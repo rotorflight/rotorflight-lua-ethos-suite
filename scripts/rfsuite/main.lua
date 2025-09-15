@@ -132,7 +132,8 @@ rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config)
 
--- Shared lazy loader to defer module creation until first use
+-- Shared lazy loader to defer module creation until first use,
+-- but promote to eager-all on first touch.
 local function rf_lazy_module(path, arg, compile_loadfile, post_init)
   local real  -- actual module table (created on first use)
   local function ensure()
@@ -140,10 +141,11 @@ local function rf_lazy_module(path, arg, compile_loadfile, post_init)
       local chunk = assert(compile_loadfile(path), "failed to load: "..path)
       real = assert(chunk)(arg)
       if post_init then post_init(real) end
+      -- First touch of any module => eagerly initialize the rest
+      rfsuite._try_eager_init("lazy-touch:" .. tostring(path))
       collectgarbage()
     end
   end
-  -- expose an eager-init handle on the proxy itself
   local proxy = {}
   proxy.__ensure = ensure
   proxy.__is_proxy = true
@@ -155,6 +157,19 @@ local function rf_lazy_module(path, arg, compile_loadfile, post_init)
   })
 end
 
+-- Reentrancy-safe eager init trigger (runs at most once)
+rfsuite._eager_started = false
+function rfsuite._try_eager_init(reason)
+  if rfsuite._eager_started then return end
+  rfsuite._eager_started = true
+  if rfsuite.eager_init then
+    rfsuite.eager_init(reason or "first-touch")
+  else
+    -- If init() hasn't defined eager_init yet, defer until it exists.
+    -- We keep the flag true so subsequent calls don't double-trigger.
+    rfsuite._pending_eager_reason = reason or "first-touch"
+  end
+end
 
 rfsuite.i18n = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
 rfsuite.i18n.load()
@@ -330,7 +345,11 @@ register_widgets = function(widgetList)
   local function make_widget_proxy(path)
   local mod
   local function ensure()
-    if not mod then mod = assert(rfsuite.compiler.loadfile(path))(config) end
+    if not mod then
+      mod = assert(rfsuite.compiler.loadfile(path))(config)
+      -- First touch of any widget => eagerly initialize the rest
+      rfsuite._try_eager_init("widget-touch:" .. tostring(path))
+    end
   end
   local function opt(name)
     return function(...)
@@ -411,6 +430,16 @@ register_widgets(widgetList)
       rfsuite.utils.log(string.format("[init] eager_init (%s): app+widgets ready", tostring(reason)), "info")
     end
   end
+
+  -- If a first-touch happened before eager_init existed, honor it now
+  if rfsuite._eager_started and rfsuite._pending_eager_reason then
+    local why = rfsuite._pending_eager_reason
+    rfsuite._pending_eager_reason = nil
+    rfsuite.eager_init(why .. " (deferred)")
+  end  
+
 end
+
+
 
 return { init = init }

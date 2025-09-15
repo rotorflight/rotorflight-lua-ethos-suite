@@ -66,6 +66,7 @@ dashboard.DEFAULT_THEME = "system/default"
 local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
 
+
 -- Cache for loaded state modules (preflight, inflight, postflight)
 local loadedStateModules = {}
 
@@ -476,6 +477,7 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
 end
 
 function dashboard.renderLayout(widget, config)
+
     local utils     = dashboard.utils
     local telemetry = tasks.telemetry
 
@@ -837,6 +839,7 @@ end
 -- Logging:
 --   - Logs info and error messages if loading or execution fails.
 local function load_state_script(theme_folder, state, isFallback)
+
     isFallback = isFallback or false
 
     local src, folder = theme_folder:match("([^/]+)/(.+)")
@@ -1025,6 +1028,7 @@ function dashboard.reload_themes(force)
             table.insert(boxes, box)
         end
     end
+    
     dashboard.loadAllObjects(boxes)
 
 
@@ -1309,7 +1313,7 @@ end
 function dashboard.wakeup(widget)
 
     -- Check if MSP is allow msp to be prioritized
-    if rfsuite.app and rfsuite.session.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
+    if rfsuite.app and rfsuite.app.triggers.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 

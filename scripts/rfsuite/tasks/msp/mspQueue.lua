@@ -142,7 +142,7 @@ function MspQueueController:processQueue()
     end
 
     if self:isProcessed() then
-        rfsuite.session.mspBusy = false
+        rfsuite.app.triggers.mspBusy = false
         self.mspBusyStart = nil
         return
     end
@@ -151,12 +151,12 @@ function MspQueueController:processQueue()
     -- This aims to simply unblock the queue if something goes wrong
     if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
         --rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "info")
-        rfsuite.session.mspBusy = false
+        rfsuite.app.triggers.mspBusy = false
         self.mspBusyStart = nil
         return
     end
 
-    rfsuite.session.mspBusy = true
+    rfsuite.app.triggers.mspBusy = true
 
     rfsuite.utils.muteSensorLostWarnings()
 
@@ -244,7 +244,7 @@ end
 --============================--
 
 function MspQueueController:clear()
-    rfsuite.session.mspBusy = false
+    rfsuite.app.triggers.mspBusy = false
     self.mspBusyStart = nil
     -- Reset FIFO quickly
     self.queue = newQueue()
