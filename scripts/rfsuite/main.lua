@@ -314,6 +314,7 @@ local function register_widgets(widgetList)
 end
 
 local function init()
+  
   local cfg = rfsuite.config
 
   -- Bail early if Ethos is too old
@@ -402,10 +403,23 @@ end
         configure  = proxy.configure,
         read       = proxy.read,
         write      = proxy.write,
+        -- persistent must be a boolean at registration time; default to false
+        -- (if a widget truly needs persistence, we can force an early ensure here and
+        -- read mod.persistent, but most widgets are fine with false)
         persistent = false,
-        menu       = nil,
-        title      = v.name,
+
+        -- Defer menu/title to the real module once loaded:
+        menu = function(...)
+          local m = proxy.get_menu and proxy.get_menu()
+          if type(m) == "function" then
+            return m(...)
+          end
+          -- if menu is not a function, Ethos expects nil or a function; return nothing
+        end,
+
+        title = v.title,
       })
+
     end
   end
 end

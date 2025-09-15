@@ -17,6 +17,8 @@
 
 -- Dashboard module table
 local dashboard = {}  -- main namespace for all dashboard functionality
+rfsuite.widgets = rfsuite.widgets or {}
+rfsuite.widgets.dashboard = dashboard
 
 -- cache some functions and variables for performance
 local compile = rfsuite.compiler.loadfile
@@ -896,7 +898,6 @@ local function load_state_script(theme_folder, state, isFallback)
             return load_state_script(dashboard.DEFAULT_THEME, state, true)
         end
         -- even default missing? give up
-        log("dashboard: Could not load "..scriptName.." for "..folder.." or default: "..tostring(chunkErr), "info")
         dashboard.themeFallbackUsed[state] = true
         dashboard.themeFallbackTime[state] = os.clock()
         return nil
@@ -907,18 +908,34 @@ local function load_state_script(theme_folder, state, isFallback)
     dashboard.themeFallbackTime[state] = isFallback and os.clock() or 0
     setPath()
 
+    local function tb(err)
+    local hasDebug = (type(debug) == "table") and (type(debug.traceback) == "function")
+    if hasDebug then
+        -- level 2: skip the handler itself
+        return debug.traceback(err, 2)
+    else
+        return "error: " .. tostring(err)
+    end
+    end
+
     -- if standalone, return the chunk itself; otherwise run it and return module
     if initTable.standalone then
         return chunk
     else
-        local ok2, module = pcall(chunk)
+        local ok2, module = xpcall(chunk, tb)
         if not ok2 then
-            if not isFallback then
-                return load_state_script(dashboard.DEFAULT_THEME, state, true)
-            end
-            dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = os.clock()
-            return nil
+        -- precise diagnostics
+        log("dashboard: state script runtime error", "info")
+        log("  state: " .. tostring(state), "info")
+        log("  theme: " .. tostring(theme_folder), "info")
+        log("  path:  " .. tostring(scriptPath), "info")
+        log("  trace: " .. tostring(module), "info")
+        if not isFallback then
+            return load_state_script(dashboard.DEFAULT_THEME, state, true)
+        end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = os.clock()
+        return nil
         end
         return module
     end
@@ -1090,6 +1107,8 @@ end
 -- @param widget The widget instance to be created.
 -- @return The result of the "create" state function for the given widget.
 function dashboard.create()
+
+
     -- 1) one-time (per Lua VM) helper modules; don’t recompile per instance
     if not dashboard.utils then
         dashboard.utils = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua"))()
@@ -1314,7 +1333,7 @@ end
 function dashboard.wakeup(widget)
 
     -- Check if MSP is allow msp to be prioritized
-    if rfsuite.app and rfsuite.app.triggers.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
+    if rfsuite.session.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
@@ -1337,7 +1356,6 @@ function dashboard.wakeup(widget)
     if firstWakeup then
         firstWakeup = false
         local theme = getThemeForState("preflight")
-        log("Initial loading of preflight theme: " .. theme, "info")
         loadedStateModules.preflight = load_state_script(theme, "preflight")
         dashboard.applySchedulerSettings()
     end
@@ -1346,10 +1364,11 @@ function dashboard.wakeup(widget)
         local state = statePreloadQueue[statePreloadIndex]
         if not loadedStateModules[state] then
             local theme = getThemeForState(state)
-            log("Preloading theme: " .. theme .. " for " .. state, "info")
+
             loadedStateModules[state] = load_state_script(theme, state)
 
             local mod = loadedStateModules[state]
+
             if mod and mod.boxes then
                 local boxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
                 for _, box in ipairs(boxes or {}) do

@@ -265,7 +265,5 @@ function toolbox.close()
     rfsuite.session.toolbox = nil
 end
 
--- No titles are used by this wrapper
-toolbox.title = false
 
 return toolbox

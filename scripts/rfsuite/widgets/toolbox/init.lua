@@ -18,6 +18,7 @@
 ]] --
 local init = {
     script = "toolbox.lua", -- run this script
+    title = false, -- show the title bar
     varname = "rftlbx", -- variable name used in the suite. (if nil, we use the script var with .lua removed)
     name = "Rotorflight Toolbox", -- name of the widget
     key = "rftlbx" -- key id used for widget

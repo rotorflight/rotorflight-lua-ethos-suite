@@ -18,6 +18,7 @@
 ]] --
 local init = {
     script = "dashboard.lua", -- run this script
+    title = false, -- show the title bar
     varname = "dashboard", -- variable name used in the suite. (if nil, we use the script var with .lua removed)
     name = "Rotorflight Dashboard", -- name of the widget
     key = "rf2sdh" -- key id used for widget
