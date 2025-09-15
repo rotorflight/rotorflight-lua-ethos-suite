@@ -169,9 +169,14 @@ local function createSensor(physId, primId, appId, frameValue)
 end
 
 local function renameSensor(physId, primId, appId, frameValue)
+
   if rfsuite.session.apiVersion == nil then return "skip" end
   local rules = renameSensorList[appId]
+
+
   if not rules then return "skip" end
+
+
   if frsky.renamed[appId] then return "noop" end
 
   if frsky.renameSensorCache[appId] == nil then
@@ -211,10 +216,17 @@ local function telemetryPop()
     return true
   end
 
+  -- Try to create; only bail out early if we actually created something.
   local cs = createSensor(physId, primId, appId, value)
-  if cs ~= "skip" then return true end
+  if cs == "created" then
+    return true
+  end
 
-  renameSensor(physId, primId, appId, value)
+  -- Allow rename even if createSensor() returned "noop" or "skip"
+  if renameSensorList[appId] then
+    renameSensor(physId, primId, appId, value)
+  end
+
   return true
 end
 
