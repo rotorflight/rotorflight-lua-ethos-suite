@@ -27,6 +27,7 @@ local utils = rfsuite.utils
 local log = utils.log
 local tasks = rfsuite.tasks
 local objectProfiler = false
+local mod
 
 
 -- Supported resolutions
