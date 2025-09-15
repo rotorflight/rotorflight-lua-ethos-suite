@@ -132,14 +132,38 @@ rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config)
 
+-- Shared lazy loader to defer module creation until first use
+local function rf_lazy_module(path, arg, compile_loadfile, post_init)
+  local real  -- actual module table (created on first use)
+  local function ensure()
+    if not real then
+      local chunk = assert(compile_loadfile(path), "failed to load: "..path)
+      real = assert(chunk)(arg)
+      if post_init then post_init(real) end
+      collectgarbage()
+    end
+  end
+  -- expose an eager-init handle on the proxy itself
+  local proxy = {}
+  proxy.__ensure = ensure
+  proxy.__is_proxy = true
+  return setmetatable(proxy, {
+    __index    = function(_, k) ensure(); return real[k] end,
+    __newindex = function(_, k, v) ensure(); real[k] = v end,
+    __call     = function(_, ...) ensure(); return real(...) end,
+    __pairs    = function() ensure(); return pairs(real) end,
+  })
+end
+
+
 rfsuite.i18n = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
 rfsuite.i18n.load()
 
 rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
-rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
+rfsuite.app   = rf_lazy_module("app/app.lua",    rfsuite.config, rfsuite.compiler.loadfile)
 
-rfsuite.tasks = assert(rfsuite.compiler.loadfile("tasks/tasks.lua"))(rfsuite.config)
+rfsuite.tasks = rf_lazy_module("tasks/tasks.lua", rfsuite.config, rfsuite.compiler.loadfile)
 
 -- Flight mode & session
 rfsuite.flightmode = { current = "preflight" }
@@ -198,12 +222,17 @@ local function register_main_tool()
 end
 
 local function register_bg_task()
+  -- wrap task init so we can eagerly warm app + widgets when bg task starts
+  local function bg_init_wrapper(...)
+    if rfsuite.eager_init then rfsuite.eager_init("bgtask") end
+    return rfsuite.tasks.init(...)
+  end
   system.registerTask({
     name = rfsuite.config.bgTaskName,
     key = rfsuite.config.bgTaskKey,
     wakeup = rfsuite.tasks.wakeup,
     event = rfsuite.tasks.event,
-    init = rfsuite.tasks.init,
+    init = bg_init_wrapper,
     read = rfsuite.tasks.read,
     write = rfsuite.tasks.write,
   })
@@ -291,7 +320,97 @@ local function init()
     build_widget_cache(widgetList, cacheFile)
   end
 
-  register_widgets(widgetList)
+  rfsuite._widget_proxies = {}
+
+-- Override register_widgets with a lazy-loading version
+register_widgets = function(widgetList)
+  rfsuite.widgets = {}
+  local dupCount = {}
+
+  local function make_widget_proxy(path)
+  local mod
+  local function ensure()
+    if not mod then mod = assert(rfsuite.compiler.loadfile(path))(config) end
+  end
+  local function opt(name)
+    return function(...)
+      ensure()
+      local f = mod[name]
+      if f then return f(...) end
+    end
+  end
+  local proxy = {
+    event     = opt("event"),
+    create    = opt("create"),
+    paint     = opt("paint"),
+    wakeup    = opt("wakeup"),
+    build     = opt("build"),
+    close     = opt("close"),
+    configure = opt("configure"),
+    read      = opt("read"),
+    write     = opt("write"),
+    get_title = function() ensure(); return mod.title end,
+    get_menu  = function() ensure(); return mod.menu end,
+    get_persistent = function() ensure(); return mod.persistent end,
+  }
+  proxy.__ensure = ensure
+  proxy.__is_proxy = true
+  table.insert(rfsuite._widget_proxies, proxy)
+  return proxy
+end
+
+  for _, v in ipairs(widgetList) do
+    if v.script then
+      local path = "widgets/" .. v.folder .. "/" .. v.script
+      local proxy = make_widget_proxy(path)
+
+      local base = v.varname or v.script:gsub("%.lua$", "")
+      if rfsuite.widgets[base] then
+        dupCount[base] = (dupCount[base] or 0) + 1
+        base = string.format("%s_dup%02d", base, dupCount[base])
+      end
+      rfsuite.widgets[base] = proxy
+
+      system.registerWidget({
+        name       = v.name,
+        key        = v.key,
+        event      = proxy.event,
+        create     = proxy.create,
+        paint      = proxy.paint,
+        wakeup     = proxy.wakeup,
+        build      = proxy.build,
+        close      = proxy.close,
+        configure  = proxy.configure,
+        read       = proxy.read,
+        write      = proxy.write,
+        persistent = false,
+        menu       = nil,
+        title      = v.name,
+      })
+    end
+  end
+end
+
+register_widgets(widgetList)
+
+  ------------------------------------------------------------------
+  -- Eager init: fully load the app + all widgets on bg task start --
+  ------------------------------------------------------------------
+  function rfsuite.eager_init(reason)
+    -- 1) App module
+    if rfsuite.app and rfsuite.app.__ensure then
+      rfsuite.app.__ensure()
+    end
+    -- 2) All widget modules
+    if rfsuite._widget_proxies then
+      for _, p in ipairs(rfsuite._widget_proxies) do
+        if p and p.__ensure then p.__ensure() end
+      end
+    end
+    if rfsuite.utils and rfsuite.utils.log then
+      rfsuite.utils.log(string.format("[init] eager_init (%s): app+widgets ready", tostring(reason)), "info")
+    end
+  end
 end
 
 return { init = init }
