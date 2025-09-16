@@ -35,7 +35,7 @@ jobs:
       # Build merged i18n JSON only for this locale (into scripts/rfsuite/i18n/<lang>.json)
       - name: Build merged i18n JSON (${{ matrix.lang }})
         run: |
-          python i18n/build-single-json.py --only '${{ matrix.lang }}'
+          python bin/i18n/build-single-json.py --only '${{ matrix.lang }}'
           test -f "scripts/rfsuite/i18n/${{ matrix.lang }}.json"
 
       # Stage scripts/ into build/<lang>/scripts
