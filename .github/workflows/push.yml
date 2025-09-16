@@ -89,21 +89,3 @@ jobs:
           path: ${{ env.ARTIFACT }}
           if-no-files-found: error
 
-#      # (Optional) Also package the combined soundpack once per job; if you only want it once,
-#      # move these two steps to a separate, non-matrix job.
-#      - name: Package combined soundpack
-#        if: ${{ matrix.lang == 'en' }}   # run once; change to preferred locale or remove this condition to do it per-locale
-#        run: |
-#          SOUND_DIR="bin/sound-generator/soundpack"
-#          OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
-#          mkdir -p "$OUTPUT_DIR"
-#          ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
-#          (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
-#          echo "SOUNDPACK=$OUTPUT_DIR/$ZIP_NAME" >> $GITHUB_ENV
-#
-#      - name: Upload soundpack artifact
-#        if: ${{ matrix.lang == 'en' }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
-#          path: ${{ env.SOUNDPACK }}

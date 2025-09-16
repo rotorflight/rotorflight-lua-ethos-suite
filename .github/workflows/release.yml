@@ -31,9 +31,8 @@ jobs:
         id: buildvars
         shell: bash
         run: |
-          GIT_TAG="${{ github.ref_name }}"
-          # strip the 'release/' prefix to get the version
-          GIT_VER="${{ github.ref_name#release/ }}"
+          GIT_TAG="${GITHUB_REF_NAME}"
+          GIT_VER="${GIT_TAG#release/}"
           if [[ $GIT_VER =~ ^[0-9]+\.[0-9]+\.[0-9]+-[A-Za-z0-9]+$ ]]; then
             GH_TYPE='Release Candidate'
           else
@@ -43,11 +42,9 @@ jobs:
           echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
           echo "GH_TYPE=$GH_TYPE" >> $GITHUB_ENV
 
-      # Build merged i18n JSON only for this locale (writes to scripts/rfsuite/i18n/<lang>.json)
       - name: Build merged i18n JSON (${{ matrix.lang }})
         run: python bin/i18n/build-single-json.py --only '${{ matrix.lang }}'
 
-      # Stage a per-locale copy to avoid mutating the repo
       - name: Stage files for this locale
         shell: bash
         run: |
@@ -56,14 +53,12 @@ jobs:
           rsync -a scripts/ "$STAGE"/
           echo "STAGE=$STAGE" >> $GITHUB_ENV
 
-      # Resolve @i18n(...)@ tags in the staged tree using the chosen locale
       - name: Resolve i18n tags (locale=${{ matrix.lang }})
         run: |
           python .vscode/scripts/resolve_i18n_tags.py \
             --json "${{ env.STAGE }}/rfsuite/i18n/${{ matrix.lang }}.json" \
             --root "${{ env.STAGE }}"
 
-      # Copy sound pack for this locale into the staged tree (fallback to 'en' if missing)
       - name: Copy sound pack (locale=${{ matrix.lang }})
         shell: bash
         run: |
@@ -78,14 +73,12 @@ jobs:
           cp -a "$SRC/." "$DEST/"
           echo "[AUDIO] Copied $SRC -> $DEST"
 
-      # Update version suffix in the *staged* main.lua
       - name: Update version and config in staged main.lua
         shell: bash
         run: |
           sed -E -i 's/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*")[^"]*(")/\1'${{ env.GIT_VER }}'\2/' "${{ env.STAGE }}/rfsuite/main.lua"
           grep 'config\.' "${{ env.STAGE }}/rfsuite/main.lua" || true
 
-      # Zip only the staged scripts folder for this locale
       - name: Create release ZIP (locale=${{ matrix.lang }})
         shell: bash
         run: |
@@ -101,41 +94,10 @@ jobs:
           path: ${{ env.ARTIFACT }}
           if-no-files-found: error
 
-  soundpack:
-    name: Package combined soundpack
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set build variables (from tag)
-        shell: bash
-        run: |
-          GIT_TAG="${{ github.ref_name }}"
-          GIT_VER="${{ github.ref_name#release/ }}"
-          echo "GIT_VER=$GIT_VER" >> $GITHUB_ENV
-          echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
-
-      - name: Package combined soundpack
-        shell: bash
-        run: |
-          SOUND_DIR="bin/sound-generator/soundpack"
-          OUTPUT_DIR="${{ github.workspace }}/tmp"
-          mkdir -p "$OUTPUT_DIR"
-          ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
-          (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
-          echo "SOUNDPACK=$OUTPUT_DIR/$ZIP_NAME" >> $GITHUB_ENV
-
-      - name: Upload soundpack artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
-          path: ${{ env.SOUNDPACK }}
-
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-zips, soundpack]
+    needs: [build-zips]
     steps:
       - name: Checkout repo (for release notes script)
         uses: actions/checkout@v4
@@ -144,8 +106,8 @@ jobs:
         id: buildvars
         shell: bash
         run: |
-          GIT_TAG="${{ github.ref_name }}"
-          GIT_VER="${{ github.ref_name#release/ }}"
+          GIT_TAG="${GITHUB_REF_NAME}"
+          GIT_VER="${GIT_TAG#release/}"
           if [[ $GIT_VER =~ ^[0-9]+\.[0-9]+\.[0-9]+-[A-Za-z0-9]+$ ]]; then
             GH_TYPE='Release Candidate'
           else

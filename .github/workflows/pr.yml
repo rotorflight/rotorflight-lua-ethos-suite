@@ -88,32 +88,3 @@ jobs:
           name: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}
           path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip
           if-no-files-found: error
-
-#  # Keep your combined soundpack builder as a separate, single-run job
-#  combined-soundpack:
-#    name: Package combined soundpack (single)
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Set build variables (PR version)
-#        run: |
-#          PR_NUMBER='${{ github.event.pull_request.number }}'
-#          echo "GIT_VER=PR-${PR_NUMBER}" >> $GITHUB_ENV
-
-#      - name: Package combined soundpack
-#        run: |
-#          SOUND_DIR="bin/sound-generator/soundpack"
-#          OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
-#          mkdir -p "$OUTPUT_DIR"
-#          ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
-#          (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
-#          echo "✅ Created $OUTPUT_DIR/$ZIP_NAME"
-#
-#      - name: Upload soundpack artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
-#          path: tmp/*.zip
