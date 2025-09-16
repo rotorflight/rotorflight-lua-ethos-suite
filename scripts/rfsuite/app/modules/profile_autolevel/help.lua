@@ -18,10 +18,10 @@
 
 ]] --
 local data = {}
-local i18n = rfsuite.i18n.get
+
 data['help'] = {}
 
-data['help']['default'] = {i18n("app.modules.profile_autolevel.help_p1"),i18n("app.modules.profile_autolevel.help_p2"),i18n("app.modules.profile_autolevel.help_p3")}
+data['help']['default'] = {"@i18n(app.modules.profile_autolevel.help_p1)@","@i18n(app.modules.profile_autolevel.help_p2)@","@i18n(app.modules.profile_autolevel.help_p3)@"}
 
 data['fields'] = {}
 

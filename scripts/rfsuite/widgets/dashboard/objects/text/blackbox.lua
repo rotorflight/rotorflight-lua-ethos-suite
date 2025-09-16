@@ -56,16 +56,16 @@ end
 -- ask + erase helpers (unchanged)
 local function eraseBlackboxAsk()
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok"),
+        label = "@i18n(app.btn_ok)@",
         action = function() eraseDataflashGo = true; return true end
     },{
-        label = rfsuite.i18n.get("app.btn_cancel"),
+        label = "@i18n(app.btn_cancel)@",
         action = function() return true end
     }}
 
     form.openDialog({
-        title =  rfsuite.i18n.get("widgets.bbl.erase_dataflash"),
-        message = rfsuite.i18n.get("widgets.bbl.erase_dataflash") .. "?",
+        title =  "@i18n(widgets.bbl.erase_dataflash)@",
+        message = "@i18n(widgets.bbl.erase_dataflash)@" .. "?",
         buttons = buttons,
         options = TEXT_LEFT
     })
@@ -74,8 +74,8 @@ end
 local function eraseDataflash()
     isErase = true
     progress = form.openProgressDialog(
-        rfsuite.i18n.get("app.msg_saving"),
-        rfsuite.i18n.get("app.msg_saving_to_fbl")
+        "@i18n(app.msg_saving)@",
+        "@i18n(app.msg_saving_to_fbl)@"
     )
     progress:value(0)
     progress:closeAllowed(false)
@@ -146,7 +146,7 @@ function render.wakeup(box)
         local transformedUsed  = utils.transformValue(usedMB, box)
         local transformedTotal = utils.transformValue(totalMB, box)
         displayValue = string.format("%." .. cfg.decimals .. "f/%." .. cfg.decimals .. "f %s",
-            transformedUsed, transformedTotal, rfsuite.i18n.get("app.modules.fblstatus.megabyte"))
+            transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
     else
         if totalSize == nil and usedSize == nil then
             -- loading dots

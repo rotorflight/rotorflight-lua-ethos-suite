@@ -1,5 +1,5 @@
 local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
-local i18n = rfsuite.i18n.get
+
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
@@ -43,7 +43,7 @@ local function openPage(pidx, title, script, displaymode)
     if not rfsuite.tasks.active() then
 
         local buttons = {{
-            label = i18n("app.btn_ok"),
+            label = "@i18n(app.btn_ok)@",
             action = function()
 
                 rfsuite.app.triggers.exitAPP = true
@@ -54,8 +54,8 @@ local function openPage(pidx, title, script, displaymode)
 
         form.openDialog({
             width = nil,
-            title = i18n("error"):gsub("^%l", string.upper),
-            message = i18n("app.check_bg_task") ,
+            title = "@i18n(error)@",
+            message = "@i18n(app.check_bg_task)@",
             buttons = buttons,
             wakeup = function()
             end,
@@ -157,7 +157,7 @@ local function openPage(pidx, title, script, displaymode)
     if #dates == 0 then
 
         LCD_W, LCD_H = lcd.getWindowSize()
-        local str = i18n("app.modules.logs.msg_no_logs_found")
+        local str = "@i18n(app.modules.logs.msg_no_logs_found)@"
         local ew = LCD_W
         local eh = LCD_H
         local etsizeW, etsizeH = lcd.getTextSize(str)

@@ -48,9 +48,9 @@ local function configure()
     end
 
     -- RPM PANEL
-    local rpm_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.headspeed"))
+    local rpm_panel = form.addExpansionPanel("@i18n(widgets.dashboard.headspeed)@")
     rpm_panel:open(false)
-    local rpm_min_line = rpm_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local rpm_min_line = rpm_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(rpm_min_line, nil, 0, 20000,
         function() return config.rpm_min end,
         function(val)
@@ -59,7 +59,7 @@ local function configure()
         1)
     formFields[#formFields]:suffix("rpm")
 
-    local rpm_max_line = rpm_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local rpm_max_line = rpm_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(rpm_max_line, nil, 1, 20000,
         function() return config.rpm_max end,
         function(val)
@@ -69,9 +69,9 @@ local function configure()
     formFields[#formFields]:suffix("rpm")
 
     -- VOLTAGE PANEL
-    local voltage_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.voltage"))
+    local voltage_panel = form.addExpansionPanel("@i18n(widgets.dashboard.voltage)@")
     voltage_panel:open(false)
-    local voltage_min_line = voltage_panel:addLine(rfsuite.i18n.get("widgets.dashboard.min"))
+    local voltage_min_line = voltage_panel:addLine("@i18n(widgets.dashboard.min)@")
     formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 60, 140,
         function()
             local v = config.v_min or THEME_DEFAULTS.v_min
@@ -84,7 +84,7 @@ local function configure()
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
-    local voltage_max_line = voltage_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local voltage_max_line = voltage_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 60, 140,
         function()
             local v = config.v_max or THEME_DEFAULTS.v_max

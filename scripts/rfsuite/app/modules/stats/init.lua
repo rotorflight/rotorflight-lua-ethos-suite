@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.stats.name"), -- title of the page
+    title = "@i18n(app.modules.stats.name)@", -- title of the page
     section = "hardware", -- section in which the page will be displayed
     script = "stats.lua", -- run this script
     image = "stats.png", -- image for the page

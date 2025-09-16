@@ -26,8 +26,8 @@ local MSP_API_STRUCTURE_READ_DATA
 
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
 
-    local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_external"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_electric"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_nitro")}
-    local throttleTypeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_normal"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_off_on"),rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on"),rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_idle_auto_on")}
+    local gov_modeTable ={[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_external)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"}
+    local throttleTypeTable ={[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@","@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@","@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_idle_auto_on)@"}
 
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "gov_mode",                        type = "U8",  apiVersion = 12.09, simResponse = {2},    min = 0,  max = #gov_modeTable, table = gov_modeTable},
@@ -58,7 +58,7 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
 
 else
 
-    local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_passthrough"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_standard"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode1"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode2")}
+    local gov_modeTable ={[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_passthrough)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_standard)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode1)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode2)@"}
 
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "gov_mode",                        type = "U8",  apiVersion = 12.06, simResponse = {3},    min = 0,  max = #gov_modeTable,   table = gov_modeTable},

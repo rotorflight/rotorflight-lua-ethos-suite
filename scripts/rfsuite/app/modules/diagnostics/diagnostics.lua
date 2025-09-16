@@ -1,38 +1,38 @@
-local i18n = rfsuite.i18n.get
+
 local app = rfsuite.app
 local log = rfsuite.utils.log
 
 local S_PAGES = {
     {
-        name = i18n("app.modules.rfstatus.name"),
+        name = "@i18n(app.modules.rfstatus.name)@",
         script = "rfstatus.lua",
         image = "rfstatus.png",
         bgtask = false,  -- requires background tasks for icon to be enabled
         offline = false  -- requires connection to fbl to run
     }, 
     {
-        name = i18n("app.modules.msp_speed.name"),
+        name = "@i18n(app.modules.msp_speed.name)@",
         script = "msp_speed.lua",
         image = "msp_speed.png",
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run
     },       
     {
-        name = i18n("app.modules.validate_sensors.name"),
+        name = "@i18n(app.modules.validate_sensors.name)@",
         script = "sensors.lua",
         image = "sensors.png",
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run
     }, 
     {
-        name = i18n("app.modules.fblstatus.name"),
+        name = "@i18n(app.modules.fblstatus.name)@",
         script = "fblstatus.lua",
         image = "fblstatus.png",
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run
     },     
     {
-        name = i18n("app.modules.info.name"),
+        name = "@i18n(app.modules.info.name)@",
         script = "info.lua",
         image = "info.png",
         bgtask = true,  -- requires background tasks for icon to be enabled
@@ -174,7 +174,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["diagnostics"] = pidx
                 app.ui.progressDisplay(nil,nil,true)
-                app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.diagnostics.name")  .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
+                app.ui.openPage(pidx, "@i18n(app.modules.diagnostics.name)@"  .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
             end
         })
 

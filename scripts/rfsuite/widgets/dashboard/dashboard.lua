@@ -20,7 +20,7 @@ local dashboard = {}  -- main namespace for all dashboard functionality
 
 -- cache some functions and variables for performance
 local compile = rfsuite.compiler.loadfile
-local i18n = rfsuite.i18n.get
+
 local baseDir = rfsuite.config.baseDir
 local preferences = rfsuite.config.preferences
 local utils = rfsuite.utils
@@ -384,12 +384,12 @@ function dashboard.computeOverlayMessage()
     -- 1) Theme load error (recent only)
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
-        return i18n("widgets.dashboard.theme_load_error")
+        return "@i18n(widgets.dashboard.theme_load_error)@"
     end
 
     -- 2) Background task
     if not tasks.active() then
-        return i18n("widgets.dashboard.check_bg_task")
+        return "@i18n(widgets.dashboard.check_bg_task)@"
     end    
   
     -- 3) As soon as we know RF version, show it with precedence
@@ -403,7 +403,7 @@ function dashboard.computeOverlayMessage()
 
     -- 4) LAST: generic waiting message (don’t let it mask actionable errors)
     if not rfsuite.session.isConnectedHigh and state ~= "postflight" then
-        return i18n("widgets.dashboard.waiting_for_connection")
+        return "@i18n(widgets.dashboard.waiting_for_connection)@"
     end
 
     return nil
@@ -1132,9 +1132,9 @@ function dashboard.paint(widget)
         -- If the resolution is unsupported, show an error message and return
         local W, H = lcd.getWindowSize()
         if H < (system.getVersion().lcdHeight/5) or W < (system.getVersion().lcdWidth/10) then
-           dashboard.utils.screenError(i18n("widgets.dashboard.unsupported_resolution"), true, 0.4)
+           dashboard.utils.screenError("@i18n(widgets.dashboard.unsupported_resolution)@", true, 0.4)
         else
-            dashboard.overlaymessage(0, 0, W, H , i18n("widgets.dashboard.unsupported_resolution"))
+            dashboard.overlaymessage(0, 0, W, H , "@i18n(widgets.dashboard.unsupported_resolution)@")
         end     
         return
     end
@@ -1611,14 +1611,14 @@ end
 function dashboard.resetFlightModeAsk()
 
     local buttons = {{
-        label = i18n("app.btn_ok"),
+        label = "@i18n(app.btn_ok)@",
         action = function()
             tasks.events.flightmode.reset()
             lcd.invalidate()
             return true
         end
     }, {
-        label = i18n("app.btn_cancel"),
+        label = "@i18n(app.btn_cancel)@",
         action = function()
             return true
         end
@@ -1626,8 +1626,8 @@ function dashboard.resetFlightModeAsk()
 
     form.openDialog({
         width = nil,
-        title =  i18n("widgets.dashboard.reset_flight_ask_title"),
-        message = i18n("widgets.dashboard.reset_flight_ask_text"),
+        title =  "@i18n(widgets.dashboard.reset_flight_ask_title)@",
+        message = "@i18n(widgets.dashboard.reset_flight_ask_text)@",
         buttons = buttons,
         wakeup = function()
         end,
@@ -1641,7 +1641,7 @@ end
 function dashboard.menu(widget)
 
     return {
-        {i18n("widgets.dashboard.reset_flight"), dashboard.resetFlightModeAsk},
+        {"@i18n(widgets.dashboard.reset_flight)@", dashboard.resetFlightModeAsk},
     }
 end
 

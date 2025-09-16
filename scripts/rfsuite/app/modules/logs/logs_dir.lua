@@ -1,6 +1,6 @@
 -- Load utility functions
 local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
-local i18n = rfsuite.i18n.get
+
 -- Wakeup control flag
 local enableWakeup = false
 
@@ -52,7 +52,7 @@ local function openPage(idx, title, script)
 
     -- Show message if no logs exist
     if #folders == 0 then
-        local msg = i18n("app.modules.logs.msg_no_logs_found")
+        local msg = "@i18n(app.modules.logs.msg_no_logs_found)@"
         local tw, th = lcd.getTextSize(msg)
         local x = w / 2 - tw / 2
         local y = h / 2 - th / 2

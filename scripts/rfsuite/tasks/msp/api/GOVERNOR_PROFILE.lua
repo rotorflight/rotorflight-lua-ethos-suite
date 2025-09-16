@@ -24,7 +24,7 @@ local MSP_API_STRUCTURE_READ_DATA
 
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
 
-    local offOn = {rfsuite.i18n.get("api.GOVERNOR_PROFILE.tbl_off"), rfsuite.i18n.get("api.GOVERNOR_PROFILE.tbl_on")}
+    local offOn = {"@i18n(api.GOVERNOR_PROFILE.tbl_off)@", "@i18n(api.GOVERNOR_PROFILE.tbl_on)@"}
 
     local governor_flags_bitmap = {
         { field = "fc_throttle_curve",    table = offOn, tableIdxInc = -1},    -- bit 0

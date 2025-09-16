@@ -18,10 +18,10 @@
 
 ]] --
 local data = {}
-local i18n = rfsuite.i18n.get
+
 data['help'] = {}
 
-data['help']['default'] = {i18n("app.modules.rates.help_default_p1"),i18n("app.modules.rates.help_default_p2")}
+data['help']['default'] = {"@i18n(app.modules.rates.help_default_p1)@","@i18n(app.modules.rates.help_default_p2)@"}
 
 -- Rates is a bit of an odd-ball because we show different help based one
 -- the rate table selected.  This info is supplied below.
@@ -29,21 +29,21 @@ data['help']['default'] = {i18n("app.modules.rates.help_default_p1"),i18n("app.m
 data["help"]["table"] = {}
 
 -- RATE TABLE NONE
-data["help"]["table"][0] = {i18n("app.modules.rates.help_table_0_p1")}
+data["help"]["table"][0] = {"@i18n(app.modules.rates.help_table_0_p1)@"}
 
 -- RATE TABLE BETAFLIGHT
-data["help"]["table"][1] = {i18n("app.modules.rates.help_table_1_p1"), i18n("app.modules.rates.help_table_1_p2"), i18n("app.modules.rates.help_table_1_p3")}
+data["help"]["table"][1] = {"@i18n(app.modules.rates.help_table_1_p1)@", "@i18n(app.modules.rates.help_table_1_p2)@", "@i18n(app.modules.rates.help_table_1_p3)@"}
 
 -- RATE TABLE RACEFLIGHT
-data["help"]["table"][2] = {i18n("app.modules.rates.help_table_2_p1"), i18n("app.modules.rates.help_table_2_p2"), i18n("app.modules.rates.help_table_2_p3")}
+data["help"]["table"][2] = {"@i18n(app.modules.rates.help_table_2_p1)@", "@i18n(app.modules.rates.help_table_2_p2)@", "@i18n(app.modules.rates.help_table_2_p3)@"}
 
 -- RATE TABLE KISS
-data["help"]["table"][3] = {i18n("app.modules.rates.help_table_3_p1"), i18n("app.modules.rates.help_table_3_p2"), i18n("app.modules.rates.help_table_3_p3")}
+data["help"]["table"][3] = {"@i18n(app.modules.rates.help_table_3_p1)@", "@i18n(app.modules.rates.help_table_3_p2)@", "@i18n(app.modules.rates.help_table_3_p3)@"}
 
 -- RATE TABLE ACTUAL
-data["help"]["table"][4] = {i18n("app.modules.rates.help_table_4_p1"), i18n("app.modules.rates.help_table_4_p2"), i18n("app.modules.rates.help_table_4_p3")}
+data["help"]["table"][4] = {"@i18n(app.modules.rates.help_table_4_p1)@", "@i18n(app.modules.rates.help_table_4_p2)@", "@i18n(app.modules.rates.help_table_4_p3)@"}
 
 -- RATE TABLE QUICK
-data["help"]["table"][5] = {i18n("app.modules.rates.help_table_5_p1"), i18n("app.modules.rates.help_table_5_p2"), i18n("app.modules.rates.help_table_5_p3")}
+data["help"]["table"][5] = {"@i18n(app.modules.rates.help_table_5_p1)@", "@i18n(app.modules.rates.help_table_5_p2)@", "@i18n(app.modules.rates.help_table_5_p3)@"}
 
 return data

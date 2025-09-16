@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.telemetry.name"), -- title of the page
+    title = "@i18n(app.modules.telemetry.name)@", -- title of the page
     section = "hardware", -- do not run if busy with msp
     script = "telemetry.lua", -- run this script
     image = "telemetry.png", -- image for the page

@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
         api = {
@@ -8,11 +8,11 @@ local apidata = {
             labels = {
             },
             fields = {
-            { t = i18n("app.modules.governor.startup_time"),     mspapi = 1, apikey = "gov_startup_time"},
-            { t = i18n("app.modules.governor.spoolup_time"),     mspapi = 1, apikey = "gov_spoolup_time"},
-            { t = i18n("app.modules.governor.spooldown_time"),     mspapi = 1, apikey = "gov_spooldown_time"},
-            { t = i18n("app.modules.governor.tracking_time"),     mspapi = 1, apikey = "gov_tracking_time" },
-            { t = i18n("app.modules.governor.recovery_time"),     mspapi = 1, apikey = "gov_recovery_time" }
+            { t = "@i18n(app.modules.governor.startup_time)@",     mspapi = 1, apikey = "gov_startup_time"},
+            { t = "@i18n(app.modules.governor.spoolup_time)@",     mspapi = 1, apikey = "gov_spoolup_time"},
+            { t = "@i18n(app.modules.governor.spooldown_time)@",     mspapi = 1, apikey = "gov_spooldown_time"},
+            { t = "@i18n(app.modules.governor.tracking_time)@",     mspapi = 1, apikey = "gov_tracking_time" },
+            { t = "@i18n(app.modules.governor.recovery_time)@",     mspapi = 1, apikey = "gov_recovery_time" }
             }
         }               
     }    

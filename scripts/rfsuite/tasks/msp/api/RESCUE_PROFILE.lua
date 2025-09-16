@@ -22,8 +22,8 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rescue_mode",               type = "U8",  apiVersion = 12.06, simResponse = {1},   min = 0, max = 1,   default = 0,   table = {[0] = rfsuite.i18n.get("api.RESCUE_PROFILE.tbl_off"), rfsuite.i18n.get("api.RESCUE_PROFILE.tbl_on")}},
-    {field = "rescue_flip_mode",          type = "U8",  apiVersion = 12.06, simResponse = {0},   min = 0, max = 1,   default = 0,   table = {[0] = rfsuite.i18n.get("api.RESCUE_PROFILE.tbl_noflip"), rfsuite.i18n.get("api.RESCUE_PROFILE.tbl_flip")}},
+    {field = "rescue_mode",               type = "U8",  apiVersion = 12.06, simResponse = {1},   min = 0, max = 1,   default = 0,   table = {[0] = "@i18n(api.RESCUE_PROFILE.tbl_off)@", "@i18n(api.RESCUE_PROFILE.tbl_on)@"}},
+    {field = "rescue_flip_mode",          type = "U8",  apiVersion = 12.06, simResponse = {0},   min = 0, max = 1,   default = 0,   table = {[0] = "@i18n(api.RESCUE_PROFILE.tbl_noflip)@", "@i18n(api.RESCUE_PROFILE.tbl_flip)@"}},
     {field = "rescue_flip_gain",          type = "U8",  apiVersion = 12.06, simResponse = {200}, min = 5, max = 250, default = 200},
     {field = "rescue_level_gain",         type = "U8",  apiVersion = 12.06, simResponse = {100}, min = 5, max = 250, default = 100},
     {field = "rescue_pull_up_time",       type = "U8",  apiVersion = 12.06, simResponse = {5},   min = 0, max = 250, default = 0.3,  unit = "s", decimals = 1, scale = 10},

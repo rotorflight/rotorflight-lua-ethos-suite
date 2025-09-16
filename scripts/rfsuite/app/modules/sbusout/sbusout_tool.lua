@@ -5,9 +5,9 @@ local currentProfileChecked = false
 local firstLoad = true
 local minMaxIndex = 1
 -- local sbus_out_frame_rate
-local i18n = rfsuite.i18n.get
+
 local ch = rfsuite.currentSbusServoIndex
-local ch_str = i18n("app.modules.sbusout.ch_prefix") .. tostring(ch + 1)
+local ch_str = "@i18n(app.modules.sbusout.ch_prefix)@" .. tostring(ch + 1)
 local offset = 6 * ch -- 6 bytes per channel
 
 local servoCount = rfsuite.session.servoCount or 6
@@ -30,10 +30,10 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.sbusout.type"), min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {[0] = i18n("app.modules.sbusout.receiver"), i18n("app.modules.sbusout.mixer"), i18n("app.modules.sbusout.servo"), i18n("app.modules.sbusout.motor")}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
-            {t = i18n("app.modules.sbusout.source"), min=0, max = 15, mspapi = 1, apikey = "Index_"..ch+1, help = "sbusOutSource"},
-            {t = i18n("app.modules.sbusout.min"), min = -2000, max = 2000, mspapi = 1, apikey="RangeLow_"..ch+1, help = "sbusOutMin"},
-            {t = i18n("app.modules.sbusout.max"), min = -2000, max = 2000, mspapi = 1, apikey="RangeHigh_"..ch+1 ,help = "sbusOutMax"},
+            {t = "@i18n(app.modules.sbusout.type)@", min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {[0] = "@i18n(app.modules.sbusout.receiver)@", "@i18n(app.modules.sbusout.mixer)@", "@i18n(app.modules.sbusout.servo)@", "@i18n(app.modules.sbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
+            {t = "@i18n(app.modules.sbusout.source)@", min=0, max = 15, mspapi = 1, apikey = "Index_"..ch+1, help = "sbusOutSource"},
+            {t = "@i18n(app.modules.sbusout.min)@", min = -2000, max = 2000, mspapi = 1, apikey="RangeLow_"..ch+1, help = "sbusOutMin"},
+            {t = "@i18n(app.modules.sbusout.max)@", min = -2000, max = 2000, mspapi = 1, apikey="RangeHigh_"..ch+1 ,help = "sbusOutMax"},
         }
     }                 
 }
@@ -70,7 +70,7 @@ local function saveServoSettings(self)
 end
 
 local function onSaveMenuProgress()
-    rfsuite.app.ui.progressDisplay(i18n("app.modules.sbusout.saving"), i18n("app.modules.sbusout.saving_data"))
+    rfsuite.app.ui.progressDisplay("@i18n(app.modules.sbusout.saving)@", "@i18n(app.modules.sbusout.saving_data)@")
     saveServoSettings()
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -128,20 +128,20 @@ end
 
 local function onSaveMenu()
     local buttons = {{
-        label = i18n("app.btn_ok_long"),
+        label = "@i18n(app.btn_ok_long)@",
         action = function()
             isSaving = true
 
             return true
         end
     }, {
-        label = i18n("app.modules.sbusout.cancel"),
+        label = "@i18n(app.modules.sbusout.cancel)@",
         action = function()
             return true
         end
     }}
-    local theTitle = i18n("app.modules.sbusout.save_settings")
-    local theMsg = i18n("app.modules.sbusout.save_prompt")
+    local theTitle = "@i18n(app.modules.sbusout.save_settings)@"
+    local theMsg = "@i18n(app.modules.sbusout.save_prompt)@"
 
     form.openDialog({
         width = nil,

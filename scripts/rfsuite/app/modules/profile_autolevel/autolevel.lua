@@ -1,6 +1,6 @@
 local activateWakeup = false
 local currentProfileChecked = false
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
     api = {
@@ -8,16 +8,16 @@ local apidata = {
     },
     formdata = {
         labels = {
-            {t = i18n("app.modules.profile_autolevel.acro_trainer"), inline_size = 13.6, label = 1},
-            {t = i18n("app.modules.profile_autolevel.angle_mode"),   inline_size = 13.6, label = 2},
-            {t = i18n("app.modules.profile_autolevel.horizon_mode"), inline_size = 13.6, label = 3}
+            {t = "@i18n(app.modules.profile_autolevel.acro_trainer)@", inline_size = 13.6, label = 1},
+            {t = "@i18n(app.modules.profile_autolevel.angle_mode)@",   inline_size = 13.6, label = 2},
+            {t = "@i18n(app.modules.profile_autolevel.horizon_mode)@", inline_size = 13.6, label = 3}
         },
         fields = {
-            {t = i18n("app.modules.profile_autolevel.gain"), inline = 2, label = 1, mspapi = 1, apikey = "trainer_gain"},
-            {t = i18n("app.modules.profile_autolevel.max"),  inline = 1, label = 1, mspapi = 1, apikey = "trainer_angle_limit"},
-            {t = i18n("app.modules.profile_autolevel.gain"), inline = 2, label = 2, mspapi = 1, apikey = "angle_level_strength"},
-            {t = i18n("app.modules.profile_autolevel.max"),  inline = 1, label = 2, mspapi = 1, apikey = "angle_level_limit"},
-            {t = i18n("app.modules.profile_autolevel.gain"), inline = 2, label = 3, mspapi = 1, apikey = "horizon_level_strength"}
+            {t = "@i18n(app.modules.profile_autolevel.gain)@", inline = 2, label = 1, mspapi = 1, apikey = "trainer_gain"},
+            {t = "@i18n(app.modules.profile_autolevel.max)@",  inline = 1, label = 1, mspapi = 1, apikey = "trainer_angle_limit"},
+            {t = "@i18n(app.modules.profile_autolevel.gain)@", inline = 2, label = 2, mspapi = 1, apikey = "angle_level_strength"},
+            {t = "@i18n(app.modules.profile_autolevel.max)@",  inline = 1, label = 2, mspapi = 1, apikey = "angle_level_limit"},
+            {t = "@i18n(app.modules.profile_autolevel.gain)@", inline = 2, label = 3, mspapi = 1, apikey = "horizon_level_strength"}
         }
     }
 }
@@ -39,7 +39,7 @@ end
 
 return {
     apidata = apidata,
-    title = i18n("app.modules.profile_autolevel.name"),
+    title = "@i18n(app.modules.profile_autolevel.name)@",
     refreshOnProfileChange = true,
     reboot = false,
     eepromWrite = true,

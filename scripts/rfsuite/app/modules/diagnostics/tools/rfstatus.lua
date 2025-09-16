@@ -18,7 +18,7 @@
 
 ]] --
 -- Short aliases
-local i18n = rfsuite.i18n.get
+
 
 -- State
 local enableWakeup = false
@@ -55,10 +55,10 @@ local function setStatus(field, ok, dashIfNil)
     return
   end
   if ok then
-    field:value(i18n("app.modules.rfstatus.ok"))
+    field:value("@i18n(app.modules.rfstatus.ok)@")
     field:color(GREEN)
   else
-    field:value(i18n("app.modules.rfstatus.error"))
+    field:value("@i18n(app.modules.rfstatus.error)@")
     field:color(RED)
   end
 end
@@ -99,7 +99,7 @@ local function openPage(pidx, title, script)
 
   -- header
   rfsuite.app.ui.fieldHeader(
-    i18n("app.modules.diagnostics.name") .. " / " .. i18n("app.modules.rfstatus.name")
+    "@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.rfstatus.name)@"
   )
 
   -- fresh tables so lookups are never stale/nil
@@ -118,19 +118,19 @@ local function openPage(pidx, title, script)
   -- Background Task status
   addStatusLine(
     "app.modules.rfstatus.bgtask",
-    rfsuite.tasks.active() and i18n("app.modules.rfstatus.ok") or i18n("app.modules.rfstatus.error")
+    rfsuite.tasks.active() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@"
   )
 
   -- RF Module Status
   addStatusLine(
     "app.modules.rfstatus.rfmodule",
-    moduleEnabled() and i18n("app.modules.rfstatus.ok") or i18n("app.modules.rfstatus.error")
+    moduleEnabled() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@"
   )
 
   -- MSP Sensor Status
   addStatusLine(
     "app.modules.rfstatus.mspsensor",
-    haveMspSensor() and i18n("app.modules.rfstatus.ok") or i18n("app.modules.rfstatus.error")
+    haveMspSensor() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@"
   )
 
   -- Telemetry Sensor Status
@@ -240,7 +240,7 @@ local function event(widget, category, value, x, y)
   if (category == EVT_CLOSE and value == 0) or value == 35 then
     rfsuite.app.ui.openPage(
       pageIdx,
-      i18n("app.modules.diagnostics.name"),
+      "@i18n(app.modules.diagnostics.name)@",
       "diagnostics/diagnostics.lua"
     )
     return true
@@ -252,7 +252,7 @@ local function onNavMenu()
   rfsuite.app.ui.progressDisplay(nil, nil, true)
   rfsuite.app.ui.openPage(
     pageIdx,
-    i18n("app.modules.diagnostics.name"),
+    "@i18n(app.modules.diagnostics.name)@",
     "diagnostics/diagnostics.lua"
   )
 end

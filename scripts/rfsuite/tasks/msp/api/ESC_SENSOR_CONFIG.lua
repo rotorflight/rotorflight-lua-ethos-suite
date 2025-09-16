@@ -24,7 +24,7 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- note. This api has currently only been tested for the last two entries
 local escTypes = {"NONE","BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY","RECORD"}
-local onOff = {rfsuite.i18n.get("api.ESC_SENSOR_CONFIG.tbl_off"),rfsuite.i18n.get("api.ESC_SENSOR_CONFIG.tbl_on")}
+local onOff = {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@","@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"}
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "protocol",                                        type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1},
     {field = "half_duplex",                                     type = "U8",  apiVersion = 12.06, simResponse = {0},     default = 0, min= 1, max = 2, table = onOff, tableIdxInc = -1},

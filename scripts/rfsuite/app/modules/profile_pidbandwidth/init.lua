@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.profile_pidbandwidth.name"), -- title of the page
+    title = "@i18n(app.modules.profile_pidbandwidth.name)@", -- title of the page
     section = "advanced", -- do not run if busy with msp
     script = "pidbandwidth.lua", -- run this script
     image = "pids-bandwidth.png", -- image for the page

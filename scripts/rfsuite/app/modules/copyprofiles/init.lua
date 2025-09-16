@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.copyprofiles.name"), -- title of the page
+    title = "@i18n(app.modules.copyprofiles.name)@", -- title of the page
     section = "tools", -- do not run if busy with msp
     script = "copyprofiles.lua", -- run this script
     image = "copy.png", -- image for the page
