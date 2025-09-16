@@ -381,9 +381,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
             for bidx, b in ipairs(v.bitmap) do
               local bitmapField = v.field .. "->" .. b.field
               if bitmapField == apikey and mspapiID == f.mspapi then
-                local help_target = "api." .. mspapiNAME .. "." .. apikey
-                local help_return = i18n(help_target)
-                if help_target ~= help_return then v.help = help_return else v.help = nil end
+                --local help_target = "api." .. mspapiNAME .. "." .. apikey
+                --local help_return = i18n(help_target)
+                --if help_target ~= help_return then v.help = help_return else v.help = nil end
 
                 app.ui.injectApiAttributes(formField, f, b)
 
