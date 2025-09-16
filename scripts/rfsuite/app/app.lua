@@ -19,7 +19,6 @@
 
 -- Root app table and common shortcuts
 local app     = {}
-local i18n    = rfsuite.i18n.get
 local utils   = rfsuite.utils
 local log     = utils.log
 local compile = rfsuite.compiler.loadfile

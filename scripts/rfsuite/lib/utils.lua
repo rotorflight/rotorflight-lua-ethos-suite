@@ -18,7 +18,7 @@
 ]] --
 
 local utils = {}
-local i18n  = rfsuite.i18n.get
+
 local compiler = rfsuite.compiler 
 
 local arg    = {...}

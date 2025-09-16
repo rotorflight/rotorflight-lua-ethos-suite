@@ -54,7 +54,7 @@ local function openPage(pidx, title, script)
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.ui.fieldHeader(
-        i18n("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.dashboard)@")
+        "@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.dashboard)@"
     )
 
 

@@ -18,7 +18,7 @@ local ui = {}
 
 local arg   = { ... }
 local config = arg[1]
-local i18n  = rfsuite.i18n.get
+
 
 --------------------------------------------------------------------------------
 -- Progress dialogs
