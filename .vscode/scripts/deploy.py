@@ -780,6 +780,26 @@ def choose_target(targets):
             print("Enter a number")
     return [targets[idx]]
 
+
+def resolve_i18n_tags_in_place(out_dir):
+    # Path to the merged JSON created by step 1
+    json_path = os.path.join(out_dir, "i18n", "en.json")  # because scripts/rfsuite/** got copied already
+    if not os.path.isfile(json_path):
+        # Fallback for local build before copy, if needed:
+        json_path = os.path.join(config['git_src'], "scripts", "rfsuite", "i18n", "en.json")
+    if not os.path.isfile(json_path):
+        print(f"[I18N] Skipping: en.json not found at {json_path}")
+        return
+    # Call the standalone resolver
+    import subprocess, sys
+    resolver = os.path.join(config['git_src'], ".vscode", "scripts", "resolve_i18n_tags.py")
+    if not os.path.isfile(resolver):
+        print(f"[I18N] Skipping: resolver not found at {resolver}")
+        return
+    print("[I18N] Resolving @i18n(...)@ tags…")
+    subprocess.run([sys.executable, resolver, "--json", json_path, "--root", out_dir], check=True)
+
+
 # Copy logic
 
 def copy_files(src_override, fileext, targets):
@@ -792,6 +812,7 @@ def copy_files(src_override, fileext, targets):
         dest = t['dest']; sim = t.get('simulator')
         print(f"[{i}/{len(targets)}] -> {t['name']} @ {dest}")
         out_dir = os.path.join(dest, tgt)
+
 
         # .lua only
         if fileext == '.lua':
@@ -806,6 +827,8 @@ def copy_files(src_override, fileext, targets):
                 for f in files:
                     if f.endswith('.lua'):
                         shutil.copy(os.path.join(r,f), out_dir)
+
+            resolve_i18n_tags_in_place(out_dir)            
 
         # fast
         elif fileext == 'fast':
@@ -883,6 +906,7 @@ def copy_files(src_override, fileext, targets):
                 for srcf, dstf, rel in to_copy:
                     if DEPLOY_TO_RADIO:
                         throttled_copyfile(srcf, dstf)
+                        # After copy to 'out_dir' for each target:
                         flush_fs()
                         time.sleep(0.05)
                     else:
@@ -893,6 +917,8 @@ def copy_files(src_override, fileext, targets):
                     bar_update.update(1)
                 bar_update.close()
 
+            resolve_i18n_tags_in_place(out_dir)    
+
             if not copied:
                 print("Fast deploy: nothing to update.")
     
@@ -900,6 +926,7 @@ def copy_files(src_override, fileext, targets):
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
             safe_full_copy(srcall, out_dir)
+            resolve_i18n_tags_in_place(out_dir)
             flush_fs()
             time.sleep(2)
 
