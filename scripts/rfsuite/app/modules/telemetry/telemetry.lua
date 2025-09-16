@@ -41,14 +41,32 @@ end
 -- Title tries i18n("telemetry.group_"..group) else uses the group name.
 -- IDs are sorted numerically for a stable UI order.
 ----------------------------------------------------------------------
+-- Literal tag map for group titles (must be literal so the post-processor can replace them)
+local GROUP_TITLE_TAG = {
+  battery   = "@i18n(telemetry.group_battery)@",
+  voltage   = "@i18n(telemetry.group_voltage)@",
+  current   = "@i18n(telemetry.group_current)@",
+  temps     = "@i18n(telemetry.group_temps)@",
+  esc1      = "@i18n(telemetry.group_esc1)@",
+  esc2      = "@i18n(telemetry.group_esc2)@",
+  rpm       = "@i18n(telemetry.group_rpm)@",
+  barometer = "@i18n(telemetry.group_barometer)@",
+  gyro      = "@i18n(telemetry.group_gyro)@",
+  gps       = "@i18n(telemetry.group_gps)@",
+  status    = "@i18n(telemetry.group_status)@",
+  profiles  = "@i18n(telemetry.group_profiles)@",
+  control   = "@i18n(telemetry.group_control)@",
+  system    = "@i18n(telemetry.group_system)@",
+  debug     = "@i18n(telemetry.group_debug)@",
+}
+
 local function buildGroups(list)
   local groups = {}
   for id, s in pairs(list) do
     local grp = s.group or "system"
     if not groups[grp] then
-      -- Try internationalized title first; fallback to raw group name
-      local key = "telemetry.group_" .. grp
-      local title = i18n(key) or grp
+      -- Use a literal tag if we have it; otherwise show the raw group key
+      local title = GROUP_TITLE_TAG[grp] or grp
       groups[grp] = { title = title, ids = {} }
     end
     table.insert(groups[grp].ids, id)
