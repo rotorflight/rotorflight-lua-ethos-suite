@@ -171,10 +171,9 @@ function rfsuite._try_eager_init(reason)
   end
 end
 
-rfsuite.i18n = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
-rfsuite.i18n.load()
+rfsuite.i18n   = rf_lazy_module("lib/i18n.lua",    rfsuite.config, rfsuite.compiler.loadfile)
 
-rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
+rfsuite.utils = rf_lazy_module("lib/utils.lua",    rfsuite.config, rfsuite.compiler.loadfile)
 
 rfsuite.app   = rf_lazy_module("app/app.lua",    rfsuite.config, rfsuite.compiler.loadfile)
 
