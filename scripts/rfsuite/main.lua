@@ -132,9 +132,6 @@ rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config)
 
-rfsuite.i18n = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
-rfsuite.i18n.load()
-
 rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
 rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)

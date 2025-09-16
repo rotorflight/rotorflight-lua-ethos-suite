@@ -23,20 +23,20 @@ local MSP_SIGNATURE = 0xD0
 local MSP_HEADER_BYTES = 2
 
 -- tables used in structure below
-local flightMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_fmheli"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_fmfw")}
-local motorDirection = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_ccw")}
+local flightMode = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_fmheli)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_fmfw)@"}
+local motorDirection = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_cw)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_ccw)@"}
 local becLvVoltage = {"6.0V", "7.4V","8.4V"}
-local startupPower = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_low"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_high")}
-local fanControl = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_off")}
-local ledColor = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_red"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_yellow"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_orange"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_green"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_jadegreen"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_blue"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_cyan"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_purple"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_pink"),rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_white")}
+local startupPower = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_low)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_medium)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_high)@"}
+local fanControl = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_on)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_off)@"}
+local ledColor = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_red)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_yellow)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_orange)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_green)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_jadegreen)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_blue)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_cyan)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_purple)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_pink)@","@i18n(api.ESC_PARAMETERS_OMP.tbl_white)@"}
 local becHvVoltage = {"6.0V", "6.2V", "6.4V", "6.6V", "6.8V", "7.0V", "7.2V", "7.4V", "7.6V", "7.8V", "8.0V", "8.2V", "8.4V", "8.6V", "8.8V", "9.0V", "9.2V", "9.4V", "9.6V", "9.8V", "10.0V", "10.2V", "10.4V", "10.6V", "10.8V", "11.0V", "11.2V", "11.4V", "11.6V", "11.8V", "12.0V"}
-local lowVoltage = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_off"), "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
-local timing = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_auto"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_low"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_high")}
-local accel = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_fast"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_slow"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_vslow")}
-local brakeType = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_reverse")}
-local autoRestart = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_off"), "90s"}
-local srFunc = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_off")}
-local govMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_escgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_extgov") , rfsuite.i18n.get("api.ESC_PARAMETERS_OMP.tbl_fwgov")}
+local lowVoltage = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_off)@", "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
+local timing = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_auto)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_low)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_medium)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_high)@"}
+local accel = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_fast)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_slow)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_vslow)@"}
+local brakeType = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_reverse)@"}
+local autoRestart = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_off)@", "90s"}
+local srFunc = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_on)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_off)@"}
+local govMode = {"@i18n(api.ESC_PARAMETERS_OMP.tbl_escgov)@", "@i18n(api.ESC_PARAMETERS_OMP.tbl_extgov)@" , "@i18n(api.ESC_PARAMETERS_OMP.tbl_fwgov)@"}
 
 -- api structure
 local MSP_API_STRUCTURE_READ_DATA = {

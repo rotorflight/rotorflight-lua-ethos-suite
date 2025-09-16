@@ -3,7 +3,7 @@ local activateWakeup = false
 local extraMsgOnSave = nil
 local resetRates = false
 local doFullReload = false
-local i18n = rfsuite.i18n.get
+
 if rfsuite.session.activeRateTable == nil then 
     rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile 
 end
@@ -16,7 +16,7 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.rates_advanced.rate_table"),        mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
+            {t = "@i18n(app.modules.rates_advanced.rate_table)@",        mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
         }
     }                 
 }
@@ -128,7 +128,7 @@ local function flagRateChange(self)
         rfsuite.app.ui.enableAllFields()
         resetRates = false
     else
-        self.extraMsgOnSave = i18n("app.modules.rates_advanced.msg_reset_to_defaults")
+        self.extraMsgOnSave = "@i18n(app.modules.rates_advanced.msg_reset_to_defaults)@"
         resetRates = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.formFields[1]:enable(true)
@@ -145,7 +145,7 @@ end
 
 return {
     apidata = apidata,
-    title = i18n("app.modules.rates_advanced.rates_type"),
+    title = "@i18n(app.modules.rates_advanced.rates_type)@",
     reboot = false,
     eepromWrite = true,
     refreshOnRateChange = true,

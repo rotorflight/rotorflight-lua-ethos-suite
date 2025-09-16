@@ -22,7 +22,7 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}, table={rfsuite.i18n.get("api.MIXER_CONFIG.tbl_cw"),rfsuite.i18n.get("api.MIXER_CONFIG.tbl_ccw")}, tableIdxInc = -1},
+    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}, table={"@i18n(api.MIXER_CONFIG.tbl_cw)@","@i18n(api.MIXER_CONFIG.tbl_ccw)@"}, tableIdxInc = -1},
     {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {0}},
     {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0}, default = 0, unit = "%", min = 0, max = 250, decimals = 1, scale = 10},
     {field = "tail_center_trim",               type = "S16", apiVersion = 12.06, simResponse = {165, 1}, default = 0,  min = -500, max = 500, decimals = 1, scale = 10, mult = 0.239923224568138},

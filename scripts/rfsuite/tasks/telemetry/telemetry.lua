@@ -10,7 +10,7 @@
 
 local arg = {...}
 local config = arg[1]
-local i18n = rfsuite.i18n.get
+
 local simSensors = rfsuite.utils.simSensors
 local round = rfsuite.utils.round
 
@@ -100,7 +100,7 @@ local onchangeInitialized     = false
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
-        name = i18n("sensors.rssi"),
+        name = "@i18n(sensors.rssi)@",
         mandatory = true,
         stats = true,
         switch_alerts = true,
@@ -124,7 +124,7 @@ local sensorTable = {
 
     -- Link
     link = {
-        name = i18n("sensors.link"),
+        name = "@i18n(sensors.link)@",
         mandatory = true,
         stats = true,
         switch_alerts = true,
@@ -152,7 +152,7 @@ local sensorTable = {
 
     -- Arm Flags
     armflags = {
-        name = i18n("sensors.arming_flags"),
+        name = "@i18n(sensors.arming_flags)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
@@ -178,7 +178,7 @@ local sensorTable = {
 
     -- Voltage Sensors
     voltage = {
-        name = i18n("sensors.voltage"),
+        name = "@i18n(sensors.voltage)@",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 3,
@@ -209,7 +209,7 @@ local sensorTable = {
 
     -- RPM Sensors
     rpm = {
-        name = i18n("sensors.headspeed"),
+        name = "@i18n(sensors.headspeed)@",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 60,
@@ -234,7 +234,7 @@ local sensorTable = {
 
     -- Current Sensors
     current = {
-        name = i18n("sensors.current"),
+        name = "@i18n(sensors.current)@",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 4,
@@ -263,7 +263,7 @@ local sensorTable = {
 
     -- ESC Temperature Sensors
     temp_esc = {
-        name = i18n("sensors.esc_temp"),
+        name = "@i18n(sensors.esc_temp)@",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 23,
@@ -320,7 +320,7 @@ local sensorTable = {
 
     -- MCU Temperature Sensors
     temp_mcu = {
-        name = i18n("sensors.mcu_temp"),
+        name = "@i18n(sensors.mcu_temp)@",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 52,
@@ -368,7 +368,7 @@ local sensorTable = {
 
     -- Fuel and Capacity Sensors
     fuel = {
-        name = i18n("sensors.fuel"),
+        name = "@i18n(sensors.fuel)@",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 6,
@@ -388,7 +388,7 @@ local sensorTable = {
     },
 
     smartfuel = {
-        name = i18n("sensors.smartfuel"),
+        name = "@i18n(sensors.smartfuel)@",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -400,7 +400,7 @@ local sensorTable = {
     },
 
     smartconsumption = {
-        name = i18n("sensors.smartconsumption"),
+        name = "@i18n(sensors.smartconsumption)@",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -412,7 +412,7 @@ local sensorTable = {
     },
 
     consumption = {
-        name = i18n("sensors.consumption"),
+        name = "@i18n(sensors.consumption)@",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 5,
@@ -432,7 +432,7 @@ local sensorTable = {
     },
 
     governor = {
-        name = i18n("sensors.governor"),
+        name = "@i18n(sensors.governor)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 93,
@@ -452,7 +452,7 @@ local sensorTable = {
     },
 
     adj_f = {
-        name = i18n("sensors.adj_func"),
+        name = "@i18n(sensors.adj_func)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 99,
@@ -469,7 +469,7 @@ local sensorTable = {
     },
 
     adj_v = {
-        name = i18n("sensors.adj_val"),
+        name = "@i18n(sensors.adj_val)@",
         mandatory = true,
         stats = false,
         sensors = {
@@ -485,7 +485,7 @@ local sensorTable = {
     },
 
     pid_profile = {
-        name = i18n("sensors.pid_profile"),
+        name = "@i18n(sensors.pid_profile)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 95,
@@ -503,7 +503,7 @@ local sensorTable = {
     },
 
     rate_profile = {
-        name = i18n("sensors.rate_profile"),
+        name = "@i18n(sensors.rate_profile)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 96,
@@ -521,7 +521,7 @@ local sensorTable = {
     },
 
     throttle_percent = {
-        name = i18n("sensors.throttle_pct"),
+        name = "@i18n(sensors.throttle_pct)@",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 15,
@@ -544,7 +544,7 @@ local sensorTable = {
     },
 
     armdisableflags = {
-        name = i18n("sensors.armdisableflags"),
+        name = "@i18n(sensors.armdisableflags)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 91,
@@ -561,7 +561,7 @@ local sensorTable = {
     },
 
     altitude = {
-        name = i18n("sensors.altitude"),
+        name = "@i18n(sensors.altitude)@",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -587,7 +587,7 @@ local sensorTable = {
     },
 
     bec_voltage = {
-        name = i18n("sensors.bec_voltage"),
+        name = "@i18n(sensors.bec_voltage)@",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 43,
@@ -613,7 +613,7 @@ local sensorTable = {
     },
 
     cell_count = {
-        name = i18n("sensors.cell_count"),
+        name = "@i18n(sensors.cell_count)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -629,7 +629,7 @@ local sensorTable = {
     },
 
     accx = {
-        name = i18n("sensors.accx"),
+        name = "@i18n(sensors.accx)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -645,7 +645,7 @@ local sensorTable = {
     },
 
     accy = {
-        name = i18n("sensors.accy"),
+        name = "@i18n(sensors.accy)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -661,7 +661,7 @@ local sensorTable = {
     },
 
     accz = {
-        name = i18n("sensors.accz"),
+        name = "@i18n(sensors.accz)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -677,7 +677,7 @@ local sensorTable = {
     },
 
     attyaw = {
-        name = i18n("sensors.attyaw"),
+        name = "@i18n(sensors.attyaw)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -693,7 +693,7 @@ local sensorTable = {
     },
 
     attroll = {
-        name = i18n("sensors.attroll"),
+        name = "@i18n(sensors.attroll)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -709,7 +709,7 @@ local sensorTable = {
     },
 
     attpitch = {
-        name = i18n("sensors.attpitch"),
+        name = "@i18n(sensors.attpitch)@",
         mandatory = false,
         stats = false,
         sensors = {
@@ -725,7 +725,7 @@ local sensorTable = {
     },
 
     groundspeed = {
-        name = i18n("sensors.groundspeed"),
+        name = "@i18n(sensors.groundspeed)@",
         mandatory = false,
         stats = false,
         sensors = {

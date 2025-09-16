@@ -1,23 +1,23 @@
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
     api = {
         [1] = 'RC_TUNING',
     },
     formdata = {
-        name = i18n("app.modules.rates.kiss"),
+        name = "@i18n(app.modules.rates.kiss)@",
         labels = {
         },
         rows = {
-            i18n("app.modules.rates.roll"),
-            i18n("app.modules.rates.pitch"),
-            i18n("app.modules.rates.yaw"),
-            i18n("app.modules.rates.collective")
+            "@i18n(app.modules.rates.roll)@",
+            "@i18n(app.modules.rates.pitch)@",
+            "@i18n(app.modules.rates.yaw)@",
+            "@i18n(app.modules.rates.collective)@"
         },
         cols = {
-            i18n("app.modules.rates.rc_rate"),
-            i18n("app.modules.rates.rate"),
-            i18n("app.modules.rates.rc_curve"),
+            "@i18n(app.modules.rates.rc_rate)@",
+            "@i18n(app.modules.rates.rate)@",
+            "@i18n(app.modules.rates.rc_curve)@",
         },
         fields = {
             -- rc rate

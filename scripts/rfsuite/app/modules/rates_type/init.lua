@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.rates_advanced.rates_type"), -- title of the page
+    title = "@i18n(app.modules.rates_advanced.rates_type)@", -- title of the page
     section = "hidden", -- do not run if busy with msp
     script = "rates_type.lua", -- run this script
     image = "rates.png", -- image for the page

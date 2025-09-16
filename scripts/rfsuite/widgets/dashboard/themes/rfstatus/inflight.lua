@@ -15,7 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local i18n = rfsuite.i18n.get
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -164,7 +164,7 @@ return {
         font = "FONT_XXL",
         fillbgcolor = colorMode.fillbgcolor,
         valuepaddingtop = opts.valuepaddingtop,
-        title = i18n("widgets.dashboard.voltage"):upper(),
+        title = "@i18n(widgets.dashboard.voltage,upper)@",
         titlepos = "bottom",
         min = function()
             local override = getUserVoltageOverride("v_min")
@@ -231,7 +231,7 @@ return {
         max = 100,
         font = "FONT_XXL",
         fillbgcolor = colorMode.fillbgcolor,
-        title = i18n("widgets.dashboard.fuel"):upper(),
+        title = "@i18n(widgets.dashboard.fuel,upper)@",
         titlepos = "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -252,13 +252,13 @@ return {
         titlecolor = colorMode.textcolor,
         textcolor = colorMode.textcolor,  
         thresholds = {
-            { value = i18n("widgets.governor.DISARMED"), textcolor = colorMode.fillcritcolor },
-            { value = i18n("widgets.governor.OFF"), textcolor = colorMode.fillcritcolor },
-            { value = i18n("widgets.governor.IDLE"), textcolor = "blue" },
-            { value = i18n("widgets.governor.SPOOLUP"), textcolor = "blue" },
-            { value = i18n("widgets.governor.RECOVERY"), textcolor = colorMode.fillwarncolor },
-            { value = i18n("widgets.governor.ACTIVE"), textcolor = colorMode.fillcolor },
-            { value = i18n("widgets.governor.THR-OFF"), textcolor = colorMode.fillcritcolor }
+            { value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor },
+            { value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor },
+            { value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue" },
+            { value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue" },
+            { value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor },
+            { value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor },
+            { value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor }
         }
     },
     {

@@ -4,7 +4,7 @@ local fields = {}
 local calibrate = false
 local calibrateComplete = false
 
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
     api = {
@@ -14,8 +14,8 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.accelerometer.roll"), mspapi=1, apikey="roll"},
-            {t = i18n("app.modules.accelerometer.pitch"), mspapi=1,apikey="pitch"}
+            {t = "@i18n(app.modules.accelerometer.roll)@", mspapi=1, apikey="roll"},
+            {t = "@i18n(app.modules.accelerometer.pitch)@", mspapi=1,apikey="pitch"}
         }
     }                 
 }
@@ -23,7 +23,7 @@ local apidata = {
 local function onToolMenu(self)
 
     local buttons = {{
-        label = i18n("app.btn_ok"),
+        label = "@i18n(app.btn_ok)@",
         action = function()
 
             -- we push this to the background task to do its job
@@ -32,7 +32,7 @@ local function onToolMenu(self)
             return true
         end
     }, {
-        label = i18n("app.btn_cancel"),
+        label = "@i18n(app.btn_cancel)@",
         action = function()
             return true
         end
@@ -40,8 +40,8 @@ local function onToolMenu(self)
 
     form.openDialog({
         width = nil,
-        title =  i18n("app.modules.accelerometer.name"),
-        message = i18n("app.modules.accelerometer.msg_calibrate"),
+        title =  "@i18n(app.modules.accelerometer.name)@",
+        message = "@i18n(app.modules.accelerometer.msg_calibrate)@",
         buttons = buttons,
         wakeup = function()
         end,

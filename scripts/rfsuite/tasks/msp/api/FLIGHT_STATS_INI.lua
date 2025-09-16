@@ -21,7 +21,7 @@ local INI_SECTION = "general"
 
 local ini       = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
-local i18n = rfsuite.i18n.get
+
 local handlers  = mspModule.createHandlers()
 
 -- Define MSP fields
@@ -71,7 +71,7 @@ end
 -- Write operation: merge payloadData into INI, save, then re-read
 local function write()
 
-    local msg = i18n("app.modules.profile_select.save_prompt_local")
+    local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
     rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
     local tbl = ini.load_ini_file(INI_FILE) or {}

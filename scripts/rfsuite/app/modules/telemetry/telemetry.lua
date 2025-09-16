@@ -1,6 +1,6 @@
 -- telemetry.lua (refactored to use sid.lua)
 
-local i18n = rfsuite.i18n.get
+
 local enableWakeup = false
 
 local mspData = nil
@@ -121,7 +121,7 @@ end
 
 local function alertIfTooManySensors()
   local buttons = {{
-    label = i18n("app.modules.profile_select.ok"),
+    label = "@i18n(app.modules.profile_select.ok)@",
     action = function()
       return true
     end,
@@ -129,8 +129,8 @@ local function alertIfTooManySensors()
 
   form.openDialog({
     width = nil,
-    title = i18n("app.modules.telemetry.name"),
-    message = i18n("app.modules.telemetry.no_more_than_40"),
+    title = "@i18n(app.modules.telemetry.name)@",
+    message = "@i18n(app.modules.telemetry.no_more_than_40)@",
     buttons = buttons,
     wakeup = function() end,
     paint = function() end,
@@ -147,7 +147,7 @@ local function openPage(pidx, title, script)
   rfsuite.app.lastScript = script
 
   -- header
-  rfsuite.app.ui.fieldHeader(i18n("app.modules.telemetry.name"))
+  rfsuite.app.ui.fieldHeader("@i18n(app.modules.telemetry.name)@")
 
   rfsuite.app.formLineCnt = 0
   rfsuite.app.formFields = {}
@@ -156,7 +156,7 @@ local function openPage(pidx, title, script)
   if rfsuite.utils.apiVersionCompare("<", "12.08") then
     rfsuite.app.triggers.closeProgressLoader = true
 
-    rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine(i18n("app.modules.telemetry.invalid_version"))
+    rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.telemetry.invalid_version)@")
 
     rfsuite.app.formNavigationFields["save"]:enable(false)
     rfsuite.app.formNavigationFields["reload"]:enable(false)
@@ -292,7 +292,7 @@ local function wakeup()
 
   -- save?
 if triggerSave == true then
-  rfsuite.app.ui.progressDisplaySave(i18n("app.modules.profile_select.save_settings"))
+  rfsuite.app.ui.progressDisplaySave("@i18n(app.modules.profile_select.save_settings)@")
 
   local selectedSensors = {}
 
@@ -376,13 +376,13 @@ end
 
 local function onSaveMenu()
   local buttons = {{
-    label = i18n("app.btn_ok_long"),
+    label = "@i18n(app.btn_ok_long)@",
     action = function()
       triggerSave = true
       return true
     end,
   }, {
-    label = i18n("app.modules.profile_select.cancel"),
+    label = "@i18n(app.modules.profile_select.cancel)@",
     action = function()
       triggerSave = false
       return true
@@ -391,8 +391,8 @@ local function onSaveMenu()
 
   form.openDialog({
     width = nil,
-    title = i18n("app.modules.profile_select.save_settings"),
-    message = i18n("app.modules.profile_select.save_prompt"),
+    title = "@i18n(app.modules.profile_select.save_settings)@",
+    message = "@i18n(app.modules.profile_select.save_prompt)@",
     buttons = buttons,
     wakeup = function() end,
     paint = function() end,
@@ -404,14 +404,14 @@ end
 
 local function onToolMenu(self)
   local buttons = {{
-    label = rfsuite.i18n.get("app.btn_ok"),
+    label = "@i18n(app.btn_ok)@",
     action = function()
       -- we push this to the background task to do its job
       setDefaultSensors = true
       return true
     end,
   }, {
-    label = rfsuite.i18n.get("app.btn_cancel"),
+    label = "@i18n(app.btn_cancel)@",
     action = function()
       return true
     end,
@@ -419,8 +419,8 @@ local function onToolMenu(self)
 
   form.openDialog({
     width = nil,
-    title = rfsuite.i18n.get("app.modules.telemetry.name"),
-    message = rfsuite.i18n.get("app.modules.telemetry.msg_set_defaults"),
+    title = "@i18n(app.modules.telemetry.name)@",
+    message = "@i18n(app.modules.telemetry.msg_set_defaults)@",
     buttons = buttons,
     wakeup = function() end,
     paint = function() end,

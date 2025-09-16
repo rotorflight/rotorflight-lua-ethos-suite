@@ -15,7 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local i18n = rfsuite.i18n.get
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -233,7 +233,7 @@ local function buildBoxes(W)
             type = "text", 
             subtype = "telemetry", 
             source = "rate_profile",
-            title = i18n("widgets.dashboard.rates"):upper(), 
+            title = "@i18n(widgets.dashboard.rates,upper)@", 
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -256,7 +256,7 @@ local function buildBoxes(W)
             type = "text", 
             subtype = "telemetry", 
             source = "pid_profile",
-            title = i18n("widgets.dashboard.profile"):upper(), 
+            title = "@i18n(widgets.dashboard.profile,upper)@", 
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -278,7 +278,7 @@ local function buildBoxes(W)
             rowspan = 2,
             type = "time", 
             subtype = "count",
-            title = i18n("widgets.dashboard.flights"):upper(), 
+            title = "@i18n(widgets.dashboard.flights,upper)@", 
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -333,7 +333,7 @@ local function buildBoxes(W)
             type = "gauge", 
             subtype = "arc", 
             source = "bec_voltage",
-            title = i18n("widgets.dashboard.bec_voltage"):upper(), 
+            title = "@i18n(widgets.dashboard.bec_voltage,upper)@", 
             titlepos = "bottom",
             decimals = 1,         
             titlepaddingbottom = opts.titlepaddingbottom,
@@ -360,7 +360,7 @@ local function buildBoxes(W)
             rowspan = 2,
             type = "text", 
             subtype = "blackbox",
-            title = i18n("widgets.dashboard.blackbox"):upper(), 
+            title = "@i18n(widgets.dashboard.blackbox,upper)@", 
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont, 
@@ -385,7 +385,7 @@ local function buildBoxes(W)
             type = "gauge", 
             subtype = "arc", 
             source = "temp_esc",
-            title = i18n("widgets.dashboard.esc_temp"):upper(), 
+            title = "@i18n(widgets.dashboard.esc_temp,upper)@", 
             titlepos = "bottom",
             font = opts.font,
             min = 0, 
@@ -414,7 +414,7 @@ local function buildBoxes(W)
             rowspan = 2,
             type = "text", 
             subtype = "governor",
-            title = i18n("widgets.dashboard.governor"):upper(), 
+            title = "@i18n(widgets.dashboard.governor,upper)@", 
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -422,13 +422,13 @@ local function buildBoxes(W)
             bgcolor = colorMode.bgcolor, 
             titlecolor = colorMode.titlecolor,
             thresholds = {
-                { value = i18n("widgets.governor.DISARMED"), textcolor = colorMode.fillcritcolor },
-                { value = i18n("widgets.governor.OFF"), textcolor = colorMode.fillcritcolor },
-                { value = i18n("widgets.governor.IDLE"), textcolor = "blue" },
-                { value = i18n("widgets.governor.SPOOLUP"), textcolor = "blue" },
-                { value = i18n("widgets.governor.RECOVERY"), textcolor = colorMode.fillwarncolor },
-                { value = i18n("widgets.governor.ACTIVE"), textcolor = colorMode.fillcolor },
-                { value = i18n("widgets.governor.THR-OFF"), textcolor = colorMode.fillcritcolor }
+                { value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor },
+                { value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor },
+                { value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue" },
+                { value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue" },
+                { value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor },
+                { value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor },
+                { value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor }
             }
         }
     }

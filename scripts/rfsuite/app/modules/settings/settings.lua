@@ -1,11 +1,11 @@
-local i18n = rfsuite.i18n.get
+
 
 local S_PAGES = {
-    {name = i18n("app.modules.settings.txt_general"), script = "general.lua", image = "general.png"},
-    {name = i18n("app.modules.settings.dashboard"), script = "dashboard.lua", image = "dashboard.png"},
-    {name = i18n("app.modules.settings.localizations"), script = "localizations.lua", image = "localizations.png"},
-    {name = i18n("app.modules.settings.audio"), script = "audio.lua", image = "audio.png"},
-    {name = i18n("app.modules.settings.txt_development"), script = "development.lua", image = "development.png"},
+    {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png"},
+    {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png"},
+    {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png"},
+    {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png"},
+    {name = "@i18n(app.modules.settings.txt_development)@", script = "development.lua", image = "development.png"},
 }
 
 local function openPage(pidx, title, script)

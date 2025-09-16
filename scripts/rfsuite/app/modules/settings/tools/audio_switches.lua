@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 
 -- Local config table for in-memory edits
 local config = {}
@@ -22,7 +22,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.audio") .. " / " .. i18n("app.modules.settings.txt_audio_switches")
+        "@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.audio)@" .. " / " .. "@i18n(app.modules.settings.txt_audio_switches)@"
     )
     rfsuite.app.formLineCnt = 0
 
@@ -84,7 +84,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil,nil,true)
     rfsuite.app.ui.openPage(
         pageIdx,
-        i18n("app.modules.settings.name"),
+        "@i18n(app.modules.settings.name)@",
         "settings/tools/audio.lua"
     )
 end
@@ -92,9 +92,9 @@ end
 local function onSaveMenu()
     local buttons = {
         {
-            label  = i18n("app.btn_ok_long"),
+            label  = "@i18n(app.btn_ok_long)@",
             action = function()
-                local msg = i18n("app.modules.profile_select.save_prompt_local")
+                local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 for key, value in pairs(config) do
                     rfsuite.preferences.switches[key] = value
@@ -109,7 +109,7 @@ local function onSaveMenu()
             end,
         },
         {
-            label  = i18n("app.modules.profile_select.cancel"),
+            label  = "@i18n(app.modules.profile_select.cancel)@",
             action = function()
                 return true
             end,
@@ -118,8 +118,8 @@ local function onSaveMenu()
 
     form.openDialog({
         width   = nil,
-        title   = i18n("app.modules.profile_select.save_settings"),
-        message = i18n("app.modules.profile_select.save_prompt_local"),
+        title   = "@i18n(app.modules.profile_select.save_settings)@",
+        message = "@i18n(app.modules.profile_select.save_prompt_local)@",
         buttons = buttons,
         wakeup  = function() end,
         paint   = function() end,
@@ -132,7 +132,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.settings.name"),
+            "@i18n(app.modules.settings.name)@",
             "settings/tools/audio.lua"
         )
         return true

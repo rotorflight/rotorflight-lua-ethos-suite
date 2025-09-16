@@ -780,9 +780,30 @@ def choose_target(targets):
             print("Enter a number")
     return [targets[idx]]
 
+
+def resolve_i18n_tags_in_place(out_dir, lang="en"):
+    # Path to the merged JSON created by step 1
+    json_path = os.path.join(out_dir, "i18n", f"{lang}.json")  # because scripts/rfsuite/** got copied already
+    if not os.path.isfile(json_path):
+        # Fallback for local build before copy, if needed:
+        json_path = os.path.join(config['git_src'], "scripts", "rfsuite", "i18n", f"{lang}.json")
+    if not os.path.isfile(json_path):
+        print(f"[I18N] Skipping: {lang}.json not found at {json_path}")
+        return
+    # Call the standalone resolver
+    import subprocess, sys
+    resolver = os.path.join(config['git_src'], ".vscode", "scripts", "resolve_i18n_tags.py")
+    if not os.path.isfile(resolver):
+        print(f"[I18N] Skipping: resolver not found at {resolver}")
+        return
+    print(f"[I18N] Resolving @i18n(...)@ tags (lang={lang})…")
+    subprocess.run([sys.executable, resolver, "--json", json_path, "--root", out_dir], check=True)
+
+
+
 # Copy logic
 
-def copy_files(src_override, fileext, targets):
+def copy_files(src_override, fileext, targets, lang="en"):
     global pbar
     git_src = src_override or config['git_src']
     tgt = config['tgt_name']
@@ -792,6 +813,7 @@ def copy_files(src_override, fileext, targets):
         dest = t['dest']; sim = t.get('simulator')
         print(f"[{i}/{len(targets)}] -> {t['name']} @ {dest}")
         out_dir = os.path.join(dest, tgt)
+
 
         # .lua only
         if fileext == '.lua':
@@ -806,6 +828,8 @@ def copy_files(src_override, fileext, targets):
                 for f in files:
                     if f.endswith('.lua'):
                         shutil.copy(os.path.join(r,f), out_dir)
+
+            resolve_i18n_tags_in_place(out_dir, lang)           
 
         # fast
         elif fileext == 'fast':
@@ -883,6 +907,7 @@ def copy_files(src_override, fileext, targets):
                 for srcf, dstf, rel in to_copy:
                     if DEPLOY_TO_RADIO:
                         throttled_copyfile(srcf, dstf)
+                        # After copy to 'out_dir' for each target:
                         flush_fs()
                         time.sleep(0.05)
                     else:
@@ -893,6 +918,8 @@ def copy_files(src_override, fileext, targets):
                     bar_update.update(1)
                 bar_update.close()
 
+            resolve_i18n_tags_in_place(out_dir, lang) 
+
             if not copied:
                 print("Fast deploy: nothing to update.")
     
@@ -900,6 +927,7 @@ def copy_files(src_override, fileext, targets):
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
             safe_full_copy(srcall, out_dir)
+            resolve_i18n_tags_in_place(out_dir, lang)
             flush_fs()
             time.sleep(2)
 
@@ -983,6 +1011,10 @@ def main():
     p.add_argument('--radio-debug', action='store_true')
     p.add_argument('--minify',    action='store_true')
     p.add_argument('--connect-only', action='store_true')
+    p.add_argument('--lang', default=os.environ.get("RFSUITE_LANG", "en"),
+                   help='Locale to resolve (e.g. en, de, fr). Defaults to env RFSUITE_LANG or "en".')
+
+
     args = p.parse_args()
 
     DEPLOY_TO_RADIO = args.radio 
@@ -1045,7 +1077,7 @@ def main():
         print('No targets.')
         sys.exit(1)
 
-    copy_files(args.src, args.fileext, targets)
+    copy_files(args.src, args.fileext, targets, lang=args.lang)
 
     # After copying to radio, ensure logger runs on real hardware (not only simulator)
     if args.radio:

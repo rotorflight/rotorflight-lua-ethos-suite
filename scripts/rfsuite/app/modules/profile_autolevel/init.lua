@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.profile_autolevel.name"), -- title of the page
+    title = "@i18n(app.modules.profile_autolevel.name)@", -- title of the page
     section = "advanced", -- do not run if busy with msp
     script = "autolevel.lua", -- run this script
     image = "autolevel.png", -- image for the page

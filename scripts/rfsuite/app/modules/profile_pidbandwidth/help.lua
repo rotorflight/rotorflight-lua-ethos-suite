@@ -18,13 +18,13 @@
 
 ]] --
 local data = {}
-local i18n = rfsuite.i18n.get
+
 data['help'] = {}
 
 data['help']['default'] = {
-    i18n("app.modules.profile_pidbandwidth.help_p1"),
-    i18n("app.modules.profile_pidbandwidth.help_p2"),
-    i18n("app.modules.profile_pidbandwidth.help_p3")
+    "@i18n(app.modules.profile_pidbandwidth.help_p1)@",
+    "@i18n(app.modules.profile_pidbandwidth.help_p2)@",
+    "@i18n(app.modules.profile_pidbandwidth.help_p3)@"
 }
 
 data['fields'] = {}

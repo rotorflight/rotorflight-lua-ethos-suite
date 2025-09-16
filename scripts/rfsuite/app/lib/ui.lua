@@ -18,7 +18,7 @@ local ui = {}
 
 local arg   = { ... }
 local config = arg[1]
-local i18n  = rfsuite.i18n.get
+
 
 --------------------------------------------------------------------------------
 -- Progress dialogs
@@ -28,8 +28,8 @@ local i18n  = rfsuite.i18n.get
 function ui.progressDisplay(title, message, speed)
     if rfsuite.app.dialogs.progressDisplay then return end
 
-    title   = title   or i18n("app.msg_loading")
-    message = message or i18n("app.msg_loading_from_fbl")
+    title   = title   or "@i18n(app.msg_loading)@"
+    message = message or "@i18n(app.msg_loading_from_fbl)@"
 
 
     if speed then
@@ -90,7 +90,7 @@ function ui.progressDisplay(title, message, speed)
                and (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) 
                and app.dialogs.progressDisplay == true then
                 app.audio.playTimeout = true
-                app.dialogs.progress:message(i18n("app.error_timed_out"))
+                app.dialogs.progress:message("@i18n(app.error_timed_out)@")
                 app.dialogs.progress:closeAllowed(true)
                 app.dialogs.progress:value(100)
                 app.Page   = app.PageTmp
@@ -132,7 +132,7 @@ function ui.progressDisplaySave(message)
     })[app.pageState]
 
     if not message then message = i18n(msg) end
-    local title = i18n("app.msg_saving")
+    local title = "@i18n(app.msg_saving)@"
 
     rfsuite.app.dialogs.save = form.openProgressDialog({
         title   = title,
@@ -177,7 +177,7 @@ function ui.progressDisplaySave(message)
                and app.dialogs.saveDisplay == true then
 
                 app.audio.playTimeout = true
-                app.dialogs.save:message(i18n("app.error_timed_out"))
+                app.dialogs.save:message("@i18n(app.error_timed_out)@")
                 app.dialogs.save:closeAllowed(true)
                 app.dialogs.save:value(100)
                 app.dialogs.saveProgressCounter = 0
@@ -1444,7 +1444,7 @@ function ui.navigationButtons(x, y, w, h)
         rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {
             x = menuOffset, y = y, w = w, h = h
         }, {
-            text    = i18n("app.navigation_menu"),
+            text    = "@i18n(app.navigation_menu)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
@@ -1466,7 +1466,7 @@ function ui.navigationButtons(x, y, w, h)
         rfsuite.app.formNavigationFields['save'] = form.addButton(line, {
             x = saveOffset, y = y, w = w, h = h
         }, {
-            text    = i18n("app.navigation_save"),
+            text    = "@i18n(app.navigation_save)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
@@ -1485,7 +1485,7 @@ function ui.navigationButtons(x, y, w, h)
         rfsuite.app.formNavigationFields['reload'] = form.addButton(line, {
             x = reloadOffset, y = y, w = w, h = h
         }, {
-            text    = i18n("app.navigation_reload"),
+            text    = "@i18n(app.navigation_reload)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
@@ -1505,7 +1505,7 @@ function ui.navigationButtons(x, y, w, h)
         rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {
             x = toolOffset, y = y, w = wS, h = h
         }, {
-            text    = i18n("app.navigation_tools"),
+            text    = "@i18n(app.navigation_tools)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
@@ -1525,7 +1525,7 @@ function ui.navigationButtons(x, y, w, h)
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {
                 x = helpOffset, y = y, w = wS, h = h
             }, {
-                text    = i18n("app.navigation_help"),
+                text    = "@i18n(app.navigation_help)@",
                 icon    = nil,
                 options = FONT_S,
                 paint   = function() end,
@@ -1545,7 +1545,7 @@ function ui.navigationButtons(x, y, w, h)
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {
                 x = helpOffset, y = y, w = wS, h = h
             }, {
-                text    = i18n("app.navigation_help"),
+                text    = "@i18n(app.navigation_help)@",
                 icon    = nil,
                 options = FONT_S,
                 paint   = function() end,
@@ -1563,7 +1563,7 @@ function ui.openPageHelp(txtData, section)
         width   = rfsuite.app.lcdWidth,
         title   = "Help - " .. rfsuite.app.lastTitle,
         message = message,
-        buttons = { { label = i18n("app.btn_close"), action = function() return true end } },
+        buttons = { { label = "@i18n(app.btn_close)@", action = function() return true end } },
         options = TEXT_LEFT
     })
 end

@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.logs.name"), -- title of the page
+    title = "@i18n(app.modules.logs.name)@", -- title of the page
     section = "footer", -- do not run if busy with msp
     script = "logs_dir.lua", -- run this script
     image = "gfx/logs.png", -- image for the page

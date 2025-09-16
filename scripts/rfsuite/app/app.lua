@@ -19,7 +19,6 @@
 
 -- Root app table and common shortcuts
 local app     = {}
-local i18n    = rfsuite.i18n.get
 local utils   = rfsuite.utils
 local log     = utils.log
 local compile = rfsuite.compiler.loadfile
@@ -361,7 +360,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
           if not v.bitmap then
             if v.field == apikey and mspapiID == f.mspapi then
               local help_target = "api." .. mspapiNAME .. "." .. apikey
-              local help_return = i18n(help_target)
+              local help_return = ""--i18n(help_target)
               if help_target ~= help_return then v.help = help_return else v.help = nil end
 
               app.ui.injectApiAttributes(formField, f, v)
@@ -382,9 +381,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
             for bidx, b in ipairs(v.bitmap) do
               local bitmapField = v.field .. "->" .. b.field
               if bitmapField == apikey and mspapiID == f.mspapi then
-                local help_target = "api." .. mspapiNAME .. "." .. apikey
-                local help_return = i18n(help_target)
-                if help_target ~= help_return then v.help = help_return else v.help = nil end
+                --local help_target = "api." .. mspapiNAME .. "." .. apikey
+                --local help_return = i18n(help_target)
+                --if help_target ~= help_return then v.help = help_return else v.help = nil end
 
                 app.ui.injectApiAttributes(formField, f, b)
 
@@ -681,7 +680,7 @@ app._uiTasks = {
       if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
         if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
         if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-        app.ui.progressDisplay(i18n("app.msg_connecting"),i18n("app.msg_connecting_to_fbl"),true)
+        app.ui.progressDisplay("@i18n(app.msg_connecting)@","@i18n(app.msg_connecting_to_fbl)@",true)
         app.dialogs.nolinkDisplay = true
       end
     end
@@ -694,17 +693,17 @@ app._uiTasks = {
       app.triggers.triggerSave = false
       form.openDialog({
         width   = nil,
-        title   = i18n("app.msg_save_settings"),
-        message = (app.Page.extraMsgOnSave and i18n("app.msg_save_current_page").."\n\n"..app.Page.extraMsgOnSave or i18n("app.msg_save_current_page")),
+        title   = "@i18n(app.msg_save_settings)@",
+        message = (app.Page.extraMsgOnSave and "@i18n(app.msg_save_current_page)@".."\n\n"..app.Page.extraMsgOnSave or "@i18n(app.msg_save_current_page)@"),
         buttons = {
-          { label=i18n("app.btn_ok"), action=function()
+          { label="@i18n(app.btn_ok)@", action=function()
               app.PageTmp = app.Page
               app.triggers.isSaving = true
               saveSettings()
               return true
             end
           },
-          { label=i18n("app.btn_cancel"), action=function() return true end }
+          { label="@i18n(app.btn_cancel)@", action=function() return true end }
         },
         wakeup = function() end,
         paint  = function() end,
@@ -733,7 +732,7 @@ app._uiTasks = {
       app.audio.playSaveArmed = true
       app.dialogs.progressCounter = 0
       local key = (rfsuite.utils.apiVersionCompare(">=", "12.08") and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
-      app.ui.progressDisplay(i18n("app.msg_save_not_commited"), i18n(key))
+      app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", i18n(key))
     end
     if app.dialogs.progressCounter >= 100 then
       app.triggers.showSaveArmedWarning = false
@@ -752,22 +751,22 @@ app._uiTasks = {
     if app.triggers.triggerReload then
       app.triggers.triggerReload = false
       form.openDialog({
-        title   = i18n("reload"):gsub("^%l", string.upper),
-        message = i18n("app.msg_reload_settings"),
+        title   = "@i18n(reload)@",
+        message = "@i18n(app.msg_reload_settings)@",
         buttons = {
-          { label=i18n("app.btn_ok"),     action=function() app.triggers.reload = true;      return true end },
-          { label=i18n("app.btn_cancel"), action=function() return true end }
+          { label="@i18n(app.btn_ok)@",     action=function() app.triggers.reload = true;      return true end },
+          { label="@i18n(app.btn_cancel)@", action=function() return true end }
         },
         options = TEXT_LEFT
       })
     elseif app.triggers.triggerReloadFull then
       app.triggers.triggerReloadFull = false
       form.openDialog({
-        title   = i18n("reload"):gsub("^%l", string.upper),
-        message = i18n("app.msg_reload_settings"),
+        title   = "@i18n(reload)@",
+        message = "@i18n(app.msg_reload_settings)@",
         buttons = {
-          { label=i18n("app.btn_ok"),     action=function() app.triggers.reloadFull = true;  return true end },
-          { label=i18n("app.btn_cancel"), action=function() return true end }
+          { label="@i18n(app.btn_ok)@",     action=function() app.triggers.reloadFull = true;  return true end },
+          { label="@i18n(app.btn_cancel)@", action=function() return true end }
         },
         options = TEXT_LEFT
       })

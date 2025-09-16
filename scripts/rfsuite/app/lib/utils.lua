@@ -16,7 +16,7 @@
 ]]--
 
 local utils = {}
-local i18n  = rfsuite.i18n.get
+
 
 local arg     = { ... }
 local config  = arg[1]

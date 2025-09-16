@@ -18,7 +18,7 @@
 ]] --
 
 local utils = {}
-local i18n  = rfsuite.i18n.get
+
 local compiler = rfsuite.compiler 
 
 local arg    = {...}
@@ -161,7 +161,7 @@ end
 --- @return string Uppercased, comma-separated descriptions or "OK".
 function utils.armingDisableFlagsToString(flags)
     if flags == nil then
-        return i18n("app.modules.fblstatus.ok"):upper()
+        return "@i18n(app.modules.fblstatus.ok,upper)@"
     end
 
     local names = {}
@@ -176,7 +176,7 @@ function utils.armingDisableFlagsToString(flags)
     end
 
     if #names == 0 then
-        return i18n("app.modules.fblstatus.ok"):upper()
+        return "@i18n(app.modules.fblstatus.ok,upper)@"
     end
 
     return table.concat(names, ", "):upper()
@@ -187,7 +187,7 @@ function utils.getGovernorState(value)
     local returnvalue
 
     if not rfsuite.tasks.telemetry then
-        return i18n("widgets.governor.UNKNOWN")
+        return "@i18n(widgets.governor.UNKNOWN)@"
     end
 
     --[[
@@ -195,17 +195,17 @@ function utils.getGovernorState(value)
         If the key exists, returns the mapped value; otherwise returns localized "UNKNOWN".
     ]]
     local map = {
-        [0]   = i18n("widgets.governor.OFF"),
-        [1]   = i18n("widgets.governor.IDLE"),
-        [2]   = i18n("widgets.governor.SPOOLUP"),
-        [3]   = i18n("widgets.governor.RECOVERY"),
-        [4]   = i18n("widgets.governor.ACTIVE"),
-        [5]   = i18n("widgets.governor.THROFF"),
-        [6]   = i18n("widgets.governor.LOSTHS"),
-        [7]   = i18n("widgets.governor.AUTOROT"),
-        [8]   = i18n("widgets.governor.BAILOUT"),
-        [100] = i18n("widgets.governor.DISABLED"),
-        [101] = i18n("widgets.governor.DISARMED")
+        [0]   = "@i18n(widgets.governor.OFF)@",
+        [1]   = "@i18n(widgets.governor.IDLE)@",
+        [2]   = "@i18n(widgets.governor.SPOOLUP)@",
+        [3]   = "@i18n(widgets.governor.RECOVERY)@",
+        [4]   = "@i18n(widgets.governor.ACTIVE)@",
+        [5]   = "@i18n(widgets.governor.THROFF)@",
+        [6]   = "@i18n(widgets.governor.LOSTHS)@",
+        [7]   = "@i18n(widgets.governor.AUTOROT)@",
+        [8]   = "@i18n(widgets.governor.BAILOUT)@",
+        [100] = "@i18n(widgets.governor.DISABLED)@",
+        [101] = "@i18n(widgets.governor.DISARMED)@"
     }
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", "12.07") then
@@ -218,7 +218,7 @@ function utils.getGovernorState(value)
     if map[value] then
         returnvalue = map[value]
     else
-        returnvalue = i18n("widgets.governor.UNKNOWN")
+        returnvalue = "@i18n(widgets.governor.UNKNOWN)@"
     end
 
     --[[

@@ -15,7 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local i18n = rfsuite.i18n.get
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -158,7 +158,7 @@ local function buildBoxes(W)
             row = 1,
             type = "time",
             subtype = "flight",
-            title = i18n("widgets.dashboard.flight_time"):upper(),
+            title = "@i18n(widgets.dashboard.flight_time,upper)@",
             titlepos = "bottom",
             font = "FONT_XXL",
             bgcolor = colorMode.bgcolor,
@@ -172,7 +172,7 @@ local function buildBoxes(W)
             subtype = "telemetry",
             source  = "link",
             unit    = "dB",
-            title   = i18n("widgets.dashboard.lq"):upper(),
+            title   = "@i18n(widgets.dashboard.lq,upper)@",
             titlepos= "bottom",
             transform = "floor",
             titlecolor = colorMode.titlecolor,
@@ -187,7 +187,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source  = "voltage",
             fillbgcolor = colorMode.fillbgcolor,
-            title    = i18n("widgets.dashboard.voltage"):upper(),
+            title    = "@i18n(widgets.dashboard.voltage,upper)@",
             font     = "FONT_XXL",
             thickness= opts.thickness,
             titlepos = "bottom",

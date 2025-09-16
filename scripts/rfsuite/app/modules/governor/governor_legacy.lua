@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
         api = {
@@ -8,13 +8,13 @@ local apidata = {
             labels = {
             },
             fields = {
-            { t = i18n("app.modules.governor.mode"),                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
-            { t = i18n("app.modules.governor.handover_throttle"),     mspapi = 1, apikey = "gov_handover_throttle" },
-            { t = i18n("app.modules.governor.startup_time"),          mspapi = 1, apikey = "gov_startup_time" },
-            { t = i18n("app.modules.governor.spoolup_time"),          mspapi = 1, apikey = "gov_spoolup_time" },
-            { t = i18n("app.modules.governor.spoolup_min_throttle"),  mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = 12.08 },
-            { t = i18n("app.modules.governor.tracking_time"),         mspapi = 1, apikey = "gov_tracking_time" },
-            { t = i18n("app.modules.governor.recovery_time"),         mspapi = 1, apikey = "gov_recovery_time" },
+            { t = "@i18n(app.modules.governor.mode)@",                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
+            { t = "@i18n(app.modules.governor.handover_throttle)@",     mspapi = 1, apikey = "gov_handover_throttle" },
+            { t = "@i18n(app.modules.governor.startup_time)@",          mspapi = 1, apikey = "gov_startup_time" },
+            { t = "@i18n(app.modules.governor.spoolup_time)@",          mspapi = 1, apikey = "gov_spoolup_time" },
+            { t = "@i18n(app.modules.governor.spoolup_min_throttle)@",  mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = 12.08 },
+            { t = "@i18n(app.modules.governor.tracking_time)@",         mspapi = 1, apikey = "gov_tracking_time" },
+            { t = "@i18n(app.modules.governor.recovery_time)@",         mspapi = 1, apikey = "gov_recovery_time" },
             }
         }                 
     }    

@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.governor.name"), -- title of the page
+    title = "@i18n(app.modules.governor.name)@", -- title of the page
     section = "advanced", -- do not run if busy with msp
     script = "select.lua", -- run this script
     image = "governor.png", -- image for the page

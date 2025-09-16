@@ -26,7 +26,7 @@ local mspTransport = (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.
 local closeProgressLoader = true
 local simulation
 
-local i18n = rfsuite.i18n.get
+
 
 local supportedMspVersion = ""
 for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
@@ -62,14 +62,14 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.info.version"), value = version, type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.ethos_version"), value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.rf_version"), value = rfVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.fc_version"), value = fcVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.msp_version"), value = apiVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.msp_transport"), value = string.upper(mspTransport), type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.supported_versions"), value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.info.simulation"), value = simulation, type = displayType, disable = disableType, position = displayPos}
+            {t = "@i18n(app.modules.info.version)@", value = version, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.ethos_version)@", value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.rf_version)@", value = rfVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.fc_version)@", value = fcVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.msp_version)@", value = apiVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.msp_transport)@", value = string.upper(mspTransport), type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.supported_versions)@", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.simulation)@", value = simulation, type = displayType, disable = disableType, position = displayPos}
         }
     }
 }
@@ -86,7 +86,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.diagnostics.name"),
+            "@i18n(app.modules.diagnostics.name)@",
             "diagnostics/diagnostics.lua"
         )
         return true
@@ -98,7 +98,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil,nil,true)
     rfsuite.app.ui.openPage(
         pageIdx,
-        i18n("app.modules.diagnostics.name"),
+        "@i18n(app.modules.diagnostics.name)@",
         "diagnostics/diagnostics.lua"
     )
 end

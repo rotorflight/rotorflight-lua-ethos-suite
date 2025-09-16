@@ -23,15 +23,15 @@ local MSP_SIGNATURE = 0xFD
 local MSP_HEADER_BYTES = 2
 
 -- some tables used in structure below
-local flightMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_fixedwing"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_heliext"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_helistore")}
-local rotation = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_ccw")}
-local lipoCellCount = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_autocalculate"), "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
-local cutoffType = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_softcutoff"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_hardcutoff")}
-local cutoffVoltage = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled"), "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
+local flightMode = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_fixedwing)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_heliext)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_heligov)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_helistore)@"}
+local rotation = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_cw)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_ccw)@"}
+local lipoCellCount = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_autocalculate)@", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
+local cutoffType = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_softcutoff)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_hardcutoff)@"}
+local cutoffVoltage = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
 local restartTime = {"1s", "1.5s", "2s", "2.5s", "3s"}
 local startupPower = {"1", "2", "3", "4", "5", "6", "7"}
-local enabledDisabled = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_enabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled")}
-local brakeType = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_proportional"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_reverse")}
+local enabledDisabled = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_enabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@"}
+local brakeType = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_proportional)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_reverse)@"}
 
 
 -- Lookup table of model number to supported voltages

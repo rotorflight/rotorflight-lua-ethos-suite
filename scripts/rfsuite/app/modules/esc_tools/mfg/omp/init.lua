@@ -1,5 +1,5 @@
 local MSP_API = "ESC_PARAMETERS_OMP"
-local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.omp.name")
+local toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@"
 moduleName = "omp"
 
 

@@ -21,13 +21,13 @@ local INI_SECTION = "battery"
 
 local ini       = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
-local i18n = rfsuite.i18n.get
+
 local handlers  = mspModule.createHandlers()
 
 -- Define MSP fields
 
-local offOn = {i18n("api.BATTERY_INI.tbl_off"), i18n("api.BATTERY_INI.tbl_on")}
-local alertTypes = {i18n("api.BATTERY_INI.alert_off"), i18n("api.BATTERY_INI.alert_bec"), i18n("api.BATTERY_INI.alert_rxbatt")}
+local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
+local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "calc_local", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn},
@@ -84,7 +84,7 @@ end
 
 -- Write operation: merge payloadData into INI, save, then re-read
 local function write()
-    local msg = i18n("app.modules.profile_select.save_prompt_local")
+    local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
     rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
     local tbl = ini.load_ini_file(INI_FILE) or {}
