@@ -63,10 +63,10 @@ jobs:
       - name: Copy sound pack (locale=${{ matrix.lang }})
         shell: bash
         run: |
-          SRC="bin/sound-generator/${{ matrix.lang }}"
+          SRC="bin/sound-generator/soundpack/${{ matrix.lang }}"
           if [ ! -d "$SRC" ]; then
-            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/en"
-            SRC="bin/sound-generator/en"
+            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/soundpack/en"
+            SRC="bin/sound-generator/soundpack/en"
           fi
           DEST="${{ env.STAGE }}/rfsuite/audio/${{ matrix.lang }}"
           rm -rf "$DEST"
