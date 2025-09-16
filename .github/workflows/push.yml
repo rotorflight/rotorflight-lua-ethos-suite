@@ -5,6 +5,7 @@ on:
     branches:
       - 'master'
       - 'RF-*'
+      - 'i18n'
 
 jobs:
   create-zip:
