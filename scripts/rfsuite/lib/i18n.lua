@@ -17,14 +17,14 @@ i18n.last_load_time = nil
 
 -- Logging helper (safe no-op if unavailable)
 local function log(msg, level)
-  if inavsuite and inavsuite.utils and inavsuite.tasks and inavsuite.tasks.logger then
-    inavsuite.utils.log(msg, level or "info")
+  if rfsuite and rfsuite.utils and rfsuite.tasks and rfsuite.tasks.logger then
+    rfsuite.utils.log(msg, level or "info")
   end
 end
 
 local function loadLangFile(filepath)
   log("i18n: loading language file "..tostring(filepath), "info")
-  local chunk = assert(inavsuite.compiler.loadfile(filepath), "i18n: loadfile error")
+  local chunk = assert(rfsuite.compiler.loadfile(filepath), "i18n: loadfile error")
   local ok, result = pcall(chunk)
   return (ok and type(result) == "table") and result or {}
 end
