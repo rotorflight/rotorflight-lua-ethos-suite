@@ -59,6 +59,21 @@ jobs:
             --json "${{ env.STAGE }}/rfsuite/i18n/${{ matrix.lang }}.json" \
             --root "${{ env.STAGE }}"
 
+      # Copy sound pack for this locale into the staged tree
+      - name: Copy sound pack (locale=${{ matrix.lang }})
+        shell: bash
+        run: |
+          SRC="bin/sound-generator/${{ matrix.lang }}"
+          if [ ! -d "$SRC" ]; then
+            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/en"
+            SRC="bin/sound-generator/en"
+          fi
+          DEST="${{ env.STAGE }}/rfsuite/audio/${{ matrix.lang }}"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+          cp -a "$SRC/." "$DEST/"
+          echo "[AUDIO] Copied $SRC -> $DEST"
+
       # Zip only the staged scripts folder for this locale
       - name: Create rotorflight-lua-ethos-suite-<lang>-commit-<sha7>.zip
         shell: bash
