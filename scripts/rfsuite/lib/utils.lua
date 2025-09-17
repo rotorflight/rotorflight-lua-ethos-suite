@@ -152,25 +152,49 @@ function utils.msp_version_array_to_indexed()
     return arr
 end
 
---- Converts arming disable flags into a human-readable string representation.
----
---- Iterates through bits of `flags` and appends corresponding localized strings.
---- Returns localized "OK" if no flags are set or flags is nil.
----
---- @param flags number Bitfield representing arming disable flags.
---- @return string Uppercased, comma-separated descriptions or "OK".
 function utils.armingDisableFlagsToString(flags)
-    if flags == nil then
+
+    local ARMING_DISABLE_FLAG_TAG = {
+    [0]  = "@i18n(app.modules.fblstatus.arming_disable_flag_0)@",
+    [1]  = "@i18n(app.modules.fblstatus.arming_disable_flag_1)@",
+    [2]  = "@i18n(app.modules.fblstatus.arming_disable_flag_2)@",
+    [3]  = "@i18n(app.modules.fblstatus.arming_disable_flag_3)@",
+    [4]  = "@i18n(app.modules.fblstatus.arming_disable_flag_4)@",
+    [5]  = "@i18n(app.modules.fblstatus.arming_disable_flag_5)@",
+    [6]  = "@i18n(app.modules.fblstatus.arming_disable_flag_6)@",
+    [7]  = "@i18n(app.modules.fblstatus.arming_disable_flag_7)@",
+    [8]  = "@i18n(app.modules.fblstatus.arming_disable_flag_8)@",
+    [9]  = "@i18n(app.modules.fblstatus.arming_disable_flag_9)@",
+    [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10)@",
+    [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11)@",
+    [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12)@",
+    [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13)@",
+    [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14)@",
+    [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15)@",
+    [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16)@",
+    [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17)@",
+    [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18)@",
+    [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19)@",
+    [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20)@",
+    [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21)@",
+    [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22)@",
+    [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
+    [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
+    [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
+    }
+
+
+    -- No flags: localized OK (already uppercase via tag transform)
+    if flags == nil or flags == 0 then
         return "@i18n(app.modules.fblstatus.ok,upper)@"
     end
 
     local names = {}
     for i = 0, 25 do
         if (flags & (1 << i)) ~= 0 then
-            local key  = "app.modules.fblstatus.arming_disable_flag_" .. i
-            local name = i18n(key)
+            local name = ARMING_DISABLE_FLAG_TAG[i]
             if name and name ~= "" then
-                table.insert(names, name)
+                names[#names+1] = name
             end
         end
     end
@@ -179,8 +203,12 @@ function utils.armingDisableFlagsToString(flags)
         return "@i18n(app.modules.fblstatus.ok,upper)@"
     end
 
-    return table.concat(names, ", "):upper()
+    -- NOTE: We avoid forcing uppercase here to preserve non-ASCII locales.
+    -- If you really want uppercase, you can do:
+    --   return (table.concat(names, ", ")):upper()
+    return table.concat(names, ", ")
 end
+
 
 -- Get the governor text from the value
 function utils.getGovernorState(value)
