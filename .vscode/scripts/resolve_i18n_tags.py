@@ -52,6 +52,21 @@ def apply_modifier(s: str, mod: str | None):
         return s.lower()
     return s  # unknown modifier, ignore
 
+def _sanitize_for_insertion(s: str) -> str:
+    """
+    Ensure:
+      - any CRLF/CR become LF,
+      - literal backslash-n sequences are written for line breaks,
+      - double quotes are escaped.
+    """
+    # Normalize all newlines to LF
+    s = s.replace("\r\n", "\n").replace("\r", "\n")
+    # Turn actual LF characters into the two-character sequence \n
+    s = s.replace("\n", r"\n")
+    # Escape double quotes
+    s = s.replace('"', r'\"')
+    return s
+
 def replace_tags_in_text(text: str, translations: dict, stats: dict):
     """
     Returns (new_text, num_replacements)
@@ -66,7 +81,11 @@ def replace_tags_in_text(text: str, translations: dict, stats: dict):
             stats.setdefault('unresolved', {}).setdefault(key, 0)
             stats['unresolved'][key] += 1
             return m.group(0)  # leave tag untouched
-        return apply_modifier(resolved, mod)
+
+        # Apply modifier, then sanitize per requirements
+        resolved = apply_modifier(resolved, mod)
+        resolved = _sanitize_for_insertion(resolved)
+        return resolved
 
     new_text, n = TAG_RE.subn(_sub, text)
     return new_text, n
@@ -135,8 +154,6 @@ def main():
         if replaced:
             total_files_changed += 1
             total_replacements += replaced
-            # per-file debug line
-            #print(f"[i18n] updated {f} — {replaced} replacement(s) (verified)")
         # aggregate unresolved
         for k, c in unresolved.items():
             unresolved_agg[k] = unresolved_agg.get(k, 0) + c
