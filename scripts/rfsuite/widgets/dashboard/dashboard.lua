@@ -1645,6 +1645,10 @@ function dashboard.menu(widget)
     }
 end
 
+function dashboard.housekeeping()
+
+end    
+
 -- table to stall object cache
 dashboard.renders = dashboard.renders or {}
 

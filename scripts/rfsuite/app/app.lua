@@ -1035,4 +1035,12 @@ function app.close()
   return true
 end
 
+function app.housekeeping()
+
+  -- quick exit if gui is running
+  if rfsuite.app.guiIsRunning then return end
+  
+
+end
+
 return app
