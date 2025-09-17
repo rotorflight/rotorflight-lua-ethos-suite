@@ -32,9 +32,9 @@ local MSP_API_SIMULATOR_RESPONSE = {4, 5, 1} -- Default simulator response
 
 -- Define the MSP response data structure
 local MSP_API_STRUCTURE_READ = {
-    {field = "version_major", type = "U8"}, -- Major version
-    {field = "version_minor", type = "U8"}, -- Minor version
-    {field = "version_patch", type = "U8"}  -- Patch version
+    {field = "version_major", type = "U8", help = "@i18n(api.FC_VERSION.version_major)@"}, -- Major version
+    {field = "version_minor", type = "U8", help = "@i18n(api.FC_VERSION.version_minor)@"}, -- Minor version
+    {field = "version_patch", type = "U8", help = "@i18n(api.FC_VERSION.version_patch)@"}  -- Patch version
 }
 
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the structure

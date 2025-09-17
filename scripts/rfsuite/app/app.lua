@@ -359,9 +359,10 @@ function app.mspApiUpdateFormAttributes(values, structure)
         for _, v in ipairs(target) do
           if not v.bitmap then
             if v.field == apikey and mspapiID == f.mspapi then
-              local help_target = "api." .. mspapiNAME .. "." .. apikey
-              local help_return = ""--i18n(help_target)
-              if help_target ~= help_return then v.help = help_return else v.help = nil end
+
+              if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then
+                v.help = nil
+              end
 
               app.ui.injectApiAttributes(formField, f, v)
 
@@ -381,9 +382,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
             for bidx, b in ipairs(v.bitmap) do
               local bitmapField = v.field .. "->" .. b.field
               if bitmapField == apikey and mspapiID == f.mspapi then
-                --local help_target = "api." .. mspapiNAME .. "." .. apikey
-                --local help_return = i18n(help_target)
-                --if help_target ~= help_return then v.help = help_return else v.help = nil end
+                if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then
+                  v.help = nil
+                end
 
                 app.ui.injectApiAttributes(formField, f, b)
 

@@ -50,14 +50,14 @@ local function generateMSPStructureRead(servoCount)
 
     -- Define servo fields structure
     local servo_fields = {
-        {field = "mid", type = "U16"},
-        {field = "min", type = "U16"},
-        {field = "max", type = "U16"},
-        {field = "rneg", type = "U16"},
-        {field = "rpos", type = "U16"},
-        {field = "rate", type = "U16"},
-        {field = "speed", type = "U16"},
-        {field = "flags", type = "U16"}
+        {field = "mid", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.mid)@"},
+        {field = "min", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.min)@"},
+        {field = "max", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.max)@"},
+        {field = "rneg", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rneg)@"},
+        {field = "rpos", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rpos)@"},
+        {field = "rate", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rate)@"},
+        {field = "speed", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.speed)@"},
+        {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
     }
 
     -- Add servo field structures dynamically based on servoCount

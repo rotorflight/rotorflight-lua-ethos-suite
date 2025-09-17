@@ -24,10 +24,10 @@ local function generateSbusApiStructure(numChannels)
     local structure = {}
 
     for i = 1, numChannels do
-        table.insert(structure, {field = "Type_" .. i, type = "U8", min=0, max = 16,      apiVersion = 12.06, simResponse = {1}})
-        table.insert(structure, {field = "Index_" .. i, type = "U8", min=0, max = 15,     apiVersion = 12.06, simResponse = {0}})
-        table.insert(structure, {field = "RangeLow_" .. i, type = "S16", min = -2000, max = 2000, apiVersion = 12.06, simResponse = {24, 252}})
-        table.insert(structure, {field = "RangeHigh_" .. i, type = "S16", min = -2000, max = 2000, apiVersion = 12.06, simResponse = {232, 3}})
+        table.insert(structure, {field = "Type_" .. i, type = "U8", min=0, max = 16,      apiVersion = 12.06, simResponse = {1}, help = "@i18n(api.msp.sbus_output_config.type)@"})
+        table.insert(structure, {field = "Index_" .. i, type = "U8", min=0, max = 15,     apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.msp.sbus_output_config.index)@"})
+        table.insert(structure, {field = "RangeLow_" .. i, type = "S16", min = -2000, max = 2000, apiVersion = 12.06, simResponse = {24, 252}, help = "@i18n(api.msp.sbus_output_config.range_low)@"})
+        table.insert(structure, {field = "RangeHigh_" .. i, type = "S16", min = -2000, max = 2000, apiVersion = 12.06, simResponse = {232, 3}, help = "@i18n(api.msp.sbus_output_config.range_high)@"})
     end
 
     return structure

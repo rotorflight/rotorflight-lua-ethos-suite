@@ -33,9 +33,9 @@ local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(rfs
 
 -- Define the MSP response data structure
 local MSP_API_STRUCTURE_READ = {
-    {field = "version_command", type = "U8"}, -- Command version
-    {field = "version_major", type = "U8"}, -- Major version
-    {field = "version_minor", type = "U8"} -- Minor version
+    {field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@"}, -- Command version
+    {field = "version_major", type = "U8", help = "@i18n(api.API_VERSION.version_major)@"}, -- Major version
+    {field = "version_minor", type = "U8", help = "@i18n(api.API_VERSION.version_minor)@"} -- Minor version
 }
 
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the structure

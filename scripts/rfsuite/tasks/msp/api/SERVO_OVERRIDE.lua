@@ -22,14 +22,14 @@ local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "servo_1", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_2", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_3", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_4", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_5", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_6", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_7", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
-    {field = "servo_8", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_1", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_1)@"}, 
+    {field = "servo_2", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_2)@"}, 
+    {field = "servo_3", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_3)@"}, 
+    {field = "servo_4", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_4)@"}, 
+    {field = "servo_5", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_5)@"}, 
+    {field = "servo_6", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_6)@"}, 
+    {field = "servo_7", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_7)@"}, 
+    {field = "servo_8", type = "U16", apiVersion=12.06, simResponse={209, 7}, help = "@i18n(api.SERVO_OVERRIDE.servo_8)@"}, 
 }
 
 local MSP_API_STRUCTURE_WRITE = {

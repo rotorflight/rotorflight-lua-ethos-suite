@@ -22,9 +22,9 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "U_ID_0",               type = "U32", apiVersion = 12.06, simResponse = {43 , 0  , 34 , 0 }},
-    {field = "U_ID_1",               type = "U32", apiVersion = 12.06, simResponse = {9  , 81 , 51 , 52}},
-    {field = "U_ID_2",               type = "U32", apiVersion = 12.06, simResponse = { 52 , 56 , 53 , 49}},
+    {field = "U_ID_0",               type = "U32", apiVersion = 12.06, simResponse = {43 , 0  , 34 , 0 }, help = "@i18n(api.UID.U_ID_0)@"},
+    {field = "U_ID_1",               type = "U32", apiVersion = 12.06, simResponse = {9  , 81 , 51 , 52}, help = "@i18n(api.UID.U_ID_1)@"},
+    {field = "U_ID_2",               type = "U32", apiVersion = 12.06, simResponse = { 52 , 56 , 53 , 49}, help = "@i18n(api.UID.U_ID_2)@"},
 }
 
 -- Process structure in one pass
