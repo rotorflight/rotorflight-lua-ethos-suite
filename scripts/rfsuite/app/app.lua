@@ -868,6 +868,7 @@ end
 
 -- App bootstrap
 function app.create()
+  
   config.environment        = system.getVersion()
   config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
 
@@ -984,16 +985,25 @@ function app.close()
   rfsuite.config.useCompiler    = true
 
   -- Reset page/nav state
-  pageLoaded  = 100
-  pageTitle   = nil
-  pageFile    = nil
-  app.Page    = {}
-  app.formFields = {}
-  app.formNavigationFields = {}
-  app.gfx_buttons = {}
+  if app.Page then
+    for k in pairs(app.Page) do app.Page[k] = nil end
+  end
+  if app.formFields then  
+    for k in pairs(app.formFields) do app.formFields[k] = nil end
+  end
+  if app.formNavigationFields then
+    for k in pairs(app.formNavigationFields) do app.formNavigationFields[k] = nil end
+  end
+  if app.gfx_buttons then
+  for k in pairs(app.gfx_buttons) do app.gfx_buttons[k] = nil end
+  end
+  if app.audio then
+    for k in pairs(app.audio) do app.audio[k] = nil end
+  end
+
+
   app.formLines = nil
   app.MainMenu  = nil
-  app.formNavigationFields = {}
   app.PageTmp = nil
   app.moduleList = nil
   app.utils = nil
@@ -1012,9 +1022,6 @@ function app.close()
   app.dialogs.nolinkValueCounter = 0
   app.dialogs.progressDisplayEsc = false
 
-  -- Reset audio
-  app.audio = {}
-
   -- Telemetry/protocol
   ELRS_PAUSE_TELEMETRY = false
   CRSF_PAUSE_TELEMETRY = false
@@ -1026,11 +1033,14 @@ function app.close()
   rfsuite.session.activeRateProfile = nil
   rfsuite.session.activeRateProfileLast = nil
   rfsuite.session.activeRateTable = nil
-
-  collectgarbage("collect")
   invalidatePages()
 
-  rfsuite.utils.reportMemoryUsage("closing application: end")
+  -- Give the VM a real chance to reclaim memory
+  collectgarbage("collect")
+  collectgarbage("collect")
+
+  rfsuite.utils.reportMemoryUsage("closing application: end")  
+
   system.exit()
   return true
 end

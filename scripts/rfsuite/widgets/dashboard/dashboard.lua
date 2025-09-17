@@ -943,6 +943,9 @@ local function reload_state_only(state)
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
     dashboard.boxRects = {}
+    if dashboard.boxRects then  
+        for k in pairs(dashboard.boxRects) do dashboard.boxRects[k] = nil end
+    end    
     lcd.invalidate()
 end
 
@@ -1036,7 +1039,9 @@ function dashboard.reload_themes(force)
 
     -- Reset rendering state explicitly
     dashboard._forceFullRepaint = true
-    dashboard.boxRects = {}
+    if dashboard.boxRects then  
+        for k in pairs(dashboard.boxRects) do dashboard.boxRects[k] = nil end
+    end    
     lastBoxRectsCount = 0
     lastLoadedBoxCount = 0
     objectWakeupIndex = 1
