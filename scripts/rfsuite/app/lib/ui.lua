@@ -1680,4 +1680,379 @@ function ui.injectApiAttributes(formField, f, v)
     end
 end
 
+-- Update form fields with MSP API values/attributes
+function ui.mspApiUpdateFormAttributes(values, structure)
+
+  local app   = rfsuite.app
+  local utils   = rfsuite.utils
+  local log     = utils.log
+
+  if not (app.Page.apidata.formdata and app.Page.apidata.api and app.Page.fields) then
+    log("app.Page.apidata.formdata or its components are nil", "debug")
+    return
+  end
+
+  local function combined_api_parts(s)
+    local part1, part2 = s:match("^([^:]+):([^:]+)$")
+    if part1 and part2 then
+      local num = tonumber(part1)
+      if num then
+        part1 = num
+      else
+        part1 = app.Page.apidata.api_reversed[part1] or nil
+      end
+      if part1 then return { part1, part2 } end
+    end
+    return nil
+  end
+
+  local fields = app.Page.apidata.formdata.fields
+  local api    = app.Page.apidata.api
+
+  if not app.Page.apidata.api_reversed then
+    app.Page.apidata.api_reversed = {}
+    for index, value in pairs(app.Page.apidata.api) do
+      app.Page.apidata.api_reversed[value] = index
+    end
+  end
+
+  for i, f in ipairs(fields) do
+    local formField = app.formFields[i]
+    if type(formField) == 'userdata' then
+      if f.api then
+        log("API field found: " .. f.api, "debug")
+        local parts = combined_api_parts(f.api)
+        if parts then f.mspapi = parts[1]; f.apikey = parts[2] end
+      end
+
+      local apikey      = f.apikey
+      local mspapiID    = f.mspapi
+      local mspapiNAME  = api[mspapiID]
+      local target      = structure[mspapiNAME]
+
+      if mspapiID == nil or mspapiID == nil then
+        log("API field missing mspapi or apikey", "debug")
+      else
+        for _, v in ipairs(target) do
+          if not v.bitmap then
+            if v.field == apikey and mspapiID == f.mspapi then
+
+              if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then
+                v.help = nil
+              end
+
+              app.ui.injectApiAttributes(formField, f, v)
+
+              local scale = f.scale or 1
+              if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
+                app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+              end
+
+              if values[mspapiNAME][apikey] == nil then
+                log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                formField:enable(false)
+              end
+              break
+            end
+          else
+            -- bitmap fields
+            for bidx, b in ipairs(v.bitmap) do
+              local bitmapField = v.field .. "->" .. b.field
+              if bitmapField == apikey and mspapiID == f.mspapi then
+                if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then
+                  v.help = nil
+                end
+
+                app.ui.injectApiAttributes(formField, f, b)
+
+                local scale = f.scale or 1
+                if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
+                  local raw_value = values[mspapiNAME][v.field]
+                  local bit_value = (raw_value >> bidx - 1) & 1
+                  app.Page.fields[i].value = bit_value / scale
+                end
+
+                if values[mspapiNAME][v.field] == nil then
+                  log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                  formField:enable(false)
+                end
+
+                app.Page.fields[i].bitmap = bidx - 1
+              end
+            end
+          end
+        end
+      end
+    else
+      log("Form field skipped; not valid for this api version?", "debug")
+    end
+  end
+
+  --collectgarbage()
+  utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
+  app.formNavigationFields['menu']:focus(true)
+end
+
+-- Request page data via the API form system
+function ui.requestPage()
+  local app = rfsuite.app
+  local log = rfsuite.utils.log
+
+
+  if not app.Page.apidata then return end
+  if not app.Page.apidata.api and not app.Page.apidata.formdata then
+    log("app.Page.apidata.api did not pass consistancy checks", "debug")
+    return
+  end
+
+  if not app.Page.apidata.apiState then
+    app.Page.apidata.apiState = { currentIndex = 1, isProcessing = false }
+  end
+
+  local apiList = app.Page.apidata.api
+  local state   = app.Page.apidata.apiState
+
+  if state.isProcessing then
+    log("requestPage is already running, skipping duplicate call.", "debug")
+    return
+  end
+  state.isProcessing = true
+
+  if not app.Page.apidata.values then
+    log("requestPage Initialize values on first run", "debug")
+    app.Page.apidata.values             = {}
+    app.Page.apidata.structure          = {}
+    app.Page.apidata.receivedBytesCount = {}
+    app.Page.apidata.receivedBytes      = {}
+    app.Page.apidata.positionmap        = {}
+    app.Page.apidata.other              = {}
+  end
+
+  if state.currentIndex == nil then state.currentIndex = 1 end
+
+  local function checkForUnresolvedTimeouts()
+    if not app or not app.Page or not app.Page.apidata then return end
+    local hasUnresolvedTimeouts = false
+    for apiKey, retries in pairs(app.Page.apidata.retryCount or {}) do
+      if retries >= 3 then
+        hasUnresolvedTimeouts = true
+        log("[ALERT] API " .. apiKey .. " failed after 3 timeouts.", "info")
+      end
+    end
+    if hasUnresolvedTimeouts then
+      app.ui.disableAllFields()
+      app.ui.disableAllNavigationFields()
+      app.ui.enableNavigationField('menu')
+      app.triggers.closeProgressLoader = true
+    end
+  end
+
+  local function processNextAPI()
+    if not app or not app.Page or not app.Page.apidata then
+      log("App is closing. Stopping processNextAPI.", "debug")
+      return
+    end
+
+    if state.currentIndex > #apiList or #apiList == 0 then
+      if state.isProcessing then
+        state.isProcessing = false
+        state.currentIndex = 1
+        app.triggers.isReady = true
+        if app.Page.postRead then app.Page.postRead(app.Page) end
+        app.ui.mspApiUpdateFormAttributes(app.Page.apidata.values, app.Page.apidata.structure)
+        if app.Page.postLoad then app.Page.postLoad(app.Page) else app.triggers.closeProgressLoader = true end
+        checkForUnresolvedTimeouts()
+      end
+      return
+    end
+
+    local v      = apiList[state.currentIndex]
+    local apiKey = type(v) == "string" and v or v.name
+    if not apiKey then
+      log("API key is missing for index " .. tostring(state.currentIndex), "warning")
+      state.currentIndex = state.currentIndex + 1
+      local base = 0.25
+      local backoff = math.min(2.0, base * (2 ^ retryCount))
+      local jitter = math.random() * 0.2
+      rfsuite.tasks.callback.inSeconds(backoff + jitter, processNextAPI)
+      return
+    end
+
+    local API = rfsuite.tasks.msp.api.load(v)
+
+    if app and app.Page and app.Page.apidata then app.Page.apidata.retryCount = app.Page.apidata.retryCount or {} end
+
+    local retryCount = app.Page.apidata.retryCount[apiKey] or 0
+    local handled = false
+
+    log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
+
+    local function handleTimeout()
+      if handled then return end
+      handled = true
+      if not app or not app.Page or not app.Page.apidata then
+        log("App is closing. Timeout handling skipped.", "debug")
+        return
+      end
+      retryCount = retryCount + 1
+      app.Page.apidata.retryCount[apiKey] = retryCount
+      if retryCount < 3 then
+        log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
+        rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)
+      else
+        log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+        state.currentIndex = state.currentIndex + 1
+        rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)
+      end
+    end
+
+    rfsuite.tasks.callback.inSeconds(2, handleTimeout)
+
+    API.setCompleteHandler(function(self, buf)
+      if handled then return end
+      handled = true
+      if not app or not app.Page or not app.Page.apidata then
+        log("App is closing. Skipping API success handling.", "debug")
+        return
+      end
+      log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
+      app.Page.apidata.values[apiKey]             = API.data().parsed
+      app.Page.apidata.structure[apiKey]          = API.data().structure
+      app.Page.apidata.receivedBytes[apiKey]      = API.data().buffer
+      app.Page.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
+      app.Page.apidata.positionmap[apiKey]        = API.data().positionmap
+      app.Page.apidata.other[apiKey]              = API.data().other or {}
+      app.Page.apidata.retryCount[apiKey]         = 0
+      state.currentIndex = state.currentIndex + 1
+      rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
+    end)
+
+    API.setErrorHandler(function(self, err)
+      if handled then return end
+      handled = true
+      if not app or not app.Page or not app.Page.apidata then
+        log("App is closing. Skipping API error handling.", "debug")
+        return
+      end
+      retryCount = retryCount + 1
+      app.Page.apidata.retryCount[apiKey] = retryCount
+      if retryCount < 3 then
+        log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
+      else
+        log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+        state.currentIndex = state.currentIndex + 1
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
+      end
+    end)
+
+    API.read()
+  end
+
+  processNextAPI()
+end
+
+-- Save current page's settings via MSP API(s)
+function ui.saveSettings()
+
+ local app = rfsuite.app
+ local log = rfsuite.utils.log
+
+  if app.pageState == app.pageStatus.saving then return end
+
+  app.pageState = app.pageStatus.saving
+  app.saveTS    = os.clock()
+
+  log("Saving data", "debug")
+
+  local mspapi  = app.Page.apidata
+  local apiList = mspapi.api
+  local values  = mspapi.values
+
+  local totalRequests    = #apiList
+  local completedRequests= 0
+
+  rfsuite.app.Page.apidata.apiState.isProcessing = true
+
+  if app.Page.preSave then app.Page.preSave(app.Page) end
+
+  for apiID, apiNAME in ipairs(apiList) do
+    log("Saving data for API: " .. apiNAME, "debug")
+
+    local payloadData      = values[apiNAME]
+    local payloadStructure = mspapi.structure[apiNAME]
+
+    local API = rfsuite.tasks.msp.api.load(apiNAME)
+    API.setErrorHandler(function(self, buf)
+      app.triggers.saveFailed = true
+    end)
+    API.setCompleteHandler(function(self, buf)
+      completedRequests = completedRequests + 1
+      log("API " .. apiNAME .. " write complete", "debug")
+      if completedRequests == totalRequests then
+        log("All API requests have been completed!", "debug")
+        if app.Page.postSave then app.Page.postSave(app.Page) end
+           app.Page.apidata.apiState.isProcessing = false
+          rfsuite.app.utils.settingsSaved()
+      end
+    end)
+
+    -- Build lookup maps (normal + bitmap)
+    local fieldMap       = {}
+    local fieldMapBitmap = {}
+    for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
+      if not f.bitmap then
+        if f.mspapi == apiID then fieldMap[f.apikey] = fidx end
+      else
+        local p1, p2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
+        if not fieldMapBitmap[p1] then fieldMapBitmap[p1] = {} end
+        fieldMapBitmap[p1][f.bitmap] = fidx
+      end
+    end
+
+    -- Inject values into payload
+    for k, v in pairs(payloadData) do
+      local fieldIndex = fieldMap[k]
+      if fieldIndex then
+        payloadData[k] = app.Page.fields[fieldIndex].value
+      elseif fieldMapBitmap[k] then
+        local originalValue = tonumber(v) or 0
+        local newValue = originalValue
+        for bit, idx in pairs(fieldMapBitmap[k]) do
+          local fieldVal = math.floor(tonumber(app.Page.fields[idx].value) or 0)
+          local mask = 1 << (bit)
+          if fieldVal ~= 0 then newValue = newValue | mask else newValue = newValue & (~mask) end
+        end
+        payloadData[k] = newValue
+      end
+    end
+
+    -- Send payload
+    for k, v in pairs(payloadData) do
+      log("Set value for " .. k .. " to " .. v, "debug")
+      API.setValue(k, v)
+    end
+
+    API.write()
+  end
+end
+
+-- Reboot FC (MSP)
+function ui.rebootFc()
+  local app   = rfsuite.app
+  local utils = rfsuite.utils
+
+  app.pageState = app.pageStatus.rebooting
+  rfsuite.tasks.msp.mspQueue:add({
+    command = 68, -- MSP_REBOOT
+    processReply = function(self, buf)
+      app.utils.invalidatePages()
+      utils.onReboot()
+    end,
+    simulatorResponse = {}
+  })
+end
+
+
+
 return ui

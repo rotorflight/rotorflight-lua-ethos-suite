@@ -269,4 +269,66 @@ function utils.titleCase(str)
     end)
 end
 
+-- Telemetry state updater
+function utils.updateTelemetryState()
+  
+  if system:getVersion().simulation ~= true then
+    if not rfsuite.session.telemetrySensor then
+      rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.noSensor
+    elseif utils.getRSSI() == 0 then
+      rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.noTelemetry
+    else
+      rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.ok
+    end
+  else
+    rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.noTelemetry
+  end
+end
+
+-- Called when settings writes have completed (may queue EEPROM write)
+function utils.settingsSaved()
+
+-- MSP EEPROM write command descriptor
+    local mspEepromWrite = {
+        command = 250, -- MSP_EEPROM_WRITE (fails when armed)
+        processReply = function(self, buf)
+            rfsuite.app.triggers.closeSave = true
+            if rfsuite.app.Page.postEepromWrite then rfsuite.app.Page.postEepromWrite() end
+            if rfsuite.app.Page.reboot then
+            rfsuite.app.ui.rebootFc()
+            else
+            rfsuite.app.utils.invalidatePages()
+            end
+        end,
+        errorHandler = function(self)
+            rfsuite.app.triggers.closeSave = true
+        end,
+        simulatorResponse = {}
+    }
+
+  if rfsuite.app.Page and rfsuite.app.Page.eepromWrite then
+    if rfsuite.app.pageState ~= rfsuite.app.pageStatus.eepromWrite then
+      rfsuite.app.pageState = rfsuite.app.pageStatus.eepromWrite
+      rfsuite.app.triggers.closeSave = true
+      if rfsuite.session.isArmed then
+        rfsuite.app.triggers.showSaveArmedWarning = true
+      end
+      rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    end
+  elseif rfsuite.app.pageState ~= rfsuite.app.pageStatus.eepromWrite then
+    rfsuite.app.utils.invalidatePages()
+    rfsuite.app.triggers.closeSave = true
+  end
+  collectgarbage()
+  rfsuite.utils.reportMemoryUsage("app.utils.settingsSaved")
+end
+
+-- Invalidate pages after writes/reloads
+function utils.invalidatePages()
+  rfsuite.app.Page      = nil
+  rfsuite.app.pageState = rfsuite.app.pageStatus.display
+  rfsuite.app.saveTS    = 0
+  collectgarbage()
+end
+
 return utils
