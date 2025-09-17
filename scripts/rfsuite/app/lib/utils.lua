@@ -269,21 +269,6 @@ function utils.titleCase(str)
     end)
 end
 
--- Telemetry state updater
-function utils.updateTelemetryState()
-  
-  if system:getVersion().simulation ~= true then
-    if not rfsuite.session.telemetrySensor then
-      rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.noSensor
-    elseif utils.getRSSI() == 0 then
-      rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.noTelemetry
-    else
-      rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.ok
-    end
-  else
-    rfsuite.session.telemetryState = rfsuite.app.telemetryStatus.noTelemetry
-  end
-end
 
 -- Called when settings writes have completed (may queue EEPROM write)
 function utils.settingsSaved()

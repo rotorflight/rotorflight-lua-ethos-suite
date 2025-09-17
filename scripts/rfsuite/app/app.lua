@@ -74,7 +74,6 @@ function app.create()
   app.gfx_buttons           = {}
   app.uiStatus              = { init = 1, mainMenu = 2, pages = 3, confirm = 4 }
   app.pageStatus            = { display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5 }
-  app.telemetryStatus       = { ok = 1, noSensor = 2, noTelemetry = 3 }
   app.uiState               = app.uiStatus.init
   app.pageState             = app.pageStatus.display
   app.lastLabel             = nil
@@ -352,7 +351,6 @@ function app.create()
 
     -- 8. Telemetry & Page State Updates
     function()
-      app.utils.updateTelemetryState()
       if app.uiState == app.uiStatus.mainMenu then
         app.utils.invalidatePages()
       elseif app.triggers.isReady and (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed())
@@ -532,7 +530,6 @@ function app.close()
   app.gfx_buttons           = nil
   app.uiStatus              = nil
   app.pageStatus            = nil
-  app.telemetryStatus       = nil
   app.uiState               = nil
   app.pageState             = nil
   app.lastLabel             = nil
