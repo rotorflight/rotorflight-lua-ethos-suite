@@ -132,7 +132,7 @@ function tasks.isTaskActive(name)
         if t.name == name then
             local age = os.clock() - t.last_run
             if name == "msp" then
-                return rfsuite.app.triggers.mspBusy
+                return rfsuite.session.mspBusy
             elseif name == "callback" then
                 return age <= 2
             else
@@ -367,7 +367,7 @@ function tasks.active()
 
     local age = os.clock() - tasks.heartbeat
     tasks.wasOn = age >= 2
-    if rfsuite.app.triggers.mspBusy or age <= 2 then return true end
+    if rfsuite.session.mspBusy or age <= 2 then return true end
 
     return false
 end
@@ -392,7 +392,7 @@ local function canRunTask(task, now)
     local ok =
         linkOK
         and connOK
-        and (priorityTask or od >= 0 or not rfsuite.app.triggers.mspBusy)
+        and (priorityTask or od >= 0 or not rfsuite.session.mspBusy)
         and (not task.simulatoronly or usingSimulator)
 
     return ok, od

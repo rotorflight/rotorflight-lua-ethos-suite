@@ -986,7 +986,7 @@ function telemetry.wakeup()
     local now = os_clock()
 
     -- Prioritize MSP traffic
-    if rfsuite.app.triggers.mspBusy then return end
+    if rfsuite.session.mspBusy then return end
 
     -- Rate‐limited “onchange” scanning
     if (now - sensorRateLimit) >= ONCHANGE_RATE then

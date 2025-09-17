@@ -325,7 +325,7 @@ end
 function elrs.crossfirePop()
   ensureElrsMap()
 
-  if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or not telemetryActive()) then
+  if (CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true or not telemetryActive()) then
     if not telemetryActive() then resetSensors() end
     return false
   end
@@ -385,7 +385,7 @@ function elrs.wakeup()
     while elrs.crossfirePop() do
       n = n + 1
       if n >= 50 then break end
-      if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then break end
+      if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end
     end
     refreshStaleSensors()
   else

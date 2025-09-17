@@ -26,149 +26,6 @@ local compile = rfsuite.compiler.loadfile
 local arg = {...}
 local config = arg[1]
 
---[[
-triggers table:
-  - exitAPP:               boolean, indicates if the app should exit.
-  - noRFMsg:               boolean, indicates if there is no RF message.
-  - triggerSave:           boolean, triggers a save operation.
-  - triggerSaveNoProgress: boolean, triggers a save without progress dialog.
-  - triggerReload:         boolean, triggers a reload.
-  - triggerReloadFull:     boolean, triggers a full reload.
-  - triggerReloadNoPrompt: boolean, triggers a reload without prompt.
-  - reloadFull:            boolean, tracks a full reload in progress.
-  - isReady:               boolean, indicates if the app is ready.
-  - isSaving / isSavingFake/ saveFailed: saving state flags.
-  - telemetryState:        current telemetry state.
-  - profileswitchLast / rateswitchLast: last switch states.
-  - closeSave / closeSaveFake: close save dialog flags.
-  - badMspVersion / badMspVersionDisplay: MSP version flags.
-  - closeProgressLoader:   flag to close progress loader.
-  - mspBusy:               MSP busy state.
-  - disableRssiTimeout:    disables RSSI timeout gating.
-  - timeIsSet:             real-time clock set flag.
-  - invalidConnectionSetup:invalid connection state detected.
-  - wasConnected:          saw at least one valid connection.
-  - isArmed:               system armed state.
-  - showSaveArmedWarning:  show warning when saving while armed.
-]]
-local triggers = {}
-triggers.exitAPP               = false
-triggers.noRFMsg               = false
-triggers.triggerSave           = false
-triggers.triggerSaveNoProgress = false
-triggers.triggerReload         = false
-triggers.triggerReloadFull     = false
-triggers.triggerReloadNoPrompt = false
-triggers.reloadFull            = false
-triggers.isReady               = false
-triggers.isSaving              = false
-triggers.isSavingFake          = false
-triggers.saveFailed            = false
-triggers.telemetryState        = nil
-triggers.profileswitchLast     = nil
-triggers.rateswitchLast        = nil
-triggers.closeSave             = false
-triggers.closeSaveFake         = false
-triggers.badMspVersion         = false
-triggers.badMspVersionDisplay  = false
-triggers.closeProgressLoader   = false
-triggers.closeProgressLoaderNoisProcessed = false
-triggers.mspBusy               = false
-triggers.disableRssiTimeout    = false
-triggers.timeIsSet             = false
-triggers.invalidConnectionSetup= false
-triggers.wasConnected          = false
-triggers.isArmed               = false
-triggers.showSaveArmedWarning  = false
-
--- Expose triggers
-app.triggers = triggers
-
--- UI
-app.ui = nil
-
--- Utils (loaded later in app.create if missing)
-app.utils = nil
-
---[[
-App state containers and constants
-]]
-app.sensors               = {}
-app.formFields            = {}
-app.formNavigationFields  = {}
-app.PageTmp               = {}
-app.Page                  = {}
-app.saveTS                = 0
-app.lastPage              = nil
-app.lastSection           = nil
-app.lastIdx               = nil
-app.lastTitle             = nil
-app.lastScript            = nil
-app.gfx_buttons           = {}
-app.uiStatus              = { init = 1, mainMenu = 2, pages = 3, confirm = 4 }
-app.pageStatus            = { display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5 }
-app.telemetryStatus       = { ok = 1, noSensor = 2, noTelemetry = 3 }
-app.uiState               = app.uiStatus.init
-app.pageState             = app.pageStatus.display
-app.lastLabel             = nil
-app.NewRateTable          = nil
-app.RateTable             = nil
-app.fieldHelpTxt          = nil
-app.radio                 = {}
-app.sensor                = {}
-app.init                  = nil
-app.guiIsRunning          = false
-app.adjfunctions          = nil
-app.profileCheckScheduler = os.clock()
-app.offlineMode           = false
-
---[[
-Audio flags
-]]
-app.audio = {}
-app.audio.playTimeout              = false
-app.audio.playEscPowerCycle        = false
-app.audio.playServoOverideDisable  = false -- (typo left for compatibility)
-app.audio.playServoOverideEnable   = false -- (typo left for compatibility)
-app.audio.playMixerOverideDisable  = false -- (typo left for compatibility)
-app.audio.playMixerOverideEnable   = false -- (typo left for compatibility)
-app.audio.playEraseFlash           = false
-
---[[
-Dialog state
-]]
-app.dialogs = {}
-app.dialogs.progress          = false
-app.dialogs.progressDisplay   = false
-app.dialogs.progressWatchDog  = nil
-app.dialogs.progressCounter   = 0
-app.dialogs.progressSpeed     = false
-app.dialogs.progressRateLimit = os.clock()
-app.dialogs.progressRate      = 0.25
-
--- ESC progress dialog
-app.dialogs.progressESC          = false
-app.dialogs.progressDisplayEsc   = false
-app.dialogs.progressWatchDogESC  = nil
-app.dialogs.progressCounterESC   = 0
-app.dialogs.progressESCRateLimit = os.clock()
-app.dialogs.progressESCRate      = 2.5
-
--- Save dialog
-app.dialogs.save              = false
-app.dialogs.saveDisplay       = false
-app.dialogs.saveWatchDog      = nil
-app.dialogs.saveProgressCounter = 0
-app.dialogs.saveRateLimit     = os.clock()
-app.dialogs.saveRate          = 0.25
-
--- No-link dialog
-app.dialogs.nolinkDisplay     = false
-
--- Bad version dialog
-app.dialogs.badversion        = false
-app.dialogs.badversionDisplay = false
-
 -- Invalidate pages after writes/reloads
 local function invalidatePages()
   app.Page      = nil
@@ -575,14 +432,14 @@ end
 function app.updateTelemetryState()
   if system:getVersion().simulation ~= true then
     if not rfsuite.session.telemetrySensor then
-      app.triggers.telemetryState = app.telemetryStatus.noSensor
+      rfsuite.session.telemetryState = app.telemetryStatus.noSensor
     elseif app.utils.getRSSI() == 0 then
-      app.triggers.telemetryState = app.telemetryStatus.noTelemetry
+      rfsuite.session.telemetryState = app.telemetryStatus.noTelemetry
     else
-      app.triggers.telemetryState = app.telemetryStatus.ok
+      rfsuite.session.telemetryState = app.telemetryStatus.ok
     end
   else
-    app.triggers.telemetryState = app.telemetryStatus.noTelemetry
+    rfsuite.session.telemetryState = app.telemetryStatus.noTelemetry
   end
 end
 
@@ -677,7 +534,7 @@ app._uiTasks = {
 
   -- 4. No-Link Progress & Message Update
   function()
-    if app.triggers.telemetryState ~= 1 or not app.triggers.disableRssiTimeout then
+    if rfsuite.session.telemetryState ~= 1 or not app.triggers.disableRssiTimeout then
       if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
         if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
         if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
@@ -802,16 +659,18 @@ app._uiTasks = {
 
   -- 10. Play Pending Audio Alerts
   function()
-    local a = app.audio
-    if a.playEraseFlash          then utils.playFile("app","eraseflash.wav");        a.playEraseFlash = false end
-    if a.playTimeout             then utils.playFile("app","timeout.wav");           a.playTimeout = false end
-    if a.playEscPowerCycle       then utils.playFile("app","powercycleesc.wav");     a.playEscPowerCycle = false end
-    if a.playServoOverideEnable  then utils.playFile("app","soverideen.wav");        a.playServoOverideEnable = false end
-    if a.playServoOverideDisable then utils.playFile("app","soveridedis.wav");       a.playServoOverideDisable = false end
-    if a.playMixerOverideEnable  then utils.playFile("app","moverideen.wav");        a.playMixerOverideEnable = false end
-    if a.playMixerOverideDisable then utils.playFile("app","moveridedis.wav");       a.playMixerOverideDisable = false end
-    if a.playSaveArmed           then utils.playFileCommon("warn.wav");               a.playSaveArmed = false end
-    if a.playBufferWarn          then utils.playFileCommon("warn.wav");               a.playBufferWarn = false end
+    if app.audio then
+      local a = app.audio
+      if a.playEraseFlash          then utils.playFile("app","eraseflash.wav");        a.playEraseFlash = false end
+      if a.playTimeout             then utils.playFile("app","timeout.wav");           a.playTimeout = false end
+      if a.playEscPowerCycle       then utils.playFile("app","powercycleesc.wav");     a.playEscPowerCycle = false end
+      if a.playServoOverideEnable  then utils.playFile("app","soverideen.wav");        a.playServoOverideEnable = false end
+      if a.playServoOverideDisable then utils.playFile("app","soveridedis.wav");       a.playServoOverideDisable = false end
+      if a.playMixerOverideEnable  then utils.playFile("app","moverideen.wav");        a.playMixerOverideEnable = false end
+      if a.playMixerOverideDisable then utils.playFile("app","moveridedis.wav");       a.playMixerOverideDisable = false end
+      if a.playSaveArmed           then utils.playFileCommon("warn.wav");               a.playSaveArmed = false end
+      if a.playBufferWarn          then utils.playFileCommon("warn.wav");               a.playBufferWarn = false end
+    end
   end,
 
   -- 11. Wakeup UI Tasks
@@ -846,29 +705,118 @@ function app.wakeup()
   end
 end
 
--- Log Tool bootstrap (standalone logs page)
-function app.create_logtool()
-  triggers.showUnderUsedBufferWarning = false
-  triggers.showOverUsedBufferWarning  = false
-
-  config.environment       = system.getVersion()
-  config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
-
-  app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
-  app.radio = assert(compile("app/radios.lua"))()
-
-  app.uiState = app.uiStatus.init
-
-  rfsuite.preferences.menulastselected["mainmenu"] = pidx
-  app.ui.progressDisplay()
-
-  app.offlineMode = true
-  app.ui.openPage(1, "Logs", "logs/logs.lua", 1)
-end
-
 -- App bootstrap
 function app.create()
-  
+
+  --[[
+  App state containers and constants
+  ]]
+  app.sensors               = {}
+  app.formFields            = {}
+  app.formNavigationFields  = {}
+  app.PageTmp               = {}
+  app.Page                  = {}
+  app.saveTS                = 0
+  app.lastPage              = nil
+  app.lastSection           = nil
+  app.lastIdx               = nil
+  app.lastTitle             = nil
+  app.lastScript            = nil
+  app.gfx_buttons           = {}
+  app.uiStatus              = { init = 1, mainMenu = 2, pages = 3, confirm = 4 }
+  app.pageStatus            = { display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5 }
+  app.telemetryStatus       = { ok = 1, noSensor = 2, noTelemetry = 3 }
+  app.uiState               = app.uiStatus.init
+  app.pageState             = app.pageStatus.display
+  app.lastLabel             = nil
+  app.NewRateTable          = nil
+  app.RateTable             = nil
+  app.fieldHelpTxt          = nil
+  app.radio                 = {}
+  app.sensor                = {}
+  app.init                  = nil
+  app.guiIsRunning          = false
+  app.adjfunctions          = nil
+  app.profileCheckScheduler = os.clock()
+  app.offlineMode           = false
+
+  --[[
+  Audio flags
+  ]]
+  app.audio = {}
+  app.audio.playTimeout              = false
+  app.audio.playEscPowerCycle        = false
+  app.audio.playServoOverideDisable  = false -- (typo left for compatibility)
+  app.audio.playServoOverideEnable   = false -- (typo left for compatibility)
+  app.audio.playMixerOverideDisable  = false -- (typo left for compatibility)
+  app.audio.playMixerOverideEnable   = false -- (typo left for compatibility)
+  app.audio.playEraseFlash           = false
+
+  --[[
+  Dialog state
+  ]]
+  app.dialogs = {}
+  app.dialogs.progress          = false
+  app.dialogs.progressDisplay   = false
+  app.dialogs.progressWatchDog  = nil
+  app.dialogs.progressCounter   = 0
+  app.dialogs.progressSpeed     = false
+  app.dialogs.progressRateLimit = os.clock()
+  app.dialogs.progressRate      = 0.25
+
+  -- ESC progress dialog
+  app.dialogs.progressESC          = false
+  app.dialogs.progressDisplayEsc   = false
+  app.dialogs.progressWatchDogESC  = nil
+  app.dialogs.progressCounterESC   = 0
+  app.dialogs.progressESCRateLimit = os.clock()
+  app.dialogs.progressESCRate      = 2.5
+
+  -- Save dialog
+  app.dialogs.save              = false
+  app.dialogs.saveDisplay       = false
+  app.dialogs.saveWatchDog      = nil
+  app.dialogs.saveProgressCounter = 0
+  app.dialogs.saveRateLimit     = os.clock()
+  app.dialogs.saveRate          = 0.25
+
+  -- No-link dialog
+  app.dialogs.nolinkDisplay     = false
+
+  -- Bad version dialog
+  app.dialogs.badversion        = false
+  app.dialogs.badversionDisplay = false
+
+  -- Triggers
+  app.triggers = {}
+  app.triggers.exitAPP               = false
+  app.triggers.noRFMsg               = false
+  app.triggers.triggerSave           = false
+  app.triggers.triggerSaveNoProgress = false
+  app.triggers.triggerReload         = false
+  app.triggers.triggerReloadFull     = false
+  app.triggers.triggerReloadNoPrompt = false
+  app.triggers.reloadFull            = false
+  app.triggers.isReady               = false
+  app.triggers.isSaving              = false
+  app.triggers.isSavingFake          = false
+  app.triggers.saveFailed            = false
+  app.triggers.profileswitchLast     = nil
+  app.triggers.rateswitchLast        = nil
+  app.triggers.closeSave             = false
+  app.triggers.closeSaveFake         = false
+  app.triggers.badMspVersion         = false
+  app.triggers.badMspVersionDisplay  = false
+  app.triggers.closeProgressLoader   = false
+  app.triggers.closeProgressLoaderNoisProcessed = false
+  app.triggers.disableRssiTimeout    = false
+  app.triggers.timeIsSet             = false
+  app.triggers.invalidConnectionSetup= false
+  app.triggers.wasConnected          = false
+  app.triggers.isArmed               = false
+  app.triggers.showSaveArmedWarning  = false
+
+
   config.environment        = system.getVersion()
   config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
 
@@ -984,60 +932,45 @@ function app.close()
   config.useCompiler            = true
   rfsuite.config.useCompiler    = true
 
-  -- Reset page/nav state
-  if app.Page then
-    for k in pairs(app.Page) do app.Page[k] = nil end
-  end
-  if app.formFields then  
-    for k in pairs(app.formFields) do app.formFields[k] = nil end
-  end
-  if app.formNavigationFields then
-    for k in pairs(app.formNavigationFields) do app.formNavigationFields[k] = nil end
-  end
-  if app.gfx_buttons then
-  for k in pairs(app.gfx_buttons) do app.gfx_buttons[k] = nil end
-  end
-  if app.audio then
-    for k in pairs(app.audio) do app.audio[k] = nil end
-  end
+  --[[
+  App state containers and constants
+  ]]
+  app.sensors               = nil
+  app.formFields            = nil
+  app.formNavigationFields  = nil
+  app.PageTmp               = nil
+  app.Page                  = nil
+  app.saveTS                = nil
+  app.lastPage              = nil
+  app.lastSection           = nil
+  app.lastIdx               = nil
+  app.lastTitle             = nil
+  app.lastScript            = nil
+  app.gfx_buttons           = nil
+  app.uiStatus              = nil
+  app.pageStatus            = nil
+  app.telemetryStatus       = nil
+  app.uiState               = nil
+  app.pageState             = nil
+  app.lastLabel             = nil
+  app.NewRateTable          = nil
+  app.RateTable             = nil
+  app.fieldHelpTxt          = nil
+  app.radio                 = nil
+  app.sensor                = nil
+  app.init                  = nil
+  app.guiIsRunning          = nil
+  app.adjfunctions          = nil
+  app.profileCheckScheduler = nil
+  app.offlineMode           = nil
+  app.audio = nil
+  app.dialogs = nil
+  app.triggers = nil
 
-
-  app.formLines = nil
-  app.MainMenu  = nil
-  app.PageTmp = nil
-  app.moduleList = nil
-  app.utils = nil
-  app.ui    = nil
-
-  -- Reset triggers
-  app.triggers.exitAPP = false
-  app.triggers.noRFMsg = false
-  app.triggers.telemetryState = nil
-  app.triggers.wasConnected = false
-  app.triggers.invalidConnectionSetup = false
-  app.triggers.disableRssiTimeout = false
-
-  -- Reset dialogs
-  app.dialogs.nolinkDisplay = false
-  app.dialogs.nolinkValueCounter = 0
-  app.dialogs.progressDisplayEsc = false
 
   -- Telemetry/protocol
   ELRS_PAUSE_TELEMETRY = false
   CRSF_PAUSE_TELEMETRY = false
-
-  -- Profile/rate
-  app.triggers.profileswitchLast = nil
-  rfsuite.session.activeProfileLast = nil
-  rfsuite.session.activeProfile = nil
-  rfsuite.session.activeRateProfile = nil
-  rfsuite.session.activeRateProfileLast = nil
-  rfsuite.session.activeRateTable = nil
-  invalidatePages()
-
-  -- Give the VM a real chance to reclaim memory
-  collectgarbage("collect")
-  collectgarbage("collect")
 
   rfsuite.utils.reportMemoryUsage("closing application: end")  
 
