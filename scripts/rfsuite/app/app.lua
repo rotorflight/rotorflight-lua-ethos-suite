@@ -26,7 +26,6 @@ local compile = rfsuite.compiler.loadfile
 local arg = {...}
 local config = arg[1]
 
-
 -- Paint hook (lcd.refresh-driven)
 function app.paint()
   if app.Page and app.Page.paint then
@@ -35,31 +34,17 @@ function app.paint()
 end
 
 function app.wakeup()
-  
-  app.guiIsRunning = true
-  local total = #app._uiTasks
-  local tasksThisTick = math.max(1, (total * app._uiTaskPercent) / 100)
-  app._taskAccumulator = app._taskAccumulator + tasksThisTick
-  while app._taskAccumulator >= 1 do
-    local idx = app._nextUiTask
-    app._uiTasks[idx]()
-    app._nextUiTask = (idx % total) + 1
-    app._taskAccumulator = app._taskAccumulator - 1
-  end
+    app.guiIsRunning = true
 
-  if app.uiState == app.uiStatus.pages then
-    if not app.Page and app.PageTmp then app.Page = app.PageTmp end
-    if app.Page and app.Page.apidata and app.pageState == app.pageStatus.display and not app.triggers.isReady then
-      app.ui.requestPage()
+    if app.tasks then
+      app.tasks.wakeup()
     end
-  end
 end
 
 -- App bootstrap
 function app.create()
-  --[[
-  App state containers and constants
-  ]]
+
+  -- App state containers and constants
   app.sensors               = {}
   app.formFields            = {}
   app.formNavigationFields  = {}
@@ -87,10 +72,11 @@ function app.create()
   app.adjfunctions          = nil
   app.profileCheckScheduler = os.clock()
   app.offlineMode           = false
+  app.isOfflinePage         = false
+  app.uiState               = app.uiStatus.init
+  app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
 
-  --[[
-  Audio flags
-  ]]
+  -- Audio flags
   app.audio = {}
   app.audio.playTimeout              = false
   app.audio.playEscPowerCycle        = false
@@ -100,9 +86,7 @@ function app.create()
   app.audio.playMixerOverideEnable   = false -- (typo left for compatibility)
   app.audio.playEraseFlash           = false
 
-  --[[
-  Dialog state
-  ]]
+  -- Dialog state
   app.dialogs = {}
   app.dialogs.progress          = false
   app.dialogs.progressDisplay   = false
@@ -164,260 +148,23 @@ function app.create()
   app.triggers.isArmed               = false
   app.triggers.showSaveArmedWarning  = false
 
-  -- Misc
-  app.isOfflinePage = false
-
   -- Task _taskAccumulator
-  app._nextUiTask      = 1
-  app._taskAccumulator = 0
-  app._uiTaskPercent   = 100  
-  app._uiTasks = {
-    -- 1. Exit App
-    function()
-      if app.triggers.exitAPP then
-        app.triggers.exitAPP = false
-        form.invalidate()
-        system.exit()
-        utils.reportMemoryUsage("Exit App")
-      end
-    end,
-
-    -- 2. Profile / Rate Change Detection
-    function()
-      if not (app.Page and (app.Page.refreshOnProfileChange or app.Page.refreshOnRateChange or app.Page.refreshFullOnProfileChange or app.Page.refreshFullOnRateChange)
-            and app.uiState == app.uiStatus.pages and not app.triggers.isSaving
-            and not app.dialogs.saveDisplay and not app.dialogs.progressDisplay
-            and rfsuite.tasks.msp.mspQueue:isProcessed()) then return end
-      local now = os.clock();
-      local interval = (rfsuite.tasks.telemetry.getSensorSource("pid_profile") and rfsuite.tasks.telemetry.getSensorSource("rate_profile"))
-                      and 0.1 or 1.5
-      if (now - (app.profileCheckScheduler or 0)) >= interval then
-        app.profileCheckScheduler = now
-        app.utils.getCurrentProfile()
-        if rfsuite.session.activeProfileLast and app.Page.refreshOnProfileChange and
-          rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast then
-          app.triggers.reload = not app.Page.refreshFullOnProfileChange
-          app.triggers.reloadFull = app.Page.refreshFullOnProfileChange
-          return
-        end
-        if rfsuite.session.activeRateProfileLast and app.Page.refreshOnRateChange and
-          rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast then
-          app.triggers.reload = not app.Page.refreshFullOnRateChange
-          app.triggers.reloadFull = app.Page.refreshFullOnRateChange
-          return
-        end
-      end
-    end,
-
-    -- 3. Main Menu Icon Enable/Disable
-    function()
-      if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
-      if app.uiState == app.uiStatus.mainMenu then
-        local apiV = tostring(rfsuite.session.apiVersion)
-
-        if not rfsuite.tasks.active() then
-            for i, v in pairs(app.formFieldsBGTask) do
-              if v == false then
-                if app.formFields[i] then
-                  app.formFields[i]:enable(false)
-                else
-                  log("Main Menu Icon " .. i .. " not found in formFields", "info")
-                end
-              end
-            end 
-        elseif not rfsuite.session.isConnected then
-          for i, v in pairs(app.formFieldsOffline) do
-            if v == false then
-              if app.formFields[i] then
-                app.formFields[i]:enable(false)
-              else
-                log("Main Menu Icon " .. i .. " not found in formFields", "info")
-              end
-            end
-          end 
-        elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
-          app.offlineMode = false
-          for i in pairs(app.formFieldsOffline) do
-            if app.formFields[i] then
-              app.formFields[i]:enable(true)
-            else
-              log("Main Menu Icon " .. i .. " not found in formFields", "info")
-            end
-          end
-        end
-      elseif not app.isOfflinePage then
-        if not rfsuite.session.isConnected then app.ui.openMainMenu() end
-      end
-    end,
-
-    -- 4. No-Link Progress & Message Update
-    function()
-      if rfsuite.session.telemetryState ~= 1 or not app.triggers.disableRssiTimeout then
-        if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
-          if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-          if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-          app.ui.progressDisplay("@i18n(app.msg_connecting)@","@i18n(app.msg_connecting_to_fbl)@",true)
-          app.dialogs.nolinkDisplay = true
-        end
-      end
-
-    end,
-
-    -- 5. Trigger Save Dialogs
-    function()
-      if app.triggers.triggerSave then
-        app.triggers.triggerSave = false
-        form.openDialog({
-          width   = nil,
-          title   = "@i18n(app.msg_save_settings)@",
-          message = (app.Page.extraMsgOnSave and "@i18n(app.msg_save_current_page)@".."\n\n"..app.Page.extraMsgOnSave or "@i18n(app.msg_save_current_page)@"),
-          buttons = {
-            { label="@i18n(app.btn_ok)@", action=function()
-                app.PageTmp = app.Page
-                app.triggers.isSaving = true
-                app.ui.saveSettings()
-                return true
-              end
-            },
-            { label="@i18n(app.btn_cancel)@", action=function() return true end }
-          },
-          wakeup = function() end,
-          paint  = function() end,
-          options= TEXT_LEFT
-        })
-      elseif app.triggers.triggerSaveNoProgress then
-        app.triggers.triggerSaveNoProgress = false
-        app.PageTmp = app.Page
-        app.ui.saveSettings()
-      end
-
-      if app.triggers.isSaving then
-        if app.pageState >= app.pageStatus.saving and not app.dialogs.saveDisplay then
-          app.triggers.saveFailed         = false
-          app.dialogs.saveProgressCounter = 0
-          app.ui.progressDisplaySave()
-          rfsuite.tasks.msp.mspQueue.retryCount = 0
-        end
-      end
-    end,
-
-    -- 6. Armed-Save Warning
-    function()
-      if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
-      if not app.dialogs.progressDisplay then
-        app.audio.playSaveArmed = true
-        app.dialogs.progressCounter = 0
-        local key = (rfsuite.utils.apiVersionCompare(">=", "12.08") and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
-        app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", i18n(key))
-      end
-      if app.dialogs.progressCounter >= 100 then
-        app.triggers.showSaveArmedWarning = false
-        app.dialogs.progressDisplay = false
-        app.dialogs.progress:close()
-      end
-    end,
-
-    -- 7. Trigger Reload Dialogs
-    function()
-      if app.triggers.triggerReloadNoPrompt then
-        app.triggers.triggerReloadNoPrompt = false
-        app.triggers.reload = true
-        return
-      end
-      if app.triggers.triggerReload then
-        app.triggers.triggerReload = false
-        form.openDialog({
-          title   = "@i18n(reload)@",
-          message = "@i18n(app.msg_reload_settings)@",
-          buttons = {
-            { label="@i18n(app.btn_ok)@",     action=function() app.triggers.reload = true;      return true end },
-            { label="@i18n(app.btn_cancel)@", action=function() return true end }
-          },
-          options = TEXT_LEFT
-        })
-      elseif app.triggers.triggerReloadFull then
-        app.triggers.triggerReloadFull = false
-        form.openDialog({
-          title   = "@i18n(reload)@",
-          message = "@i18n(app.msg_reload_settings)@",
-          buttons = {
-            { label="@i18n(app.btn_ok)@",     action=function() app.triggers.reloadFull = true;  return true end },
-            { label="@i18n(app.btn_cancel)@", action=function() return true end }
-          },
-          options = TEXT_LEFT
-        })
-      end
-    end,
-
-    -- 8. Telemetry & Page State Updates
-    function()
-      if app.uiState == app.uiStatus.mainMenu then
-        app.utils.invalidatePages()
-      elseif app.triggers.isReady and (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed())
-            and app.Page and app.Page.values then
-        app.triggers.isReady = false
-        app.triggers.closeProgressLoader = true
-      end
-    end,
-
-    -- 9. Perform Reload Actions
-    function()
-      if app.triggers.reload then
-        app.triggers.reload = false
-        app.ui.progressDisplay()
-        app.ui.openPageRefresh(app.lastIdx, app.lastTitle, app.lastScript)
-      end
-      if app.triggers.reloadFull then
-        app.triggers.reloadFull = false
-        app.ui.progressDisplay()
-        app.ui.openPage(app.lastIdx, app.lastTitle, app.lastScript)
-      end
-    end,
-
-    -- 10. Play Pending Audio Alerts
-    function()
-      if app.audio then
-        local a = app.audio
-        if a.playEraseFlash          then utils.playFile("app","eraseflash.wav");        a.playEraseFlash = false end
-        if a.playTimeout             then utils.playFile("app","timeout.wav");           a.playTimeout = false end
-        if a.playEscPowerCycle       then utils.playFile("app","powercycleesc.wav");     a.playEscPowerCycle = false end
-        if a.playServoOverideEnable  then utils.playFile("app","soverideen.wav");        a.playServoOverideEnable = false end
-        if a.playServoOverideDisable then utils.playFile("app","soveridedis.wav");       a.playServoOverideDisable = false end
-        if a.playMixerOverideEnable  then utils.playFile("app","moverideen.wav");        a.playMixerOverideEnable = false end
-        if a.playMixerOverideDisable then utils.playFile("app","moveridedis.wav");       a.playMixerOverideDisable = false end
-        if a.playSaveArmed           then utils.playFileCommon("warn.wav");               a.playSaveArmed = false end
-        if a.playBufferWarn          then utils.playFileCommon("warn.wav");               a.playBufferWarn = false end
-      end
-    end,
-
-    -- 11. Wakeup UI Tasks
-    function()
-      if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
-        app.Page.wakeup(app.Page)
-      end
-    end,
-  }
+  app.tasks = assert(compile("app/tasks.lua"))()
 
   config.environment        = system.getVersion()
   config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
 
-  app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
+
   app.radio = assert(compile("app/radios.lua"))()
 
-  app.uiState = app.uiStatus.init
+  -- Load main menu module
+  app.MainMenu = assert(compile("app/modules/init.lua"))()
 
-  if not app.MainMenu then
-    app.MainMenu = assert(compile("app/modules/init.lua"))()
-  end
+  -- Load libraries
+  app.ui = assert(compile("app/lib/ui.lua"))(config)
+  app.utils = assert(compile("app/lib/utils.lua"))(config)
 
-  if not app.ui then
-    app.ui = assert(compile("app/lib/ui.lua"))(config)
-  end
-
-  if not app.utils then
-    app.utils = assert(compile("app/lib/utils.lua"))(config)
-  end
-
+  -- Start with main menu
   app.ui.openMainMenu()
 end
 
@@ -556,12 +303,9 @@ function app.close()
   app.lcdWidth              = nil
   app.lcdHeight             = nil
   app.formFieldsOffline     = nil
-  app._nextUiTask           = nil
-  app._taskAccumulator      = nil
-  app._uiTaskPercent        = nil
-  app._uiTasks              = nil
   app.formLineCnt           = nil
   app.formFieldCount        = nil
+  app.tasks                 = nil
 
   rfsuite.utils.log("--------------------------------", "info")
   rfsuite.utils.log("Left over tables on closing application:", "info")
