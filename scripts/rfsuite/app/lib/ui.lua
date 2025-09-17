@@ -261,6 +261,8 @@ function ui.openMainMenu()
     rfsuite.app.formLines          = {}
     rfsuite.app.lastLabel          = nil
     rfsuite.app.isOfflinePage      = false
+    rfsuite.app.Page               = nil
+    rfsuite.app.PageTmp            = nil
 
     if rfsuite.tasks.msp then
         rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
@@ -399,6 +401,8 @@ function ui.openMainMenuSub(activesection)
     rfsuite.app.isOfflinePage     = false
     rfsuite.app.gfx_buttons[activesection] = {}
     rfsuite.app.lastMenu = activesection
+    rfsuite.app.Page               = nil
+    rfsuite.app.PageTmp            = nil
 
     -- Clear old icons.
     for k in pairs(rfsuite.app.gfx_buttons) do
