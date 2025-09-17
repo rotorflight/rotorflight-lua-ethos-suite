@@ -656,31 +656,19 @@ function tasks.wakeup()
 
     -- track average memory usage
     do
-    local now2 = os.clock()
-    if (now2 - last_mem_t) >= MEM_PERIOD then
-        last_mem_t = now2
+        local now2 = os.clock()
+        if (now2 - last_mem_t) >= MEM_PERIOD then
+            last_mem_t = now2
 
-        local m = (system.getMemoryUsage and system.getMemoryUsage()) or nil
-        if m and m.luaRamAvailable then
-        -- Primary path: radio reports free Lua RAM (bytes)
-        local free_now_kb = (m.luaRamAvailable or 0) / 1000
-        if mem_avg_kb == nil then
-            mem_avg_kb = free_now_kb
-        else
-            mem_avg_kb = MEM_ALPHA * free_now_kb + (1 - MEM_ALPHA) * mem_avg_kb
+            local m = (system.getMemoryUsage and system.getMemoryUsage()) or nil
+            local free_now_kb = (m.luaRamAvailable or 0) / 1000
+            if mem_avg_kb == nil then
+                mem_avg_kb = free_now_kb
+            else
+                mem_avg_kb = MEM_ALPHA * free_now_kb + (1 - MEM_ALPHA) * mem_avg_kb
+            end
+            rfsuite.session.freeram   = mem_avg_kb          -- KB (ema)
         end
-        rfsuite.session.freeram   = mem_avg_kb          -- KB (ema)
-        rfsuite.session.luaUsedKb = collectgarbage and collectgarbage("count") or nil
-        rfsuite.session.memSource = "system"
-        else
-        -- Fallback: no system metric; still report Lua heap used so UI isn’t “0”
-        local used_kb = collectgarbage and collectgarbage("count") or nil
-        rfsuite.session.luaUsedKb = used_kb
-        -- keep last known free if we had one; otherwise mark as nil
-        rfsuite.session.freeram   = mem_avg_kb          -- may be nil if never known
-        rfsuite.session.memSource = "lua"
-        end
-    end
     end
 
 end
@@ -775,7 +763,7 @@ function tasks.init()
     MEM_ALPHA                  = 0.2
     mem_avg_kb                 = nil
     last_mem_t                 = 0
-    MEM_PERIOD                 = 2.0
+    MEM_PERIOD                 = 0.25
 
     -- reset public flags
     tasks.heartbeat            = nil
