@@ -119,24 +119,28 @@ function ui.progressDisplay(title, message, speed)
 end
 
 -- Show a "Saving…" progress dialog.
+-- Literal tags for the progress dialog "message" by page state
 function ui.progressDisplaySave(message)
     local app = rfsuite.app
 
-    rfsuite.app.dialogs.saveDisplay  = true
-    rfsuite.app.dialogs.saveWatchDog = os.clock()
+    app.dialogs.saveDisplay  = true
+    app.dialogs.saveWatchDog = os.clock()
 
-    local msg = ({
-        [app.pageStatus.saving]      = "app.msg_saving_settings",
-        [app.pageStatus.eepromWrite] = "app.msg_saving_settings",
-        [app.pageStatus.rebooting]   = "app.msg_rebooting"
-    })[app.pageState]
 
-    if not message then message = i18n(msg) end
+    local SAVE_MESSAGE_TAG = {
+        [rfsuite.app.pageStatus.saving]      = "@i18n(app.msg_saving_settings)@",
+        [rfsuite.app.pageStatus.eepromWrite] = "@i18n(app.msg_saving_settings)@",
+        [rfsuite.app.pageStatus.rebooting]   = "@i18n(app.msg_rebooting)@",
+    }
+
+    -- If caller didn’t provide a message, pick the literal tag for the current state.
+    -- Fallback defaults to "saving settings".
+    local resolvedMessage = message or SAVE_MESSAGE_TAG[app.pageState] or "@i18n(app.msg_saving_settings)@"
     local title = "@i18n(app.msg_saving)@"
 
-    rfsuite.app.dialogs.save = form.openProgressDialog({
+    app.dialogs.save = form.openProgressDialog({
         title   = title,
-        message = message,
+        message = resolvedMessage,
         close   = function() end,
         wakeup  = function()
             local app = rfsuite.app
@@ -145,10 +149,13 @@ function ui.progressDisplaySave(message)
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
 
+            -- initialize counter if nil
             if not app.dialogs.saveProgressCounter then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
-            elseif isProcessing then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3        
+                app.dialogs.saveProgressCounter = 0
+            end
+
+            if isProcessing then
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
             elseif app.triggers.closeSaveFake then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then
@@ -157,7 +164,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay         = false
                     app.dialogs.saveWatchDog        = nil
                     app.dialogs.save:close()
-                end           
+                end
             elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
@@ -173,7 +180,7 @@ function ui.progressDisplaySave(message)
 
             local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
             if (app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout)
-               or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) 
+               or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed())
                and app.dialogs.saveDisplay == true then
 
                 app.audio.playTimeout = true
@@ -189,9 +196,10 @@ function ui.progressDisplaySave(message)
         end
     })
 
-    rfsuite.app.dialogs.save:value(0)
-    rfsuite.app.dialogs.save:closeAllowed(false)
+    app.dialogs.save:value(0)
+    app.dialogs.save:closeAllowed(false)
 end
+
 
 -- Is any progress-related dialog showing?
 function ui.progressDisplayIsActive()
