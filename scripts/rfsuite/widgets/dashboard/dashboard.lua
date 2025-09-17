@@ -1644,15 +1644,10 @@ function dashboard.resetFlightModeAsk()
 end    
 
 function dashboard.menu(widget)
-
     return {
         {"@i18n(widgets.dashboard.reset_flight)@", dashboard.resetFlightModeAsk},
     }
 end
-
-function dashboard.housekeeping()
-
-end    
 
 -- table to stall object cache
 dashboard.renders = dashboard.renders or {}
