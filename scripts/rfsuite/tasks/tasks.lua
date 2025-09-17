@@ -668,6 +668,7 @@ function tasks.wakeup()
                 mem_avg_kb = MEM_ALPHA * free_now_kb + (1 - MEM_ALPHA) * mem_avg_kb
             end
             rfsuite.session.freeram   = mem_avg_kb          -- KB (ema)
+            rfsuite.session.usedram   = collectgarbage("count")  -- KB (instant)
         end
     end
 

@@ -757,41 +757,86 @@ function dashboard.renderLayout(widget, config)
     if layout.showstats or rfsuite.preferences.developer.overlaystats then
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
-        local cpuUsage = rfsuite.session and rfsuite.session.cpuload or 0
-        local ramUsage = rfsuite.session and rfsuite.session.freeram or 0
+        local cpuUsage = (rfsuite.session and rfsuite.session.cpuload) or 0
+        local ramFree  = (rfsuite.session and rfsuite.session.freeram) or 0
+        local ramUsed  = (rfsuite.session and rfsuite.session.usedram) or 0
 
         lcd.font(FONT_S)
 
-        local cpuText = "CPU: " .. rfsuite.utils.round(cpuUsage, 0) .. "%"
-        local ramText = "RAM: " .. rfsuite.utils.round(ramUsage, 0) .. "kB"
+        -- ===== Config you can tune =====
+        local cfg = {
+            padX = 6, padY = 4,        -- box padding
+            colGap = 10, rowGap = 2,   -- gaps between columns/rows
+            labelW = 64,               -- column widths (px)
+            valueW = 70,
+            unitW  = 30,
+            align = {                   -- per-column alignment: "left" | "right"
+                label = "left",
+                value = "right",
+                unit  = "left",
+            },
+            boxX = 4,                  -- box position (top-left)
+            boxY = 4 + headerOffset,
+            -- colors
+            bg = {0,0,0}, fg = {255,255,255},
+            border = true,
+        }
+        -- =================================
 
-        -- measure widths
-        local cpuW, textH = lcd.getTextSize(cpuText)
-        local ramW, _     = lcd.getTextSize(ramText)
+        -- rows: label / value / unit (unit is just a suffix column)
+        local rows = {
+            { "CPU",      rfsuite.utils.round(cpuUsage, 0), "%"  },
+            { "RAM FREE", rfsuite.utils.round(ramFree, 0),  "kB" },
+            { "RAM USED", rfsuite.utils.round(ramUsed, 0),  "kB" },
+        }
 
-        local padX, padY = 6, 4
-        local spacing    = 12  -- space between CPU and RAM
+        -- measure row height from font
+        local _, textH = lcd.getTextSize("A")  -- any char, to get height
 
-        -- box dimensions
-        local boxW = cpuW + spacing + ramW + padX * 2
-        local boxH = textH + padY * 2
-        local boxX = 4
-        local boxY = 4 + headerOffset
+        -- compute box size
+        local boxW = cfg.padX*2 + cfg.labelW + cfg.colGap + cfg.valueW + cfg.colGap + cfg.unitW
+        local boxH = cfg.padY*2 + (#rows * textH) + ((#rows-1) * cfg.rowGap)
 
         -- draw background + border
-        lcd.color(lcd.RGB(0, 0, 0))
-        lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
-        lcd.pen(1)
-        lcd.color(lcd.RGB(255, 255, 255))
-        lcd.drawRectangle(boxX, boxY, boxW, boxH)
-        lcd.pen(0)
+        lcd.color(lcd.RGB(cfg.bg[1], cfg.bg[2], cfg.bg[3]))
+        lcd.drawFilledRectangle(cfg.boxX, cfg.boxY, boxW, boxH)
+        if cfg.border then
+            lcd.pen(1)
+            lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
+            lcd.drawRectangle(cfg.boxX, cfg.boxY, boxW, boxH)
+            lcd.pen(0)
+        end
 
-        -- draw text inside box
-        local textY = boxY + padY
-        lcd.color(lcd.RGB(255, 255, 255))
-        lcd.drawText(boxX + padX, textY, cpuText)
-        lcd.drawText(boxX + padX + cpuW + spacing, textY, ramText)
+        -- column anchors
+        local labelX = cfg.boxX + cfg.padX
+        local valueX = labelX + cfg.labelW + cfg.colGap
+        local unitX  = valueX + cfg.valueW + cfg.colGap
+        local startY = cfg.boxY + cfg.padY
+
+        lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
+
+        local function drawCell(x, w, text, align, y)
+            local tw = 0
+            if text ~= nil then tw = (lcd.getTextSize(tostring(text))) end
+            if align == "right" then
+                lcd.drawText(x + w - tw, y, tostring(text))
+            else -- left/default
+                lcd.drawText(x, y, tostring(text))
+            end
+        end
+
+        -- draw rows
+        for i = 1, #rows do
+            local y = startY + (i-1) * (textH + cfg.rowGap)
+            local label, value, unit = rows[i][1], rows[i][2], rows[i][3]
+
+            drawCell(labelX, cfg.labelW, label, cfg.align.label, y)
+            drawCell(valueX, cfg.valueW, value, cfg.align.value, y)
+            drawCell(unitX,  cfg.unitW,  unit,  cfg.align.unit,  y)
+        end
     end
+
+
 
 
 

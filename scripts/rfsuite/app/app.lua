@@ -318,8 +318,10 @@ function app.close()
   ELRS_PAUSE_TELEMETRY = false
   CRSF_PAUSE_TELEMETRY = false
 
+  print(collectgarbage("count")) -- memory before
   collectgarbage()
   collectgarbage()
+  print(collectgarbage("count")) -- memory after
 
   rfsuite.utils.reportMemoryUsage("closing application: end")  
 
