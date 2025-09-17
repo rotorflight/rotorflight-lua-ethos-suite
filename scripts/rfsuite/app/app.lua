@@ -85,7 +85,7 @@ triggers.showSaveArmedWarning  = false
 app.triggers = triggers
 
 -- UI
-app.ui = assert(compile("app/lib/ui.lua"))(config)
+app.ui = nil
 
 -- Utils (loaded later in app.create if missing)
 app.utils = nil
