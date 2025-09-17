@@ -33,7 +33,7 @@ local xRight = w - 15
 local displayPos = {
   x = xRight - btnW - btnWs - 5 - btnWs,
   y = rfsuite.app.radio.linePaddingTop,
-  w = 100,
+  w = 150,
   h = rfsuite.app.radio.navbuttonHeight
 }
 
