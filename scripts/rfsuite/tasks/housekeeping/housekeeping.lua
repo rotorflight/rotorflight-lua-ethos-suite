@@ -29,12 +29,7 @@ function housekeeping.wakeup()
         if rfsuite.app and rfsuite.app.housekeeping then
                 rfsuite.app.housekeeping()
         end
-
-        -- run tasks housekeeping if defined
-        if rfsuite.tasks and rfsuite.tasks.housekeeping then
-                rfsuite.tasks.housekeeping()
-        end
-
+        
         -- run widget housekeeping if defined
         if rfsuite.widgets then
                 for i,v in pairs(rfsuite.widgets) do
