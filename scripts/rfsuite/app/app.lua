@@ -1026,7 +1026,7 @@ function app.close()
   rfsuite.session.activeRateProfileLast = nil
   rfsuite.session.activeRateTable = nil
 
-  collectgarbage()
+  collectgarbage("collect")
   invalidatePages()
 
   rfsuite.utils.reportMemoryUsage("closing application: end")
