@@ -16,6 +16,10 @@
 ]]--
 
 local utils = {}
+local app   = rfsuite.app
+local session = rfsuite.session
+local rfutils = rfsuite.utils
+local tasks = rfsuite.tasks
 
 
 local arg     = { ... }
@@ -38,11 +42,11 @@ function utils.getRSSI()
         return 0
     end
 
-    if rfsuite.app.offlineMode == true then
+    if app.offlineMode == true then
         return 100
     end
 
-    if rfsuite.session.telemetryState then
+    if session.telemetryState then
         return 100
     else
         return 0
@@ -93,7 +97,7 @@ function utils.getFieldValue(f)
     local v = f.value or 0
 
     if f.decimals then
-        v = rfsuite.utils.round(v * rfsuite.app.utils.decimalInc(f.decimals), 2)
+        v = rfutils.round(v * app.utils.decimalInc(f.decimals), 2)
     end
 
     if f.offset then
@@ -113,7 +117,7 @@ end
     @param f (table) Field to save to. Optional keys:
         - offset (number)   Subtracted from input value before saving.
         - decimals (number) Divisor via decimalInc(decimals) before save.
-        - postEdit (func)   Called as postEdit(rfsuite.app.Page) after save.
+        - postEdit (func)   Called as postEdit(app.Page) after save.
         - mult (number)     If present, divides the stored value before return.
     @param value (number) Value to save.
 
@@ -123,11 +127,11 @@ function utils.saveFieldValue(f, value)
     if value then
         if f.offset   then value  = value - f.offset end
         if f.decimals then
-            f.value = value / rfsuite.app.utils.decimalInc(f.decimals)
+            f.value = value / app.utils.decimalInc(f.decimals)
         else
             f.value = value
         end
-        if f.postEdit then f.postEdit(rfsuite.app.Page) end
+        if f.postEdit then f.postEdit(app.Page) end
     end
 
     if f.mult then f.value = f.value / f.mult end
@@ -146,9 +150,9 @@ end
 ]]
 function utils.scaleValue(value, f)
     if not value then return nil end
-    local v = value * rfsuite.app.utils.decimalInc(f.decimals)
+    local v = value * app.utils.decimalInc(f.decimals)
     if f.scale then v = v / f.scale end
-    return rfsuite.utils.round(v)
+    return rfutils.round(v)
 end
 
 --[[
@@ -182,7 +186,7 @@ end
 ]]
 function utils.getInlinePositions(f, lPage)
     -- Compute inline size in one step.
-    local inline_size = utils.getInlineSize(f.label, lPage) * rfsuite.app.radio.inlinesize_mult
+    local inline_size = utils.getInlineSize(f.label, lPage) * app.radio.inlinesize_mult
 
     -- Get LCD dimensions.
     local w, h = lcd.getWindowSize()
@@ -190,8 +194,8 @@ function utils.getInlinePositions(f, lPage)
     local padding = 5
     local fieldW  = (w * inline_size) / 100
     local eW      = fieldW - padding
-    local eH      = rfsuite.app.radio.navbuttonHeight
-    local eY      = rfsuite.app.radio.linePaddingTop
+    local eH      = app.radio.navbuttonHeight
+    local eY      = app.radio.linePaddingTop
 
     -- Set default text and compute its dimensions.
     f.t = f.t or ""
@@ -238,24 +242,24 @@ end
     you MUST set it to nil after you get it.
 ]]
 function utils.getCurrentProfile()
-    local pidProfile  = rfsuite.tasks.telemetry.getSensor("pid_profile")
-    local rateProfile = rfsuite.tasks.telemetry.getSensor("rate_profile")
+    local pidProfile  = tasks.telemetry.getSensor("pid_profile")
+    local rateProfile = tasks.telemetry.getSensor("rate_profile")
 
     if (pidProfile ~= nil and rateProfile ~= nil) then
-        rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
+        session.activeProfileLast = session.activeProfile
         local p = pidProfile
         if p ~= nil then
-            rfsuite.session.activeProfile = math.floor(p)
+            session.activeProfile = math.floor(p)
         else
-            rfsuite.session.activeProfile = nil
+            session.activeProfile = nil
         end
 
-        rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
+        session.activeRateProfileLast = session.activeRateProfile
         local r = rateProfile
         if r ~= nil then
-            rfsuite.session.activeRateProfile = math.floor(r)
+            session.activeRateProfile = math.floor(r)
         else
-            rfsuite.session.activeRateProfile = nil
+            session.activeRateProfile = nil
         end
     end
 end
@@ -277,41 +281,41 @@ function utils.settingsSaved()
     local mspEepromWrite = {
         command = 250, -- MSP_EEPROM_WRITE (fails when armed)
         processReply = function(self, buf)
-            rfsuite.app.triggers.closeSave = true
-            if rfsuite.app.Page.postEepromWrite then rfsuite.app.Page.postEepromWrite() end
-            if rfsuite.app.Page.reboot then
-            rfsuite.app.ui.rebootFc()
+            app.triggers.closeSave = true
+            if app.Page.postEepromWrite then app.Page.postEepromWrite() end
+            if app.Page.reboot then
+            app.ui.rebootFc()
             else
-            rfsuite.app.utils.invalidatePages()
+            app.utils.invalidatePages()
             end
         end,
         errorHandler = function(self)
-            rfsuite.app.triggers.closeSave = true
+            app.triggers.closeSave = true
         end,
         simulatorResponse = {}
     }
 
-  if rfsuite.app.Page and rfsuite.app.Page.eepromWrite then
-    if rfsuite.app.pageState ~= rfsuite.app.pageStatus.eepromWrite then
-      rfsuite.app.pageState = rfsuite.app.pageStatus.eepromWrite
-      rfsuite.app.triggers.closeSave = true
-      if rfsuite.session.isArmed then
-        rfsuite.app.triggers.showSaveArmedWarning = true
+  if app.Page and app.Page.eepromWrite then
+    if app.pageState ~= app.pageStatus.eepromWrite then
+      app.pageState = app.pageStatus.eepromWrite
+      app.triggers.closeSave = true
+      if session.isArmed then
+        app.triggers.showSaveArmedWarning = true
       end
-      rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+      tasks.msp.mspQueue:add(mspEepromWrite)
     end
-  elseif rfsuite.app.pageState ~= rfsuite.app.pageStatus.eepromWrite then
-    rfsuite.app.utils.invalidatePages()
-    rfsuite.app.triggers.closeSave = true
+  elseif app.pageState ~= app.pageStatus.eepromWrite then
+    app.utils.invalidatePages()
+    app.triggers.closeSave = true
   end
   collectgarbage()
 end
 
 -- Invalidate pages after writes/reloads
 function utils.invalidatePages()
-  rfsuite.app.Page      = nil
-  rfsuite.app.pageState = rfsuite.app.pageStatus.display
-  rfsuite.app.saveTS    = 0
+  app.Page      = nil
+  app.pageState = app.pageStatus.display
+  app.saveTS    = 0
   collectgarbage()
 end
 
