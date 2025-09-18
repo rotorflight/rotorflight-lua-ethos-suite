@@ -80,6 +80,8 @@ end
 local function mainMenuIconEnableDisable()
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
 
+    if rfsuite.session.mspBusy then return end
+
     if app.uiState == app.uiStatus.mainMenu then
         local apiV = tostring(rfsuite.session.apiVersion)
         if not rfsuite.tasks.active() then
