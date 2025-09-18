@@ -32,6 +32,51 @@ function app.paint()
     app.Page.paint(app.Page)
   end
   
+  if rfsuite.preferences
+    and rfsuite.preferences.developer
+    and rfsuite.preferences.developer.overlaystatsadmin
+  then
+      -- font & color
+      lcd.font(FONT_XXS)
+      lcd.color(lcd.RGB(255,255,255))
+
+      -- read fresh values each draw
+      local cpuUsage = (rfsuite.session and rfsuite.session.cpuload) or 0
+      local ramUsed  = (rfsuite.session and rfsuite.session.usedram) or 0
+
+      local memInfo = system.getMemoryUsage() or {}
+      local luaRamKB = ((memInfo.luaRamAvailable or 0) / 1024)
+
+      -- config
+      local cfg = {
+          colGap = 14,      -- gap between stat blocks
+          sep    = " ",     -- separator within a block
+          startX = 0,
+          startY = app.radio.navbuttonHeight,
+          decimalsKB = 2,
+      }
+
+      local function fmtInt(n) return rfsuite.utils.round(n or 0, 0) end
+      local function fmtKB(n)  return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end
+
+      -- only the 3 requested items
+      local rows = {
+          { "CPU:",          fmtInt(cpuUsage),  "%"  },
+          { "USED",     fmtInt(ramUsed),   "kB" },
+          { "FREE", fmtKB(luaRamKB),   "KB" },
+      }
+
+      -- render one line from (0,0)
+      local x, y = cfg.startX, cfg.startY
+      for i = 1, #rows do
+          local label, value, unit = rows[i][1], rows[i][2], rows[i][3]
+          local seg = tostring(label) .. cfg.sep .. tostring(value) .. cfg.sep .. tostring(unit)
+          lcd.drawText(x, y, seg)
+          x = x + lcd.getTextSize(seg) + cfg.colGap
+      end
+  end
+
+
 end
 
 function app.wakeup()
@@ -39,6 +84,12 @@ function app.wakeup()
 
     if app.tasks then
       app.tasks.wakeup()
+    end
+
+    -- turn on stats in admin
+    -- we need to trigger an invalidate
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then
+      lcd.invalidate()
     end
 end
 
