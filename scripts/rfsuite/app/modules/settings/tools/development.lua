@@ -49,20 +49,22 @@ formFieldCount = formFieldCount + 1
                                                             if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 settings.compile = newValue
                                                             end    
-                                                        end)                                                        
+                                                        end)           
+                                                        
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_apiversion)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
-                                                        rfsuite.utils.msp_version_array_to_indexed(),
-                                                        function() 
-                                                                return settings.apiversion
-                                                        end, 
-                                                        function(newValue) 
-                                                                settings.apiversion = newValue
-                                                        end) 
-
+    if system.getVersion().simulation then                                                     
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_apiversion)@")
+        rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
+                                                            rfsuite.utils.msp_version_array_to_indexed(),
+                                                            function() 
+                                                                    return settings.apiversion
+                                                            end, 
+                                                            function(newValue) 
+                                                                    settings.apiversion = newValue
+                                                            end) 
+    end
 
 
     local logpanel = form.addExpansionPanel("@i18n(app.modules.settings.txt_logging)@")
@@ -202,15 +204,11 @@ formFieldCount = formFieldCount + 1
                                                             if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 settings.logobjprof = newValue
                                                             end    
-                                                        end)                                                            
-
-
-    local dashboardPanel = form.addExpansionPanel("@i18n(app.modules.settings.dashboard)@")
-    dashboardPanel:open(false)
-
+                                                        end)       
+                                                        
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = dashboardPanel:addLine("@i18n(app.modules.settings.txt_overlaygrid)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = logpanel:addLine("@i18n(app.modules.settings.txt_overlaygrid)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -222,11 +220,11 @@ formFieldCount = formFieldCount + 1
                                                             if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 settings.overlaygrid = newValue
                                                             end    
-                                                        end)       
+                                                        end)                                                          
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = dashboardPanel:addLine("@i18n(app.modules.settings.txt_overlaystats)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = logpanel:addLine("@i18n(app.modules.settings.txt_overlaystats)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -238,9 +236,26 @@ formFieldCount = formFieldCount + 1
                                                             if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 settings.overlaystats = newValue
                                                             end    
+                                                        end)                                                           
+
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = logpanel:addLine("@i18n(app.modules.settings.txt_overlaystatsadmin)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return settings['overlaystatsadmin'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                settings.overlaystatsadmin = newValue
+                                                            end    
                                                         end)   
 
-    
+        
 end
 
 local function onNavMenu()

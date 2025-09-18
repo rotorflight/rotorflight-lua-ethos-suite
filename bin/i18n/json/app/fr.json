@@ -141,14 +141,19 @@
         "needs_translation": false
       },
       "txt_overlaygrid": {
-        "english": "Show grid",
-        "translation": "Afficher la grille",
+        "english": "Overlay grid in dashboard",
+        "translation": "Overlay grid in dashboard",
         "needs_translation": false
       },
       "txt_overlaystats": {
-        "english": "Show stats",
-        "translation": "Afficher les statistiques",
+        "english": "Overlay stats in dashboard",
+        "translation": "Overlay stats in dashboard",
         "needs_translation": false
+      },
+      "txt_overlaystatsadmin": {
+        "english": "Overlay stats in admin",
+        "translation": "Overlay stats in admin",
+        "needs_translation": true
       },
       "no_themes_available_to_configure": {
         "english": "No configurable themes installed on this device",
@@ -206,8 +211,8 @@
         "needs_translation": false
       },
       "txt_apiversion": {
-        "english": "API Version",
-        "translation": "Version API",
+        "english": "SIM API Version",
+        "translation": "Version API SIM",
         "needs_translation": false
       },
       "txt_logging": {

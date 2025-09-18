@@ -95,6 +95,7 @@ local userpref_defaults = {
     apiversion = 2, -- msp api version to use for simulator
     overlaystats = false, -- show cpu load in overlay
     overlaygrid = false, -- show overlay grid
+    overlaystatsadmin = false
   },
   timer = {
     timeraudioenable = false,

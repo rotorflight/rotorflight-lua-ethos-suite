@@ -5389,9 +5389,9 @@
           "translation": "Pre-timer Alert Options"
         },
         "txt_apiversion": {
-          "english": "API Version",
+          "english": "SIM API Version",
           "needs_translation": false,
-          "translation": "API Version"
+          "translation": "SIM API Version"
         },
         "txt_audio_events": {
           "english": "Events",
@@ -5514,14 +5514,19 @@
           "translation": "OFF"
         },
         "txt_overlaygrid": {
-          "english": "Show grid",
+          "english": "Overlay grid in dashboard",
           "needs_translation": false,
-          "translation": "Show grid"
+          "translation": "Overlay grid in dashboard"
         },
         "txt_overlaystats": {
-          "english": "Show stats",
+          "english": "Overlay stats in dashboard",
           "needs_translation": false,
-          "translation": "Show stats"
+          "translation": "Overlay stats in dashboard"
+        },
+        "txt_overlaystatsadmin": {
+          "english": "Overlay stats in admin",
+          "needs_translation": false,
+          "translation": "Overlay stats in admin"
         },
         "txt_queuesize": {
           "english": "Log MSP queue size",

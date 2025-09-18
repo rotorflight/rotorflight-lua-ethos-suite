@@ -31,6 +31,7 @@ function app.paint()
   if app.Page and app.Page.paint then
     app.Page.paint(app.Page)
   end
+  
 end
 
 function app.wakeup()
