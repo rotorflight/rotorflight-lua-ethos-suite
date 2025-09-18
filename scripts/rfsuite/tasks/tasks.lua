@@ -95,6 +95,8 @@ local MEM_ALPHA
 local mem_avg_kb
 local last_mem_t
 local MEM_PERIOD
+local bitmap_pool_est_kb
+local usedram_avg_kb
 
 
 -- =========================
@@ -653,24 +655,58 @@ function tasks.wakeup()
 
   last_wakeup_start = now
 
-
-    -- track average memory usage
+    -- track average memory usage (logic-used excludes bitmaps)
     do
         local now2 = os.clock()
         if (now2 - last_mem_t) >= MEM_PERIOD then
             last_mem_t = now2
 
-            local m = (system.getMemoryUsage and system.getMemoryUsage()) or nil
-            local free_now_kb = (m.luaRamAvailable or 0) / 1000
-            if mem_avg_kb == nil then
-                mem_avg_kb = free_now_kb
-            else
-                mem_avg_kb = MEM_ALPHA * free_now_kb + (1 - MEM_ALPHA) * mem_avg_kb
+            local m = (system.getMemoryUsage and system.getMemoryUsage()) or {}
+            -- Ethos returns bytes; convert to KB
+            local free_lua_kb    = (m.luaRamAvailable or 0) / 1024
+            local free_bmp_kb    = (m.luaBitmapsRamAvailable or 0) / 1024
+
+            -- Estimate bitmap pool capacity as the max free seen so far (first sample seeds it)
+            if not bitmap_pool_est_kb or free_bmp_kb > bitmap_pool_est_kb then
+                bitmap_pool_est_kb = free_bmp_kb
             end
-            rfsuite.session.freeram   = mem_avg_kb          -- KB (ema)
-            rfsuite.session.usedram   = collectgarbage("count")  -- KB (instant)
+
+            -- Estimated bitmap used
+            local bmp_used_est_kb = 0
+            if bitmap_pool_est_kb then
+                bmp_used_est_kb = math.max(0, bitmap_pool_est_kb - free_bmp_kb)
+            end
+
+            -- Total Lua+bitmap used reported by Lua GC (in KB)
+            local gc_total_kb = collectgarbage("count")
+
+            -- Logic-used (exclude bitmaps)
+            local logic_used_now_kb = math.max(0, gc_total_kb - bmp_used_est_kb)
+
+            -- Smooth free RAM (already in your code)
+            if mem_avg_kb == nil then
+                mem_avg_kb = free_lua_kb
+            else
+                mem_avg_kb = MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb
+            end
+            rfsuite.session.freeram = mem_avg_kb  -- KB (EMA)
+
+            -- Smooth logic-used (exclude bitmaps)
+            if usedram_avg_kb == nil then
+                usedram_avg_kb = logic_used_now_kb
+            else
+                usedram_avg_kb = MEM_ALPHA * logic_used_now_kb + (1 - MEM_ALPHA) * usedram_avg_kb
+            end
+            rfsuite.session.usedram = usedram_avg_kb  -- KB (EMA, excludes bitmaps)
+
+            -- (Optional) If you want both metrics available:
+            -- rfsuite.session.usedram_incl_bitmaps = gc_total_kb          -- KB (instant, includes bitmaps)
+            -- rfsuite.session.bitmap_used_est      = bmp_used_est_kb      -- KB (instant estimate)
         end
     end
+
+
+
 
 end
 
