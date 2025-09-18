@@ -1992,7 +1992,8 @@ function ui.saveSettings()
   if app.Page.preSave then app.Page.preSave(app.Page) end
 
   for apiID, apiNAME in ipairs(apiList) do
-    log("Saving data for API: " .. apiNAME, "debug")
+
+    rfsuite.utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "start")
 
     local payloadData      = values[apiNAME]
     local payloadStructure = mspapi.structure[apiNAME]
@@ -2049,7 +2050,12 @@ function ui.saveSettings()
     end
 
     API.write()
+
+    rfsuite.utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
+
   end
+
+
 end
 
 -- Reboot FC (MSP)
