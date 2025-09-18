@@ -793,14 +793,14 @@ function tasks.init()
 
     -- profiler / CPU / mem tracking baselines
     CPU_TICK_BUDGET            = 1 / CPU_TICK_HZ
-    CPU_ALPHA                  = 0.2
+    CPU_ALPHA                  = 0.8        -- raise this to 1.0 if you want instant CPU
     cpu_avg                    = 0
     last_wakeup_start          = nil
 
-    MEM_ALPHA                  = 0.2
+    MEM_ALPHA                  = 0.8        -- raise this to 1.0 if you want instant mem
     mem_avg_kb                 = nil
     last_mem_t                 = 0
-    MEM_PERIOD                 = 0.25
+    MEM_PERIOD                 = 0.5
 
     -- reset public flags
     tasks.heartbeat            = nil

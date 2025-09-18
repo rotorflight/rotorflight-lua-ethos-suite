@@ -799,7 +799,6 @@ function dashboard.renderLayout(widget, config)
             { "CPU",               fmtInt(cpuUsage),             "%"  },
             { "RAM FREE",          fmtInt(ramFree),              "kB" },
             { "RAM USED",          fmtInt(ramUsed),              "kB" },
-            { "MAIN STACK FREE",  fmtKB(mainStackKB),           "KB" },
             { "SYSTEM RAM FREE",  fmtKB(ramKB),                 "KB" },
             { "LUA RAM FREE",     fmtKB(luaRamKB),              "KB" },
             { "LUA BITMAP RAM",    fmtKB(luaBitmapsRamKB),       "KB" },
