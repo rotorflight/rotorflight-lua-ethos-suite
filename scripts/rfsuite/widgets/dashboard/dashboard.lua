@@ -761,14 +761,21 @@ function dashboard.renderLayout(widget, config)
         local ramFree  = (rfsuite.session and rfsuite.session.freeram) or 0
         local ramUsed  = (rfsuite.session and rfsuite.session.usedram) or 0
 
+        -- deeper system stats (in KB)
+        local memInfo = system.getMemoryUsage() or {}
+        local mainStackKB     = ((memInfo.mainStackAvailable or 0) / 1024)
+        local ramKB           = ((memInfo.ramAvailable or 0) / 1024)
+        local luaRamKB        = ((memInfo.luaRamAvailable or 0) / 1024)
+        local luaBitmapsRamKB = ((memInfo.luaBitmapsRamAvailable or 0) / 1024)
+
         lcd.font(FONT_S)
 
         -- ===== Config you can tune =====
         local cfg = {
             padX = 6, padY = 4,        -- box padding
             colGap = 10, rowGap = 2,   -- gaps between columns/rows
-            labelW = 64,               -- column widths (px)
-            valueW = 70,
+            labelW = 180,              -- widened for longer labels
+            valueW = 80,
             unitW  = 30,
             align = {                   -- per-column alignment: "left" | "right"
                 label = "left",
@@ -778,16 +785,24 @@ function dashboard.renderLayout(widget, config)
             boxX = 4,                  -- box position (top-left)
             boxY = 4 + headerOffset,
             -- colors
-            bg = {0,0,0}, fg = {255,255,255},
+            bg = {0,0,0,0.9}, fg = {255,255,255},
             border = true,
+            decimalsKB = 2,            -- how many decimals for KB values
         }
         -- =================================
 
-        -- rows: label / value / unit (unit is just a suffix column)
+        local function fmtInt(n)   return rfsuite.utils.round(n or 0, 0) end
+        local function fmtKB(n)    return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end
+
+        -- rows: label / value / unit
         local rows = {
-            { "CPU",      rfsuite.utils.round(cpuUsage, 0), "%"  },
-            { "RAM FREE", rfsuite.utils.round(ramFree, 0),  "kB" },
-            { "RAM USED", rfsuite.utils.round(ramUsed, 0),  "kB" },
+            { "CPU",               fmtInt(cpuUsage),             "%"  },
+            { "RAM FREE",          fmtInt(ramFree),              "kB" },
+            { "RAM USED",          fmtInt(ramUsed),              "kB" },
+            { "MAIN STACK FREE",  fmtKB(mainStackKB),           "KB" },
+            { "SYSTEM RAM FREE",  fmtKB(ramKB),                 "KB" },
+            { "LUA RAM FREE",     fmtKB(luaRamKB),              "KB" },
+            { "LUA BITMAP RAM",    fmtKB(luaBitmapsRamKB),       "KB" },
         }
 
         -- measure row height from font
@@ -797,21 +812,28 @@ function dashboard.renderLayout(widget, config)
         local boxW = cfg.padX*2 + cfg.labelW + cfg.colGap + cfg.valueW + cfg.colGap + cfg.unitW
         local boxH = cfg.padY*2 + (#rows * textH) + ((#rows-1) * cfg.rowGap)
 
+        -- center on screen, but respect headerOffset at top
+        local screenW, screenH = lcd.getWindowSize()
+        local boxX = math.floor((screenW - boxW) / 2)
+        local boxY = math.floor((screenH - boxH) / 2)
+        local minY = 4 + headerOffset
+        if boxY < minY then boxY = minY end
+
         -- draw background + border
-        lcd.color(lcd.RGB(cfg.bg[1], cfg.bg[2], cfg.bg[3]))
-        lcd.drawFilledRectangle(cfg.boxX, cfg.boxY, boxW, boxH)
+        lcd.color(lcd.RGB(cfg.bg[1], cfg.bg[2], cfg.bg[3], cfg.bg[4]))
+        lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
         if cfg.border then
             lcd.pen(1)
             lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
-            lcd.drawRectangle(cfg.boxX, cfg.boxY, boxW, boxH)
+            lcd.drawRectangle(boxX, boxY, boxW, boxH)
             lcd.pen(0)
         end
 
         -- column anchors
-        local labelX = cfg.boxX + cfg.padX
+        local labelX = boxX + cfg.padX
         local valueX = labelX + cfg.labelW + cfg.colGap
         local unitX  = valueX + cfg.valueW + cfg.colGap
-        local startY = cfg.boxY + cfg.padY
+        local startY = boxY + cfg.padY
 
         lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
 
@@ -835,10 +857,6 @@ function dashboard.renderLayout(widget, config)
             drawCell(unitX,  cfg.unitW,  unit,  cfg.align.unit,  y)
         end
     end
-
-
-
-
 
     -- Handle overlay messages
     if dashboard.overlayMessage then
