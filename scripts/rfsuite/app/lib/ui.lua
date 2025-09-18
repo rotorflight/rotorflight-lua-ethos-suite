@@ -288,8 +288,6 @@ function ui.openMainMenu()
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    ESC = {}
-
     -- Icon size
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1

@@ -175,7 +175,7 @@ local TYPE_SIZES = {
   U56=7,S56=7, U64=8,S64=8, U72=9,S72=9, U80=10,S80=10, U88=11,S88=11,
   U96=12,S96=12, U104=13,S104=13, U112=14,S112=14, U120=15,S120=15, U128=16,S128=16
 }
-function get_type_size(data_type)
+local function get_type_size(data_type)
   if data_type == nil then return TYPE_SIZES end
   return TYPE_SIZES[data_type] or 1
 end

@@ -59,8 +59,6 @@ local function openPage(pidx, title, script)
         end
     end
 
-    ESC = {}
-
     -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
@@ -78,7 +76,7 @@ local function openPage(pidx, title, script)
 
     form.addLine(title)
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW - 10
 
     app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {

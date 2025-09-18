@@ -1,4 +1,5 @@
 local activateWakeup = false
+local currentProfileChecked = false
 
 local apidata = {
     api = {

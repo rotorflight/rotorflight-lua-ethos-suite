@@ -33,7 +33,7 @@ local function openPage(idx, title, script, source, folder,themeScript)
 
     --form.addLine("../ " .. "@i18n(app.modules.settings.dashboard)@" .. " / " .. "@i18n(app.modules.settings.name)@" .. " / " .. title)
     form.addLine( "@i18n(app.modules.settings.name)@" .. " / " .. title)
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - (buttonW * 2) - 15
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {

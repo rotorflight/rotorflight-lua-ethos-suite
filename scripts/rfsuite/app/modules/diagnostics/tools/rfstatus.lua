@@ -30,6 +30,8 @@ local btnW   = 100
 local btnWs  = btnW - (btnW * 20) / 100
 local xRight = w - 15
 
+local x,y
+
 local displayPos = {
   x = xRight - btnW - btnWs - 5 - btnWs,
   y = rfsuite.app.radio.linePaddingTop,

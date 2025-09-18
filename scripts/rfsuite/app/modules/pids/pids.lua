@@ -64,7 +64,7 @@ local function openPage(idx, title, script)
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-    longPage = false
+    local longPage = false
 
     form.clear()
 

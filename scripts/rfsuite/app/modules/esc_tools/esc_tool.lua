@@ -115,7 +115,7 @@ local function openPage(pidx, title, script)
 
     line = form.addLine("@i18n(app.modules.esc_tools.name)@" .. ' / ' .. ESC.toolName)
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {

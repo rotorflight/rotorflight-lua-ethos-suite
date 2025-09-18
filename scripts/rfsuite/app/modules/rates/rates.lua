@@ -40,7 +40,7 @@ local function postLoad(self)
 
 end
 
-function rightAlignText(width, text)
+local function rightAlignText(width, text)
     local textWidth, _ = lcd.getTextSize(text)  -- Get the text width
     local padding = width - textWidth  -- Calculate how much padding is needed
     
@@ -60,9 +60,12 @@ local function openPage(idx, title, script)
     rfsuite.app.lastScript = script
     rfsuite.session.lastPage = script
 
+    local maxValue
+    local minValue
+
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-    longPage = false
+    local longPage = false
 
     form.clear()
 

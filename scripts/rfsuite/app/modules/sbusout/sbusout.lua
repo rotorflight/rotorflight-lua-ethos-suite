@@ -36,7 +36,7 @@ local function openPage(pidx, title, script)
     local sc
     local panel
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.ui.fieldHeader("@i18n(app.modules.sbusout.title)@" .. "")
