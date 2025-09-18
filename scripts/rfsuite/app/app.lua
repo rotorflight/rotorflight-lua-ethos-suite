@@ -238,7 +238,7 @@ end
 
 -- Close and cleanup
 function app.close()
-  rfsuite.utils.reportMemoryUsage("closing application: start")
+  rfsuite.utils.reportMemoryUsage("app.close", "start")
 
   -- Save user preferences
   local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
@@ -323,7 +323,7 @@ function app.close()
   collectgarbage()
   print(collectgarbage("count")) -- memory after
 
-  rfsuite.utils.reportMemoryUsage("closing application: end")  
+  rfsuite.utils.reportMemoryUsage("app.close", "end")
 
   system.exit()
 

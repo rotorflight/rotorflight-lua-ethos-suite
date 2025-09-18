@@ -647,24 +647,59 @@ function utils.logMsp(cmd, rwState, buf, err)
     end
 end
 
-function utils.reportMemoryUsage(location)
+-- store measurements between start/end calls
+utils._memProfile = utils._memProfile or {}
+
+function utils.reportMemoryUsage(location, phase)
     if not rfsuite.preferences.developer.memstats then return end
     location = location or "Unknown"
 
     local cpuInfo   = (rfsuite.session and rfsuite.session.cpuload) or 0
     local ramFree   = (rfsuite.session and rfsuite.session.freeram) or 0
     local ramUsed   = (rfsuite.session and rfsuite.session.usedram) or 0
+    local memInfo   = system.getMemoryUsage() or {}
 
-    -- high-level session stats
-    rfsuite.utils.log("--------------------------------------------------------------", "info")
-    rfsuite.utils.log(string.format("[%s] CPU Load: %d%%", location, rfsuite.utils.round(cpuInfo, 0)), "info")
-    rfsuite.utils.log(string.format("[%s] RAM Free: %d kB", location, rfsuite.utils.round(ramFree, 0)), "info")
-    rfsuite.utils.log(string.format("[%s] RAM Used: %d kB", location, rfsuite.utils.round(ramUsed, 0)), "info")
-    rfsuite.utils.log("--------------------------------------------------------------", "info")
-    rfsuite.utils.log("", "info")    
+    local snapshot = {
+        cpu   = cpuInfo,
+        free  = ramFree,
+        used  = ramUsed,
+        main  = (memInfo.mainStackAvailable or 0) / 1024,
+        ram   = (memInfo.ramAvailable or 0) / 1024,
+        lua   = (memInfo.luaRamAvailable or 0) / 1024,
+        bmp   = (memInfo.luaBitmapsRamAvailable or 0) / 1024,
+        time  = os.clock()
+    }
 
+    -- if phase is given, handle profiling
+    if phase == "start" then
+        utils._memProfile[location] = snapshot
+        rfsuite.utils.log(string.format("[%s] Profiling started", location), "info")
+        return
+    elseif phase == "end" then
+        local startSnap = utils._memProfile[location]
+        if startSnap then
+            local dt = snapshot.time - startSnap.time
+            utils.log(string.format("[%s] Profiling ended (%.3fs)", location, dt), "info")
+            utils.log(string.format("[%s] CPU diff: %.0f -> %.0f", location, startSnap.cpu, snapshot.cpu), "info")
+            utils.log(string.format("[%s] RAM Used diff: %.0f -> %.0f kB", location, startSnap.used, snapshot.used), "info")
+            utils.log(string.format("[%s] Lua RAM diff: %.2f -> %.2f KB", location, startSnap.lua, snapshot.lua), "info")
+            -- …repeat for other stats if useful
+            utils._memProfile[location] = nil
+        else
+            utils.log(string.format("[%s] Profiling 'end' without a 'start'", location), "warn")
+        end
+        return
+    end
+
+    -- default behavior: just log snapshot
+    rfsuite.utils.log(string.format("[%s] CPU Load: %d%%", location, rfsuite.utils.round(snapshot.cpu, 0)), "info")
+    rfsuite.utils.log(string.format("[%s] RAM Free: %d kB", location, rfsuite.utils.round(snapshot.free, 0)), "info")
+    rfsuite.utils.log(string.format("[%s] RAM Used: %d kB", location, rfsuite.utils.round(snapshot.used, 0)), "info")
+    rfsuite.utils.log(string.format("[%s] Main stack available: %.2f KB", location, snapshot.main), "info")
+    rfsuite.utils.log(string.format("[%s] System RAM available: %.2f KB", location, snapshot.ram), "info")
+    rfsuite.utils.log(string.format("[%s] Lua RAM available: %.2f KB", location, snapshot.lua), "info")
+    rfsuite.utils.log(string.format("[%s] Lua Bitmap RAM available: %.2f KB", location, snapshot.bmp), "info")
 end
-
 
 
 

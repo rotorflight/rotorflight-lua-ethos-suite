@@ -255,6 +255,9 @@ end
 
 -- Open main menu.
 function ui.openMainMenu()
+
+    rfsuite.utils.reportMemoryUsage("app.openMainMenu", "start")
+
     rfsuite.app.formFields         = {}
     rfsuite.app.formFieldsOffline  = {}
     rfsuite.app.formFieldsBGTask   = {}
@@ -388,12 +391,15 @@ function ui.openMainMenu()
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-    collectgarbage()
-    rfsuite.utils.reportMemoryUsage("MainMenuSub")
+
+    rfsuite.utils.reportMemoryUsage("app.openMainMenu", "end")
 end
 
 -- Open a sub-section of the main menu.
 function ui.openMainMenuSub(activesection)
+
+    rfsuite.utils.reportMemoryUsage("app.openMainMenuSub", "start")
+
     rfsuite.app.formFields        = {}
     rfsuite.app.formFieldsOffline = {}
     rfsuite.app.formLines         = {}
@@ -535,8 +541,8 @@ function ui.openMainMenuSub(activesection)
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-    collectgarbage()
-    rfsuite.utils.reportMemoryUsage("MainMenuSub")
+
+    rfsuite.utils.reportMemoryUsage("app.openMainMenuSub", "end")
 end
 
 --------------------------------------------------------------------------------
@@ -1332,6 +1338,9 @@ end
 --------------------------------------------------------------------------------
 
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+
+  rfsuite.utils.reportMemoryUsage("ui.openPage: " .. script, "start")
+
     -- Global UI state; clear form data.
     rfsuite.app.uiState          = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
@@ -1350,8 +1359,12 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     -- Module-specific openPage?
     if rfsuite.app.Page.openPage then
+
+        rfsuite.utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
+
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
-        rfsuite.utils.reportMemoryUsage(title)
+
+        rfsuite.utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
     end
 
@@ -1414,7 +1427,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         end
     end
 
-    rfsuite.utils.reportMemoryUsage(title)
+    rfsuite.utils.reportMemoryUsage("ui.openPage: " .. script, "end")
 end
 
 -- Navigation buttons (Menu / Save / Reload / Tool / Help).
@@ -1792,8 +1805,6 @@ function ui.mspApiUpdateFormAttributes(values, structure)
     end
   end
 
-  --collectgarbage()
-  utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
   app.formNavigationFields['menu']:focus(true)
 end
 

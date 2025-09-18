@@ -305,7 +305,6 @@ function utils.settingsSaved()
     rfsuite.app.triggers.closeSave = true
   end
   collectgarbage()
-  rfsuite.utils.reportMemoryUsage("app.utils.settingsSaved")
 end
 
 -- Invalidate pages after writes/reloads

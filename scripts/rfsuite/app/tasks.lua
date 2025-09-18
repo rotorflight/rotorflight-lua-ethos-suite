@@ -31,7 +31,6 @@ local function exitApp()
         app.triggers.exitAPP = false
         form.invalidate()
         system.exit()
-        utils.reportMemoryUsage("Exit App")
     end
 end
 
