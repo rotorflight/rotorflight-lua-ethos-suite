@@ -33,7 +33,9 @@ function app.paint()
   end
   
   if app.ui and app.ui.adminStatsOverlay then
-    app.ui.adminStatsOverlay()
+    if not rfsuite.session.mspBusy then
+      app.ui.adminStatsOverlay()
+    end
   end
 
 
@@ -49,7 +51,9 @@ function app.wakeup()
     -- turn on stats in admin
     -- we need to trigger an invalidate
     if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then
-      lcd.invalidate()
+      if not rfsuite.session.mspBusy then
+        lcd.invalidate()
+      end
     end
 end
 
@@ -329,11 +333,6 @@ function app.close()
   -- Telemetry/protocol
   ELRS_PAUSE_TELEMETRY = false
   CRSF_PAUSE_TELEMETRY = false
-
-  print(collectgarbage("count")) -- memory before
-  collectgarbage()
-  collectgarbage()
-  print(collectgarbage("count")) -- memory after
 
   rfsuite.utils.reportMemoryUsage("app.close", "end")
 
