@@ -328,12 +328,14 @@ function app.close()
   print("--------------------------------")
   ]]
 
+  --[[
   print("--------------------------------")
   print("Global variables:")
   for i,v in pairs(_G) do 
     print("  -" .. i)
   end
   print("--------------------------------")
+]]--
 
   -- Telemetry/protocol
   ELRS_PAUSE_TELEMETRY = false
