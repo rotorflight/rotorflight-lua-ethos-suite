@@ -13,6 +13,7 @@ if crsf.getSensor ~= nil then
   elrs.pushFrame = function(x, y) return sensor:pushFrame(x, y) end
 else
   elrs.popFrame = function() return crsf.popFrame() end
+if not elrs.crossfirePush then elrs.crossfirePush = elrs.pushFrame end
   elrs.pushFrame = function(x, y) return crsf.pushFrame(x, y) end
 end
 
@@ -177,7 +178,8 @@ local function ensureElrsMap()
   for _, s in pairs(sidList) do
     if s.sidElrs then
       local decFn = DECODERS[s.dec] or decNil
-      elrs.RFSensors[s.sidElrs] = {
+      local _key = s.sidElrs; if type(_key) == "table" then _key = _key[1] end
+      elrs.RFSensors[_key] = {
         name = s.name,
         unit = s.unit,
         prec = s.prec,
@@ -210,7 +212,13 @@ function elrs.setFblSensors(list)
   if sidList then
     for _, id in ipairs(list or {}) do
       local s = sidList[id]
-      if s and s.sidElrs then enabledSidElrs[s.sidElrs] = true end
+      if s and s.sidElrs then
+      if type(s.sidElrs) == "table" then
+        for i=1,#s.sidElrs do enabledSidElrs[s.sidElrs[i]] = true end
+      else
+        enabledSidElrs[s.sidElrs] = true
+      end
+      end
     end
     -- free again after use
     if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then

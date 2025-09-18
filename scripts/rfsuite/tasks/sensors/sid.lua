@@ -17,7 +17,7 @@ local sensorList = {
               sportName = "Cell Count" },
     [8]  = { sidElrs = 0x1021, sidSport = 0x0910,  group = "battery",  name = "Cell Voltage",  unit = UNIT_VOLT,    prec = 2, min = 0,    max = 455,     dec ="decCellV",
               sportName = "Cell Voltage", sportRename = { {name="Cell Voltage", onlyifname="ADC4"} } },
-    [9]  = { sidElrs = 0x102F, sidSport = 0x0300,  group = "battery",  name = "Cell Voltages", unit = UNIT_VOLT,    prec = 2, min = nil,  max = nil,     dec ="decCells",
+    [9]  = { sidElrs = {0x102F}, sidSport = 0x0300,  group = "battery",  name = "Cell Voltages", unit = UNIT_VOLT,    prec = 2, min = nil,  max = nil,     dec ="decCells",
               sportName = "Cell Voltages" },
 
     -- Control
@@ -109,14 +109,14 @@ local sensorList = {
               sportName = "Tailspeed", sportRename = { {name="Tailspeed", onlyifname="RPM"} } },
 
     -- Attitude / accel
-    [64] = { sidElrs = 0x1100, sidSport = nil,     group = "gyro",     name = "Attd",          unit = UNIT_DEGREE,  prec = 1, min = nil,  max = nil,     dec ="decAttitude" },
+    [64] = { sidElrs = {0x1100, 0x1101, 0x1102, 0x1103}, sidSport = nil,  elrsName = {"Attitude", "Pitch Attitude", "Roll Attitude", "Yaw Attitude"}, group = "gyro",     name = "Attd",          unit = UNIT_DEGREE,  prec = 1, min = nil,  max = nil,     dec ="decAttitude" },
     [65] = { sidElrs = 0x1101, sidSport = 0x0730,  group = "gyro",     name = "Pitch Attitude",unit = UNIT_DEGREE,  prec = 0, min = -180, max = 360,     dec ="decS16",
               sportName = "Pitch Attitude" },
     [66] = { sidElrs = 0x1102, sidSport = 0x0730,  group = "gyro",     name = "Roll Attitude", unit = UNIT_DEGREE,  prec = 0, min = -180, max = 360,     dec ="decS16",
               sportName = "Roll Attitude" },
     [67] = { sidElrs = 0x1103, sidSport = nil,     group = "gyro",     name = "Yaw Attitude",  unit = UNIT_DEGREE,  prec = 0, min = -180, max = 360,     dec ="decS16" },
 
-    [68] = { sidElrs = 0x1110, sidSport = nil,     group = "gyro",     name = "Accl",          unit = UNIT_G,       prec = 2, min = nil,  max = nil,     dec ="decAccel" },
+    [68] = { sidElrs = {0x1110, 0x1111, 0x1112, 0x1113}, sidSport = nil,  elrsName = {"Accel", "Accel X", "Accel Y", "Accel Z"}, group = "gyro",   name = "Accl",          unit = UNIT_G,       prec = 2, min = nil,  max = nil,     dec ="decAccel" },
     [69] = { sidElrs = 0x1111, sidSport = 0x0700,  group = "gyro",     name = "Accel X",       unit = UNIT_G,       prec = 1, min = -4000, max = 4000,   dec ="decS16",
               sportName = "Accel X" },
     [70] = { sidElrs = 0x1112, sidSport = 0x0710,  group = "gyro",     name = "Accel Y",       unit = UNIT_G,       prec = 1, min = -4000, max = 4000,   dec ="decS16",
@@ -129,7 +129,7 @@ local sensorList = {
     [74] = { sidElrs = 0x1122, sidSport = nil,     group = "gps",      name = "GPS PDOP",      unit = UNIT_RAW,     prec = 0, min = 0,    max = 255,     dec ="decU8" },
     [75] = { sidElrs = 0x1123, sidSport = nil,     group = "gps",      name = "GPS HDOP",      unit = UNIT_RAW,     prec = 0, min = 0,    max = 255,     dec ="decU8" },
     [76] = { sidElrs = 0x1124, sidSport = nil,     group = "gps",      name = "GPS VDOP",      unit = UNIT_RAW,     prec = 0, min = 0,    max = 255,     dec ="decU8" },
-    [77] = { sidElrs = 0x1125, sidSport = 0x0800,  group = "gps",      name = "GPS Coord",     unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decLatLong",
+    [77] = { sidElrs = {0x1125, 0x112B}, sidSport = 0x0800,  group = "gps", elrsName = {"GPS Latitude", "GPS Longitude"}, name = "GPS Coord",     unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decLatLong",
               sportName = "GPS Coord" },
     [78] = { sidElrs = 0x1126, sidSport = 0x0820,  group = "gps",      name = "GPS Altitude",  unit = UNIT_METER,   prec = 2, min = -100000000, max = 100000000, dec ="decS16",
               sportName = "GPS Altitude" },
@@ -167,8 +167,8 @@ local sensorList = {
               sportName = "Rate Profile" },
     [98] = { sidElrs = 0x1213, sidSport = nil,     group = "profiles", name = "LED Profile",   unit = UNIT_RAW,     prec = 0, min = 1,    max = 6,       dec ="decU8" },
 
-    [99] = { sidElrs = 0x1220, sidSport = {0x5110, 0x5111},  group = "status",   name = "ADJ",           unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decAdjFunc",
-              sportName = {"Adj. Source", "Adj. Value"} },
+    [99] = { sidElrs  = { 0x1220, 0x1221, 0x1222 }, sidSport = {0x5110, 0x5111},   group = "status",   name = "ADJ",           unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decAdjFunc",
+              sportName = {"Adj. Source", "Adj. Value"} , elrsName = { "Adj", "Adj. Source", "Adj. Value" }},
 
     -- Debug
     [100] = { sidElrs = 0xDB00, sidSport = nil,    group = "debug",    name = "DBG0",          unit = UNIT_RAW,     prec = 0, dec ="decS32" },
