@@ -651,7 +651,7 @@ function tasks.wakeup()
 
 
   cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
-  rfsuite.session.cpuload = math.min(100, math.max(0, cpu_avg * 100))
+  rfsuite.session.os.cpuload = math.min(100, math.max(0, cpu_avg * 100))
 
   last_wakeup_start = now
 
@@ -689,7 +689,7 @@ function tasks.wakeup()
             else
                 mem_avg_kb = MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb
             end
-            rfsuite.session.freeram = mem_avg_kb  -- KB (EMA)
+            rfsuite.session.os.freeram = mem_avg_kb  -- KB (EMA)
 
             -- Smooth logic-used (exclude bitmaps)
             if usedram_avg_kb == nil then
@@ -697,11 +697,16 @@ function tasks.wakeup()
             else
                 usedram_avg_kb = MEM_ALPHA * logic_used_now_kb + (1 - MEM_ALPHA) * usedram_avg_kb
             end
-            rfsuite.session.usedram = usedram_avg_kb  -- KB (EMA, excludes bitmaps)
+            rfsuite.session.os.usedram = usedram_avg_kb  -- KB (EMA, excludes bitmaps)
 
-            -- (Optional) If you want both metrics available:
-            -- rfsuite.session.usedram_incl_bitmaps = gc_total_kb          -- KB (instant, includes bitmaps)
-            -- rfsuite.session.bitmap_used_est      = bmp_used_est_kb      -- KB (instant estimate)
+
+            -- deeper system stats (in KB)
+            rfsuite.session.os.mainStackKB     = ((m.mainStackAvailable or 0) / 1024)
+            rfsuite.session.os.ramKB           = ((m.ramAvailable or 0) / 1024)
+            rfsuite.session.os.luaRamKB        = ((m.luaRamAvailable or 0) / 1024)
+            rfsuite.session.os.luaBitmapsRamKB = ((m.luaBitmapsRamAvailable or 0) / 1024)
+
+
         end
     end
 
@@ -785,19 +790,16 @@ function tasks.init()
     schedulerTick              = 0
 
     ethosVersionGood           = nil
-    lastTelemetrySensorName    = nil
-    sportSensor, elrsSensor    = nil, nil
-    lastModuleId               = 0
     lastSensorName             = nil
     lastCheckAt                = nil
 
     -- profiler / CPU / mem tracking baselines
     CPU_TICK_BUDGET            = 1 / CPU_TICK_HZ
-    CPU_ALPHA                  = 0.8        -- raise this to 1.0 if you want instant CPU
+    CPU_ALPHA                  = 0.6        -- raise this to 1.0 if you want instant CPU
     cpu_avg                    = 0
     last_wakeup_start          = nil
 
-    MEM_ALPHA                  = 0.8        -- raise this to 1.0 if you want instant mem
+    MEM_ALPHA                  = 0.6        -- raise this to 1.0 if you want instant mem
     mem_avg_kb                 = nil
     last_mem_t                 = 0
     MEM_PERIOD                 = 0.5

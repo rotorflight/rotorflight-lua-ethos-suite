@@ -55,7 +55,7 @@ local function cachename(name)
 end
 
 -- Adaptive LRU Cache with Pinning Support
-local LUA_RAM_THRESHOLD = 500 * 1024 -- 500 KB
+local LUA_RAM_THRESHOLD = 500 -- 500 KB
 local LRU_HARD_LIMIT    = 10
 local EVICT_INTERVAL    = 5
 
@@ -81,19 +81,43 @@ local function LRUCache()
     return value
   end
 
+
+  local function currentLuaRamKB()
+    -- Prefer rfsuite session metrics (already in KB)
+    if rfsuite and rfsuite.session and rfsuite.session.os then
+      local osinfo = rfsuite.session.os
+      if osinfo.luaRamKB then
+        return osinfo.luaRamKB
+      end
+    end
+    -- Fallback to system.getMemoryUsage (bytes) -> KB
+    local m = system.getMemoryUsage and system.getMemoryUsage()
+    if m and m.luaRamAvailable then
+      return m.luaRamAvailable / 1024
+    end
+    return nil
+  end
+
   function self:evict_if_low_memory()
     self._last_evict = os.clock()
-    local usage = system.getMemoryUsage and system.getMemoryUsage()
-    local i     = 1
+
+    local i = 1
     while i <= #self.order do
       local key = self.order[i]
-      if not self.pinned[key] and (
-        (usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD) or
-        #self.order > LRU_HARD_LIMIT
-      ) then
+
+      -- Decide if we should evict: low Lua RAM or over hard limit
+      local luaRamKB = currentLuaRamKB()
+      local low_mem  = (LUA_RAM_THRESHOLD and luaRamKB and (luaRamKB < LUA_RAM_THRESHOLD)) or false
+      local over_cap = (#self.order > LRU_HARD_LIMIT)
+
+      if not self.pinned[key] and (low_mem or over_cap) then
+        -- evict this entry
         table.remove(self.order, i)
         self.cache[key] = nil
-        usage = system.getMemoryUsage and system.getMemoryUsage() or usage
+        -- after eviction, re-check memory before continuing
+        -- (so we don't evict more than needed)
+        luaRamKB = currentLuaRamKB()
+        -- only advance i if we didn't remove (we removed, so keep i)
       else
         i = i + 1
       end

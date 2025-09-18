@@ -2080,22 +2080,20 @@ function ui.adminStatsOverlay()
     and rfsuite.preferences.developer.overlaystatsadmin
   then
       -- font & color
-      lcd.font(FONT_XXS)
+      lcd.font(FONT_XS)
       lcd.color(lcd.RGB(255,255,255))
 
       -- read fresh values each draw
-      local cpuUsage = (rfsuite.session and rfsuite.session.cpuload) or 0
-      local ramUsed  = (rfsuite.session and rfsuite.session.usedram) or 0
-
-      local memInfo = system.getMemoryUsage() or {}
-      local luaRamKB = ((memInfo.luaRamAvailable or 0) / 1024)
+      local cpuUsage = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.cpuload) or 0
+      local ramUsed  = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.usedram) or 0
+      local luaRamKB = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.luaRamKB) or 0) 
 
       -- config
       local cfg = {
           colGap = 14,      -- gap between stat blocks
           sep    = " ",     -- separator within a block
           startX = 0,
-          startY = rfsuite.app.radio.navbuttonHeight,
+          startY = rfsuite.app.radio.navbuttonHeight + 3,
           decimalsKB = 2,
       }
 
