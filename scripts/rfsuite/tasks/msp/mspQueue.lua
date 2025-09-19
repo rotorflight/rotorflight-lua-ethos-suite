@@ -129,7 +129,7 @@ function MspQueueController:processQueue()
         self._nextProcessAt = now + self.loopInterval
     end
 
-    local mspBusyTimeout = 5.0
+    local mspBusyTimeout = 5.0  -- unblock the busy flag to stop msp stalling other tasks
     self.mspBusyStart = self.mspBusyStart or os.clock()
 
     -- lightweight, guarded logging
@@ -150,7 +150,8 @@ function MspQueueController:processQueue()
     -- Timeout watchdog for global MSP busy state
     -- This aims to simply unblock the queue if something goes wrong
     if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
-        rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "info")
+        rfsuite.utils.log("MSP blocked for more than " .. mspBusyTimeout .. " seconds", "info")
+        rfsuite.utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
         rfsuite.session.mspBusy = false
         self.mspBusyStart = nil
         return
@@ -170,7 +171,7 @@ function MspQueueController:processQueue()
     local cmd, buf, err
 
     -- Sending cadence controlled by protocol override or default 1s
-    local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.5
+    local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.25
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then

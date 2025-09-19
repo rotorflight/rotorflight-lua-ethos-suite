@@ -383,6 +383,9 @@ function elrs.wakeup()
 
   -- we cannot do anything until connected
   if not rfsuite.session.isConnected then return end
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then
+        return
+    end 
 
   -- Rebuild whitelist if MSP changed the selection
   local fp = slotsFingerprint()
@@ -393,12 +396,14 @@ function elrs.wakeup()
   end
 
   if telemetryActive() and rfsuite.session.telemetrySensor then
-    local n = 0
-    while elrs.crossfirePop() do
-      n = n + 1
-      if n >= 50 then break end
-      if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end
-    end
+    if not rfsuite.session.mspBusy then 
+      local n = 0
+      while elrs.crossfirePop() do
+        n = n + 1
+        if n >= 50 then break end
+        if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end
+      end
+    end  
     refreshStaleSensors()
   else
     resetSensors()
