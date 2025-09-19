@@ -1,180 +1,93 @@
---[[
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- *
-]]
-
-local function CircularBuffer(capacity)
-    local buffer = {
-        data = {},
-        head = 1,
-        tail = 1,
-        size = 0,
-        capacity = capacity or 100,
-    }
-
-    function buffer:push(item)
-        self.data[self.tail] = item
-        self.tail = (self.tail % self.capacity) + 1
-        if self.size < self.capacity then
-            self.size = self.size + 1
-        else
-            self.head = (self.head % self.capacity) + 1  -- overwrite oldest
-        end
-    end
-
-    function buffer:pop()
-        if self.size == 0 then return nil end
-        local item = self.data[self.head]
-        self.data[self.head] = nil
-        self.head = (self.head % self.capacity) + 1
-        self.size = self.size - 1
-        return item
-    end
-
-    function buffer:is_empty()
-        return self.size == 0
-    end
-
-    function buffer:reset()
-        self.data = {}
-        self.head = 1
-        self.tail = 1
-        self.size = 0
-    end
-
-    return buffer
+-- compact logger (console + file), same semantics as your current module
+local function Ring(cap)
+  return {d={},h=1,t=1,n=0,c=cap or 64,
+    push=function(self,x)
+      self.d[self.t]=x; self.t=(self.t%self.c)+1
+      if self.n<self.c then self.n=self.n+1 else self.h=(self.h%self.c)+1 end
+    end,
+    pop=function(self)
+      if self.n==0 then return nil end
+      local x=self.d[self.h]; self.d[self.h]=nil; self.h=(self.h%self.c)+1; self.n=self.n-1; return x
+    end,
+    empty=function(self) return self.n==0 end
+  }
 end
 
-local logs = {}
-
-logs.config = {
+local logs = {
+  config = {
     enabled = true,
     log_to_file = true,
-    print_interval = 0.5,
+    print_interval = system:getVersion().simulation and 0.025 or 0.5,
     disk_write_interval = 5.0,
     max_line_length = 200,
-    min_print_level = "info",
+    min_print_level = "info", -- "debug" | "info" | "off"
     log_file = "log.txt",
     prefix = ""
+  }
 }
 
-if system:getVersion().simulation == true then
-    logs.config.print_interval = 0.025
+local LEVEL = { debug=0, info=1, off=2 }
+local MINLVL = LEVEL[logs.config.min_print_level] or 1
+
+local qConsole = Ring(50)
+local qDisk    = Ring(100)
+local lastPrint, lastDisk = os.clock(), os.clock()
+
+local function split(msg, maxlen, cont)
+  if #msg <= maxlen then return {msg} end
+  local t, i = {}, 1
+  while i <= #msg do
+    local j = i + maxlen - 1
+    t[#t+1] = msg:sub(i, j)
+    i = j + 1
+    if i <= #msg then msg = cont .. msg:sub(i); i = 1 end
+    if #msg <= maxlen then t[#t+1] = msg; break end
+  end
+  return t
 end
 
-logs.queue = CircularBuffer(50)      -- Console log queue
-logs.disk_queue = CircularBuffer(100) -- Disk write queue
-logs.last_print_time = os.clock()
-logs.last_disk_write_time = os.clock()
-
-logs.levels = {
-    debug = 0,
-    info = 1,
-    off = 2
-}
-
--- Splits a message into multiple lines based on max_length, preserving prefixes
-local function split_message(message, max_length, prefix)
-    local lines = {}
-    while #message > max_length do
-        table.insert(lines, message:sub(1, max_length))
-        message = prefix .. message:sub(max_length + 1)
-    end
-    if #message > 0 then
-        table.insert(lines, message)
-    end
-    return lines
-end
-
--- Adds a log entry to the queues (deferred splitting at output time)
 function logs.add(message, level)
-    if not logs.config.enabled or logs.config.min_print_level == "off" then
-        return
-    end
-    level = level or "info"
-    if logs.levels[level] == nil then return end
-    if logs.levels[level] < logs.levels[logs.config.min_print_level] then return end
-
-    -- Truncate overly long messages
-    local max_message_length = logs.config.max_line_length * 10
-    if #message > max_message_length then
-        message = message:sub(1, max_message_length) .. " [truncated]"
-    end
-
-    -- Enqueue raw entry (lightweight)
-    logs.queue:push({ msg = message, lvl = level })
-    if logs.config.log_to_file then
-        logs.disk_queue:push({ msg = message, lvl = level })
-    end
+  if not logs.config.enabled or MINLVL==LEVEL.off then return end
+  local lvl = LEVEL[level or "info"]; if not lvl or lvl < MINLVL then return end
+  local maxlen = logs.config.max_line_length * 10
+  if #message > maxlen then message = message:sub(1, maxlen) .. " [truncated]" end
+  local e = {msg=message, lvl=lvl}
+  qConsole:push(e)
+  if logs.config.log_to_file then qDisk:push(e) end
 end
 
--- Processes and prints pending console log entries
-local function process_console_queue()
-    if not logs.config.enabled or logs.config.min_print_level == "off" then return end
-    local now = os.clock()
-    if now - logs.last_print_time >= logs.config.print_interval and not logs.queue:is_empty() then
-        logs.last_print_time = now
-
-        local MAX_CONSOLE_MESSAGES = 5
-        for _ = 1, MAX_CONSOLE_MESSAGES do
-            local entry = logs.queue:pop()
-            if not entry then break end
-
-            -- Deferred heavy work: split and print lines
-            local raw_prefix = logs.config.prefix
-            local prefix = type(raw_prefix) == "function" and raw_prefix() or raw_prefix
-            local log_entry = prefix .. entry.msg
-            local pad = string.rep(" ", #prefix)
-            for _, line in ipairs(split_message(log_entry, logs.config.max_line_length, pad)) do
-                print(line)
-            end
-        end
+local function drain_console(now)
+  if now - lastPrint < logs.config.print_interval or qConsole:empty() then return end
+  lastPrint = now
+  local rawp = logs.config.prefix
+  local pfx  = type(rawp)=="function" and rawp() or (rawp or "")
+  local pad  = #pfx>0 and string.rep(" ", #pfx) or ""
+  for _=1,5 do
+    local e = qConsole:pop(); if not e then break end
+    for _,line in ipairs(split(pfx..e.msg, logs.config.max_line_length, pad)) do
+      print(line)
     end
+  end
 end
 
--- Processes and writes pending disk log entries
-local function process_disk_queue()
-    if not logs.config.enabled or logs.config.min_print_level == "off" or not logs.config.log_to_file then return end
-
-    local now = os.clock()
-    if now - logs.last_disk_write_time >= logs.config.disk_write_interval and not logs.disk_queue:is_empty() then
-        logs.last_disk_write_time = now
-
-        local MAX_DISK_MESSAGES = 20
-        local file = io.open(logs.config.log_file, "a")
-        if file then
-            for _ = 1, MAX_DISK_MESSAGES do
-                local entry = logs.disk_queue:pop()
-                if not entry then break end
-
-                -- Deferred heavy work: concatenate and write
-                local raw_prefix = logs.config.prefix
-                local prefix = type(raw_prefix) == "function" and raw_prefix() or raw_prefix
-                local line = prefix .. entry.msg
-                file:write(line .. "\n")
-            end
-            file:close()
-        end
-    end
+local function drain_disk(now)
+  if not logs.config.log_to_file or now - lastDisk < logs.config.disk_write_interval or qDisk:empty() then return end
+  lastDisk = now
+  local f = io.open(logs.config.log_file, "a"); if not f then return end
+  local rawp = logs.config.prefix
+  local pfx  = type(rawp)=="function" and rawp() or (rawp or "")
+  for _=1,20 do
+    local e = qDisk:pop(); if not e then break end
+    f:write(pfx .. e.msg .. "\n")
+  end
+  f:close()
 end
 
--- Main processing function to be called each tick
 function logs.process()
-    process_console_queue()
-    process_disk_queue()
+  if not logs.config.enabled or MINLVL==LEVEL.off then return end
+  local now = os.clock()
+  drain_console(now)
+  drain_disk(now)
 end
 
 return logs
