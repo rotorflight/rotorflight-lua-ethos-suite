@@ -21,7 +21,7 @@ local init = {
     script          = "performance.lua", -- run this script
     linkrequired    = false,             -- run only if link is established
     connected       = false,             -- run this script only if msp is connected
-    spreadschedule  = false,             -- run on every loop
+    spreadschedule  = true,             -- run on every loop
     simulatoronly   = false,             -- run in simulation mode
 }
 return init
