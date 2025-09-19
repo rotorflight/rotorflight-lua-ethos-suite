@@ -2099,7 +2099,7 @@ function ui.adminStatsOverlay()
         blocks = {
           LOAD = { x = 0,   valueRight = 50 },
           USED = { x = 70, valueRight = 130 },
-          FREE = { x = 150, valueRight = 220 },
+          FREE = { x = 160, valueRight = 230 },
         }
       }
 
