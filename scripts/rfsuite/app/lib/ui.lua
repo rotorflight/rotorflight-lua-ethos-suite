@@ -2085,41 +2085,55 @@ function ui.adminStatsOverlay()
       lcd.font(FONT_XXS)
       lcd.color(lcd.RGB(255,255,255))
 
-      -- read fresh values each draw
+      -- fresh values each draw
       local cpuUsage = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.cpuload) or 0
       local ramUsed  = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.usedram) or 0
-      local luaRamKB = ((rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.luaRamKB) or 0) 
+      local luaRamKB = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.luaRamKB) or 0
 
-      -- config
+      -- layout config: fixed block columns
       local cfg = {
-          colGap = 14,      -- gap between stat blocks
-          sep    = " ",     -- separator within a block
-          startX = 0,
-          startY = app.radio.navbuttonHeight + 3,
-          decimalsKB = 2,
+        startY = app.radio.navbuttonHeight + 3,
+        decimalsKB = 0,
+        labelGap = 4, -- space between label and value
+        -- Each block: left x for label, and right edge where value+unit are right-aligned
+        blocks = {
+          LOAD = { x = 0,   valueRight = 50 },
+          USED = { x = 70, valueRight = 130 },
+          FREE = { x = 150, valueRight = 220 },
+        }
       }
 
       local function fmtInt(n) return utils.round(n or 0, 0) end
       local function fmtKB(n)  return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end
 
-      -- only the 3 requested items
+      -- rows: key, label, valueWithUnit
       local rows = {
-          { "LOAD:",          fmtInt(cpuUsage),  "%"  },
-          { "USED",     fmtInt(ramUsed),   "kB" },
-          { "FREE", fmtKB(luaRamKB),   "KB" },
+        { "LOAD", "LOAD:", tostring(fmtInt(cpuUsage)) .. "%" },
+        { "USED", "USED",  tostring(fmtInt(ramUsed))  .. "kB" },
+        { "FREE", "FREE",  tostring(fmtKB(luaRamKB))  .. "KB" },
       }
 
-      -- render one line from (0,0)
-      local x, y = cfg.startX, cfg.startY
+      local y = cfg.startY
+
+      local function drawBlock(key, label, valueWithUnit)
+        local b = cfg.blocks[key]; if not b then return end
+
+        -- draw label at fixed left
+        lcd.drawText(b.x, y, label)
+
+        -- value+unit right-aligned to valueRight
+        local vx = b.x + lcd.getTextSize(label) + cfg.labelGap
+        local vWidth = lcd.getTextSize(valueWithUnit)
+        lcd.drawText(math.max(vx, b.valueRight - vWidth), y, valueWithUnit)
+      end
+
+      -- single-row, three fixed columns
       for i = 1, #rows do
-          local label, value, unit = rows[i][1], rows[i][2], rows[i][3]
-          local seg = tostring(label) .. cfg.sep .. tostring(value) .. cfg.sep .. tostring(unit)
-          lcd.drawText(x, y, seg)
-          x = x + lcd.getTextSize(seg) + cfg.colGap
+        local key, label, v = rows[i][1], rows[i][2], rows[i][3]
+        drawBlock(key, label, v)
       end
   end
 end
-
 
 
 return ui
