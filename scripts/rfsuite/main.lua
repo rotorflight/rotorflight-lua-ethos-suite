@@ -39,10 +39,24 @@ local config = {
   watchdogParam = 10, -- progress box timeout
 }
 
+
 -- Pre-format minimum version string once
 config.ethosVersionString = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
 
 rfsuite.config = config
+
+-- CPU Load and Memory tracking
+local performance = {
+            cpuload             = 0,
+            freeram             = 0,
+            mainStackKB         = 0,
+            ramKB               = 0,  
+            luaRamKB            = 0,
+            luaBitmapsRamKB     = 0,
+        }
+
+rfsuite.performance = performance
+
 
 --======================
 -- Preferences / INI

@@ -28,17 +28,6 @@ local config = arg[1]
 -- Function is called on startup of the script and whenever tasks.lua detects the heli has been disconnected.
 function utils.session()
     rfsuite.session = {
-        -- performance
-        performance = {
-            cpuload             = nil,
-            freeram             = nil,
-            mainStackKB         = nil,
-            ramKB               = nil,  
-            luaRamKB            = nil,
-            luaBitmapsRamKB     = nil,
-        },
-
-
         -- Modes
         tailMode            = nil,
         swashMode           = nil,
@@ -661,9 +650,9 @@ function utils.reportMemoryUsage(location, phase)
     if not rfsuite.preferences.developer.memstats then return end
     location = location or "Unknown"
 
-    local cpuInfo   = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.cpuload) or 0
-    local ramFree   = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.freeram) or 0
-    local ramUsed   = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.usedram) or 0
+    local cpuInfo   = (rfsuite.performance and rfsuite.performance.cpuload) or 0
+    local ramFree   = (rfsuite.performance and rfsuite.performance.freeram) or 0
+    local ramUsed   = (rfsuite.performance and rfsuite.performance.usedram) or 0
     local memInfo   = system.getMemoryUsage() or {}
 
     local snapshot = {

@@ -591,9 +591,9 @@ function tasks.wakeup()
     -- measure how long this wakeup cycle took
     -- Publish both: summed CPU time and (legacy) wall-ish loop time.
     local t1 = os.clock()
-    rfsuite.session.performance = rfsuite.session.performance or {}
-    rfsuite.session.performance.taskLoopCpuMs = loopCpu * 1000.0
-    rfsuite.session.performance.taskLoopTime  = (t1 - t0) * 1000.0
+    rfsuite.performance = rfsuite.performance or {}
+    rfsuite.performance.taskLoopCpuMs = loopCpu * 1000.0
+    rfsuite.performance.taskLoopTime  = (t1 - t0) * 1000.0
 end
 
 function tasks.reset()

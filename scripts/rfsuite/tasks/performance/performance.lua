@@ -90,20 +90,20 @@ function performance.wakeup()
 
     if mem_avg_kb == nil then mem_avg_kb = free_lua_kb
     else mem_avg_kb = clamp(MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb, 0, 1e12) end
-    rfsuite.session.performance.freeram = mem_avg_kb
+    rfsuite.performance.freeram = mem_avg_kb
 
     local gc_total_kb = clamp(collectgarbage("count") or 0, 0, 1e12)
     if usedram_avg_kb == nil then usedram_avg_kb = gc_total_kb
     else usedram_avg_kb = clamp(MEM_ALPHA * gc_total_kb + (1 - MEM_ALPHA) * usedram_avg_kb, 0, 1e12) end
-    rfsuite.session.performance.usedram = usedram_avg_kb
+    rfsuite.performance.usedram = usedram_avg_kb
 
     if free_bmp_kb > bitmap_pool_est_kb then bitmap_pool_est_kb = free_bmp_kb end
-    rfsuite.session.performance.luaBitmapsRamKB = free_bmp_kb
+    rfsuite.performance.luaBitmapsRamKB = free_bmp_kb
 
-    rfsuite.session.performance.mainStackKB     = (m.mainStackAvailable or 0) / 1024
-    rfsuite.session.performance.ramKB           = (m.ramAvailable       or 0) / 1024
-    rfsuite.session.performance.luaRamKB        = (m.luaRamAvailable    or 0) / 1024
-    rfsuite.session.performance.luaBitmapsRamKB = (m.luaBitmapsRamAvailable or 0) / 1024
+    rfsuite.performance.mainStackKB     = (m.mainStackAvailable or 0) / 1024
+    rfsuite.performance.ramKB           = (m.ramAvailable       or 0) / 1024
+    rfsuite.performance.luaRamKB        = (m.luaRamAvailable    or 0) / 1024
+    rfsuite.performance.luaBitmapsRamKB = (m.luaBitmapsRamAvailable or 0) / 1024
   end
 
   ----------------------------------------------------------------
@@ -113,9 +113,9 @@ function performance.wakeup()
   --   taskLoopCpuMs (best) or taskLoopTime (fallback)
   -- Budget per tick is SCHED_DT (seconds) -> convert to ms.
   ----------------------------------------------------------------
-  rfsuite.session.performance = rfsuite.session.performance or {}
-  local loop_ms   = tonumber(rfsuite.session.performance.taskLoopCpuMs)
-                  or tonumber(rfsuite.session.performance.taskLoopTime)
+  rfsuite.performance = rfsuite.performance or {}
+  local loop_ms   = tonumber(rfsuite.performance.taskLoopCpuMs)
+                  or tonumber(rfsuite.performance.taskLoopTime)
                   or 0
   local budget_ms = SCHED_DT * 1000.0
   -- Utilization is how much of the tick budget the loop consumed.
@@ -135,11 +135,11 @@ function performance.wakeup()
   end
 
   cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
-  rfsuite.session.performance.cpuload = clamp(cpu_avg * 100, 0, 100)
+  rfsuite.performance.cpuload = clamp(cpu_avg * 100, 0, 100)
   -- optional: expose raw numbers for debugging in your UI
-  rfsuite.session.performance.loop_ms   = loop_ms
-  rfsuite.session.performance.budget_ms = budget_ms
-  rfsuite.session.performance.util_raw  = instant_util * 100
+  rfsuite.performance.loop_ms   = loop_ms
+  rfsuite.performance.budget_ms = budget_ms
+  rfsuite.performance.util_raw  = instant_util * 100
 
   last_wakeup_start = t_now
 end
