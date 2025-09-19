@@ -89,6 +89,8 @@ function sensors.wakeup()
         return
     end    
 
+    schedulerTick = schedulerTick + 1
+
     if rfsuite.session.resetSensors and not delayPending then
         delayStartTime = os.clock()
         delayPending = true
