@@ -622,6 +622,21 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
     local actual_fields = {}
     if rfsuite.app.Page and rfsuite.app.Page.apidata then
         for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
+            -- catch fields defined in api format like: api="MIXER_CONFIG:tail_motor_idle"
+            if field.api and not field.apikey then
+                local mspapi, apikey = string.match(field.api, "([^:]+):(.+)")
+                -- at this point mspapi is a string.  we need to make it its id number
+                --- that means checking rfsuite.app.Page.apidata.api for the index of mspapi
+                for i, api in ipairs(rfsuite.app.Page.apidata.api) do
+                    if api == mspapi then
+                        mspapi = i
+                        break
+                    end
+                end
+                field.apikey = apikey
+                field.mspapi = mspapi
+                rfsuite.utils.log("[buildDeltaPayload] Converted api field '" .. field.api .. "' to mspapi=" .. tostring(mspapi) .. " apikey=" .. tostring(apikey), "info")
+            end
             if not actual_fields[field.apikey] then -- we check this because its possible a field may not be there is mspgt or msplt is used on page.
                 actual_fields[field.apikey] = field
             end
