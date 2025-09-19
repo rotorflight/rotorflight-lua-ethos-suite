@@ -28,6 +28,7 @@ local loadedSensorModule = nil
 local delayDuration = 2  -- seconds
 local delayStartTime = nil
 local delayPending = false
+local schedulerTick = 0
 
 local msp = assert(rfsuite.compiler.loadfile("tasks/sensors/msp.lua"))(config)
 local smart = assert(rfsuite.compiler.loadfile("tasks/sensors/smart.lua"))(config)
@@ -108,17 +109,24 @@ function sensors.wakeup()
 
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
+
+            local cycleFlip = schedulerTick % 2
+            if cycleFlip == 0 then
+                loadedSensorModule.module.wakeup()
+            else
+                if rfsuite.session and rfsuite.session.isConnected then
+                    -- run msp sensors
+                    if msp and msp.wakeup then msp.wakeup() end
+
+                    -- run smart sensors
+                    if smart and smart.wakeup then smart.wakeup() end
         
-        loadedSensorModule.module.wakeup()
+                end
+            end
 
-        if rfsuite.session and rfsuite.session.isConnected then
-            -- run msp sensors
-            if msp and msp.wakeup then msp.wakeup() end
+        
 
-            -- run smart sensors
-            if smart and smart.wakeup then smart.wakeup() end
- 
-        end
+
 
     end
 
