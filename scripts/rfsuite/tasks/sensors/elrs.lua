@@ -380,6 +380,10 @@ function elrs.crossfirePop()
 end
 
 function elrs.wakeup()
+
+  -- we cannot do anything until connected
+  if not rfsuite.session.isConnected then return end
+
   -- Rebuild whitelist if MSP changed the selection
   local fp = slotsFingerprint()
   if fp ~= _lastSlotsFp then

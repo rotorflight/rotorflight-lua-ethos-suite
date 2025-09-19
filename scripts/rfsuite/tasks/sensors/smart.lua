@@ -216,6 +216,9 @@ end
 local lastWakeupTime = 0
 function smart.wakeup()
 
+    -- we cannot do anything until connected
+    if not rfsuite.session.isConnected then return end    
+
     if firstWakeup then
         log = rfsuite.utils.log
         tasks = rfsuite.tasks

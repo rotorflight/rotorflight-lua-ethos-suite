@@ -186,7 +186,7 @@ function tasks.wakeup()
 
     if levelDone then
         rfsuite.session.onConnect[activeLevel] = true
-        rfsuite.utils.log("All '" .. activeLevel .. "' tasks complete.", "info")
+        rfsuite.utils.log("All []" .. activeLevel .. "] tasks complete.", "info")
 
         if activeLevel == "high" then
             rfsuite.utils.playFileCommon("beep.wav")
@@ -200,7 +200,7 @@ function tasks.wakeup()
         elseif activeLevel == "low" then
             rfsuite.session.isConnectedLow = true
             rfsuite.session.isConnected = true
-            collectgarbage()
+            rfsuite.utils.log("Connection [established].", "info")
             return
         end
     end
