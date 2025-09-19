@@ -9,6 +9,7 @@
 local tasks = {}
 local tasksList = {}
 local tasksLoaded = false
+local activeLevel = nil
 
 local telemetryTypeChanged = false
 
@@ -111,7 +112,7 @@ function tasks.wakeup()
     end
 
     -- Find the first priority level that isn't complete yet.
-    local activeLevel = nil
+    activeLevel = nil
     for _, level in ipairs(PRIORITY_LEVELS) do
         if not rfsuite.session.onConnect[level] then
             activeLevel = level
@@ -208,6 +209,13 @@ end
 function tasks.setTelemetryTypeChanged()
     telemetryTypeChanged = true
     lastTypeChangeAt = os.clock()
+end
+
+function tasks.active()
+    if not activeLevel then
+        return false
+    end
+    return true
 end
 
 

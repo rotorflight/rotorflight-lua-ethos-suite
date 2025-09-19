@@ -988,6 +988,11 @@ function telemetry.wakeup()
     -- Prioritize MSP traffic
     if rfsuite.session.mspBusy then return end
 
+    -- Yield if busy doing onConnect
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then
+        return
+    end    
+
     -- Rate‐limited “onchange” scanning
     if (now - sensorRateLimit) >= ONCHANGE_RATE then
         sensorRateLimit = now

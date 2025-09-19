@@ -83,6 +83,11 @@ end
 
 function sensors.wakeup()
 
+    -- Yield if busy doing onConnect
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then
+        return
+    end    
+
     if rfsuite.session.resetSensors and not delayPending then
         delayStartTime = os.clock()
         delayPending = true
