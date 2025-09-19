@@ -1023,15 +1023,15 @@
         "needs_translation": false,
         "translation": "STANDARD"
       },
-      "tbl_throttle_type_idle_auto_on": {
-        "english": "IDLE_AUTO_ON",
-        "needs_translation": false,
-        "translation": "IDLE_AUTO_ON"
-      },
       "tbl_throttle_type_normal": {
         "english": "NORMAL",
         "needs_translation": false,
         "translation": "NORMAL"
+      },
+      "tbl_throttle_type_off_idle_auto_on": {
+        "english": "OFF_IDLE_AUTO_ON",
+        "needs_translation": false,
+        "translation": "OFF_IDLE_AUTO_ON"
       },
       "tbl_throttle_type_off_idle_on": {
         "english": "OFF_IDLE_ON",

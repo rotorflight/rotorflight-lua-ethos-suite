@@ -27,7 +27,7 @@ local MSP_API_STRUCTURE_READ_DATA
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
 
     local gov_modeTable ={[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_external)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"}
-    local throttleTypeTable ={[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@","@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@","@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_idle_auto_on)@"}
+    local throttleTypeTable ={[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@","@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@","@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_auto_on)@"}
 
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "gov_mode",                        type = "U8",  apiVersion = 12.09, simResponse = {2},    min = 0,  max = #gov_modeTable, table = gov_modeTable, help = "@i18n(api.GOVERNOR_CONFIG.gov_mode)@"},

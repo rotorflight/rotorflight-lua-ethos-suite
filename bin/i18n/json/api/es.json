@@ -1245,9 +1245,9 @@
       "translation": "APAGADO_MARCHA_ENCENDIDO",
       "needs_translation": false
     },
-    "tbl_throttle_type_idle_auto_on": {
-      "english": "IDLE_AUTO_ON",
-      "translation": "MARCHA_AUTO_ENCENDIDO",
+    "tbl_throttle_type_off_idle_auto_on": {
+      "english": "OFF_IDLE_AUTO_ON",
+      "translation": "APAGADO_MARCHA_AUTO_ENCENDIDO",
       "needs_translation": false
     },
     "governor_idle_throttle": {

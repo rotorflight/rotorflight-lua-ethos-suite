@@ -1023,15 +1023,15 @@
         "needs_translation": false,
         "translation": "STANDAARD"
       },
-      "tbl_throttle_type_idle_auto_on": {
-        "english": "IDLE_AUTO_ON",
-        "needs_translation": false,
-        "translation": "STATIONAIR_AUTO_AAN"
-      },
       "tbl_throttle_type_normal": {
         "english": "NORMAL",
         "needs_translation": false,
         "translation": "NORMAAL"
+      },
+      "tbl_throttle_type_off_idle_auto_on": {
+        "english": "OFF_IDLE_AUTO_ON",
+        "needs_translation": false,
+        "translation": "UIT_STATIONAIR_AUTO_AAN"
       },
       "tbl_throttle_type_off_idle_on": {
         "english": "OFF_IDLE_ON",

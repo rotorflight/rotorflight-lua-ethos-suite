@@ -1245,9 +1245,9 @@
       "translation": "SPENTO_MINIMO_ACC",
       "needs_translation": false
     },
-    "tbl_throttle_type_idle_auto_on": {
-      "english": "IDLE_AUTO_ON",
-      "translation": "MINIMO_AUTO_ACC",
+    "tbl_throttle_type_off_idle_auto_on": {
+      "english": "OFF_IDLE_AUTO_ON",
+      "translation": "SPENTO_MINIMO_AUTO_ACC",
       "needs_translation": false
     },
     "governor_idle_throttle": {

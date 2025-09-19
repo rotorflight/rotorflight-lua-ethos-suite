@@ -1245,9 +1245,9 @@
       "translation": "UIT_STATIONAIR_AAN",
       "needs_translation": false
     },
-    "tbl_throttle_type_idle_auto_on": {
-      "english": "IDLE_AUTO_ON",
-      "translation": "STATIONAIR_AUTO_AAN",
+    "tbl_throttle_type_off_idle_auto_on": {
+      "english": "OFF_IDLE_AUTO_ON",
+      "translation": "UIT_STATIONAIR_AUTO_AAN",
       "needs_translation": false
     },
     "governor_idle_throttle": {

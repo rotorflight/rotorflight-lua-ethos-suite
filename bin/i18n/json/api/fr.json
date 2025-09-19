@@ -1245,9 +1245,9 @@
       "translation": "ARRET_RALENTI_ALLUME",
       "needs_translation": false
     },
-    "tbl_throttle_type_idle_auto_on": {
-      "english": "IDLE_AUTO_ON",
-      "translation": "RALENTI_AUTO_ALLUME",
+    "tbl_throttle_type_off_idle_auto_on": {
+      "english": "OFF_IDLE_AUTO_ON",
+      "translation": "ARRET_RALENTI_AUTO_ALLUME",
       "needs_translation": false
     },
     "governor_idle_throttle": {
