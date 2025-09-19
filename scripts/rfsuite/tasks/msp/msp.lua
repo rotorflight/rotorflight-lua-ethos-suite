@@ -100,8 +100,6 @@ function msp.wakeup()
 
    msp.activeProtocol = rfsuite.session.telemetryType
 
-    if rfsuite.tasks.wasOn == true then telemetryTypeChanged = true end
-
     if telemetryTypeChanged == true then
 
         --rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)

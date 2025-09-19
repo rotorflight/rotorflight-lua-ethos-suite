@@ -54,7 +54,7 @@ local taskSchedulerPercentage
 local schedulerTick
 local lastSensorName
 local tasks, tasksList = {}, {}
-tasks.heartbeat, tasks.begin, tasks.wasOn = nil, nil, false  -- begin nil by default
+tasks.heartbeat, tasks.begin = nil, nil  -- begin nil by default
 
 local currentSensor, currentModuleId, currentTelemetryType
 local internalModule, externalModule
@@ -352,11 +352,10 @@ function tasks.telemetryCheckScheduler()
 end
 
 function tasks.active()
-    if not tasks.heartbeat then return false end
-
-    local age = os.clock() - tasks.heartbeat
-    tasks.wasOn = age >= 2
-    if rfsuite.session.mspBusy or age <= 2 then return true end
+    -- consider recent task activity as active
+    if tasks.heartbeat and (os.clock() - tasks.heartbeat) < 2 then
+        return true
+    end
 
     return false
 end
@@ -677,7 +676,6 @@ function tasks.init()
 
     -- reset public flags
     tasks.heartbeat            = nil
-    tasks.wasOn                = false
     tasks._justInitialized     = false
 
     -- fresh task container(s)
