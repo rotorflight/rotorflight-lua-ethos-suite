@@ -757,16 +757,13 @@ function dashboard.renderLayout(widget, config)
     if layout.showstats or rfsuite.preferences.developer.overlaystats then
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
-        local cpuUsage = (rfsuite.session and rfsuite.session.cpuload) or 0
-        local ramFree  = (rfsuite.session and rfsuite.session.freeram) or 0
-        local ramUsed  = (rfsuite.session and rfsuite.session.usedram) or 0
-
-        -- deeper system stats (in KB)
-        local memInfo = system.getMemoryUsage() or {}
-        local mainStackKB     = ((memInfo.mainStackAvailable or 0) / 1024)
-        local ramKB           = ((memInfo.ramAvailable or 0) / 1024)
-        local luaRamKB        = ((memInfo.luaRamAvailable or 0) / 1024)
-        local luaBitmapsRamKB = ((memInfo.luaBitmapsRamAvailable or 0) / 1024)
+        local cpuUsage = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.cpuload) or 0
+        local ramFree  = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.freeram) or 0
+        local ramUsed  = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.usedram) or 0
+        local mainStackKB     = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.mainStackKB) or 0)
+        local ramKB           = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.ramKB) or 0)
+        local luaRamKB        = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.luaRamKB) or 0)
+        local luaBitmapsRamKB = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.luaBitmapsRamKB) or 0)
 
         lcd.font(FONT_S)
 
@@ -796,11 +793,10 @@ function dashboard.renderLayout(widget, config)
 
         -- rows: label / value / unit
         local rows = {
-            { "CPU",               fmtInt(cpuUsage),             "%"  },
-            { "RAM FREE",          fmtInt(ramFree),              "kB" },
-            { "RAM USED",          fmtInt(ramUsed),              "kB" },
+            { "SCHEDULER CPU",               fmtInt(cpuUsage),             "%"  },
+            { "LUA RAM FREE",          fmtInt(ramFree),              "kB" },
+            { "LUA RAM USED",          fmtInt(ramUsed),              "kB" },
             { "SYSTEM RAM FREE",  fmtKB(ramKB),                 "KB" },
-            { "LUA RAM FREE",     fmtKB(luaRamKB),              "KB" },
             { "LUA BITMAP RAM",    fmtKB(luaBitmapsRamKB),       "KB" },
         }
 

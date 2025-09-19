@@ -171,8 +171,12 @@ local function armedSaveWarning()
     if not app.dialogs.progressDisplay then
         app.audio.playSaveArmed = true
         app.dialogs.progressCounter = 0
-        local key = (rfsuite.utils.apiVersionCompare(">=", "12.08") and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
-        app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", i18n(key))
+        local key =
+            (rfsuite.utils.apiVersionCompare(">=", "12.08")
+                and "@i18n(app.msg_please_disarm_to_save_warning)@"
+                or "@i18n(app.msg_please_disarm_to_save)@")
+
+        app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", key)
     end
     if app.dialogs.progressCounter >= 100 then
         app.triggers.showSaveArmedWarning = false

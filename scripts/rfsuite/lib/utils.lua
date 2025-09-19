@@ -28,9 +28,16 @@ local config = arg[1]
 -- Function is called on startup of the script and whenever tasks.lua detects the heli has been disconnected.
 function utils.session()
     rfsuite.session = {
-        -- system
-        cpuload             = 0,
-        freeram             = 0,
+        -- system`
+        os = {
+            cpuload             = nil,
+            freeram             = nil,
+            mainStackKB         = nil,
+            ramKB               = nil,  
+            luaRamKB            = nil,
+            luaBitmapsRamKB     = nil,
+        },
+
 
         -- Modes
         tailMode            = nil,

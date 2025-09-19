@@ -13,6 +13,8 @@ local tasksLoaded = false
 local telemetryTypeChanged = false
 
 local TASK_TIMEOUT_SECONDS = 10
+local MAX_RETRIES = 3            -- how many times to retry a timed-out task
+local RETRY_BACKOFF_SECONDS = 1  -- base backoff; actual backoff = base * 2^(attempt-1)
 
 
 -- Debounce for telemetryTypeChanged -> avoid repeated resets on ELRS/S.Port flaps
@@ -56,6 +58,9 @@ function tasks.findTasks()
                             priority = level,
                             initialized = false,
                             complete = false,
+                            failed = false,
+                            attempts = 0,
+                            nextEligibleAt = 0,
                             startTime = nil
                         }
                     else
@@ -75,6 +80,9 @@ function tasks.resetAllTasks()
         task.initialized = false
         task.complete = false
         task.startTime = nil
+        task.failed = false
+        task.attempts = 0
+        task.nextEligibleAt = 0        
     end
 
     resetSessionFlags()
@@ -121,25 +129,50 @@ function tasks.wakeup()
     -- Only run tasks from the active level.
     for name, task in pairs(tasksList) do
         if task.priority == activeLevel then
+            -- Skip failed tasks entirely
+            if task.failed then goto continue end
+
+            -- Respect backoff window
+            if task.nextEligibleAt and task.nextEligibleAt > now then
+                goto continue
+            end
+
             if not task.initialized then
                 task.initialized = true
                 task.startTime = now
             end
+
             if not task.complete then
                 rfsuite.utils.log("Waking up " .. name, "debug")
                 task.module.wakeup()
                 if task.module.isComplete and task.module.isComplete() then
                     task.complete = true
                     task.startTime = nil
+                    task.nextEligibleAt = 0
                     rfsuite.utils.log("Completed " .. name, "debug")
                 elseif task.startTime and (now - task.startTime) > TASK_TIMEOUT_SECONDS then
-                    rfsuite.utils.log("Task '" .. name .. "' timed out.", "info")
-                    tasks.resetAllTasks()
-                    task.startTime = nil
+                    -- Timeout: re-queue with backoff or mark failed
+                    task.attempts = (task.attempts or 0) + 1
+                    if task.attempts <= MAX_RETRIES then
+                        local backoff = RETRY_BACKOFF_SECONDS * (2 ^ (task.attempts - 1))
+                        task.nextEligibleAt = now + backoff
+                        task.initialized = false
+                        task.startTime = nil
+                        rfsuite.utils.log(
+                            string.format("Task '%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
+                                        name, task.attempts, MAX_RETRIES, backoff), "info")
+                    else
+                        task.failed = true
+                        task.startTime = nil
+                        rfsuite.utils.log(
+                            string.format("Task '%s' failed after %d attempts. Skipping.", name, MAX_RETRIES), "info")
+                    end
                 end
             end
+            ::continue::
         end
     end
+
 
     -- Check if the active level just finished; if so, set flags and return early.
     local levelDone = true

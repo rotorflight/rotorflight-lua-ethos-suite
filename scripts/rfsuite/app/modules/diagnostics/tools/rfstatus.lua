@@ -30,6 +30,8 @@ local btnW   = 100
 local btnWs  = btnW - (btnW * 20) / 100
 local xRight = w - 15
 
+local x,y
+
 local displayPos = {
   x = xRight - btnW - btnWs - 5 - btnWs,
   y = rfsuite.app.radio.linePaddingTop,
@@ -110,10 +112,10 @@ local function openPage(pidx, title, script)
   rfsuite.app.formFieldCount = 0
 
   -- CPU Load %
-  addStatusLine("@i18n(app.modules.fblstatus.cpu_load)@", string.format("%.1f%%", rfsuite.session.cpuload or 0))
+  addStatusLine("@i18n(app.modules.fblstatus.cpu_load)@", string.format("%.1f%%", rfsuite.session.os.cpuload or 0))
 
   -- Free RAM
-  addStatusLine("@i18n(app.modules.msp_speed.memory_free)@", string.format("%.1f kB", rfsuite.session.freeram or 0))
+  addStatusLine("@i18n(app.modules.msp_speed.memory_free)@", string.format("%.1f kB", rfsuite.session.os.freeram or 0))
 
   -- Background Task status
   addStatusLine("@i18n(app.modules.rfstatus.bgtask)@",
@@ -158,7 +160,7 @@ local function wakeup()
   do
     local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_CPULOAD]
     if field then
-      field:value(string.format("%.1f%%", rfsuite.session.cpuload or 0))
+      field:value(string.format("%.1f%%", rfsuite.session.os.cpuload or 0))
     end
   end
 
@@ -166,7 +168,7 @@ local function wakeup()
   do
     local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_FREERAM]
     if field then
-      field:value(string.format("%.1f kB", rfsuite.utils.round(rfsuite.session.freeram or 0, 1)))
+      field:value(string.format("%.1f kB", rfsuite.utils.round(rfsuite.session.os.freeram or 0, 1)))
     end
   end
 
