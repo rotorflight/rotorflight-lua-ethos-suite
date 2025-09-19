@@ -56,10 +56,13 @@ local lastSensorName
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.begin, tasks.wasOn = nil, nil, false  -- begin nil by default
 
-
 local currentSensor, currentModuleId, currentTelemetryType
 local internalModule, externalModule
 
+-- CPU constants (cheap -> keep)
+local CPU_TICK_HZ     = 20
+local SCHED_DT        = 1 / CPU_TICK_HZ
+local OVERDUE_TOL     = SCHED_DT * 0.25
 
 tasks._justInitialized = false
 tasks._initState = "start"
@@ -80,24 +83,6 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm 
 
--- CPU constants (cheap -> keep)
-local CPU_TICK_HZ     = 20
-local SCHED_DT        = 1 / CPU_TICK_HZ
-local OVERDUE_TOL     = SCHED_DT * 0.25
-
--- CPU/mem moving-average state (declare only)
-local last_wakeup_start
-local CPU_TICK_BUDGET
-local CPU_ALPHA
-local cpu_avg
-
-local MEM_ALPHA
-local mem_avg_kb
-local last_mem_t
-local MEM_PERIOD
-local bitmap_pool_est_kb
-local usedram_avg_kb
-
 
 -- =========================
 -- Profiler config & helpers
@@ -113,6 +98,7 @@ tasks.profile = {
 }
 
 local function profWanted(name)
+  if not tasks.profile.enabled then return end
   if not tasks.profile.enabled then return false end
   local inc, exc = tasks.profile.include, tasks.profile.exclude
   if inc and not inc[name] then return false end
@@ -121,6 +107,7 @@ local function profWanted(name)
 end
 
 local function profRecord(task, dur)
+  if not tasks.profile.enabled then return end
   if dur < (tasks.profile.minDuration or 0) then return end
   task.duration = dur
   task.totalDuration = (task.totalDuration or 0) + dur
@@ -613,88 +600,6 @@ function tasks.wakeup()
         end
     end
 
-    -- track average cpu load    
-  -- Accurate CPU utilization: work_time / wall_time_between_wakeups
-  local t_end = os.clock()
-  local work_elapsed = t_end - now
-
-  local dt
-  if last_wakeup_start ~= nil then
-    dt = now - last_wakeup_start
-  else
-    dt = (1 / CPU_TICK_HZ)
-  end
-
-  -- Guard against pathological tiny dt (e.g., re-entrancy)
-  if dt < (0.25 * (1 / CPU_TICK_HZ)) then
-    dt = (1 / CPU_TICK_HZ)
-  end
-
-  local instant_util = work_elapsed / dt   -- 0..∞
-
-  -- ---- Simulator CPU bias ---
-  if usingSimulator then
-    -- Target the radio's baseline utilization in sim.
-    local SIM_TARGET_UTIL = 0.50        -- e.g. 20%
-    local SIM_MAX_UTIL    = 0.80        -- never report above this via bias
-    -- Blend toward the target only when we're below it.
-    if instant_util < SIM_TARGET_UTIL then
-        -- Amount to blend this tick (EMA-ish). Tune 0.25..0.5 for snappier/slower convergence.
-        local BLEND = 0.55
-        instant_util = math.min(
-        SIM_MAX_UTIL,
-        instant_util + (SIM_TARGET_UTIL - instant_util) * BLEND
-        )
-    end
-  end
-  -- ---- end simulator bias ----
-
-
-  cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
-  rfsuite.session.os.cpuload = math.min(100, math.max(0, cpu_avg * 100))
-
-  last_wakeup_start = now
-
-    -- track average memory usage (logic-used excludes bitmaps)
-    do
-        local now2 = os.clock()
-        if (now2 - last_mem_t) >= MEM_PERIOD then
-            last_mem_t = now2
-
-            local m = (system.getMemoryUsage and system.getMemoryUsage()) or {}
-
-            local free_lua_kb = math.max(0, (m.luaRamAvailable or 0) / 1024)
-            local free_bmp_kb = math.max(0, (m.luaBitmapsRamAvailable or 0) / 1024)
-
-            -- Smooth free Lua heap (this is what you should expose as freeram)
-            if mem_avg_kb == nil then mem_avg_kb = free_lua_kb
-            else mem_avg_kb = math.max(0, MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb) end
-            rfsuite.session.os.freeram = mem_avg_kb  -- KB (EMA), Lua heap only
-
-            -- Lua logic used = GC heap usage (don’t subtract bitmaps)
-            local gc_total_kb = math.max(0, collectgarbage("count"))
-            if usedram_avg_kb == nil then usedram_avg_kb = gc_total_kb
-            else usedram_avg_kb = math.max(0, MEM_ALPHA * gc_total_kb + (1 - MEM_ALPHA) * usedram_avg_kb) end
-            rfsuite.session.os.usedram = usedram_avg_kb  -- KB (EMA), Lua heap only
-
-            -- (Optional) track bitmap pool separately for display/diagnostics
-            bitmap_pool_est_kb = math.max(bitmap_pool_est_kb or 0, free_bmp_kb)
-            rfsuite.session.os.luaBitmapsRamKB = free_bmp_kb
-
-
-
-            -- deeper system stats (in KB)
-            rfsuite.session.os.mainStackKB     = ((m.mainStackAvailable or 0) / 1024)
-            rfsuite.session.os.ramKB           = ((m.ramAvailable or 0) / 1024)
-            rfsuite.session.os.luaRamKB        = ((m.luaRamAvailable or 0) / 1024)
-            rfsuite.session.os.luaBitmapsRamKB = ((m.luaBitmapsRamAvailable or 0) / 1024)
-
-
-        end
-    end
-
-
-
 
 end
 
@@ -775,17 +680,6 @@ function tasks.init()
     ethosVersionGood           = nil
     lastSensorName             = nil
     lastCheckAt                = nil
-
-    -- profiler / CPU / mem tracking baselines
-    CPU_TICK_BUDGET            = 1 / CPU_TICK_HZ
-    CPU_ALPHA                  = 0.6        -- raise this to 1.0 if you want instant CPU
-    cpu_avg                    = 0
-    last_wakeup_start          = nil
-
-    MEM_ALPHA                  = 0.6        -- raise this to 1.0 if you want instant mem
-    mem_avg_kb                 = nil
-    last_mem_t                 = 0
-    MEM_PERIOD                 = 0.5
 
     -- reset public flags
     tasks.heartbeat            = nil
