@@ -2082,7 +2082,7 @@ function ui.adminStatsOverlay()
     and preferences.developer.overlaystatsadmin
   then
       -- font & color
-      lcd.font(FONT_XS)
+      lcd.font(FONT_XXS)
       lcd.color(lcd.RGB(255,255,255))
 
       -- read fresh values each draw
@@ -2104,7 +2104,7 @@ function ui.adminStatsOverlay()
 
       -- only the 3 requested items
       local rows = {
-          { "SCHEDULER:",          fmtInt(cpuUsage),  "%"  },
+          { "LOAD:",          fmtInt(cpuUsage),  "%"  },
           { "USED",     fmtInt(ramUsed),   "kB" },
           { "FREE", fmtKB(luaRamKB),   "KB" },
       }
