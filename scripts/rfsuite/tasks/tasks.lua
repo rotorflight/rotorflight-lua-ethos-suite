@@ -391,6 +391,8 @@ function tasks.wakeup()
 
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
+    local t0 = tasks.heartbeat
+    local loopCpu = 0   -- seconds of CPU spent inside task wakeups this tick
 
     tasks.profile.enabled = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler
 
@@ -476,21 +478,20 @@ function tasks.wakeup()
                         end
                         local fn = tasks[task.name].wakeup
                         if fn then
+                            local c0 = os.clock()
+                            local ok, err = pcall(fn, tasks[task.name])
+                            local c1 = os.clock()
+                            local dur = c1 - c0
+                            loopCpu = loopCpu + dur
                             if profWanted(task.name) then
-                                local t0 = os.clock()
-                                local ok, err = pcall(fn, tasks[task.name])
-                                local t1 = os.clock()
-                                profRecord(task, t1 - t0)
+                                profRecord(task, dur)
                                 if not ok then
                                     print(("Error in task %q wakeup: %s"):format(task.name, err))
                                     collectgarbage("collect")
                                 end
-                            else
-                                local ok, err = pcall(fn, tasks[task.name])
-                                if not ok then
-                                    print(("Error in task %q wakeup: %s"):format(task.name, err))
-                                    collectgarbage("collect")
-                                end
+                            elseif not ok then
+                                print(("Error in task %q wakeup: %s"):format(task.name, err))
+                                collectgarbage("collect")
                             end
                         end
                         task.last_run = now
@@ -538,21 +539,15 @@ function tasks.wakeup()
         for _, task in ipairs(mustRunTasks) do
             local fn = tasks[task.name].wakeup
             if fn then
-                if profWanted(task.name) then
-                    local t0 = os.clock()
-                    local ok, err = pcall(fn, tasks[task.name])
-                    local t1 = os.clock()
-                    profRecord(task, t1 - t0)
-                    if not ok then
-                        print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
-                        collectgarbage("collect")
-                    end
-                else
-                    local ok, err = pcall(fn, tasks[task.name])
-                    if not ok then
-                        print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
-                        collectgarbage("collect")
-                    end
+                local c0 = os.clock()
+                local ok, err = pcall(fn, tasks[task.name])
+                local c1 = os.clock()
+                local dur = c1 - c0
+                loopCpu = loopCpu + dur
+                if profWanted(task.name) then profRecord(task, dur) end
+                if not ok then
+                    print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
+                    collectgarbage("collect")
                 end
             end
             task.last_run = now
@@ -562,21 +557,15 @@ function tasks.wakeup()
             local task = normalEligibleTasks[i]
             local fn = tasks[task.name].wakeup
             if fn then
-                if profWanted(task.name) then
-                    local t0 = os.clock()
-                    local ok, err = pcall(fn, tasks[task.name])
-                    local t1 = os.clock()
-                    profRecord(task, t1 - t0)
-                    if not ok then
-                        print(("Error in task %q wakeup: %s"):format(task.name, err))
-                        collectgarbage("collect")
-                    end
-                else
-                    local ok, err = pcall(fn, tasks[task.name])
-                    if not ok then
-                        print(("Error in task %q wakeup: %s"):format(task.name, err))
-                        collectgarbage("collect")
-                    end
+                local c0 = os.clock()
+                local ok, err = pcall(fn, tasks[task.name])
+                local c1 = os.clock()
+                local dur = c1 - c0
+                loopCpu = loopCpu + dur
+                if profWanted(task.name) then profRecord(task, dur) end
+                if not ok then
+                    print(("Error in task %q wakeup: %s"):format(task.name, err))
+                    collectgarbage("collect")
                 end
             end
             task.last_run = now
@@ -600,7 +589,12 @@ function tasks.wakeup()
         end
     end
 
-
+    -- measure how long this wakeup cycle took
+    -- Publish both: summed CPU time and (legacy) wall-ish loop time.
+    local t1 = os.clock()
+    rfsuite.session.performance = rfsuite.session.performance or {}
+    rfsuite.session.performance.taskLoopCpuMs = loopCpu * 1000.0
+    rfsuite.session.performance.taskLoopTime  = (t1 - t0) * 1000.0
 end
 
 function tasks.reset()

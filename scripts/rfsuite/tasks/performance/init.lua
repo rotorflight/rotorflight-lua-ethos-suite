@@ -17,11 +17,11 @@
  * 
 ]] --
 local init = {
-    interval        = 0.05,              -- run every 0.5 seconds
-    script          = "performance.lua",     -- run this script
-    linkrequired    = false,            -- run only if link is established
-    connected       = false,            -- run this script only if msp is connected
+    interval        = 0.05,              -- run every 0.05 seconds (20 Hz)
+    script          = "performance.lua", -- run this script
+    linkrequired    = false,             -- run only if link is established
+    connected       = false,             -- run this script only if msp is connected
     spreadschedule  = false,             -- run on every loop
-    simulatoronly   = false,            -- run in simulation mode
+    simulatoronly   = false,             -- run in simulation mode
 }
 return init

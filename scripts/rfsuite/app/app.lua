@@ -323,24 +323,6 @@ function app.close()
   app.formFieldCount        = nil
   app.tasks                 = nil
 
-  --[[
-  print("--------------------------------")
-  print("Left over tables on closing application:")
-  for i,v in pairs(rfsuite.app) do 
-    print("  -" .. i)
-  end
-  print("--------------------------------")
-  ]]
-
-  --[[
-  print("--------------------------------")
-  print("Global variables:")
-  for i,v in pairs(_G) do 
-    print("  -" .. i)
-  end
-  print("--------------------------------")
-]]--
-
   -- Telemetry/protocol
   ELRS_PAUSE_TELEMETRY = false
   CRSF_PAUSE_TELEMETRY = false

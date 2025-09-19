@@ -2104,7 +2104,7 @@ function ui.adminStatsOverlay()
 
       -- only the 3 requested items
       local rows = {
-          { "CPU:",          fmtInt(cpuUsage),  "%"  },
+          { "SCHEDULER:",          fmtInt(cpuUsage),  "%"  },
           { "USED",     fmtInt(ramUsed),   "kB" },
           { "FREE", fmtKB(luaRamKB),   "KB" },
       }

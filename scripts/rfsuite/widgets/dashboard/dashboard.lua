@@ -793,7 +793,7 @@ function dashboard.renderLayout(widget, config)
 
         -- rows: label / value / unit
         local rows = {
-            { "SCHEDULER CPU",               fmtInt(cpuUsage),             "%"  },
+            { "SCHEDULER CAPACITY",               fmtInt(cpuUsage),             "%"  },
             { "LUA RAM FREE",          fmtInt(ramFree),              "kB" },
             { "LUA RAM USED",          fmtInt(ramUsed),              "kB" },
             { "SYSTEM RAM FREE",  fmtKB(ramKB),                 "KB" },

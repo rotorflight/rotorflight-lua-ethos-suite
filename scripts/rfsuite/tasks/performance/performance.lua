@@ -15,21 +15,22 @@ local performance = {}
 ----------------------------------------------------------------
 -- Tuning
 ----------------------------------------------------------------
-local PROF_PERIOD_S   = 0.05            -- 40 Hz task interval
+local PROF_PERIOD_S   = 0.05             -- 20 Hz tick (matches scheduler
 local CPU_TICK_HZ     = 1 / PROF_PERIOD_S
 local SCHED_DT        = PROF_PERIOD_S
 local OVERDUE_TOL     = SCHED_DT * 0.25
 
 local CPU_TICK_BUDGET = SCHED_DT
-local CPU_ALPHA       = 0.8              -- 1.0 => instant, 0.8 => fast-follow
+local CPU_ALPHA       = 0.9              -- 1.0 => instant, 0.8 => fast-follow
 local MEM_ALPHA       = 0.8
 local MEM_PERIOD      = 0.50             -- sample memory twice per second
 
 -- Optional: make sim utilization less jittery
 local usingSimulator  = (system.getVersion and system.getVersion().simulation) or false
-local SIM_TARGET_UTIL = 0.50
-local SIM_MAX_UTIL    = 0.80
-local SIM_BLEND       = 0.55
+-- Simulator bias (raise these to make sim read higher)
+local SIM_TARGET_UTIL = 0.80   
+local SIM_MAX_UTIL    = 1.00   
+local SIM_BLEND       = 0.90  
 
 ----------------------------------------------------------------
 -- State
@@ -75,7 +76,7 @@ function performance.wakeup()
 
   if dt < (0.25 * SCHED_DT) then dt = SCHED_DT end
 
-  local tick_work_start = t_now
+  -- no internal timing needed; we consume loop time published by tasks.lua
 
   ----------------------------------------------------------------
   -- Memory (rate-limited)
@@ -106,10 +107,25 @@ function performance.wakeup()
   end
 
   ----------------------------------------------------------------
-  -- CPU (work_time / wall_time_between_wakeups)
+  -- CPU (external loop time / budget)
+  -- Use scheduler loop runtime measured in tasks.lua:
+  -- Prefer summed CPU time of tasks (ms), fall back to total loop time:
+  --   taskLoopCpuMs (best) or taskLoopTime (fallback)
+  -- Budget per tick is SCHED_DT (seconds) -> convert to ms.
   ----------------------------------------------------------------
-  local work_elapsed = os.clock() - tick_work_start
-  local instant_util = work_elapsed / dt
+  rfsuite.session.performance = rfsuite.session.performance or {}
+  local loop_ms   = tonumber(rfsuite.session.performance.taskLoopCpuMs)
+                  or tonumber(rfsuite.session.performance.taskLoopTime)
+                  or 0
+  local budget_ms = SCHED_DT * 1000.0
+  -- Utilization is how much of the tick budget the loop consumed.
+  local instant_util = 0
+  if budget_ms > 0 then
+    instant_util = loop_ms / budget_ms
+  end
+  -- keep the filter stable even if we overshoot occasionally
+  if instant_util < 0 then instant_util = 0 end
+  if instant_util > 1 then instant_util = 1 end
 
   if usingSimulator and instant_util < SIM_TARGET_UTIL then
     instant_util = math.min(
@@ -120,6 +136,10 @@ function performance.wakeup()
 
   cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
   rfsuite.session.performance.cpuload = clamp(cpu_avg * 100, 0, 100)
+  -- optional: expose raw numbers for debugging in your UI
+  rfsuite.session.performance.loop_ms   = loop_ms
+  rfsuite.session.performance.budget_ms = budget_ms
+  rfsuite.session.performance.util_raw  = instant_util * 100
 
   last_wakeup_start = t_now
 end
