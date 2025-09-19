@@ -129,7 +129,7 @@ function MspQueueController:processQueue()
         self._nextProcessAt = now + self.loopInterval
     end
 
-    local mspBusyTimeout = 2.0
+    local mspBusyTimeout = 5.0
     self.mspBusyStart = self.mspBusyStart or os.clock()
 
     -- lightweight, guarded logging
@@ -150,7 +150,7 @@ function MspQueueController:processQueue()
     -- Timeout watchdog for global MSP busy state
     -- This aims to simply unblock the queue if something goes wrong
     if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
-        --rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "info")
+        rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "info")
         rfsuite.session.mspBusy = false
         self.mspBusyStart = nil
         return
