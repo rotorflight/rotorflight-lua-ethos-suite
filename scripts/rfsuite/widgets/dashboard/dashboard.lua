@@ -757,13 +757,13 @@ function dashboard.renderLayout(widget, config)
     if layout.showstats or rfsuite.preferences.developer.overlaystats then
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
-        local cpuUsage = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.cpuload) or 0
-        local ramFree  = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.freeram) or 0
-        local ramUsed  = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.usedram) or 0
-        local mainStackKB     = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.mainStackKB) or 0)
-        local ramKB           = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.ramKB) or 0)
-        local luaRamKB        = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.luaRamKB) or 0)
-        local luaBitmapsRamKB = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.luaBitmapsRamKB) or 0)
+        local cpuUsage = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.cpuload) or 0
+        local ramFree  = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.freeram) or 0
+        local ramUsed  = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.usedram) or 0
+        local mainStackKB     = ((rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.mainStackKB) or 0)
+        local ramKB           = ((rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.ramKB) or 0)
+        local luaRamKB        = ((rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.luaRamKB) or 0)
+        local luaBitmapsRamKB = ((rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.luaBitmapsRamKB) or 0)
 
         lcd.font(FONT_S)
 

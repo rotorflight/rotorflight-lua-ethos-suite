@@ -2086,9 +2086,9 @@ function ui.adminStatsOverlay()
       lcd.color(lcd.RGB(255,255,255))
 
       -- read fresh values each draw
-      local cpuUsage = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.cpuload) or 0
-      local ramUsed  = (rfsuite.session and rfsuite.session.os and rfsuite.session.os.usedram) or 0
-      local luaRamKB = ((rfsuite.session and rfsuite.session.os and rfsuite.session.os.luaRamKB) or 0) 
+      local cpuUsage = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.cpuload) or 0
+      local ramUsed  = (rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.usedram) or 0
+      local luaRamKB = ((rfsuite.session and rfsuite.session.performance and rfsuite.session.performance.luaRamKB) or 0) 
 
       -- config
       local cfg = {

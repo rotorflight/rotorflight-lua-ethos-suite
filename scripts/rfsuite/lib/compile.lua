@@ -84,8 +84,8 @@ local function LRUCache()
 
   local function currentLuaRamKB()
     -- Prefer rfsuite session metrics (already in KB)
-    if rfsuite and rfsuite.session and rfsuite.session.os then
-      local osinfo = rfsuite.session.os
+    if rfsuite and rfsuite.session and rfsuite.session.performance then
+      local osinfo = rfsuite.session.performance
       if osinfo.luaRamKB then
         return osinfo.luaRamKB
       end
