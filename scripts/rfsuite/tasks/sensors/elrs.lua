@@ -175,18 +175,33 @@ local function ensureElrsMap()
   local sidList = getSidList()
   if not sidList then return end
 
+  -- Build ELRS lookup keyed by *every* sidElrs value
   for _, s in pairs(sidList) do
-    if s.sidElrs then
+    local sid = s.sidElrs
+    if sid then
       local decFn = DECODERS[s.dec] or decNil
-      local _key = s.sidElrs; if type(_key) == "table" then _key = _key[1] end
-      elrs.RFSensors[_key] = {
-        name = s.name,
-        unit = s.unit,
-        prec = s.prec,
-        min  = s.min,
-        max  = s.max,
-        dec  = decFn,
-      }
+      if type(sid) == "table" then
+        for i = 1, #sid do
+          elrs.RFSensors[sid[i]] = {
+            name = s.name,
+            unit = s.unit,
+            prec = s.prec,
+            min  = s.min,
+            max  = s.max,
+            dec  = decFn,
+            -- idx = i,        -- uncomment if any decoder wants to know which sub-SID it is
+          }
+        end
+      else
+        elrs.RFSensors[sid] = {
+          name = s.name,
+          unit = s.unit,
+          prec = s.prec,
+          min  = s.min,
+          max  = s.max,
+          dec  = decFn,
+        }
+      end
     end
   end
 
