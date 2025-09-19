@@ -26,6 +26,8 @@ function servos.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
+    if rfsuite.session.mspBusy then return end
+
 
     if (rfsuite.session.servoCount == nil) and (mspCall1Made == false) then
         mspCall1Made = true

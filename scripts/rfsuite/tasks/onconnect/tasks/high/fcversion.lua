@@ -22,7 +22,12 @@ local fcversion = {}
 local mspCallMade = false
 
 function fcversion.wakeup()
-    if rfsuite.session.fcVersion== nil and mspCallMade == false then
+
+    -- quick exit if no apiVersion
+    if rfsuite.session.apiVersion == nil then return end    
+    if rfsuite.session.mspBusy then return end
+
+    if mspCallMade == false then
 
         mspCallMade = true
 

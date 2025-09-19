@@ -26,6 +26,8 @@ function rxmap.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
+    if rfsuite.session.mspBusy then return end 
+
     if not rfsuite.utils.rxmapReady() and mspCallMade == false then
         mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("RX_MAP")
