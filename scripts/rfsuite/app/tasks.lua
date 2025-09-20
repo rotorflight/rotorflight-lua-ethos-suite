@@ -85,7 +85,7 @@ local function mainMenuIconEnableDisable()
     if app.uiState == app.uiStatus.mainMenu then
         local apiV = tostring(rfsuite.session.apiVersion)
         if not rfsuite.tasks.active() then
-            for i, v in pairs(app.formFieldsBGTask) do
+            for i, v in pairs(rfsuite.app.formFieldsBGTask) do -- <<< keep the full lookup
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
                 elseif v == false then
@@ -93,7 +93,7 @@ local function mainMenuIconEnableDisable()
                 end
             end
         elseif not rfsuite.session.isConnected then
-            for i, v in pairs(app.formFieldsOffline) do
+            for i, v in pairs(rfsuite.app.formFieldsOffline) do -- <<< keep the full lookup
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
                 elseif v == false then
@@ -102,7 +102,7 @@ local function mainMenuIconEnableDisable()
             end
         elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
             app.offlineMode = false
-            for i in pairs(app.formFieldsOffline) do
+            for i in pairs(rfsuite.app.formFieldsOffline) do -- <<< keep the full lookup
                 if app.formFields[i] then
                     app.formFields[i]:enable(true)
                 else
@@ -111,6 +111,7 @@ local function mainMenuIconEnableDisable()
             end
         end
     elseif not app.isOfflinePage then
+        print("loop 4")
         if not rfsuite.session.isConnected then app.ui.openMainMenu() end
     end
 end
