@@ -1191,6 +1191,14 @@ end
 -- @param widget The widget object to be painted.
 function dashboard.paint(widget)
 
+    -- we expect the isCompiledCheck to be replaced at build time with "true"
+    -- if this has not happened; abort as they clearly have a non-release build
+    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    if isCompiledCheck ~= "true" then
+        dashboard.utils.screenError("i18n not compiled - download a release version", true, 0.6)
+        return
+    end
+
     if unsupportedResolution then
         -- If the resolution is unsupported, show an error message and return
         local W, H = lcd.getWindowSize()

@@ -51,6 +51,57 @@ function toolbox.create()
     }
 end
 
+
+local function screenError(msg, border, pct, padX, padY)
+    -- Default values
+    if not pct then pct = 0.5 end
+    if border == nil then border = true end
+    if not padX then padX = 8 end      -- default horizontal padding
+    if not padY then padY = 4 end      -- default vertical padding
+
+    -- Get display size and mode
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+
+    -- Available fonts to try
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+    
+    -- Compute maximum allowed dimensions for text
+    local maxW, maxH = w * pct, h * pct
+    local bestFont, bestW, bestH = FONT_XXS, 0, 0
+
+    -- Choose the largest font that fits within maxW x maxH
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tsizeW, tsizeH = lcd.getTextSize(msg)
+        if tsizeW <= maxW and tsizeH <= maxH then
+            bestFont = font
+            bestW, bestH = tsizeW, tsizeH
+        else
+            break
+        end
+    end
+
+    -- Set chosen font
+    lcd.font(bestFont)
+
+    -- Determine text and border color
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- Calculate centered text position
+    local x = (w - bestW) / 2
+    local y = (h - bestH) / 2
+
+    -- Draw border rectangle if requested
+    if border then
+        lcd.drawRectangle(x - padX, y - padY, bestW + padX * 2, bestH + padY * 2)
+    end
+
+    -- Draw the text centered
+    lcd.drawText(x, y, msg)
+end
+
 -- Delegate paint to the chosen sub-widget (once set up)
 function toolbox.paint(widget)
  
@@ -61,6 +112,15 @@ function toolbox.paint(widget)
     if not widget.object then
         return
     end
+
+    -- we expect the isCompiledCheck to be replaced at build time with "true"
+    -- if this has not happened; abort as they clearly have a non-release build
+    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    if isCompiledCheck ~= "true" then
+        screenError("i18n not compiled", true, 0.6)
+        return
+    end
+
 
     local msg = rfsuite.session.toolbox[toolBoxList[widget.object].object] or "-"
     local title = toolBoxList[widget.object].name 
@@ -172,6 +232,12 @@ function toolbox.wakeup(widget)
         rfsuite.session.toolbox = {}
         return
     end
+
+    local isCompiledCheck = "@i18n(iscompiledcheck1)@"
+    if isCompiledCheck ~= "true" then
+        lcd.invalidate()
+        return
+    end    
 
     local scheduler = lcd.isVisible() and 0.25 or 5
     local now = os.clock()

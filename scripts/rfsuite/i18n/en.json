@@ -5854,6 +5854,11 @@
     "needs_translation": false,
     "translation": "image"
   },
+  "iscompiledcheck": {
+    "english": "true",
+    "needs_translation": false,
+    "translation": "true"
+  },
   "no_link": {
     "english": "no link",
     "needs_translation": false,
