@@ -41,13 +41,6 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 100, max = 500, unit="Hz", help = "@i18n(api.FILTER_CONFIG.dyn_notch_max_hz)@"},
     { field = "rpm_preset",               type = "U8",  apiVersion = 12.08, simResponse = {1 }, table = rpmPreset, tableIdxInc = -1, help = "@i18n(api.FILTER_CONFIG.rpm_preset)@"}, 
     { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.08, simResponse = {20}, min = 1, max = 100, unit = "Hz" , help = "@i18n(api.FILTER_CONFIG.rpm_min_hz)@"},
-    { field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 0}, min = 0, max = 1000, unit = "Hz" , help = "@i18n(api.FILTER_CONFIG.gyro_lpf1_dyn_max_hz)@"},     
-    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }, min = 0, max = 8, help = "@i18n(api.FILTER_CONFIG.dyn_notch_count)@"},          
-    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {100}, min = 0, max = 100, decimals=1, scale = 10, help = "@i18n(api.FILTER_CONFIG.dyn_notch_q)@"},       
-    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 10, max = 200, unit="Hz", help = "@i18n(api.FILTER_CONFIG.dyn_notch_min_hz)@"},       
-    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 100, max = 500, unit="Hz", help = "@i18n(api.FILTER_CONFIG.dyn_notch_max_hz)@"},
-    { field = "rpm_preset",               type = "U8",  apiVersion = 12.08, simResponse = {1 }, table = rpmPreset, tableIdxInc = -1, help = "@i18n(api.FILTER_CONFIG.rpm_preset)@"}, 
-    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.08, simResponse = {20}, min = 1, max = 100, unit = "Hz" , help = "@i18n(api.FILTER_CONFIG.rpm_min_hz)@"},            
 }
 
 
