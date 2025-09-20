@@ -76,6 +76,10 @@ local telemetryCheckScheduler = os.clock  -- keep reference, actual timers set l
 local lastCheckAt
 local lastTelemetryType
 
+local lastModelPath = model.path()
+local lastModelPathCheckAt = 0
+local PATH_CHECK_INTERVAL = 2.0
+
 local lastNameCheckAt = 0
 local NAME_CHECK_INTERVAL = 2.0
 
@@ -289,6 +293,15 @@ function tasks.telemetryCheckScheduler()
     -- early out if link is down
     if not telemetryState then
         return clearSessionAndQueue()
+    end
+
+        -- we must reset if model changes
+    if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
+        if model.path() ~= lastModelPath then
+            utils.log("Model changed, resetting session", "info")
+            lastModelPath = model.path()
+            clearSessionAndQueue()
+        end
     end
 
     -- fast path: if we already have a sensor, don’t rescan every time
