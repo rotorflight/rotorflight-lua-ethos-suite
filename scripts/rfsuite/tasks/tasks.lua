@@ -297,9 +297,10 @@ function tasks.telemetryCheckScheduler()
 
         -- we must reset if model changes
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
-        if model.path() ~= lastModelPath then
+        local newModelPath = model.path()
+        if newModelPath ~= lastModelPath then
             utils.log("Model changed, resetting session", "info")
-            lastModelPath = model.path()
+            lastModelPath = newModelPath
             clearSessionAndQueue()
         end
     end
