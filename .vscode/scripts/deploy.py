@@ -10,7 +10,10 @@ from tqdm import tqdm
 import re
 import shlex
 import time
-import atexit, signal, tempfile  
+import atexit, signal, tempfile
+
+
+MIN_ETHOSSUITE_VERSION = "1.7.0"
 
 SERIAL_PIDFILE = os.path.join(tempfile.gettempdir(), "rfdeploy-serial.pid")
 DEPLOY_TO_RADIO = False  # flag to control radio-only behavior
@@ -19,6 +22,43 @@ THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
 THROTTLE_CHUNK = 16 * 1024          # 16 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024  # pause+fsync every 64 KiB written
 THROTTLE_PAUSE_S = 0.2             # 200 ms
+
+def parse_version(v: str):
+    return tuple(map(int, v.split(".")))
+
+def check_ethossuite_version(ethossuite_bin, min_version=MIN_ETHOSSUITE_VERSION):
+    try:
+        res = subprocess.run(
+            [ethossuite_bin, "--version"],
+            text=True,
+            capture_output=True,
+            timeout=10
+        )
+    except FileNotFoundError:
+        print(f"[ERROR] Ethos Suite not found at: {ethossuite_bin}")
+        return False
+    except subprocess.TimeoutExpired:
+        print("[ERROR] Ethos Suite --version timed out.")
+        return False
+
+    if res.returncode != 0:
+        print(f"[ERROR] Ethos Suite exited with code {res.returncode}")
+        return False
+
+    lines = [l.strip() for l in (res.stdout or "").splitlines() if l.strip()]
+    version = next((l for l in lines if re.match(r'^\d+\.\d+\.\d+$', l)), None)
+
+    if not version:
+        print(f"[ERROR] Could not parse Ethos Suite version from output:\n{res.stdout}")
+        return False
+
+    if parse_version(version) < parse_version(min_version):
+        print(f"[ERROR] Ethos Suite version {version} is too old (need >= {min_version})")
+        return False
+
+    print(f"[ETHOS] Detected Ethos Suite version {version} ✓")
+    return True
+
 
 def file_md5(path, chunk=1024 * 1024):
     import hashlib
@@ -1032,6 +1072,11 @@ def main():
     if args.config != CONFIG_PATH:
         with open(args.config) as f:
             config.update(json.load(f))
+
+    # Sanity check Ethos Suite version
+    ethos_bin = config.get('ethossuite_bin')
+    if ethos_bin and not check_ethossuite_version(ethos_bin, min_version=MIN_ETHOSSUITE_VERSION):
+        sys.exit(1)
 
     # select targets
     if args.radio and args.connect_only:
