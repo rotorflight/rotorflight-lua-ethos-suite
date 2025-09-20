@@ -2,21 +2,21 @@
   "txt_enter_craft_name": {
     "english": "Enter Craft Name",
     "translation": "Enter Craft Name",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "title": {
     "english": "CRAFT NAME",
     "translation": "CRAFT NAME",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "txt_cancel": {
     "english": "Cancel",
     "translation": "Cancel",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "txt_save": {
     "english": "Save",
     "translation": "Save",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

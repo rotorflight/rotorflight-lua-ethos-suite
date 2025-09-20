@@ -6,13 +6,13 @@ servoTable['sections'] = {}
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
-local i18n = rfsuite.i18n.get
+
 local function buildServoTable()
 
     for i = 1, rfsuite.session.servoCount do
         servoTable[i] = {}
         servoTable[i] = {}
-        servoTable[i]['title'] = i18n("app.modules.servos.servo_prefix") .. i
+        servoTable[i]['title'] = "@i18n(app.modules.servos.servo_prefix)@" .. i
         servoTable[i]['image'] = "servo" .. i .. ".png"
         servoTable[i]['disabled'] = true
     end
@@ -26,26 +26,26 @@ local function buildServoTable()
         elseif rfsuite.session.swashMode == 1 then
             -- servo mode is direct - only servo for sure we know name of is tail
             if rfsuite.session.tailMode == 0 then
-                servoTable[4]['title'] = i18n("app.modules.servos.tail")
+                servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
                 servoTable[4]['image'] = "tail.png"
                 servoTable[4]['section'] = 1
             end
         elseif rfsuite.session.swashMode == 2 or rfsuite.session.swashMode == 3 or rfsuite.session.swashMode == 4 then
             -- servo mode is cppm - 
-            servoTable[1]['title'] = i18n("app.modules.servos.cyc_pitch")
+            servoTable[1]['title'] = "@i18n(app.modules.servos.cyc_pitch)@"
             servoTable[1]['image'] = "cpitch.png"
 
-            servoTable[2]['title'] = i18n("app.modules.servos.cyc_left")
+            servoTable[2]['title'] = "@i18n(app.modules.servos.cyc_left)@"
             servoTable[2]['image'] = "cleft.png"
 
-            servoTable[3]['title'] = i18n("app.modules.servos.cyc_right")
+            servoTable[3]['title'] = "@i18n(app.modules.servos.cyc_right)@"
             servoTable[3]['image'] = "cright.png"
 
             if rfsuite.session.tailMode == 0 then
                 -- this is because when swiching models this may or may not have
                 -- been created.
                 if servoTable[4] == nil then servoTable[4] = {} end
-                servoTable[4]['title'] = i18n("app.modules.servos.tail")
+                servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
                 servoTable[4]['image'] = "tail.png"
             else
                 -- servoTable[4]['disabled'] = true
@@ -54,7 +54,7 @@ local function buildServoTable()
             -- servo mode is fpm 90
             -- servoTable[3]['disabled'] = true 
             if rfsuite.session.tailMode == 0 then
-                servoTable[4]['title'] = i18n("app.modules.servos.tail")
+                servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
                 servoTable[4]['image'] = "tail.png"
             else
                 -- servoTable[4]['disabled'] = true                
@@ -116,10 +116,10 @@ local function openPage(pidx, title, script)
     local sc
     local panel
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader(i18n("app.modules.servos.name"))
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@")
 
     local buttonW
     local buttonH
@@ -171,12 +171,12 @@ local function openPage(pidx, title, script)
 
             if pvalue.section == "tail" then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, i18n("app.modules.servos.tail"))
+                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "@i18n(app.modules.servos.tail)@")
             end
 
             if pvalue.section == "other" then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, i18n("app.modules.servos.tail"))
+                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "@i18n(app.modules.servos.tail)@")
             end
 
             if lc == 0 then
@@ -298,7 +298,7 @@ local function onToolMenu(self)
     local buttons
     if rfsuite.session.servoOverride == false then
         buttons = {{
-            label = i18n("app.btn_ok_long"),
+            label = "@i18n(app.btn_ok_long)@",
             action = function()
 
                 -- we cant launch the loader here to se rely on the modules
@@ -315,7 +315,7 @@ local function onToolMenu(self)
         }}
     else
         buttons = {{
-            label = i18n("app.btn_ok_long"),
+            label = "@i18n(app.btn_ok_long)@",
             action = function()
 
                 -- we cant launch the loader here to se rely on the modules
@@ -324,7 +324,7 @@ local function onToolMenu(self)
                 return true
             end
         }, {
-            label = i18n("app.btn_cancel"),
+            label = "@i18n(app.btn_cancel)@",
             action = function()
                 return true
             end
@@ -333,11 +333,11 @@ local function onToolMenu(self)
     local message
     local title
     if rfsuite.session.servoOverride == false then
-        title = i18n("app.modules.servos.enable_servo_override")
-        message = i18n("app.modules.servos.enable_servo_override_msg")
+        title = "@i18n(app.modules.servos.enable_servo_override)@"
+        message = "@i18n(app.modules.servos.enable_servo_override_msg)@"
     else
-        title = i18n("app.modules.servos.disable_servo_override")
-        message = i18n("app.modules.servos.disable_servo_override_msg")
+        title = "@i18n(app.modules.servos.disable_servo_override)@"
+        message = "@i18n(app.modules.servos.disable_servo_override_msg)@"
     end
 
     form.openDialog({
@@ -360,12 +360,12 @@ local function wakeup()
 
         if rfsuite.session.servoOverride == false then
             rfsuite.app.audio.playServoOverideEnable = true
-            rfsuite.app.ui.progressDisplay(i18n("app.modules.servos.servo_override"), i18n("app.modules.servos.enabling_servo_override"))
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.enabling_servo_override)@")
             rfsuite.app.Page.servoCenterFocusAllOn(self)
             rfsuite.session.servoOverride = true
         else
             rfsuite.app.audio.playServoOverideDisable = true
-            rfsuite.app.ui.progressDisplay(i18n("app.modules.servos.servo_override"), i18n("app.modules.servos.disabling_servo_override"))
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.session.servoOverride = false
         end
@@ -419,7 +419,7 @@ local function onNavMenu(self)
         rfsuite.app.audio.playServoOverideDisable = true
         rfsuite.session.servoOverride = false
         inFocus = false
-        rfsuite.app.ui.progressDisplay(i18n("app.modules.servos.servo_override"), i18n("app.modules.servos.disabling_servo_override"))
+        rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
         rfsuite.app.Page.servoCenterFocusAllOff(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end

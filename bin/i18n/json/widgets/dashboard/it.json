@@ -2,291 +2,291 @@
   "theme_load_error": {
     "english": "Your theme did not load correctly. Falling back to default theme.",
     "translation": "Il Tuo tema non si è caricato correttamente. Ritorno al tema di default.",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "validate_sensors": {
     "english": "PLEASE CHECK SENSORS",
     "translation": "SENSORI NECESSARI MANCANTI",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "unsupported_resolution": {
     "english": "TO SMALL",
     "translation": "TROPPO PICCOLO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "waiting_for_connection": {
     "english": "CONNECTING",
     "translation": "CONNECTING",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "check_bg_task": {
     "english": "BG TASK",
     "translation": "BG TASK",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "check_rf_module_on": {
     "english": "RF MODULE",
     "translation": "MODULO RF",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "check_discovered_sensors": {
     "english": "SENSORS",
     "translation": "SENSORI",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_link": {
     "english": "NO LINK",
     "translation": "NO LINK",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "reset_flight": {
     "english": "Reset flight",
     "translation": "Reset VOLO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "reset_flight_ask_title": {
     "english": "Reset flight",
     "translation": "Reset VOLO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "reset_flight_ask_text": {
     "english": "Are you sure you want to reset the flight?",
     "translation": "Sei sicuro di resettare il Volo?",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "voltage": {
     "english": "Voltage",
     "translation": "Voltaggio",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "fuel": {
     "english": "Fuel",
     "translation": "Fuel",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "headspeed": {
     "english": "Headspeed",
     "translation": "Headspeed",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "max": {
     "english": "Max",
     "translation": "Max",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "min": {
     "english": "Min",
     "translation": "Min",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "bec_voltage": {
     "english": "BEC Voltage",
     "translation": "Voltaggio BEC",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "esc_temp": {
     "english": "ESC Temp",
     "translation": "ESC Temp",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "flight_duration": {
     "english": "Flight Duration",
     "translation": "Durata Volo",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "total_flight_duration": {
     "english": "Total Model Flight Duration",
     "translation": "Durata Totale Volo del modello",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "rpm_min": {
     "english": "RPM Min",
     "translation": "RPM Min",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "rpm_max": {
     "english": "RPM Max",
     "translation": "RPM Max",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "throttle_max": {
     "english": "Throttle Max",
     "translation": "Throttle Max",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "current_max": {
     "english": "Current Max",
     "translation": "Corrente Max",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "esc_max_temp": {
     "english": "ESC Temp Max",
     "translation": "ESC Temp Max",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "watts_max": {
     "english": "Max Watts",
     "translation": "Max Watts",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "consumed_mah": {
     "english": "Consumed mAh",
     "translation": "mAh Consumati",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "fuel_remaining": {
     "english": "Fuel Remaining",
     "translation": "Carburante Rimanente",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "min_volts_cell": {
     "english": "Min Volts per cell",
     "translation": "Min Volts per cella",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "link_min": {
     "english": "Link Min",
     "translation": "Link Min",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "governor": {
     "english": "Governor",
     "translation": "Governor",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "profile": {
     "english": "Profile",
     "translation": "Profilo",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "rates": {
     "english": "Rates",
     "translation": "Escursioni",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "flights": {
     "english": "Flights",
     "translation": "Voli",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "lq": {
     "english": "LQ",
     "translation": "LQ",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "time": {
     "english": "Time",
     "translation": "Tempo",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "blackbox": {
     "english": "Blackbox",
     "translation": "Blackbox",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "throttle": {
     "english": "Throttle",
     "translation": "Throttle",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "flight_time": {
     "english": "Flight Time",
     "translation": "Tempo Volo",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "rssi_min": {
     "english": "RSSI Min",
     "translation": "RSSI Min",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "current": {
     "english": "Current",
     "translation": "Corrente",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "timer": {
     "english": "Timer",
     "translation": "Timer",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "rpm": {
     "english": "RPM",
     "translation": "RPM",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "min_voltage": {
     "english": "Min Voltage",
     "translation": "Min Voltaggio",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "max_voltage": {
     "english": "Max Voltage",
     "translation": "Max Voltaggio",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "min_current": {
     "english": "Min Current",
     "translation": "Min Corrente",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "max_current": {
     "english": "Max Current",
     "translation": "Max Corrente",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "max_tmcu": {
     "english": "Max T.MCU",
     "translation": "Max T.MCU",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "max_emcu": {
     "english": "Max E.MCU",
     "translation": "Max E.MCU",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "altitude": {
     "english": "Altitude",
     "translation": "Altitudine",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "altitude_max": {
     "english": "Altitude Max",
     "translation": "Altitudine Max",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "power": {
     "english": "Power",
     "translation": "Power",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "cell_voltage": {
     "english": "Cell Voltage",
     "translation": "Voltaggio Cella",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "volts_per_cell": {
     "english": "Volts per cell",
     "translation": "Volts per cella",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "warning": {
     "english": "Warning",
     "translation": "Attenzione",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "tx_batt": {
     "english": "TX Battery",
-    "translation": "TX Battery",
-    "needs_translation": "true"
+    "translation": "Batteria TX",
+    "needs_translation": false
   },
   "link_max": {
     "english": "Link Max",
-    "translation": "Link Max",
-    "needs_translation": "true"
+    "translation": "Link Massimo",
+    "needs_translation": false
   }
 }

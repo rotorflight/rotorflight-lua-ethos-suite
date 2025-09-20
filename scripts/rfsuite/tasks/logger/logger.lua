@@ -51,6 +51,7 @@ logger.queue.config.log_to_file = (logtofile == true or logtofile == "true")
 
 
 function logger.wakeup()
+    if rfsuite.session.mspBusy then return end
     logger.queue.process()    
 end
 

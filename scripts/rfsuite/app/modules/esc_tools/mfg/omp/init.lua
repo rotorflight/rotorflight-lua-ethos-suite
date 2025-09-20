@@ -1,9 +1,9 @@
 local MSP_API = "ESC_PARAMETERS_OMP"
-local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.omp.name")
-moduleName = "omp"
+local toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@"
+local moduleName = "omp"
 
 
-function getPageValue(page, index)
+local function getPageValue(page, index)
     return page[index]
 end
 
@@ -67,7 +67,7 @@ local function extract_16bit_values_as_table(byte_stream)
     return combined_binary_table
 end
 
-function getActiveFields(inputTable)
+local function getActiveFields(inputTable)
     
     if inputTable == nil then
         return {}

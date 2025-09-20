@@ -2,61 +2,61 @@
   "UNKNOWN": {
     "english": "UNKNOWN",
     "translation": "UNBEKANNT",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "IDLE": {
     "english": "IDLE",
     "translation": "LEERLAUF",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "DISARMED": {
     "english": "DISARMED",
     "translation": "DISARMED",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "OFF": {
     "english": "OFF",
     "translation": "AUS",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "SPOOLUP": {
     "english": "SPOOLUP",
     "translation": "HOCHLAUF",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "ACTIVE": {
     "english": "ACTIVE",
     "translation": "AKTIV",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "RECOVERY": {
     "english": "RECOVERY",
     "translation": "ERHOLUNG",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "THROFF": {
     "english": "THR-OFF",
     "translation": "GAS-AUS",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "LOSTHS": {
     "english": "LOST-HS",
     "translation": "KEIN SIGNAL",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "AUTOROT": {
     "english": "AUTOROT",
     "translation": "AUTOROTATION",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "DISABLED": {
     "english": "DISABLED",
     "translation": "DEAKTIVIERT",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "BAILOUT": {
     "english": "BAILOUT",
     "translation": "NOTAUS",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

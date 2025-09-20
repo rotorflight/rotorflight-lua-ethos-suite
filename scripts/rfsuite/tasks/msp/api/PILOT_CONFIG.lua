@@ -22,13 +22,13 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "model_id",            type = "U8",  apiVersion = 12.07, simResponse = {3}},
-    {field = "model_param1_type",   type = "U8",  apiVersion = 12.07, simResponse = {0}},  
-    {field = "model_param1_value",  type = "U16", apiVersion = 12.07, simResponse = {44, 1}, unit = "s", min =0, max = 3600}, -- timer
-    {field = "model_param2_type",   type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "model_param2_value",  type = "U16", apiVersion = 12.07, simResponse = {20, 0}},
-    {field = "model_param3_type",   type = "U8",  apiVersion = 12.07, simResponse = {20}},
-    {field = "model_param3_value",  type = "U16", apiVersion = 12.07, simResponse = {0, 30}},
+    {field = "model_id",            type = "U8",  apiVersion = 12.07, simResponse = {3}, help = "@i18n(api.PILOT_CONFIG.model_id)@"},  -- model id
+    {field = "model_param1_type",   type = "U8",  apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.PILOT_CONFIG.model_param1_type)@"}, -- type
+    {field = "model_param1_value",  type = "U16", apiVersion = 12.07, simResponse = {44, 1}, unit = "s", min =0, max = 3600, help = "@i18n(api.PILOT_CONFIG.model_param1_value)@"}, -- timer
+    {field = "model_param2_type",   type = "U8",  apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.PILOT_CONFIG.model_param2_type)@"}, -- type
+    {field = "model_param2_value",  type = "U16", apiVersion = 12.07, simResponse = {20, 0}, help = "@i18n(api.PILOT_CONFIG.model_param2_value)@"}, -- value
+    {field = "model_param3_type",   type = "U8",  apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.PILOT_CONFIG.model_param3_type)@"}, -- type
+    {field = "model_param3_value",  type = "U16", apiVersion = 12.07, simResponse = {0, 30}, help = "@i18n(api.PILOT_CONFIG.model_param3_value)@"}, -- value
 }
 
 -- Process structure in one pass

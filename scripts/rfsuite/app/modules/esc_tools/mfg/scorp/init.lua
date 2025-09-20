@@ -1,9 +1,9 @@
-local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name")
-moduleName = "RF2SCORP"
+local toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@"
+local moduleName = "RF2SCORP"
 
 
 
-function getUInt(page, vals)
+local function getUInt(page, vals)
     if page.values == nil then return 0 end
     local v = 0
     for idx = 1, #vals do

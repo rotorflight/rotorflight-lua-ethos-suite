@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
     api = {
@@ -6,19 +6,19 @@ local apidata = {
     },
     formdata = {
         labels = {
-            { t = i18n("app.modules.radio_config.stick"),    label = 1, inline_size = 16 },
-            { t = i18n("app.modules.radio_config.throttle"), label = 2, inline_size = 16 },
+            { t = "@i18n(app.modules.radio_config.stick)@",    label = 1, inline_size = 16 },
+            { t = "@i18n(app.modules.radio_config.throttle)@", label = 2, inline_size = 16 },
             { t = "",         label = 3, inline_size = 16 },
-            { t = i18n("app.modules.radio_config.deadband"), label = 4, inline_size = 16 }
+            { t = "@i18n(app.modules.radio_config.deadband)@", label = 4, inline_size = 16 }
         },
         fields = {
-            { t = i18n("app.modules.radio_config.center"),     label = 1, inline = 2, mspapi = 1, apikey = "rc_center"       },
-            { t = i18n("app.modules.radio_config.deflection"), label = 1, inline = 1, mspapi = 1, apikey = "rc_deflection"   },
-            { t = i18n("app.modules.radio_config.arming"),     label = 2, inline = 2, mspapi = 1, apikey = "rc_arm_throttle" },
-            { t = i18n("app.modules.radio_config.min_throttle"),        label = 2, inline = 1, mspapi = 1, apikey = "rc_min_throttle" },
-            { t = i18n("app.modules.radio_config.max_throttle"),        label = 3, inline = 1, mspapi = 1, apikey = "rc_max_throttle" },
-            { t = i18n("app.modules.radio_config.cyclic"),     label = 4, inline = 2, mspapi = 1, apikey = "rc_deadband"     },
-            { t = i18n("app.modules.radio_config.yaw_deadband"),        label = 4, inline = 1, mspapi = 1, apikey = "rc_yaw_deadband" }
+            { t = "@i18n(app.modules.radio_config.center)@",     label = 1, inline = 2, mspapi = 1, apikey = "rc_center"       },
+            { t = "@i18n(app.modules.radio_config.deflection)@", label = 1, inline = 1, mspapi = 1, apikey = "rc_deflection"   },
+            { t = "@i18n(app.modules.radio_config.arming)@",     label = 2, inline = 2, mspapi = 1, apikey = "rc_arm_throttle" },
+            { t = "@i18n(app.modules.radio_config.min_throttle)@",        label = 2, inline = 1, mspapi = 1, apikey = "rc_min_throttle" },
+            { t = "@i18n(app.modules.radio_config.max_throttle)@",        label = 3, inline = 1, mspapi = 1, apikey = "rc_max_throttle" },
+            { t = "@i18n(app.modules.radio_config.cyclic)@",     label = 4, inline = 2, mspapi = 1, apikey = "rc_deadband"     },
+            { t = "@i18n(app.modules.radio_config.yaw_deadband)@",        label = 4, inline = 1, mspapi = 1, apikey = "rc_yaw_deadband" }
         }
     }                 
 }

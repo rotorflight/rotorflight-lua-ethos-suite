@@ -37,74 +37,95 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local lastDisplayValue = nil
 
+-- External invalidation if runtime params change at runtime
+function render.invalidate(box) box._cfg = nil end
+
+-- Only repaint when the displayed value changes
 function render.dirty(box)
-    -- Always dirty on first run
     if box._lastDisplayValue == nil then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-
     if box._lastDisplayValue ~= box._currentDisplayValue then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-
     return false
 end
 
-function render.wakeup(box)
-    -- Value extraction
-    local value = getParam(box, "value")
-    local displayValue = value
-    if value == nil then
-        displayValue = getParam(box, "novalue") or "-"
+-- Build/refresh static config (theme/params aware)
+local function ensureCfg(box)
+    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
+    local param_version = box._param_version or 0 -- bump externally when params change
+    local cfg = box._cfg
+    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
+        cfg = {}
+        cfg._theme_version     = theme_version
+        cfg._param_version     = param_version
+
+        -- title + layout
+        cfg.title              = getParam(box, "title")
+        cfg.titlepos           = getParam(box, "titlepos")
+        cfg.titlealign         = getParam(box, "titlealign")
+        cfg.titlefont          = getParam(box, "titlefont")
+        cfg.titlespacing       = getParam(box, "titlespacing")
+        cfg.titlepadding       = getParam(box, "titlepadding")
+        cfg.titlepaddingleft   = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright  = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop    = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+
+        -- value style
+        cfg.font               = getParam(box, "font")
+        cfg.valuealign         = getParam(box, "valuealign")
+        cfg.valuepadding       = getParam(box, "valuepadding")
+        cfg.valuepaddingleft   = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright  = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop    = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+
+        -- colours
+        cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+        cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+
+        -- static value + fallbacks
+        cfg.novalue            = getParam(box, "novalue") or "-"
+        cfg.unit               = nil -- explicit: no unit for plain text widget
+
+        box._cfg = cfg
     end
+    return box._cfg
+end
 
-    -- Set box.value so dashboard/dirty can track change for redraws
+function render.wakeup(box)
+    local cfg = ensureCfg(box)
+
+    -- Compute display value from params; this is static unless params change
+    local value = getParam(box, "value")
+    local displayValue = (value ~= nil) and tostring(value) or cfg.novalue
+
     box._currentDisplayValue = displayValue
-
-    box._cache = {
-        displayValue       = displayValue,
-        unit               = nil,
-        title              = getParam(box, "title"),
-        titlepos           = getParam(box, "titlepos"),
-        titlealign         = getParam(box, "titlealign"),
-        titlefont          = getParam(box, "titlefont"),
-        titlespacing       = getParam(box, "titlespacing"),
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font               = getParam(box, "font"),
-        valuealign         = getParam(box, "valuealign"),
-        textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-    }
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cfg or {}
 
     utils.box(
-    x, y, w, h,
-    c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
-    c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-    c.titlepaddingtop, c.titlepaddingbottom,
-    c.displayValue, c.unit, c.font, c.valuealign, c.textcolor,
-    c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-    c.valuepaddingtop, c.valuepaddingbottom,
-    c.bgcolor
-)
+        x, y, w, h,
+        c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
+        c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom,
+        box._currentDisplayValue, c.unit, c.font, c.valuealign, c.textcolor,
+        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom,
+        c.bgcolor
+    )
 end
+
+-- Static label: no need for frequent wakeups; keep it slow
+render.scheduler = 2.0
 
 return render

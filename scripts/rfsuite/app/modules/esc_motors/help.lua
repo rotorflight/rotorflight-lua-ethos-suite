@@ -21,10 +21,10 @@ local data = {}
 
 data['help'] = {}
 
-local i18n = rfsuite.i18n.get
+
 
 data['help']['default'] = {
-    i18n("app.modules.esc_motors.help_p1"),
+    "@i18n(app.modules.esc_motors.help_p1)@",
 }
 
 data['fields'] = {}

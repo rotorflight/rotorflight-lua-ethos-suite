@@ -1,6 +1,25 @@
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * Note.  Some icons have been sourced from https://www.flaticon.com/
+ * 
+
+]] --
 local fields = {}
 local labels = {}
-local i18n = rfsuite.i18n.get
+
 local enableWakeup = false
 
 local w, h = lcd.getWindowSize()
@@ -39,7 +58,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript= script
 
-    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.diagnostics.name")  .. " / " .. rfsuite.i18n.get("app.modules.validate_sensors.name"))
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@"  .. " / " .. "@i18n(app.modules.validate_sensors.name)@")
 
     -- fresh tables so lookups are never stale/nil
     rfsuite.app.formLineCnt = 0
@@ -175,7 +194,7 @@ local function wakeup()
         doDiscoverNotify = false
 
         local buttons = {{
-            label = rfsuite.i18n.get("app.btn_ok"),
+            label = "@i18n(app.btn_ok)@",
             action = function()
                 return true
             end
@@ -187,8 +206,8 @@ local function wakeup()
         else    
             form.openDialog({
                 width = nil,
-                title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
-                message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair_fin"),
+                title =  "@i18n(app.modules.validate_sensors.name)@",
+                message = "@i18n(app.modules.validate_sensors.msg_repair_fin)@",
                 buttons = buttons,
                 wakeup = function()
                 end,
@@ -209,14 +228,14 @@ local function wakeup()
         if field then
             if sensorKeyExists(v.key, invalidSensors) then
                 if v.mandatory == true then
-                    field:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
+                    field:value("@i18n(app.modules.validate_sensors.invalid)@")
                     field:color(ORANGE)
                 else
-                    field:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
+                    field:value("@i18n(app.modules.validate_sensors.invalid)@")
                     field:color(RED)
                 end
             else
-                field:value(rfsuite.i18n.get("app.modules.validate_sensors.ok"))
+                field:value("@i18n(app.modules.validate_sensors.ok)@")
                 field:color(GREEN)
             end
         end
@@ -226,7 +245,7 @@ local function wakeup()
   if repairSensors == true then
 
         -- show the progress dialog
-        progressLoader = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
+        progressLoader = form.openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
         progressLoader:closeAllowed(false)
         progressLoaderCounter = 0
 
@@ -243,10 +262,12 @@ local function wakeup()
     end  
 
     -- enable/disable the tool button
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare("<", "12.08") then
-        rfsuite.app.formNavigationFields['tool']:enable(false)
-    else
-        rfsuite.app.formNavigationFields['tool']:enable(true)
+    if rfsuite.app.formNavigationFields['tool'] then
+        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare("<", "12.08") then
+            rfsuite.app.formNavigationFields['tool']:enable(false)
+        else
+            rfsuite.app.formNavigationFields['tool']:enable(true)
+        end
     end
 
     if progressLoader then
@@ -268,7 +289,7 @@ end
 local function onToolMenu(self)
 
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok"),
+        label = "@i18n(app.btn_ok)@",
         action = function()
 
             -- we push this to the background task to do its job
@@ -277,7 +298,7 @@ local function onToolMenu(self)
             return true
         end
     }, {
-        label = rfsuite.i18n.get("app.btn_cancel"),
+        label = "@i18n(app.btn_cancel)@",
         action = function()
             return true
         end
@@ -285,8 +306,8 @@ local function onToolMenu(self)
 
     form.openDialog({
         width = nil,
-        title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
-        message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair"),
+        title =  "@i18n(app.modules.validate_sensors.name)@",
+        message = "@i18n(app.modules.validate_sensors.msg_repair)@",
         buttons = buttons,
         wakeup = function()
         end,
@@ -302,7 +323,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.diagnostics.name"),
+            "@i18n(app.modules.diagnostics.name)@",
             "diagnostics/diagnostics.lua"
         )
         return true
@@ -314,7 +335,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil,nil,true)
     rfsuite.app.ui.openPage(
         pageIdx,
-        i18n("app.modules.diagnostics.name"),
+        "@i18n(app.modules.diagnostics.name)@",
         "diagnostics/diagnostics.lua"
     )
 end
@@ -329,15 +350,15 @@ return {
     postLoad = postLoad,
     postRead = postRead,
     openPage = openPage,
-    onToolMenu = onToolMenu,
+    --onToolMenu = onToolMenu,
     onNavMenu = onNavMenu,
     event = event,
     navButtons = {
         menu = true,
         save = false,
         reload = false,
-        tool = true,
-        help = true
+        tool = false,
+        help = false
     },
     API = {},
 }

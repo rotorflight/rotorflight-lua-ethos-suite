@@ -1,217 +1,279 @@
-local fields = {}
-local labels = {}
-local i18n = rfsuite.i18n.get
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * Note.  Some icons have been sourced from https://www.flaticon.com/
+ * 
+
+]] --
+-- Short aliases
+
+
+-- State
 local enableWakeup = false
-local lastWakeup = 0  -- store last run time in seconds
-local w, h = lcd.getWindowSize()
-local buttonW = 100
-local buttonWs = buttonW - (buttonW * 20) / 100
-local x = w - 15
+local lastWakeup   = 0 -- seconds
 
-local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
+-- Layout
+local w, h   = lcd.getWindowSize()
+local btnW   = 100
+local btnWs  = btnW - (btnW * 20) / 100
+local xRight = w - 15
 
+local x,y
 
+local displayPos = {
+  x = xRight - btnW - btnWs - 5 - btnWs,
+  y = rfsuite.app.radio.linePaddingTop,
+  w = 150,
+  h = rfsuite.app.radio.navbuttonHeight
+}
+
+-- Indices into rfsuite.app.formFields (intentionally 0-based)
+local IDX_CPULOAD     = 0
+local IDX_FREERAM     = 1
+local IDX_BG_TASK     = 2
+local IDX_RF_MODULE   = 3
+local IDX_MSP         = 4
+local IDX_TELEM       = 5
+local IDX_FBLCONNECTED= 6
+local IDX_APIVERSION  = 7
+
+-- Helpers
+local function setStatus(field, ok, dashIfNil)
+  if not field then return end
+  if dashIfNil and ok == nil then
+    field:value("-")
+    return
+  end
+  if ok then
+    field:value("@i18n(app.modules.rfstatus.ok)@")
+    field:color(GREEN)
+  else
+    field:value("@i18n(app.modules.rfstatus.error)@")
+    field:color(RED)
+  end
+end
+
+local function addStatusLine(captionText, initialText)
+  -- captionText should already be a literal string or an @i18n(...)@ tag
+  rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(captionText)
+  rfsuite.app.formFields[rfsuite.app.formFieldCount] = form.addStaticText(
+    rfsuite.app.formLines[rfsuite.app.formLineCnt],
+    displayPos,
+    initialText
+  )
+  rfsuite.app.formLineCnt     = rfsuite.app.formLineCnt + 1
+  rfsuite.app.formFieldCount  = rfsuite.app.formFieldCount + 1
+end
+
+local function moduleEnabled()
+  local m0 = model.getModule(0)
+  local m1 = model.getModule(1)
+  return (m0 and m0:enable()) or (m1 and m1:enable()) or false
+end
+
+local function haveMspSensor()
+  local sportSensor = system.getSource({ appId = 0xF101 })
+  local elrsSensor  = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
+  return sportSensor or elrsSensor
+end
+
+-- Page open
 local function openPage(pidx, title, script)
-    enableWakeup = false
-    rfsuite.app.triggers.closeProgressLoader = true
+  enableWakeup = false
+  rfsuite.app.triggers.closeProgressLoader = true
+  form.clear()
 
-    form.clear()
+  -- track page
+  rfsuite.app.lastIdx    = pidx
+  rfsuite.app.lastTitle  = title
+  rfsuite.app.lastScript = script
 
-    -- track page
-    rfsuite.app.lastIdx   = pidx   -- was idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript= script
-    local config = {}
+  -- header
+  rfsuite.app.ui.fieldHeader(
+    "@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.rfstatus.name)@"
+  )
 
-    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.diagnostics.name")  .. " / " .. rfsuite.i18n.get("app.modules.rfstatus.name"))
+  -- fresh tables so lookups are never stale/nil
+  rfsuite.app.formLineCnt    = 0
+  rfsuite.app.formFields     = {}
+  rfsuite.app.formLines      = {}
+  rfsuite.app.formFieldCount = 0
 
-    -- fresh tables so lookups are never stale/nil
-    rfsuite.app.formLineCnt = 0
-    rfsuite.app.formFields  = {}
-    rfsuite.app.formLines   = {}
-    local formFieldCount = 0
+  -- CPU Load %
+  addStatusLine("@i18n(app.modules.fblstatus.cpu_load)@", string.format("%.1f%%", rfsuite.performance.cpuload or 0))
 
-    -- Background Task status
-    local bgtaskStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
-    if not rfsuite.tasks.active() then bgtaskStatus = rfsuite.i18n.get("app.modules.rfstatus.error") end
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.bgtask"))
-    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
-                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                    nil, 
-                    bgtaskStatus
-                )
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    formFieldCount = formFieldCount + 1
+  -- Free RAM
+  addStatusLine("@i18n(app.modules.msp_speed.memory_free)@", string.format("%.1f kB", rfsuite.performance.freeram or 0))
 
+  -- Background Task status
+  addStatusLine("@i18n(app.modules.rfstatus.bgtask)@",
+    rfsuite.tasks.active() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@"
+  )
 
-    -- RF Module Status
-    local moduleState = (model.getModule(0):enable()  or model.getModule(1):enable()) or false            
-    local moduleStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
-    if not moduleState then moduleStatus = rfsuite.i18n.get("app.modules.rfstatus.error") end
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.rfmodule"))
-    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
-                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                    nil, 
-                    moduleStatus
-                )
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    formFieldCount = formFieldCount + 1
+  -- RF Module Status
+  addStatusLine("@i18n(app.modules.rfstatus.rfmodule)@",
+    moduleEnabled() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@"
+  )
 
-    -- MSP Sensor Status
-    local sportSensor = system.getSource({appId = 0xF101})
-    local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
-    local mspStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
-    if not (sportSensor or elrsSensor)  then mspStatus = rfsuite.i18n.get("app.modules.rfstatus.error") end
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.mspsensor"))
-    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
-                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                    nil, 
-                    mspStatus
-                )
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    formFieldCount = formFieldCount + 1
+  -- MSP Sensor Status
+  addStatusLine("@i18n(app.modules.rfstatus.mspsensor)@",
+    haveMspSensor() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@"
+  )
 
-    -- Telemetry Sensor Status
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.telemetrysensors"))
-    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
-                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                    nil, 
-                    "-")
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    formFieldCount = formFieldCount + 1
+  -- Telemetry Sensor Status
+  addStatusLine("@i18n(app.modules.rfstatus.telemetrysensors)@", "-")
 
+  -- FBL Connected
+  addStatusLine("@i18n(app.modules.rfstatus.fblconnected)@", "-")
 
-    enableWakeup = true
+  -- API Version
+  addStatusLine("@i18n(app.modules.rfstatus.apiversion)@", "-")
+
+  enableWakeup = true
 end
 
+-- Lifecycle hooks
+local function postLoad(self) rfsuite.utils.log("postLoad", "debug") end
+local function postRead(self) rfsuite.utils.log("postRead", "debug") end
 
-local function postLoad(self)
-    rfsuite.utils.log("postLoad","debug")
-end
-
-local function postRead(self)
-    rfsuite.utils.log("postRead","debug")
-end
-
-
+-- Periodic refresh
 local function wakeup()
-    if enableWakeup == false then return end
+  if not enableWakeup then return end
 
-    -- check time since last execution
-    local now = os.clock()
-    if (now - lastWakeup) < 2 then return end
-    lastWakeup = now
+  local now = os.clock()
+  if (now - lastWakeup) < 2 then return end
+  lastWakeup = now
 
-    -- Background Task
-    do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[0]
-        if field then
-            if rfsuite.tasks and rfsuite.tasks.active() then
-                field:value(i18n("app.modules.rfstatus.ok"))
-                field:color(GREEN)
-            else
-                field:value(i18n("app.modules.rfstatus.error"))
-                field:color(RED)
-            end
-        end
+  -- CPU Load
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_CPULOAD]
+    if field then
+      field:value(string.format("%.1f%%", rfsuite.performance.cpuload or 0))
     end
+  end
 
-    -- RF Module
-    do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[1]
-        if field then
-            local m0 = model.getModule(0)
-            local m1 = model.getModule(1)
-            local enabled = (m0 and m0:enable()) or (m1 and m1:enable()) or false
-            if enabled then
-                field:value(i18n("app.modules.rfstatus.ok"))
-                field:color(GREEN)
-            else
-                field:value(i18n("app.modules.rfstatus.error"))
-                field:color(RED)
-            end
-        end
+  -- Free RAM
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_FREERAM]
+    if field then
+      field:value(string.format("%.1f kB", rfsuite.utils.round(rfsuite.performance.freeram or 0, 1)))
     end
+  end
 
-    -- MSP Sensor
-    do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[2]
-        if field then
-            local sportSensor = system.getSource({appId = 0xF101})
-            local elrsSensor  = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
-            if sportSensor or elrsSensor then
-                field:value(i18n("app.modules.rfstatus.ok"))
-                field:color(GREEN)
-            else
-                field:value(i18n("app.modules.rfstatus.error"))
-                field:color(RED)
-            end
-        end
-    end
+  -- Background Task
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_BG_TASK]
+    local ok    = rfsuite.tasks and rfsuite.tasks.active()
+    setStatus(field, ok)
+  end
 
-    -- Telemetry Sensors
-    do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[3]
-        if field then
-            local sensors = rfsuite.tasks and rfsuite.tasks.telemetry
-                          and rfsuite.tasks.telemetry.validateSensors(false) or false
-            if type(sensors) == "table" then
-                if #sensors == 0 then
-                    field:value(i18n("app.modules.rfstatus.ok"))
-                    field:color(GREEN)
-                else
-                    field:value(i18n("app.modules.rfstatus.error"))
-                    field:color(RED)
-                end
-            else
-                field:value("-")
-            end
-        end
+  -- RF Module
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_RF_MODULE]
+    setStatus(field, moduleEnabled())
+  end
+
+  -- MSP Sensor
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_MSP]
+    setStatus(field, haveMspSensor())
+  end
+
+  -- Telemetry Sensors
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_TELEM]
+    if field then
+      local sensors = rfsuite.tasks
+                    and rfsuite.tasks.telemetry
+                    and rfsuite.tasks.telemetry.validateSensors(false)
+                    or false
+      if type(sensors) == "table" then
+        -- empty list means OK
+        setStatus(field, #sensors == 0)
+      else
+        -- unknown status
+        setStatus(field, nil, true) -- dash
+      end
     end
+  end
+
+  -- FBL Connected
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_FBLCONNECTED]
+    if field then
+      local isConnected = rfsuite.session and rfsuite.session.isConnected 
+      if isConnected then
+        setStatus(field, isConnected)
+      else
+        setStatus(field, nil, true) -- dash 
+      end
+    end
+  end
+
+  -- API Version
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_APIVERSION]
+    if field then
+      local isInvalid = not rfsuite.session.apiVersionInvalid 
+      setStatus(field, isInvalid)
+    end
+  end
+
 end
 
-
-
+-- Events
 local function event(widget, category, value, x, y)
-    -- if close event detected go to section home page
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(
-            pageIdx,
-            i18n("app.modules.diagnostics.name"),
-            "diagnostics/diagnostics.lua"
-        )
-        return true
-    end
+  -- if close event detected go to section home page
+  if (category == EVT_CLOSE and value == 0) or value == 35 then
+    rfsuite.app.ui.openPage(
+      pageIdx,
+      "@i18n(app.modules.diagnostics.name)@",
+      "diagnostics/diagnostics.lua"
+    )
+    return true
+  end
 end
 
-
+-- Nav menu
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil,nil,true)
-    rfsuite.app.ui.openPage(
-        pageIdx,
-        i18n("app.modules.diagnostics.name"),
-        "diagnostics/diagnostics.lua"
-    )
+  rfsuite.app.ui.progressDisplay(nil, nil, true)
+  rfsuite.app.ui.openPage(
+    pageIdx,
+    "@i18n(app.modules.diagnostics.name)@",
+    "diagnostics/diagnostics.lua"
+  )
 end
 
 return {
-    reboot = false,
-    eepromWrite = false,
-    minBytes = 0,
-    wakeup = wakeup,
-    refreshswitch = false,
-    simulatorResponse = {},
-    postLoad = postLoad,
-    postRead = postRead,
-    openPage = openPage,
-    onNavMenu = onNavMenu,
-    event = event,
-    navButtons = {
-        menu = true,
-        save = false,
-        reload = false,
-        tool = false,
-        help = true
-    },
-    API = {},
+  reboot           = false,
+  eepromWrite      = false,
+  minBytes         = 0,
+  wakeup           = wakeup,
+  refreshswitch    = false,
+  simulatorResponse= {},
+  postLoad         = postLoad,
+  postRead         = postRead,
+  openPage         = openPage,
+  onNavMenu        = onNavMenu,
+  event            = event,
+  navButtons = {
+    menu   = true,
+    save   = false,
+    reload = false,
+    tool   = false,
+    help   = false,
+  },
+  API = {},
 }

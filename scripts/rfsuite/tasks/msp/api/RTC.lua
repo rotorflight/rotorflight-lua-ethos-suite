@@ -23,13 +23,13 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "year",     type = "U16", apiVersion = 12.06, simResponse = {180, 7}},
-    {field = "month",    type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "day",      type = "U8",  apiVersion = 12.06, simResponse = {40}},
-    {field = "hours",    type = "U8",  apiVersion = 12.06, simResponse = {233}},
-    {field = "minutes",  type = "U8",  apiVersion = 12.06, simResponse = {197}},
-    {field = "seconds",  type = "U8",  apiVersion = 12.06, simResponse = {202}},
-    {field = "millis",   type = "U16", apiVersion = 12.06, simResponse = {62, 2}},
+    {field = "year",     type = "U16", apiVersion = 12.06, simResponse = {180, 7}, help = "@i18n(api.RTC.help_year)@"},
+    {field = "month",    type = "U8",  apiVersion = 12.06, simResponse = {1}, help = "@i18n(api.RTC.help_month)@"},
+    {field = "day",      type = "U8",  apiVersion = 12.06, simResponse = {40}, help = "@i18n(api.RTC.help_day)@"},
+    {field = "hours",    type = "U8",  apiVersion = 12.06, simResponse = {233}, help = "@i18n(api.RTC.help_hours)@"},
+    {field = "minutes",  type = "U8",  apiVersion = 12.06, simResponse = {197}, help = "@i18n(api.RTC.help_minutes)@"},
+    {field = "seconds",  type = "U8",  apiVersion = 12.06, simResponse = {202}, help = "@i18n(api.RTC.help_seconds)@"},
+    {field = "millis",   type = "U16", apiVersion = 12.06, simResponse = {62, 2}, help = "@i18n(api.RTC.help_millis)@"},
 }
 
 -- Process structure in one pass

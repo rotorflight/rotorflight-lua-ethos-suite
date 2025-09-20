@@ -32,85 +32,104 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local loadImage = rfsuite.utils.loadImage
-local lastImagePath = nil
 
+-- External invalidation when runtime params/theme change
+function render.invalidate(box) box._cfg = nil end
+
+-- Only repaint when displayed image path changes
 function render.dirty(box)
-    if box._lastImagePath ~= box.imagePath then
-        box._lastImagePath = box._imagePath
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+    if box._lastDisplayValue ~= box._currentDisplayValue then
+        box._lastDisplayValue = box._currentDisplayValue
         return true
     end
     return false
 end
 
-
-function render.wakeup(box)
-    local imageParam = getParam(box, "image")
-    local imagePath
-
+-- Resolve image path once, trying .png then .bmp; return fallback if none
+local function resolveImagePath(imageParam)
     if imageParam and imageParam ~= "" then
-        -- Strip extension if present
         local baseNoExt = imageParam:gsub("%.png$",""):gsub("%.bmp$","")
         local pngPath = baseNoExt .. ".png"
         local bmpPath = baseNoExt .. ".bmp"
         if loadImage and loadImage(pngPath) then
-            imagePath = pngPath
+            return pngPath
         elseif loadImage and loadImage(bmpPath) then
-            imagePath = bmpPath
+            return bmpPath
         end
     end
+    return "widgets/dashboard/gfx/logo.png"
+end
 
-    if not imagePath then
-        imagePath = "widgets/dashboard/gfx/logo.png"
+-- Build/refresh static config (theme/params aware)
+local function ensureCfg(box)
+    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
+    local param_version = box._param_version or 0 -- bump externally when params change
+    local cfg = box._cfg
+    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
+        cfg = {}
+        cfg._theme_version     = theme_version
+        cfg._param_version     = param_version
+
+        cfg.title              = getParam(box, "title")
+        cfg.titlepos           = getParam(box, "titlepos")
+        cfg.titlealign         = getParam(box, "titlealign")
+        cfg.titlefont          = getParam(box, "titlefont")
+        cfg.titlespacing       = getParam(box, "titlespacing")
+        cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.titlepadding       = getParam(box, "titlepadding")
+        cfg.titlepaddingleft   = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright  = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop    = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+
+        cfg.valuepadding       = getParam(box, "valuepadding")
+        cfg.valuepaddingleft   = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright  = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop    = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+
+        cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+
+        cfg.imagewidth         = getParam(box, "imagewidth")
+        cfg.imageheight        = getParam(box, "imageheight")
+        cfg.imagealign         = getParam(box, "imagealign")
+
+        -- Resolve image path once per param/theme change
+        cfg.image              = resolveImagePath(getParam(box, "image"))
+
+        box._cfg = cfg
     end
+    return box._cfg
+end
 
-    -- Set box.value so dashboard/dirty can track change for redraws
-    box._currentDisplayValue = imagePath   
-
-    box._cache = {
-        title              = getParam(box, "title"),
-        titlepos           = getParam(box, "titlepos"),
-        titlealign         = getParam(box, "titlealign"),
-        titlefont          = getParam(box, "titlefont"),
-        titlespacing       = getParam(box, "titlespacing"),
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        displayValue       = nil,
-        unit               = nil,
-        font               = nil,
-        valuealign         = nil,
-        textcolor          = nil,
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        image              = imagePath,
-        imagewidth         = getParam(box, "imagewidth"),
-        imageheight        = getParam(box, "imageheight"),
-        imagealign         = getParam(box, "imagealign")
-    }
+function render.wakeup(box)
+    local cfg = ensureCfg(box)
+    -- Dynamic part is just the path; keep it here for consistency
+    box._currentDisplayValue = cfg.image
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cfg or {}
 
     utils.box(
         x, y, w, h,
         c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
         c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
         c.titlepaddingtop, c.titlepaddingbottom,
-        c.displayValue, c.unit, c.font, c.valuealign, c.textcolor,
+        nil, nil, nil, nil, nil, -- value text not used in image widget
         c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
         c.valuepaddingtop, c.valuepaddingbottom,
         c.bgcolor,
         c.image, c.imagewidth, c.imageheight, c.imagealign
     )
 end
+
+-- No need for frequent wakeups; only changes when params/theme change
+render.scheduler = 2.0
 
 return render

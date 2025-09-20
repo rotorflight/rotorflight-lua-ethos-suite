@@ -1,5 +1,5 @@
-local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.name")
-moduleName = "RF2YGE"
+local toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
+local moduleName = "RF2YGE"
 
 local mspHeaderBytes = 2
 
@@ -33,7 +33,7 @@ function getEscTypeLabel(values)
     return escType[idx] or "YGE ESC (" .. idx .. ")"
 end
 
-function getUInt(page, vals)
+local function getUInt(page, vals)
     local v = 0
     for idx = 1, #vals do
         local raw_val = page[vals[idx] + mspHeaderBytes] or 0

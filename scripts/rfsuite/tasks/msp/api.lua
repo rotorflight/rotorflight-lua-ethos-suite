@@ -175,7 +175,7 @@ local TYPE_SIZES = {
   U56=7,S56=7, U64=8,S64=8, U72=9,S72=9, U80=10,S80=10, U88=11,S88=11,
   U96=12,S96=12, U104=13,S104=13, U112=14,S112=14, U120=15,S120=15, U128=16,S128=16
 }
-function get_type_size(data_type)
+local function get_type_size(data_type)
   if data_type == nil then return TYPE_SIZES end
   return TYPE_SIZES[data_type] or 1
 end
@@ -570,10 +570,10 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure, noDelta)
     end
 
     if useDelta then
-        utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
+        --utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
         return apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
     else
-        utils.log("[buildWritePayload] Using full rebuild for " .. apiname, "info")
+        --utils.log("[buildWritePayload] Using full rebuild for " .. apiname, "info")
         return apiLoader.buildFullPayload(apiname, payload, api_structure)
     end
 end
@@ -622,6 +622,21 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
     local actual_fields = {}
     if rfsuite.app.Page and rfsuite.app.Page.apidata then
         for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
+            -- catch fields defined in api format like: api="MIXER_CONFIG:tail_motor_idle"
+            if field.api and not field.apikey then
+                local mspapi, apikey = string.match(field.api, "([^:]+):(.+)")
+                -- at this point mspapi is a string.  we need to make it its id number
+                --- that means checking rfsuite.app.Page.apidata.api for the index of mspapi
+                for i, api in ipairs(rfsuite.app.Page.apidata.api) do
+                    if api == mspapi then
+                        mspapi = i
+                        break
+                    end
+                end
+                field.apikey = apikey
+                field.mspapi = mspapi
+                rfsuite.utils.log("[buildDeltaPayload] Converted api field '" .. field.api .. "' to mspapi=" .. tostring(mspapi) .. " apikey=" .. tostring(apikey), "info")
+            end
             if not actual_fields[field.apikey] then -- we check this because its possible a field may not be there is mspgt or msplt is used on page.
                 actual_fields[field.apikey] = field
             end

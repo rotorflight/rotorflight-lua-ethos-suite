@@ -1,7 +1,7 @@
 
 
 local folder = "scorp"
-local i18n = rfsuite.i18n.get
+
 
 local ESC = assert(rfsuite.compiler.loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
@@ -14,10 +14,10 @@ local apidata = {
         },
         fields = {
 
-            {t = i18n("app.modules.esc_tools.mfg.scorp.esc_mode"), type = 1, mspapi=1, apikey="esc_mode"},
-            {t = i18n("app.modules.esc_tools.mfg.scorp.rotation"), type = 1, mspapi=1, apikey="rotation"},
-            {t = i18n("app.modules.esc_tools.mfg.scorp.bec_voltage"), type = 1, mspapi=1, apikey="bec_voltage"},
-            -- {t = i18n("app.modules.esc_tools.mfg.scorp.telemetry_protocol"),, type = 1, mspapi=1, apikey="telemetry_protocol"} -- not used as dangerous to change
+            {t = "@i18n(app.modules.esc_tools.mfg.scorp.esc_mode)@", type = 1, mspapi=1, apikey="esc_mode"},
+            {t = "@i18n(app.modules.esc_tools.mfg.scorp.rotation)@", type = 1, mspapi=1, apikey="rotation"},
+            {t = "@i18n(app.modules.esc_tools.mfg.scorp.bec_voltage)@", type = 1, mspapi=1, apikey="bec_voltage"},
+            -- {t = "@i18n(app.modules.esc_tools.mfg.scorp.telemetry_protocol)@",, type = 1, mspapi=1, apikey="telemetry_protocol"} -- not used as dangerous to change
         }
     }                 
 }
@@ -60,7 +60,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = i18n("app.modules.esc_tools.name") .. " / " ..  i18n("app.modules.esc_tools.mfg.scorp.name") .. " / " .. i18n("app.modules.esc_tools.mfg.scorp.basic"),
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " ..  "@i18n(app.modules.esc_tools.mfg.scorp.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.basic)@",
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = i18n("app.modules.esc_tools.mfg.scorp.extra_msg_save"),    
+    extraMsgOnSave = "@i18n(app.modules.esc_tools.mfg.scorp.extra_msg_save)@",    
 }

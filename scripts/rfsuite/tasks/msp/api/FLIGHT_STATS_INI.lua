@@ -21,14 +21,15 @@ local INI_SECTION = "general"
 
 local ini       = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
-local i18n = rfsuite.i18n.get
+
 local handlers  = mspModule.createHandlers()
 
 -- Define MSP fields
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "flightcount",     type = "U32", simResponse = {0} , min = 0, max = 1000000000},
-    { field = "lastflighttime",  type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s"},
-    { field = "totalflighttime", type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s"},
+    { field = "flightcount",     type = "U32", simResponse = {0} , min = 0, max = 1000000000, help = "@i18n(api.FLIGHT_STATS_INI.flightcount)@"},
+    { field = "lastflighttime",  type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s", help = "@i18n(api.FLIGHT_STATS_INI.lastflighttime)@"},
+    { field = "totalflighttime", type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s", help = "@i18n(api.FLIGHT_STATS_INI.totalflighttime)@"},
+    { field = "totallandings",   type = "U32", simResponse = {0} , min = 0, max = 1000000000, help = "@i18n(api.FLIGHT_STATS_INI.totallandings)@"},
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
     mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
@@ -71,7 +72,7 @@ end
 -- Write operation: merge payloadData into INI, save, then re-read
 local function write()
 
-    local msg = i18n("app.modules.profile_select.save_prompt_local")
+    local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
     rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
     local tbl = ini.load_ini_file(INI_FILE) or {}

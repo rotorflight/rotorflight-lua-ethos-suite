@@ -32,49 +32,90 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local lastDisplayValue = nil
 
+-- External invalidation if runtime params change
+function render.invalidate(box) box._cfg = nil end
+
+-- Only repaint when the displayed value changes
 function render.dirty(box)
-    -- Always dirty on first run
     if box._lastDisplayValue == nil then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-
     if box._lastDisplayValue ~= box._currentDisplayValue then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-
-    return false
+    return true
 end
 
+-- Build/refresh static config (theme/params aware)
+local function ensureCfg(box)
+    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
+    local param_version = box._param_version or 0 -- bump externally when params change
+    local cfg = box._cfg
+    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
+        cfg = {}
+        cfg._theme_version     = theme_version
+        cfg._param_version     = param_version
+        cfg.title              = getParam(box, "title")
+        cfg.titlepos           = getParam(box, "titlepos")
+        cfg.titlealign         = getParam(box, "titlealign")
+        cfg.titlefont          = getParam(box, "titlefont")
+        cfg.titlespacing       = getParam(box, "titlespacing")
+        cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.titlepadding       = getParam(box, "titlepadding")
+        cfg.titlepaddingleft   = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright  = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop    = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+
+        cfg.font               = getParam(box, "font")
+        cfg.valuealign         = getParam(box, "valuealign")
+        cfg.defaultTextColor   = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+        cfg.valuepadding       = getParam(box, "valuepadding")
+        cfg.valuepaddingleft   = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright  = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop    = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+        cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+
+        cfg.source             = getParam(box, "source")
+        cfg.novalue            = getParam(box, "novalue") or "-"
+        cfg.manualUnit         = getParam(box, "unit") -- "" allowed to hide
+
+        box._cfg = cfg
+    end
+    return box._cfg
+end
 
 function render.wakeup(box)
-    -- Value extraction
-    local source = getParam(box, "source")
-    local value = rfsuite.session[source]
+    local cfg = ensureCfg(box)
 
-    -- Set displayValue, Fallback if no value
-    local unit = getParam(box, "unit") or ""
-    local fallbackText = getParam(box, "novalue") or "-"
+    -- Value extraction from session table
+    local value = cfg.source and rfsuite.session[cfg.source]
+    if type(value) == "boolean" then
+        value = value and "TRUE" or "FALSE"
+    end
+
+    -- Decide display value and unit
     local displayValue
+    local unit = cfg.manualUnit
 
     if value == nil then
         -- Animated loading dots if not yet available
         local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
-    elseif tostring(value) == "" then
-        displayValue = fallbackText
-        unit = nil
     else
-        displayValue = tostring(value)
-        if unit ~= "" then
-            displayValue = displayValue .. unit
+        local s = tostring(value)
+        if s == "" then
+            displayValue = cfg.novalue
+            unit = nil
+        else
+            displayValue = s
         end
     end
 
@@ -82,51 +123,30 @@ function render.wakeup(box)
     if type(displayValue) == "string" and displayValue:match("^%.+$") then
         unit = nil
     end
-    
-    -- Set box.value so dashboard/dirty can track change for redraws
-    box._currentDisplayValue = displayValue
-    
-    box._cache = {
-        title              = getParam(box, "title"),
-        titlepos           = getParam(box, "titlepos"),
-        titlealign         = getParam(box, "titlealign"),
-        titlefont          = getParam(box, "titlefont"),
-        titlespacing       = getParam(box, "titlespacing"),
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        displayValue       = displayValue,
-        unit               = unit,
-        font               = getParam(box, "font"),
-        valuealign         = getParam(box, "valuealign"),
-        textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-    }
-end
 
+    -- Expose dynamic-only fields for paint
+    box._currentDisplayValue = displayValue
+    box._dyn_unit = unit
+    box._dyn_textcolor = nil -- no thresholds here, use default
+end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cfg or {}
 
     utils.box(
         x, y, w, h,
         c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
         c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
         c.titlepaddingtop, c.titlepaddingbottom,
-        c.displayValue, c.unit, c.font, c.valuealign, c.textcolor,
+        box._currentDisplayValue, box._dyn_unit, c.font, c.valuealign, c.defaultTextColor,
         c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
         c.valuepaddingtop, c.valuepaddingbottom,
         c.bgcolor
     )
 end
+
+-- Reasonable refresh for loading dots
+render.scheduler = 0.5
 
 return render

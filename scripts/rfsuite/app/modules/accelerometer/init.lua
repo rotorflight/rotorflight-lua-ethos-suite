@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.accelerometer.name"), -- title of the page
+    title = "@i18n(app.modules.accelerometer.name)@", -- title of the page
     section = "hardware", -- do not run if busy with msp
     script = "accelerometer.lua", -- run this script
     image = "acc.png", -- image for the page

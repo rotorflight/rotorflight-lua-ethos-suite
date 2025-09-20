@@ -45,10 +45,10 @@ local function configure()
     end
 
     -- VOLTAGE PANEL (override min/max V)
-    local voltage_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.voltage"))
+    local voltage_panel = form.addExpansionPanel("@i18n(widgets.dashboard.voltage)@")
     voltage_panel:open(true)
 
-    local voltage_min_line = voltage_panel:addLine(rfsuite.i18n.get("widgets.dashboard.min"))
+    local voltage_min_line = voltage_panel:addLine("@i18n(widgets.dashboard.min)@")
     formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 50, 650,
         function()
             local v = config.v_min or THEME_DEFAULTS.v_min
@@ -61,7 +61,7 @@ local function configure()
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
-    local voltage_max_line = voltage_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local voltage_max_line = voltage_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 50, 650,
         function()
             local v = config.v_max or THEME_DEFAULTS.v_max

@@ -36,7 +36,7 @@ def ensure_needs_translation_false(data):
     for key, val in data.items():
         if isinstance(val, dict):
             if "english" in val and "translation" in val:
-                val.setdefault("needs_translation", "false")
+                val.setdefault("needs_translation", False)
             else:
                 ensure_needs_translation_false(val)
 
@@ -52,13 +52,13 @@ def build_translation(ref, target, order):
                 output[key] = {
                     "english": ref_val["english"],
                     "translation": tgt_val["translation"],
-                    "needs_translation": tgt_val.get("needs_translation", "false")
+                    "needs_translation": tgt_val.get("needs_translation", False)
                 }
             else:
                 output[key] = {
                     "english": ref_val["english"],
                     "translation": ref_val["english"],
-                    "needs_translation": "true"
+                    "needs_translation": True
                 }
         elif isinstance(ref_val, dict):
             output[key] = build_translation(ref_val, tgt_val or {}, order.get(key, {"__order": []}))

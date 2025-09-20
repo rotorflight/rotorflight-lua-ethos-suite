@@ -1,6 +1,6 @@
 local labels = {}
 local fields = {}
-local i18n = rfsuite.i18n.get
+
 local triggerOverRide = false
 local inOverRide = false
 local lastChangeTime = os.clock()
@@ -25,11 +25,11 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.trim.roll_trim"),         mspapi = 1, apikey = "swash_trim_0"},
-            {t = i18n("app.modules.trim.pitch_trim"),        mspapi = 1, apikey = "swash_trim_1"},
-            {t = i18n("app.modules.trim.collective_trim"),   mspapi = 1, apikey = "swash_trim_2"},
-            {t = i18n("app.modules.trim.tail_motor_idle"),   mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
-            {t = i18n("app.modules.trim.yaw_trim"),          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end }
+            {t = "@i18n(app.modules.trim.roll_trim)@",         mspapi = 1, apikey = "swash_trim_0"},
+            {t = "@i18n(app.modules.trim.pitch_trim)@",        mspapi = 1, apikey = "swash_trim_1"},
+            {t = "@i18n(app.modules.trim.collective_trim)@",   mspapi = 1, apikey = "swash_trim_2"},
+            {t = "@i18n(app.modules.trim.tail_motor_idle)@",   mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
+            {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end }
         }
     }                 
 }
@@ -186,7 +186,7 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideEnable = true
 
-            rfsuite.app.ui.progressDisplay(i18n("app.modules.trim.mixer_override"), i18n("app.modules.trim.mixer_override_enabling"))
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_enabling)@")
 
             rfsuite.app.Page.mixerOn(self)
             inOverRide = true
@@ -194,7 +194,7 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideDisable = true
 
-            rfsuite.app.ui.progressDisplay(i18n("app.modules.trim.mixer_override"), i18n("app.modules.trim.mixer_override_disabling"))
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
 
             rfsuite.app.Page.mixerOff(self)
             inOverRide = false
@@ -206,7 +206,7 @@ end
 local function onToolMenu(self)
 
     local buttons = {{
-        label = i18n("app.btn_ok"),
+        label = "@i18n(app.btn_ok)@",
         action = function()
 
             -- we cant launch the loader here to se rely on the modules
@@ -215,7 +215,7 @@ local function onToolMenu(self)
             return true
         end
     }, {
-        label = i18n("app.btn_cancel"),
+        label = "@i18n(app.btn_cancel)@",
         action = function()
             return true
         end
@@ -223,11 +223,11 @@ local function onToolMenu(self)
     local message
     local title
     if inOverRide == false then
-        title = i18n("app.modules.trim.enable_mixer_override")
-        message = i18n("app.modules.trim.enable_mixer_message")
+        title = "@i18n(app.modules.trim.enable_mixer_override)@"
+        message = "@i18n(app.modules.trim.enable_mixer_message)@"
     else
-        title = i18n("app.modules.trim.disable_mixer_override")
-        message = i18n("app.modules.trim.disable_mixer_message")
+        title = "@i18n(app.modules.trim.disable_mixer_override)@"
+        message = "@i18n(app.modules.trim.disable_mixer_message)@"
     end
 
     form.openDialog({
@@ -252,7 +252,7 @@ local function onNavMenu(self)
         inOverRide = false
         inFocus = false
 
-        rfsuite.app.ui.progressDisplay(i18n("app.modules.trim.mixer_override"), i18n("app.modules.trim.mixer_override_disabling"))
+        rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
 
         mixerOff(self)
         rfsuite.app.triggers.closeProgressLoader = true

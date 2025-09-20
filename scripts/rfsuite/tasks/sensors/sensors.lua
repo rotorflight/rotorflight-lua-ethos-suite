@@ -28,11 +28,14 @@ local loadedSensorModule = nil
 local delayDuration = 2  -- seconds
 local delayStartTime = nil
 local delayPending = false
+local schedulerTick = 0
 
 local msp = assert(rfsuite.compiler.loadfile("tasks/sensors/msp.lua"))(config)
 local smart = assert(rfsuite.compiler.loadfile("tasks/sensors/smart.lua"))(config)
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
+
+
 
 --[[
     loadSensorModule - Loads the appropriate sensor module based on the current protocol and preferences.
@@ -81,6 +84,13 @@ end
 
 function sensors.wakeup()
 
+    -- Yield if busy doing onConnect
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then
+        return
+    end    
+
+    schedulerTick = schedulerTick + 1
+
     if rfsuite.session.resetSensors and not delayPending then
         delayStartTime = os.clock()
         delayPending = true
@@ -101,17 +111,24 @@ function sensors.wakeup()
 
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
+
+            local cycleFlip = schedulerTick % 2
+            if cycleFlip == 0 then
+                loadedSensorModule.module.wakeup()
+            else
+                if rfsuite.session and rfsuite.session.isConnected then
+                    -- run msp sensors
+                    if msp and msp.wakeup then msp.wakeup() end
+
+                    -- run smart sensors
+                    if smart and smart.wakeup then smart.wakeup() end
         
-        loadedSensorModule.module.wakeup()
+                end
+            end
 
-        if rfsuite.session and rfsuite.session.isConnected then
-            -- run msp sensors
-            if msp and msp.wakeup then msp.wakeup() end
+        
 
-            -- run smart sensors
-            if smart and smart.wakeup then smart.wakeup() end
- 
-        end
+
 
     end
 
@@ -125,5 +142,14 @@ function sensors.reset()
     loadedSensorModule = nil  -- Clear loaded sensor module
 
 end
+
+
+-- On-demand sid accessor with cache; allows freeing and reload later
+function sensors.getSid()
+  if sensors.sid then return sensors.sid end
+  sensors.sid = assert(rfsuite.compiler.loadfile("tasks/sensors/sid.lua"))(config)
+  return sensors.sid
+end
+
 
 return sensors

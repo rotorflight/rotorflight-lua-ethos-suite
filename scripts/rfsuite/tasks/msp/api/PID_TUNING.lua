@@ -23,27 +23,27 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "pid_0_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50},
-    {field = "pid_0_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
-    {field = "pid_0_D", type = "U16", apiVersion = 12.06, simResponse = {20, 0},  min = 0, max = 1000, default = 0},
-    {field = "pid_0_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+    {field = "pid_0_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50, help = "@i18n(api.PID_TUNING.pid_0_P)@"},
+    {field = "pid_0_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "@i18n(api.PID_TUNING.pid_0_I)@"},
+    {field = "pid_0_D", type = "U16", apiVersion = 12.06, simResponse = {20, 0},  min = 0, max = 1000, default = 0, help = "@i18n(api.PID_TUNING.pid_0_D)@"},
+    {field = "pid_0_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "@i18n(api.PID_TUNING.pid_0_F)@"},
     
-    {field = "pid_1_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50},
-    {field = "pid_1_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
-    {field = "pid_1_D", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 40},
-    {field = "pid_1_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+    {field = "pid_1_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50, help = "@i18n(api.PID_TUNING.pid_1_P)@"},
+    {field = "pid_1_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "@i18n(api.PID_TUNING.pid_1_I)@"},
+    {field = "pid_1_D", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 40, help = "@i18n(api.PID_TUNING.pid_1_D)@"},
+    {field = "pid_1_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "@i18n(api.PID_TUNING.pid_1_F)@"},
   
-    {field = "pid_2_P", type = "U16", apiVersion = 12.06, simResponse = {80, 0},  min = 0, max = 1000, default = 80},
-    {field = "pid_2_I", type = "U16", apiVersion = 12.06, simResponse = {120, 0}, min = 0, max = 1000, default = 120},
-    {field = "pid_2_D", type = "U16", apiVersion = 12.06, simResponse = {40, 0},  min = 0, max = 1000, default = 10},
-    {field = "pid_2_F", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
+    {field = "pid_2_P", type = "U16", apiVersion = 12.06, simResponse = {80, 0},  min = 0, max = 1000, default = 80, help = "@i18n(api.PID_TUNING.pid_2_P)@"},
+    {field = "pid_2_I", type = "U16", apiVersion = 12.06, simResponse = {120, 0}, min = 0, max = 1000, default = 120, help = "@i18n(api.PID_TUNING.pid_2_I)@"},
+    {field = "pid_2_D", type = "U16", apiVersion = 12.06, simResponse = {40, 0},  min = 0, max = 1000, default = 10, help = "@i18n(api.PID_TUNING.pid_2_D)@"},
+    {field = "pid_2_F", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0, help = "@i18n(api.PID_TUNING.pid_2_F)@"},
   
-    {field = "pid_0_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
-    {field = "pid_1_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
-    {field = "pid_2_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
+    {field = "pid_0_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0, help = "@i18n(api.PID_TUNING.pid_0_B)@"},
+    {field = "pid_1_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0, help = "@i18n(api.PID_TUNING.pid_1_B)@"},
+    {field = "pid_2_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0}, help = "@i18n(api.PID_TUNING.pid_2_B)@",
  
-    {field = "pid_0_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45},
-    {field = "pid_1_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45}
+    {field = "pid_0_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45, help = "@i18n(api.PID_TUNING.pid_0_O)@"},
+    {field = "pid_1_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45, help = "@i18n(api.PID_TUNING.pid_1_O)@"},
 }
 
 -- Process structure in one pass

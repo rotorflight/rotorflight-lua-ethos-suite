@@ -19,15 +19,19 @@
 
 local governor = {}
 
+local mspCallMade = false
+
 function governor.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.governorMode == nil) then
+    if rfsuite.session.mspBusy then return end
+
+    if (rfsuite.session.governorMode == nil and mspCallMade == false) then
+        mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local governorMode = API.readValue("gov_mode")
-            print("Governor mode: " .. (governorMode or "unknown"))
             if governorMode then
                 rfsuite.utils.log("Governor mode: " .. governorMode, "info")
             end
@@ -40,6 +44,7 @@ end
 
 function governor.reset()
     rfsuite.session.governorMode = nil
+    mspCallMade = false
 end
 
 function governor.isComplete()

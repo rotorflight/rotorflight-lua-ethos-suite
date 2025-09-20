@@ -15,7 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local i18n = rfsuite.i18n.get
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -155,42 +155,42 @@ local function buildBoxes(W)
 
     return {    
         -- Flight info and RPM info
-        {col = 1, row = 1, rowspan = 2, type = "time", subtype = "flight", title = i18n("widgets.dashboard.flight_duration"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
+        {col = 1, row = 1, rowspan = 2, type = "time", subtype = "flight", title = "@i18n(widgets.dashboard.flight_duration)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange"},
 
-        {col = 1, row = 3, rowspan = 2, type = "time", subtype = "total", title = i18n("widgets.dashboard.total_flight_duration"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 1, row = 3, rowspan = 2, type = "time", subtype = "total", title = "@i18n(widgets.dashboard.total_flight_duration)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange"},
 
-        {col = 1, row = 5, rowspan = 2, type = "time", subtype = "count", title = i18n("widgets.dashboard.flights"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 1, row = 5, rowspan = 2, type = "time", subtype = "count", title = "@i18n(widgets.dashboard.flights)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
-        {col = 1, row = 7, rowspan = 2, type = "text", subtype = "stats", source = "rpm", title = i18n("widgets.dashboard.rpm_max"), unit = " rpm", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 1, row = 7, rowspan = 2, type = "text", subtype = "stats", source = "rpm", title = "@i18n(widgets.dashboard.rpm_max)@", unit = " rpm", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
         -- Flight max/min stats 1
-        {col = 2, row = 1, rowspan = 2, type = "text", subtype = "watts", source = "max", title = i18n("widgets.dashboard.watts_max"), unit = "W", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 2, row = 1, rowspan = 2, type = "text", subtype = "watts", source = "max", title = "@i18n(widgets.dashboard.watts_max)@", unit = "W", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, transform = "floor", textcolor = "orange", titlecolor = colorMode.titlecolor},
 
-        {col = 2, row = 3, rowspan = 2, type = "text", subtype = "stats", source = "current", title = i18n("widgets.dashboard.current_max"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 2, row = 3, rowspan = 2, type = "text", subtype = "stats", source = "current", title = "@i18n(widgets.dashboard.current_max)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
-        {col = 2, row = 5, rowspan = 2, type = "text", subtype = "stats", source = "temp_esc", title = i18n("widgets.dashboard.esc_max_temp"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 2, row = 5, rowspan = 2, type = "text", subtype = "stats", source = "temp_esc", title = "@i18n(widgets.dashboard.esc_max_temp)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
-        {col = 2, row = 7, rowspan = 2, type = "text", subtype = "stats", source = "altitude", title = i18n("widgets.dashboard.altitude_max"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 2, row = 7, rowspan = 2, type = "text", subtype = "stats", source = "altitude", title = "@i18n(widgets.dashboard.altitude_max)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
         -- Flight max/min stats 2
-        {col = 3, row = 1, rowspan = 2, type = "text", subtype = "stats", stattype = "max", source = "smartconsumption", title = i18n("widgets.dashboard.consumed_mah"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 3, row = 1, rowspan = 2, type = "text", subtype = "stats", stattype = "max", source = "smartconsumption", title = "@i18n(widgets.dashboard.consumed_mah)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
-        {col = 3, row = 3, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "smartfuel", title = i18n("widgets.dashboard.fuel_remaining"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
+        {col = 3, row = 3, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "smartfuel", title = "@i18n(widgets.dashboard.fuel_remaining)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
-        {col = 3, row = 5, rowspan = 2, type = "text", subtype = "telemetry", source = "voltage", title = i18n("widgets.dashboard.volts_per_cell"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 3, row = 5, rowspan = 2, type = "text", subtype = "telemetry", source = "voltage", title = "@i18n(widgets.dashboard.volts_per_cell)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end},
 
-        {col = 3, row = 7, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "link", title = i18n("widgets.dashboard.link_min"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
+        {col = 3, row = 7, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "link", title = "@i18n(widgets.dashboard.link_min)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
     }
 end

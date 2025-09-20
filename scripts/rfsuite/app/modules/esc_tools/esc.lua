@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 
 local function findMFG()
     local mfgsList = {}
@@ -10,9 +10,8 @@ local function findMFG()
 
         local init_path = mfgs_path .. v .. '/init.lua'
 
-        local f = io.open(init_path, "r")
+        local f = os.stat(init_path)
         if f then
-            io.close(f)
 
             local func, err = rfsuite.compiler.loadfile(init_path)
 
@@ -46,7 +45,6 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    ESC = {}
 
     -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
@@ -65,11 +63,11 @@ local function openPage(pidx, title, script)
 
     form.addLine(title)
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = i18n("app.navigation_menu"),
+        text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
         paint = function()

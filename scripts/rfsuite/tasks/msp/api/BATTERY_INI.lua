@@ -21,21 +21,36 @@ local INI_SECTION = "battery"
 
 local ini       = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
-local i18n = rfsuite.i18n.get
+
 local handlers  = mspModule.createHandlers()
 
 -- Define MSP fields
 
-local offOn = {i18n("api.BATTERY_INI.tbl_off"), i18n("api.BATTERY_INI.tbl_on")}
-local alertTypes = {i18n("api.BATTERY_INI.alert_off"), i18n("api.BATTERY_INI.alert_bec"), i18n("api.BATTERY_INI.alert_rxbatt")}
+local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
+local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
 
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "calc_local", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn},
-    { field = "sag_multiplier", type = "U8", simResponse = {0} , decimals = 1, default = 0.5, min=0, max=10},
-    { field = "alert_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
-    { field = "becalertvalue", type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 6.5 },
-    { field = "rxalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 7.5 },
-    { field = "flighttime",  type = "U8", simResponse = {0}, min = 0, max = 3600,  unit = "s", default = 300 },
+    { field = "calc_local", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.calc_local)@"},
+    { field = "vfas_source", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.vfas_source)@"},
+    { field = "mah_source", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.mah_source)@"},
+    { field = "current_source", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.current_source)@"},
+    { field = "voltage_source", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.voltage_source)@"},
+    { field = "cellcount_source", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.cellcount_source)@"},
+    { field = "capacity", type = "U16", simResponse = {0, 0}, min=0, max=20000, step=50, unit="mAh", default=0, help = "@i18n(api.BATTERY_INI.capacity)@"},
+    { field = "warning_capacity", type = "U16", simResponse = {0, 0}, min=0, max=20000, step=50, unit="mAh", default=500, help = "@i18n(api.BATTERY_INI.warning_capacity)@"},
+    { field = "cell_count", type = "U8", simResponse = {0}, min=0, max=24, default=6, help = "@i18n(api.BATTERY_INI.cell_count)@"},
+    { field = "vbatmincellvoltage", type = "U16", simResponse = {0, 0}, min=0, decimals=2, scale=100, max=500, unit="V", default=3.3, help = "@i18n(api.BATTERY_INI.vbatmincellvoltage)@"},
+    { field = "vbatmaxcellvoltage", type = "U16", simResponse = {0, 0}, min=0, decimals=2, scale=100, max=500, unit="V", default=4.2, help = "@i18n(api.BATTERY_INI.vbatmaxcellvoltage)@"},
+    { field = "vbatfullcellvoltage", type = "U16", simResponse = {0, 0}, min=0, decimals=2, scale=100, max=500, unit="V", default=4.1, help = "@i18n(api.BATTERY_INI.vbatfullcellvoltage)@"},
+    { field = "vbatwarningcellvoltage", type = "U16", simResponse = {0, 0}, min=0, decimals=2, scale=100, max=500, unit="V", default=3.5, help = "@i18n(api.BATTERY_INI.vbatwarningcellvoltage)@"},
+    { field = "lvc_percentage", type = "U8", simResponse = {0}, min=0, max=100, default=100, help = "@i18n(api.BATTERY_INI.lvc_percentage)@"},
+    { field = "consumption_warning_percentage", type = "U8", simResponse = {0}, min=0, max=50, default=35, unit="%", help = "@i18n(api.BATTERY_INI.consumption_warning_percentage)@"},
+    { field = "sag_compensation", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn, help = "@i18n(api.BATTERY_INI.sag_compensation)@"},
+    { field = "sag_multiplier", type = "U8", simResponse = {0} , decimals = 1, default = 0.5, min=0, max=10, help = "@i18n(api.BATTERY_INI.sag_multiplier)@"},
+    { field = "alert_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2, help = "@i18n(api.BATTERY_INI.alert_type)@"},
+    { field = "becalertvalue", type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 6.5, help = "@i18n(api.BATTERY_INI.becalertvalue)@"},
+    { field = "rxalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 7.5, help = "@i18n(api.BATTERY_INI.rxalertvalue)@"},
+    { field = "flighttime",  type = "U8", simResponse = {0}, min = 0, max = 3600,  unit = "s", default = 300, help = "@i18n(api.BATTERY_INI.flighttime)@"},
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
     mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
@@ -84,7 +99,7 @@ end
 
 -- Write operation: merge payloadData into INI, save, then re-read
 local function write()
-    local msg = i18n("app.modules.profile_select.save_prompt_local")
+    local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
     rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
     local tbl = ini.load_ini_file(INI_FILE) or {}

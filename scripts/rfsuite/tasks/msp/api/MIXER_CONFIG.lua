@@ -22,21 +22,21 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}, table={rfsuite.i18n.get("api.MIXER_CONFIG.tbl_cw"),rfsuite.i18n.get("api.MIXER_CONFIG.tbl_ccw")}, tableIdxInc = -1},
-    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0}, default = 0, unit = "%", min = 0, max = 250, decimals = 1, scale = 10},
-    {field = "tail_center_trim",               type = "S16", apiVersion = 12.06, simResponse = {165, 1}, default = 0,  min = -500, max = 500, decimals = 1, scale = 10, mult = 0.239923224568138},
-    {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}, table={"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1},
-    {field = "swash_ring",                     type = "U8",  apiVersion = 12.06, simResponse = {2}},
-    {field = "swash_phase",                    type = "S16", apiVersion = 12.06, simResponse = {100, 0}, default = 0, min = -1800, max = 1800, decimals = 1, scale = 10},
-    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {131, 6}, default = 0, min = 0, max = 360, decimals = 1, step = 1, mult = 0.01200192},
-    {field = "swash_trim_0",                   type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10},
-    {field = "swash_trim_1",                   type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10},
-    {field = "swash_trim_2",                   type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10},
-    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0}, default = 0, min = 0, max = 250},
-    {field = "swash_geo_correction",           type = "S8",  apiVersion = 12.07, simResponse = {0}, default = 0, min = -250, max = 250, decimals = 1, scale = 5, step = 2},
-    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0}, default = 0, min = -100, max = 100},
-    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}, default = 10, min = -100, max = 100},
+    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}, table={"@i18n(api.MIXER_CONFIG.tbl_cw)@","@i18n(api.MIXER_CONFIG.tbl_ccw)@"}, tableIdxInc = -1, help = "@i18n(api.MIXER_CONFIG.main_rotor_dir)@"},
+    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.MIXER_CONFIG.tail_rotor_mode)@"},
+    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0}, default = 0, unit = "%", min = 0, max = 250, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.tail_motor_idle)@"},
+    {field = "tail_center_trim",               type = "S16", apiVersion = 12.06, simResponse = {165, 1}, default = 0,  min = -500, max = 500, decimals = 1, scale = 10, mult = 0.239923224568138, help = "@i18n(api.MIXER_CONFIG.tail_center_trim)@"},
+    {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}, table={"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1, help = "@i18n(api.MIXER_CONFIG.swash_type)@"},
+    {field = "swash_ring",                     type = "U8",  apiVersion = 12.06, simResponse = {2}, help = "@i18n(api.MIXER_CONFIG.swash_ring)@"},
+    {field = "swash_phase",                    type = "S16", apiVersion = 12.06, simResponse = {100, 0}, default = 0, min = -1800, max = 1800, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_phase)@"},
+    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {131, 6}, default = 0, min = 0, max = 360, decimals = 1, step = 1, mult = 0.01200192, help = "@i18n(api.MIXER_CONFIG.swash_pitch_limit)@"},
+    {field = "swash_trim_0",                   type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_trim_0)@"},
+    {field = "swash_trim_1",                   type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_trim_1)@"},
+    {field = "swash_trim_2",                   type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_trim_2)@"},
+    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0}, default = 0, min = 0, max = 250, help = "@i18n(api.MIXER_CONFIG.swash_tta_precomp)@"},
+    {field = "swash_geo_correction",           type = "S8",  apiVersion = 12.07, simResponse = {0}, default = 0, min = -250, max = 250, decimals = 1, scale = 5, step = 2, help = "@i18n(api.MIXER_CONFIG.swash_geo_correction)@"},
+    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0}, default = 0, min = -100, max = 100, help = "@i18n(api.MIXER_CONFIG.collective_tilt_correction_pos)@"},
+    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}, default = 10, min = -100, max = 100, help = "@i18n(api.MIXER_CONFIG.collective_tilt_correction_neg)@"},
 }
 
 -- Process structure in one pass

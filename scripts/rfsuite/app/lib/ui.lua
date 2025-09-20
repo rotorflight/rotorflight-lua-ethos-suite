@@ -18,7 +18,11 @@ local ui = {}
 
 local arg   = { ... }
 local config = arg[1]
-local i18n  = rfsuite.i18n.get
+local app = rfsuite.app
+local preferences = rfsuite.preferences
+local utils = rfsuite.utils
+local tasks = rfsuite.tasks
+
 
 --------------------------------------------------------------------------------
 -- Progress dialogs
@@ -26,21 +30,21 @@ local i18n  = rfsuite.i18n.get
 
 -- Show a progress dialog (defaults: "Loading" / "Loading data from flight controller...").
 function ui.progressDisplay(title, message, speed)
-    if rfsuite.app.dialogs.progressDisplay then return end
+    if app.dialogs.progressDisplay then return end
 
-    title   = title   or i18n("app.msg_loading")
-    message = message or i18n("app.msg_loading_from_fbl")
+    title   = title   or "@i18n(app.msg_loading)@"
+    message = message or "@i18n(app.msg_loading_from_fbl)@"
 
 
     if speed then
-        rfsuite.app.dialogs.progressSpeed = true
+        app.dialogs.progressSpeed = true
     else
-        rfsuite.app.dialogs.progressSpeed = false
+        app.dialogs.progressSpeed = false
     end
 
-    rfsuite.app.dialogs.progressDisplay   = true
-    rfsuite.app.dialogs.progressWatchDog  = os.clock()
-    rfsuite.app.dialogs.progress = form.openProgressDialog({
+    app.dialogs.progressDisplay   = true
+    app.dialogs.progressWatchDog  = os.clock()
+    app.dialogs.progress = form.openProgressDialog({
         title   = title,
         message = message,
         close   = function() end,
@@ -55,12 +59,16 @@ function ui.progressDisplay(title, message, speed)
             end
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+            local apiV = tostring(rfsuite.session.apiVersion)
 
             if not app.triggers.closeProgressLoader then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
-            elseif isProcessing then    
+                if app.dialogs.progressCounter > 50 and rfsuite.session.apiVersion and not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+                    print("No API version yet")
+                end
+            elseif isProcessing then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
-            elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
+            elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
@@ -82,11 +90,11 @@ function ui.progressDisplay(title, message, speed)
 
             -- Timeout (hard timeout)
             if app.dialogs.progressWatchDog
-               and rfsuite.tasks.msp
-               and (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) 
+               and tasks.msp
+               and (os.clock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) 
                and app.dialogs.progressDisplay == true then
                 app.audio.playTimeout = true
-                app.dialogs.progress:message(i18n("app.error_timed_out"))
+                app.dialogs.progress:message("@i18n(app.error_timed_out)@")
                 app.dialogs.progress:closeAllowed(true)
                 app.dialogs.progress:value(100)
                 app.Page   = app.PageTmp
@@ -96,7 +104,7 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressDisplay = false
             end
 
-            if not rfsuite.tasks.msp  then
+            if not tasks.msp  then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
@@ -109,30 +117,34 @@ function ui.progressDisplay(title, message, speed)
         end
     })
 
-    rfsuite.app.dialogs.progressCounter = 0
-    rfsuite.app.dialogs.progress:value(0)
-    rfsuite.app.dialogs.progress:closeAllowed(false)
+    app.dialogs.progressCounter = 0
+    app.dialogs.progress:value(0)
+    app.dialogs.progress:closeAllowed(false)
 end
 
 -- Show a "Saving…" progress dialog.
+-- Literal tags for the progress dialog "message" by page state
 function ui.progressDisplaySave(message)
     local app = rfsuite.app
 
-    rfsuite.app.dialogs.saveDisplay  = true
-    rfsuite.app.dialogs.saveWatchDog = os.clock()
+    app.dialogs.saveDisplay  = true
+    app.dialogs.saveWatchDog = os.clock()
 
-    local msg = ({
-        [app.pageStatus.saving]      = "app.msg_saving_settings",
-        [app.pageStatus.eepromWrite] = "app.msg_saving_settings",
-        [app.pageStatus.rebooting]   = "app.msg_rebooting"
-    })[app.pageState]
 
-    if not message then message = i18n(msg) end
-    local title = i18n("app.msg_saving")
+    local SAVE_MESSAGE_TAG = {
+        [app.pageStatus.saving]      = "@i18n(app.msg_saving_settings)@",
+        [app.pageStatus.eepromWrite] = "@i18n(app.msg_saving_settings)@",
+        [app.pageStatus.rebooting]   = "@i18n(app.msg_rebooting)@",
+    }
 
-    rfsuite.app.dialogs.save = form.openProgressDialog({
+    -- If caller didn’t provide a message, pick the literal tag for the current state.
+    -- Fallback defaults to "saving settings".
+    local resolvedMessage = message or SAVE_MESSAGE_TAG[app.pageState] or "@i18n(app.msg_saving_settings)@"
+    local title = "@i18n(app.msg_saving)@"
+
+    app.dialogs.save = form.openProgressDialog({
         title   = title,
-        message = message,
+        message = resolvedMessage,
         close   = function() end,
         wakeup  = function()
             local app = rfsuite.app
@@ -141,10 +153,13 @@ function ui.progressDisplaySave(message)
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
 
+            -- initialize counter if nil
             if not app.dialogs.saveProgressCounter then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
-            elseif isProcessing then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3                     
+                app.dialogs.saveProgressCounter = 0
+            end
+
+            if isProcessing then
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
             elseif app.triggers.closeSaveFake then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then
@@ -153,8 +168,8 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay         = false
                     app.dialogs.saveWatchDog        = nil
                     app.dialogs.save:close()
-                end           
-            elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
+                end
+            elseif tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
                     app.dialogs.save:close()
@@ -167,13 +182,13 @@ function ui.progressDisplaySave(message)
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
             end
 
-            local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
+            local timeout = tonumber(tasks.msp.protocol.saveTimeout + 5)
             if (app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout)
-               or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) 
+               or (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed())
                and app.dialogs.saveDisplay == true then
 
                 app.audio.playTimeout = true
-                app.dialogs.save:message(i18n("app.error_timed_out"))
+                app.dialogs.save:message("@i18n(app.error_timed_out)@")
                 app.dialogs.save:closeAllowed(true)
                 app.dialogs.save:value(100)
                 app.dialogs.saveProgressCounter = 0
@@ -185,17 +200,18 @@ function ui.progressDisplaySave(message)
         end
     })
 
-    rfsuite.app.dialogs.save:value(0)
-    rfsuite.app.dialogs.save:closeAllowed(false)
+    app.dialogs.save:value(0)
+    app.dialogs.save:closeAllowed(false)
 end
+
 
 -- Is any progress-related dialog showing?
 function ui.progressDisplayIsActive()
-    return rfsuite.app.dialogs.progressDisplay
-        or rfsuite.app.dialogs.saveDisplay
-        or rfsuite.app.dialogs.progressDisplayEsc
-        or rfsuite.app.dialogs.nolinkDisplay
-        or rfsuite.app.dialogs.badversionDisplay
+    return app.dialogs.progressDisplay
+        or app.dialogs.saveDisplay
+        or app.dialogs.progressDisplayEsc
+        or app.dialogs.nolinkDisplay
+        or app.dialogs.badversionDisplay
 end
 
 --------------------------------------------------------------------------------
@@ -203,37 +219,37 @@ end
 --------------------------------------------------------------------------------
 
 function ui.disableAllFields()
-    for i = 1, #rfsuite.app.formFields do
-        local field = rfsuite.app.formFields[i]
+    for i = 1, #app.formFields do
+        local field = app.formFields[i]
         if type(field) == "userdata" then field:enable(false) end
     end
 end
 
 function ui.enableAllFields()
-    for _, field in ipairs(rfsuite.app.formFields) do
+    for _, field in ipairs(app.formFields) do
         if type(field) == "userdata" then field:enable(true) end
     end
 end
 
 function ui.disableAllNavigationFields()
-    for _, v in pairs(rfsuite.app.formNavigationFields) do
+    for _, v in pairs(app.formNavigationFields) do
         v:enable(false)
     end
 end
 
 function ui.enableAllNavigationFields()
-    for _, v in pairs(rfsuite.app.formNavigationFields) do
+    for _, v in pairs(app.formNavigationFields) do
         v:enable(true)
     end
 end
 
 function ui.enableNavigationField(x)
-    local field = rfsuite.app.formNavigationFields[x]
+    local field = app.formNavigationFields[x]
     if field then field:enable(true) end
 end
 
 function ui.disableNavigationField(x)
-    local field = rfsuite.app.formNavigationFields[x]
+    local field = app.formNavigationFields[x]
     if field then field:enable(false) end
 end
 
@@ -243,41 +259,44 @@ end
 
 -- Open main menu.
 function ui.openMainMenu()
-    rfsuite.app.formFields         = {}
-    rfsuite.app.formFieldsOffline  = {}
-    rfsuite.app.formFieldsBGTask   = {}
-    rfsuite.app.formLines          = {}
-    rfsuite.app.lastLabel          = nil
-    rfsuite.app.isOfflinePage      = false
 
-    if rfsuite.tasks.msp then
-        rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    utils.reportMemoryUsage("app.openMainMenu", "start")
+
+    app.formFields         = {}
+    app.formFieldsOffline  = {}
+    app.formFieldsBGTask   = {}
+    app.formLines          = {}
+    app.lastLabel          = nil
+    app.isOfflinePage      = false
+    app.Page               = nil
+    app.PageTmp            = nil
+
+    if tasks.msp then
+        tasks.msp.protocol.mspIntervalOveride = nil
     end
 
-    rfsuite.app.gfx_buttons["mainmenu"] = {}
-    rfsuite.app.lastMenu = nil
+    app.gfx_buttons["mainmenu"] = {}
+    app.lastMenu = nil
 
     -- Clear old icons.
-    for k in pairs(rfsuite.app.gfx_buttons) do
-        if k ~= "mainmenu" then rfsuite.app.gfx_buttons[k] = nil end
+    for k in pairs(app.gfx_buttons) do
+        if k ~= "mainmenu" then app.gfx_buttons[k] = nil end
     end
 
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState          = rfsuite.app.uiStatus.mainMenu
+    app.triggers.isReady = false
+    app.uiState          = app.uiStatus.mainMenu
 
     form.clear()
 
-    rfsuite.app.lastIdx   = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-
-    ESC = {}
+    app.lastIdx   = idx
+    app.lastTitle = title
+    app.lastScript = script
 
     -- Icon size
-    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
-        rfsuite.preferences.general.iconsize = 1
+    if preferences.general.iconsize == nil or preferences.general.iconsize == "" then
+        preferences.general.iconsize = 1
     else
-        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
+        preferences.general.iconsize = tonumber(preferences.general.iconsize)
     end
 
     -- Dimensions
@@ -287,26 +306,26 @@ function ui.openMainMenu()
 
     local buttonW, buttonH, padding, numPerRow
 
-    if rfsuite.preferences.general.iconsize == 0 then
-        padding   = rfsuite.app.radio.buttonPaddingSmall
-        buttonW   = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
-        buttonH   = rfsuite.app.radio.navbuttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
-    elseif rfsuite.preferences.general.iconsize == 1 then
-        padding   = rfsuite.app.radio.buttonPaddingSmall
-        buttonW   = rfsuite.app.radio.buttonWidthSmall
-        buttonH   = rfsuite.app.radio.buttonHeightSmall
-        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
-    elseif rfsuite.preferences.general.iconsize == 2 then
-        padding   = rfsuite.app.radio.buttonPadding
-        buttonW   = rfsuite.app.radio.buttonWidth
-        buttonH   = rfsuite.app.radio.buttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
+    if preferences.general.iconsize == 0 then
+        padding   = app.radio.buttonPaddingSmall
+        buttonW   = (app.lcdWidth - padding) / app.radio.buttonsPerRow - padding
+        buttonH   = app.radio.navbuttonHeight
+        numPerRow = app.radio.buttonsPerRow
+    elseif preferences.general.iconsize == 1 then
+        padding   = app.radio.buttonPaddingSmall
+        buttonW   = app.radio.buttonWidthSmall
+        buttonH   = app.radio.buttonHeightSmall
+        numPerRow = app.radio.buttonsPerRowSmall
+    elseif preferences.general.iconsize == 2 then
+        padding   = app.radio.buttonPadding
+        buttonW   = app.radio.buttonWidth
+        buttonH   = app.radio.buttonHeight
+        numPerRow = app.radio.buttonsPerRow
     end
 
-    rfsuite.app.gfx_buttons["mainmenu"] = rfsuite.app.gfx_buttons["mainmenu"] or {}
-    rfsuite.preferences.menulastselected["mainmenu"] =
-        rfsuite.preferences.menulastselected["mainmenu"] or 1
+    app.gfx_buttons["mainmenu"] = app.gfx_buttons["mainmenu"] or {}
+    preferences.menulastselected["mainmenu"] =
+        preferences.menulastselected["mainmenu"] or 1
 
     local Menu = assert(rfsuite.compiler.loadfile("app/modules/sections.lua"))()
 
@@ -316,8 +335,8 @@ function ui.openMainMenu()
 
     for pidx, pvalue in ipairs(Menu) do
         if not pvalue.developer then
-            rfsuite.app.formFieldsOffline[pidx] = pvalue.offline or false
-            rfsuite.app.formFieldsBGTask[pidx] = pvalue.bgtask or false
+            app.formFieldsOffline[pidx] = pvalue.offline or false
+            app.formFieldsBGTask[pidx] = pvalue.bgtask or false
 
             if pvalue.newline then
                 lc = 0
@@ -326,46 +345,46 @@ function ui.openMainMenu()
 
             if lc == 0 then
                 y = form.height() +
-                    ((rfsuite.preferences.general.iconsize == 2) and rfsuite.app.radio.buttonPadding
-                                                                  or rfsuite.app.radio.buttonPaddingSmall)
+                    ((preferences.general.iconsize == 2) and app.radio.buttonPadding
+                                                                  or app.radio.buttonPaddingSmall)
             end
 
             bx = (buttonW + padding) * lc
 
-            if rfsuite.preferences.general.iconsize ~= 0 then
-                rfsuite.app.gfx_buttons["mainmenu"][pidx] =
-                    rfsuite.app.gfx_buttons["mainmenu"][pidx] or lcd.loadMask(pvalue.image)
+            if preferences.general.iconsize ~= 0 then
+                app.gfx_buttons["mainmenu"][pidx] =
+                    app.gfx_buttons["mainmenu"][pidx] or lcd.loadMask(pvalue.image)
             else
-                rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
+                app.gfx_buttons["mainmenu"][pidx] = nil
             end
 
-            rfsuite.app.formFields[pidx] = form.addButton(line, {
+            app.formFields[pidx] = form.addButton(line, {
                 x = bx, y = y, w = buttonW, h = buttonH
             }, {
                 text    = pvalue.title,
-                icon    = rfsuite.app.gfx_buttons["mainmenu"][pidx],
+                icon    = app.gfx_buttons["mainmenu"][pidx],
                 options = FONT_S,
                 paint   = function() end,
                 press   = function()
-                    rfsuite.preferences.menulastselected["mainmenu"] = pidx
+                    preferences.menulastselected["mainmenu"] = pidx
                     local speed = false
                     if pvalue.loaderspeed then speed = true end
-                    rfsuite.app.ui.progressDisplay(nil,nil,speed)
+                    app.ui.progressDisplay(nil,nil,speed)
                     if pvalue.module then
-                        rfsuite.app.isOfflinePage = true
-                        rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
+                        app.isOfflinePage = true
+                        app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
                     else
-                        rfsuite.app.ui.openMainMenuSub(pvalue.id)
+                        app.ui.openMainMenuSub(pvalue.id)
                     end
                 end
             })
 
             if pvalue.disabled then
-                rfsuite.app.formFields[pidx]:enable(false)
+                app.formFields[pidx]:enable(false)
             end
 
-            if rfsuite.preferences.menulastselected["mainmenu"] == pidx then
-                rfsuite.app.formFields[pidx]:focus()
+            if preferences.menulastselected["mainmenu"] == pidx then
+                app.formFields[pidx]:focus()
             end
 
             lc = lc + 1
@@ -373,142 +392,147 @@ function ui.openMainMenu()
         end
     end
 
-    rfsuite.app.triggers.closeProgressLoader = true
-    collectgarbage()
-    rfsuite.utils.reportMemoryUsage("MainMenuSub")
+    app.triggers.closeProgressLoader = true
+
+    utils.reportMemoryUsage("app.openMainMenu", "end")
 end
 
 -- Open a sub-section of the main menu.
 function ui.openMainMenuSub(activesection)
-    rfsuite.app.formFields        = {}
-    rfsuite.app.formFieldsOffline = {}
-    rfsuite.app.formLines         = {}
-    rfsuite.app.lastLabel         = nil
-    rfsuite.app.isOfflinePage     = false
-    rfsuite.app.gfx_buttons[activesection] = {}
-    rfsuite.app.lastMenu = activesection
+
+    utils.reportMemoryUsage("app.openMainMenuSub", "start")
+
+    app.formFields        = {}
+    app.formFieldsOffline = {}
+    app.formLines         = {}
+    app.lastLabel         = nil
+    app.isOfflinePage     = false
+    app.gfx_buttons[activesection] = {}
+    app.lastMenu = activesection
+    app.Page               = nil
+    app.PageTmp            = nil
 
     -- Clear old icons.
-    for k in pairs(rfsuite.app.gfx_buttons) do
-        if k ~= activesection then rfsuite.app.gfx_buttons[k] = nil end
+    for k in pairs(app.gfx_buttons) do
+        if k ~= activesection then app.gfx_buttons[k] = nil end
     end
 
     -- Hard exit on error.
-    if not rfsuite.utils.ethosVersionAtLeast(config.ethosVersion) then return end
+    if not utils.ethosVersionAtLeast(config.ethosVersion) then return end
 
-    local MainMenu = rfsuite.app.MainMenu
+    local MainMenu = app.MainMenu
 
     -- Clear navigation vars.
-    rfsuite.app.lastIdx   = nil
-    rfsuite.app.lastTitle = nil
-    rfsuite.app.lastScript = nil
+    app.lastIdx   = nil
+    app.lastTitle = nil
+    app.lastScript = nil
     rfsuite.session.lastPage = nil
-    rfsuite.app.triggers.isReady             = false
-    rfsuite.app.uiState                      = rfsuite.app.uiStatus.mainMenu
-    rfsuite.app.triggers.disableRssiTimeout  = false
+    app.triggers.isReady             = false
+    app.uiState                      = app.uiStatus.mainMenu
+    app.triggers.disableRssiTimeout  = false
 
-    rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize) or 1
+    preferences.general.iconsize = tonumber(preferences.general.iconsize) or 1
 
     local buttonW, buttonH, padding, numPerRow
 
-    if rfsuite.preferences.general.iconsize == 0 then
-        padding   = rfsuite.app.radio.buttonPaddingSmall
-        buttonW   = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
-        buttonH   = rfsuite.app.radio.navbuttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
-    elseif rfsuite.preferences.general.iconsize == 1 then
-        padding   = rfsuite.app.radio.buttonPaddingSmall
-        buttonW   = rfsuite.app.radio.buttonWidthSmall
-        buttonH   = rfsuite.app.radio.buttonHeightSmall
-        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
-    elseif rfsuite.preferences.general.iconsize == 2 then
-        padding   = rfsuite.app.radio.buttonPadding
-        buttonW   = rfsuite.app.radio.buttonWidth
-        buttonH   = rfsuite.app.radio.buttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
+    if preferences.general.iconsize == 0 then
+        padding   = app.radio.buttonPaddingSmall
+        buttonW   = (app.lcdWidth - padding) / app.radio.buttonsPerRow - padding
+        buttonH   = app.radio.navbuttonHeight
+        numPerRow = app.radio.buttonsPerRow
+    elseif preferences.general.iconsize == 1 then
+        padding   = app.radio.buttonPaddingSmall
+        buttonW   = app.radio.buttonWidthSmall
+        buttonH   = app.radio.buttonHeightSmall
+        numPerRow = app.radio.buttonsPerRowSmall
+    elseif preferences.general.iconsize == 2 then
+        padding   = app.radio.buttonPadding
+        buttonW   = app.radio.buttonWidth
+        buttonH   = app.radio.buttonHeight
+        numPerRow = app.radio.buttonsPerRow
     end
 
     form.clear()
 
-    rfsuite.app.gfx_buttons[activesection] = rfsuite.app.gfx_buttons[activesection] or {}
-    rfsuite.preferences.menulastselected[activesection] =
-        rfsuite.preferences.menulastselected[activesection] or 1
+    app.gfx_buttons[activesection] = app.gfx_buttons[activesection] or {}
+    preferences.menulastselected[activesection] =
+        preferences.menulastselected[activesection] or 1
 
     for idx, section in ipairs(MainMenu.sections) do
         if section.id == activesection then
             local w, h = lcd.getWindowSize()
             local windowWidth, windowHeight = w, h
-            local padding = rfsuite.app.radio.buttonPadding
+            local padding = app.radio.buttonPadding
 
             form.addLine(section.title)
 
             local x = windowWidth - 110 -- 100 + 10 padding
-            rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {
-                x = x, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight
+            app.formNavigationFields['menu'] = form.addButton(line, {
+                x = x, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight
             }, {
                 text    = "MENU",
                 icon    = nil,
                 options = FONT_S,
                 paint   = function() end,
                 press   = function()
-                    rfsuite.app.lastIdx = nil
+                    app.lastIdx = nil
                     rfsuite.session.lastPage = nil
-                    if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then
-                        rfsuite.app.Page.onNavMenu(rfsuite.app.Page)
+                    if app.Page and app.Page.onNavMenu then
+                        app.Page.onNavMenu(app.Page)
                     end
-                    rfsuite.app.ui.openMainMenu()
+                    app.ui.openMainMenu()
                 end
             })
-            rfsuite.app.formNavigationFields['menu']:focus()
+            app.formNavigationFields['menu']:focus()
 
             local lc, y = 0, 0
 
             for pidx, page in ipairs(MainMenu.pages) do
                 if page.section == idx then
                 local hideEntry =
-                    (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion))
-                    or (page.mspversion and rfsuite.utils.apiVersionCompare("<", page.mspversion))
-                    or (page.developer and not rfsuite.preferences.developer.devtools)
+                    (page.ethosversion and not utils.ethosVersionAtLeast(page.ethosversion))
+                    or (page.mspversion and utils.apiVersionCompare("<", page.mspversion))
+                    or (page.developer and not preferences.developer.devtools)
 
                     local offline = page.offline
-                    rfsuite.app.formFieldsOffline[pidx] = offline or false
+                    app.formFieldsOffline[pidx] = offline or false
 
                     if not hideEntry then
                         if lc == 0 then
                             y = form.height() +
-                                ((rfsuite.preferences.general.iconsize == 2) and rfsuite.app.radio.buttonPadding
-                                                                              or rfsuite.app.radio.buttonPaddingSmall)
+                                ((preferences.general.iconsize == 2) and app.radio.buttonPadding
+                                                                              or app.radio.buttonPaddingSmall)
                         end
 
                         local x = (buttonW + padding) * lc
 
-                        if rfsuite.preferences.general.iconsize ~= 0 then
-                            rfsuite.app.gfx_buttons[activesection][pidx] =
-                                rfsuite.app.gfx_buttons[activesection][pidx]
+                        if preferences.general.iconsize ~= 0 then
+                            app.gfx_buttons[activesection][pidx] =
+                                app.gfx_buttons[activesection][pidx]
                                 or lcd.loadMask("app/modules/" .. page.folder .. "/" .. page.image)
                         else
-                            rfsuite.app.gfx_buttons[activesection][pidx] = nil
+                            app.gfx_buttons[activesection][pidx] = nil
                         end
 
-                        rfsuite.app.formFields[pidx] = form.addButton(line, {
+                        app.formFields[pidx] = form.addButton(line, {
                             x = x, y = y, w = buttonW, h = buttonH
                         }, {
                             text    = page.title,
-                            icon    = rfsuite.app.gfx_buttons[activesection][pidx],
+                            icon    = app.gfx_buttons[activesection][pidx],
                             options = FONT_S,
                             paint   = function() end,
                             press   = function()
-                                rfsuite.preferences.menulastselected[activesection] = pidx
+                                preferences.menulastselected[activesection] = pidx
                                 local speed = false
                                 if page.loaderspeed or section.loaderspeed then speed = true end
-                                rfsuite.app.ui.progressDisplay(nil,nil,speed)
-                                rfsuite.app.isOfflinePage = offline
-                                rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
+                                app.ui.progressDisplay(nil,nil,speed)
+                                app.isOfflinePage = offline
+                                app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
                             end
                         })
 
-                        if rfsuite.preferences.menulastselected[activesection] == pidx then
-                            rfsuite.app.formFields[pidx]:focus()
+                        if preferences.menulastselected[activesection] == pidx then
+                            app.formFields[pidx]:focus()
                         end
 
                         lc = (lc + 1) % numPerRow
@@ -518,9 +542,9 @@ function ui.openMainMenuSub(activesection)
         end
     end
 
-    rfsuite.app.triggers.closeProgressLoader = true
-    collectgarbage()
-    rfsuite.utils.reportMemoryUsage("MainMenuSub")
+    app.triggers.closeProgressLoader = true
+
+    utils.reportMemoryUsage("app.openMainMenuSub", "end")
 end
 
 --------------------------------------------------------------------------------
@@ -536,6 +560,83 @@ function ui.getLabel(id, page)
     return nil
 end
 
+-- Boolean field.
+-- Single Boolean field with optional inversion when f.subtype == 1
+function ui.fieldBoolean(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+    local radioText  = app.radio.text
+
+    -- Defensive guard: field must exist
+    if not f then
+        ui.disableAllFields()
+        ui.disableAllNavigationFields()
+        ui.enableNavigationField('menu')
+        return
+    end
+
+    local invert = (f.subtype == 1)  -- your proposed switch
+
+    local posText, posField
+
+    -- Label / inline handling
+    if f.inline and f.inline >= 1 and f.label then
+        if radioText == 2 and f.t2 then f.t = f.t2 end
+        local p = app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if radioText == 2 and f.t2 then f.t = f.t2 end
+            if f.label then f.t = "        " .. f.t end
+        end
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    -- Helper: decode stored numeric (0/1) -> UI boolean, honoring inversion
+    local function decode()
+        if not fields or not fields[i] then
+            ui.disableAllFields()
+            ui.disableAllNavigationFields()
+            ui.enableNavigationField('menu')
+            return nil
+        end
+        local v = (fields[i].value == 1) and 1 or 0
+        if invert then v = (v == 1) and 0 or 1 end
+        return (v == 1)
+    end
+
+    -- Helper: encode UI boolean -> stored numeric (0/1), honoring inversion
+    local function encode(b)
+        local v = b and 1 or 0
+        if invert then v = (v == 1) and 0 or 1 end
+        return v
+    end
+
+    formFields[i] = form.addBooleanField(
+        formLines[app.formLineCnt],
+        posField,
+        function()
+            return decode()
+        end,
+        function(valueBool)
+            local value = encode(valueBool == true)
+            if f.postEdit then f.postEdit(page, value) end
+            if f.onChange then f.onChange(page, value) end
+            f.value = app.utils.saveFieldValue(fields[i], value)
+        end
+    )
+
+    if f.disable then formFields[i]:enable(false) end
+end
+
+
 -- Choice field.
 function ui.fieldChoice(i)
     local app        = rfsuite.app
@@ -550,23 +651,23 @@ function ui.fieldChoice(i)
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f, page)
         posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
         if f.t then
             if radioText == 2 and f.t2 then f.t = f.t2 end
             if f.label then f.t = "        " .. f.t end
         end
-        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
-    local tbldata = f.table and rfsuite.app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
+    local tbldata = f.table and app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
 
     formFields[i] = form.addChoiceField(
-        formLines[rfsuite.app.formLineCnt],
+        formLines[app.formLineCnt],
         posField,
         tbldata,
         function()
@@ -576,16 +677,96 @@ function ui.fieldChoice(i)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(fields[i])
+            return app.utils.getFieldValue(fields[i])
         end,
         function(value)
             if f.postEdit then f.postEdit(page, value) end
             if f.onChange then f.onChange(page, value) end
-            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
+            f.value = app.utils.saveFieldValue(fields[i], value)
         end
     )
 
     if f.disable then formFields[i]:enable(false) end
+end
+
+-- Slider field.
+function ui.fieldSlider(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = app.utils.scaleValue(f.min, f)
+    local maxValue = app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSliderField(
+        formLines[app.formLineCnt],
+        posField,
+        minValue,
+        maxValue,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.decimals then currentField:decimals(f.decimals) end
+    if f.step     then currentField:step(f.step)         end
+    if f.disable  then currentField:enable(false)        end
+
+    if f.help or f.apikey then
+        if not f.help and f.apikey then f.help = f.apikey end
+        if app.fieldHelpTxt and app.fieldHelpTxt[f.help] and app.fieldHelpTxt[f.help].t then
+            currentField:help(app.fieldHelpTxt[f.help].t)
+        end
+    end
+
 end
 
 -- Number field.
@@ -600,17 +781,17 @@ function ui.fieldNumber(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f, page)
         posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
         if f.t then
             if f.label then f.t = "        " .. f.t end
         else
             f.t = ""
         end
-        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
@@ -619,8 +800,8 @@ function ui.fieldNumber(i)
         if f.max then f.max = f.max + f.offset end
     end
 
-    local minValue = rfsuite.app.utils.scaleValue(f.min, f)
-    local maxValue = rfsuite.app.utils.scaleValue(f.max, f)
+    local minValue = app.utils.scaleValue(f.min, f)
+    local maxValue = app.utils.scaleValue(f.max, f)
 
     if f.mult then
         if minValue then minValue = minValue * f.mult end
@@ -631,7 +812,7 @@ function ui.fieldNumber(i)
     maxValue = maxValue or 0
 
     formFields[i] = form.addNumberField(
-        formLines[rfsuite.app.formLineCnt],
+        formLines[app.formLineCnt],
         posField,
         minValue,
         maxValue,
@@ -642,12 +823,12 @@ function ui.fieldNumber(i)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(page.fields[i])
+            return app.utils.getFieldValue(page.fields[i])
         end,
         function(value)
             if f.postEdit then f.postEdit(page) end
             if f.onChange then f.onChange(page) end
-            f.value = rfsuite.app.utils.saveFieldValue(page.fields[i], value)
+            f.value = app.utils.saveFieldValue(page.fields[i], value)
         end
     )
 
@@ -657,7 +838,7 @@ function ui.fieldNumber(i)
 
     if f.default then
         if f.offset then f.default = f.default + f.offset end
-        local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
+        local default = f.default * app.utils.decimalInc(f.decimals)
         if f.mult then default = default * f.mult end
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end
@@ -685,6 +866,286 @@ function ui.fieldNumber(i)
     end
 end
 
+-- Source field.
+function ui.fieldSource(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = app.utils.scaleValue(f.min, f)
+    local maxValue = app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSourceField(
+        formLines[app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
+-- Sensor field.
+function ui.fieldSensor(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = app.utils.scaleValue(f.min, f)
+    local maxValue = app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSensorField(
+        formLines[app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
+-- Color field.
+function ui.fieldColor(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = app.utils.scaleValue(f.min, f)
+    local maxValue = app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addColorField(
+        formLines[app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+            end
+            local color = page.fields[i]
+            if type(color) ~= "number" then
+                return COLOR_BLACK
+            else 
+                return color
+            end
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
+-- Source field.
+function ui.fieldSwitch(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = app.utils.scaleValue(f.min, f)
+    local maxValue = app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSwitchField(
+        formLines[app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
 -- Static text field.
 function ui.fieldStaticText(i)
     local app         = rfsuite.app
@@ -699,9 +1160,9 @@ function ui.fieldStaticText(i)
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f, page)
         posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
         if radioText == 2 and f.t2 then f.t = f.t2 end
         if f.t then
@@ -709,17 +1170,17 @@ function ui.fieldStaticText(i)
         else
             f.t = ""
         end
-        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
     -- if HideMe == true then ... end (kept as comment in original)
 
     formFields[i] = form.addStaticText(
-        formLines[rfsuite.app.formLineCnt],
+        formLines[app.formLineCnt],
         posField,
-        rfsuite.app.utils.getFieldValue(fields[i])
+        app.utils.getFieldValue(fields[i])
     )
 
     local currentField = formFields[i]
@@ -743,9 +1204,9 @@ function ui.fieldText(i)
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f, page)
         posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
         if radioText == 2 and f.t2 then f.t = f.t2 end
         if f.t then
@@ -753,13 +1214,13 @@ function ui.fieldText(i)
         else
             f.t = ""
         end
-        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        app.formLineCnt = app.formLineCnt + 1
+        formLines[app.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
     formFields[i] = form.addTextField(
-        formLines[rfsuite.app.formLineCnt],
+        formLines[app.formLineCnt],
         posField,
         function()
             if not fields or not fields[i] then
@@ -768,12 +1229,12 @@ function ui.fieldText(i)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(fields[i])
+            return app.utils.getFieldValue(fields[i])
         end,
         function(value)
             if f.postEdit then f.postEdit(page) end
             if f.onChange then f.onChange(page) end
-            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
+            f.value = app.utils.saveFieldValue(fields[i], value)
         end
     )
 
@@ -807,12 +1268,12 @@ function ui.fieldLabel(f, i, l)
         if label.t2 then labelValue = label.t2 end
         local labelName = f.t and labelValue or "unknown"
 
-        if f.label ~= rfsuite.app.lastLabel then
+        if f.label ~= app.lastLabel then
             label.type = label.type or 0
-            rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-            app.formLines[rfsuite.app.formLineCnt] = form.addLine(labelName)
-            form.addStaticText(app.formLines[rfsuite.app.formLineCnt], nil, "")
-            rfsuite.app.lastLabel = f.label
+            app.formLineCnt = app.formLineCnt + 1
+            app.formLines[app.formLineCnt] = form.addLine(labelName)
+            form.addStaticText(app.formLines[app.formLineCnt], nil, "")
+            app.lastLabel = f.label
         end
     end
 end
@@ -825,7 +1286,7 @@ function ui.fieldHeader(title)
     local app       = rfsuite.app
     local radio     = app.radio
     local formFields = app.formFields
-    local lcdWidth  = rfsuite.app.lcdWidth
+    local lcdWidth  = app.lcdWidth
 
     if not title then title = "No Title" end
 
@@ -850,7 +1311,7 @@ function ui.fieldHeader(title)
 end
 
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
-    rfsuite.app.triggers.isReady = false
+    app.triggers.isReady = false
 end
 
 --------------------------------------------------------------------------------
@@ -862,7 +1323,7 @@ ui._helpCache = ui._helpCache or {}
 local function getHelpData(section)
     if ui._helpCache[section] == nil then
         local helpPath = "app/modules/" .. section .. "/help.lua"
-        if rfsuite.utils.file_exists(helpPath) then
+        if utils.file_exists(helpPath) then
             local ok, helpData = pcall(function()
                 return assert(rfsuite.compiler.loadfile(helpPath))()
             end)
@@ -879,82 +1340,96 @@ end
 --------------------------------------------------------------------------------
 
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+
+  utils.reportMemoryUsage("ui.openPage: " .. script, "start")
+
     -- Global UI state; clear form data.
-    rfsuite.app.uiState          = rfsuite.app.uiStatus.pages
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.formFields       = {}
-    rfsuite.app.formLines        = {}
-    rfsuite.app.lastLabel        = nil
+    app.uiState          = app.uiStatus.pages
+    app.triggers.isReady = false
+    app.formFields       = {}
+    app.formLines        = {}
+    app.lastLabel        = nil
 
     -- Load module.
     local modulePath = "app/modules/" .. script
-    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+    app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
     -- Load help (if present).
     local section  = script:match("([^/]+)")
     local helpData = getHelpData(section)
-    rfsuite.app.fieldHelpTxt = helpData and helpData.fields or nil
+    app.fieldHelpTxt = helpData and helpData.fields or nil
 
     -- Module-specific openPage?
-    if rfsuite.app.Page.openPage then
-        rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
-        rfsuite.utils.reportMemoryUsage(title)
+    if app.Page.openPage then
+
+        utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
+
+        app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+
+        utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
     end
 
     -- Fallback rendering.
-    rfsuite.app.lastIdx   = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    app.lastIdx   = idx
+    app.lastTitle = title
+    app.lastScript = script
 
     form.clear()
     rfsuite.session.lastPage = script
 
-    local pageTitle = rfsuite.app.Page.pageTitle or title
-    rfsuite.app.ui.fieldHeader(pageTitle)
+    local pageTitle = app.Page.pageTitle or title
+    app.ui.fieldHeader(pageTitle)
 
-    if rfsuite.app.Page.headerLine then
+    if app.Page.headerLine then
         local headerLine = form.addLine("")
         form.addStaticText(headerLine, {
-            x = 0, y = rfsuite.app.radio.linePaddingTop,
-            w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight
-        }, rfsuite.app.Page.headerLine)
+            x = 0, y = app.radio.linePaddingTop,
+            w = app.lcdWidth, h = app.radio.navbuttonHeight
+        }, app.Page.headerLine)
     end
 
-    rfsuite.app.formLineCnt = 0
+    app.formLineCnt = 0
 
-    rfsuite.utils.log("Merging form data from mspapi", "debug")
-    rfsuite.app.Page.fields = rfsuite.app.Page.apidata.formdata.fields
-    rfsuite.app.Page.labels = rfsuite.app.Page.apidata.formdata.labels
+    utils.log("Merging form data from mspapi", "debug")
+    app.Page.fields = app.Page.apidata.formdata.fields
+    app.Page.labels = app.Page.apidata.formdata.labels
 
-    if rfsuite.app.Page.fields then
-        for i, field in ipairs(rfsuite.app.Page.fields) do
-            local label   = rfsuite.app.Page.labels
+    if app.Page.fields then
+        for i, field in ipairs(app.Page.fields) do
+            local label   = app.Page.labels
             if rfsuite.session.apiVersion == nil then return end
 
             local valid =
-                (field.apiversion    == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversion))    and
-                (field.apiversionlt  == nil or rfsuite.utils.apiVersionCompare("<",  field.apiversionlt))  and
-                (field.apiversiongt  == nil or rfsuite.utils.apiVersionCompare(">",  field.apiversiongt))  and
-                (field.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", field.apiversionlte)) and
-                (field.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversiongte)) and
+                (field.apiversion    == nil or utils.apiVersionCompare(">=", field.apiversion))    and
+                (field.apiversionlt  == nil or utils.apiVersionCompare("<",  field.apiversionlt))  and
+                (field.apiversiongt  == nil or utils.apiVersionCompare(">",  field.apiversiongt))  and
+                (field.apiversionlte == nil or utils.apiVersionCompare("<=", field.apiversionlte)) and
+                (field.apiversiongte == nil or utils.apiVersionCompare(">=", field.apiversiongte)) and
                 (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
-                rfsuite.app.ui.fieldLabel(field, i, label)
-                if     field.type == 0 then rfsuite.app.ui.fieldStaticText(i)
-                elseif field.table or field.type == 1 then rfsuite.app.ui.fieldChoice(i)
-                elseif field.type == 2 then rfsuite.app.ui.fieldNumber(i)
-                elseif field.type == 3 then rfsuite.app.ui.fieldText(i)
-                else                         rfsuite.app.ui.fieldNumber(i)
+                app.ui.fieldLabel(field, i, label)
+                if     field.type == 0 then app.ui.fieldStaticText(i)
+                elseif field.table or field.type == 1 then app.ui.fieldChoice(i)
+                elseif field.type == 2 then app.ui.fieldNumber(i)
+                elseif field.type == 3 then app.ui.fieldText(i)
+                elseif field.type == 4 then app.ui.fieldBoolean(i)
+                elseif field.type == 5 then app.ui.fieldBooleanInverted(i)  
+                elseif field.type == 6 then app.ui.fieldSlider(i)  
+                elseif field.type == 7 then app.ui.fieldSource(i)   
+                elseif field.type == 8 then app.ui.fieldSwitch(i) 
+                elseif field.type == 9 then app.ui.fieldSensor(i)     
+                elseif field.type == 10 then app.ui.fieldColor(i) 
+                else                         app.ui.fieldNumber(i)
                 end
             else
-                rfsuite.app.formFields[i] = {}
+                app.formFields[i] = {}
             end
         end
     end
 
-    rfsuite.utils.reportMemoryUsage(title)
+    utils.reportMemoryUsage("ui.openPage: " .. script, "end")
 end
 
 -- Navigation buttons (Menu / Save / Reload / Tool / Help).
@@ -969,10 +1444,10 @@ function ui.navigationButtons(x, y, w, h)
     local menuOffset   = 0
 
     local navButtons
-    if rfsuite.app.Page.navButtons == nil then
+    if app.Page.navButtons == nil then
         navButtons = { menu = true, save = true, reload = true, help = true }
     else
-        navButtons = rfsuite.app.Page.navButtons
+        navButtons = app.Page.navButtons
     end
 
     -- Precompute offsets to keep focus order correct in Ethos.
@@ -993,40 +1468,40 @@ function ui.navigationButtons(x, y, w, h)
 
     -- MENU
     if navButtons.menu == true then
-        rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {
+        app.formNavigationFields['menu'] = form.addButton(line, {
             x = menuOffset, y = y, w = w, h = h
         }, {
-            text    = i18n("app.navigation_menu"),
+            text    = "@i18n(app.navigation_menu)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
             press   = function()
-                if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then
-                    rfsuite.app.Page.onNavMenu(rfsuite.app.Page)
-                elseif rfsuite.app.lastMenu ~= nil then
-                    rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+                if app.Page and app.Page.onNavMenu then
+                    app.Page.onNavMenu(app.Page)
+                elseif app.lastMenu ~= nil then
+                    app.ui.openMainMenuSub(app.lastMenu)
                 else
-                    rfsuite.app.ui.openMainMenu()
+                    app.ui.openMainMenu()
                 end
             end
         })
-        rfsuite.app.formNavigationFields['menu']:focus()
+        app.formNavigationFields['menu']:focus()
     end
 
     -- SAVE
     if navButtons.save == true then
-        rfsuite.app.formNavigationFields['save'] = form.addButton(line, {
+        app.formNavigationFields['save'] = form.addButton(line, {
             x = saveOffset, y = y, w = w, h = h
         }, {
-            text    = i18n("app.navigation_save"),
+            text    = "@i18n(app.navigation_save)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
             press   = function()
-                if rfsuite.app.Page and rfsuite.app.Page.onSaveMenu then
-                    rfsuite.app.Page.onSaveMenu(rfsuite.app.Page)
+                if app.Page and app.Page.onSaveMenu then
+                    app.Page.onSaveMenu(app.Page)
                 else
-                    rfsuite.app.triggers.triggerSave = true
+                    app.triggers.triggerSave = true
                 end
             end
         })
@@ -1034,18 +1509,18 @@ function ui.navigationButtons(x, y, w, h)
 
     -- RELOAD
     if navButtons.reload == true then
-        rfsuite.app.formNavigationFields['reload'] = form.addButton(line, {
+        app.formNavigationFields['reload'] = form.addButton(line, {
             x = reloadOffset, y = y, w = w, h = h
         }, {
-            text    = i18n("app.navigation_reload"),
+            text    = "@i18n(app.navigation_reload)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
             press   = function()
-                if rfsuite.app.Page and rfsuite.app.Page.onReloadMenu then
-                    rfsuite.app.Page.onReloadMenu(rfsuite.app.Page)
+                if app.Page and app.Page.onReloadMenu then
+                    app.Page.onReloadMenu(app.Page)
                 else
-                    rfsuite.app.triggers.triggerReload = true
+                    app.triggers.triggerReload = true
                 end
                 return true
             end
@@ -1054,56 +1529,56 @@ function ui.navigationButtons(x, y, w, h)
 
     -- TOOL
     if navButtons.tool == true then
-        rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {
+        app.formNavigationFields['tool'] = form.addButton(line, {
             x = toolOffset, y = y, w = wS, h = h
         }, {
-            text    = i18n("app.navigation_tools"),
+            text    = "@i18n(app.navigation_tools)@",
             icon    = nil,
             options = FONT_S,
             paint   = function() end,
             press   = function()
-                rfsuite.app.Page.onToolMenu()
+                app.Page.onToolMenu()
             end
         })
     end
 
     -- HELP
     if navButtons.help == true then
-        local section = rfsuite.app.lastScript:match("([^/]+)")
-        local script  = rfsuite.app.lastScript:match("/([^/]+)%.lua$")
+        local section = app.lastScript:match("([^/]+)")
+        local script  = app.lastScript:match("/([^/]+)%.lua$")
 
         local help = getHelpData(section)
         if help then
-            rfsuite.app.formNavigationFields['help'] = form.addButton(line, {
+            app.formNavigationFields['help'] = form.addButton(line, {
                 x = helpOffset, y = y, w = wS, h = h
             }, {
-                text    = i18n("app.navigation_help"),
+                text    = "@i18n(app.navigation_help)@",
                 icon    = nil,
                 options = FONT_S,
                 paint   = function() end,
                 press   = function()
-                    if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
-                        rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
+                    if app.Page and app.Page.onHelpMenu then
+                        app.Page.onHelpMenu(app.Page)
                     else
                         if help.help[script] then
-                            rfsuite.app.ui.openPageHelp(help.help[script], section)
+                            app.ui.openPageHelp(help.help[script], section)
                         else
-                            rfsuite.app.ui.openPageHelp(help.help['default'], section)
+                            app.ui.openPageHelp(help.help['default'], section)
                         end
                     end
                 end
             })
         else
-            rfsuite.app.formNavigationFields['help'] = form.addButton(line, {
+            app.formNavigationFields['help'] = form.addButton(line, {
                 x = helpOffset, y = y, w = wS, h = h
             }, {
-                text    = i18n("app.navigation_help"),
+                text    = "@i18n(app.navigation_help)@",
                 icon    = nil,
                 options = FONT_S,
                 paint   = function() end,
                 press   = function() end
             })
-            rfsuite.app.formNavigationFields['help']:enable(false)
+            app.formNavigationFields['help']:enable(false)
         end
     end
 end
@@ -1112,10 +1587,10 @@ end
 function ui.openPageHelp(txtData, section)
     local message = table.concat(txtData, "\r\n\r\n")
     form.openDialog({
-        width   = rfsuite.app.lcdWidth,
-        title   = "Help - " .. rfsuite.app.lastTitle,
+        width   = app.lcdWidth,
+        title   = "Help - " .. app.lastTitle,
         message = message,
-        buttons = { { label = i18n("app.btn_close"), action = function() return true end } },
+        buttons = { { label = "@i18n(app.btn_close)@", action = function() return true end } },
         options = TEXT_LEFT
     })
 end
@@ -1132,7 +1607,9 @@ function ui.injectApiAttributes(formField, f, v)
         if f.type ~= 1 then
             log("Injecting decimals: " .. v.decimals, "debug")
             f.decimals = v.decimals
-            formField:decimals(v.decimals)
+            if formField.decimals then
+                formField:decimals(v.decimals)
+            end
         end
     end
 
@@ -1143,7 +1620,9 @@ function ui.injectApiAttributes(formField, f, v)
     if v.unit and not f.unit then
         if f.type ~= 1 then
             log("Injecting unit: " .. v.unit, "debug")
-            formField:suffix(v.unit)
+            if formField.suffix then
+                formField:suffix(v.unit)
+            end
         end
     end
 
@@ -1151,7 +1630,9 @@ function ui.injectApiAttributes(formField, f, v)
         if f.type ~= 1 then
             log("Injecting step: " .. v.step, "debug")
             f.step = v.step
-            formField:step(v.step)
+            if formField.step then
+                formField:step(v.step)
+            end
         end
     end
 
@@ -1160,7 +1641,9 @@ function ui.injectApiAttributes(formField, f, v)
         if f.offset then f.min = f.min + f.offset end
         if f.type ~= 1 then
             log("Injecting min: " .. f.min, "debug")
-            formField:minimum(f.min)
+            if formField.minimum then
+                formField:minimum(f.min)
+            end
         end
     end
 
@@ -1169,41 +1652,488 @@ function ui.injectApiAttributes(formField, f, v)
         if f.offset then f.max = f.max + f.offset end
         if f.type ~= 1 then
             log("Injecting max: " .. f.max, "debug")
-            formField:maximum(f.max)
+            if formField.maximum then
+                formField:maximum(f.max)
+            end
         end
     end
 
     if v.default and not f.default then
         f.default = v.default
         if f.offset then f.default = f.default + f.offset end
-        local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
+        local default = f.default * app.utils.decimalInc(f.decimals)
         if f.mult then default = default * f.mult end
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end
         if f.type ~= 1 then
             log("Injecting default: " .. default, "debug")
-            formField:default(default)
+            if formField.default then
+                formField:default(default)
+            end
         end
     end
 
     if v.table and not f.table then
         f.table = v.table
         local idxInc = f.tableIdxInc or v.tableIdxInc
-        local tbldata = rfsuite.app.utils.convertPageValueTable(v.table, idxInc)
+        local tbldata = app.utils.convertPageValueTable(v.table, idxInc)
         if f.type == 1 then
             log("Injecting table: {}", "debug")
-            formField:values(tbldata)
+            if formField.values then
+                formField:values(tbldata)
+            end
         end
     end
 
     if v.help then
         f.help = v.help
         log("Injecting help: {}", "debug")
-        formField:help(v.help)
+        if formField.help then
+            formField:help(v.help)
+        end
     end
 
     -- Force focus to ensure field updates.
-    formField:focus(true)
+    if formField.focus then
+        formField:focus(true)
+    end
 end
+
+-- Update form fields with MSP API values/attributes
+function ui.mspApiUpdateFormAttributes(values, structure)
+
+  local app   = rfsuite.app
+  local utils   = rfsuite.utils
+  local log     = utils.log
+
+  if not (app.Page.apidata.formdata and app.Page.apidata.api and app.Page.fields) then
+    log("app.Page.apidata.formdata or its components are nil", "debug")
+    return
+  end
+
+  local function combined_api_parts(s)
+    local part1, part2 = s:match("^([^:]+):([^:]+)$")
+    if part1 and part2 then
+      local num = tonumber(part1)
+      if num then
+        part1 = num
+      else
+        part1 = app.Page.apidata.api_reversed[part1] or nil
+      end
+      if part1 then return { part1, part2 } end
+    end
+    return nil
+  end
+
+  local fields = app.Page.apidata.formdata.fields
+  local api    = app.Page.apidata.api
+
+  if not app.Page.apidata.api_reversed then
+    app.Page.apidata.api_reversed = {}
+    for index, value in pairs(app.Page.apidata.api) do
+      app.Page.apidata.api_reversed[value] = index
+    end
+  end
+
+  for i, f in ipairs(fields) do
+    local formField = app.formFields[i]
+    if type(formField) == 'userdata' then
+      if f.api then
+        log("API field found: " .. f.api, "debug")
+        local parts = combined_api_parts(f.api)
+        if parts then f.mspapi = parts[1]; f.apikey = parts[2] end
+      end
+
+      local apikey      = f.apikey
+      local mspapiID    = f.mspapi
+      local mspapiNAME  = api[mspapiID]
+      local target      = structure[mspapiNAME]
+
+      if mspapiID == nil or mspapiID == nil then
+        log("API field missing mspapi or apikey", "debug")
+      else
+        for _, v in ipairs(target) do
+          if not v.bitmap then
+            if v.field == apikey and mspapiID == f.mspapi then
+
+              if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then
+                v.help = nil
+              end
+
+              app.ui.injectApiAttributes(formField, f, v)
+
+              local scale = f.scale or 1
+              if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
+                app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+              end
+
+              if values[mspapiNAME][apikey] == nil then
+                log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                formField:enable(false)
+              end
+              break
+            end
+          else
+            -- bitmap fields
+            for bidx, b in ipairs(v.bitmap) do
+              local bitmapField = v.field .. "->" .. b.field
+              if bitmapField == apikey and mspapiID == f.mspapi then
+                if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then
+                  v.help = nil
+                end
+
+                app.ui.injectApiAttributes(formField, f, b)
+
+                local scale = f.scale or 1
+                if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
+                  local raw_value = values[mspapiNAME][v.field]
+                  local bit_value = (raw_value >> bidx - 1) & 1
+                  app.Page.fields[i].value = bit_value / scale
+                end
+
+                if values[mspapiNAME][v.field] == nil then
+                  log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                  formField:enable(false)
+                end
+
+                app.Page.fields[i].bitmap = bidx - 1
+              end
+            end
+          end
+        end
+      end
+    else
+      log("Form field skipped; not valid for this api version?", "debug")
+    end
+  end
+
+  app.formNavigationFields['menu']:focus(true)
+end
+
+-- Request page data via the API form system
+function ui.requestPage()
+  local app = rfsuite.app
+  local log = utils.log
+
+
+  if not app.Page.apidata then return end
+  if not app.Page.apidata.api and not app.Page.apidata.formdata then
+    log("app.Page.apidata.api did not pass consistancy checks", "debug")
+    return
+  end
+
+  if not app.Page.apidata.apiState then
+    app.Page.apidata.apiState = { currentIndex = 1, isProcessing = false }
+  end
+
+  local apiList = app.Page.apidata.api
+  local state   = app.Page.apidata.apiState
+
+  if state.isProcessing then
+    log("requestPage is already running, skipping duplicate call.", "debug")
+    return
+  end
+  state.isProcessing = true
+
+  if not app.Page.apidata.values then
+    log("requestPage Initialize values on first run", "debug")
+    app.Page.apidata.values             = {}
+    app.Page.apidata.structure          = {}
+    app.Page.apidata.receivedBytesCount = {}
+    app.Page.apidata.receivedBytes      = {}
+    app.Page.apidata.positionmap        = {}
+    app.Page.apidata.other              = {}
+  end
+
+  if state.currentIndex == nil then state.currentIndex = 1 end
+
+  local function checkForUnresolvedTimeouts()
+    if not app or not app.Page or not app.Page.apidata then return end
+    local hasUnresolvedTimeouts = false
+    for apiKey, retries in pairs(app.Page.apidata.retryCount or {}) do
+      if retries >= 3 then
+        hasUnresolvedTimeouts = true
+        log("[ALERT] API " .. apiKey .. " failed after 3 timeouts.", "info")
+      end
+    end
+    if hasUnresolvedTimeouts then
+      app.ui.disableAllFields()
+      app.ui.disableAllNavigationFields()
+      app.ui.enableNavigationField('menu')
+      app.triggers.closeProgressLoader = true
+    end
+  end
+
+  local function processNextAPI()
+    if not app or not app.Page or not app.Page.apidata then
+      log("App is closing. Stopping processNextAPI.", "debug")
+      return
+    end
+
+    if state.currentIndex > #apiList or #apiList == 0 then
+      if state.isProcessing then
+        state.isProcessing = false
+        state.currentIndex = 1
+        app.triggers.isReady = true
+        if app.Page.postRead then app.Page.postRead(app.Page) end
+        app.ui.mspApiUpdateFormAttributes(app.Page.apidata.values, app.Page.apidata.structure)
+        if app.Page.postLoad then app.Page.postLoad(app.Page) else app.triggers.closeProgressLoader = true end
+        checkForUnresolvedTimeouts()
+      end
+      return
+    end
+
+    local v      = apiList[state.currentIndex]
+    local apiKey = type(v) == "string" and v or v.name
+    if not apiKey then
+      log("API key is missing for index " .. tostring(state.currentIndex), "warning")
+      state.currentIndex = state.currentIndex + 1
+      local base = 0.25
+      local backoff = math.min(2.0, base * (2 ^ retryCount))
+      local jitter = math.random() * 0.2
+      tasks.callback.inSeconds(backoff + jitter, processNextAPI)
+      return
+    end
+
+    local API = tasks.msp.api.load(v)
+
+    if app and app.Page and app.Page.apidata then app.Page.apidata.retryCount = app.Page.apidata.retryCount or {} end
+
+    local retryCount = app.Page.apidata.retryCount[apiKey] or 0
+    local handled = false
+
+    log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
+
+    local function handleTimeout()
+      if handled then return end
+      handled = true
+      if not app or not app.Page or not app.Page.apidata then
+        log("App is closing. Timeout handling skipped.", "debug")
+        return
+      end
+      retryCount = retryCount + 1
+      app.Page.apidata.retryCount[apiKey] = retryCount
+      if retryCount < 3 then
+        log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
+        tasks.callback.inSeconds(0.25, processNextAPI)
+      else
+        log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+        state.currentIndex = state.currentIndex + 1
+        tasks.callback.inSeconds(0.25, processNextAPI)
+      end
+    end
+
+    tasks.callback.inSeconds(2, handleTimeout)
+
+    API.setCompleteHandler(function(self, buf)
+      if handled then return end
+      handled = true
+      if not app or not app.Page or not app.Page.apidata then
+        log("App is closing. Skipping API success handling.", "debug")
+        return
+      end
+      log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
+      app.Page.apidata.values[apiKey]             = API.data().parsed
+      app.Page.apidata.structure[apiKey]          = API.data().structure
+      app.Page.apidata.receivedBytes[apiKey]      = API.data().buffer
+      app.Page.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
+      app.Page.apidata.positionmap[apiKey]        = API.data().positionmap
+      app.Page.apidata.other[apiKey]              = API.data().other or {}
+      app.Page.apidata.retryCount[apiKey]         = 0
+      state.currentIndex = state.currentIndex + 1
+      tasks.callback.inSeconds(0.5, processNextAPI)
+    end)
+
+    API.setErrorHandler(function(self, err)
+      if handled then return end
+      handled = true
+      if not app or not app.Page or not app.Page.apidata then
+        log("App is closing. Skipping API error handling.", "debug")
+        return
+      end
+      retryCount = retryCount + 1
+      app.Page.apidata.retryCount[apiKey] = retryCount
+      if retryCount < 3 then
+        log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
+        tasks.callback.inSeconds(0.5, processNextAPI)
+      else
+        log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+        state.currentIndex = state.currentIndex + 1
+        tasks.callback.inSeconds(0.5, processNextAPI)
+      end
+    end)
+
+    API.read()
+  end
+
+  processNextAPI()
+end
+
+-- Save current page's settings via MSP API(s)
+function ui.saveSettings()
+
+ local app = rfsuite.app
+ local log = utils.log
+
+  if app.pageState == app.pageStatus.saving then return end
+
+  app.pageState = app.pageStatus.saving
+  app.saveTS    = os.clock()
+
+  log("Saving data", "debug")
+
+  local mspapi  = app.Page.apidata
+  local apiList = mspapi.api
+  local values  = mspapi.values
+
+  local totalRequests    = #apiList
+  local completedRequests= 0
+
+  app.Page.apidata.apiState.isProcessing = true
+
+  if app.Page.preSave then app.Page.preSave(app.Page) end
+
+  for apiID, apiNAME in ipairs(apiList) do
+
+    utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "start")
+
+    local payloadData      = values[apiNAME]
+    local payloadStructure = mspapi.structure[apiNAME]
+
+    local API = tasks.msp.api.load(apiNAME)
+    API.setErrorHandler(function(self, buf)
+      app.triggers.saveFailed = true
+    end)
+    API.setCompleteHandler(function(self, buf)
+      completedRequests = completedRequests + 1
+      log("API " .. apiNAME .. " write complete", "debug")
+      if completedRequests == totalRequests then
+        log("All API requests have been completed!", "debug")
+        if app.Page.postSave then app.Page.postSave(app.Page) end
+           app.Page.apidata.apiState.isProcessing = false
+          app.utils.settingsSaved()
+      end
+    end)
+
+    -- Build lookup maps (normal + bitmap)
+    local fieldMap       = {}
+    local fieldMapBitmap = {}
+    for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
+      if not f.bitmap then
+        if f.mspapi == apiID then fieldMap[f.apikey] = fidx end
+      else
+        local p1, p2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
+        if not fieldMapBitmap[p1] then fieldMapBitmap[p1] = {} end
+        fieldMapBitmap[p1][f.bitmap] = fidx
+      end
+    end
+
+    -- Inject values into payload
+    for k, v in pairs(payloadData) do
+      local fieldIndex = fieldMap[k]
+      if fieldIndex then
+        payloadData[k] = app.Page.fields[fieldIndex].value
+      elseif fieldMapBitmap[k] then
+        local originalValue = tonumber(v) or 0
+        local newValue = originalValue
+        for bit, idx in pairs(fieldMapBitmap[k]) do
+          local fieldVal = math.floor(tonumber(app.Page.fields[idx].value) or 0)
+          local mask = 1 << (bit)
+          if fieldVal ~= 0 then newValue = newValue | mask else newValue = newValue & (~mask) end
+        end
+        payloadData[k] = newValue
+      end
+    end
+
+    -- Send payload
+    for k, v in pairs(payloadData) do
+      log("Set value for " .. k .. " to " .. v, "debug")
+      API.setValue(k, v)
+    end
+
+    API.write()
+
+    utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
+
+  end
+
+
+end
+
+-- Reboot FC (MSP)
+function ui.rebootFc()
+  local app   = rfsuite.app
+  local utils = rfsuite.utils
+
+  app.pageState = app.pageStatus.rebooting
+  tasks.msp.mspQueue:add({
+    command = 68, -- MSP_REBOOT
+    processReply = function(self, buf)
+      app.utils.invalidatePages()
+      utils.onReboot()
+    end,
+    simulatorResponse = {}
+  })
+end
+
+function ui.adminStatsOverlay()
+  if rfsuite.preferences
+    and preferences.developer
+    and preferences.developer.overlaystatsadmin
+  then
+      -- font & color
+      lcd.font(FONT_XXS)
+      lcd.color(lcd.RGB(255,255,255))
+
+      -- fresh values each draw
+      local cpuUsage = (rfsuite.performance and rfsuite.performance.cpuload) or 0
+      local ramUsed  = (rfsuite.performance and rfsuite.performance.usedram) or 0
+      local luaRamKB = (rfsuite.performance and rfsuite.performance.luaRamKB) or 0
+
+      -- layout config: fixed block columns
+      local cfg = {
+        startY = app.radio.navbuttonHeight + 3,
+        decimalsKB = 0,
+        labelGap = 4, -- space between label and value
+        -- Each block: left x for label, and right edge where value+unit are right-aligned
+        blocks = {
+          LOAD = { x = 0,   valueRight = 50 },
+          USED = { x = 70, valueRight = 130 },
+          FREE = { x = 160, valueRight = 230 },
+        }
+      }
+
+      local function fmtInt(n) return utils.round(n or 0, 0) end
+      local function fmtKB(n)  return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end
+
+      -- rows: key, label, valueWithUnit
+      local rows = {
+        { "LOAD", "LOAD:", tostring(fmtInt(cpuUsage)) .. "%" },
+        { "USED", "USED",  tostring(fmtInt(ramUsed))  .. "kB" },
+        { "FREE", "FREE",  tostring(fmtKB(luaRamKB))  .. "KB" },
+      }
+
+      local y = cfg.startY
+
+      local function drawBlock(key, label, valueWithUnit)
+        local b = cfg.blocks[key]; if not b then return end
+
+        -- draw label at fixed left
+        lcd.drawText(b.x, y, label)
+
+        -- value+unit right-aligned to valueRight
+        local vx = b.x + lcd.getTextSize(label) + cfg.labelGap
+        local vWidth = lcd.getTextSize(valueWithUnit)
+        lcd.drawText(math.max(vx, b.valueRight - vWidth), y, valueWithUnit)
+      end
+
+      -- single-row, three fixed columns
+      for i = 1, #rows do
+        local key, label, v = rows[i][1], rows[i][2], rows[i][3]
+        drawBlock(key, label, v)
+      end
+  end
+end
+
 
 return ui

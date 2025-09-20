@@ -3,7 +3,7 @@ local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.bas
 local res = system.getVersion()
 local LCD_W = res.lcdWidth
 local LCD_H = res.lcdHeight
-local i18n = rfsuite.i18n.get
+
 local graphPos = {}
 graphPos['menu_offset'] = rfsuite.app.radio.logGraphMenuOffset
 graphPos['height_offset'] = rfsuite.app.radio.logGraphHeightOffset or 0

@@ -8,10 +8,14 @@
 local arg = {...}
 local config = arg[1]
 
+local MAX_QUEUE = 50        -- If we exceed this many lines queued, force flush
+local FLUSH_QUEUE_SIZE = 2  -- number of lines to queue before writing to file
+
 local logging = {}
 local logInterval = 1 -- changing this will skew the log analysis - so dont change it
 local logFileName
 local logRateLimit = os.clock()
+local logHeader
 
 local telemetry
 
@@ -41,7 +45,6 @@ local logTable = {
 
 local log_queue = {}
 local logDirChecked = false
-local cachedSensors = {} -- cache for sensor sources
 
 
 local function generateLogFilename()
@@ -59,20 +62,42 @@ end
 
 function logging.queueLog(msg)
     table.insert(log_queue, msg)
+    if #log_queue >= MAX_QUEUE then
+        -- If something stalls and the queue grows, force a flush to bound memory.
+        logging.writeLogs(true)
+    end
 end
 
 function logging.writeLogs(forcewrite)
     local max_lines = forcewrite and #log_queue or 10
     if #log_queue > 0 and logFileName then
-        rfsuite.utils.log("Write " .. #log_queue .. " lines to " .. logFileName,"info")
         local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
+
+        rfsuite.utils.log(
+            string.format("Write %d (of %d) lines to %s",
+            math.min(#log_queue, max_lines), #log_queue, logFileName),
+            "info"
+        )
+
         local f = io.open(filePath, 'a')
-        for i = 1, math.min(#log_queue, max_lines) do
-            io.write(f, table.remove(log_queue, 1) .. "\n")
+
+        local n = math.min(#log_queue, max_lines)
+        -- write N lines in one go
+        io.write(f, table.concat(log_queue, "\n", 1, n), "\n")
+
+        -- compact the queue so #log_queue stays accurate (avoid holes)
+        local total = #log_queue
+        if n < total then
+            table.move(log_queue, n+1, total, 1)
+            for i = total - n + 1, total do log_queue[i] = nil end
+        else
+            for i = 1, total do log_queue[i] = nil end
         end
+
         io.close(f)
+        end
     end
-end
+
 
 
 function logging.getLogHeader()
@@ -84,43 +109,31 @@ end
 function logging.getLogLine()
     local values = {}
     for i, sensor in ipairs(logTable) do
-        local src = cachedSensors[sensor.name]
+        local src = telemetry and telemetry.getSensorSource(sensor.name)
         values[i] = src and src:value() or 0
     end
-    return os.date("%Y-%m-%d_%H:%M:%S") .. ", " .. rfsuite.utils.joinTableItems(values, ", ")
+    local ts = os.time()
+    return ts .. ", " .. rfsuite.utils.joinTableItems(values, ", ")
 end
 
 function logging.getLogTable()
     return logTable
 end
 
--- Sensor cache setup — runs once when telemetry becomes active
-local function cacheSensorSources()
-    if not telemetry then return end
-    
-    cachedSensors = {}
-    for _, sensor in ipairs(logTable) do
-        cachedSensors[sensor.name] = telemetry.getSensorSource(sensor.name)
-    end
-end
-
--- Clear all cached sensors
-local function clearSensorCache()
-    cachedSensors = {}
-end
 
 function logging.flushLogs()
     if logFileName or logHeader then
-        rfsuite.utils.log("Flushing logs - ".. logFileName,"info")
-        logFileName, logHeader = nil, nil
+        rfsuite.utils.log("Flushing logs - " .. tostring(logFileName), "info")
+        -- Write pending lines before clearing state so they don't carry over
         logging.writeLogs(true)
+        logFileName, logHeader = nil, nil
         logdir = nil
+        collectgarbage()
     end    
 end
 
 function logging.reset()
-    clearSensorCache()
-    cacheSensorSources()
+
 end
 
 function logging.wakeup()
@@ -141,15 +154,9 @@ function logging.wakeup()
 
     if not telemetry.active() then
         logging.flushLogs()
-        clearSensorCache()
-        cacheSensorSources()
         return
     end
 
-    -- Cache sensors once when telemetry activates
-    if not next(cachedSensors) then
-        cacheSensorSources()
-    end
 
     -- SIMPLIFIED logging trigger:
     if rfsuite.utils.inFlight() then
@@ -166,14 +173,20 @@ function logging.wakeup()
             rfsuite.ini.save_ini_file(iniName, iniData)
         end
         if not logHeader then
-            logHeader = logging.getLogHeader()
-            logging.queueLog(logHeader)
+            -- Write the header immediately so it is always the first line
+            local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
+            local f = io.open(filePath, 'w')
+            if f then
+                io.write(f, logging.getLogHeader(), "\n")
+                io.close(f)
+                logHeader = true
+            end
         end
 
         if os.clock() - logRateLimit >= logInterval then
             logRateLimit = os.clock()
             logging.queueLog(logging.getLogLine())
-            if #log_queue >= 5 then
+            if #log_queue >= FLUSH_QUEUE_SIZE then
                 logging.writeLogs()
             end
         end

@@ -18,10 +18,10 @@
 
 ]] --
 local data = {}
-local i18n = rfsuite.i18n.get
+
 data['help'] = {}
 
-data['help']['default'] = {i18n("app.modules.radio_config.help_p1")}
+data['help']['default'] = {"@i18n(app.modules.radio_config.help_p1)@"}
 
 data['fields'] = {}
 

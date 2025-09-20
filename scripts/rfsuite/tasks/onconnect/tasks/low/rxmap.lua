@@ -19,12 +19,17 @@
 
 local rxmap = {}
 
+local mspCallMade = false
+
 function rxmap.wakeup()
     
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if not rfsuite.utils.rxmapReady() then
+    if rfsuite.session.mspBusy then return end 
+
+    if not rfsuite.utils.rxmapReady() and mspCallMade == false then
+        mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("RX_MAP")
         API.setCompleteHandler(function(self, buf)
 
@@ -77,6 +82,7 @@ function rxmap.reset()
     end
     rfsuite.session.rxmap = {}
     rfsuite.session.rxvalues = {}    
+    mspCallMade = false
 end
 
 function rxmap.isComplete()

@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 local enableWakeup = false
 
 -- Local config table for in-memory edits
@@ -15,7 +15,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.dashboard") .. " / " .. i18n("app.modules.settings.localizations")
+        "@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.dashboard)@" .. " / " .. "@i18n(app.modules.settings.localizations)@"
     )
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
@@ -28,13 +28,13 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(i18n("app.modules.settings.temperature_unit"))
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.temperature_unit)@")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
         rfsuite.app.formLines[rfsuite.app.formLineCnt],
         nil,
         {
-            {i18n("app.modules.settings.celcius"), 0},
-            {i18n("app.modules.settings.fahrenheit"), 1}
+            {"@i18n(app.modules.settings.celcius)@", 0},
+            {"@i18n(app.modules.settings.fahrenheit)@", 1}
         },
         function()
             return config.temperature_unit or 0
@@ -46,13 +46,13 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(i18n("app.modules.settings.altitude_unit"))
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.altitude_unit)@")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
         rfsuite.app.formLines[rfsuite.app.formLineCnt],
         nil,
         {
-            {i18n("app.modules.settings.meters"), 0},
-            {i18n("app.modules.settings.feet"), 1}
+            {"@i18n(app.modules.settings.meters)@", 0},
+            {"@i18n(app.modules.settings.feet)@", 1}
         },
         function()
             return config.altitude_unit or 0
@@ -73,7 +73,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil,nil,true)
     rfsuite.app.ui.openPage(
         pageIdx,
-        i18n("app.modules.settings.name"),
+        "@i18n(app.modules.settings.name)@",
         "settings/settings.lua"
     )
     return true
@@ -82,9 +82,9 @@ end
 local function onSaveMenu()
     local buttons = {
         {
-            label  = i18n("app.btn_ok_long"),
+            label  = "@i18n(app.btn_ok_long)@",
             action = function()
-                local msg = i18n("app.modules.profile_select.save_prompt_local")
+                local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 for key, value in pairs(config) do
                     rfsuite.preferences.localizations[key] = value
@@ -101,7 +101,7 @@ local function onSaveMenu()
             end,
         },
         {
-            label  = i18n("app.modules.profile_select.cancel"),
+            label  = "@i18n(app.modules.profile_select.cancel)@",
             action = function()
                 return true
             end,
@@ -110,8 +110,8 @@ local function onSaveMenu()
 
     form.openDialog({
         width   = nil,
-        title   = i18n("app.modules.profile_select.save_settings"),
-        message = i18n("app.modules.profile_select.save_prompt_local"),
+        title   = "@i18n(app.modules.profile_select.save_settings)@",
+        message = "@i18n(app.modules.profile_select.save_prompt_local)@",
         buttons = buttons,
         wakeup  = function() end,
         paint   = function() end,
@@ -124,7 +124,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.settings.name"),
+            "@i18n(app.modules.settings.name)@",
             "settings/settings.lua"
         )
         return true

@@ -39,10 +39,24 @@ local config = {
   watchdogParam = 10, -- progress box timeout
 }
 
+
 -- Pre-format minimum version string once
 config.ethosVersionString = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
 
 rfsuite.config = config
+
+-- CPU Load and Memory tracking
+local performance = {
+            cpuload             = 0,
+            freeram             = 0,
+            mainStackKB         = 0,
+            ramKB               = 0,  
+            luaRamKB            = 0,
+            luaBitmapsRamKB     = 0,
+        }
+
+rfsuite.performance = performance
+
 
 --======================
 -- Preferences / INI
@@ -87,11 +101,15 @@ local userpref_defaults = {
     logtofile = false, -- log to file
     loglevel = "off", -- off, info, debug
     logmsp = false, -- print msp byte stream
+    logobjprof = false, -- periodic print object references
     logmspQueue = false, -- periodic print the msp queue size
     memstats = false, -- periodic print memory usage
     taskprofiler = false, -- periodic print task profile
     mspexpbytes = 8,
     apiversion = 2, -- msp api version to use for simulator
+    overlaystats = false, -- show cpu load in overlay
+    overlaygrid = false, -- show overlay grid
+    overlaystatsadmin = false
   },
   timer = {
     timeraudioenable = false,
@@ -128,9 +146,6 @@ rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config)
-
-rfsuite.i18n = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
-rfsuite.i18n.load()
 
 rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
@@ -200,6 +215,9 @@ local function register_bg_task()
     key = rfsuite.config.bgTaskKey,
     wakeup = rfsuite.tasks.wakeup,
     event = rfsuite.tasks.event,
+    init = rfsuite.tasks.init,
+    read = rfsuite.tasks.read,
+    write = rfsuite.tasks.write,
   })
 end
 

@@ -23,8 +23,8 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "pitch", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°"},
-    { field = "roll",  type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°"},
+    { field = "pitch", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.pitch)@"},
+    { field = "roll",  type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.roll)@"},
 }
 
 -- Process structure in one pass

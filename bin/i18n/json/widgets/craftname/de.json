@@ -2,21 +2,21 @@
   "txt_enter_craft_name": {
     "english": "Enter Craft Name",
     "translation": "Fluggeraetname eingeben",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "title": {
     "english": "CRAFT NAME",
     "translation": "FLUGGERAET NAME",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "txt_cancel": {
     "english": "Cancel",
     "translation": "Abbrechen",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "txt_save": {
     "english": "Save",
     "translation": "Speichern",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

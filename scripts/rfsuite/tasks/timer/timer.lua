@@ -119,6 +119,12 @@ end
 --   - Uses `rfsuite.ini` for reading and writing model preferences.
 --   - Calls `finalizeFlightSegment(now)` when appropriate.
 function timer.wakeup()
+
+    -- Yield if busy doing onConnect
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then
+        return
+    end
+
     local now = os.time()
     local timerSession = rfsuite.session.timer
     local prefs = rfsuite.session.modelPreferences

@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.servos.name"), -- title of the page
+    title = "@i18n(app.modules.servos.name)@", -- title of the page
     section = "hardware", -- do not run if busy with msp
     script = "servos.lua", -- run this script
     image = "servos.png", -- image for the page

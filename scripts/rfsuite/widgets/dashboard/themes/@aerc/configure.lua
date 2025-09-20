@@ -60,9 +60,9 @@ local function configure()
     end
 
     -- RPM PANEL
-    local rpm_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.headspeed"))
+    local rpm_panel = form.addExpansionPanel("@i18n(widgets.dashboard.headspeed)@")
     rpm_panel:open(false)
-    local rpm_min_line = rpm_panel:addLine(rfsuite.i18n.get("widgets.dashboard.min"))
+    local rpm_min_line = rpm_panel:addLine("@i18n(widgets.dashboard.min)@")
     formFields[#formFields + 1] = form.addNumberField(rpm_min_line, nil, 0, 20000,
         function() return config.rpm_min end,
         function(val)
@@ -71,7 +71,7 @@ local function configure()
         1)
     formFields[#formFields]:suffix("rpm")
 
-    local rpm_max_line = rpm_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local rpm_max_line = rpm_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(rpm_max_line, nil, 1, 20000,
         function() return config.rpm_max end,
         function(val)
@@ -81,9 +81,9 @@ local function configure()
     formFields[#formFields]:suffix("rpm")
 
     -- BEC VOLTAGE PANEL
-    local bec_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.bec_voltage"))
+    local bec_panel = form.addExpansionPanel("@i18n(widgets.dashboard.bec_voltage)@")
     bec_panel:open(false)
-    local bec_min_line = bec_panel:addLine(rfsuite.i18n.get("widgets.dashboard.min"))
+    local bec_min_line = bec_panel:addLine("@i18n(widgets.dashboard.min)@")
     formFields[#formFields + 1] = form.addNumberField(bec_min_line, nil, 20, 150,
         function()
             local v = config.bec_min or THEME_DEFAULTS.bec_min
@@ -96,7 +96,7 @@ local function configure()
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
-    local bec_warn_line = bec_panel:addLine(rfsuite.i18n.get("widgets.dashboard.warning"))
+    local bec_warn_line = bec_panel:addLine("@i18n(widgets.dashboard.warning)@")
     formFields[#formFields + 1] = form.addNumberField(bec_warn_line, nil, 20, 150,
         function()
             local v = config.bec_warn or THEME_DEFAULTS.bec_warn
@@ -110,7 +110,7 @@ local function configure()
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
-    local bec_max_line = bec_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local bec_max_line = bec_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(bec_max_line, nil, 20, 150,
         function()
             local v = config.bec_max or THEME_DEFAULTS.bec_max
@@ -124,9 +124,9 @@ local function configure()
     formFields[#formFields]:suffix("V")
 
     -- ESC TEMP PANEL
-    local esc_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.esc_temp"))
+    local esc_panel = form.addExpansionPanel("@i18n(widgets.dashboard.esc_temp)@")
     esc_panel:open(false)
-    local esc_warn_line = esc_panel:addLine(rfsuite.i18n.get("widgets.dashboard.warning"))
+    local esc_warn_line = esc_panel:addLine("@i18n(widgets.dashboard.warning)@")
     formFields[#formFields + 1] = form.addNumberField(esc_warn_line, nil, 0, 200,
         function()
             return config.esctemp_warn
@@ -137,7 +137,7 @@ local function configure()
         1)
     formFields[#formFields]:suffix("°")
 
-    local esc_max_line = esc_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
+    local esc_max_line = esc_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(esc_max_line, nil, 1, 200,
         function() return config.esctemp_max end,
         function(val)

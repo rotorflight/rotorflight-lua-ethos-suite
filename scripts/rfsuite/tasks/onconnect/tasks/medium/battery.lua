@@ -19,11 +19,16 @@
 
 local battery = {}
 
+local mspCallMade = false
+
 function battery.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.batteryConfig == nil) then
+    if rfsuite.session.mspBusy then return end
+
+    if (rfsuite.session.batteryConfig == nil) and mspCallMade == false then
+        mspCallMade = true
 
         local API = rfsuite.tasks.msp.api.load("BATTERY_CONFIG")
         API.setCompleteHandler(function(self, buf)
@@ -65,6 +70,7 @@ end
 
 function battery.reset()
     rfsuite.session.batteryConfig = nil
+    mspCallMade = false
 end
 
 function battery.isComplete()

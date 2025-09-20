@@ -1,5 +1,5 @@
 local activateWakeup = false
-local i18n = rfsuite.i18n.get
+
 local apidata = {
     api = {
         [1] = 'PID_TUNING',
@@ -8,17 +8,17 @@ local apidata = {
         labels = {
         },
         rows = {
-            i18n("app.modules.pids.roll"),
-            i18n("app.modules.pids.pitch"),
-            i18n("app.modules.pids.yaw")
+            "@i18n(app.modules.pids.roll)@",
+            "@i18n(app.modules.pids.pitch)@",
+            "@i18n(app.modules.pids.yaw)@"
         },
         cols = {
-            i18n("app.modules.pids.p"),
-            i18n("app.modules.pids.i"),
-            i18n("app.modules.pids.d"),
-            i18n("app.modules.pids.f"),
-            i18n("app.modules.pids.o"),
-            i18n("app.modules.pids.b")
+            "@i18n(app.modules.pids.p)@",
+            "@i18n(app.modules.pids.i)@",
+            "@i18n(app.modules.pids.d)@",
+            "@i18n(app.modules.pids.f)@",
+            "@i18n(app.modules.pids.o)@",
+            "@i18n(app.modules.pids.b)@"
         },
         fields = {
             -- P
@@ -64,7 +64,7 @@ local function openPage(idx, title, script)
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-    longPage = false
+    local longPage = false
 
     form.clear()
 
@@ -158,7 +158,7 @@ end
 
 return {
     apidata = apidata,
-    title = i18n("app.modules.pids.name"),
+    title = "@i18n(app.modules.pids.name)@",
     reboot = false,
     eepromWrite = true,
     refreshOnProfileChange = true,

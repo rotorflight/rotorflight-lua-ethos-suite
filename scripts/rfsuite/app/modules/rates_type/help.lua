@@ -18,11 +18,11 @@
 
 ]] --
 local data = {}
-local i18n = rfsuite.i18n.get
+
 data['help'] = {}
 
 data['help']['default'] = {
-    i18n("app.modules.rates_advanced.help_rate_table"),
+    "@i18n(app.modules.rates_advanced.help_rate_table)@",
 }
 
 data['fields'] = {}

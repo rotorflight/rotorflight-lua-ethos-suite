@@ -22,6 +22,12 @@ local sensorstats = {}
 local runOnce = false
 
 function sensorstats.wakeup()
+
+    -- quick exit if no apiVersion
+    if rfsuite.session.apiVersion == nil then return end    
+
+    if rfsuite.session.mspBusy then return end    
+
     if rfsuite.tasks.telemetry then
         rfsuite.tasks.telemetry.sensorStats = {}
         runOnce = true

@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 0.5,              -- run every 0.5 seconds
+    interval        = 0.52,             -- run every 0.52 seconds
     script          = "telemetry.lua",  -- run this script
     linkrequired    = false,            -- run only if link is established
     connected       = false,            -- run this script only if msp is connected

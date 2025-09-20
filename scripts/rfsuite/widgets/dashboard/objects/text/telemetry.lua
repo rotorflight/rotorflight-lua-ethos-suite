@@ -37,20 +37,21 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local lastDisplayValue = nil
 
+-- External invalidation if runtime params change
+function render.invalidate(box) box._cfg = nil end
+
+-- Only repaint when the displayed value changes
 function render.dirty(box)
-    -- Always dirty on first run
+    if not rfsuite.session.telemetryState then return false end
     if box._lastDisplayValue == nil then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-
     if box._lastDisplayValue ~= box._currentDisplayValue then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-
     return false
 end
 
@@ -77,17 +78,15 @@ local function compileTransform(t, decimals)
     end
 end
 
-function render.wakeup(box)
-    local telemetry = rfsuite.tasks.telemetry
-
-    -- Reuse cache table
-    local c = box._cache or {}
-    box._cache = c
-
-   -- Build static config once
+-- Build/refresh static config (theme/params aware)
+local function ensureCfg(box)
+    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
+    local param_version = box._param_version or 0 -- bump externally when params change
     local cfg = box._cfg
-    if not cfg then
+    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
         cfg = {}
+        cfg._theme_version     = theme_version
+        cfg._param_version     = param_version
         cfg.title              = getParam(box, "title")
         cfg.titlepos           = getParam(box, "titlepos")
         cfg.titlealign         = getParam(box, "titlealign")
@@ -107,14 +106,23 @@ function render.wakeup(box)
         cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
         cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
         cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+
         cfg.source             = getParam(box, "source")
-        cfg.manualUnit         = getParam(box, "unit")
+        cfg.manualUnit         = getParam(box, "unit")            -- "" allowed to hide
         cfg.decimals           = getParam(box, "decimals")
         cfg.transform          = getParam(box, "transform")
         cfg.transformFn        = compileTransform(cfg.transform, cfg.decimals)
+        cfg.novalue            = getParam(box, "novalue") or "-"
 
         box._cfg = cfg
     end
+    return box._cfg
+end
+
+function render.wakeup(box)
+    local cfg = ensureCfg(box)
+
+    local telemetry = rfsuite.tasks.telemetry
 
     -- Value extraction
     local source = cfg.source
@@ -127,8 +135,7 @@ function render.wakeup(box)
         dynamicUnit = "V"
         localizedThresholds = thresholdsCfg
     elseif telemetry and source then
-        value, _, dynamicUnit, _, _, localizedThresholds =
-            telemetry.getSensor(source, nil, nil, thresholdsCfg)
+        value, _, dynamicUnit, _, _, localizedThresholds = telemetry.getSensor(source, nil, nil, thresholdsCfg)
     end
 
     -- Transform and decimals
@@ -138,8 +145,7 @@ function render.wakeup(box)
     else
         -- Animated loading dots if no telemetry value
         local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     end
@@ -148,10 +154,9 @@ function render.wakeup(box)
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor", localizedThresholds)
 
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
-    local manualUnit = cfg.manualUnit
     local unit
-    if manualUnit ~= nil then
-        unit = manualUnit  -- use user value, even if ""
+    if cfg.manualUnit ~= nil then
+        unit = cfg.manualUnit  -- use user value, even if ""
     elseif dynamicUnit ~= nil then
         unit = dynamicUnit
     elseif source and telemetry and telemetry.sensorTable[source] then
@@ -165,48 +170,31 @@ function render.wakeup(box)
         unit = nil
     end
 
-    -- Set box.value so dashboard/dirty can track change for redraws
+    -- Set current value for dirty() + paint()
     box._currentDisplayValue = displayValue
 
-    -- Mutate cache
-    c.title              = cfg.title
-    c.titlepos           = cfg.titlepos
-    c.titlealign         = cfg.titlealign
-    c.titlefont          = cfg.titlefont
-    c.titlespacing       = cfg.titlespacing
-    c.titlepadding       = cfg.titlepadding
-    c.titlepaddingleft   = cfg.titlepaddingleft
-    c.titlepaddingright  = cfg.titlepaddingright
-    c.titlepaddingtop    = cfg.titlepaddingtop
-    c.titlepaddingbottom = cfg.titlepaddingbottom
-    c.displayValue       = displayValue
-    c.unit               = unit
-    c.font               = cfg.font
-    c.valuealign         = cfg.valuealign
-    c.textcolor          = textcolor
-    c.valuepadding       = cfg.valuepadding
-    c.valuepaddingleft   = cfg.valuepaddingleft
-    c.valuepaddingright  = cfg.valuepaddingright
-    c.valuepaddingtop    = cfg.valuepaddingtop
-    c.valuepaddingbottom = cfg.valuepaddingbottom
-    c.bgcolor            = cfg.bgcolor
-    c.titlecolor         = cfg.titlecolor
+    -- Store dynamic-only fields for paint
+    box._dyn_textcolor = textcolor
+    box._dyn_unit = unit
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cfg or {}
 
     utils.box(
         x, y, w, h,
         c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
         c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
         c.titlepaddingtop, c.titlepaddingbottom,
-        c.displayValue, c.unit, c.font, c.valuealign, c.textcolor,
+        box._currentDisplayValue, box._dyn_unit, c.font, c.valuealign, box._dyn_textcolor,
         c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
         c.valuepaddingtop, c.valuepaddingbottom,
         c.bgcolor
     )
 end
+
+-- Reasonable default refresh
+render.scheduler = 0.5
 
 return render

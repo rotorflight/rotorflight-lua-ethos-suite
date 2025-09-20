@@ -2,7 +2,7 @@ local labels = {}
 local tables = {}
 
 local activateWakeup = false
-local i18n = rfsuite.i18n.get
+
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
@@ -40,7 +40,7 @@ local function postLoad(self)
 
 end
 
-function rightAlignText(width, text)
+local function rightAlignText(width, text)
     local textWidth, _ = lcd.getTextSize(text)  -- Get the text width
     local padding = width - textWidth  -- Calculate how much padding is needed
     
@@ -60,9 +60,12 @@ local function openPage(idx, title, script)
     rfsuite.app.lastScript = script
     rfsuite.session.lastPage = script
 
+    local maxValue
+    local minValue
+
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-    longPage = false
+    local longPage = false
 
     form.clear()
 
@@ -211,7 +214,7 @@ end
 
 return {
     apidata = apidata,
-    title = i18n("app.modules.rates.name"),
+    title = "@i18n(app.modules.rates.name)@",
     reboot = false,
     eepromWrite = true,
     refreshOnRateChange = true,

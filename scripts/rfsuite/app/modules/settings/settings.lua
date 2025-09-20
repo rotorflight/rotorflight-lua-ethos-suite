@@ -1,11 +1,11 @@
-local i18n = rfsuite.i18n.get
+
 
 local S_PAGES = {
-    {name = i18n("app.modules.settings.txt_general"), script = "general.lua", image = "general.png"},
-    {name = i18n("app.modules.settings.dashboard"), script = "dashboard.lua", image = "dashboard.png"},
-    {name = i18n("app.modules.settings.localizations"), script = "localizations.lua", image = "localizations.png"},
-    {name = i18n("app.modules.settings.audio"), script = "audio.lua", image = "audio.png"},
-    {name = i18n("app.modules.settings.txt_development"), script = "development.lua", image = "development.png"},
+    {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png"},
+    {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png"},
+    {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png"},
+    {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png"},
+    {name = "@i18n(app.modules.settings.txt_development)@", script = "development.lua", image = "development.png"},
 }
 
 local function openPage(pidx, title, script)
@@ -30,7 +30,6 @@ local function openPage(pidx, title, script)
         end
     end
 
-    ESC = {}
 
     -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
@@ -49,7 +48,7 @@ local function openPage(pidx, title, script)
 
     form.addLine(title)
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {

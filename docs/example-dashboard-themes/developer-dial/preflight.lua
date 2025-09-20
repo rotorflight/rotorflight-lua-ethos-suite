@@ -32,6 +32,8 @@ local layout = {
     cols = 3,
     rows = 3,
     padding = 4,
+    showstats = true  -- or any color you prefer
+    --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer    
 }
 
 local boxes = {

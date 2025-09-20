@@ -22,6 +22,12 @@ local timer = {}
 local runOnce = false
 
 function timer.wakeup()
+
+    -- quick exit if no apiVersion
+    if rfsuite.session.apiVersion == nil then return end    
+
+    if rfsuite.session.mspBusy then return end    
+
         rfsuite.session.timer = {}
         rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
         rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight

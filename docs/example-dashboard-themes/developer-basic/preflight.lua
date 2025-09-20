@@ -64,7 +64,8 @@ local layout = {
     cols = 4,
     rows = 4,
     padding = 4,
-    showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
+    showgrid = lcd.RGB(100, 100, 100),  -- or any color you prefer
+    showstats = true  -- or any color you prefer
 }
 
 local boxes = {

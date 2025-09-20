@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 15,               -- run every 15 seconds
+    interval        = 5,               -- run every 15 seconds
     script          = "compiler.lua",   -- run this script
     linkrequired    = false,            -- run this script only if link is established
     connected       = false,            -- run this script only if msp is connected    

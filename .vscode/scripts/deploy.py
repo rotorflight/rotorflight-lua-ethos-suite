@@ -479,11 +479,17 @@ def safe_full_copy(srcall, out_dir):
     pbar = tqdm(total=total)
     shutil.copytree(srcall, out_dir, dirs_exist_ok=True, copy_function=copy_verbose)
     pbar.close()
-# Load config from environment variable only
-CONFIG_PATH = os.environ.get('RFSUITE_CONFIG')
+
+# parse args early so we can know --config-env
+_p = argparse.ArgumentParser(add_help=False)
+_p.add_argument("--config-env", help="Name of env var that contains the config path")
+_early, _ = _p.parse_known_args()
+
+env_name = _early.config_env 
+CONFIG_PATH = os.environ.get(env_name)
 
 if not CONFIG_PATH:
-    print("[CONFIG ERROR] Environment variable RFSUITE_CONFIG is not set.")
+    print(f"[CONFIG ERROR] Environment variable '{env_name}' is not set.")
     sys.exit(1)
 
 if not os.path.exists(CONFIG_PATH):
@@ -496,7 +502,6 @@ try:
 except json.JSONDecodeError as e:
     print(f"[CONFIG ERROR] Failed to parse JSON config file: {e}")
     sys.exit(1)
-
 
 pbar = None
 
@@ -560,7 +565,7 @@ def _find_com_port_by_vid_pid(vid_hex, pid_hex):
         return None
 
 
-def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
+def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no_vidpid=True, prefer_pid_from_hwid=True):
     try:
         from serial.tools import list_ports
     except Exception:
@@ -580,6 +585,21 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
         print(f"  - device={p.device} vid={p.vid} pid={p.pid} desc='{desc}' iface='{iface}' hwid='{p.hwid}'")
 
     # 1) Strict VID/PID match if provided
+    # Helper to parse PID from the HWID string (e.g. 'USB VID:PID=0483:5750 ...')
+    def _pid_from_hwid(hw):
+        try:
+            hw = hw or ""
+            # find ...PID=hhhh:pppp...
+            token = "PID="
+            if token in hw:
+                rhs = hw.split(token, 1)[1]
+                pid_str = rhs.split(":")[1].split()[0]
+                return int(pid_str, 16)
+        except Exception:
+            pass
+        return None
+
+    # 1) Strict VID/PID match if provided (no fuzzy fallback)
     if vid_hex and pid_hex:
         try:
             vid = int(vid_hex, 16)
@@ -593,13 +613,43 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
                         return p.device
                 except Exception:
                     pass
+            # If strict match not found, be conservative: keep waiting; do NOT choose another PID.
+            print(f"[SERIAL] No exact VID:PID match yet ({vid_hex}:{pid_hex}). Will keep scanning.")
+            return None
 
-    # 2) Fallback: fuzzy name/description match (e.g. contains 'Serial' or 'FrSky')
-    hints = [h.lower() for h in [name_hint, "frsky", "serial", "stm", "vcp", "x20", "x18", "x14"] if h]
-    for p in ports:
-        desc = f"{p.description or ''} {getattr(p,'interface','') or ''}".lower()
-        if any(h in desc for h in hints):
-            return p.device
+    # 2) If only VID is known, prefer same-VID ports, and among them prefer PID from hwid/attr == desired
+    if vid_hex and not pid_hex:
+        try:
+            vid = int(vid_hex, 16)
+        except Exception:
+            vid = None
+        candidates = []
+        for p in ports:
+            try:
+                if p.vid == vid:
+                    candidates.append(p)
+            except Exception:
+                pass
+        if candidates:
+            # Prefer 5750 if present (either via attribute or parsed from HWID)
+            def _score(cp):
+                cp_pid = getattr(cp, "pid", None)
+                hw_pid = _pid_from_hwid(getattr(cp, "hwid", None)) if prefer_pid_from_hwid else None
+                pid_val = cp_pid if cp_pid is not None else hw_pid
+                # Highest priority for 0x5750, then anything else but de-prioritize 0x5740
+                if pid_val == 0x5750: return 0
+                if pid_val == 0x5740: return 2
+                return 1
+            best = sorted(candidates, key=_score)[0]
+            return best.device
+
+    # 3) Only if no VID/PID are provided AND allowed, use fuzzy hints
+    if allow_fuzzy_if_no_vidpid and not vid_hex and not pid_hex:
+        hints = [h.lower() for h in [name_hint, "frsky", "serial", "stm", "vcp", "x20", "x18", "x14"] if h]
+        for p in ports:
+            desc = f"{p.description or ''} {getattr(p,'interface','') or ''}".lower()
+            if any(h in desc for h in hints):
+                return p.device
 
     return None
 
@@ -629,8 +679,9 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
 
     port = None
     for i in range(retries):
-        # Prefer strict VID/PID match, then fallback to name hint
-        port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint)
+        # Strict VID/PID only; do not fall back to fuzzy when VID/PID are known
+        port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint,
+                              allow_fuzzy_if_no_vidpid=False)
         if port:
             break
         print(f"[SERIAL] Waiting for COM port ({i+1}/{retries})…")
@@ -729,9 +780,30 @@ def choose_target(targets):
             print("Enter a number")
     return [targets[idx]]
 
+
+def resolve_i18n_tags_in_place(out_dir, lang="en"):
+    # Path to the merged JSON created by step 1
+    json_path = os.path.join(out_dir, "i18n", f"{lang}.json")  # because scripts/rfsuite/** got copied already
+    if not os.path.isfile(json_path):
+        # Fallback for local build before copy, if needed:
+        json_path = os.path.join(config['git_src'], "scripts", "rfsuite", "i18n", f"{lang}.json")
+    if not os.path.isfile(json_path):
+        print(f"[I18N] Skipping: {lang}.json not found at {json_path}")
+        return
+    # Call the standalone resolver
+    import subprocess, sys
+    resolver = os.path.join(config['git_src'], ".vscode", "scripts", "resolve_i18n_tags.py")
+    if not os.path.isfile(resolver):
+        print(f"[I18N] Skipping: resolver not found at {resolver}")
+        return
+    print(f"[I18N] Resolving @i18n(...)@ tags (lang={lang})…")
+    subprocess.run([sys.executable, resolver, "--json", json_path, "--root", out_dir], check=True)
+
+
+
 # Copy logic
 
-def copy_files(src_override, fileext, targets):
+def copy_files(src_override, fileext, targets, lang="en"):
     global pbar
     git_src = src_override or config['git_src']
     tgt = config['tgt_name']
@@ -741,6 +813,7 @@ def copy_files(src_override, fileext, targets):
         dest = t['dest']; sim = t.get('simulator')
         print(f"[{i}/{len(targets)}] -> {t['name']} @ {dest}")
         out_dir = os.path.join(dest, tgt)
+
 
         # .lua only
         if fileext == '.lua':
@@ -756,10 +829,26 @@ def copy_files(src_override, fileext, targets):
                     if f.endswith('.lua'):
                         shutil.copy(os.path.join(r,f), out_dir)
 
-        # fast
+            resolve_i18n_tags_in_place(out_dir, lang)           
+
         # fast
         elif fileext == 'fast':
             scr = os.path.join(git_src, 'scripts', tgt)
+
+            # ensure no leftover .luac files in target
+            if os.path.isdir(out_dir):
+                removed = 0
+                for r, _, files in os.walk(out_dir):
+                    for f in files:
+                        if f.endswith('.luac'):
+                            try:
+                                os.remove(os.path.join(r, f))
+                                removed += 1
+                            except Exception as e:
+                                print(f"[WARN] Failed to delete {f}: {e}")
+                if removed:
+                    print(f"Fast deploy cleanup: removed {removed} stale .luac file(s).")
+
 
             # FAT/exFAT timestamp slack (seconds)
             TS_SLACK = 2.0
@@ -818,6 +907,7 @@ def copy_files(src_override, fileext, targets):
                 for srcf, dstf, rel in to_copy:
                     if DEPLOY_TO_RADIO:
                         throttled_copyfile(srcf, dstf)
+                        # After copy to 'out_dir' for each target:
                         flush_fs()
                         time.sleep(0.05)
                     else:
@@ -828,6 +918,8 @@ def copy_files(src_override, fileext, targets):
                     bar_update.update(1)
                 bar_update.close()
 
+            resolve_i18n_tags_in_place(out_dir, lang) 
+
             if not copied:
                 print("Fast deploy: nothing to update.")
     
@@ -835,6 +927,7 @@ def copy_files(src_override, fileext, targets):
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
             safe_full_copy(srcall, out_dir)
+            resolve_i18n_tags_in_place(out_dir, lang)
             flush_fs()
             time.sleep(2)
 
@@ -903,6 +996,11 @@ def launch_sims(targets):
 def main():
     global DEPLOY_TO_RADIO
     p = argparse.ArgumentParser(description='Deploy & launch')
+    p = argparse.ArgumentParser(description='Deploy & launch')
+    p.add_argument(
+        '--config-env',
+        help='Name of env var that contains the config path (eg: PROJECT_CONFIG)'
+    )
     p.add_argument('--config', default=CONFIG_PATH)
     p.add_argument('--src')
     p.add_argument('--fileext')
@@ -913,6 +1011,10 @@ def main():
     p.add_argument('--radio-debug', action='store_true')
     p.add_argument('--minify',    action='store_true')
     p.add_argument('--connect-only', action='store_true')
+    p.add_argument('--lang', default=os.environ.get("RFSUITE_LANG", "en"),
+                   help='Locale to resolve (e.g. en, de, fr). Defaults to env RFSUITE_LANG or "en".')
+
+
     args = p.parse_args()
 
     DEPLOY_TO_RADIO = args.radio 
@@ -975,7 +1077,7 @@ def main():
         print('No targets.')
         sys.exit(1)
 
-    copy_files(args.src, args.fileext, targets)
+    copy_files(args.src, args.fileext, targets, lang=args.lang)
 
     # After copying to radio, ensure logger runs on real hardware (not only simulator)
     if args.radio:

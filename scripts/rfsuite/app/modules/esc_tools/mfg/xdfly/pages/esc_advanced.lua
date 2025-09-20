@@ -6,7 +6,7 @@ local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
-local i18n = rfsuite.i18n.get
+
 
 local apidata = {
     api = {
@@ -16,13 +16,13 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.timing"),              activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.acceleration"),        activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.brake_force"),         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.sr_function"),         activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.capacity_correction"), activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.auto_restart_time"),   activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
-            {t = i18n("app.modules.esc_tools.mfg.xdfly.cell_cutoff"),         activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.timing)@",              activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.acceleration)@",        activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.brake_force)@",         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.sr_function)@",         activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.capacity_correction)@", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.auto_restart_time)@",   activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
+            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.cell_cutoff)@",         activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
         }
     }                 
 }
@@ -80,7 +80,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = i18n("app.modules.esc_tools.name") .. " / " ..  i18n("app.modules.esc_tools.mfg.xdfly.name") .. " / " .. i18n("app.modules.esc_tools.mfg.xdfly.advanced"),
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " ..  "@i18n(app.modules.esc_tools.mfg.xdfly.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.advanced)@",
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }

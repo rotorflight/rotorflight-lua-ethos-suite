@@ -7,7 +7,7 @@ local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
-local i18n = rfsuite.i18n.get
+
 
 local foundEsc = false
 local foundEscDone = false
@@ -20,10 +20,10 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.esc_tools.mfg.omp.gov"), activeFieldPos = 2, type = 1,  mspapi = 1, apikey = "governor"},
-            {t = i18n("app.modules.esc_tools.mfg.omp.gov_p"), activeFieldPos = 6,  mspapi = 1, apikey="gov_p"},
-            {t = i18n("app.modules.esc_tools.mfg.omp.gov_i"), activeFieldPos = 7,  mspapi = 1, apikey="gov_i"},
-            {t = i18n("app.modules.esc_tools.mfg.omp.motor_poles"),  activeFieldPos = 17 ,  mspapi = 1, apikey="motor_poles"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.gov)@", activeFieldPos = 2, type = 1,  mspapi = 1, apikey = "governor"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.gov_p)@", activeFieldPos = 6,  mspapi = 1, apikey="gov_p"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.gov_i)@", activeFieldPos = 7,  mspapi = 1, apikey="gov_i"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.motor_poles)@",  activeFieldPos = 17 ,  mspapi = 1, apikey="motor_poles"},
         }
     }                 
 }
@@ -77,7 +77,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = i18n("app.modules.esc_tools.name") .. " / " ..  i18n("app.modules.esc_tools.mfg.omp.name") .. " / " .. i18n("app.modules.esc_tools.mfg.omp.governor"),
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " ..  "@i18n(app.modules.esc_tools.mfg.omp.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.omp.governor)@",
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }

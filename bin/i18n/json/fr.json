@@ -2,51 +2,51 @@
   "reload": {
     "english": "reload",
     "translation": "recharger",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "image": {
     "english": "image",
     "translation": "image",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "error": {
     "english": "error",
     "translation": "erreur",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "save": {
     "english": "save",
     "translation": "enregistrer",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "ethos": {
     "english": "ethos",
     "translation": "ethos",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "version": {
     "english": "version",
     "translation": "version",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "bg_task_disabled": {
     "english": "bg task disabled",
     "translation": "tache AR plan desactivee",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_link": {
     "english": "no link",
     "translation": "aucun lien",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "background_task_disabled": {
     "english": "background task disabled",
     "translation": "tache en arriere-plan desactivee",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_sensor": {
     "english": "no sensor",
     "translation": "pas de capteur",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

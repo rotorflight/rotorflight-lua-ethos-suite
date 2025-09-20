@@ -49,6 +49,8 @@ function modelpreferences.wakeup()
         return 
     end    
 
+    if rfsuite.session.mspBusy then return end    
+
     --- check if we have a mcu_id
     if not rfsuite.session.mcu_id then
         rfsuite.session.modelPreferences = nil

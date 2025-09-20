@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.settings.name"), -- title of the page
+    title = "@i18n(app.modules.settings.name)@", -- title of the page
     section = "footer", -- do not run if busy with msp
     script = "settings.lua", -- run this script
     image = "settings.png", -- image for the page

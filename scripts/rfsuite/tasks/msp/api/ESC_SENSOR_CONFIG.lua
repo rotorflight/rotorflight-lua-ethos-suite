@@ -24,19 +24,19 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- note. This api has currently only been tested for the last two entries
 local escTypes = {"NONE","BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY","RECORD"}
-local onOff = {rfsuite.i18n.get("api.ESC_SENSOR_CONFIG.tbl_off"),rfsuite.i18n.get("api.ESC_SENSOR_CONFIG.tbl_on")}
+local onOff = {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@","@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"}
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "protocol",                                        type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1},
-    {field = "half_duplex",                                     type = "U8",  apiVersion = 12.06, simResponse = {0},     default = 0, min= 1, max = 2, table = onOff, tableIdxInc = -1},
-    {field = "update_hz",                                       type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz"},
-    {field = "current_offset",                                  type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0},
-    {field = "hw4_current_offset",                              type = "U16", apiVersion = 12.06, simResponse = {0, 0},  min = 0, max = 1000, default = 0},
-    {field = "hw4_current_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250, default = 0},
-    {field = "hw4_voltage_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250,  default = 30},
-    {field = "pin_swap",                                        type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff, tableIdxInc = -1},
-    {field = "voltage_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125},
-    {field = "current_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125},
-    {field = "consumption_correction",       mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125},
+    {field = "protocol",                                        type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1, help ="@i18n(api.ESC_SENSOR_CONFIG.protocol)@"},
+    {field = "half_duplex",                                     type = "U8",  apiVersion = 12.06, simResponse = {0},     default = 0, min= 1, max = 2, table = onOff, tableIdxInc = -1, help ="@i18n(api.ESC_SENSOR_CONFIG.half_duplex)@"},
+    {field = "update_hz",                                       type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help ="@i18n(api.ESC_SENSOR_CONFIG.update_hz)@"},
+    {field = "current_offset",                                  type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help ="@i18n(api.ESC_SENSOR_CONFIG.current_offset)@"},
+    {field = "hw4_current_offset",                              type = "U16", apiVersion = 12.06, simResponse = {0, 0},  min = 0, max = 1000, default = 0, help ="@i18n(api.ESC_SENSOR_CONFIG.hw4_current_offset)@"},
+    {field = "hw4_current_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250, default = 0, help ="@i18n(api.ESC_SENSOR_CONFIG.hw4_current_gain)@"},
+    {field = "hw4_voltage_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250,  default = 30, help ="@i18n(api.ESC_SENSOR_CONFIG.hw4_voltage_gain)@"},
+    {field = "pin_swap",                                        type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff, tableIdxInc = -1, help ="@i18n(api.ESC_SENSOR_CONFIG.pin_swap)@"},
+    {field = "voltage_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125, help ="@i18n(api.ESC_SENSOR_CONFIG.voltage_correction)@"},
+    {field = "current_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125, help ="@i18n(api.ESC_SENSOR_CONFIG.current_correction)@"},
+    {field = "consumption_correction",       mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125, help ="@i18n(api.ESC_SENSOR_CONFIG.consumption_correction)@"},
 }
 
 -- Process structure in one pass

@@ -1,10 +1,10 @@
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
-local i18n = rfsuite.i18n.get
 
-local toolName = i18n("app.modules.esc_tools.mfg.flrtr.name")
-moduleName = "FLRTR"
 
-function getUInt(page, vals)
+local toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@"
+local moduleName = "FLRTR"
+
+local function getUInt(page, vals)
     local v = 0
     for idx = 1, #vals do
         local raw_val = page[vals[idx]] or 0
@@ -14,7 +14,7 @@ function getUInt(page, vals)
     return v
 end
 
-function getPageValue(page, index)
+local function getPageValue(page, index)
     return page[index]
 end
 

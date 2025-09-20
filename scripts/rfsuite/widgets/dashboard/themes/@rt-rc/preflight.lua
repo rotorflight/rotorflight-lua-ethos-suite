@@ -15,7 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local i18n = rfsuite.i18n.get
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -131,6 +131,7 @@ local layout = {
     rows    = 8,
     padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
+    showstats = false  -- or any color you prefer
 }
 
 -- Header Layout
@@ -175,19 +176,19 @@ local function buildBoxes(W)
         rowspan = 3,
         type    = "text",
         subtype = "governor",
-        title   = i18n("widgets.dashboard.governor"):upper(),
+        title   = "@i18n(widgets.dashboard.governor,upper)@",
         titlepos= "bottom",
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
         thresholds = {
-            { value = i18n("widgets.governor.DISARMED"), textcolor = colorMode.fillcritcolor },
-            { value = i18n("widgets.governor.OFF"), textcolor = colorMode.fillcritcolor },
-            { value = i18n("widgets.governor.IDLE"), textcolor = "blue" },
-            { value = i18n("widgets.governor.SPOOLUP"), textcolor = "blue" },
-            { value = i18n("widgets.governor.RECOVERY"), textcolor = colorMode.fillwarncolor },
-            { value = i18n("widgets.governor.ACTIVE"), textcolor = colorMode.fillcolor },
-            { value = i18n("widgets.governor.THR-OFF"), textcolor = colorMode.fillcritcolor }
+            { value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor },
+            { value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor },
+            { value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue" },
+            { value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue" },
+            { value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor },
+            { value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor },
+            { value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor }
         }
       },
       {
@@ -200,7 +201,7 @@ local function buildBoxes(W)
         source  = "rpm",
         unit    = "",
         transform = "floor",
-        title   = i18n("widgets.dashboard.headspeed"):upper(),
+        title   = "@i18n(widgets.dashboard.headspeed,upper)@",
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -214,7 +215,7 @@ local function buildBoxes(W)
         type    = "text",
         subtype = "telemetry",
         source  = "pid_profile",
-        title   = i18n("widgets.dashboard.profile"):upper(),
+        title   = "@i18n(widgets.dashboard.profile,upper)@",
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -229,7 +230,7 @@ local function buildBoxes(W)
         type    = "text",
         subtype = "telemetry",
         source  = "rate_profile",
-        title   = i18n("widgets.dashboard.rates"):upper(),
+        title   = "@i18n(widgets.dashboard.rates,upper)@",
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -243,7 +244,7 @@ local function buildBoxes(W)
         rowspan = 2,
         type    = "time",
         subtype = "count",
-        title   = i18n("widgets.dashboard.flights"):upper(),
+        title   = "@i18n(widgets.dashboard.flights,upper)@",
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -258,7 +259,7 @@ local function buildBoxes(W)
         subtype = "telemetry",
         source  = "link",
         unit    = "dB",
-        title   = i18n("widgets.dashboard.lq"):upper(),
+        title   = "@i18n(widgets.dashboard.lq,upper)@",
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -272,7 +273,7 @@ local function buildBoxes(W)
         rowspan = 2,
         type    = "time",
         subtype = "flight",
-        title   = i18n("widgets.dashboard.time"):upper(),
+        title   = "@i18n(widgets.dashboard.time,upper)@",
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -285,7 +286,7 @@ local function buildBoxes(W)
         rowspan = 2,
         type    = "text",
         subtype = "blackbox",
-        title   = i18n("widgets.dashboard.blackbox"):upper(),
+        title   = "@i18n(widgets.dashboard.blackbox,upper)@",
         titlepos= "bottom",
         decimals = 0,
         titlecolor = colorMode.titlecolor,
@@ -309,7 +310,7 @@ local function buildBoxes(W)
         gaugepadding = opts.gaugepadding,
         valuepaddingtop = opts.valuepaddingtop,
         fillbgcolor = colorMode.fillbgcolor,
-        title   = i18n("widgets.dashboard.fuel"):upper(),
+        title   = "@i18n(widgets.dashboard.fuel,upper)@",
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -329,7 +330,7 @@ local function buildBoxes(W)
         subtype = "arc",
         source  = "voltage",
         fillbgcolor = colorMode.fillbgcolor,
-        title    = i18n("widgets.dashboard.voltage"):upper(),
+        title    = "@i18n(widgets.dashboard.voltage,upper)@",
         font     = opts.font,
         thickness= opts.thickness,
         titlepos = "bottom",

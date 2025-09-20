@@ -1,10 +1,10 @@
 
 
-local i18n = rfsuite.i18n.get
+
 local S_PAGES = {
-    [1] = {name = i18n("app.modules.governor.menu_general"), script = "general.lua", image = "general.png"},
-    [2] = {name = i18n("app.modules.governor.menu_time"), script = "time.lua", image = "time.png"},
-    [3] = {name = i18n("app.modules.governor.menu_filters"), script = "filters.lua", image = "filters.png"},
+    [1] = {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
+    [2] = {name = "@i18n(app.modules.governor.menu_time)@", script = "time.lua", image = "time.png"},
+    [3] = {name = "@i18n(app.modules.governor.menu_filters)@", script = "filters.lua", image = "filters.png"},
 }
 
 local enableWakeup = false
@@ -33,8 +33,6 @@ local function openPage(pidx, title, script)
         end
     end    
 
-    ESC = {}
-
     -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
@@ -51,11 +49,11 @@ local function openPage(pidx, title, script)
     local panel
 
 
-    buttonW = 100
+    local buttonW = 100
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.ui.fieldHeader(
-        i18n(i18n("app.modules.governor.name"))
+        "@i18n(app.modules.governor.name)@"
     )
 
 
@@ -126,7 +124,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["governor"] = pidx
                 rfsuite.app.ui.progressDisplay()
-                local name = i18n("app.modules.governor.name") .. " / " .. pvalue.name
+                local name = "@i18n(app.modules.governor.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "governor/tools/" .. pvalue.script)
             end
         })

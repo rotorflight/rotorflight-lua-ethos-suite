@@ -15,7 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local i18n = rfsuite.i18n.get
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -146,17 +146,17 @@ local function buildBoxes(W)
 
     return{
     -- Flight info and RPM info
-    {col = 1, row = 1, type = "time", subtype = "flight", opts.font, title = i18n("widgets.dashboard.flight_duration"), titlepos = "bottom", valuepaddingtop = opts.valuepaddingtop, bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 1, row = 2, type = "time", subtype = "total", opts.font, title = i18n("widgets.dashboard.total_flight_duration"), titlepos = "bottom", valuepaddingtop = opts.valuepaddingtop, bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 1, row = 3, type = "text", subtype = "stats", opts.font, stattype = "min", source = "rpm", title = i18n("widgets.dashboard.rpm_min"), valuepaddingtop = opts.valuepaddingtop, unit = " rpm", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 1, row = 1, type = "time", subtype = "flight", opts.font, title = "@i18n(widgets.dashboard.flight_duration)@", titlepos = "bottom", valuepaddingtop = opts.valuepaddingtop, bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 1, row = 2, type = "time", subtype = "total", opts.font, title = "@i18n(widgets.dashboard.total_flight_duration)@", titlepos = "bottom", valuepaddingtop = opts.valuepaddingtop, bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 1, row = 3, type = "text", subtype = "stats", opts.font, stattype = "min", source = "rpm", title = "@i18n(widgets.dashboard.rpm_min)@", valuepaddingtop = opts.valuepaddingtop, unit = " rpm", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
 
-    {col = 2, row = 1, type = "text", subtype = "stats", stattype = "min", source = "link", opts.font, title = i18n("widgets.dashboard.link_min"), valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 2, row = 2, type = "text", subtype = "stats", stattype = "max", source = "link", opts.font, title = i18n("widgets.dashboard.link_max"), valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 2, row = 3, type = "text", subtype = "stats", source = "rpm", opts.font, title = i18n("widgets.dashboard.rpm_max"), unit = " rpm", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 2, row = 1, type = "text", subtype = "stats", stattype = "min", source = "link", opts.font, title = "@i18n(widgets.dashboard.link_min)@", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 2, row = 2, type = "text", subtype = "stats", stattype = "max", source = "link", opts.font, title = "@i18n(widgets.dashboard.link_max)@", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 2, row = 3, type = "text", subtype = "stats", source = "rpm", opts.font, title = "@i18n(widgets.dashboard.rpm_max)@", unit = " rpm", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
  
-    {col = 3, row = 1, type = "text", subtype = "telemetry", source = "bec_voltage", opts.font, title = i18n("widgets.dashboard.voltage"), valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "bec_voltage", opts.font, title = i18n("widgets.dashboard.min_volts_cell"), valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 3, row = 3, type = "text", subtype = "stats", source = "throttle_percent", opts.font, title = i18n("widgets.dashboard.throttle_max"), valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 3, row = 1, type = "text", subtype = "telemetry", source = "bec_voltage", opts.font, title = "@i18n(widgets.dashboard.voltage)@", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "bec_voltage", opts.font, title = "@i18n(widgets.dashboard.min_volts_cell)@", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 3, row = 3, type = "text", subtype = "stats", source = "throttle_percent", opts.font, title = "@i18n(widgets.dashboard.throttle_max)@", valuepaddingtop = opts.valuepaddingtop, titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
  
     }
 end

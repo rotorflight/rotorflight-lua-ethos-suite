@@ -1,6 +1,25 @@
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * Note.  Some icons have been sourced from https://www.flaticon.com/
+ * 
+
+]] --
 local line = {}
 local fields = {}
-local i18n = rfsuite.i18n.get
+
 local formLoaded = false
 local startTestTime = os.clock()
 local startTestLength = 0
@@ -83,8 +102,6 @@ local function updateStats()
 
     fields['runtime']:value(startTestLength)
 
-    fields['memory']:value(rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
-
     fields['total']:value(tostring(mspSpeedTestStats['total']))
 
     fields['retries']:value(tostring(mspSpeedTestStats['retries']))
@@ -112,8 +129,8 @@ local function startTest(duration)
     startTestTime = os.clock()
 
     testLoader = form.openProgressDialog({
-        title = i18n("app.modules.msp_speed.testing"),
-        message = i18n("app.modules.msp_speed.testing_performance"),
+        title = "@i18n(app.modules.msp_speed.testing)@",
+        message = "@i18n(app.modules.msp_speed.testing_performance)@",
         close = function()
             updateStats()
             testLoader = nil
@@ -166,31 +183,31 @@ end
 
 local function openSpeedTestDialog()
     local buttons = {{
-        label = i18n("app.modules.msp_speed.seconds_600"),
+        label = "@i18n(app.modules.msp_speed.seconds_600)@",
         action = function()
             startTest(600)
             return true
         end
     }, {
-        label = i18n("app.modules.msp_speed.seconds_300"),
+        label = "@i18n(app.modules.msp_speed.seconds_300)@",
         action = function()
             startTest(300)
             return true
         end
     }, {
-        label = i18n("app.modules.msp_speed.seconds_120"),
+        label = "@i18n(app.modules.msp_speed.seconds_120)@",
         action = function()
             startTest(120)
             return true
         end
     }, {
-        label = i18n("app.modules.msp_speed.seconds_30"),
+        label = "@i18n(app.modules.msp_speed.seconds_30)@",
         action = function()
             startTest(30)
             return true
         end
     }}
-    form.openDialog({title = i18n("app.modules.msp_speed.start"), message = i18n("app.modules.msp_speed.start_prompt"), buttons = buttons, options = TEXT_LEFT})
+    form.openDialog({title = "@i18n(app.modules.msp_speed.start)@", message = "@i18n(app.modules.msp_speed.start_prompt)@", buttons = buttons, options = TEXT_LEFT})
 end
 
 local function openPage(pidx, title, script)
@@ -205,20 +222,20 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    local titleline = form.addLine(i18n("app.modules.diagnostics.name") .. " / " .. i18n("app.modules.msp_speed.name"))
+    local titleline = form.addLine("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.msp_speed.name)@")
 
     local buttonW = 100
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = i18n("app.navigation_menu"),
+        text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
         press = function()
             rfsuite.app.ui.openPage(
                 pageIdx,
-                i18n("app.modules.diagnostics.name"),
+                "@i18n(app.modules.diagnostics.name)@",
                 "diagnostics/diagnostics.lua"
             )
         end
@@ -237,37 +254,34 @@ local function openPage(pidx, title, script)
 
     local posText = {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
 
-    line['rf'] = form.addLine(i18n("app.modules.msp_speed.rf_protocol"))
+    line['rf'] = form.addLine("@i18n(app.modules.msp_speed.rf_protocol)@")
     fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(rfsuite.tasks.msp.protocol.mspProtocol))
 
-    line['memory'] = form.addLine(i18n("app.modules.msp_speed.memory_free"))
-    fields['memory'] = form.addStaticText(line['memory'], posText, rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
-
-    line['runtime'] = form.addLine(i18n("app.modules.msp_speed.test_length"))
+    line['runtime'] = form.addLine("@i18n(app.modules.msp_speed.test_length)@")
     fields['runtime'] = form.addStaticText(line['runtime'], posText, "-")
 
-    line['total'] = form.addLine(i18n("app.modules.msp_speed.total_queries"))
+    line['total'] = form.addLine("@i18n(app.modules.msp_speed.total_queries)@")
     fields['total'] = form.addStaticText(line['total'], posText, "-")
 
-    line['success'] = form.addLine(i18n("app.modules.msp_speed.successful_queries"))
+    line['success'] = form.addLine("@i18n(app.modules.msp_speed.successful_queries)@")
     fields['success'] = form.addStaticText(line['success'], posText, "-")
 
-    line['timeouts'] = form.addLine(i18n("app.modules.msp_speed.timeouts"))
+    line['timeouts'] = form.addLine("@i18n(app.modules.msp_speed.timeouts)@")
     fields['timeouts'] = form.addStaticText(line['timeouts'], posText, "-")
 
-    line['retries'] = form.addLine(i18n("app.modules.msp_speed.retries"))
+    line['retries'] = form.addLine("@i18n(app.modules.msp_speed.retries)@")
     fields['retries'] = form.addStaticText(line['retries'], posText, "-")
 
-    line['checksum'] = form.addLine(i18n("app.modules.msp_speed.checksum_errors"))
+    line['checksum'] = form.addLine("@i18n(app.modules.msp_speed.checksum_errors)@")
     fields['checksum'] = form.addStaticText(line['checksum'], posText, "-")
 
-    line['mintime'] = form.addLine(i18n("app.modules.msp_speed.min_query_time"))
+    line['mintime'] = form.addLine("@i18n(app.modules.msp_speed.min_query_time)@")
     fields['mintime'] = form.addStaticText(line['mintime'], posText, "-")
 
-    line['maxtime'] = form.addLine(i18n("app.modules.msp_speed.max_query_time"))
+    line['maxtime'] = form.addLine("@i18n(app.modules.msp_speed.max_query_time)@")
     fields['maxtime'] = form.addStaticText(line['maxtime'], posText, "-")
 
-    line['time'] = form.addLine(i18n("app.modules.msp_speed.avg_query_time"))
+    line['time'] = form.addLine("@i18n(app.modules.msp_speed.avg_query_time)@")
     fields['time'] = form.addStaticText(line['time'], posText, "-")
 
     formLoaded = true
@@ -313,7 +327,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.diagnostics.name"),
+            "@i18n(app.modules.diagnostics.name)@",
             "diagnostics/diagnostics.lua"
         )
         return true

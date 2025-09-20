@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 0.25,         -- run every 0.25 seconds
+    interval        = 0.28,         -- run every 0.28 seconds
     script          = "logger.lua", -- run this script
     linkrequired    = false,        -- run this script only if link is established
     connected       = false,         -- run this script only if msp is connected

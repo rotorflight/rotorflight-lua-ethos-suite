@@ -9,55 +9,83 @@ on:
 jobs:
   create-zip:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # ←—— add/remove locales here
+        lang: [en, de , es, fr, it, nl]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set build variables (commit-based version)
-      run: |
-        SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
-        echo "GIT_VER=commit-${SHORT_SHA}" >> $GITHUB_ENV
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Update version and config in main.lua
-      run: |
-        # Use GIT_VER set in previous step
-        sed -E -i "s/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*\")[^\"]*(\")/\1${{ env.GIT_VER }}\2/" scripts/rfsuite/main.lua
+      - name: Set build variables (commit-based version)
+        id: buildvars
+        shell: bash
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "GIT_VER=commit-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "sha7=${SHORT_SHA}" >> $GITHUB_OUTPUT
 
+      # Build merged JSON for the specific locale (writes to scripts/rfsuite/i18n/<locale>.json)
+      - name: Build i18n for this locale
+        run: python bin/i18n/build-single-json.py --only ${{ matrix.lang }}
 
-        # Show updated file (for verification)
-        grep 'config\.' scripts/rfsuite/main.lua
+      # Stage a per-locale copy to avoid mutating the repo
+      - name: Stage files for this locale
+        shell: bash
+        run: |
+          STAGE="build/${{ matrix.lang }}/scripts"
+          mkdir -p "$STAGE"
+          rsync -a scripts/ "$STAGE"/
+          echo "STAGE=$STAGE" >> $GITHUB_ENV
 
-    - name: Create rotorflight-lua-ethos-suite-commit-<short_sha>.zip (entire scripts folder)
-      run: |
-        zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
+      # Update version in the staged copy
+      - name: Update version and config in main.lua (staged)
+        run: |
+          sed -E -i "s/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*\")[^\"]*(\")/\1${{ env.GIT_VER }}\2/" "${{ env.STAGE }}/rfsuite/main.lua"
+          grep 'config\.' "${{ env.STAGE }}/rfsuite/main.lua" || true
 
-    - name: Upload rotorflight-lua-ethos-suite-commit-<short_sha>.zip as Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}
-        path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
-        if-no-files-found: error
-        
-    - name: Package combined soundpack
-      run: |
-        # Where your per-locale packs live
-        SOUND_DIR="bin/sound-generator/soundpack"
+      # Resolve @i18n(...)@ tags in the staged tree using the chosen locale
+      - name: Resolve i18n tags (locale=${{ matrix.lang }})
+        run: |
+          python .vscode/scripts/resolve_i18n_tags.py \
+            --json "${{ env.STAGE }}/rfsuite/i18n/${{ matrix.lang }}.json" \
+            --root "${{ env.STAGE }}"
 
-        # Where to drop the ZIP
-        OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
-        mkdir -p "$OUTPUT_DIR"
+      # Copy sound pack for this locale into the staged tree
+      - name: Copy sound pack (locale=${{ matrix.lang }})
+        shell: bash
+        run: |
+          SRC="bin/sound-generator/soundpack/${{ matrix.lang }}"
+          if [ ! -d "$SRC" ]; then
+            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/soundpack/en"
+            SRC="bin/sound-generator/soundpack/en"
+          fi
+          DEST="${{ env.STAGE }}/rfsuite/audio/${{ matrix.lang }}"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+          cp -a "$SRC/." "$DEST/"
+          echo "[AUDIO] Copied $SRC -> $DEST"
 
-        # Name it with your GIT_VER (e.g. PR-936 or 1.2.3)
-        ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
+      # Zip only the staged scripts folder for this locale
+      - name: Create rotorflight-lua-ethos-suite-<lang>-commit-<sha7>.zip
+        shell: bash
+        run: |
+          ART="rotorflight-lua-ethos-suite-${{ matrix.lang }}-${{ env.GIT_VER }}.zip"
+          (cd build/${{ matrix.lang }} && zip -q -r -9 "../$ART" scripts)
+          mv "build/${{ matrix.lang }}/../$ART" .
+          echo "ARTIFACT=$ART" >> $GITHUB_ENV
 
-        # Zip up everything under SOUND_DIR, preserving locale/pack/... structure
-        (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
+      - name: Upload per-locale artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rotorflight-lua-ethos-suite-${{ matrix.lang }}-${{ env.GIT_VER }}
+          path: ${{ env.ARTIFACT }}
+          if-no-files-found: error
 
-        echo "✅ Created $OUTPUT_DIR/$ZIP_NAME"
-
-    - name: Upload soundpack artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
-        path: tmp/*.zip

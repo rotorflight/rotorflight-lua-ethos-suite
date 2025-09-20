@@ -68,7 +68,7 @@ local function drawOverlayBackground(cx, cy, innerR, bg)
 end
 
 local function renderOverlayText(dashboard, cx, cy, innerR, fg)
-  local message = dashboard._overlay_text or rfsuite.i18n.get("widgets.dashboard.loading")
+  local message = dashboard._overlay_text or "@i18n(widgets.dashboard.loading)@"
   local fonts = dashboard.utils.getFontListsForResolution().value_default
   local lines, chosenFont, lineH = getWrappedTextLines(message, fonts, innerR * 2 * 0.9, innerR * 2 * 0.8)
 

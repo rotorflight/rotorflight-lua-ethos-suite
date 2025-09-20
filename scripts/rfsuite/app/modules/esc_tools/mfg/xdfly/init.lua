@@ -1,9 +1,9 @@
 local MSP_API = "ESC_PARAMETERS_XDFLY"
-local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.name")
-moduleName = "xdfly"
+local toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@"
+local moduleName = "xdfly"
 
 
-function getPageValue(page, index)
+local function getPageValue(page, index)
     return page[index]
 end
 
@@ -67,7 +67,7 @@ local function extract_16bit_values_as_table(byte_stream)
     return combined_binary_table
 end
 
-function getActiveFields(inputTable)
+local function getActiveFields(inputTable)
     
     if inputTable == nil then
         return {}

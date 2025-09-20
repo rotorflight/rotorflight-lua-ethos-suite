@@ -1,4 +1,4 @@
-local i18n = rfsuite.i18n.get
+
 
 
 local enableWakeup = false
@@ -31,13 +31,13 @@ local function openPage(idx, title, script, source, folder,themeScript)
 
     form.clear()
 
-    --form.addLine("../ " .. i18n("app.modules.settings.dashboard") .. " / " .. i18n("app.modules.settings.name") .. " / " .. title)
-    form.addLine( i18n("app.modules.settings.name") .. " / " .. title)
-    buttonW = 100
+    --form.addLine("../ " .. "@i18n(app.modules.settings.dashboard)@" .. " / " .. "@i18n(app.modules.settings.name)@" .. " / " .. title)
+    form.addLine( "@i18n(app.modules.settings.name)@" .. " / " .. title)
+    local buttonW = 100
     local x = windowWidth - (buttonW * 2) - 15
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = i18n("app.navigation_menu"),
+        text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
         paint = function()
@@ -51,7 +51,7 @@ local function openPage(idx, title, script, source, folder,themeScript)
 
             rfsuite.app.ui.openPage(
                 pageIdx,
-                i18n("app.modules.settings.dashboard"),
+                "@i18n(app.modules.settings.dashboard)@",
                 "settings/tools/dashboard_settings.lua"
             )
         end
@@ -70,9 +70,9 @@ local function openPage(idx, title, script, source, folder,themeScript)
 
                 local buttons = {
                     {
-                        label  = i18n("app.btn_ok_long"),
+                        label  = "@i18n(app.btn_ok_long)@",
                         action = function()
-                            local msg = i18n("app.modules.profile_select.save_prompt_local")
+                            local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
                             rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                             if page.write then
                                 page.write()
@@ -84,7 +84,7 @@ local function openPage(idx, title, script, source, folder,themeScript)
                         end,
                     },
                     {
-                        label  = i18n("app.modules.profile_select.cancel"),
+                        label  = "@i18n(app.modules.profile_select.cancel)@",
                         action = function()
                             return true
                         end,
@@ -93,8 +93,8 @@ local function openPage(idx, title, script, source, folder,themeScript)
 
                 form.openDialog({
                     width   = nil,
-                    title   = i18n("app.modules.profile_select.save_settings"),
-                    message = i18n("app.modules.profile_select.save_prompt_local"),
+                    title   = "@i18n(app.modules.profile_select.save_settings)@",
+                    message = "@i18n(app.modules.profile_select.save_prompt_local)@",
                     buttons = buttons,
                     wakeup  = function() end,
                     paint   = function() end,
@@ -125,7 +125,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.settings.dashboard"),
+            "@i18n(app.modules.settings.dashboard)@",
             "settings/tools/dashboard.lua"
         )
         return true
@@ -141,7 +141,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil,nil,true)
         rfsuite.app.ui.openPage(
             pageIdx,
-            i18n("app.modules.settings.dashboard"),
+            "@i18n(app.modules.settings.dashboard)@",
             "settings/tools/dashboard.lua"
         )
         return true

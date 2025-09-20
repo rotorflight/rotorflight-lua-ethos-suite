@@ -39,9 +39,9 @@ function bbl.wakeup()
         local transformedUsed  = usedMB
         local transformedTotal = totalMB
         displayValue = string.format("%." .. decimals .. "f/%." .. decimals .. "f %s",
-            transformedUsed, transformedTotal, rfsuite.i18n.get("app.modules.fblstatus.megabyte"))
+            transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
     else
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue =  "-"
         percentUsed = nil
     end
 
