@@ -73,6 +73,11 @@ local loadedStateModules = {}
 -- Counter used by wakeup to cycle through tasks
 local wakeupScheduler = 0
 
+-- Check model path aligns
+local lastModelPath = model.path()
+local lastModelPathCheckAt = 0
+local PATH_CHECK_INTERVAL = 1.0
+
 -- Spread scheduling of object wakeups to avoid doing them all at once:
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
@@ -1219,6 +1224,21 @@ function dashboard.paint(widget)
         lcd.invalidate()  -- Ensures repaint while theme loads
         return
     end
+
+        -- we must reset if model changes
+    if os.clock() - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
+        local newModelPath = model.path()
+        if newModelPath ~= lastModelPath then
+            lastModelPath = newModelPath
+            lastModelPathCheckAt = os.clock()
+
+            local W, H = lcd.getWindowSize()
+            local loaderY = (isFullScreen and headerLayout.height) or 0
+            dashboard.loader(0, loaderY, W, H - loaderY)
+            lcd.invalidate()  -- Ensures repaint while theme loads
+            return
+        end
+    end    
 
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
