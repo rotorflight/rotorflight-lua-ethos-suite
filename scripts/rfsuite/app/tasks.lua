@@ -16,7 +16,6 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 
 ]] --
-local app = rfsuite.app
 local utils = rfsuite.utils
 local log  = utils.log
 
@@ -27,6 +26,7 @@ local uiTaskPercent   = 100  -- Percentage of tasks to run per wakeup (1-100)
 
 -- 1. Exit App
 local function exitApp()
+    local app = rfsuite.app
     if app.triggers.exitAPP then
         app.triggers.exitAPP = false
         form.invalidate()
@@ -36,6 +36,7 @@ end
 
 -- 2. Profile / Rate Change Detection
 local function profileRateChangeDetection()
+    local app = rfsuite.app
     if not (
         app.Page and (
             app.Page.refreshOnProfileChange or
@@ -78,6 +79,7 @@ end
 
 -- 3. Main Menu Icon Enable/Disable
 local function mainMenuIconEnableDisable()
+    local app = rfsuite.app
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
 
     if rfsuite.session.mspBusy then return end
@@ -85,7 +87,7 @@ local function mainMenuIconEnableDisable()
     if app.uiState == app.uiStatus.mainMenu then
         local apiV = tostring(rfsuite.session.apiVersion)
         if not rfsuite.tasks.active() then
-            for i, v in pairs(rfsuite.app.formFieldsBGTask) do -- <<< keep the full lookup
+            for i, v in pairs(app.formFieldsBGTask) do 
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
                 elseif v == false then
@@ -93,7 +95,7 @@ local function mainMenuIconEnableDisable()
                 end
             end
         elseif not rfsuite.session.isConnected then
-            for i, v in pairs(rfsuite.app.formFieldsOffline) do -- <<< keep the full lookup
+            for i, v in pairs(app.formFieldsOffline) do
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
                 elseif v == false then
@@ -102,7 +104,7 @@ local function mainMenuIconEnableDisable()
             end
         elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
             app.offlineMode = false
-            for i in pairs(rfsuite.app.formFieldsOffline) do -- <<< keep the full lookup
+            for i in pairs(app.formFieldsOffline) do 
                 if app.formFields[i] then
                     app.formFields[i]:enable(true)
                 else
@@ -111,13 +113,13 @@ local function mainMenuIconEnableDisable()
             end
         end
     elseif not app.isOfflinePage then
-        print("loop 4")
         if not rfsuite.session.isConnected then app.ui.openMainMenu() end
     end
 end
 
 -- 4. No-Link Progress & Message Update
 local function noLinkProgressUpdate()
+    local app = rfsuite.app
     if rfsuite.session.telemetryState ~= 1 or not app.triggers.disableRssiTimeout then
         if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
@@ -130,6 +132,7 @@ end
 
 -- 5. Trigger Save Dialogs
 local function triggerSaveDialogs()
+    local app = rfsuite.app
     if app.triggers.triggerSave then
         app.triggers.triggerSave = false
         form.openDialog({
@@ -168,6 +171,7 @@ end
 
 -- 6. Armed-Save Warning
 local function armedSaveWarning()
+    local app = rfsuite.app
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
     if not app.dialogs.progressDisplay then
         app.audio.playSaveArmed = true
@@ -188,6 +192,7 @@ end
 
 -- 7. Trigger Reload Dialogs
 local function triggerReloadDialogs()
+    local app = rfsuite.app
     if app.triggers.triggerReloadNoPrompt then
         app.triggers.triggerReloadNoPrompt = false
         app.triggers.reload = true
@@ -220,6 +225,7 @@ end
 
 -- 8. Telemetry & Page State Updates
 local function telemetryAndPageStateUpdates()
+    local app = rfsuite.app
     if app.uiState == app.uiStatus.mainMenu then
         app.utils.invalidatePages()
     elseif app.triggers.isReady and (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed())
@@ -231,6 +237,7 @@ end
 
 -- 9. Perform Reload Actions
 local function performReloadActions()
+    local app = rfsuite.app
     if app.triggers.reload then
         app.triggers.reload = false
         app.ui.progressDisplay()
@@ -245,6 +252,7 @@ end
 
 -- 10. Play Pending Audio Alerts
 local function playPendingAudioAlerts()
+    local app = rfsuite.app
     if app.audio then
         local a = app.audio
         if a.playEraseFlash          then utils.playFile("app","eraseflash.wav");        a.playEraseFlash = false end
@@ -261,8 +269,21 @@ end
 
 -- 11. Wakeup UI Tasks
 local function wakeupUITasks()
+    local app = rfsuite.app
     if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
         app.Page.wakeup(app.Page)
+    end
+end
+
+-- 12. Request data
+local function requestPage()
+    local app = rfsuite.app
+    -- Ensure page is loaded if needed
+    if app.uiState == app.uiStatus.pages then
+        if not app.Page and app.PageTmp then app.Page = app.PageTmp end
+        if app.ui and app.Page and app.Page.apidata and app.pageState == app.pageStatus.display and not app.triggers.isReady then
+        app.ui.requestPage()
+        end
     end
 end
 
@@ -272,7 +293,6 @@ local tasks = {}
 tasks.list = {
     exitApp,
     profileRateChangeDetection,
-    mainMenuIconEnableDisable,
     noLinkProgressUpdate,
     triggerSaveDialogs,
     armedSaveWarning,
@@ -281,11 +301,12 @@ tasks.list = {
     performReloadActions,
     playPendingAudioAlerts,
     wakeupUITasks,
+    mainMenuIconEnableDisable,
+    requestPage,    
 }
 
 -- wakeup function uses the local tasks
 function tasks.wakeup()
-
     -- Run a portion of the tasks each wakeup to keep the UI responsive
     local list  = tasks.list
     local total = #list
@@ -304,14 +325,6 @@ function tasks.wakeup()
         list[nextUiTask]()
         nextUiTask = (nextUiTask % total) + 1
         taskAccumulator = taskAccumulator - 1
-    end
-
-    -- Ensure page is loaded if needed
-    if app.uiState == app.uiStatus.pages then
-        if not app.Page and app.PageTmp then app.Page = app.PageTmp end
-        if app.Page and app.Page.apidata and app.pageState == app.pageStatus.display and not app.triggers.isReady then
-        app.ui.requestPage()
-        end
     end
 
 end

@@ -494,7 +494,7 @@ function utils.print_r(node, maxDepth, currentDepth)
     end
 
     table.insert(result, "}")
-    return table.concat(result, " ")
+    print(table.concat(result, " "))
 end
 
 --[[
