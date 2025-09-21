@@ -288,8 +288,10 @@ local function wakeup()
     API.setCompleteHandler(function(self, buf)
       local hasData = API.readValue("telem_sensor_slot_40")
       if hasData then
-        rfsuite.app.Page.mspData = API.data()
-        rfsuite.app.Page.configLoaded = true
+        if rfsuite.app.Page then
+          rfsuite.app.Page.mspData = API.data()
+          rfsuite.app.Page.configLoaded = true
+        end
       end
     end)
     API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
