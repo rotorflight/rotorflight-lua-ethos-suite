@@ -239,6 +239,7 @@ local function openPage(pidx, title, script)
               config[sensor.id] = val
             end
           )
+          rfsuite.app.formFields[formFieldCount]:enable(false)
         end
       end
     end
@@ -288,25 +289,31 @@ local function wakeup()
     API.setCompleteHandler(function(self, buf)
       local hasData = API.readValue("telem_sensor_slot_40")
       if hasData then
-        rfsuite.app.Page.mspData = API.data()
-        rfsuite.app.Page.configLoaded = true
+        if rfsuite.app.Page then
+
+          if rfsuite.app.formFields then
+            for i,v in pairs(rfsuite.app.formFields) do
+              if v then
+                v:enable(true)
+              end
+            end
+          end
+          
+          local data = API.data()
+
+          for _, value in pairs(data.parsed) do
+            -- by default field is 'false' so only set true values
+            if value ~= 0 then
+              rfsuite.app.Page.config[value] = true
+            end
+          end
+        end
+        rfsuite.app.triggers.closeProgressLoader = true
       end
     end)
-    API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
+    API.setUUID("a23e4567-e89b-12d3-a456-426614174001" )
     API.read()
-  end
-
-  -- if we have data, populate config if empty (stop as soon as config has something in it)
-  if rfsuite.app.Page and rfsuite.app.Page.configLoaded == true and rfsuite.app.Page.configApplied == false then
-    local parsed = rfsuite.app.Page.mspData.parsed
-    for _, value in pairs(parsed) do
-      -- by default field is 'false' so only set true values
-      if value ~= 0 then
-        config[value] = true
-      end
-    end
-    rfsuite.app.Page.configApplied = true
-    rfsuite.app.triggers.closeProgressLoader = true
+    rfsuite.app.Page.configLoaded = true
   end
 
   -- save?
@@ -477,6 +484,7 @@ return {
   reboot = false,
   wakeup = wakeup,
   API = {},
+  config = config,
   configLoaded = configLoaded,
   configApplied = configApplied,
   navButtons = {

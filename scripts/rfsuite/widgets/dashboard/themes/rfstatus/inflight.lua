@@ -164,7 +164,7 @@ return {
         font = "FONT_XXL",
         fillbgcolor = colorMode.fillbgcolor,
         valuepaddingtop = opts.valuepaddingtop,
-        title = "@i18n(widgets.dashboard.voltage,upper)@",
+        title = "@i18n(widgets.dashboard.voltage):upper()@",
         titlepos = "bottom",
         min = function()
             local override = getUserVoltageOverride("v_min")
@@ -231,7 +231,7 @@ return {
         max = 100,
         font = "FONT_XXL",
         fillbgcolor = colorMode.fillbgcolor,
-        title = "@i18n(widgets.dashboard.fuel,upper)@",
+        title = "@i18n(widgets.dashboard.fuel):upper()@",
         titlepos = "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,

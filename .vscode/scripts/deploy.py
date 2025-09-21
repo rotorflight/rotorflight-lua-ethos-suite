@@ -11,7 +11,9 @@ import re
 import shlex
 import time
 import atexit, signal, tempfile
-
+import platform
+from hashlib import md5
+from glob import glob
 
 MIN_ETHOSSUITE_VERSION = "1.7.0"
 
@@ -19,9 +21,117 @@ SERIAL_PIDFILE = os.path.join(tempfile.gettempdir(), "rfdeploy-serial.pid")
 DEPLOY_TO_RADIO = False  # flag to control radio-only behavior
 THROTTLE_EXTS = None  # unused when throttling all copies
 THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
-THROTTLE_CHUNK = 16 * 1024          # 16 KiB
+THROTTLE_CHUNK = 32 * 1024          # 16 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024  # pause+fsync every 64 KiB written
-THROTTLE_PAUSE_S = 0.2             # 200 ms
+THROTTLE_PAUSE_S = 0.1             # 200 ms
+
+# --- single-instance lock helpers --------------------------------------------
+LOCK_DEFAULT_NAME = "rfdeploy.single.lock"
+if os.name == "nt":
+    import msvcrt
+else:
+    import fcntl
+
+def _lock_file(fd):
+    if os.name == "nt":
+        msvcrt.locking(fd.fileno(), msvcrt.LK_NBLCK, 1)
+    else:
+        fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+def _unlock_file(fd):
+    try:
+        if os.name == "nt":
+            fd.seek(0)
+            msvcrt.locking(fd.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
+    except OSError:
+        pass
+
+def _pid_is_running(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+class SingleInstance:
+    """OS-level file lock + PID metadata to ensure only one deploy.py instance."""
+    def __init__(self, name: str = LOCK_DEFAULT_NAME, force: bool = False):
+        self.lock_path = os.path.join(tempfile.gettempdir(), name)
+        self.force = force
+        self.fd = None
+        self._acquired = False
+
+    def acquire(self):
+        self.fd = open(self.lock_path, "a+")
+        self.fd.seek(0)
+        try:
+            _lock_file(self.fd)
+            self._acquired = True
+        except OSError:
+            # Check if the current holder is stale
+            self.fd.seek(0)
+            holder_pid = -1
+            try:
+                import json as _json
+                meta = (self.fd.read() or "").strip()
+                data = _json.loads(meta) if meta else {}
+                holder_pid = int(data.get("pid", -1))
+            except Exception:
+                pass
+            if holder_pid > 0 and not _pid_is_running(holder_pid):
+                if not self.force:
+                    raise RuntimeError(
+                        f"Another deploy appears to be running (stale lock from PID {holder_pid}). "
+                        f"Re-run with --force to take over. Lock: {self.lock_path}"
+                    )
+                time.sleep(0.2)
+                _lock_file(self.fd)
+                self._acquired = True
+            else:
+                raise RuntimeError(
+                    f"Another deploy is already running (PID {holder_pid if holder_pid>0 else 'unknown'})."
+                )
+        # record metadata
+        try:
+            self.fd.seek(0); self.fd.truncate(0)
+            import json as _json
+            _json.dump({"pid": os.getpid(), "time": time.time(), "host": platform.node()}, self.fd)
+            self.fd.flush(); os.fsync(self.fd.fileno())
+        except Exception:
+            pass
+        atexit.register(self.release)
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                signal.signal(sig, self._signal_and_release)
+            except Exception:
+                pass
+
+    def _signal_and_release(self, signum, frame):
+        self.release()
+        signal.signal(signum, signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    def release(self):
+        if self._acquired and self.fd:
+            try:
+                self.fd.seek(0); self.fd.truncate(0); self.fd.flush()
+                _unlock_file(self.fd)
+            finally:
+                try: self.fd.close()
+                except Exception: pass
+                try: os.remove(self.lock_path)
+                except Exception: pass
+            self._acquired = False
+
+def _lock_path_for_config(config_path: str) -> str:
+    """Compute the exact lock file path used for this project/config."""
+    proj_key = md5(os.path.abspath(config_path).encode("utf-8")).hexdigest()[:8]
+    lock_name = f"rfdeploy-{proj_key}.lock"
+    return os.path.join(tempfile.gettempdir(), lock_name)
 
 def parse_version(v: str):
     return tuple(map(int, v.split(".")))
@@ -1053,7 +1163,15 @@ def main():
     p.add_argument('--connect-only', action='store_true')
     p.add_argument('--lang', default=os.environ.get("RFSUITE_LANG", "en"),
                    help='Locale to resolve (e.g. en, de, fr). Defaults to env RFSUITE_LANG or "en".')
-
+    p.add_argument('--force', action='store_true',
+                   help='Take over a stale single-instance lock if the previous run crashed.')
+    # maintenance / self-contained “menu” operations
+    p.add_argument('--clear-lock', action='store_true',
+                   help='Delete ONLY the current project lock and exit.')
+    p.add_argument('--clear-all-locks', action='store_true',
+                   help='Delete ALL rfdeploy-*.lock files in the system temp and exit.')
+    p.add_argument('--print-lock', action='store_true',
+                   help='Print the lock file path for this project and exit.')    
 
     args = p.parse_args()
 
@@ -1072,6 +1190,47 @@ def main():
     if args.config != CONFIG_PATH:
         with open(args.config) as f:
             config.update(json.load(f))
+
+    # --- self-contained maintenance commands (handled BEFORE acquiring lock) ---
+    if args.print_lock:
+        print(_lock_path_for_config(args.config))
+        return 0
+
+    if args.clear_all_locks:
+        tmp = tempfile.gettempdir()
+        removed = 0
+        for f in glob(os.path.join(tmp, "rfdeploy-*.lock")):
+            try:
+                os.remove(f)
+                print(f"Removed: {f}")
+                removed += 1
+            except Exception as e:
+                print(f"Could not remove: {f} — {e}", file=sys.stderr)
+        print(f"Removed {removed} lock file(s) from {tmp}")
+        return 0
+
+    if args.clear_lock:
+        path = _lock_path_for_config(args.config)
+        try:
+            os.remove(path)
+            print(f"Removed: {path}")
+            return 0
+        except FileNotFoundError:
+            print(f"No lock found: {path}")
+            return 0
+        except Exception as e:
+            print(f"Could not remove: {path} — {e}", file=sys.stderr)
+            return 1
+
+
+    # --- acquire single-instance lock (project-scoped by config path) ----------
+    proj_key = md5(os.path.abspath(args.config).encode("utf-8")).hexdigest()[:8]
+    lock_name = f"rfdeploy-{proj_key}.lock"
+    try:
+        SingleInstance(name=lock_name, force=args.force).acquire()
+    except RuntimeError as e:
+        print(str(e), file=sys.stderr)
+        return 1            
 
     # Sanity check Ethos Suite version
     ethos_bin = config.get('ethossuite_bin')

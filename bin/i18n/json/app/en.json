@@ -3709,6 +3709,16 @@
       }
     },
     "fblstatus": {
+      "fbl_date": {
+        "english": "Date",
+        "translation": "Date",
+        "needs_translation": false
+      },
+      "fbl_time": {
+        "english": "Time",
+        "translation": "Time",
+        "needs_translation": false
+      },
       "arming_disable_flag_3": {
         "english": "Bad RX Recovery",
         "translation": "Bad RX Recovery",

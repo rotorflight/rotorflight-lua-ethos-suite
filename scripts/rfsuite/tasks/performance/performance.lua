@@ -15,15 +15,16 @@ local performance = {}
 ----------------------------------------------------------------
 -- Tuning
 ----------------------------------------------------------------
-local PROF_PERIOD_S   = 0.05             -- 20 Hz tick (matches scheduler
+local PROF_PERIOD_S   = 0.05             -- 20 Hz tick (matches scheduler)
 local CPU_TICK_HZ     = 1 / PROF_PERIOD_S
 local SCHED_DT        = PROF_PERIOD_S
 local OVERDUE_TOL     = SCHED_DT * 0.25
 
 local CPU_TICK_BUDGET = SCHED_DT
-local CPU_ALPHA       = 0.9              -- 1.0 => instant, 0.8 => fast-follow
+local CPU_TAU         = 5.0              -- time constant. the cpu will smooth over 5.0s
 local MEM_ALPHA       = 0.8
 local MEM_PERIOD      = 0.50             -- sample memory twice per second
+
 
 -- Optional: make sim utilization less jittery
 local usingSimulator  = (system.getVersion and system.getVersion().simulation) or false
@@ -42,6 +43,7 @@ local last_mem_t        = 0
 local mem_avg_kb        = nil
 local usedram_avg_kb    = nil
 local bitmap_pool_est_kb= 0
+local win_sum_ms, win_budget_ms, win_t = 0, 0, 0
 
 ----------------------------------------------------------------
 -- Helpers
@@ -120,6 +122,27 @@ function performance.wakeup()
   local budget_ms = SCHED_DT * 1000.0
   -- Utilization is how much of the tick budget the loop consumed.
   local instant_util = 0
+
+  -- accumulate for 100ms window
+  win_sum_ms    = win_sum_ms + (loop_ms or 0)
+  win_budget_ms = win_budget_ms + (budget_ms or 50)
+  win_t         = win_t + (SCHED_DT or 0.05)
+
+  -- Every ~0.10s, publish a 100ms-window utilization
+  if win_t >= 0.10 then
+    local window_util = 0
+    if win_budget_ms > 0 then
+      window_util = win_sum_ms / win_budget_ms
+    end
+    -- clamp and convert to %
+    if window_util < 0 then window_util = 0 end
+    if window_util > 1 then window_util = 1 end
+    rfsuite.performance.cpuload_window100 = window_util * 100
+
+    -- reset window accumulators
+    win_sum_ms, win_budget_ms, win_t = 0, 0, 0
+  end
+
   if budget_ms > 0 then
     instant_util = loop_ms / budget_ms
   end
@@ -134,12 +157,15 @@ function performance.wakeup()
     )
   end
 
-  cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
+  local alpha = 1 - math.exp(-dt / CPU_TAU)
+  cpu_avg = alpha * instant_util + (1 - alpha) * cpu_avg
+
   rfsuite.performance.cpuload = clamp(cpu_avg * 100, 0, 100)
   -- optional: expose raw numbers for debugging in your UI
   rfsuite.performance.loop_ms   = loop_ms
   rfsuite.performance.budget_ms = budget_ms
   rfsuite.performance.util_raw  = instant_util * 100
+  rfsuite.performance.tick_ms = dt * 1000.0
 
   last_wakeup_start = t_now
 end

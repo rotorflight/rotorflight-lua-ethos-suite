@@ -14,8 +14,7 @@
       "console": "integratedTerminal",
       "subProcess": false, // prevents auto-attach to child procs
       "justMyCode": true,
-      "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
+      "stopOnEntry": false,     
     },
     {
       "name": "Deploy & Launch [Fast]",
@@ -32,7 +31,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },   
     {
       "name": "Deploy & Choose",
@@ -49,7 +47,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Deploy & Choose [Fast]",
@@ -67,7 +64,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Deploy & Launch [choose lang]",
@@ -83,7 +79,6 @@
       "subProcess": false, // prevents auto-attach to child procs
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Deploy & Choose [choose lang]",
@@ -100,7 +95,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },         
     {
       "name": "Deploy Radio",
@@ -116,7 +110,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Deploy Radio [Fast]",
@@ -133,7 +126,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Deploy Radio + Serial Debug",
@@ -150,7 +142,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Deploy Radio + Serial Debug [Fast]",
@@ -168,7 +159,6 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "kill deploy"
     },
     {
       "name": "Radio: Serial Debug",
@@ -182,7 +172,17 @@
         "--lang", "en",
       ],
       "console": "integratedTerminal"
-    }
+    },
+    {
+      "name": "Clear locks",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": ["--config-env", "RFSUITE_CONFIG", "--clear-lock"],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "noDebug": true
+    } 
   ],
   "inputs": [
     {

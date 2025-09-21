@@ -73,6 +73,11 @@ local loadedStateModules = {}
 -- Counter used by wakeup to cycle through tasks
 local wakeupScheduler = 0
 
+-- Check model path aligns
+local lastModelPath = model.path()
+local lastModelPathCheckAt = 0
+local PATH_CHECK_INTERVAL = 1.0
+
 -- Spread scheduling of object wakeups to avoid doing them all at once:
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
@@ -758,63 +763,73 @@ function dashboard.renderLayout(widget, config)
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
         local cpuUsage = (rfsuite.performance and rfsuite.performance.cpuload) or 0
-        local ramFree  = (rfsuite.performance and rfsuite.performance.freeram) or 0
-        local ramUsed  = (rfsuite.performance and rfsuite.performance.usedram) or 0
-        local mainStackKB     = ((rfsuite.performance and rfsuite.performance.mainStackKB) or 0)
-        local ramKB           = ((rfsuite.performance and rfsuite.performance.ramKB) or 0)
-        local luaRamKB        = ((rfsuite.performance and rfsuite.performance.luaRamKB) or 0)
-        local luaBitmapsRamKB = ((rfsuite.performance and rfsuite.performance.luaBitmapsRamKB) or 0)
+        local loopMs   = (rfsuite.performance and rfsuite.performance.loop_ms)   or 0
+        local budgetMs = (rfsuite.performance and rfsuite.performance.budget_ms) or 50  -- 20 Hz -> 50ms
+        local tickMs   = (rfsuite.performance and rfsuite.performance.tick_ms)   -- optional, if you published it
+        local headroomPct = math.max(0, 100 - (cpuUsage or 0))
 
+        local ramFreeKB        = (rfsuite.performance and rfsuite.performance.luaRamKB)        or 0
+        local ramUsedGC_KB     = (rfsuite.performance and rfsuite.performance.usedram)         or 0
+        local sysRamFreeKB     = (rfsuite.performance and rfsuite.performance.ramKB)           or 0
+        local bitmapRamFreeKB  = (rfsuite.performance and rfsuite.performance.luaBitmapsRamKB) or 0
+        local mainStackKB      = (rfsuite.performance and rfsuite.performance.mainStackKB)     or 0
+
+        -- fonts
         lcd.font(FONT_S)
+        local _, lineH = lcd.getTextSize("A")
 
-        -- ===== Config you can tune =====
         local cfg = {
-            padX = 6, padY = 4,        -- box padding
-            colGap = 10, rowGap = 2,   -- gaps between columns/rows
-            labelW = 180,              -- widened for longer labels
-            valueW = 80,
-            unitW  = 30,
-            align = {                   -- per-column alignment: "left" | "right"
-                label = "left",
-                value = "right",
-                unit  = "left",
-            },
-            boxX = 4,                  -- box position (top-left)
-            boxY = 4 + headerOffset,
-            -- colors
+            padX = 8, padY = 6,
+            colGap = 10, rowGap = 2,
+            labelW = 170, valueW = 120, unitW = 30,
+            sectionGap = 8,                 -- extra gap before each section
+            decimalsMS = 1, decimalsKB = 1,
+            boxX = 4, boxY = 4 + headerOffset,
             bg = {0,0,0,0.9}, fg = {255,255,255},
             border = true,
-            decimalsKB = 2,            -- how many decimals for KB values
-        }
-        -- =================================
-
-        local function fmtInt(n)   return rfsuite.utils.round(n or 0, 0) end
-        local function fmtKB(n)    return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end
-
-        -- rows: label / value / unit
-        local rows = {
-            { "SCHEDULER CAPACITY",               fmtInt(cpuUsage),             "%"  },
-            { "LUA RAM FREE",          fmtInt(ramFree),              "kB" },
-            { "LUA RAM USED",          fmtInt(ramUsed),              "kB" },
-            { "SYSTEM RAM FREE",  fmtKB(ramKB),                 "KB" },
-            { "LUA BITMAP RAM",    fmtKB(luaBitmapsRamKB),       "KB" },
+            showActualPeriod = true,        -- set false if you didn’t publish tick_ms
         }
 
-        -- measure row height from font
-        local _, textH = lcd.getTextSize("A")  -- any char, to get height
 
-        -- compute box size
+        local function fmtPct(n) return rfsuite.utils.round(n or 0, 0) end
+        local function fmtMS(n)  return string.format("%."..cfg.decimalsMS.."f", n or 0) end
+        local function fmtKB(n)  return string.format("%."..cfg.decimalsKB.."f", n or 0) end
+
+        -- Build rows for each section: {label, value, unit}
+        local schedRows = {
+            { "LOAD",         fmtPct(cpuUsage),                     "%"  },
+            { "LOAD (100ms window)", fmtPct(rfsuite.performance.cpuload_window100 or 0), "%" },
+            { "HEADROOM",     fmtPct(headroomPct),                  "%"  },
+            { "LOOP / BUDGET", fmtMS(loopMs).." / "..fmtMS(budgetMs), "ms" },
+        }
+        if cfg.showActualPeriod and tickMs then
+            table.insert(schedRows, { "ACTUAL PERIOD", fmtMS(tickMs), "ms" })
+        end
+
+        local memRows = {
+            { "LUA RAM FREE",        fmtKB(ramFreeKB),        "KB" },
+            { "LUA RAM USED (GC)",   fmtKB(ramUsedGC_KB),     "KB" },
+            { "SYSTEM RAM FREE",     fmtKB(sysRamFreeKB),     "KB" },
+            { "LUA BITMAP RAM",      fmtKB(bitmapRamFreeKB),  "KB" },
+        }
+
+        -- Measure widths/heights
         local boxW = cfg.padX*2 + cfg.labelW + cfg.colGap + cfg.valueW + cfg.colGap + cfg.unitW
-        local boxH = cfg.padY*2 + (#rows * textH) + ((#rows-1) * cfg.rowGap)
+        -- header rows add an extra line height
+        local sectionHeaderH = lineH
+        local totalRows = #schedRows + #memRows
+        local boxH = cfg.padY*2
+            + sectionHeaderH + (#schedRows * (lineH + cfg.rowGap)) + cfg.sectionGap
+            + sectionHeaderH + (#memRows  * (lineH + cfg.rowGap))
 
-        -- center on screen, but respect headerOffset at top
+        -- Center the box
         local screenW, screenH = lcd.getWindowSize()
         local boxX = math.floor((screenW - boxW) / 2)
         local boxY = math.floor((screenH - boxH) / 2)
         local minY = 4 + headerOffset
         if boxY < minY then boxY = minY end
 
-        -- draw background + border
+        -- Background + border
         lcd.color(lcd.RGB(cfg.bg[1], cfg.bg[2], cfg.bg[3], cfg.bg[4]))
         lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
         if cfg.border then
@@ -824,34 +839,41 @@ function dashboard.renderLayout(widget, config)
             lcd.pen(0)
         end
 
-        -- column anchors
+        -- Column anchors
         local labelX = boxX + cfg.padX
         local valueX = labelX + cfg.labelW + cfg.colGap
         local unitX  = valueX + cfg.valueW + cfg.colGap
-        local startY = boxY + cfg.padY
+        local y = boxY + cfg.padY
 
-        lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
+        -- Draw a section (title + rows)
+        local function drawSection(title, rows)
+            -- title
+            lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
+            lcd.font(FONT_S_BOLD)
+            lcd.drawText(labelX, y, title)
+            lcd.font(FONT_S)
+            y = y + sectionHeaderH + cfg.rowGap
 
-        local function drawCell(x, w, text, align, y)
-            local tw = 0
-            if text ~= nil then tw = (lcd.getTextSize(tostring(text))) end
-            if align == "right" then
-                lcd.drawText(x + w - tw, y, tostring(text))
-            else -- left/default
-                lcd.drawText(x, y, tostring(text))
+            -- rows
+            for i = 1, #rows do
+                local label, value, unit = rows[i][1], rows[i][2], rows[i][3]
+                lcd.drawText(labelX, y, label)
+                -- right align value within valueW
+                local tw = lcd.getTextSize(tostring(value))
+                lcd.drawText(valueX + cfg.valueW - tw, y, tostring(value))
+                lcd.drawText(unitX, y, tostring(unit))
+                y = y + lineH + cfg.rowGap
             end
+
+            -- gap before next section
+            y = y + cfg.sectionGap
         end
 
-        -- draw rows
-        for i = 1, #rows do
-            local y = startY + (i-1) * (textH + cfg.rowGap)
-            local label, value, unit = rows[i][1], rows[i][2], rows[i][3]
-
-            drawCell(labelX, cfg.labelW, label, cfg.align.label, y)
-            drawCell(valueX, cfg.valueW, value, cfg.align.value, y)
-            drawCell(unitX,  cfg.unitW,  unit,  cfg.align.unit,  y)
-        end
+        drawSection("SCHEDULER", schedRows)
+        drawSection("MEMORY", memRows)
     end
+
+
 
     -- Handle overlay messages
     if dashboard.overlayMessage then
@@ -1220,6 +1242,21 @@ function dashboard.paint(widget)
         return
     end
 
+        -- we must reset if model changes
+    if os.clock() - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
+        local newModelPath = model.path()
+        if newModelPath ~= lastModelPath then
+            lastModelPath = newModelPath
+            lastModelPathCheckAt = os.clock()
+
+            local W, H = lcd.getWindowSize()
+            local loaderY = (isFullScreen and headerLayout.height) or 0
+            dashboard.loader(0, loaderY, W, H - loaderY)
+            lcd.invalidate()  -- Ensures repaint while theme loads
+            return
+        end
+    end    
+
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
@@ -1383,18 +1420,45 @@ function dashboard.wakeup(widget)
     -- Check if MSP is allow msp to be prioritized
     if rfsuite.session and rfsuite.session.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
+    -- Quick exit if not visible or running admin app
+    local now = os.clock()
+    local visible = lcd.isVisible()
+    local admin = rfsuite.app and rfsuite.app.guiIsRunning 
+
+    -- Throttle CPU usage based on connection and visibility
+    if admin or not visible then
+        -- not visible or in admin 
+        return     
+    elseif isSliding then
+        -- check if sliding timeout expired
+        if (now - isSlidingStart) > 1 then
+            isSliding = false
+        else
+            return
+        end 
+    end
+
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
     local telemetry = tasks.telemetry
     local W, H = lcd.getWindowSize()
 
-    if not dashboard.utils.supportedResolution(W, H, supportedResolutions) then
-        unsupportedResolution = true
-        lcd.invalidate(widget)
-        return
-    else
-        unsupportedResolution = false
+    -- cache last window size + support result to avoid rework every wakeup
+    dashboard._lastWH = dashboard._lastWH or { w = nil, h = nil, supported = nil }
+
+    if W ~= dashboard._lastWH.w or H ~= dashboard._lastWH.h then
+        local supported = dashboard.utils.supportedResolution(W, H, supportedResolutions)
+        if supported ~= dashboard._lastWH.supported then
+            unsupportedResolution = not supported
+            dashboard._lastWH.supported = supported
+            -- Only invalidate on a state flip (supported <-> unsupported)
+            lcd.invalidate(widget)
+        end
+        dashboard._lastWH.w, dashboard._lastWH.h = W, H
     end
+
+    -- Early out if currently unsupported (no need to keep invalidating)
+    if unsupportedResolution then return end
 
     if lcd.darkMode() ~= darkModeState then
         darkModeState = lcd.darkMode()
@@ -1441,29 +1505,6 @@ function dashboard.wakeup(widget)
             dashboard.reload_themes()
             firstWakeupCustomTheme = false
         end
-    end
-
-    local now = os.clock()
-    local visible = lcd.isVisible()
-    local admin = rfsuite.app and rfsuite.app.guiIsRunning 
-
-    -- Throttle CPU usage based on connection and visibility
-    if not rfsuite.session.isConnected then
-        -- if not connected, then poll every 1 second
-        if (now - lastWakeup) < 1 then return end
-    elseif isSliding then
-        -- check if sliding timeout expired
-        if (now - isSlidingStart) > 1 then
-            isSliding = false
-        else
-            return
-        end
-    elseif admin or not visible then
-        -- if admin app is running or quick return
-        return 
-    else
-        -- default rate limit of 0.05s (50% of clock speed)
-        if (now - lastWakeup) < 0.05 then return end   
     end
 
     local currentFlightMode = rfsuite.flightmode.current or "preflight"

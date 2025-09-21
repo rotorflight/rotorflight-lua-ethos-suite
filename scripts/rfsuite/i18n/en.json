@@ -3017,6 +3017,16 @@
           "needs_translation": false,
           "translation": "Erasing dataflash..."
         },
+        "fbl_date": {
+          "english": "Date",
+          "needs_translation": false,
+          "translation": "Date"
+        },
+        "fbl_time": {
+          "english": "Time",
+          "needs_translation": false,
+          "translation": "Time"
+        },
         "help_p1": {
           "english": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
           "needs_translation": false,
