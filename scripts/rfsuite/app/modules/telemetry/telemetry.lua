@@ -239,6 +239,7 @@ local function openPage(pidx, title, script)
               config[sensor.id] = val
             end
           )
+          rfsuite.app.formFields[formFieldCount]:enable(false)
         end
       end
     end
@@ -289,8 +290,18 @@ local function wakeup()
       local hasData = API.readValue("telem_sensor_slot_40")
       if hasData then
         if rfsuite.app.Page then
+
+          if rfsuite.app.formFields then
+            for i,v in pairs(rfsuite.app.formFields) do
+              if v then
+                v:enable(true)
+              end
+            end
+          end
+          
           rfsuite.app.Page.mspData = API.data()
           rfsuite.app.Page.configLoaded = true
+          rfsuite.app.triggers.closeProgressLoader = true
         end
       end
     end)
@@ -308,7 +319,7 @@ local function wakeup()
       end
     end
     rfsuite.app.Page.configApplied = true
-    rfsuite.app.triggers.closeProgressLoader = true
+
   end
 
   -- save?
