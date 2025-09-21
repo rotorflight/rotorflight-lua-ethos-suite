@@ -304,21 +304,51 @@ function utils.createCacheFile(tbl, path, options)
     f:close()
 end
 
-function utils.dir_exists(base, name)
+-- Cache tables
+local directoryExistenceCache = {}
+local fileExistenceCache      = {}
+
+--- Check if a directory exists, with optional caching.
+-- @param base string: base path (defaults to "./")
+-- @param name string: directory name
+-- @param noCache boolean: bypass the cache if true
+-- @return boolean: true if exists, false otherwise
+function utils.dir_exists(base, name, noCache)
     base = base or "./"
     if not name then return false end
 
-    local tgt = base .. name
-    local exists = os.stat(tgt)
-    if exists then return true end
+    local targetPath = base .. name
+
+    if not noCache and directoryExistenceCache[targetPath] then return true end
+
+    local exists = os.stat(targetPath)
+    if exists then
+        if not noCache then
+            directoryExistenceCache[targetPath] = true
+        end
+        return true
+    end
+
     return false
 end
 
-function utils.file_exists(name)
-    local tgt = os.stat(name)
-    if tgt then
+--- Check if a file exists, with optional caching.
+-- @param path string: file path
+-- @param noCache boolean: bypass the cache if true
+-- @return boolean: true if exists, false otherwise
+function utils.file_exists(path, noCache)
+    if not path then return false end
+
+    if not noCache and fileExistenceCache[path] then return true end
+
+    local stat = os.stat(path)
+    if stat then
+        if not noCache then
+            fileExistenceCache[path] = true
+        end
         return true
     end
+
     return false
 end
 
