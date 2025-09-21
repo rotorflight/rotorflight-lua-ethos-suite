@@ -13,6 +13,7 @@ import time
 import atexit, signal, tempfile
 import platform
 from hashlib import md5
+from glob import glob
 
 MIN_ETHOSSUITE_VERSION = "1.7.0"
 
@@ -126,6 +127,11 @@ class SingleInstance:
                 except Exception: pass
             self._acquired = False
 
+def _lock_path_for_config(config_path: str) -> str:
+    """Compute the exact lock file path used for this project/config."""
+    proj_key = md5(os.path.abspath(config_path).encode("utf-8")).hexdigest()[:8]
+    lock_name = f"rfdeploy-{proj_key}.lock"
+    return os.path.join(tempfile.gettempdir(), lock_name)
 
 def parse_version(v: str):
     return tuple(map(int, v.split(".")))
@@ -1159,6 +1165,13 @@ def main():
                    help='Locale to resolve (e.g. en, de, fr). Defaults to env RFSUITE_LANG or "en".')
     p.add_argument('--force', action='store_true',
                    help='Take over a stale single-instance lock if the previous run crashed.')
+    # maintenance / self-contained “menu” operations
+    p.add_argument('--clear-lock', action='store_true',
+                   help='Delete ONLY the current project lock and exit.')
+    p.add_argument('--clear-all-locks', action='store_true',
+                   help='Delete ALL rfdeploy-*.lock files in the system temp and exit.')
+    p.add_argument('--print-lock', action='store_true',
+                   help='Print the lock file path for this project and exit.')    
 
     args = p.parse_args()
 
@@ -1177,6 +1190,38 @@ def main():
     if args.config != CONFIG_PATH:
         with open(args.config) as f:
             config.update(json.load(f))
+
+    # --- self-contained maintenance commands (handled BEFORE acquiring lock) ---
+    if args.print_lock:
+        print(_lock_path_for_config(args.config))
+        return 0
+
+    if args.clear_all_locks:
+        tmp = tempfile.gettempdir()
+        removed = 0
+        for f in glob(os.path.join(tmp, "rfdeploy-*.lock")):
+            try:
+                os.remove(f)
+                print(f"Removed: {f}")
+                removed += 1
+            except Exception as e:
+                print(f"Could not remove: {f} — {e}", file=sys.stderr)
+        print(f"Removed {removed} lock file(s) from {tmp}")
+        return 0
+
+    if args.clear_lock:
+        path = _lock_path_for_config(args.config)
+        try:
+            os.remove(path)
+            print(f"Removed: {path}")
+            return 0
+        except FileNotFoundError:
+            print(f"No lock found: {path}")
+            return 0
+        except Exception as e:
+            print(f"Could not remove: {path} — {e}", file=sys.stderr)
+            return 1
+
 
     # --- acquire single-instance lock (project-scoped by config path) ----------
     proj_key = md5(os.path.abspath(args.config).encode("utf-8")).hexdigest()[:8]

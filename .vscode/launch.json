@@ -172,7 +172,17 @@
         "--lang", "en",
       ],
       "console": "integratedTerminal"
-    }
+    },
+    {
+      "name": "Clear locks",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": ["--config-env", "RFSUITE_CONFIG", "--clear-lock"],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "noDebug": true
+    } 
   ],
   "inputs": [
     {
