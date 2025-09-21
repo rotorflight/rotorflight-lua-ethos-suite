@@ -1403,6 +1403,30 @@ function dashboard.wakeup(widget)
     -- Check if MSP is allow msp to be prioritized
     if rfsuite.session and rfsuite.session.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
+    -- Quick exit if not visible or running admin app
+    local now = os.clock()
+    local visible = lcd.isVisible()
+    local admin = rfsuite.app and rfsuite.app.guiIsRunning 
+
+    -- Throttle CPU usage based on connection and visibility
+    if admin or not visible then
+        -- not visible or in admin 
+        return     
+    elseif not rfsuite.session.isConnected then
+        -- if not connected, then poll every 1 second
+        if (now - lastWakeup) < 1 then return end
+    elseif isSliding then
+        -- check if sliding timeout expired
+        if (now - isSlidingStart) > 1 then
+            isSliding = false
+        else
+            return
+        end
+    else
+        -- default rate limit of 0.05s (50% of clock speed)
+        if (now - lastWakeup) < 0.05 then return end   
+    end
+
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
     local telemetry = tasks.telemetry
@@ -1461,29 +1485,6 @@ function dashboard.wakeup(widget)
             dashboard.reload_themes()
             firstWakeupCustomTheme = false
         end
-    end
-
-    local now = os.clock()
-    local visible = lcd.isVisible()
-    local admin = rfsuite.app and rfsuite.app.guiIsRunning 
-
-    -- Throttle CPU usage based on connection and visibility
-    if not rfsuite.session.isConnected then
-        -- if not connected, then poll every 1 second
-        if (now - lastWakeup) < 1 then return end
-    elseif isSliding then
-        -- check if sliding timeout expired
-        if (now - isSlidingStart) > 1 then
-            isSliding = false
-        else
-            return
-        end
-    elseif admin or not visible then
-        -- if admin app is running or quick return
-        return 
-    else
-        -- default rate limit of 0.05s (50% of clock speed)
-        if (now - lastWakeup) < 0.05 then return end   
     end
 
     local currentFlightMode = rfsuite.flightmode.current or "preflight"
