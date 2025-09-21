@@ -1432,13 +1432,22 @@ function dashboard.wakeup(widget)
     local telemetry = tasks.telemetry
     local W, H = lcd.getWindowSize()
 
-    if not dashboard.utils.supportedResolution(W, H, supportedResolutions) then
-        unsupportedResolution = true
-        lcd.invalidate(widget)
-        return
-    else
-        unsupportedResolution = false
+    -- cache last window size + support result to avoid rework every wakeup
+    dashboard._lastWH = dashboard._lastWH or { w = nil, h = nil, supported = nil }
+
+    if W ~= dashboard._lastWH.w or H ~= dashboard._lastWH.h then
+        local supported = dashboard.utils.supportedResolution(W, H, supportedResolutions)
+        if supported ~= dashboard._lastWH.supported then
+            unsupportedResolution = not supported
+            dashboard._lastWH.supported = supported
+            -- Only invalidate on a state flip (supported <-> unsupported)
+            lcd.invalidate(widget)
+        end
+        dashboard._lastWH.w, dashboard._lastWH.h = W, H
     end
+
+    -- Early out if currently unsupported (no need to keep invalidating)
+    if unsupportedResolution then return end
 
     if lcd.darkMode() ~= darkModeState then
         darkModeState = lcd.darkMode()
