@@ -56,6 +56,34 @@ local apidata = {
     }                 
 }
 
+
+local function getSimulatorTimeResponse()
+    local t = os.date("*t")  -- get local time
+    local millis = math.floor((os.clock() % 1) * 1000)
+
+    local year = t.year
+    local month = t.month
+    local day = t.day
+    local hour = t.hour
+    local min = t.min
+    local sec = t.sec
+
+    -- encode into byte array (little-endian)
+    local bytes = {
+        year & 0xFF,         -- year LSB
+        (year >> 8) & 0xFF,  -- year MSB
+        month,
+        day,
+        hour,
+        min,
+        sec,
+        millis & 0xFF,       -- millis LSB
+        (millis >> 8) & 0xFF -- millis MSB
+    }
+
+    return bytes
+end
+
 local function getFblTime()
     local message = {
         command = 247, -- MSP_STATUS
@@ -77,7 +105,7 @@ local function getFblTime()
             status.fblMillis = rfsuite.tasks.msp.mspHelper.readU16(buf)
 
         end,
-        simulatorResponse = {180, 7, 1, 40 , 233, 197, 202, 62, 2}
+        simulatorResponse = getSimulatorTimeResponse()
     }
 
     rfsuite.tasks.msp.mspQueue:add(message)
