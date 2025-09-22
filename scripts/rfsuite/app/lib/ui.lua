@@ -18,7 +18,6 @@ local ui = {}
 
 local arg   = { ... }
 local config = arg[1]
-local app = rfsuite.app
 local preferences = rfsuite.preferences
 local utils = rfsuite.utils
 local tasks = rfsuite.tasks
@@ -30,6 +29,9 @@ local tasks = rfsuite.tasks
 
 -- Show a progress dialog (defaults: "Loading" / "Loading data from flight controller...").
 function ui.progressDisplay(title, message, speed)
+
+    local app = rfsuite.app
+
     if app.dialogs.progressDisplay then return end
 
     title   = title   or "@i18n(app.msg_loading)@"
@@ -207,6 +209,9 @@ end
 
 -- Is any progress-related dialog showing?
 function ui.progressDisplayIsActive()
+
+    local app = rfsuite.app
+
     return app.dialogs.progressDisplay
         or app.dialogs.saveDisplay
         or app.dialogs.progressDisplayEsc
@@ -219,6 +224,9 @@ end
 --------------------------------------------------------------------------------
 
 function ui.disableAllFields()
+
+    local app = rfsuite.app
+
     for i = 1, #app.formFields do
         local field = app.formFields[i]
         if type(field) == "userdata" then field:enable(false) end
@@ -226,29 +234,44 @@ function ui.disableAllFields()
 end
 
 function ui.enableAllFields()
+
+    local app = rfsuite.app
+
     for _, field in ipairs(app.formFields) do
         if type(field) == "userdata" then field:enable(true) end
     end
 end
 
 function ui.disableAllNavigationFields()
+
+    local app = rfsuite.app
+
     for _, v in pairs(app.formNavigationFields) do
         v:enable(false)
     end
 end
 
 function ui.enableAllNavigationFields()
+
+    local app = rfsuite.app
+
     for _, v in pairs(app.formNavigationFields) do
         v:enable(true)
     end
 end
 
 function ui.enableNavigationField(x)
+
+    local app = rfsuite.app
+
     local field = app.formNavigationFields[x]
     if field then field:enable(true) end
 end
 
 function ui.disableNavigationField(x)
+
+    local app = rfsuite.app
+
     local field = app.formNavigationFields[x]
     if field then field:enable(false) end
 end
@@ -259,6 +282,8 @@ end
 
 -- Open main menu.
 function ui.openMainMenu()
+
+    local app = rfsuite.app
 
     utils.reportMemoryUsage("app.openMainMenu", "start")
 
@@ -399,6 +424,8 @@ end
 
 -- Open a sub-section of the main menu.
 function ui.openMainMenuSub(activesection)
+
+    local app = rfsuite.app
 
     utils.reportMemoryUsage("app.openMainMenuSub", "start")
 
@@ -1341,7 +1368,9 @@ end
 
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
-  utils.reportMemoryUsage("ui.openPage: " .. script, "start")
+    utils.reportMemoryUsage("ui.openPage: " .. script, "start")
+
+    local app = rfsuite.app
 
     -- Global UI state; clear form data.
     app.uiState          = app.uiStatus.pages
@@ -1434,6 +1463,9 @@ end
 
 -- Navigation buttons (Menu / Save / Reload / Tool / Help).
 function ui.navigationButtons(x, y, w, h)
+
+    local app = rfsuite.app
+
     local xOffset    = 0
     local padding    = 5
     local wS         = w - (w * 20) / 100
@@ -1585,6 +1617,9 @@ end
 
 -- Open a help dialog with given text data.
 function ui.openPageHelp(txtData, section)
+
+    local app = rfsuite.app
+
     local message = table.concat(txtData, "\r\n\r\n")
     form.openDialog({
         width   = app.lcdWidth,
@@ -1601,6 +1636,7 @@ end
 
 function ui.injectApiAttributes(formField, f, v)
     local utils = rfsuite.utils
+    local app = rfsuite.app
     local log   = utils.log
 
     if v.decimals and not f.decimals then
