@@ -1331,7 +1331,7 @@ function dashboard.event(widget, category, value, x, y)
     end
 
     -- Touch and hold
-    if category  == 1 and value == 16642 then
+    if category  == 1 and value == TOUCH_MOVE then
          isSliding = true
          isSlidingStart = os.clock()
     end
@@ -1761,5 +1761,8 @@ dashboard.renders = dashboard.renders or {}
 
 -- disabled use of title
 dashboard.title = false
+
+-- expose widget moving
+dashboard.isSliding = function() return isSliding end
 
 return dashboard
