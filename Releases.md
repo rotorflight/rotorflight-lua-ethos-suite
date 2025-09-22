@@ -1,4 +1,4 @@
-# 2.3.0-20250921
+# 2.3.0-20250926
 
 Snapshot release of Ethos Suite.
 
