@@ -197,6 +197,26 @@ local function unsupported_tool()
   }
 end
 
+local function unsupported_i18n()
+  return {
+    name = rfsuite.config.toolName,
+    icon = rfsuite.config.icon_unsupported,
+    create = function() end,
+    wakeup = function()
+      lcd.invalidate()
+    end,
+    paint = function()
+      local w, h = lcd.getWindowSize()
+      lcd.color(lcd.RGB(255, 255, 255, 1))
+      lcd.font(FONT_M)
+      local msg = "i18n not compiled - download a release version"
+      local tw, th = lcd.getTextSize(msg)
+      lcd.drawText((w - tw) / 2, (h - th) / 2, msg)
+    end,
+    close = function() end,
+  }
+end
+
 local function register_main_tool()
   system.registerSystemTool({
     event = rfsuite.app.event,
@@ -290,8 +310,14 @@ local function init()
     return
   end
 
-  register_main_tool()
-  register_bg_task()
+  local isCompiledCheck = "@i18n(iscompiledcheck)@"
+  if isCompiledCheck ~= "true" then
+    system.registerSystemTool(unsupported_i18n())
+  else
+    register_main_tool()
+  end
+
+    register_bg_task()
 
   -- Widgets: try cache, else rebuild
   local cacheFile = "widgets.lua"

@@ -24,7 +24,7 @@ local apidata = {
             {t = "@i18n(app.modules.profile_pidcontroller.yaw)@",                  inline = 1, label = 4,  mspapi = 1, apikey = "error_limit_2"          },        
             {t = "@i18n(app.modules.profile_pidcontroller.roll)@",                  inline = 3, label = 5,  mspapi = 1, apikey = "offset_limit_0"          },
             {t = "@i18n(app.modules.profile_pidcontroller.pitch)@",                  inline = 2, label = 5,  mspapi = 1, apikey = "offset_limit_1"          },
-            {t = "@i18n(app.modules.profile_pidcontroller.error_rotation)@",                             mspapi = 1, apikey = "error_rotation", type = 1                      },
+            {t = "@i18n(app.modules.profile_pidcontroller.error_rotation)@",                             mspapi = 1, apikey = "error_rotation", type = 1 , apiversionlte = 12.08   },
             {t = "",                   inline = 1, label = 6,  mspapi = 1, apikey = "iterm_relax_type", type = 1},
             {t = "@i18n(app.modules.profile_pidcontroller.roll)@",                  inline = 3, label = 15, mspapi = 1, apikey = "iterm_relax_cutoff_0"  },
             {t = "@i18n(app.modules.profile_pidcontroller.pitch)@",                  inline = 2, label = 15, mspapi = 1, apikey = "iterm_relax_cutoff_1"  },

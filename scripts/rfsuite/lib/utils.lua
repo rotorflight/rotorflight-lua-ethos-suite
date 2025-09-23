@@ -154,38 +154,38 @@ end
 function utils.armingDisableFlagsToString(flags)
 
     local ARMING_DISABLE_FLAG_TAG = {
-    [0]  = "@i18n(app.modules.fblstatus.arming_disable_flag_0,upper)@",
-    [1]  = "@i18n(app.modules.fblstatus.arming_disable_flag_1,upper)@",
-    [2]  = "@i18n(app.modules.fblstatus.arming_disable_flag_2,upper)@",
-    [3]  = "@i18n(app.modules.fblstatus.arming_disable_flag_3,upper)@",
-    [4]  = "@i18n(app.modules.fblstatus.arming_disable_flag_4,upper)@",
-    [5]  = "@i18n(app.modules.fblstatus.arming_disable_flag_5,upper)@",
-    [6]  = "@i18n(app.modules.fblstatus.arming_disable_flag_6,upper)@",
-    [7]  = "@i18n(app.modules.fblstatus.arming_disable_flag_7,upper)@",
-    [8]  = "@i18n(app.modules.fblstatus.arming_disable_flag_8,upper)@",
-    [9]  = "@i18n(app.modules.fblstatus.arming_disable_flag_9,upper)@",
-    [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10,upper)@",
-    [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11,upper)@",
-    [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12,upper)@",
-    [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13,upper)@",
-    [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14,upper)@",
-    [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15,upper)@",
-    [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16,upper)@",
-    [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17,upper)@",
-    [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18,upper)@",
-    [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19,upper)@",
-    [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20,upper)@",
-    [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21,upper)@",
-    [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22,upper)@",
-    [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23,upper)@",
-    [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24,upper)@",
-    [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25,upper)@",
+    [0]  = "@i18n(app.modules.fblstatus.arming_disable_flag_0):upper()@",
+    [1]  = "@i18n(app.modules.fblstatus.arming_disable_flag_1):upper()@",
+    [2]  = "@i18n(app.modules.fblstatus.arming_disable_flag_2):upper()@",
+    [3]  = "@i18n(app.modules.fblstatus.arming_disable_flag_3):upper()@",
+    [4]  = "@i18n(app.modules.fblstatus.arming_disable_flag_4):upper()@",
+    [5]  = "@i18n(app.modules.fblstatus.arming_disable_flag_5):upper()@",
+    [6]  = "@i18n(app.modules.fblstatus.arming_disable_flag_6):upper()@",
+    [7]  = "@i18n(app.modules.fblstatus.arming_disable_flag_7):upper()@",
+    [8]  = "@i18n(app.modules.fblstatus.arming_disable_flag_8):upper()@",
+    [9]  = "@i18n(app.modules.fblstatus.arming_disable_flag_9):upper()@",
+    [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10):upper()@",
+    [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11):upper()@",
+    [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12):upper()@",
+    [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13):upper()@",
+    [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14):upper()@",
+    [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15):upper()@",
+    [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16):upper()@",
+    [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17):upper()@",
+    [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18):upper()@",
+    [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19):upper()@",
+    [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20):upper()@",
+    [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21):upper()@",
+    [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22):upper()@",
+    [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23):upper()@",
+    [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24):upper()@",
+    [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25):upper()@",
     }
 
 
     -- No flags: localized OK (already uppercase via tag transform)
     if flags == nil or flags == 0 then
-        return "@i18n(app.modules.fblstatus.ok,upper)@"
+        return "@i18n(app.modules.fblstatus.ok):upper()@"
     end
 
     local names = {}
@@ -199,7 +199,7 @@ function utils.armingDisableFlagsToString(flags)
     end
 
     if #names == 0 then
-        return "@i18n(app.modules.fblstatus.ok,upper)@"
+        return "@i18n(app.modules.fblstatus.ok):upper()@"
     end
 
     -- NOTE: We avoid forcing uppercase here to preserve non-ASCII locales.
@@ -222,17 +222,17 @@ function utils.getGovernorState(value)
         If the key exists, returns the mapped value; otherwise returns localized "UNKNOWN".
     ]]
     local map = {
-        [0]   = "@i18n(widgets.governor.OFF,upper)@",
-        [1]   = "@i18n(widgets.governor.IDLE,upper)@",
-        [2]   = "@i18n(widgets.governor.SPOOLUP,upper)@",
-        [3]   = "@i18n(widgets.governor.RECOVERY,upper)@",
-        [4]   = "@i18n(widgets.governor.ACTIVE,upper)@",
-        [5]   = "@i18n(widgets.governor.THROFF,upper)@",
-        [6]   = "@i18n(widgets.governor.LOSTHS,upper)@",
-        [7]   = "@i18n(widgets.governor.AUTOROT,upper)@",
-        [8]   = "@i18n(widgets.governor.BAILOUT,upper)@",
-        [100] = "@i18n(widgets.governor.DISABLED,upper)@",
-        [101] = "@i18n(widgets.governor.DISARMED,upper)@"
+        [0]   = "@i18n(widgets.governor.OFF):upper()@",
+        [1]   = "@i18n(widgets.governor.IDLE):upper()@",
+        [2]   = "@i18n(widgets.governor.SPOOLUP):upper()@",
+        [3]   = "@i18n(widgets.governor.RECOVERY):upper()@",
+        [4]   = "@i18n(widgets.governor.ACTIVE):upper()@",
+        [5]   = "@i18n(widgets.governor.THROFF):upper()@",
+        [6]   = "@i18n(widgets.governor.LOSTHS):upper()@",
+        [7]   = "@i18n(widgets.governor.AUTOROT):upper()@",
+        [8]   = "@i18n(widgets.governor.BAILOUT):upper()@",
+        [100] = "@i18n(widgets.governor.DISABLED):upper()@",
+        [101] = "@i18n(widgets.governor.DISARMED):upper()@"
     }
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", "12.07") then
@@ -245,7 +245,7 @@ function utils.getGovernorState(value)
     if map[value] then
         returnvalue = map[value]
     else
-        returnvalue = "@i18n(widgets.governor.UNKNOWN,upper)@"
+        returnvalue = "@i18n(widgets.governor.UNKNOWN):upper()@"
     end
 
     --[[
@@ -304,21 +304,51 @@ function utils.createCacheFile(tbl, path, options)
     f:close()
 end
 
-function utils.dir_exists(base, name)
+-- Cache tables
+local directoryExistenceCache = {}
+local fileExistenceCache      = {}
+
+--- Check if a directory exists, with optional caching.
+-- @param base string: base path (defaults to "./")
+-- @param name string: directory name
+-- @param noCache boolean: bypass the cache if true
+-- @return boolean: true if exists, false otherwise
+function utils.dir_exists(base, name, noCache)
     base = base or "./"
     if not name then return false end
 
-    local tgt = base .. name
-    local exists = os.stat(tgt)
-    if exists then return true end
+    local targetPath = base .. name
+
+    if not noCache and directoryExistenceCache[targetPath] then return true end
+
+    local exists = os.stat(targetPath)
+    if exists then
+        if not noCache then
+            directoryExistenceCache[targetPath] = true
+        end
+        return true
+    end
+
     return false
 end
 
-function utils.file_exists(name)
-    local tgt = os.stat(name)
-    if tgt then
+--- Check if a file exists, with optional caching.
+-- @param path string: file path
+-- @param noCache boolean: bypass the cache if true
+-- @return boolean: true if exists, false otherwise
+function utils.file_exists(path, noCache)
+    if not path then return false end
+
+    if not noCache and fileExistenceCache[path] then return true end
+
+    local stat = os.stat(path)
+    if stat then
+        if not noCache then
+            fileExistenceCache[path] = true
+        end
         return true
     end
+
     return false
 end
 
@@ -464,7 +494,7 @@ function utils.print_r(node, maxDepth, currentDepth)
     end
 
     table.insert(result, "}")
-    return table.concat(result, " ")
+    print(table.concat(result, " "))
 end
 
 --[[
