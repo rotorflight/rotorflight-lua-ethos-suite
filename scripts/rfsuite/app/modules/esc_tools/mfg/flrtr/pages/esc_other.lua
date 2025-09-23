@@ -34,12 +34,14 @@ if rfsuite.session.escDetails and rfsuite.session.escDetails.model then
     if string.find(rfsuite.session.escDetails.model, "FLYROTOR 150A") then
         -- this works because battery capacity is last item in list.
         -- we just keep popping off the first item until we get to the battery capacity
-        table.remove(mspapi.formdata.fields, 1)  -- throttle protocol
-        table.remove(mspapi.formdata.fields, 1)  -- telemetry protocol
-        table.remove(mspapi.formdata.fields, 1)  -- led color
-        table.remove(mspapi.formdata.fields, 1)  -- motor temp sensor
-        table.remove(mspapi.formdata.fields, 1)  -- motor temp
-    end    
+        if rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata and rfsuite.app.Page.apidata.formdata.fields then
+            table.remove(rfsuite.app.Page.apidata.formdata.fields, 1)  -- throttle protocol
+            table.remove(rfsuite.app.Page.apidata.formdata.fields, 1)  -- telemetry protocol
+            table.remove(rfsuite.app.Page.apidata.formdata.fields, 1)  -- led color
+            table.remove(rfsuite.app.Page.apidata.formdata.fields, 1)  -- motor temp sensor
+            table.remove(rfsuite.app.Page.apidata.formdata.fields, 1)  -- motor temp
+        end
+    end
 
 end
 
