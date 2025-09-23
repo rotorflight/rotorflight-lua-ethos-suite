@@ -118,7 +118,7 @@ jobs:
 
       - name: Create snapshot notes
         run: |
-          .github/scripts/extract-release-notes.py "${{ env.GIT_VER }}" Releases.md > Notes.md
+          python .github/scripts/extract-release-notes.py "${{ env.GIT_VER }}" Releases.md > Notes.md
           sed -n '1,200p' Notes.md
 
       - name: Create Snapshot
