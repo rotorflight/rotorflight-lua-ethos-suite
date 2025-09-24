@@ -1338,6 +1338,7 @@ function ui.fieldHeader(title)
 end
 
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+    local app = rfsuite.app
     app.triggers.isReady = false
 end
 
