@@ -32,6 +32,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local lastValue = 0
 
 -- Optional helper: call to force cfg rebuild after runtime param changes
 function render.invalidate(box)
@@ -92,7 +93,15 @@ end
 
 function render.wakeup(box)
     -- Read current count
-    local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
+    local value
+    if rfsuite.session and rfsuite.session.modelPreferences then
+        value =  rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
+        lastValue = value
+    else
+        value = lastValue or 0
+    end
+
+
     local displayValue
 
     -- Track last valid while connected
