@@ -2114,6 +2114,10 @@ function ui.rebootFc()
 end
 
 function ui.adminStatsOverlay()
+
+  local app   = rfsuite.app
+  local utils = rfsuite.utils
+
   if rfsuite.preferences
     and preferences.developer
     and preferences.developer.overlaystatsadmin
