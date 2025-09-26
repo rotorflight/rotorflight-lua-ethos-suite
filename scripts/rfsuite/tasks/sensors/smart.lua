@@ -75,7 +75,7 @@ local lastValue = {}          -- appId -> last numeric value pushed to TX
 local lastPush = {}           -- appId -> last os.clock() time we pushed any value
 local lastModule = nil        -- detect module changes to rebind DIY sensors
 local VALUE_EPSILON = 0.0     -- push on any change; keep 0 to avoid stale warnings
-local FORCE_REFRESH_INTERVAL = 2.5  -- seconds; force a heartbeat write this often even if unchanged
+local FORCE_REFRESH_INTERVAL = 2.0  -- seconds; force a heartbeat write this often even if unchanged
 
 local function calculateFuel()
     -- work out what type of sensor we are running and use 
@@ -216,14 +216,9 @@ end
 local lastWakeupTime = 0
 function smart.wakeup()
 
-    -- we cannot do anything until connected
-    if rfsuite.flightmode and rfsuite.flightmode.current ~= "inflight" then
-        if not rfsuite.session.isConnected then return end    
-        if rfsuite.session.mspBusy then return end
-        if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then
-            return
-        end     
-    end
+
+    if not rfsuite.session.isConnected then return end
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
 
     if firstWakeup then
         log = rfsuite.utils.log
