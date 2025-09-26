@@ -1338,6 +1338,7 @@ function ui.fieldHeader(title)
 end
 
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+    local app = rfsuite.app
     app.triggers.isReady = false
 end
 
@@ -2113,6 +2114,10 @@ function ui.rebootFc()
 end
 
 function ui.adminStatsOverlay()
+
+  local app   = rfsuite.app
+  local utils = rfsuite.utils
+
   if rfsuite.preferences
     and preferences.developer
     and preferences.developer.overlaystatsadmin

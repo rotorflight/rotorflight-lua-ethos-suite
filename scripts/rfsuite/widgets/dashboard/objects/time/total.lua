@@ -33,6 +33,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local lastValue = 0
 
 -- Allow external invalidation when runtime params change
 function render.invalidate(box)
@@ -94,7 +95,14 @@ end
 
 function render.wakeup(box)
     -- Read total seconds from prefs
-    local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
+    local value
+    if rfsuite.session and rfsuite.session.modelPreferences then
+        value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
+        lastValue = value
+    else
+        value = lastValue or 0
+    end
+
 
     local displayValue
     local haveNumber = (type(value) == "number" and value > 0)

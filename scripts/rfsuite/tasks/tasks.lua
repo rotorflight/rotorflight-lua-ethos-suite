@@ -64,6 +64,14 @@ local CPU_TICK_HZ     = 20
 local SCHED_DT        = 1 / CPU_TICK_HZ
 local OVERDUE_TOL     = SCHED_DT * 0.25
 
+
+-- Global runtime rate multiplier (<1.0 = faster, >1.0 = slower)
+-- this scales all task intervals deterministically
+tasks.rateMultiplier = tasks.rateMultiplier or 1.0
+
+-- Overdue Task logging
+local LOG_OVERDUE_TASKS = false
+
 tasks._justInitialized = false
 tasks._initState = "start"
 tasks._initMetadata = nil
@@ -161,6 +169,21 @@ function tasks.dumpSchedule()
       "info"
     )
   end
+
+
+-- Set a new global rate multiplier at runtime; rescales all task intervals deterministically.
+function tasks.setRateMultiplier(mult)
+    mult = tonumber(mult) or 1.0
+    if mult <= 0 then mult = 0.0001 end
+    tasks.rateMultiplier = mult
+    for _, task in ipairs(tasksList) do
+        local base = task.baseInterval or task.interval or 1
+        local j = task.jitter or 0
+        task.interval = (base * mult) + j
+    end
+    utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
+end
+
   utils.log("================================", "info")
 end
 
@@ -231,12 +254,17 @@ function tasks.findTasks()
 
                     -- add a small drift to de-synchronize fixed intervals
                     local baseInterval = tconfig.interval or 1
-                    local interval     = baseInterval + (math.random() * 0.1)
+                    local jitter = (math.random() * 0.1)
+                    local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
                     local offset = taskOffset(dir, interval)
 
                     local task = {
                         name = dir,
                         interval = interval,
+                    baseInterval = baseInterval,
+                    jitter = jitter,
+                        baseInterval = baseInterval,
+                        jitter = jitter,
                         script = tconfig.script,
                         linkrequired = tconfig.linkrequired or false,
                         connected = tconfig.connected or false,
@@ -444,7 +472,8 @@ function tasks.wakeup()
 
             if meta.interval >= 0 then
                 local baseInterval = meta.interval or 1
-                local interval = baseInterval + (math.random() * 0.1)
+                local jitter = (math.random() * 0.1)
+                local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
                 local offset = math.random() * interval
                 table.insert(tasksList, {
                     name = key,
@@ -487,7 +516,9 @@ function tasks.wakeup()
                     local elapsed = now - task.last_run
                     if elapsed + OVERDUE_TOL >= task.interval then
                         if (od or 0) > 0 then
-                            utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "debug")
+                            if LOG_OVERDUE_TASKS then
+                                utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "info")
+                            end
                         end
                         local fn = tasks[task.name].wakeup
                         if fn then
@@ -524,13 +555,17 @@ function tasks.wakeup()
                     local elapsed = now - task.last_run
                     if elapsed >= 2 * task.interval then
                         table.insert(mustRunTasks, task)
-                        utils.log(string.format("[scheduler] %s hard overdue by %.3fs",
-                          task.name, elapsed - 2*task.interval), "debug")
+                        if LOG_OVERDUE_TASKS then
+                            utils.log(string.format("[scheduler] %s hard overdue by %.3fs",
+                              task.name, elapsed - 2*task.interval), "info")
+                        end
                     elseif elapsed + OVERDUE_TOL >= task.interval then
                         table.insert(normalEligibleTasks, task)
                         if elapsed - task.interval > 0 then
-                            utils.log(string.format("[scheduler] %s overdue by %.3fs",
-                              task.name, elapsed - task.interval), "debug")
+                            if LOG_OVERDUE_TASKS then
+                                utils.log(string.format("[scheduler] %s overdue by %.3fs",
+                                  task.name, elapsed - task.interval), "info")
+                            end
                         end
                     end
                 end
@@ -679,6 +714,7 @@ end
 
 function tasks.init()
     -- initialize all mutable runtime state here (no heavy work yet)
+    tasks.rateMultiplier        = tasks.rateMultiplier or 1.0
     currentTelemetrySensor     = nil
     tasksPerCycle              = 1
     taskSchedulerPercentage    = 0.5

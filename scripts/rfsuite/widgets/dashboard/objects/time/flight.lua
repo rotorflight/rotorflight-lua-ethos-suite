@@ -31,6 +31,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local lastValue = 0
 
 -- Optional helper so outside code can force a rebuild of static cfg
 function render.invalidate(box)
@@ -95,7 +96,15 @@ end
 
 function render.wakeup(box)
     -- Compute dynamic value once per tick
-    local value = rfsuite.session.timer and rfsuite.session.timer.live
+    local value
+    if rfsuite.session and rfsuite.session.modelPreferences then
+        value = rfsuite.session.timer and rfsuite.session.timer.live or 0
+        lastValue = value
+    else
+        value = lastValue or 0
+    end
+
+    
     local displayValue
 
     if type(value) == "number" and value > 0 then
