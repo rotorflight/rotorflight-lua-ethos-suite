@@ -137,28 +137,37 @@ function render.paint(x, y, w, h, box)
     lcd.color(pitch >= 0 and skyColor or groundColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- 2. Overlay the opposite color using triangles to simulate horizon
-    local dominantColor = pitch >= 0 and skyColor or groundColor
-    local overlayColor  = pitch >= 0 and groundColor or skyColor
-    lcd.color(dominantColor)
-    lcd.drawFilledRectangle(x, y, w, h)
-
-    -- 3. Overlay two triangles in the other color to cover below/above horizon
-    lcd.color(overlayColor)
+    -- 3. Overlay the opposite half-plane using a normal to the rotated horizon
     local horizonY = cy + pitch * ppd
-    local rollRad = math.rad(roll)
+    local rollRad  = math.rad(roll)
 
-    -- Extend points far beyond width to ensure coverage
-    local xL, yL = rotate(cx - 2*w, horizonY, cx, horizonY, rollRad)
-    local xR, yR = rotate(cx + 2*w, horizonY, cx, horizonY, rollRad)
+    -- Two far apart points on the horizon line (rotate a long segment)
+    local xL, yL = rotate(cx - 3*w, horizonY, cx, horizonY, rollRad)
+    local xR, yR = rotate(cx + 3*w, horizonY, cx, horizonY, rollRad)
 
+    -- Normal pointing "down" from the horizon line (screen coords: y+ is down)
+    local nx, ny = -math.sin(rollRad), math.cos(rollRad)
+
+    -- Pick which side to paint as the overlay (opposite of the base color)
+    local overlayColor  = (pitch >= 0) and groundColor or skyColor
+    lcd.color(overlayColor)
+
+    -- Big extension to cover the whole box even at steep rolls
+    local BIG = 4 * math.max(w, h)
+    local sx, sy
     if pitch >= 0 then
-        lcd.drawFilledTriangle(xL, yL, xR, yR, cx - 2*w, y + h)
-        lcd.drawFilledTriangle(xR, yR, cx + 2*w, y + h, cx - 2*w, y + h)
+        sx, sy = nx*BIG, ny*BIG   -- ground side
     else
-        lcd.drawFilledTriangle(xL, yL, xR, yR, cx - 2*w, y)
-        lcd.drawFilledTriangle(xR, yR, cx + 2*w, y, cx - 2*w, y)
+        sx, sy = -nx*BIG, -ny*BIG -- sky side
     end
+    -- Build a quad for the chosen half-plane and draw as two triangles
+    local p1x, p1y = xL + sx, yL + sy
+    local p2x, p2y = xR + sx, yR + sy
+    local p3x, p3y = xR,      yR
+    local p4x, p4y = xL,      yL
+
+    lcd.drawFilledTriangle(p1x, p1y, p2x, p2y, p3x, p3y)
+    lcd.drawFilledTriangle(p1x, p1y, p3x, p3y, p4x, p4y)
 
     -- 4. Crosshair
     lcd.color(c.crosshaircolor)
@@ -266,6 +275,6 @@ function render.paint(x, y, w, h, box)
 end
 
 -- Update rate similar to original (fluid horizon)
-render.scheduler = 0.2
+render.scheduler = 0.01
 
 return render
