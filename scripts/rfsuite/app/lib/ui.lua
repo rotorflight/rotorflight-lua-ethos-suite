@@ -77,6 +77,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
+                    collectgarbage('collect')
                 end
             elseif app.triggers.closeProgressLoader and  app.triggers.closeProgressLoaderNoisProcessed then   -- an oddball for things where we dont want to check against isProcessed
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
@@ -87,6 +88,7 @@ function ui.progressDisplay(title, message, speed)
                     app.triggers.closeProgressLoader = false
                     app.dialogs.progressSpeed = false
                     app.triggers.closeProgressLoaderNoisProcessed= false
+                    collectgarbage('collect')
                 end
             end
 
@@ -113,6 +115,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.dialogs.progressSpeed = false
+                    collectgarbage('collect')
                 end
             end
 
@@ -170,6 +173,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay         = false
                     app.dialogs.saveWatchDog        = nil
                     app.dialogs.save:close()
+                    collectgarbage('collect')
                 end
             elseif tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
@@ -179,6 +183,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveProgressCounter = 0
                     app.triggers.closeSave          = false
                     app.triggers.isSaving           = false
+                    collectgarbage('collect')
                 end
             else
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
@@ -198,6 +203,7 @@ function ui.progressDisplaySave(message)
                 app.triggers.isSaving           = false
                 app.Page   = app.PageTmp
                 app.PageTmp = nil
+                collectgarbage('collect')
             end
         end
     })
@@ -420,6 +426,8 @@ function ui.openMainMenu()
     app.triggers.closeProgressLoader = true
 
     utils.reportMemoryUsage("app.openMainMenu", "end")
+
+    collectgarbage('collect')
 end
 
 -- Open a sub-section of the main menu.
@@ -572,6 +580,8 @@ function ui.openMainMenuSub(activesection)
     app.triggers.closeProgressLoader = true
 
     utils.reportMemoryUsage("app.openMainMenuSub", "end")
+
+    collectgarbage('collect')
 end
 
 --------------------------------------------------------------------------------
@@ -1460,6 +1470,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "end")
+
+    collectgarbage('collect')
 end
 
 -- Navigation buttons (Menu / Save / Reload / Tool / Help).
