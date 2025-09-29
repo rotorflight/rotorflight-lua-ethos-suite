@@ -261,8 +261,6 @@ function tasks.findTasks()
                     local task = {
                         name = dir,
                         interval = interval,
-                    baseInterval = baseInterval,
-                    jitter = jitter,
                         baseInterval = baseInterval,
                         jitter = jitter,
                         script = tconfig.script,

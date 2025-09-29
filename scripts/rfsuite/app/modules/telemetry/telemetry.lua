@@ -300,6 +300,7 @@ local function wakeup()
           end
           
           local data = API.data()
+          rfsuite.app.Page.mspData = data
 
           for _, value in pairs(data.parsed) do
             -- by default field is 'false' so only set true values
