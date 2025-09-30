@@ -1353,24 +1353,20 @@ function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, 
 end
 
 --------------------------------------------------------------------------------
--- Help caching
+-- Help loading
 --------------------------------------------------------------------------------
 
-ui._helpCache = ui._helpCache or {}
-
 local function getHelpData(section)
-    if ui._helpCache[section] == nil then
-        local helpPath = "app/modules/" .. section .. "/help.lua"
-        if utils.file_exists(helpPath) then
-            local ok, helpData = pcall(function()
-                return assert(rfsuite.compiler.loadfile(helpPath))()
-            end)
-            ui._helpCache[section] = (ok and type(helpData) == "table") and helpData or false
-        else
-            ui._helpCache[section] = false
+    local helpPath = "app/modules/" .. section .. "/help.lua"
+    if utils.file_exists(helpPath) then
+        local ok, helpData = pcall(function()
+            return assert(rfsuite.compiler.loadfile(helpPath))()
+        end)
+        if ok and type(helpData) == "table" then
+            return helpData
         end
     end
-    return ui._helpCache[section] or nil
+    return nil
 end
 
 --------------------------------------------------------------------------------
@@ -2014,6 +2010,7 @@ function ui.requestPage()
     end)
 
     API.read()
+    collectgarbage('step') 
   end
 
   processNextAPI()
@@ -2103,7 +2100,7 @@ function ui.saveSettings()
         end
 
         API.write()
-
+        collectgarbage('step') 
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
 
     end
