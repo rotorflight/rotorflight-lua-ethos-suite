@@ -1988,6 +1988,7 @@ function ui.requestPage()
       app.Page.apidata.retryCount[apiKey]         = 0
       state.currentIndex = state.currentIndex + 1
       tasks.callback.inSeconds(0.5, processNextAPI)
+      API = nil
     end)
 
     API.setErrorHandler(function(self, err)
@@ -1995,6 +1996,7 @@ function ui.requestPage()
       handled = true
       if not app or not app.Page or not app.Page.apidata then
         log("App is closing. Skipping API error handling.", "debug")
+        API = nil
         return
       end
       retryCount = retryCount + 1
@@ -2007,6 +2009,7 @@ function ui.requestPage()
         state.currentIndex = state.currentIndex + 1
         tasks.callback.inSeconds(0.5, processNextAPI)
       end
+      API = nil
     end)
 
     API.read()
@@ -2051,6 +2054,7 @@ function ui.saveSettings()
         local API = load_api(apiNAME)
         API.setErrorHandler(function(self, buf)
         app.triggers.saveFailed = true
+        API = nil
         end)
         API.setCompleteHandler(function(self, buf)
         completedRequests = completedRequests + 1
@@ -2061,6 +2065,7 @@ function ui.saveSettings()
             app.Page.apidata.apiState.isProcessing = false
             app.utils.settingsSaved()
         end
+        API = nil
         end)
 
         -- Build lookup maps (normal + bitmap)
