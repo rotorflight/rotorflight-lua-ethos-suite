@@ -37,8 +37,6 @@ local defaultData = {}
 local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 
-
--- >>> STATIC MSP callbacks (no upvalues that capture page/app) <<<
 local function processReplyStaticWrite(self, buf)
   -- mark write done without capturing handlers/page
   mspWriteComplete = true
@@ -56,7 +54,6 @@ local function errorHandlerStatic(self, buf)
     if err then err(self, buf) end
   end
 end
--- <<< END static MSP callbacks >>>
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID

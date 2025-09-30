@@ -72,7 +72,7 @@ local lastWriteUUID = nil
 -- weak keys/values so finished entries don't pin memory
 local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
 
--- ---- STATIC callbacks: NO upvalues captured ----
+
 local function processReplyStaticRead(self, buf)
   rfsuite.tasks.msp.api.parseMSPData(buf, self.structure, nil, nil, function(result)
     mspData = result
