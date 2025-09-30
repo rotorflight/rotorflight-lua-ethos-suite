@@ -48,7 +48,8 @@ local rpm = rpmSensor:value()
 Use MSP to query the flight controller:
 
 ```lua
-local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+local load_api = rfsuite.tasks.msp.api().load
+local API = load_api("GOVERNOR_CONFIG")
 API.setCompleteHandler(function(self, buf)
   local mode = API.readValue("gov_mode")
   -- process mode
@@ -111,6 +112,7 @@ end
 local function wakeup(widget)
     -- Handle the main loop
     local currentTime = os.clock()
+    local load_api = rfsuite.tasks.msp.api().load
 
     if currentTime - lastPrintTime >= printInterval then
         if rfsuite and rfsuite.tasks.active() then
@@ -134,7 +136,7 @@ local function wakeup(widget)
 
             -- MSP API - synchronous check example
             if apiValue == nil then
-                local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+                local API = load_api("GOVERNOR_CONFIG")
                 API.setCompleteHandler(function(self, buf)
                     local governorMode = API.readValue("gov_mode")
                     rfsuite.utils.log("API Value: " .. governorMode, "info")

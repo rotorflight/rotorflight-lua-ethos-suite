@@ -89,7 +89,8 @@ local function openPage(pidx, title, script)
 
     if ESC.mspapi ~= nil then
         -- we are using the api so get values from that!
-        local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api(ESC.mspapi)
         mspSignature = API.mspSignature
         mspHeaderBytes = API.mspHeaderBytes
         simulatorResponse = API.simulatorResponse or {0}

@@ -40,7 +40,7 @@ function developer.wakeup()
     --[[
     -- This is an example of how to use the api library to query the governor mode
         rfsuite.utils.log("API Debug Task: GOVERNOR_CONFIG", "info")
-    local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+    local API = rfsuite.tasks.msp.api().load("GOVERNOR_CONFIG")
     API.setCompleteHandler(function(self, buf)
         local governorMode = API.readValue("gov_mode")
         rfsuite.utils.log("Governor mode: " .. governorMode, "info")
@@ -52,7 +52,7 @@ function developer.wakeup()
 
     --[[
     rfsuite.utils.log("API Debug Task: TELEMETRY_CONFIG", "info")
-    local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+    local API = rfsuite.tasks.msp.api().load("TELEMETRY_CONFIG")
     API.setCompleteHandler(function(self, buf)
     end)
     API.setUUID("123e4567-e89b-12d3-a456-426614174000")
@@ -62,7 +62,8 @@ function developer.wakeup()
     -- Example of reading a value from an INI file using the API
     if rfsuite.session.mcu_id and rfsuite.config.preferences then
         local iniName = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
-        local api = rfsuite.tasks.ini.api.load("api_template")
+        local load_api = rfsuite.tasks.msp.api().load
+        local api = load_api("api_template")
         api.setIniFile(iniName)
         local pitch = api.readValue("pitch")
 
@@ -73,7 +74,8 @@ function developer.wakeup()
     -- Example of reading a value from an INI file using the API
     if rfsuite.session.mcu_id and rfsuite.config.preferences then
         local iniName = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
-        local api = rfsuite.tasks.ini.api.load("api_template")
+        local load_api = rfsuite.tasks.msp.api().load
+        local api = load_api("api_template")
         api.setIniFile(iniName)
 
         -- stage value for later write

@@ -388,7 +388,8 @@ function msp.wakeup()
             end
 
             local fields = api_meta.fields
-            local API = tasks.msp.api.load(api_name)
+            local load_api = rfsuite.tasks.msp.api().load
+            local API = load_api(api_name)
             API.setCompleteHandler(function(self, buf)
                 for field_key, meta in pairs(fields) do
                     local value = API.readValue(field_key)

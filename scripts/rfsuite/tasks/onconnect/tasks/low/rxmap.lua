@@ -30,7 +30,8 @@ function rxmap.wakeup()
 
     if not rfsuite.utils.rxmapReady() and mspCallMade == false then
         mspCallMade = true
-        local API = rfsuite.tasks.msp.api.load("RX_MAP")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("RX_MAP")
         API.setCompleteHandler(function(self, buf)
 
             local aileron = API.readValue("aileron")

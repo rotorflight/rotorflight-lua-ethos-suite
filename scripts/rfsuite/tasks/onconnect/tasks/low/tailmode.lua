@@ -26,10 +26,12 @@ function tailmode.wakeup()
     if rfsuite.session.apiVersion == nil then return end    
 
     if rfsuite.session.mspBusy then return end
+    
 
     if (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil)  and mspCallMade == false then
         mspCallMade = true
-        local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("MIXER_CONFIG")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
             rfsuite.session.swashMode = API.readValue("swash_type")

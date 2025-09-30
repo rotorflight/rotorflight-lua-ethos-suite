@@ -29,7 +29,8 @@ function governor.wakeup()
 
     if (rfsuite.session.governorMode == nil and mspCallMade == false) then
         mspCallMade = true
-        local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local governorMode = API.readValue("gov_mode")
             if governorMode then

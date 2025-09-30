@@ -32,7 +32,8 @@ function uid.wakeup()
 
         mspCallMade = true
 
-        local API = rfsuite.tasks.msp.api.load("UID")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("UID")
         API.setCompleteHandler(function(self, buf)
             local U_ID_0 = API.readValue("U_ID_0")
             local U_ID_1 = API.readValue("U_ID_1")

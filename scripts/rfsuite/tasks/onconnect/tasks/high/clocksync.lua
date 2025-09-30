@@ -27,7 +27,8 @@ function clocksync.wakeup()
 
     if rfsuite.session.clockSet == nil then
 
-        local API = rfsuite.tasks.msp.api.load("RTC", 1)
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("RTC", 1)
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.clockSet = true
             rfsuite.utils.log("Sync clock: " .. os.date("%c"), "info")

@@ -30,7 +30,8 @@ function battery.wakeup()
     if (rfsuite.session.batteryConfig == nil) and mspCallMade == false then
         mspCallMade = true
 
-        local API = rfsuite.tasks.msp.api.load("BATTERY_CONFIG")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("BATTERY_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local batteryCapacity = API.readValue("batteryCapacity")
             local batteryCellCount = API.readValue("batteryCellCount")

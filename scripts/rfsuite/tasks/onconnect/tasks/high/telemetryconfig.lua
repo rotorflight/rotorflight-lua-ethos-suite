@@ -29,7 +29,8 @@ function telemetryconfig.wakeup()
 
     if (rfsuite.session.telemetryConfig == nil) and (mspCallMade == false) then
         mspCallMade = true
-        local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local data = API.data().parsed
 

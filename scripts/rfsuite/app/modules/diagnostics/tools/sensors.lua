@@ -94,7 +94,8 @@ end
 
 local function rebootFC()
 
-    local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    local load_api = rfsuite.tasks.msp.api().load
+    local RAPI = load_api("REBOOT")
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC","info")
@@ -107,7 +108,8 @@ local function rebootFC()
 end
 
 local function applySettings()
-    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local load_api = rfsuite.tasks.msp.api().load
+    local EAPI = load_api("EEPROM_WRITE")
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM","info")
@@ -144,8 +146,8 @@ local function runRepair(data)
         end    
     end       
 
-
-    local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+    local load_api = rfsuite.tasks.msp.api().load
+    local WRITEAPI = load_api("TELEMETRY_CONFIG")
     WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     WRITEAPI.setCompleteHandler(function(self, buf)
         applySettings()
@@ -249,7 +251,7 @@ local function wakeup()
         progressLoader:closeAllowed(false)
         progressLoaderCounter = 0
 
-        API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        API = rfsuite.tasks.msp.api().load("TELEMETRY_CONFIG")
         API.setUUID("550e8400-e29b-41d4-a716-446655440000")
         API.setCompleteHandler(function(self, buf)
             local data = API.data()

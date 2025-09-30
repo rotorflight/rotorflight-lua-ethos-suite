@@ -53,7 +53,8 @@ local function onToolMenu(self)
 end
 
 local function applySettings()
-    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local load_api = rfsuite.tasks.msp.api().load
+    local EAPI = load_api("EEPROM_WRITE")
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM","info")

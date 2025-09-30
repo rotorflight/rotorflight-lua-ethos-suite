@@ -1945,7 +1945,8 @@ function ui.requestPage()
       return
     end
 
-    local API = tasks.msp.api.load(v)
+    local load_api = rfsuite.tasks.msp.api().load
+    local API = load_api(v)
 
     if app and app.Page and app.Page.apidata then app.Page.apidata.retryCount = app.Page.apidata.retryCount or {} end
 
@@ -2049,7 +2050,8 @@ function ui.saveSettings()
     local payloadData      = values[apiNAME]
     local payloadStructure = mspapi.structure[apiNAME]
 
-    local API = tasks.msp.api.load(apiNAME)
+    local load_api = rfsuite.tasks.msp.api().load
+    local API = load_api(apiNAME)
     API.setErrorHandler(function(self, buf)
       app.triggers.saveFailed = true
     end)

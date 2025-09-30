@@ -26,7 +26,8 @@ function apiversion.wakeup()
 
         mspCallMade = true
 
-        local API = rfsuite.tasks.msp.api.load("API_VERSION")
+        local load_api = rfsuite.tasks.msp.api().load
+        local API = load_api("API_VERSION")
         API.setCompleteHandler(function(self, buf)
             local version = API.readVersion()
 
