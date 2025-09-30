@@ -43,6 +43,7 @@ function craftname.wakeup()
             else
                 rfsuite.session.craftName = model.name()    
             end
+            API = nil
         end)
         API.setUUID("37163617-1486-4886-8b81-6a1dd6d7edd1")
         API.read()

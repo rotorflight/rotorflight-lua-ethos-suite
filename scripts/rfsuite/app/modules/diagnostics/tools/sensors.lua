@@ -101,7 +101,7 @@ local function rebootFC()
         rfsuite.utils.log("Rebooting FC","info")
 
         rfsuite.utils.onReboot()
-
+        RAPI = nil
     end)
     RAPI.write()
     
@@ -114,6 +114,7 @@ local function applySettings()
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM","info")
         rebootFC()
+        EAPI = nil
     end)
     EAPI.write()
 
@@ -151,6 +152,7 @@ local function runRepair(data)
     WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     WRITEAPI.setCompleteHandler(function(self, buf)
         applySettings()
+        WRITEAPI = nil
     end)
 
     local buffer = data['buffer']  -- Existing buffer
@@ -258,6 +260,7 @@ local function wakeup()
             if data['parsed'] then
                 runRepair(data)
             end
+            API = nil
         end)
         API.read()
         repairSensors = false

@@ -55,7 +55,7 @@ function uid.wakeup()
                 rfsuite.session.mcu_id = uid
             end
 
-
+            API = nil
         end)
         API.setUUID("a3e5f2d7-9c4b-4e6a-b8f1-3d7e2c9a1f45")
         API.read()  

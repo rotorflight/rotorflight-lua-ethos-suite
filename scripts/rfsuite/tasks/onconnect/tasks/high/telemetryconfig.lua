@@ -56,6 +56,7 @@ function telemetryconfig.wakeup()
             if rfsuite.utils and rfsuite.utils.log then
                 rfsuite.utils.log("Updated telemetry sensors: " .. slotsStr, "info")
             end
+            API = nil
         end)
         API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")
         API.read()

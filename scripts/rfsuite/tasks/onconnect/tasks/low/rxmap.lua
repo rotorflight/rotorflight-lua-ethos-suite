@@ -64,7 +64,7 @@ function rxmap.wakeup()
                 ", Aux3: " .. aux3,
                 "info"
             )
-
+            API = nil
         end)
         API.setUUID("b3e5c8a4-5f3e-4e2c-9f7d-2e7a1c4b8f21")
         API.read()

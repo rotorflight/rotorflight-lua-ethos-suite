@@ -62,6 +62,7 @@ function battery.wakeup()
             rfsuite.utils.log("LVC Percentage: " .. lvcPercentage .. "%","info")
             rfsuite.utils.log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%","info")
             rfsuite.utils.log("Battery Config Complete","info")
+            API = nil
         end)
         API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
         API.read()

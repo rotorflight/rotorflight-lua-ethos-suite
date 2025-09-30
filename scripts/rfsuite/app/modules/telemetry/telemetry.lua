@@ -255,6 +255,7 @@ local function rebootFC()
   RAPI.setCompleteHandler(function(self)
     rfsuite.utils.log("Rebooting FC", "info")
     rfsuite.utils.onReboot()
+    RAPI = nil
   end)
   RAPI.write()
 end
@@ -266,6 +267,7 @@ local function applySettings()
   EAPI.setCompleteHandler(function(self)
     rfsuite.utils.log("Writing to EEPROM", "info")
     rebootFC()
+    EAPI = nil
   end)
   EAPI.write()
 end
@@ -314,6 +316,7 @@ local function wakeup()
         end
         rfsuite.app.triggers.closeProgressLoader = true
       end
+      API = nil
     end)
     API.setUUID("a23e4567-e89b-12d3-a456-426614174001" )
     API.read()
@@ -339,6 +342,7 @@ if triggerSave == true then
   WRITEAPI.setCompleteHandler(function(self, buf)
     rfsuite.utils.log("Telemetry config written, now writing to EEPROM","info")
     applySettings()
+    WRITEAPI = nil
   end
   )
   WRITEAPI.setErrorHandler(function(self, buf)

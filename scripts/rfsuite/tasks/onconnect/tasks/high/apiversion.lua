@@ -36,6 +36,7 @@ function apiversion.wakeup()
                 if not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionString) then
                     rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "info")
                     rfsuite.session.apiVersionInvalid = true
+                    API = nil
                     return
                 end
             end

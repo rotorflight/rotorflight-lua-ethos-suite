@@ -45,6 +45,7 @@ function developer.wakeup()
         local governorMode = API.readValue("gov_mode")
         rfsuite.utils.log("Governor mode: " .. governorMode, "info")
         rfsuite.session.governorMode = governorMode
+        API = nil
     end)
     API.setUUID("123e4567-e89b-12d3-a456-426614174000")
     API.read()

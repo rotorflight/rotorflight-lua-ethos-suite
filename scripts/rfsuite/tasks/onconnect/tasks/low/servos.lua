@@ -37,6 +37,7 @@ function servos.wakeup()
             if rfsuite.session.servoCount then
                 rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info")
             end    
+            API = nil
         end)
         API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
         API.read()
@@ -52,6 +53,7 @@ function servos.wakeup()
                 end
             end
             if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
+            API = nil
         end)
         API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
         API.read()

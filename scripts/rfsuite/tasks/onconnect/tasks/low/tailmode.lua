@@ -39,6 +39,7 @@ function tailmode.wakeup()
                 rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode, "info")
                 rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode, "info")
             end
+            API = nil
         end)
         API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
         API.read()  

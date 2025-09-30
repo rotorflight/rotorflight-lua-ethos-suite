@@ -53,6 +53,7 @@ local API = load_api("GOVERNOR_CONFIG")
 API.setCompleteHandler(function(self, buf)
   local mode = API.readValue("gov_mode")
   -- process mode
+  API = nil
 end)
 API.setUUID("550e8400-e29b-41d4-a716-446655440000")
 API.read()
@@ -141,6 +142,7 @@ local function wakeup(widget)
                     local governorMode = API.readValue("gov_mode")
                     rfsuite.utils.log("API Value: " .. governorMode, "info")
                     apiValue = governorMode
+                    API = nil
                 end)
                 API.setUUID("550e8400-e29b-41d4-a716-446655440000")
                 API.read()

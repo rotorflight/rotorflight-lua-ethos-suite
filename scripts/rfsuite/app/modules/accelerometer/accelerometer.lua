@@ -59,6 +59,7 @@ local function applySettings()
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM","info")
         calibrateComplete = true
+        EAPI = nil
     end)
     EAPI.write()
 
