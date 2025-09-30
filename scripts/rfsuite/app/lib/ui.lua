@@ -1932,10 +1932,9 @@ function ui.requestPage()
       return
     end
 
-    local retryCount = app.Page.apidata.retryCount[apiKey] or 0   
-
     local v      = apiList[state.currentIndex]
     local apiKey = type(v) == "string" and v or v.name
+    local retryCount = app.Page.apidata.retryCount and app.Page.apidata.retryCount[apiKey] or 0   
     if not apiKey then
       log("API key is missing for index " .. tostring(state.currentIndex), "warning")
       state.currentIndex = state.currentIndex + 1
