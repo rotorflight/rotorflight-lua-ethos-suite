@@ -14,6 +14,8 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
+local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
+
 --[[
  * API Reference Guide
  * -------------------
@@ -43,7 +45,7 @@ local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the 
 local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.tasks.msp.api.createHandlers()
+local handlers = core.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -56,7 +58,7 @@ local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
 
 
 local function processReplyStaticRead(self, buf)
-  rfsuite.tasks.msp.api.parseMSPData(buf, self.structure, nil, nil, function(result)
+  core.parseMSPData(buf, self.structure, nil, nil, function(result)
     mspData = result
     if #buf >= (self.minBytes or 0) then
       local getComplete = self.getCompleteHandler

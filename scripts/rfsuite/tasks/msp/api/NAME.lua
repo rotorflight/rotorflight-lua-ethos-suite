@@ -14,6 +14,8 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
+local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
+
 -- Constants for MSP Commands
 local API_NAME = "NAME" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 10 -- Command identifier 
@@ -27,13 +29,13 @@ local MSP_API_STRUCTURE_READ_DATA = {
 }
 
 -- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 -- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+local MSP_API_SIMULATOR_RESPONSE = core.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -42,7 +44,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.tasks.msp.api.createHandlers()
+local handlers = core.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -85,7 +87,7 @@ local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
 
 
 local function processReplyStaticRead(self, buf)
-  rfsuite.tasks.msp.api.parseMSPData(buf, self.structure, nil, nil, function(result)
+  core.parseMSPData(buf, self.structure, nil, nil, function(result)
     mspData = result
     if #buf >= (self.minBytes or 0) then
       local getComplete = self.getCompleteHandler
@@ -149,7 +151,7 @@ local function write(suppliedPayload)
 
   -- Build payload eagerly (no capture)
   local payload = suppliedPayload or
-    rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
+    core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
   -- Choose a UUID for this write; if you already set MSP_API_UUID elsewhere, we’ll reuse it
   local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
