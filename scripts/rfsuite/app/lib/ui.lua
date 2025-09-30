@@ -1864,7 +1864,6 @@ function ui.requestPage()
   local app = rfsuite.app
   local log = utils.log
 
-
   if not app.Page.apidata then return end
   if not app.Page.apidata.api and not app.Page.apidata.formdata then
     log("app.Page.apidata.api did not pass consistancy checks", "debug")
@@ -1914,6 +1913,8 @@ function ui.requestPage()
   end
 
   local function processNextAPI()
+    local load_api = rfsuite.tasks.msp.api().load
+
     if not app or not app.Page or not app.Page.apidata then
       log("App is closing. Stopping processNextAPI.", "debug")
       return
@@ -1945,7 +1946,6 @@ function ui.requestPage()
       return
     end
 
-    local load_api = rfsuite.tasks.msp.api().load
     local API = load_api(v)
 
     if app and app.Page and app.Page.apidata then app.Page.apidata.retryCount = app.Page.apidata.retryCount or {} end
@@ -2022,91 +2022,91 @@ end
 -- Save current page's settings via MSP API(s)
 function ui.saveSettings()
 
- local app = rfsuite.app
- local log = utils.log
-
-  if app.pageState == app.pageStatus.saving then return end
-
-  app.pageState = app.pageStatus.saving
-  app.saveTS    = os.clock()
-
-  log("Saving data", "debug")
-
-  local mspapi  = app.Page.apidata
-  local apiList = mspapi.api
-  local values  = mspapi.values
-
-  local totalRequests    = #apiList
-  local completedRequests= 0
-
-  app.Page.apidata.apiState.isProcessing = true
-
-  if app.Page.preSave then app.Page.preSave(app.Page) end
-
-  for apiID, apiNAME in ipairs(apiList) do
-
-    utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "start")
-
-    local payloadData      = values[apiNAME]
-    local payloadStructure = mspapi.structure[apiNAME]
-
+    local app = rfsuite.app
+    local log = utils.log
     local load_api = rfsuite.tasks.msp.api().load
-    local API = load_api(apiNAME)
-    API.setErrorHandler(function(self, buf)
-      app.triggers.saveFailed = true
-    end)
-    API.setCompleteHandler(function(self, buf)
-      completedRequests = completedRequests + 1
-      log("API " .. apiNAME .. " write complete", "debug")
-      if completedRequests == totalRequests then
-        log("All API requests have been completed!", "debug")
-        if app.Page.postSave then app.Page.postSave(app.Page) end
-           app.Page.apidata.apiState.isProcessing = false
-          app.utils.settingsSaved()
-      end
-    end)
 
-    -- Build lookup maps (normal + bitmap)
-    local fieldMap       = {}
-    local fieldMapBitmap = {}
-    for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
-      if not f.bitmap then
-        if f.mspapi == apiID then fieldMap[f.apikey] = fidx end
-      else
-        local p1, p2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
-        if not fieldMapBitmap[p1] then fieldMapBitmap[p1] = {} end
-        fieldMapBitmap[p1][f.bitmap] = fidx
-      end
-    end
+    if app.pageState == app.pageStatus.saving then return end
 
-    -- Inject values into payload
-    for k, v in pairs(payloadData) do
-      local fieldIndex = fieldMap[k]
-      if fieldIndex then
-        payloadData[k] = app.Page.fields[fieldIndex].value
-      elseif fieldMapBitmap[k] then
-        local originalValue = tonumber(v) or 0
-        local newValue = originalValue
-        for bit, idx in pairs(fieldMapBitmap[k]) do
-          local fieldVal = math.floor(tonumber(app.Page.fields[idx].value) or 0)
-          local mask = 1 << (bit)
-          if fieldVal ~= 0 then newValue = newValue | mask else newValue = newValue & (~mask) end
+    app.pageState = app.pageStatus.saving
+    app.saveTS    = os.clock()
+
+    log("Saving data", "debug")
+
+    local mspapi  = app.Page.apidata
+    local apiList = mspapi.api
+    local values  = mspapi.values
+
+    local totalRequests    = #apiList
+    local completedRequests= 0
+
+    app.Page.apidata.apiState.isProcessing = true
+
+    if app.Page.preSave then app.Page.preSave(app.Page) end
+
+    for apiID, apiNAME in ipairs(apiList) do
+
+        utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "start")
+
+        local payloadData      = values[apiNAME]
+        local payloadStructure = mspapi.structure[apiNAME]
+
+        local API = load_api(apiNAME)
+        API.setErrorHandler(function(self, buf)
+        app.triggers.saveFailed = true
+        end)
+        API.setCompleteHandler(function(self, buf)
+        completedRequests = completedRequests + 1
+        log("API " .. apiNAME .. " write complete", "debug")
+        if completedRequests == totalRequests then
+            log("All API requests have been completed!", "debug")
+            if app.Page.postSave then app.Page.postSave(app.Page) end
+            app.Page.apidata.apiState.isProcessing = false
+            app.utils.settingsSaved()
         end
-        payloadData[k] = newValue
-      end
+        end)
+
+        -- Build lookup maps (normal + bitmap)
+        local fieldMap       = {}
+        local fieldMapBitmap = {}
+        for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
+        if not f.bitmap then
+            if f.mspapi == apiID then fieldMap[f.apikey] = fidx end
+        else
+            local p1, p2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
+            if not fieldMapBitmap[p1] then fieldMapBitmap[p1] = {} end
+            fieldMapBitmap[p1][f.bitmap] = fidx
+        end
+        end
+
+        -- Inject values into payload
+        for k, v in pairs(payloadData) do
+        local fieldIndex = fieldMap[k]
+        if fieldIndex then
+            payloadData[k] = app.Page.fields[fieldIndex].value
+        elseif fieldMapBitmap[k] then
+            local originalValue = tonumber(v) or 0
+            local newValue = originalValue
+            for bit, idx in pairs(fieldMapBitmap[k]) do
+            local fieldVal = math.floor(tonumber(app.Page.fields[idx].value) or 0)
+            local mask = 1 << (bit)
+            if fieldVal ~= 0 then newValue = newValue | mask else newValue = newValue & (~mask) end
+            end
+            payloadData[k] = newValue
+        end
+        end
+
+        -- Send payload
+        for k, v in pairs(payloadData) do
+        log("Set value for " .. k .. " to " .. v, "debug")
+        API.setValue(k, v)
+        end
+
+        API.write()
+
+        utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
+
     end
-
-    -- Send payload
-    for k, v in pairs(payloadData) do
-      log("Set value for " .. k .. " to " .. v, "debug")
-      API.setValue(k, v)
-    end
-
-    API.write()
-
-    utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
-
-  end
 
 
 end
