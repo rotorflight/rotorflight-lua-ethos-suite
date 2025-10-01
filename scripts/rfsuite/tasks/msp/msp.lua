@@ -56,12 +56,7 @@ msp.mspQueue.copyOnAdd    = false  -- keep RAM/GC low (set true for strict immut
 msp.mspQueue.timeout      = 2.0    -- per-message timeout (override if you want)
 
 msp.mspHelper = assert(rfsuite.compiler.loadfile("tasks/msp/mspHelper.lua"))()
-
-
-function msp.common()  
-  local chunk = assert(rfsuite.compiler.loadfile("tasks/msp/common.lua"))
-  return chunk()
-end
+msp.common = assert(rfsuite.compiler.loadfile("tasks/msp/common.lua"))()
 
 function msp.api()  
   local chunk = assert(rfsuite.compiler.loadfile("tasks/msp/api.lua"))
