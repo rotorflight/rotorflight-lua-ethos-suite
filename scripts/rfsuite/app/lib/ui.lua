@@ -623,7 +623,7 @@ function ui.fieldBoolean(i)
     -- Label / inline handling
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -688,7 +688,7 @@ function ui.fieldChoice(i)
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -738,7 +738,7 @@ function ui.fieldSlider(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -818,7 +818,7 @@ function ui.fieldNumber(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -915,7 +915,7 @@ function ui.fieldSource(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -984,7 +984,7 @@ function ui.fieldSensor(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -1053,7 +1053,7 @@ function ui.fieldColor(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -1126,7 +1126,7 @@ function ui.fieldSwitch(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -1197,7 +1197,7 @@ function ui.fieldStaticText(i)
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
@@ -1241,7 +1241,7 @@ function ui.fieldText(i)
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f, page)
+        local p = app.utils.getInlinePositions(f)
         posText, posField = p.posText, p.posField
         form.addStaticText(formLines[app.formLineCnt], posText, f.t)
     else
