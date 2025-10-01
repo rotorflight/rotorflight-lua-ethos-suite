@@ -218,7 +218,7 @@ end
     @return (table|nil) - Returns a table with parsed data, buffer, structure, position map, processed data, other data, and received bytes count in blocking mode.
                           Returns nil in chunked mode.
 --]]
-function core.parseMSPData(buf, structure, processed, other, options)
+function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
     if type(options) == "function" then
         options = {chunked = true, completionCallback = options}
     elseif type(options) ~= "table" then
@@ -273,7 +273,7 @@ function core.parseMSPData(buf, structure, processed, other, options)
                 ::continue::
             end
 
-            utils.log(string.format("Chunk processed - fields %d to %d", 
+            utils.log("[" .. API_NAME .. "] " .. string.format("Chunk processed - fields %d to %d", 
                 state.index - processedFields, state.index - 1), "debug")
 
             if state.index > #structure then
@@ -288,7 +288,7 @@ function core.parseMSPData(buf, structure, processed, other, options)
                         receivedBytesCount = math.floor(buf.offset - 1)
                     })
                 else
-                    utils.log("Completion callback not provided or buffer offset not available", "info")
+                    utils.log("[" .. API_NAME .. "] Completion callback not provided or buffer offset not available", "info")
                     completionCallback({
                         parsed = {state.parsedData},
                         buffer = {},
@@ -341,9 +341,9 @@ function core.parseMSPData(buf, structure, processed, other, options)
 
         if buf.offset <= #buf then
             local extraBytes = #buf - (buf.offset - 1)
-            utils.log("Unused bytes in buffer (" .. extraBytes .. " extra bytes)", "debug")
+            utils.log("[" .. API_NAME .. "] Unused bytes in buffer (" .. extraBytes .. " extra bytes)", "debug")
         elseif buf.offset > #buf + 1 then
-            utils.log("Offset exceeded buffer length (Offset: " .. buf.offset .. ", Buffer: " .. #buf .. ")", "debug")
+            utils.log("[" .. API_NAME .. "] Offset exceeded buffer length (Offset: " .. buf.offset .. ", Buffer: " .. #buf .. ")", "debug")
         end
 
         return {

@@ -87,7 +87,7 @@ local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
 
 
 local function processReplyStaticRead(self, buf)
-  core.parseMSPData(buf, self.structure, nil, nil, function(result)
+    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
     mspData = result
     if #buf >= (self.minBytes or 0) then
       local getComplete = self.getCompleteHandler
@@ -121,26 +121,26 @@ end
 
 -- Function to initiate MSP read operation
 local function read()
-  if MSP_API_CMD_READ == nil then
-    rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-    return
-  end
-
-  local message = {
-    command           = MSP_API_CMD_READ,
-    structure         = MSP_API_STRUCTURE_READ,   -- add this
-    minBytes          = MSP_MIN_BYTES,            -- and this
-    processReply      = processReplyStaticRead,
-    errorHandler      = errorHandlerStatic,
-    simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-    uuid              = MSP_API_UUID,
-    timeout           = MSP_API_MSG_TIMEOUT,
-    getCompleteHandler = handlers.getCompleteHandler,
-    getErrorHandler    = handlers.getErrorHandler,
-    -- optional: place to stash parsed data if you want it here:
-    mspData           = nil,
-  }
-  rfsuite.tasks.msp.mspQueue:add(message)
+    local message = {
+        command = MSP_API_CMD_READ, -- Specify the MSP command
+        processReply = function(self, buf)
+            -- Parse the MSP data using the defined structure
+            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            if #buf >= 0 then  -- this is a odd one in that we dont know how many bytes we will get!
+                local completeHandler = handlers.getCompleteHandler()
+                if completeHandler then completeHandler(self, buf) end
+            end
+        end,
+        errorHandler = function(self, buf)
+            local errorHandler = handlers.getErrorHandler()
+            if errorHandler then errorHandler(self, buf) end
+        end,
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
+    }
+    -- Add the message to the processing queue
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)

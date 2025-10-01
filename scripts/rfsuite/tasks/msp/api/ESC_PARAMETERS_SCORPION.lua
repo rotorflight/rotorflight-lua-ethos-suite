@@ -114,7 +114,7 @@ local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
 
 
 local function processReplyStaticRead(self, buf)
-  core.parseMSPData(buf, self.structure, nil, nil, function(result)
+  core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
     mspData = result
     if #buf >= (self.minBytes or 0) then
       local getComplete = self.getCompleteHandler
