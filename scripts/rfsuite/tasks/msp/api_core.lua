@@ -346,7 +346,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
             utils.log("[" .. API_NAME .. "] Offset exceeded buffer length (Offset: " .. buf.offset .. ", Buffer: " .. #buf .. ")", "debug")
         end
 
-        return {
+        completionCallback({
             parsed = parsedData,
             buffer = buf,
             structure = structure,
@@ -354,7 +354,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
             processed = processed,
             other = other,
             receivedBytesCount = math.floor(buf.offset - 1)
-        }
+        })
     end
 end
 
