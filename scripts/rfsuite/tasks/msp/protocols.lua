@@ -82,7 +82,7 @@ end
 ]]
 function protocol.getTransports()
     local transport = {}
-    for i, v in pairs(supportedProtocols) do transport[i] = "tasks/msp/" .. v.mspTransport end
+    for i, v in pairs(supportedProtocols) do transport[i] = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/" .. v.mspTransport end
     return transport
 end
 

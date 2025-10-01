@@ -456,47 +456,15 @@ function tasks.wakeup()
         local key = tasks._initKeys[tasks._initIndex]
         if key then
             local meta = tasks._initMetadata[key]
-            if meta.init then
-                local initFn, err = compiler(meta.init)
-                if initFn then
-                    pcall(initFn)
-                else
-                    utils.log("Failed to load init for " .. key .. ": " .. (err or "unknown error"), "info")
-                end
-            end
-            local script = "tasks/" .. key .. "/" .. meta.script
-            local module = assert(compiler(script))(config) -- assumes global 'config'
-            tasks[key] = module
-
-            if meta.interval >= 0 then
-                local baseInterval = meta.interval or 1
-                local jitter = (math.random() * 0.1)
-                local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
-                local offset = math.random() * interval
-                table.insert(tasksList, {
-                    name = key,
-                    interval = interval,
-                    script = meta.script,
-                    spreadschedule = meta.spreadschedule,
-                    linkrequired = meta.linkrequired or false,
-                    connected = meta.connected or false,
-                    simulatoronly = meta.simulatoronly or false,
-                    last_run = os.clock() - offset,
-                    -- profiling fields
-                    duration = 0,
-                    totalDuration = 0,
-                    runs = 0,
-                    maxDuration = 0
-                })
-            end
-
+            -- Reuse unified loader (handles init side-effects, module creation, and scheduling)
+            tasks.load(key, meta)
             tasks._initIndex = tasks._initIndex + 1
             return
         else
-            tasks._initState = nil
-            tasks._initMetadata = nil
-            tasks._initKeys = nil
-            tasks._initIndex = 1
+            tasks._initState   = nil
+            tasks._initMetadata= nil
+            tasks._initKeys    = nil
+            tasks._initIndex   = 1
             utils.log("All tasks initialized.", "info")
             return
         end
@@ -762,5 +730,134 @@ end
 function tasks.write()
     -- print("onWrite:")
 end
+
+-- Unload a single task by name (e.g. "msp")
+function tasks.unload(name)
+  -- run task-specific reset/cleanup if present
+  local mod = tasks[name]
+  if mod and mod.reset then
+    pcall(mod.reset)  -- don't let errors stop us
+  end
+
+  -- MSP-specific: clear its queue if present
+  if name == "msp" then
+    local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if q and q.clear then pcall(function() q:clear() end) end  -- same queue used elsewhere
+  end
+
+  -- remove from scheduler list
+  for i, t in ipairs(tasksList) do
+    if t.name == name then
+      table.remove(tasksList, i)
+      break
+    end
+  end
+
+  -- drop module from memory
+  tasks[name] = nil
+  utils.log(string.format("[scheduler] Unloaded task '%s'", tostring(name)), "info")
+  return true
+end
+
+-- Load a single task (re-creates module + optional schedule entry)
+function tasks.load(name, meta)
+  -- if metadata wasn't provided, read it via init.lua
+  if not meta then
+    local initPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/init.lua"
+    local initFn, err = compiler(initPath)
+    if not initFn then
+      utils.log("Failed to load init for " .. name .. ": " .. tostring(err), "info")
+      return false
+    end
+    local m = initFn()
+    if type(m) ~= "table" or not m.script then
+      utils.log("Invalid config in " .. initPath, "info")
+      return false
+    end
+    meta = m
+    meta.init = initPath
+  else
+    -- if metadata includes an init path, run it (side-effects) just like bootstrap did
+    if meta.init then
+      local initFn, err = compiler(meta.init)
+      if initFn then pcall(initFn) else utils.log("Failed to run init for " .. name .. ": " .. (err or "unknown"), "info") end
+    end
+  end
+
+  -- compile module
+  local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/" .. meta.script
+  local fn, loadErr = compiler(scriptPath)
+  if not fn then
+    utils.log("Failed to load task script " .. scriptPath .. ": " .. tostring(loadErr), "info")
+    return false
+  end
+
+  -- instantiate module (assumes global 'config')
+  tasks[name] = fn(config)
+
+  -- if meta.interval < 0, load the module but do not schedule it (parity with bootstrap)
+  local baseInterval = tonumber(meta.interval or 1)
+  if baseInterval and baseInterval < 0 then
+    utils.log(string.format("[scheduler] Loaded task '%s' (no schedule; interval < 0)", name), "info")
+    return true
+  end
+
+  -- schedule entry (same jitter/offset logic used elsewhere)
+  local jitter   = (math.random() * 0.1)
+  local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
+  local offset   = math.random() * interval
+
+  table.insert(tasksList, {
+    name           = name,
+    interval       = interval,
+    baseInterval   = baseInterval,
+    jitter         = jitter,
+    script         = meta.script,
+    linkrequired   = meta.linkrequired or false,
+    connected      = meta.connected or false,
+    simulatoronly  = meta.simulatoronly or false,
+    spreadschedule = meta.spreadschedule or false,
+    last_run       = os.clock() - offset,
+    duration       = 0,
+    totalDuration  = 0,
+    runs           = 0,
+    maxDuration    = 0
+  })
+
+  utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
+  return true
+end
+
+-- Reload a single task safely: unload, then load with known metadata.
+function tasks.reload(name)
+  -- 1) Unload (best-effort)
+  tasks.unload(name)
+
+  collectgarbage("collect")
+  collectgarbage("collect")
+
+  -- 2) Prefer cached metadata from initialize(); fall back to reading init.lua
+  local meta = tasks._initMetadata and tasks._initMetadata[name] or nil
+
+  -- 3) Attempt load (reuses unified loader, including scheduling rules)
+  local ok = tasks.load(name, meta)
+
+  -- 4) Verify scheduling (if interval >= 0 we expect an entry in tasksList)
+  if ok then
+    local scheduled = false
+    for _, t in ipairs(tasksList) do
+      if t.name == name then scheduled = true; break end
+    end
+    if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then
+      utils.log(string.format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn")
+    end
+  else
+    utils.log(string.format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
+  end
+
+  return ok
+end
+
+
 
 return tasks
