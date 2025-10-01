@@ -184,8 +184,8 @@ function MspQueueController:processQueue()
             if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
         end
 
-        rfsuite.tasks.msp.common.mspProcessTxQ()
-        cmd, buf, err = rfsuite.tasks.msp.common.mspPollReply()
+        rfsuite.tasks.msp.common().mspProcessTxQ()
+        cmd, buf, err = rfsuite.tasks.msp.common().mspPollReply()
         -- defer logging until payload complete
     else
         -- Simulator path
@@ -251,7 +251,7 @@ function MspQueueController:clear()
     self.queue = newQueue()
     self.currentMessage = nil
     self.uuid = nil
-    rfsuite.tasks.msp.common.mspClearTxBuf()
+    rfsuite.tasks.msp.common().mspClearTxBuf()
 end
 
 --============================--
