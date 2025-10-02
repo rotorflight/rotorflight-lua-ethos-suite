@@ -65,6 +65,7 @@ function app.create()
       -- App state containers and constants
       app.sensors               = {}
       app.formFields            = {}
+      app.formLines             = {}
       app.formNavigationFields  = {}
       app.PageTmp               = {}
       app.Page                  = {}

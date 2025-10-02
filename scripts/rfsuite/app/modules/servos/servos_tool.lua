@@ -308,7 +308,12 @@ local function openPage(idx, title, script, extra1)
     configs[servoIndex]['geometry'] = 0
     configs[servoIndex]['reverse'] = 0
 
-    rfsuite.app.formLines = {}
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title

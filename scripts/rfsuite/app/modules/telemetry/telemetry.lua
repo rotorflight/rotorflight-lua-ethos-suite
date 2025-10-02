@@ -301,7 +301,7 @@ local function wakeup()
 
           if rfsuite.app.formFields then
             for i,v in pairs(rfsuite.app.formFields) do
-              if v then
+              if v and v.enable then
                 v:enable(true)
               end
             end

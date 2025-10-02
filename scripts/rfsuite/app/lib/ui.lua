@@ -300,10 +300,8 @@ function ui.openMainMenu()
         for i = 1, #app.formLines do app.formLines[i] = nil end
     end
 
-
     app.formFieldsOffline  = {}
     app.formFieldsBGTask   = {}
-    app.formLines          = {}
     app.lastLabel          = nil
     app.isOfflinePage      = false
     app.Page               = nil
@@ -1766,7 +1764,11 @@ function ui.injectApiAttributes(formField, f, v)
 end
 
 -- Update form fields with MSP API values/attributes
-function ui.mspApiUpdateFormAttributes(values, structure)
+function ui.mspApiUpdateFormAttributes()
+
+  local app = rfsuite.app
+  local values = app.Page.apidata.values
+  local structure = app.Page.apidata.structure
 
   local app   = rfsuite.app
   local utils   = rfsuite.utils
@@ -1942,9 +1944,11 @@ function ui.requestPage()
         state.currentIndex = 1
         app.triggers.isReady = true
         if app.Page.postRead then app.Page.postRead(app.Page) end
-        app.ui.mspApiUpdateFormAttributes(app.Page.apidata.values, app.Page.apidata.structure)
+        app.ui.mspApiUpdateFormAttributes()
         if app.Page.postLoad then app.Page.postLoad(app.Page) else app.triggers.closeProgressLoader = true end
         checkForUnresolvedTimeouts()
+        collectgarbage('collect')
+        collectgarbage('collect')
       end
       return
     end
