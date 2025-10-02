@@ -293,7 +293,14 @@ function ui.openMainMenu()
 
     utils.reportMemoryUsage("app.openMainMenu", "start")
 
-    app.formFields         = {}
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end
+
+
     app.formFieldsOffline  = {}
     app.formFieldsBGTask   = {}
     app.formLines          = {}
@@ -437,9 +444,14 @@ function ui.openMainMenuSub(activesection)
 
     utils.reportMemoryUsage("app.openMainMenuSub", "start")
 
-    app.formFields        = {}
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end    
+
     app.formFieldsOffline = {}
-    app.formLines         = {}
     app.lastLabel         = nil
     app.isOfflinePage     = false
     app.gfx_buttons[activesection] = {}
@@ -1386,9 +1398,14 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     -- Global UI state; clear form data.
     app.uiState          = app.uiStatus.pages
     app.triggers.isReady = false
-    app.formFields       = {}
-    app.formLines        = {}
     app.lastLabel        = nil
+
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end
 
     -- Load module.
     local modulePath = "app/modules/" .. script

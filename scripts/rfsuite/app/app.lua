@@ -60,125 +60,130 @@ end
 -- App bootstrap
 function app.create()
 
-  -- App state containers and constants
-  app.sensors               = {}
-  app.formFields            = {}
-  app.formNavigationFields  = {}
-  app.PageTmp               = {}
-  app.Page                  = {}
-  app.saveTS                = 0
-  app.lastPage              = nil
-  app.lastSection           = nil
-  app.lastIdx               = nil
-  app.lastTitle             = nil
-  app.lastScript            = nil
-  app.gfx_buttons           = {}
-  app.uiStatus              = { init = 1, mainMenu = 2, pages = 3, confirm = 4 }
-  app.pageStatus            = { display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5 }
-  app.uiState               = app.uiStatus.init
-  app.pageState             = app.pageStatus.display
-  app.lastLabel             = nil
-  app.NewRateTable          = nil
-  app.RateTable             = nil
-  app.fieldHelpTxt          = nil
-  app.radio                 = {}
-  app.sensor                = {}
-  app.init                  = nil
-  app.guiIsRunning          = false
-  app.adjfunctions          = nil
-  app.profileCheckScheduler = os.clock()
-  app.offlineMode           = false
-  app.isOfflinePage         = false
-  app.uiState               = app.uiStatus.init
-  app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
+  if not app.initialized then
 
-  -- Audio flags
-  app.audio = {}
-  app.audio.playTimeout              = false
-  app.audio.playEscPowerCycle        = false
-  app.audio.playServoOverideDisable  = false -- (typo left for compatibility)
-  app.audio.playServoOverideEnable   = false -- (typo left for compatibility)
-  app.audio.playMixerOverideDisable  = false -- (typo left for compatibility)
-  app.audio.playMixerOverideEnable   = false -- (typo left for compatibility)
-  app.audio.playEraseFlash           = false
+      -- App state containers and constants
+      app.sensors               = {}
+      app.formFields            = {}
+      app.formNavigationFields  = {}
+      app.PageTmp               = {}
+      app.Page                  = {}
+      app.saveTS                = 0
+      app.lastPage              = nil
+      app.lastSection           = nil
+      app.lastIdx               = nil
+      app.lastTitle             = nil
+      app.lastScript            = nil
+      app.gfx_buttons           = {}
+      app.uiStatus              = { init = 1, mainMenu = 2, pages = 3, confirm = 4 }
+      app.pageStatus            = { display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5 }
+      app.uiState               = app.uiStatus.init
+      app.pageState             = app.pageStatus.display
+      app.lastLabel             = nil
+      app.NewRateTable          = nil
+      app.RateTable             = nil
+      app.fieldHelpTxt          = nil
+      app.radio                 = {}
+      app.sensor                = {}
+      app.init                  = nil
+      app.guiIsRunning          = false
+      app.adjfunctions          = nil
+      app.profileCheckScheduler = os.clock()
+      app.offlineMode           = false
+      app.isOfflinePage         = false
+      app.uiState               = app.uiStatus.init
+      app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
 
-  -- Dialog state
-  app.dialogs = {}
-  app.dialogs.progress          = false
-  app.dialogs.progressDisplay   = false
-  app.dialogs.progressWatchDog  = nil
-  app.dialogs.progressCounter   = 0
-  app.dialogs.progressSpeed     = false
-  app.dialogs.progressRateLimit = os.clock()
-  app.dialogs.progressRate      = 0.25
+      -- Audio flags
+      app.audio = {}
+      app.audio.playTimeout              = false
+      app.audio.playEscPowerCycle        = false
+      app.audio.playServoOverideDisable  = false -- (typo left for compatibility)
+      app.audio.playServoOverideEnable   = false -- (typo left for compatibility)
+      app.audio.playMixerOverideDisable  = false -- (typo left for compatibility)
+      app.audio.playMixerOverideEnable   = false -- (typo left for compatibility)
+      app.audio.playEraseFlash           = false
 
-  -- ESC progress dialog
-  app.dialogs.progressESC          = false
-  app.dialogs.progressDisplayEsc   = false
-  app.dialogs.progressWatchDogESC  = nil
-  app.dialogs.progressCounterESC   = 0
-  app.dialogs.progressESCRateLimit = os.clock()
-  app.dialogs.progressESCRate      = 2.5
+      -- Dialog state
+      app.dialogs = {}
+      app.dialogs.progress          = false
+      app.dialogs.progressDisplay   = false
+      app.dialogs.progressWatchDog  = nil
+      app.dialogs.progressCounter   = 0
+      app.dialogs.progressSpeed     = false
+      app.dialogs.progressRateLimit = os.clock()
+      app.dialogs.progressRate      = 0.25
 
-  -- Save dialog
-  app.dialogs.save              = false
-  app.dialogs.saveDisplay       = false
-  app.dialogs.saveWatchDog      = nil
-  app.dialogs.saveProgressCounter = 0
-  app.dialogs.saveRateLimit     = os.clock()
-  app.dialogs.saveRate          = 0.25
+      -- ESC progress dialog
+      app.dialogs.progressESC          = false
+      app.dialogs.progressDisplayEsc   = false
+      app.dialogs.progressWatchDogESC  = nil
+      app.dialogs.progressCounterESC   = 0
+      app.dialogs.progressESCRateLimit = os.clock()
+      app.dialogs.progressESCRate      = 2.5
 
-  -- No-link dialog
-  app.dialogs.nolinkDisplay     = false
+      -- Save dialog
+      app.dialogs.save              = false
+      app.dialogs.saveDisplay       = false
+      app.dialogs.saveWatchDog      = nil
+      app.dialogs.saveProgressCounter = 0
+      app.dialogs.saveRateLimit     = os.clock()
+      app.dialogs.saveRate          = 0.25
 
-  -- Bad version dialog
-  app.dialogs.badversion        = false
-  app.dialogs.badversionDisplay = false
+      -- No-link dialog
+      app.dialogs.nolinkDisplay     = false
 
-  -- Triggers
-  app.triggers = {}
-  app.triggers.exitAPP               = false
-  app.triggers.noRFMsg               = false
-  app.triggers.triggerSave           = false
-  app.triggers.triggerSaveNoProgress = false
-  app.triggers.triggerReload         = false
-  app.triggers.triggerReloadFull     = false
-  app.triggers.triggerReloadNoPrompt = false
-  app.triggers.reloadFull            = false
-  app.triggers.isReady               = false
-  app.triggers.isSaving              = false
-  app.triggers.isSavingFake          = false
-  app.triggers.saveFailed            = false
-  app.triggers.profileswitchLast     = nil
-  app.triggers.rateswitchLast        = nil
-  app.triggers.closeSave             = false
-  app.triggers.closeSaveFake         = false
-  app.triggers.badMspVersion         = false
-  app.triggers.badMspVersionDisplay  = false
-  app.triggers.closeProgressLoader   = false
-  app.triggers.closeProgressLoaderNoisProcessed = false
-  app.triggers.disableRssiTimeout    = false
-  app.triggers.timeIsSet             = false
-  app.triggers.invalidConnectionSetup= false
-  app.triggers.wasConnected          = false
-  app.triggers.isArmed               = false
-  app.triggers.showSaveArmedWarning  = false
+      -- Bad version dialog
+      app.dialogs.badversion        = false
+      app.dialogs.badversionDisplay = false
 
-  -- Task _taskAccumulator
-  app.tasks = assert(compile("app/tasks.lua"))()
+      -- Triggers
+      app.triggers = {}
+      app.triggers.exitAPP               = false
+      app.triggers.noRFMsg               = false
+      app.triggers.triggerSave           = false
+      app.triggers.triggerSaveNoProgress = false
+      app.triggers.triggerReload         = false
+      app.triggers.triggerReloadFull     = false
+      app.triggers.triggerReloadNoPrompt = false
+      app.triggers.reloadFull            = false
+      app.triggers.isReady               = false
+      app.triggers.isSaving              = false
+      app.triggers.isSavingFake          = false
+      app.triggers.saveFailed            = false
+      app.triggers.profileswitchLast     = nil
+      app.triggers.rateswitchLast        = nil
+      app.triggers.closeSave             = false
+      app.triggers.closeSaveFake         = false
+      app.triggers.badMspVersion         = false
+      app.triggers.badMspVersionDisplay  = false
+      app.triggers.closeProgressLoader   = false
+      app.triggers.closeProgressLoaderNoisProcessed = false
+      app.triggers.disableRssiTimeout    = false
+      app.triggers.timeIsSet             = false
+      app.triggers.invalidConnectionSetup= false
+      app.triggers.wasConnected          = false
+      app.triggers.isArmed               = false
+      app.triggers.showSaveArmedWarning  = false
 
-  config.environment        = system.getVersion()
-  config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
+      -- Task _taskAccumulator
+      app.tasks = assert(compile("app/tasks.lua"))()
+
+      config.environment        = system.getVersion()
+      config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
 
 
-  app.radio = assert(compile("app/radios.lua"))()
+      app.radio = assert(compile("app/radios.lua"))()
 
-  -- Load main menu module
-  app.MainMenu = assert(compile("app/modules/init.lua"))()
+      -- Load main menu module
+      app.MainMenu = assert(compile("app/modules/init.lua"))()
 
-  -- Load libraries
-  app.ui = assert(compile("app/lib/ui.lua"))(config)
-  app.utils = assert(compile("app/lib/utils.lua"))(config)
+      -- Load libraries
+      app.ui = assert(compile("app/lib/ui.lua"))(config)
+      app.utils = assert(compile("app/lib/utils.lua"))(config)
+ 
+      app.initialized = true
+  end    
 
   -- Start with main menu
   app.ui.openMainMenu()
@@ -279,49 +284,18 @@ function app.close()
   --[[
   App state containers and constants
   ]]
-  app.sensors               = nil
-  app.formFields            = nil
-  app.formNavigationFields  = nil
-  app.PageTmp               = nil
-  app.Page                  = nil
-  app.saveTS                = nil
-  app.lastPage              = nil
-  app.lastSection           = nil
-  app.lastIdx               = nil
-  app.lastTitle             = nil
-  app.lastScript            = nil
-  app.gfx_buttons           = nil
-  app.uiStatus              = nil
-  app.pageStatus            = nil
-  app.uiState               = nil
-  app.pageState             = nil
-  app.lastLabel             = nil
-  app.NewRateTable          = nil
-  app.RateTable             = nil
-  app.fieldHelpTxt          = nil
-  app.radio                 = nil
-  app.sensor                = nil
-  app.init                  = nil
-  app.guiIsRunning          = nil
-  app.adjfunctions          = nil
-  app.profileCheckScheduler = nil
-  app.offlineMode           = nil
-  app.audio                 = nil
-  app.dialogs               = nil
-  app.triggers              = nil
-  app.utils                 = nil
-  app.ui                    = nil
-  app.formFieldsBGTask      = nil
-  app.formLines             = nil
-  app.moduleList            = nil
-  app.MainMenu              = nil
-  app.isOfflinePage         = nil
-  app.lcdWidth              = nil
-  app.lcdHeight             = nil
-  app.formFieldsOffline     = nil
-  app.formLineCnt           = nil
-  app.formFieldCount        = nil
-  app.tasks                 = nil
+  config.useCompiler = true
+  app.triggers.exitAPP = false
+  app.triggers.noRFMsg = false
+  app.dialogs.nolinkDisplay = false
+  app.dialogs.nolinkValueCounter = 0
+  app.triggers.telemetryState = nil
+  app.dialogs.progressDisplayEsc = false
+  app.triggers.wasConnected = false
+  app.triggers.invalidConnectionSetup = false
+  app.triggers.profileswitchLast = nil
+
+    collectgarbage()
 
   -- Telemetry/protocol
   ELRS_PAUSE_TELEMETRY = false

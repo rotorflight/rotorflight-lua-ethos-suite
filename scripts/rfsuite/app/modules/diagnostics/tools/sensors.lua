@@ -62,8 +62,14 @@ local function openPage(pidx, title, script)
 
     -- fresh tables so lookups are never stale/nil
     rfsuite.app.formLineCnt = 0
-    rfsuite.app.formFields  = {}
-    rfsuite.app.formLines   = {}
+
+     local app = rfsuite.app
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end       
 
     local posText = { x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight }
     for i, v in ipairs(sensorList or {}) do

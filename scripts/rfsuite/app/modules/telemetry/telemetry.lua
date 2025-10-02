@@ -169,7 +169,15 @@ local function openPage(pidx, title, script)
   rfsuite.app.ui.fieldHeader("@i18n(app.modules.telemetry.name)@")
 
   rfsuite.app.formLineCnt = 0
-  rfsuite.app.formFields = {}
+
+    local app = rfsuite.app
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end    
+
 
   -- quick exit if running unsupported version of msp protocol
   if rfsuite.utils.apiVersionCompare("<", "12.08") then

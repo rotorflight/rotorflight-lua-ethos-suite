@@ -139,7 +139,13 @@ local function openPage(pidx, title, script)
     local lc = 0
     local bx = 0
 
-    app.formFields         = {}
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end
+
     app.formFieldsOffline  = {}
     app.formFieldsBGTask   = {}    
 
