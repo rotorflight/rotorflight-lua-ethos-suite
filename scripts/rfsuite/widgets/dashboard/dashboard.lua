@@ -84,6 +84,7 @@ local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 local lastBoxRectsCount = 0
+local lastLoadedBoxSig = nil 
 
 -- Some placeholders used by dashboard loader
 local moduleState
@@ -505,6 +506,27 @@ function dashboard.renderLayout(widget, config)
         for _, b in ipairs(headerBoxes) do table.insert(allBoxes, b) end
         dashboard.loadAllObjects(allBoxes)
         lastLoadedBoxCount = #boxes + #headerBoxes
+    end
+
+    -- Build a stable signature of the box "types" present (order-insensitive)
+    local function makeBoxesSig(bx, hbx)
+        local t = {}
+        for _, b in ipairs(bx or {}) do t[#t+1] = tostring(b.type or "") end
+        for _, b in ipairs(hbx or {}) do t[#t+1] = tostring(b.type or "") end
+        table.sort(t)
+        return table.concat(t, "|")
+    end
+
+    local thisSig = makeBoxesSig(boxes, headerBoxes)
+
+    -- Reload widgets if layout changed (count OR types)
+    if ((#boxes + #headerBoxes) ~= lastLoadedBoxCount) or (thisSig ~= lastLoadedBoxSig) then
+        local allBoxes = {}
+        for _, b in ipairs(boxes)       do allBoxes[#allBoxes+1] = b end
+        for _, b in ipairs(headerBoxes) do allBoxes[#allBoxes+1] = b end
+        dashboard.loadAllObjects(allBoxes)
+        lastLoadedBoxCount = #boxes + #headerBoxes
+        lastLoadedBoxSig   = thisSig   -- remember the types we loaded
     end
 
 
@@ -1054,6 +1076,7 @@ function dashboard.reload_active_theme_only(force)
     lastLoadedBoxCount          = 0
     lastBoxRectsCount           = 0
     objectWakeupsPerCycle       = nil
+    lastLoadedBoxSig = nil
 
     -- Force spinner draw
     lcd.invalidate()
@@ -1127,6 +1150,7 @@ function dashboard.reload_themes(force)
     objectWakeupIndex = 1
     objectWakeupsPerCycle = nil
     objectsThreadedWakeupCount = 0
+    lastLoadedBoxSig = nil
 
     -- force module.layout to be rendered
     local mod = loadedStateModules[dashboard.flightmode or "preflight"]
