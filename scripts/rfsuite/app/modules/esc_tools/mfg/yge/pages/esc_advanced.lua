@@ -23,7 +23,7 @@ local apidata = {
 local foundEsc = false
 local foundEscDone = false
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
 

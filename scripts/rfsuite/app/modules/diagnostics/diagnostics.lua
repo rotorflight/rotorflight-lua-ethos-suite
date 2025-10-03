@@ -138,6 +138,7 @@ local function openPage(pidx, title, script)
     local pages = S_PAGES
     local lc = 0
     local bx = 0
+    local y = 0
 
     if app.formFields then
         for i = 1, #app.formFields do app.formFields[i] = nil end
@@ -210,7 +211,7 @@ local function wakeup()
     elseif not rfsuite.session.isConnected then
         for i, v in pairs(app.formFieldsOffline) do
             if v == true then
-            if app.formFields[i] then
+            if app.formFields[i] and app.formFields[i].enable then
                 app.formFields[i]:enable(false)
             else
                 log("Main Menu Icon " .. i .. " not found in formFields", "info")
@@ -219,7 +220,9 @@ local function wakeup()
         end
     else
         for i, v in pairs(app.formFields) do
-            app.formFields[i]:enable(true)
+            if app.formFields[i] and app.formFields[i].enable then
+                app.formFields[i]:enable(true)
+            end
         end               
     end    
 end

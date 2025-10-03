@@ -296,11 +296,10 @@ function app.close()
   app.triggers.invalidConnectionSetup = false
   app.triggers.profileswitchLast = nil
 
-    collectgarbage()
+  collectgarbage()
+  collectgarbage()
 
-  -- Telemetry/protocol
-  ELRS_PAUSE_TELEMETRY = false
-  CRSF_PAUSE_TELEMETRY = false
+
 
   rfsuite.utils.reportMemoryUsage("app.close", "end")
 

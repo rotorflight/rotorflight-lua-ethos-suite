@@ -97,7 +97,7 @@ local function openPage(idx, title, script)
     local pos
 
     --line = form.addLine(apidata.formdata.name)
-    line = form.addLine("")
+    local line = form.addLine("")
     pos = {x = 0, y = paddingTop, w = 200, h = h}
     rfsuite.app.formFields['col_0'] = form.addStaticText(line, pos, apidata.formdata.name)
 

@@ -21,7 +21,7 @@
 local arg = {...}
 local config = arg[1]
 
-protocol = {}
+local protocol = {}
 
 --[[
     supportedProtocols table contains configurations for different communication protocols.

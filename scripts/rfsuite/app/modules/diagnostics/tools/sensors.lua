@@ -81,7 +81,7 @@ local function openPage(pidx, title, script)
     enableWakeup = true
 end
 
-function sensorKeyExists(searchKey, sensorTable)
+local function sensorKeyExists(searchKey, sensorTable)
     if type(sensorTable) ~= "table" then return false end
 
     for _, sensor in pairs(sensorTable) do if sensor['key'] == searchKey then return true end end

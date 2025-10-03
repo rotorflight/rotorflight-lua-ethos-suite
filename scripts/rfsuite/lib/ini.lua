@@ -1,4 +1,4 @@
-ini = {}
+local ini = {}
 
 -- Reads a file's full contents into a string, compatible with limited Lua
 function ini.load_file_as_string(path)

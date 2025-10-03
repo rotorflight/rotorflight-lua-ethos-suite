@@ -1,6 +1,7 @@
 
 
 local config = {}
+local enableWakeup = false
 
 local function sensorNameMap(sensorList)
     local nameMap = {}

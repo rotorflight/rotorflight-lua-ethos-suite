@@ -118,7 +118,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    line = form.addLine("@i18n(app.modules.esc_tools.name)@" .. ' / ' .. ESC.toolName)
+    local line = form.addLine("@i18n(app.modules.esc_tools.name)@" .. ' / ' .. ESC.toolName)
 
     local buttonW = 100
     local x = windowWidth - buttonW

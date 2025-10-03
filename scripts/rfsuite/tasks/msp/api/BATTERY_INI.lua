@@ -23,7 +23,7 @@ local INI_SECTION = "battery"
 local ini       = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
 
-local handlers  = mspModule.createHandlers()
+local handlers = core.createHandlers()
 
 -- Define MSP fields
 
@@ -39,7 +39,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "flighttime",  type = "U8", simResponse = {0}, min = 0, max = 3600,  unit = "s", default = 300, help = "@i18n(api.BATTERY_INI.flighttime)@"},
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
-    mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+    core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- Internal state
 local mspData      = nil

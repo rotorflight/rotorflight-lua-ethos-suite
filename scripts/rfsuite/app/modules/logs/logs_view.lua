@@ -75,7 +75,7 @@ local function secondsToSamples(sec)
   return math.floor(sec * SAMPLE_RATE)
 end
 
-function readNextChunk()
+local function readNextChunk()
     if logDataRawReadComplete then
         return
     end
@@ -102,7 +102,7 @@ function readNextChunk()
     end
 end
 
-function format_time(seconds)
+local function format_time(seconds)
     -- Calculate minutes and remaining seconds
     local minutes = math.floor(seconds / 60)
     local seconds_remainder = seconds % 60
@@ -132,7 +132,7 @@ end
 
 
 
-function calculateSeconds(totalSeconds, sliderValue)
+local function calculateSeconds(totalSeconds, sliderValue)
     -- Ensure sliderValue is within the range 1-100
     if sliderValue < 1 or sliderValue > 100 then error("Slider value must be between 1 and 100") end
     
@@ -141,7 +141,7 @@ function calculateSeconds(totalSeconds, sliderValue)
 end
 
 -- Enhanced paginate_table() to support decimation
-function paginate_table(data, step_size, position, decimationFactor)
+local function paginate_table(data, step_size, position, decimationFactor)
      decimationFactor = decimationFactor or 1
 
      local start_index = math.max(1, position)
@@ -155,7 +155,7 @@ function paginate_table(data, step_size, position, decimationFactor)
      return page
 end
 
-function padTable(tbl, padCount)
+local function padTable(tbl, padCount)
     -- Get the first and last values of the table
     local first = tbl[1]
     local last = tbl[#tbl]
@@ -176,13 +176,13 @@ function padTable(tbl, padCount)
 end
 
 
-function map(x, in_min, in_max, out_min, out_max)
+local function map(x, in_min, in_max, out_min, out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
 
 -- Efficient function to get a specific column from CSV
-function getColumn(csvData, colIndex)
+local function getColumn(csvData, colIndex)
     local column = {}
     local start = 1
     local len = #csvData
@@ -232,7 +232,7 @@ local function cleanColumn(data)
     return out
 end
 
-function getValueAtPercentage(array, percentage)
+local function getValueAtPercentage(array, percentage)
     -- Ensure percentage is between 0 and 100
     if percentage < 0 or percentage > 100 then error("Percentage must be between 0 and 100") end
 
@@ -479,7 +479,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     end
 end
 
-function findMaxNumber(numbers)
+local function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
     for i = 2, #numbers do -- Iterate through the table starting from the second element
         if numbers[i] > max then max = numbers[i] end
@@ -487,7 +487,7 @@ function findMaxNumber(numbers)
     return max
 end
 
-function findMinNumber(numbers)
+local function findMinNumber(numbers)
     local min = numbers[1] -- Assume the first number is the smallest initially
     for i = 2, #numbers do -- Iterate through the table starting from the second element
         if numbers[i] < min then min = numbers[i] end
@@ -495,7 +495,7 @@ function findMinNumber(numbers)
     return min
 end
 
-function findAverage(numbers)
+local function findAverage(numbers)
     local sum = 0
     for i = 1, #numbers do -- Iterate through the table
         sum = sum + numbers[i]
@@ -517,6 +517,8 @@ local function openPage(pidx, title, script, logfile, displaymode,dirname)
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
+
+    local err
 
     local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.app.activeLogDir)
     rfsuite.app.ui.fieldHeader("Logs / ".. name .. " / " .. extractShortTimestamp(logfile))

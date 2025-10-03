@@ -27,7 +27,7 @@ local apidata = {
 }
 
 
-function postLoad()
+local function postLoad()
 
 
     -- inject new voltage lookup table

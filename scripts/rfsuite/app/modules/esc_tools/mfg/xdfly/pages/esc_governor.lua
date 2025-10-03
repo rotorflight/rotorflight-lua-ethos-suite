@@ -40,7 +40,7 @@ for i = #apidata.formdata.fields, 1, -1 do
 end
 
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end

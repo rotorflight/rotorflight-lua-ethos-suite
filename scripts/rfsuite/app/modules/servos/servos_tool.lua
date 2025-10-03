@@ -287,6 +287,8 @@ end
 
 local function openPage(idx, title, script, extra1)
 
+    local app = rfsuite.app
+
     if extra1 ~= nil then
         servoTable = extra1
         rfsuite.servoTableLast = servoTable

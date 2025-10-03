@@ -47,7 +47,7 @@ local voltage_lookup = {
     ["default"] = {"5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "7.0", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7", "7.8", "7.9", "8.0", "8.1", "8.2", "8.3", "8.4"} -- Default voltage values
 }
 
-voltages = voltage_lookup["default"] -- Default voltage values
+local voltages = voltage_lookup["default"] -- Default voltage values
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",       type = "U8", apiVersion = 12.07, simResponse = {253}, help = "@i18n(api.ESC_PARAMETERS_HW5.esc_signature)@"},

@@ -47,7 +47,7 @@ if rfsuite.session.escDetails and rfsuite.session.escDetails.model then
 
 end
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
 

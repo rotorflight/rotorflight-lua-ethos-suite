@@ -39,7 +39,7 @@ end
 
 
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end

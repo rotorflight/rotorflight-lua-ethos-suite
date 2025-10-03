@@ -41,7 +41,7 @@ end
 local foundEsc = false
 local foundEscDone = false
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
