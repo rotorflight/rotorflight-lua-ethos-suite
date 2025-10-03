@@ -102,8 +102,13 @@ local function openPage(pidx, title, script)
         mspBytes = ESC.mspBytes
     end    
 
-    rfsuite.app.formFields = {}
-    rfsuite.app.formLines = {}
+    local app = rfsuite.app
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end
 
 
     local windowWidth = rfsuite.app.lcdWidth
@@ -113,7 +118,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    line = form.addLine("@i18n(app.modules.esc_tools.name)@" .. ' / ' .. ESC.toolName)
+    local line = form.addLine("@i18n(app.modules.esc_tools.name)@" .. ' / ' .. ESC.toolName)
 
     local buttonW = 100
     local x = windowWidth - buttonW

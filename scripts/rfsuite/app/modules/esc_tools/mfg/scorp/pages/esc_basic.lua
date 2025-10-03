@@ -25,7 +25,7 @@ local apidata = {
 
 
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
 

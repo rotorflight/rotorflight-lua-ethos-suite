@@ -28,7 +28,7 @@ local escType = {
 
 local escFlags = {spinDirection = 0, f3cAuto = 1, keepMah = 2, bec12v = 3}
 
-function getEscTypeLabel(values)
+local function getEscTypeLabel(values)
     local idx = (values[mspHeaderBytes + 24] * 256) + values[mspHeaderBytes + 23]
     return escType[idx] or "YGE ESC (" .. idx .. ")"
 end

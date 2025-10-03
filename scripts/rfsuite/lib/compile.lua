@@ -1,18 +1,36 @@
 --[[
  * Rotorflight Project - Enhanced Script Compilation and Caching
- *
- * Copyright (C) Rotorflight Project
+ * ENV-aware, keyed by config.baseDir to allow coexistence with other suites.
  * License: GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
- *
 ]]
 
 local compile = {}
 local arg     = { ... }
+local config  = arg[1] or {}
+-- Use the suite key passed from main.lua (e.g. rfsuite.config.baseDir = "rfsuite")
+local SUITE   = (config and config.baseDir) or "rfsuite"
+
+-- Capture the environment we were loaded with so all subsequent
+-- loads run with the same `_ENV` (which includes `rfsuite`).
+local ENV = _ENV or _G
+
+-- Helper to load files inside ENV (Lua 5.2+/5.3) with 5.1 fallback
+local function loadfile_in_env(path)
+  if setfenv and _VERSION == "Lua 5.1" then
+    local chunk, err = loadfile(path)
+    if not chunk then return nil, err end
+    setfenv(chunk, ENV)
+    return chunk
+  else
+    -- nil mode: accept text/bytecode; run under ENV (more ETHOS-compatible)
+    return loadfile(path, nil, ENV)
+  end
+end
 
 compile._startTime    = os.clock()
 compile._startupDelay = 60 -- seconds before starting any compiles
 
--- Configuration: expects rfsuite.config to be globally available
+-- Configuration: expects rfsuite.config to be available via ENV
 local logTimings = true
 if rfsuite and rfsuite.config then
   if type(rfsuite.preferences.developer.compilerTiming) == "boolean" then
@@ -20,27 +38,19 @@ if rfsuite and rfsuite.config then
   end
 end
 
-local baseDir      = "./"
-local compiledDir  = baseDir .. "cache/"
+-- Suite-specific compiled directory to avoid cross-suite clashes
+local baseDir       = "./"
+local compiledDir   = baseDir .. "cache/" .. SUITE .. "/"
 local SCRIPT_PREFIX = "SCRIPTS:"
 
-local function ensure_dir(dir)
-  if os.mkdir then
-    local found = false
-    for _, name in ipairs(system.listFiles(baseDir)) do
-      if name == "cache" then
-        found = true
-        break
-      end
-    end
-    if not found then os.mkdir(dir) end
-  end
-end
-ensure_dir(compiledDir)
+-- Ensure cache directories exist
+os.mkdir("cache")
+os.mkdir(compiledDir)
 
 local disk_cache = {}
 do
-  for _, fname in ipairs(system.listFiles(compiledDir)) do
+  local list = system.listFiles and system.listFiles(compiledDir) or {}
+  for _, fname in ipairs(list) do
     disk_cache[fname] = true
   end
 end
@@ -51,7 +61,8 @@ local function cachename(name)
   end
   name = name:gsub("/", "_")
   name = name:gsub("^_", "", 1)
-  return name
+  -- Prefix with suite so compiled filenames are unique across suites
+  return SUITE .. "__" .. name
 end
 
 -- Adaptive LRU Cache with Pinning Support
@@ -188,7 +199,7 @@ function compile.wakeup()
 
     compile._lastCompile = now
 
-    if rfsuite and rfsuite.utils and log then
+    if rfsuite and rfsuite.utils then
       if ok then
         rfsuite.utils.log("Deferred-compiled (throttled): " .. entry.script, "info")
       else
@@ -220,16 +231,16 @@ function compile.loadfile(script, opts)
     which = "in-memory"
   else
     if not rfsuite.preferences.developer.compile then
-      loader = loadfile(script)
+      loader = loadfile_in_env(script)
       which  = "raw"
     else
       local cache_path = compiledDir .. cache_fname
       if disk_cache[cache_fname] then
-        loader = loadfile(cache_path)
+        loader = loadfile_in_env(cache_path)
         which  = "compiled"
       else
         compile._enqueue(script, cache_path, cache_fname)
-        loader = loadfile(script)
+        loader = loadfile_in_env(script)
         which  = "raw (queued for deferred compile)"
       end
     end
@@ -255,23 +266,24 @@ function compile.dofile(script, ...)
 end
 
 function compile.require(modname)
-  if package.loaded[modname] then
-    return package.loaded[modname]
+  -- Suite-scoped module cache to avoid clashes across suites
+  local key = SUITE .. ":" .. modname
+  if package.loaded[key] then
+    return package.loaded[key]
   end
 
-  local raw_path = modname:gsub("%%.", "/") .. ".lua"
-  local path     = cachename(raw_path)
+  local raw_path = modname:gsub("%.", "/") .. ".lua"
   local chunk
 
   if not rfsuite.preferences.developer.compile then
-    chunk = assert(loadfile(path))
+    chunk = assert(loadfile_in_env(raw_path))
   else
-    chunk = compile.loadfile(path)
+    chunk = compile.loadfile(raw_path)
   end
 
   local result = chunk()
-  package.loaded[modname] = (result == nil) and true or result
-  return package.loaded[modname]
+  package.loaded[key] = (result == nil) and true or result
+  return package.loaded[key]
 end
 
 -- Helper to unpin script from memory cache

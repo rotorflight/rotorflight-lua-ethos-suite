@@ -1,3 +1,29 @@
+# 2.3.0-20250929
+
+Snapshot release of Ethos Suite.
+
+This is an update to the previous snapshot releae created on 31 August 2025.
+
+We have worked hard to make Ethos Suite faster.  The aim being to be less of a resouce hog.
+
+The system now uses less ram; and less cpu to achieve the same job. It is a massive performance upgrade!
+
+Please note.  The official latest release that aligns with the 2.2.x firmware does not include dashboard.  This snapshot is to the best of our knowledge stable - however bugs may still occur.  If you are not happy to use a snapshot version - please use the official 2.2.x release of rfsuite.
+
+Updates in this snapshot include:
+
+- Introduced a precompiler to create language specific versions of suite; saving circa 100k of ram.
+- Removed cpu bottlenecks in frsky telemetry system - reducing load on radio
+- Removed cpu bottlenecks in elrs telemetry system - reducing load on radio.
+- Optimised dashboard objects - reducing load on radio.
+- Updated progress dialogs to use seprate wakeup loop - resulting in smoother progress bar loading
+- Updated progress loades to run 'fast' if not processing MSP data.
+- Fixed a bug in logging system resulting in logs not being viewable.
+- Added in a diagnostic menu system to help verify you are setup correctly.
+- Added support for new RF2.3 governor. (only useable if running RF2.3 snapshots on fbl)
+- Updated telemetry module to allow setting/managing sensors from the radio.
+- Many other small bug fixes.
+
 # 2.3.0-20250731
 
 Snapshot release of the new Ethos Suite dashboard system.

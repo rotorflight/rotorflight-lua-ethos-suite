@@ -1,6 +1,7 @@
 
 
 local config = {}
+local enableWakeup = false
 
 local function sensorNameMap(sensorList)
     local nameMap = {}
@@ -30,7 +31,14 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
-    rfsuite.app.formFields = {}
+
+     local app = rfsuite.app
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end       
 
     -- Build event name map
     local eventList = rfsuite.tasks.events.telemetry.eventTable

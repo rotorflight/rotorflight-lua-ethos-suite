@@ -107,9 +107,16 @@ local function openPage(pidx, title, script)
 
   -- fresh tables so lookups are never stale/nil
   rfsuite.app.formLineCnt    = 0
-  rfsuite.app.formFields     = {}
-  rfsuite.app.formLines      = {}
   rfsuite.app.formFieldCount = 0
+
+  local app = rfsuite.app
+  if app.formFields then
+      for i = 1, #app.formFields do app.formFields[i] = nil end
+  end
+  if app.formLines then
+      for i = 1, #app.formLines do app.formLines[i] = nil end
+  end
+
 
   -- CPU Load %
   addStatusLine("@i18n(app.modules.fblstatus.cpu_load)@", string.format("%.1f%%", rfsuite.performance.cpuload or 0))

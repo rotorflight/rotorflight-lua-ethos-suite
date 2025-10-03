@@ -14,6 +14,8 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
+local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
+
 -- Constants for MSP Commands
 local API_NAME = "RTC" -- API name (must be same as filename)
 local MSP_API_CMD_WRITE = 246 -- Command identifier for setting RTC
@@ -34,7 +36,26 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.tasks.msp.api.createHandlers()
+local handlers = core.createHandlers()
+
+
+local function processReplyStaticWrite(self, buf)
+  -- mark write done without capturing handlers/page
+  mspWriteComplete = true
+  local getComplete = self and self.getCompleteHandler
+  if getComplete then
+    local complete = getComplete()
+    if complete then complete(self, buf) end
+  end
+end
+
+local function errorHandlerStatic(self, buf)
+  local getError = self and self.getErrorHandler
+  if getError then
+    local err = getError()
+    if err then err(self, buf) end
+  end
+end
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID

@@ -7,6 +7,7 @@ local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 
+
 local function buildServoTable()
 
     for i = 1, rfsuite.session.servoCount do
@@ -153,6 +154,7 @@ local function openPage(pidx, title, script)
 
     local lc = 0
     local bx = 0
+    local y = 0
 
     if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
     if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end

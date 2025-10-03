@@ -1,5 +1,6 @@
 
 local folder = "hw5"
+local powercycleLoader
 
 local apidata = {
     api = {
@@ -23,7 +24,7 @@ local apidata = {
 }
 
 
-function postLoad()
+local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
 

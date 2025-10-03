@@ -15,7 +15,6 @@ local function openPage(pidx, title, script)
 
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
-    rfsuite.app.formLines = {}
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -32,6 +31,14 @@ local function openPage(pidx, title, script)
             rfsuite.app.gfx_buttons[i] = nil
         end
     end    
+
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end
+
 
     -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then

@@ -184,9 +184,21 @@ end
         - posText  = { x, y, w, h }
         - posField = { x, y, w, h }
 ]]
-function utils.getInlinePositions(f, lPage)
+function utils.getInlinePositions(f)
+
+    local lPage = rfsuite.app.Page
+
+    local function getInlineSize(id)
+        if not id then return 13.6 end
+        for i = 1, #lPage.labels do
+            if lPage.labels[i].label == id then
+                return lPage.labels[i].inline_size or 13.6
+            end
+        end
+        return 13.6
+    end
     -- Compute inline size in one step.
-    local inline_size = utils.getInlineSize(f.label, lPage) * app.radio.inlinesize_mult
+    local inline_size = getInlineSize(f.label) * app.radio.inlinesize_mult
 
     -- Get LCD dimensions.
     local w, h = lcd.getWindowSize()
@@ -218,23 +230,6 @@ function utils.getInlinePositions(f, lPage)
     return { posText = posText, posField = posField }
 end
 
---[[
-    Retrieves the inline size for a given label ID from the provided page.
-
-    @param id (string|nil) Label identifier. If nil, returns default size.
-    @param lPage (table)   Page object containing labels with inline sizes.
-
-    @return (number) Inline size if found; otherwise 13.6.
-]]
-function utils.getInlineSize(id, lPage)
-    if not id then return 13.6 end
-    for i = 1, #lPage.labels do
-        if lPage.labels[i].label == id then
-            return lPage.labels[i].inline_size or 13.6
-        end
-    end
-    return 13.6
-end
 
 --[[
     Capture active PID profile and rate profile into session.

@@ -62,8 +62,14 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
     -- Initialize global UI state and clear form data
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
-    rfsuite.app.formFields = {}
-    rfsuite.app.formLines = {}
+
+    local app = rfsuite.app
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end    
 
 
     -- Fallback behavior if no custom openPage exists

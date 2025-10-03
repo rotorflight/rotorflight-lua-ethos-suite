@@ -287,7 +287,7 @@ local function openPage(pidx, title, script)
     formLoaded = true
 end
 
-function mspSuccess(self)
+local function mspSuccess(self)
     if testLoader then
         mspQueryTimeCount = mspQueryTimeCount + os.clock() - mspQueryStartTime
         mspSpeedTestStats['success'] = mspSpeedTestStats['success'] + 1
@@ -303,19 +303,19 @@ function mspSuccess(self)
     end
 end
 
-function mspTimeout(self)
+local function mspTimeout(self)
     if testLoader then mspSpeedTestStats['timeouts'] = mspSpeedTestStats['timeouts'] + 1 end
 end
 
-function mspRetry(self)
+local function mspRetry(self)
     if testLoader then mspSpeedTestStats['retries'] = mspSpeedTestStats['retries'] + (self.retryCount - 1) end
 end
 
-function mspChecksum(self)
+local function mspChecksum(self)
     if testLoader then mspSpeedTestStats['checksum'] = mspSpeedTestStats['checksum'] + 1 end
 end
 
-function close()
+local function close()
     if testLoader then
         testLoader:close()
         testLoader = nil

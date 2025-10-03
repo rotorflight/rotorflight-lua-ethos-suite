@@ -73,6 +73,7 @@ local function openPage(pidx, title, script)
 
     local lc = 0
     local bx = 0
+    local y = 0
 
     if rfsuite.app.gfx_buttons["sbuschannel"] == nil then rfsuite.app.gfx_buttons["sbuschannel"] = {} end
     if rfsuite.preferences.menulastselected["sbuschannel"] == nil then rfsuite.preferences.menulastselected["sbuschannel"] = 0 end

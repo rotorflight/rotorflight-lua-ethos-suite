@@ -121,7 +121,7 @@ local function openPage(idx, title, script)
     local positions_r = {}
     local pos
 
-    line = form.addLine("")
+    local line = form.addLine("")
 
     local loc = numCols
     local posX = screenWidth - paddingRight

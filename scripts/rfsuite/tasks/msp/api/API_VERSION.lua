@@ -25,6 +25,8 @@
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
+local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
+
 -- Constants for MSP Commands
 local API_NAME = "API_VERSION" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
@@ -44,34 +46,53 @@ local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the 
 local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.tasks.msp.api.createHandlers()
+local handlers = core.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
+-- Track write completion without closures
+local lastWriteUUID = nil
+-- weak keys/values so finished entries don't pin memory
+local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
+
+
+local function processReplyStaticRead(self, buf)
+  core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
+    mspData = result
+    if #buf >= (self.minBytes or 0) then
+      local getComplete = self.getCompleteHandler
+      if getComplete then
+        local complete = getComplete()
+        if complete then complete(self, buf) end
+      end
+    end
+  end)
+end
+
 -- Function to initiate MSP read operation
 local function read()
-    local message = {
-        command = MSP_API_CMD_READ, -- Specify the MSP command
-        processReply = function(self, buf)
-            -- Parse the MSP data using the defined structure
-            mspData = rfsuite.tasks.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
-        end,
-        errorHandler = function(self, buf)
-            local errorHandler = handlers.getErrorHandler()
-            if errorHandler then errorHandler(self, buf) end
-        end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT  
-    }
-    -- Add the message to the processing queue
-    rfsuite.tasks.msp.mspQueue:add(message)
+  if MSP_API_CMD_READ == nil then
+    rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
+    return
+  end
+
+  local message = {
+    command           = MSP_API_CMD_READ,
+    structure         = MSP_API_STRUCTURE_READ,   -- add this
+    minBytes          = MSP_MIN_BYTES,            -- and this
+    processReply      = processReplyStaticRead,
+    errorHandler      = errorHandlerStatic,
+    simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+    uuid              = MSP_API_UUID,
+    timeout           = MSP_API_MSG_TIMEOUT,
+    getCompleteHandler = handlers.getCompleteHandler,
+    getErrorHandler    = handlers.getErrorHandler,
+    -- optional: place to stash parsed data if you want it here:
+    mspData           = nil,
+  }
+  rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to return the parsed MSP data

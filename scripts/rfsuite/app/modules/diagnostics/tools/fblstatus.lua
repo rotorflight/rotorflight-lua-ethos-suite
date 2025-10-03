@@ -29,6 +29,7 @@ local enableWakeup = false
 
 local displayType = 0
 local disableType = false
+local firstRun = true
 
 local w, h = lcd.getWindowSize()
 local buttonW = 100

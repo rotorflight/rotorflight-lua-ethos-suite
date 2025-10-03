@@ -9,9 +9,15 @@ local function openPage(idx, title, script, source, folder,themeScript)
     -- Initialize global UI state and clear form data
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
-    rfsuite.app.formFields = {}
-    rfsuite.app.formLines = {}
     rfsuite.app.lastLabel = nil
+
+    local app = rfsuite.app
+    if app.formFields then
+        for i = 1, #app.formFields do app.formFields[i] = nil end
+    end
+    if app.formLines then
+        for i = 1, #app.formLines do app.formLines[i] = nil end
+    end        
 
     rfsuite.app.dashboardEditingTheme = source .. "/" .. folder
 

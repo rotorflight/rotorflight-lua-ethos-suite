@@ -14,6 +14,7 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
+local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
 
 local API_NAME = "FLIGHT_STATS_INI"
 local INI_FILE = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
@@ -22,7 +23,7 @@ local INI_SECTION = "general"
 local ini       = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
 
-local handlers  = mspModule.createHandlers()
+local handlers = core.createHandlers()
 
 -- Define MSP fields
 local MSP_API_STRUCTURE_READ_DATA = {
@@ -31,7 +32,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "totalflighttime", type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s", help = "@i18n(api.FLIGHT_STATS_INI.totalflighttime)@"},
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
-    mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+    core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- Internal state
 local mspData      = nil

@@ -110,6 +110,7 @@ local function openPage(pidx, title, script)
     local pages = S_PAGES
     local lc = 0
     local bx = 0
+    local y = 0
 
 
 
