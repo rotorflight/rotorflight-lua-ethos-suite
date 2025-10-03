@@ -9,10 +9,26 @@
 local compile = {}
 local arg     = { ... }
 
+-- Capture the environment we were loaded with so all subsequent
+-- loads run with the same `_ENV` (which includes `rfsuite`).
+local ENV = _ENV or _G
+
+-- Helper to load files inside ENV (Lua 5.2+/5.3) with 5.1 fallback
+local function loadfile_in_env(path)
+  if setfenv and _VERSION == "Lua 5.1" then
+    local chunk, err = loadfile(path)
+    if not chunk then return nil, err end
+    setfenv(chunk, ENV)
+    return chunk
+  else
+    return loadfile(path, "t", ENV)
+  end
+end
+
 compile._startTime    = os.clock()
 compile._startupDelay = 60 -- seconds before starting any compiles
 
--- Configuration: expects rfsuite.config to be globally available
+-- Configuration: expects rfsuite.config to be available via ENV
 local logTimings = true
 if rfsuite and rfsuite.config then
   if type(rfsuite.preferences.developer.compilerTiming) == "boolean" then
@@ -220,16 +236,16 @@ function compile.loadfile(script, opts)
     which = "in-memory"
   else
     if not rfsuite.preferences.developer.compile then
-      loader = loadfile(script)
+      loader = loadfile_in_env(script)
       which  = "raw"
     else
       local cache_path = compiledDir .. cache_fname
       if disk_cache[cache_fname] then
-        loader = loadfile(cache_path)
+        loader = loadfile_in_env(cache_path)
         which  = "compiled"
       else
         compile._enqueue(script, cache_path, cache_fname)
-        loader = loadfile(script)
+        loader = loadfile_in_env(script)
         which  = "raw (queued for deferred compile)"
       end
     end
@@ -264,7 +280,7 @@ function compile.require(modname)
   local chunk
 
   if not rfsuite.preferences.developer.compile then
-    chunk = assert(loadfile(path))
+    chunk = assert(loadfile_in_env(path))
   else
     chunk = compile.loadfile(path)
   end

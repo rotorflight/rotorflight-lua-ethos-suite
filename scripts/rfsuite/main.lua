@@ -15,9 +15,18 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]]
 
--- Global namespace for the suite
-rfsuite = {}
+-- Namespace for the suite (kept local; not global)
+local rfsuite = {}
 rfsuite.session = {}
+
+-- Shared environment so all chunks see `rfsuite` without polluting _G
+local ENV = setmetatable({ rfsuite = rfsuite }, {
+  __index = _G,
+  -- Uncomment to forbid accidental globals from modules:
+   __newindex = function(_, k)
+     error("attempt to create global '" .. tostring(k) .."'", 2)
+  end
+})
 
 -- Ensure legacy font (ethos 1.6 vs 1.7)
 if not FONT_M then FONT_M = FONT_STD end
@@ -61,7 +70,8 @@ rfsuite.performance = performance
 --======================
 -- Preferences / INI
 --======================
-rfsuite.ini = assert(loadfile("lib/ini.lua"))(config) -- self-contained; never compiled
+-- Load `ini.lua` inside ENV so it can reference `rfsuite` if needed
+rfsuite.ini = assert(loadfile("lib/ini.lua", "t", ENV))(config) -- self-contained; never compiled
 
 local userpref_defaults = {
   general = {
@@ -145,8 +155,10 @@ end
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
 
-rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config)
+-- Load the compiler in ENV so it can in turn load other files in the same ENV
+rfsuite.compiler = assert(loadfile("lib/compile.lua", "t", ENV))(rfsuite.config)
 
+-- Subsequent modules are loaded through the compiler, which preserves ENV
 rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
 rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
