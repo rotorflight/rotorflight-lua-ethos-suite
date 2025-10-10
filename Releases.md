@@ -1,3 +1,11 @@
+# 2.3.0-20251010
+
+Snapshot release of Ethos Suite.
+
+- Some minor bug fixes
+- Improve memory usage
+- Remove use of 'globals'
+
 # 2.3.0-20250929
 
 Snapshot release of Ethos Suite.
