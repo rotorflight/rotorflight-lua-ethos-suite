@@ -39,7 +39,7 @@ local config = {
   icon = lcd.loadMask("app/gfx/icon.png"),
   icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png"),
   icon_unsupported = lcd.loadMask("app/gfx/unsupported.png"),
-  version = { major = 2, minor = 3, revision = 0, suffix = "20250926" },
+  version = { major = 2, minor = 3, revision = 0, suffix = "20251010" },
   ethosVersion = { 1, 6, 2 }, -- min supported Ethos version
   supportedMspApiVersion = { "12.07", "12.08", "12.09" },
   baseDir = "rfsuite",
