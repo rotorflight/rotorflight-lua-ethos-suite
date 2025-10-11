@@ -10,6 +10,7 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 local governorDisabledMsg = false
+local app = rfsuite.app
 
 local function openPage(pidx, title, script)
 
@@ -113,6 +114,7 @@ local function openPage(pidx, title, script)
     local pages = S_PAGES
     local lc = 0
     local bx = 0
+    local y = 0
 
 
 
