@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
 
 

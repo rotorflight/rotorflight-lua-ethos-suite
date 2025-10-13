@@ -1,3 +1,4 @@
+local rfsuite = require("rfsuite") 
 local PageFiles = {}
 
 -- ESC pages.

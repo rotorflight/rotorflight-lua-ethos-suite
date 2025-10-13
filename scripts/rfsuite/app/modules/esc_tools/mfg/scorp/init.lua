@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@"
 local moduleName = "RF2SCORP"
 

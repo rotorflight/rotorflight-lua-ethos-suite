@@ -1,3 +1,4 @@
+local rfsuite = require("rfsuite") 
 local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes

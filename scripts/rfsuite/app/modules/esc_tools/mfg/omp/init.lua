@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local MSP_API = "ESC_PARAMETERS_OMP"
 local toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@"
 local moduleName = "omp"

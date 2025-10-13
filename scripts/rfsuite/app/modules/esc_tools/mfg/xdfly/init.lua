@@ -1,3 +1,4 @@
+local rfsuite = require("rfsuite") 
 local MSP_API = "ESC_PARAMETERS_XDFLY"
 local toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@"
 local moduleName = "xdfly"

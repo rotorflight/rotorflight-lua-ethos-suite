@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@"
 local mspHeaderBytes = 2
 
