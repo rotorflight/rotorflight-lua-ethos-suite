@@ -8,6 +8,7 @@
  *
  * Drop-in replacement for the original module API: new(), isProcessed(), processQueue(), clear(), add()
 ]] --
+local rfsuite = require("rfsuite") 
 
 -- MspQueueController class
 local MspQueueController = {}

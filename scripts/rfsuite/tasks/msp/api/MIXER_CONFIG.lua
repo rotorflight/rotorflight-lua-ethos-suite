@@ -14,7 +14,8 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
+local rfsuite = require("rfsuite") 
+local core = assert(loadfile("tasks/msp/api_core.lua"))()
 
 -- Constants for MSP Commands
 local API_NAME = "MIXER_CONFIG" -- API name (must be same as filename)

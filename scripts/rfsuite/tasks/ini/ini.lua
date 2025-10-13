@@ -18,6 +18,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite")
+
 --
 -- background processing of ini traffic
 --
@@ -27,7 +29,7 @@ local config = arg[1]
 local ini = {}
 
 
-ini.api = assert(rfsuite.compiler.loadfile("tasks/ini/api.lua"))()
+ini.api = assert(loadfile("tasks/ini/api.lua"))()
 
 function ini.wakeup()
     -- currently no processing required

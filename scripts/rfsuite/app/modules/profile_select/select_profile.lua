@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local fcStatus = {}
 local dataflashSummary = {}
 local wakeupScheduler = os.clock()

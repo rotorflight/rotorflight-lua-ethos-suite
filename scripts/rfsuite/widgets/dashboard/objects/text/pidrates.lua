@@ -54,6 +54,7 @@
     -- Background
     bgcolor                 : color                     -- (Optional) Widget background color
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

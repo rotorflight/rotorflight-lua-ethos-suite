@@ -16,6 +16,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+ local rfsuite = require("rfsuite")
  
 --[[
     ini/api.lua
@@ -49,7 +50,7 @@
 
 local ini      = rfsuite.ini
 local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/ini/api/"
-local compiler = rfsuite.compiler
+
 
 local M = {}
 

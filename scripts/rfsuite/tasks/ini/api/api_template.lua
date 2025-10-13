@@ -16,6 +16,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite")
 
 --[[
 This is an example of the api structure for an INI file API.

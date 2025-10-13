@@ -31,6 +31,7 @@
     -- This widget is for **static or label text only**. It does not support live telemetry or stats.
     -- If you need dynamic stats or telemetry (min/max/live), use `stats.lua` or other appropriate widgets.
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

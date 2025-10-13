@@ -1,4 +1,5 @@
-
+ local rfsuite = require("rfsuite")
+ 
 local enableWakeup = false
 local disableMultiplier
 local becAlert

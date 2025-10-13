@@ -1,5 +1,7 @@
 
 
+local rfsuite = require("rfsuite") 
+
 local apidata = {
     api = {
         [1] = "RC_CONFIG",

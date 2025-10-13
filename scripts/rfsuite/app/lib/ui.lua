@@ -13,6 +13,8 @@
 
   Note: Some icons sourced from https://www.flaticon.com/
 ]]--
+ local rfsuite = require("rfsuite")
+
 
 local ui = {}
 
@@ -363,7 +365,7 @@ function ui.openMainMenu()
     preferences.menulastselected["mainmenu"] =
         preferences.menulastselected["mainmenu"] or 1
 
-    local Menu = assert(rfsuite.compiler.loadfile("app/modules/sections.lua"))()
+    local Menu = assert(loadfile("app/modules/sections.lua"))()
 
     local lc, bx, y = 0, 0, 0
 
@@ -1373,7 +1375,7 @@ local function getHelpData(section)
         local helpPath = "app/modules/" .. section .. "/help.lua"
         if utils.file_exists(helpPath) then
             local ok, helpData = pcall(function()
-                return assert(rfsuite.compiler.loadfile(helpPath))()
+                return assert(loadfile(helpPath))()
             end)
             ui._helpCache[section] = (ok and type(helpData) == "table") and helpData or false
         else
@@ -1407,7 +1409,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     -- Load module.
     local modulePath = "app/modules/" .. script
-    app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+    app.Page = assert(loadfile(modulePath))(idx)
 
     -- Load help (if present).
     local section  = script:match("([^/]+)")

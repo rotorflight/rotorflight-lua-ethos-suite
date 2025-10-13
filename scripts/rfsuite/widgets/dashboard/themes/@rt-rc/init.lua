@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+ local rfsuite = require("rfsuite")
+
 -- Theme initialization table
 local init = {
     name = "@RT-RC",                 -- Theme name

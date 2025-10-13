@@ -31,6 +31,7 @@
     valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
     bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

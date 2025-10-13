@@ -1,4 +1,4 @@
-
+local rfsuite = require("rfsuite") 
 
 local config = {}
 local enableWakeup = false

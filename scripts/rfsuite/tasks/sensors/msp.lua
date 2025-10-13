@@ -69,6 +69,8 @@
  *   0x5FE2
  *
 ]]
+local rfsuite = require("rfsuite") 
+
 
 local msp = {}
 msp.clock = os.clock()

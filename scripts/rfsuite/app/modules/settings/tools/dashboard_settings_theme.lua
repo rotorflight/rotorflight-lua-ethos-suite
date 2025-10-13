@@ -1,5 +1,5 @@
 
-
+local rfsuite = require("rfsuite") 
 
 local enableWakeup = false
 local prevConnectedState = nil
@@ -24,7 +24,7 @@ local function openPage(idx, title, script, source, folder,themeScript)
     -- Load the module
     local modulePath =  themeScript
 
-    page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+    page = assert(loadfile(modulePath))(idx)
 
     -- load up the menu
     local w, h = lcd.getWindowSize()

@@ -9,6 +9,7 @@
  *  - Avoid work when events are disabled
  *  - Keep firstRun behavior intact (no audio on very first valid tick)
 ]]
+local rfsuite = require("rfsuite")
 
 local arg = {...}
 local config = arg[1]

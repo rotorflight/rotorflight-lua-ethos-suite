@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite")
+
 local init = {
     interval        = 0.05,         -- run every 0.05 seconds
     script          = "events.lua", -- run this script

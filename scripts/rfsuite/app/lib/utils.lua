@@ -14,7 +14,8 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
-
+ local rfsuite = require("rfsuite")
+ 
 local utils = {}
 local app   = rfsuite.app
 local session = rfsuite.session

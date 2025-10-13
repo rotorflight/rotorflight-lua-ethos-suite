@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite")
+
 local init = {
     interval       = 0.2,               -- run every 0.2 seconds (deliberate offset from msp)
     script         = "callback.lua",    -- run this script

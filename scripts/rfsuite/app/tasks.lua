@@ -16,6 +16,8 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local utils = rfsuite.utils
 local log  = utils.log
 

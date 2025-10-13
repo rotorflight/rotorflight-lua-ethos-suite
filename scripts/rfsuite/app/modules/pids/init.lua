@@ -17,6 +17,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     title = "@i18n(app.modules.pids.name)@", -- title of the page
     section = "main", -- do not run if busy with msp

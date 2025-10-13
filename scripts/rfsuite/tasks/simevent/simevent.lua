@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 -- simevent.lua
 local simevent = {}
 

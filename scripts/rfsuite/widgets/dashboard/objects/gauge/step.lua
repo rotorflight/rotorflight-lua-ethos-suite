@@ -49,6 +49,7 @@
     barpaddingtop       : number    -- (Optional) Top padding for bar
     barpaddingbottom    : number    -- (Optional) Bottom padding for bar
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

@@ -1,4 +1,6 @@
-local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
+local rfsuite = require("rfsuite") 
+
+local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
 local triggerOverRide = false
 local triggerOverRideAll = false

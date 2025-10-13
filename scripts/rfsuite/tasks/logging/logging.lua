@@ -5,6 +5,8 @@
  * Some icons sourced from https://www.flaticon.com/
 
 ]]--
+local rfsuite = require("rfsuite")
+
 local arg = {...}
 local config = arg[1]
 

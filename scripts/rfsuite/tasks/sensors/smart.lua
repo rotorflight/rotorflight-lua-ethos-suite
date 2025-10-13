@@ -53,11 +53,12 @@
  * 0x5FCE
 
 ]]
+local rfsuite = require("rfsuite") 
 
 local smart = {}
 
-local smartfuel = assert(rfsuite.compiler.loadfile("tasks/sensors/lib/smartfuel.lua"))()
-local smartfuelvoltage = assert(rfsuite.compiler.loadfile("tasks/sensors/lib/smartfuelvoltage.lua"))()
+local smartfuel = assert(loadfile("tasks/sensors/lib/smartfuel.lua"))()
+local smartfuelvoltage = assert(loadfile("tasks/sensors/lib/smartfuelvoltage.lua"))()
 
 -- container vars
 local log

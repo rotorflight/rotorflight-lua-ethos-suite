@@ -7,6 +7,7 @@
  * bug fixes (weak table reset; accy sim sensor typo), and light memoization.
  * Retains existing functionality/IO while lowering CPU & RAM.
 ]]
+ local rfsuite = require("rfsuite") 
 
 local arg = {...}
 local config = arg[1]

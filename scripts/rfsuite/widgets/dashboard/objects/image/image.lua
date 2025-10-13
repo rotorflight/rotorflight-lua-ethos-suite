@@ -25,6 +25,7 @@
     imageheight         : number   -- (Optional) Image height (px)
     imagealign          : string   -- (Optional) Image alignment ("center", "left", "right", "top", "bottom")
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

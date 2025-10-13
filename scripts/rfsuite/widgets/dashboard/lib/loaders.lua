@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 -- loaders.lua
 local loaders = {}
 

@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 -- create 16 servos in disabled state
 local servoTable = {}
 servoTable = {}

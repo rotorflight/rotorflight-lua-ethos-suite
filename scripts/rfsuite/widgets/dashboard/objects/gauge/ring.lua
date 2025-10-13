@@ -57,7 +57,7 @@
     ringbattsubpaddingtop    : number    -- (Optional) Top padding override for subtext
     ringbattsubpaddingbottom : number    -- (Optional) Bottom padding override for subtext
 ]]
-
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

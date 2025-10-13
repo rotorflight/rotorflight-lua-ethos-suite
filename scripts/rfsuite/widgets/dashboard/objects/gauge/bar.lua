@@ -85,6 +85,7 @@
     subtextpaddingtop    : number   -- (Optional) Extra offset from top of bar (default: 0)
     subtextpaddingbottom : number   -- (Optional) Padding above bottom of bar (default: 0)
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

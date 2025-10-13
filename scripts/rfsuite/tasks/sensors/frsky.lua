@@ -1,4 +1,5 @@
 -- tasks/sensors/frsky.lua  (lazy sid load, compact maps, free sid; acts only on whitelisted S.Port sensors)
+local rfsuite = require("rfsuite") 
 
 local arg = {...}
 local config = arg[1]

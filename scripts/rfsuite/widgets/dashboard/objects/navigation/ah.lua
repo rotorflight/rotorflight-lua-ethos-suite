@@ -22,6 +22,7 @@
     groundspeedmin            : number   -- Minimum displayed groundspeed (default: 0)
     groundspeedmax            : number   -- Maximum displayed groundspeed (default: 100)
 ]]
+local rfsuite = require("rfsuite") 
 
 local render    = {}
 local utils     = rfsuite.widgets.dashboard.utils

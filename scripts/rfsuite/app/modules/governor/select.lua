@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local function openPage(pidx, title, script)
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then

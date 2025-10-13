@@ -14,12 +14,13 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
+ local rfsuite = require("rfsuite")
 
 -- Dashboard module table
 local dashboard = {}  -- main namespace for all dashboard functionality
 
 -- cache some functions and variables for performance
-local compile = rfsuite.compiler.loadfile
+local compile = loadfile
 
 local baseDir = rfsuite.config.baseDir
 local preferences = rfsuite.config.preferences

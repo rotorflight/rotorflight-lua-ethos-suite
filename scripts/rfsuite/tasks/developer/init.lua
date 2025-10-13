@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite")
+
 local init = {
     interval        = -1,                -- run every 5 seconds (set to -1 to disable after debug)
     script          = "developer.lua",  -- run this script

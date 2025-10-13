@@ -5,6 +5,7 @@
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
 --]]
+local rfsuite = require("rfsuite")
 
 local tasks = {}
 local tasksList = {}
@@ -48,7 +49,7 @@ function tasks.findTasks()
             if file:match("%.lua$") then
                 local fullPath = dirPath .. file
                 local name = level .. "/" .. file:gsub("%.lua$", "")
-                local chunk, err = rfsuite.compiler.loadfile(fullPath)
+                local chunk, err = loadfile(fullPath)
                 if not chunk then
                     rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. err, "error")
                 else

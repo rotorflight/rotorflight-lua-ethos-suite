@@ -18,6 +18,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+ 
 --
 -- background processing of msp traffic
 --
@@ -29,7 +31,7 @@ local msp = {}
 msp.activeProtocol = nil
 msp.onConnectChecksInit = true
 
-local protocol = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/protocols.lua"))()
+local protocol = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/protocols.lua"))()
 
 local telemetryTypeChanged = false
 
@@ -40,7 +42,7 @@ msp.protocol = protocol.getProtocol()
 
 -- preload all transport methods
 msp.protocolTransports = {}
-for i, v in pairs(protocol.getTransports()) do msp.protocolTransports[i] = assert(rfsuite.compiler.loadfile(v))() end
+for i, v in pairs(protocol.getTransports()) do msp.protocolTransports[i] = assert(loadfile(v))() end
 
 -- set active transport table to use
 local transport = msp.protocolTransports[msp.protocol.mspProtocol]
@@ -49,15 +51,15 @@ msp.protocol.mspSend = transport.mspSend
 msp.protocol.mspWrite = transport.mspWrite
 msp.protocol.mspPoll = transport.mspPoll
 
-msp.mspQueue = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspQueue.lua"))()
+msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
 msp.mspQueue.loopInterval = 0.01   -- process every 10ms (throttles CPU)
 msp.mspQueue.copyOnAdd    = false  -- keep RAM/GC low (set true for strict immutability)
 msp.mspQueue.timeout      = 2.0    -- per-message timeout (override if you want)
 
-msp.mspHelper = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspHelper.lua"))()
-msp.api = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
-msp.common = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
+msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspHelper.lua"))()
+msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
+msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
 
 local delayDuration = 2  -- seconds
 local delayStartTime = nil

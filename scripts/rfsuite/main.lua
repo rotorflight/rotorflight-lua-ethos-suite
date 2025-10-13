@@ -16,16 +16,13 @@
 ]]
 
 -- Namespace for the suite (kept local; not global)
-local rfsuite = {}
-rfsuite.session = {}
+local rfsuite = { session = {} }
+package.loaded.rfsuite = rfsuite
 
--- Shared environment so all chunks see `rfsuite` without polluting _G
-local ENV = setmetatable({ rfsuite = rfsuite }, {
+-- If you still want to ban accidental globals in this chunk:
+local _ENV = setmetatable({ rfsuite = rfsuite }, {
   __index = _G,
-  -- Uncomment to forbid accidental globals from modules:
-   __newindex = function(_, k)
-     error("attempt to create global '" .. tostring(k) .."'", 2)
-  end
+  __newindex = function(_, k) error("attempt to create global '"..tostring(k).."'", 2) end
 })
 
 -- Ensure legacy font (ethos 1.6 vs 1.7)
@@ -71,7 +68,7 @@ rfsuite.performance = performance
 -- Preferences / INI
 --======================
 -- Load `ini.lua` inside ENV so it can reference `rfsuite` if needed
-rfsuite.ini = assert(loadfile("lib/ini.lua", "t", ENV))(config) -- self-contained; never compiled
+rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config) -- self-contained; never compiled
 
 local userpref_defaults = {
   general = {
@@ -155,15 +152,13 @@ end
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
 
--- Load the compiler in ENV so it can in turn load other files in the same ENV
-rfsuite.compiler = assert(loadfile("lib/compile.lua", "t", ENV))(rfsuite.config)
 
 -- Subsequent modules are loaded through the compiler, which preserves ENV
-rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
+rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
 
-rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
+rfsuite.app = assert(loadfile("app/app.lua"))(rfsuite.config)
 
-rfsuite.tasks = assert(rfsuite.compiler.loadfile("tasks/tasks.lua"))(rfsuite.config)
+rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(rfsuite.config)
 
 -- Flight mode & session
 rfsuite.flightmode = { current = "preflight" }
@@ -254,7 +249,7 @@ local function register_bg_task()
 end
 
 local function load_widget_cache(cachePath)
-  local loadf, loadErr = rfsuite.compiler.loadfile(cachePath)
+  local loadf, loadErr = loadfile(cachePath)
   if not loadf then
     rfsuite.utils.log("[cache] loadfile failed: " .. tostring(loadErr), "info")
     return nil
@@ -284,7 +279,7 @@ local function register_widgets(widgetList)
   for _, v in ipairs(widgetList) do
     if v.script then
       local path = "widgets/" .. v.folder .. "/" .. v.script
-      local scriptModule = assert(rfsuite.compiler.loadfile(path))(config)
+      local scriptModule = assert(loadfile(path))(config)
 
       local base = v.varname or v.script:gsub("%.lua$", "")
       if rfsuite.widgets[base] then

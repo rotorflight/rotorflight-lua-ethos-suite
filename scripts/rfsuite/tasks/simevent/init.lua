@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     interval       = 1,                 -- run every second
     script         = "simevent.lua",    -- run this script

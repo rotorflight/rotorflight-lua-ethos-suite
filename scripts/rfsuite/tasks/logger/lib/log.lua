@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite")
+
 -- compact logger (console + file), same semantics as your current module
 local function Ring(cap)
   return {d={},h=1,t=1,n=0,c=cap or 64,

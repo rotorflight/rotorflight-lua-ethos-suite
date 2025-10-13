@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite")
+
 local init = {
     interval        = 1.0,                  -- run every 1.0 seconds
     script          = "adjfunctions.lua",   -- run this script

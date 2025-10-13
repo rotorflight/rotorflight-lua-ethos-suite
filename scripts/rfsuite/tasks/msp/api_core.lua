@@ -19,6 +19,7 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
 
 local core = {}
 

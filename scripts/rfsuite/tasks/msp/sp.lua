@@ -18,6 +18,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local transport = {}
 
 local LOCAL_SENSOR_ID = 0x0D

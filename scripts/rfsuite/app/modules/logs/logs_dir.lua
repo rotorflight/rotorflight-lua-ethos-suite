@@ -1,5 +1,7 @@
+local rfsuite = require("rfsuite") 
+
 -- Load utility functions
-local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
+local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
 -- Wakeup control flag
 local enableWakeup = false

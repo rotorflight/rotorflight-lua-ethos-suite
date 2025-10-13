@@ -5,6 +5,7 @@
  * - Memory: Lua heap free (KB) + GC used (KB) EMA
  * - Module name: performance (to avoid clobbering system os)
 ]]
+local rfsuite = require("rfsuite") 
 
 local arg = {...}
 local config = arg and arg[1]

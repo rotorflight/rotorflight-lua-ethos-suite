@@ -14,6 +14,7 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
+local rfsuite = require("rfsuite") 
 
 local arg = { ... }
 local config = arg[1]
@@ -28,7 +29,7 @@ local taskExecutionPercent = 50 -- 50% of tasks will run each cycle
 
 -- Dynamically load task modules and populate wakeupHandlers
 for _, name in ipairs(taskNames) do
-    toolbox[name] = assert(rfsuite.compiler.loadfile("tasks/toolbox/tasks/" .. name .. ".lua"))(rfsuite.config)
+    toolbox[name] = assert(loadfile("tasks/toolbox/tasks/" .. name .. ".lua"))(rfsuite.config)
     table.insert(wakeupHandlers, function() toolbox[name].wakeup() end)
 end
 

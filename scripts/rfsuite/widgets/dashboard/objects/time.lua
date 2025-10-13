@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local wrapper = {}
 
 local renders = rfsuite.widgets.dashboard.renders
@@ -40,7 +42,7 @@ function wrapper.wakeup(box)
 
     if not renders[subtype] then
         local path = folder .. subtype .. ".lua"
-        local loader = rfsuite.compiler.loadfile(path)
+        local loader = loadfile(path)
         if loader then
             renders[subtype] = loader()
         else

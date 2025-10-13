@@ -18,6 +18,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local transport = {}
 
 -- CRSF Devices

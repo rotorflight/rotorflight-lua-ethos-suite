@@ -17,6 +17,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     title = "@i18n(app.modules.rates_advanced.rates_type)@", -- title of the page
     section = "hidden", -- do not run if busy with msp

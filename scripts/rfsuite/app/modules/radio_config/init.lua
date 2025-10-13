@@ -17,6 +17,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+ 
 local init = {
     title = "@i18n(app.modules.radio_config.name)@", -- title of the page
     section = "hardware", -- do not run if busy with msp

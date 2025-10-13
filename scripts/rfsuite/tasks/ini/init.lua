@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite")
+
 local init = {
     interval        = -1,      -- disable the wakeup as we dont use it
     script          = "ini.lua", -- run this script

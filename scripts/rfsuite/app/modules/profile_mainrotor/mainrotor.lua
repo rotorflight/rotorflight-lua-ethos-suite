@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local activateWakeup = false
 
 

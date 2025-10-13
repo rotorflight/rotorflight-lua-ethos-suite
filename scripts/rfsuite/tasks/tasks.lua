@@ -42,10 +42,12 @@
 -- }
 
 ]] --
+local rfsuite = require("rfsuite")
+
 
 -- keep these constant / cheap definitions at file scope
 local utils = rfsuite.utils
-local compiler = rfsuite.compiler.loadfile
+local compiler = loadfile
 
 local currentTelemetrySensor
 local tasksPerCycle
@@ -190,7 +192,7 @@ end
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
     if io.open(cachePath, "r") then
-        local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
+        local ok, cached = pcall(dofile, cachePath)
         if ok and type(cached) == "table" then
             tasks._initMetadata = cached
             utils.log("[cache] Loaded task metadata from cache", "info")

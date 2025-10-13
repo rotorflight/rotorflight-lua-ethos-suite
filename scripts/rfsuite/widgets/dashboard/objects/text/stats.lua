@@ -45,6 +45,7 @@
       - "unit" always overrides; if not set, unit is resolved from telemetry.sensorTable[source] if available.
       - To display min stats, set stattype = "min"; for max, omit or set stattype = "max".
 --]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

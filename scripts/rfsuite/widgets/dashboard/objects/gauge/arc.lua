@@ -54,6 +54,7 @@
     gaugepadding        : number    -- (Optional) Horizontal-only padding applied to arc radius (shrinks arc from left/right only)
     gaugepaddingbottom  : number    -- (Optional) Extra space added below arc region, pushing arc upward (vertical only)
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

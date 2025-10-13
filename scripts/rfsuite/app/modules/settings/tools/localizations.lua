@@ -1,4 +1,5 @@
 
+local rfsuite = require("rfsuite") 
 local enableWakeup = false
 
 -- Local config table for in-memory edits

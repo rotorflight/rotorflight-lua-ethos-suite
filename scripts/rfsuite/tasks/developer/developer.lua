@@ -29,6 +29,8 @@
  * flag in main.lua. This will print out the msp request and response.
 
 ]] --
+local rfsuite = require("rfsuite")
+
 local arg = {...}
 
 local developer = {}

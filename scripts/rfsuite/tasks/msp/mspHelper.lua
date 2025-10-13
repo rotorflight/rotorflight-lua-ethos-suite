@@ -15,6 +15,8 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
  *
 ]] --
+local rfsuite = require("rfsuite") 
+
 local mspHelper = {}
 
 -- Generic readUInt supporting 8 to 512 bits

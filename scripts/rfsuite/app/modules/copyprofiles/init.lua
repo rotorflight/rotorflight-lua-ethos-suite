@@ -17,6 +17,7 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite")  
 local init = {
     title = "@i18n(app.modules.copyprofiles.name)@", -- title of the page
     section = "tools", -- do not run if busy with msp

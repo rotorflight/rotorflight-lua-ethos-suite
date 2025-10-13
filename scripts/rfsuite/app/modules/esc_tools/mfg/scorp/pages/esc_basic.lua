@@ -3,7 +3,7 @@
 local folder = "scorp"
 
 
-local ESC = assert(rfsuite.compiler.loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
+local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
 local apidata = {
     api = {

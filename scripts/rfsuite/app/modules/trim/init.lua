@@ -17,6 +17,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     title = "@i18n(app.modules.trim.name)@", -- title of the page
     section = "advanced", -- do not run if busy with msp

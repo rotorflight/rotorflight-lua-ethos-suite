@@ -17,6 +17,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     title = "@i18n(app.modules.diagnostics.name)@", -- title of the page
     section = "system", -- do not run if busy with msp

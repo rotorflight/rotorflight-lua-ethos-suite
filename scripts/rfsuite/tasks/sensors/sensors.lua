@@ -19,6 +19,8 @@
 
 ]] --
 --
+local rfsuite = require("rfsuite") 
+
 local arg = {...}
 local config = arg[1]
 
@@ -30,8 +32,8 @@ local delayStartTime = nil
 local delayPending = false
 local schedulerTick = 0
 
-local msp = assert(rfsuite.compiler.loadfile("tasks/sensors/msp.lua"))(config)
-local smart = assert(rfsuite.compiler.loadfile("tasks/sensors/smart.lua"))(config)
+local msp = assert(loadfile("tasks/sensors/msp.lua"))(config)
+local smart = assert(loadfile("tasks/sensors/smart.lua"))(config)
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
 
@@ -58,23 +60,23 @@ local function loadSensorModule()
     if system:getVersion().simulation == true then
         if not loadedSensorModule or loadedSensorModule.name ~= "sim" then
             --log("Loading Simulator sensor module","info")
-            loadedSensorModule = {name = "sim", module = assert(rfsuite.compiler.loadfile("tasks/sensors/sim.lua"))(config)}
+            loadedSensorModule = {name = "sim", module = assert(loadfile("tasks/sensors/sim.lua"))(config)}
         end   
     elseif protocol == "crsf" then
         if not loadedSensorModule or loadedSensorModule.name ~= "elrs" then
             --log("Loading ELRS sensor module","info")
-            loadedSensorModule = {name = "elrs", module = assert(rfsuite.compiler.loadfile("tasks/sensors/elrs.lua"))(config)}
+            loadedSensorModule = {name = "elrs", module = assert(loadfile("tasks/sensors/elrs.lua"))(config)}
         end
     elseif protocol == "sport" then
         if rfsuite.utils.apiVersionCompare(">=", "12.08") then
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky" then
                 --log("Loading FrSky sensor module","info")
-                loadedSensorModule = {name = "frsky", module = assert(rfsuite.compiler.loadfile("tasks/sensors/frsky.lua"))(config)}
+                loadedSensorModule = {name = "frsky", module = assert(loadfile("tasks/sensors/frsky.lua"))(config)}
             end
         else
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky_legacy" then
                 --log("Loading FrSky Legacy sensor module","info")
-                loadedSensorModule = {name = "frsky_legacy", module = assert(rfsuite.compiler.loadfile("tasks/sensors/frsky_legacy.lua"))(config)}
+                loadedSensorModule = {name = "frsky_legacy", module = assert(loadfile("tasks/sensors/frsky_legacy.lua"))(config)}
             end
         end
     else
@@ -147,7 +149,7 @@ end
 -- On-demand sid accessor with cache; allows freeing and reload later
 function sensors.getSid()
   if sensors.sid then return sensors.sid end
-  sensors.sid = assert(rfsuite.compiler.loadfile("tasks/sensors/sid.lua"))(config)
+  sensors.sid = assert(loadfile("tasks/sensors/sid.lua"))(config)
   return sensors.sid
 end
 

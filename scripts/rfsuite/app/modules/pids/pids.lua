@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local activateWakeup = false
 
 local apidata = {
@@ -54,7 +56,7 @@ local function openPage(idx, title, script)
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
 
-    rfsuite.app.Page = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
+    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
     -- collectgarbage()
 
     rfsuite.app.lastIdx = idx

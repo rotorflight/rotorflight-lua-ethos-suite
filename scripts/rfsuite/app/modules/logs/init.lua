@@ -17,6 +17,8 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     title = "@i18n(app.modules.logs.name)@", -- title of the page
     section = "footer", -- do not run if busy with msp

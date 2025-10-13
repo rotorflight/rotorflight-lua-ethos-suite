@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local sensorList = {
 --  [0]  = { sidElrs = 0x1000, sidSport = nil,     group = "system",   name = "NULL",          unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decNil" },
     [1]  = { sidElrs = 0x1001, sidSport = 0x5100,  group = "system",   name = "Heartbeat",     unit = UNIT_RAW,     prec = 0, min = 0,    max = 60000,   dec ="decU16",

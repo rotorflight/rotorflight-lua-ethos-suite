@@ -18,8 +18,10 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local pages = {}
-local sections = rfsuite.compiler.loadfile("app/modules/sections.lua")()
+local sections = loadfile("app/modules/sections.lua")()
 
 -- find the modules (this should already have been done in the tasks/tasks.lua script but we catch and retry on the offchance it hasn't)
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end

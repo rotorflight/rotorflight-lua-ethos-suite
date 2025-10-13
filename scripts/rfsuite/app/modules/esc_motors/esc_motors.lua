@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local title = "Motor/ESC Features"
 local enableWakeup = false
 

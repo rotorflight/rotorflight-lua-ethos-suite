@@ -36,6 +36,7 @@
     --     { value = "Failsafe", textcolor = "orange" },
     -- }
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

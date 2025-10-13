@@ -14,6 +14,8 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] -- Protocol constants
+local rfsuite = require("rfsuite") 
+
 local MSP_VERSION = (1 << 5)
 local MSP_STARTFLAG = (1 << 4)
 

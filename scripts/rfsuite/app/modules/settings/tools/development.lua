@@ -1,3 +1,4 @@
+local rfsuite = require("rfsuite") 
 local settings = {}
 local enableWakeup = false
 
@@ -36,24 +37,8 @@ formFieldCount = formFieldCount + 1
                                                             end    
                                                         end)    
 
-
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_compilation)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                                                        nil, 
-                                                        function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.developer then
-                                                                return settings['compile'] 
-                                                            end
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.developer then
-                                                                settings.compile = newValue
-                                                            end    
-                                                        end)           
+        
                                                         
-
     if system.getVersion().simulation then                                                     
         formFieldCount = formFieldCount + 1
         rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1

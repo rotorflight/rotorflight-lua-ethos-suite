@@ -1,4 +1,5 @@
 -- tasks/sensors/elrs.lua  (lazy sid load, compact map, free sid; polls only whitelisted sensors)
+local rfsuite = require("rfsuite") 
 
 local arg = {...}
 local config = arg[1]

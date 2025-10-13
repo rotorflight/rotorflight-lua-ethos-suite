@@ -17,6 +17,7 @@
  * 
 
 ]] --
+local rfsuite = require("rfsuite")  
 local init = {
     title = "@i18n(app.modules.stats.name)@", -- title of the page
     section = "hardware", -- section in which the page will be displayed

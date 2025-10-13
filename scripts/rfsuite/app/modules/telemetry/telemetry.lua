@@ -1,3 +1,4 @@
+local rfsuite = require("rfsuite") 
 -- telemetry.lua (refactored to use sid.lua)
 
 
@@ -16,7 +17,7 @@ local PREV_STATE = {}
 -- Expects sid.lua to 'return sensorList' (table keyed by numeric ID)
 ----------------------------------------------------------------------
 --local sensorList = rfsuite.tasks.sensors.getSid()
-local sensorList= assert(rfsuite.compiler.loadfile("tasks/sensors/sid.lua"))(config)
+local sensorList= assert(loadfile("tasks/sensors/sid.lua"))(config)
 
 ----------------------------------------------------------------------
 -- Build TELEMETRY_SENSORS from sid.lua

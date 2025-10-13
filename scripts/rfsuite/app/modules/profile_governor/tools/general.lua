@@ -1,4 +1,6 @@
 
+local rfsuite = require("rfsuite") 
+
 local activateWakeup = false
 local governorDisabledMsg = false
 

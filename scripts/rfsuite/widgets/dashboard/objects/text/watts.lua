@@ -37,6 +37,8 @@
       source  ("current" | "min" | "max" | "avg", default "current"),
       unit    (optional manual override; "" to hide)
 ]]
+local rfsuite = require("rfsuite") 
+
 
 local render = {}
 

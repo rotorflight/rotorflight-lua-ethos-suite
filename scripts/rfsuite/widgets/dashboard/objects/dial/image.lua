@@ -44,6 +44,7 @@
 
     bgcolor                 : color    -- Widget background color (default: theme fallback)
 ]]
+local rfsuite = require("rfsuite")     
 
 local render = {}
 

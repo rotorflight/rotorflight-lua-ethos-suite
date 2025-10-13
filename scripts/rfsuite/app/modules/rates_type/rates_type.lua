@@ -1,3 +1,4 @@
+local rfsuite = require("rfsuite") 
 
 local activateWakeup = false
 local extraMsgOnSave = nil
@@ -37,7 +38,7 @@ local function preSave(self)
         tables[4] = "app/modules/rates/ratetables/actual.lua"
         tables[5] = "app/modules/rates/ratetables/quick.lua"
         
-        local mytable = assert(rfsuite.compiler.loadfile(tables[table_id]))()
+        local mytable = assert(loadfile(tables[table_id]))()
 
         rfsuite.utils.log("Using defaults from table " .. tables[table_id], "info")
 

@@ -1,5 +1,5 @@
 
-
+local rfsuite = require("rfsuite") 
 
 
 local S_PAGES = {
@@ -89,7 +89,7 @@ local function openPage(pidx, title, script)
     if rfsuite.preferences.menulastselected["settings_dashboard_audio"] == nil then rfsuite.preferences.menulastselected["settings_dashboard_audio"] = 1 end
 
 
-    local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
+    local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
     local lc = 0
     local bx = 0

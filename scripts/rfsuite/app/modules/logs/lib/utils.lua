@@ -1,3 +1,5 @@
+local rfsuite = require("rfsuite") 
+
 local utils = {}
 
 --- Resolves model name from telemetry folder's configuration file

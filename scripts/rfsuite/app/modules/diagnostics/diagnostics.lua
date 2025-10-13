@@ -1,4 +1,5 @@
 
+local rfsuite = require("rfsuite") 
 local app = rfsuite.app
 local log = rfsuite.utils.log
 
@@ -134,7 +135,7 @@ local function openPage(pidx, title, script)
     if rfsuite.preferences.menulastselected["diagnostics"] == nil then rfsuite.preferences.menulastselected["diagnostics"] = 1 end
 
 
-    local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
+    local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
     local lc = 0
     local bx = 0

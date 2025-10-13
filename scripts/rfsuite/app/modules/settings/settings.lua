@@ -1,4 +1,4 @@
-
+local rfsuite = require("rfsuite") 
 
 local S_PAGES = {
     {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png"},
@@ -106,7 +106,7 @@ local function openPage(pidx, title, script)
     if rfsuite.preferences.menulastselected["settings"] == nil then rfsuite.preferences.menulastselected["settings"] = 1 end
 
 
-    local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
+    local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
     local lc = 0
     local bx = 0

@@ -53,6 +53,7 @@
     needlehubsize           : number    -- (Optional) Needle hub circle radius (default: 7)
 
 ]]
+local rfsuite = require("rfsuite") 
 
 local render = {}
 

@@ -25,7 +25,8 @@
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
-local core = assert(rfsuite.compiler.loadfile("tasks/msp/api_core.lua"))()
+local rfsuite = require("rfsuite") 
+local core = assert(loadfile("tasks/msp/api_core.lua"))()
 
 -- Constants for MSP Commands
 local API_NAME = "API_VERSION" -- API name (must be same as filename)

@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite") 
+ 
 -- Persistent vars for the smart fuel logic
 local batteryConfigCache      = nil   -- Cached battery configuration data.
 local fuelStartingPercent     = nil   -- Initial fuel percentage at the start of measurement.

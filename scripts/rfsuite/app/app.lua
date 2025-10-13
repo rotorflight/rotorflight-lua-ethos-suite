@@ -17,11 +17,13 @@
 
 ]] --
 
+local rfsuite = require("rfsuite")
+
 -- Root app table and common shortcuts
 local app     = {}
 local utils   = rfsuite.utils
 local log     = utils.log
-local compile = rfsuite.compiler.loadfile
+local compile = loadfile
 
 local arg = {...}
 local config = arg[1]

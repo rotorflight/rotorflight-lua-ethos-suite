@@ -1,5 +1,7 @@
+local rfsuite = require("rfsuite") 
+
 -- display vars
-local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
+local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 local res = system.getVersion()
 local LCD_W = res.lcdWidth
 local LCD_H = res.lcdHeight

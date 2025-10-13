@@ -16,6 +16,8 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+local rfsuite = require("rfsuite") 
+
 local init = {
     interval        = 0.52,             -- run every 0.52 seconds
     script          = "telemetry.lua",  -- run this script
