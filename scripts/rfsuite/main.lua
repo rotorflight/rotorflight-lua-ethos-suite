@@ -19,10 +19,10 @@
 local rfsuite = { session = {} }
 package.loaded.rfsuite = rfsuite
 
--- If you still want to ban accidental globals in this chunk:
+-- Log accidentally created globals:
 local _ENV = setmetatable({ rfsuite = rfsuite }, {
   __index = _G,
-  __newindex = function(_, k) error("attempt to create global '"..tostring(k).."'", 2) end
+  __newindex = function(_, k) print("attempt to create global '"..tostring(k).."'", 2) end
 })
 
 -- Ensure legacy font (ethos 1.6 vs 1.7)
