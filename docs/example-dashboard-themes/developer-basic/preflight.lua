@@ -27,7 +27,7 @@ SEE THE TOP OF EACH WIDGET OBJECT FILE.
 -- ACTUAL DASHBOARD CONFIG BELOW (edit/add your widgets here!)
 --------------------------------------------------------------------------------
 ]]
-
+ local rfsuite = require("rfsuite")
 -- Custom render function for a box
 local function customPaintFunction(x, y, w, h)
     local msg = "Render Function"

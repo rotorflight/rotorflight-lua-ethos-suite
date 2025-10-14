@@ -1,4 +1,5 @@
 
+local rfsuite = require("rfsuite") 
 local utils = {}
 
 -- error function

@@ -10,7 +10,7 @@
  * GNU General Public License for more details.
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
-
+ local rfsuite = require("rfsuite")
 local config = {}
 local THEME_DEFAULTS = {
     v_min          = 18.0,      -- default: 6s x 3.0V

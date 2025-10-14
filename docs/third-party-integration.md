@@ -39,6 +39,7 @@ or a faster and more efficient:
 
 
 ```lua
+local rfsuite = require("rfsuite")
 local rpmSensor = rfsuite.tasks.telemetry.getSensorSource("rpm")
 local rpm = rpmSensor:value()
 ```
@@ -48,6 +49,7 @@ local rpm = rpmSensor:value()
 Use MSP to query the flight controller:
 
 ```lua
+local rfsuite = require("rfsuite")
 local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
 API.setCompleteHandler(function(self, buf)
   local mode = API.readValue("gov_mode")
@@ -64,6 +66,7 @@ API.read()
 * **Logging**: `rfsuite.utils.log(message, level)` where `level` is `"info"`, `"warn"`, or `"error"`.
 
 ```lua
+local rfsuite = require("rfsuite")
 rfsuite.utils.log("Headspeed: " .. rpm, "info")
 ```
 
@@ -87,6 +90,7 @@ Below is a widget that logs session info and telemetry every 5 seconds, using th
  * This script is a simple widget that shows how you can access various
  * session variables from Rotorflight.
 ]]--
+local rfsuite = require("rfsuite")
 
 local environment = system.getVersion()
 local lastPrintTime = 0

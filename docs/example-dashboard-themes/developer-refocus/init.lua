@@ -17,6 +17,7 @@
  * 
 ]] --
 -- Theme initialization table
+ local rfsuite = require("rfsuite")
 local init = {
     name = "Developer Refocus Examples",                -- Theme name
     preflight = "preflight.lua",     -- Script to run before takeoff

@@ -16,6 +16,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+ local rfsuite = require("rfsuite") 
 local init = {
     script = "toolbox.lua", -- run this script
     varname = "rftlbx", -- variable name used in the suite. (if nil, we use the script var with .lua removed)
