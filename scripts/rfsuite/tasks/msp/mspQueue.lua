@@ -43,17 +43,34 @@ local function qcount(q)
     return q.last - q.first + 1
 end
 
--- Optional deep copy (used only if copyOnAdd=true)
-local function deepCopy(original)
-    if type(original) == "table" then
-        local copy = {}
-        for k, v in next, original do copy[k] = deepCopy(v) end
-        return setmetatable(copy, getmetatable(original))
-    else
-        return original
-    end
+-- Replace the old deepCopy with this safer variant:
+local function cloneArray(src)
+    local dst = {}
+    for i = 1, #src do dst[i] = src[i] end
+    return setmetatable(dst, getmetatable(src))
 end
 
+local function shallowClone(src)
+    local dst = {}
+    for k, v in pairs(src) do dst[k] = v end
+    return setmetatable(dst, getmetatable(src))
+end
+
+local function cloneMessage(msg)
+    local out = {}
+    for k, v in pairs(msg) do
+        if k == "payload" and type(v) == "table" then
+            out[k] = cloneArray(v)                 -- preserve array semantics
+        elseif k == "simulatorResponse" then
+            out[k] = v                             -- keep as reference
+        elseif type(v) == "table" then
+            out[k] = shallowClone(v)               -- shallow only; no recursion
+        else
+            out[k] = v
+        end
+    end
+    return setmetatable(out, getmetatable(msg))
+end
 -- Safe logging guard
 local function LOG_ENABLED_MSP()
     return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp
@@ -277,7 +294,7 @@ function MspQueueController:add(message)
 
     if message.uuid then self.uuid = message.uuid end
 
-    local toQueue = self.copyOnAdd and deepCopy(message) or message
+    local toQueue = self.copyOnAdd and cloneMessage(message) or message
     qpush(self.queue, toQueue)
     return self
 end

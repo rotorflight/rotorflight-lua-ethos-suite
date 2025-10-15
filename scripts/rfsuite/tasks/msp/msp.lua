@@ -54,7 +54,7 @@ msp.protocol.mspPoll = transport.mspPoll
 msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
 msp.mspQueue.loopInterval = 0.01   -- process every 10ms (throttles CPU)
-msp.mspQueue.copyOnAdd    = false  -- keep RAM/GC low (set true for strict immutability)
+msp.mspQueue.copyOnAdd    = true  -- keep RAM/GC low (set true for strict immutability)
 msp.mspQueue.timeout      = 2.0    -- per-message timeout (override if you want)
 
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspHelper.lua"))()
