@@ -5,6 +5,44 @@ local activateWakeup = false
 local governorDisabledMsg = false
 
 
+-- Field index constants (must match order in apidata->formdata->fields)
+local FIELD_FULL_HEADSPEED       = 1
+local FIELD_MIN_THROTTLE         = 2
+local FIELD_MAX_THROTTLE         = 3
+local FIELD_FALLBACK_DROP        = 4
+local FIELD_GAIN                 = 5
+local FIELD_P_GAIN               = 6
+local FIELD_I_GAIN               = 7
+local FIELD_D_GAIN               = 8
+local FIELD_F_GAIN               = 9
+local FIELD_YAW_WEIGHT           = 10
+local FIELD_CYCLIC_WEIGHT        = 11
+local FIELD_COLLECTIVE_WEIGHT    = 12
+local FIELD_TTA_GAIN             = 13
+local FIELD_TTA_LIMIT            = 14
+
+-- decode bit flags into a table of {field = true/false}
+local function decodeGovernorFlags(flags)
+    local governor_flags_bitmap = {
+        { field = "fc_throttle_curve" },   -- bit 0
+        { field = "tx_precomp_curve" },    -- bit 1
+        { field = "fallback_precomp" },    -- bit 2
+        { field = "voltage_comp" },        -- bit 3
+        { field = "pid_spoolup" },         -- bit 4
+        { field = "hs_adjustment" },       -- bit 5
+        { field = "dyn_min_throttle" },    -- bit 6
+        { field = "autorotation" },        -- bit 7
+        { field = "suspend" },             -- bit 8
+        { field = "bypass" },              -- bit 9
+    }
+
+    local decoded = {}
+    for bitIndex, info in ipairs(governor_flags_bitmap) do
+        local mask = 2 ^ (bitIndex - 1)
+        decoded[info.field] = (flags & mask) ~= 0
+    end
+    return decoded
+end
 
 local apidata = {
         api = {
@@ -64,6 +102,23 @@ local function wakeup()
 
             end
         end
+
+        local flags = rfsuite.app.Page.apidata.values['GOVERNOR_PROFILE'].governor_flags
+        local decodedFlags = decodeGovernorFlags(flags)
+ 
+        if decodedFlags["tx_precomp_curve"] then  
+            rfsuite.app.formFields[FIELD_F_GAIN]:enable(false)
+            rfsuite.app.formFields[FIELD_YAW_WEIGHT]:enable(false)
+            rfsuite.app.formFields[FIELD_CYCLIC_WEIGHT]:enable(false)
+            rfsuite.app.formFields[FIELD_COLLECTIVE_WEIGHT]:enable(false)
+
+        else
+            rfsuite.app.formFields[FIELD_F_GAIN]:enable(true)
+            rfsuite.app.formFields[FIELD_YAW_WEIGHT]:enable(true)
+            rfsuite.app.formFields[FIELD_CYCLIC_WEIGHT]:enable(true)
+            rfsuite.app.formFields[FIELD_COLLECTIVE_WEIGHT]:enable(true)
+        end
+
 
     end
 
