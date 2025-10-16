@@ -3237,9 +3237,9 @@
           "translation": "Filters"
         },
         "menu_flags": {
-          "english": "Flags",
+          "english": "Behaviour",
           "needs_translation": false,
-          "translation": "Vlaggen"
+          "translation": "Gedrag"
         },
         "menu_general": {
           "english": "General",

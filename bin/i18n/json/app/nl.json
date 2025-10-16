@@ -2670,8 +2670,8 @@
         "needs_translation": false
       },
       "menu_flags": {
-        "english": "Flags",
-        "translation": "Vlaggen",
+        "english": "Behaviour",
+        "translation": "Gedrag",
         "needs_translation": false
       },
       "menu_filters": {
