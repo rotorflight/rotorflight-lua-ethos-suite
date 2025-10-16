@@ -3798,9 +3798,9 @@
           "translation": "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."
         },
         "hs_adjustment": {
-          "english": "HS Adjustment",
+          "english": "Headspeed Adjustment",
           "needs_translation": false,
-          "translation": "HS Adjustment"
+          "translation": "Headspeed Adjustment"
         },
         "i": {
           "english": "I",
@@ -3833,9 +3833,9 @@
           "translation": "P"
         },
         "pid_spoolup": {
-          "english": "PID Spoolup",
+          "english": "Governed Spoolup",
           "needs_translation": false,
-          "translation": "PID Spoolup"
+          "translation": "Governed Spoolup"
         },
         "precomp": {
           "english": "Precomp",
@@ -3863,14 +3863,14 @@
           "translation": "Limit"
         },
         "tx_precomp_curve": {
-          "english": "TX Precomp Curve",
+          "english": "TX Throttle V-Curve",
           "needs_translation": false,
-          "translation": "TX Precomp Curve"
+          "translation": "TX Throttle V-Curve"
         },
         "voltage_comp": {
-          "english": "Voltage Comp",
+          "english": "Voltage Compensation",
           "needs_translation": false,
-          "translation": "Voltage Comp"
+          "translation": "Voltage Compensation"
         },
         "yaw": {
           "english": "Yaw",

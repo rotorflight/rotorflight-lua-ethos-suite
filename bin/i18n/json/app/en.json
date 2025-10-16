@@ -1817,8 +1817,8 @@
         "needs_translation": false
       },
       "tx_precomp_curve": {
-        "english": "TX Precomp Curve",
-        "translation": "TX Precomp Curve",
+        "english": "TX Throttle V-Curve",
+        "translation": "TX Throttle V-Curve",
         "needs_translation": false
       },
       "fallback_precomp": {
@@ -1827,18 +1827,18 @@
         "needs_translation": false
       },
       "voltage_comp": {
-        "english": "Voltage Comp",
-        "translation": "Voltage Comp",
+        "english": "Voltage Compensation",
+        "translation": "Voltage Compensation",
         "needs_translation": false
       },
       "pid_spoolup": {
-        "english": "PID Spoolup",
-        "translation": "PID Spoolup",
+        "english": "Governed Spoolup",
+        "translation": "Governed Spoolup",
         "needs_translation": false
       },
       "hs_adjustment": {
-        "english": "HS Adjustment",
-        "translation": "HS Adjustment",
+        "english": "Headspeed Adjustment",
+        "translation": "Headspeed Adjustment",
         "needs_translation": false
       },
       "dyn_min_throttle": {

@@ -3798,7 +3798,7 @@
           "translation": "Heck-Drehmoment-Unterstuetzung: Fuer motorisierte Heckrotoren. Verstaerkung und Begrenzung der Drehzahlerhoehung beim Gierausgleich durch das Hauptrotordrehmoment."
         },
         "hs_adjustment": {
-          "english": "HS Adjustment",
+          "english": "Headspeed Adjustment",
           "needs_translation": false,
           "translation": "Drehz.Anpassung"
         },
@@ -3833,7 +3833,7 @@
           "translation": "P"
         },
         "pid_spoolup": {
-          "english": "PID Spoolup",
+          "english": "Governed Spoolup",
           "needs_translation": false,
           "translation": "PID-Spoolup"
         },
@@ -3863,12 +3863,12 @@
           "translation": "Limit"
         },
         "tx_precomp_curve": {
-          "english": "TX Precomp Curve",
+          "english": "TX Throttle V-Curve",
           "needs_translation": false,
           "translation": "TX-Vorkomp.Kurve"
         },
         "voltage_comp": {
-          "english": "Voltage Comp",
+          "english": "Voltage Compensation",
           "needs_translation": false,
           "translation": "Spannungskomp."
         },

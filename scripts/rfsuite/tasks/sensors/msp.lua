@@ -111,6 +111,9 @@ local msp_sensors = {
         interval_armed    = -1,
         interval_disarmed = 5,
         fields = {
+            voltageMeterSource = {
+                sessionname = { "batteryConfig", "voltageMeterSource" },
+            },
             batteryCapacity = {
                 sessionname = { "batteryConfig", "batteryCapacity" },
             },

@@ -3798,7 +3798,7 @@
           "translation": "Tail Torque Assist: Voor gemotoriseerde staart. Gains en minimale rotortoerental nemen toe voorhoofdrotorkoppel voor yaw-assistentie./n"
         },
         "hs_adjustment": {
-          "english": "HS Adjustment",
+          "english": "Headspeed Adjustment",
           "needs_translation": false,
           "translation": "HS Aanpassing"
         },
@@ -3833,7 +3833,7 @@
           "translation": "P"
         },
         "pid_spoolup": {
-          "english": "PID Spoolup",
+          "english": "Governed Spoolup",
           "needs_translation": false,
           "translation": "PID Optoeren"
         },
@@ -3863,12 +3863,12 @@
           "translation": "Limit"
         },
         "tx_precomp_curve": {
-          "english": "TX Precomp Curve",
+          "english": "TX Throttle V-Curve",
           "needs_translation": false,
           "translation": "TX Precomp Kromme"
         },
         "voltage_comp": {
-          "english": "Voltage Comp",
+          "english": "Voltage Compensation",
           "needs_translation": false,
           "translation": "Spanning Comp"
         },

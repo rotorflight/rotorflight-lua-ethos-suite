@@ -3798,7 +3798,7 @@
           "translation": "Asistencia de Torque de Cola: Para colas motorizadas. Ganancia y límite de aceleracion del rotor cuando se utiliza el torque del rotor principal para asistir al giro sobre el eje vertical."
         },
         "hs_adjustment": {
-          "english": "HS Adjustment",
+          "english": "Headspeed Adjustment",
           "needs_translation": false,
           "translation": "Ajuste VR"
         },
@@ -3833,7 +3833,7 @@
           "translation": "P"
         },
         "pid_spoolup": {
-          "english": "PID Spoolup",
+          "english": "Governed Spoolup",
           "needs_translation": false,
           "translation": "PID Arranque"
         },
@@ -3863,12 +3863,12 @@
           "translation": "Limite"
         },
         "tx_precomp_curve": {
-          "english": "TX Precomp Curve",
+          "english": "TX Throttle V-Curve",
           "needs_translation": false,
           "translation": "Curva Precomp TX"
         },
         "voltage_comp": {
-          "english": "Voltage Comp",
+          "english": "Voltage Compensation",
           "needs_translation": false,
           "translation": "Comp Voltaje"
         },
