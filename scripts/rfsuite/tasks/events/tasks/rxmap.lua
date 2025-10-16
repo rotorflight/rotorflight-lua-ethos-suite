@@ -59,7 +59,7 @@ function rxmap.wakeup()
     for name, src in pairs(channelSources) do
         if src then
             local val = src:value()
-            if val ~= nil then
+            if val and type(val) == "number" then
                  rfsuite.session.rx.values[name] = val
             end
         else
