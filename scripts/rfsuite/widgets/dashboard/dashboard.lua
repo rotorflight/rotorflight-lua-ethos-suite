@@ -395,9 +395,12 @@ function dashboard.computeOverlayMessage()
     end
 
     -- 2) Background task
-    if not tasks.active() then
-        return "@i18n(widgets.dashboard.check_bg_task)@"
-    end    
+    local elapsed = os.clock() - initTime
+    if elapsed > 10 then
+        if not tasks.active() then
+            return "@i18n(widgets.dashboard.check_bg_task)@"
+        end
+    end 
   
     -- 3) As soon as we know RF version, show it with precedence
     if rfsuite.session.apiVersion and rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
