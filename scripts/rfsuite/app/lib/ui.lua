@@ -246,7 +246,7 @@ function ui.openMainMenu()
 
     if tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
 
-    app.gfx_buttons["mainmenu"] = {}
+    if not app.gfx_buttons["mainmenu"] then app.gfx_buttons["mainmenu"] = {} end
     app.lastMenu = nil
 
     for k in pairs(app.gfx_buttons) do if k ~= "mainmenu" then app.gfx_buttons[k] = nil end end
@@ -256,9 +256,9 @@ function ui.openMainMenu()
 
     form.clear()
 
-    app.lastIdx = idx
-    app.lastTitle = title
-    app.lastScript = script
+    app.lastIdx = nil
+    app.lastTitle = nil
+    app.lastScript = nil
 
     if preferences.general.iconsize == nil or preferences.general.iconsize == "" then
         preferences.general.iconsize = 1
@@ -365,10 +365,11 @@ function ui.openMainMenuSub(activesection)
     app.formFieldsOffline = {}
     app.lastLabel = nil
     app.isOfflinePage = false
-    app.gfx_buttons[activesection] = {}
     app.lastMenu = activesection
     app.Page = nil
     app.PageTmp = nil
+
+    if not app.gfx_buttons[activesection] then app.gfx_buttons[activesection] = {} end
 
     for k in pairs(app.gfx_buttons) do if k ~= activesection then app.gfx_buttons[k] = nil end end
 
@@ -1727,6 +1728,8 @@ function ui.requestPage()
             app.Page.apidata.other[apiKey] = API.data().other or {}
             app.Page.apidata.retryCount[apiKey] = 0
             state.currentIndex = state.currentIndex + 1
+            API = nil
+            collectgarbage('collect')
             tasks.callback.inSeconds(0.5, processNextAPI)
         end)
 
@@ -1739,6 +1742,8 @@ function ui.requestPage()
             end
             retryCount = retryCount + 1
             app.Page.apidata.retryCount[apiKey] = retryCount
+            API = nil
+            collectgarbage('collect')            
             if retryCount < 3 then
                 log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
                 tasks.callback.inSeconds(0.5, processNextAPI)
@@ -1790,6 +1795,8 @@ function ui.saveSettings()
         API.setCompleteHandler(function(self, buf)
             completedRequests = completedRequests + 1
             log("API " .. apiNAME .. " write complete", "debug")
+            API = nil
+            collectgarbage('collect')
             if completedRequests == totalRequests then
                 log("All API requests have been completed!", "debug")
                 if app.Page.postSave then app.Page.postSave(app.Page) end
