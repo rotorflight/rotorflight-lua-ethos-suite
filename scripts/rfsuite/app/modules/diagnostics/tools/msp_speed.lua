@@ -36,35 +36,43 @@ resetStats()
 local RateLimit = os.clock()
 local Rate = 0.25
 
-local function getMSPPidBandwidth()
-    local message = {command = 94, processReply = function(self, buf) doNextMsp = true end, simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20}}
-    rfsuite.tasks.msp.mspQueue:add(message)
+local function getMSPBattery()
+        local API = rfsuite.tasks.msp.api.load("BATTERY_CONFIG")
+        API.setCompleteHandler(function(self, buf)
+            doNextMsp = true
+        end)
+        API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
+        API.read()
 end
 
-local function getMSPServos()
-    local message = {
-        command = 120,
-        processReply = function(self, buf) doNextMsp = true end,
-        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
+local function getMSPGovernor()
+        local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+        API.setCompleteHandler(function(self, buf)
+            doNextMsp = true
+        end)
+        API.setUUID("e2a1c5b3-7f4a-4c8e-9d2a-3b6f8e2d9a1c")
+        API.read()
 end
 
-local function getMSPPids()
-    local message = {command = 112, processReply = function(self, buf) doNextMsp = true end, simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0}}
-    rfsuite.tasks.msp.mspQueue:add(message)
+local function getMSPMixer()
+        local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
+        API.setCompleteHandler(function(self, buf)
+            doNextMsp = true
+        end)
+        API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
+        API.read()
 end
 
 local function getMSP()
 
     if getMSPCount == 0 then
-        getMSPPidBandwidth()
+        getMSPBattery()
         getMSPCount = 1
     elseif getMSPCount == 1 then
-        getMSPServos()
+        getMSPGovernor()
         getMSPCount = 2
     else
-        getMSPPids()
+        getMSPMixer()
         getMSPCount = 0
     end
 

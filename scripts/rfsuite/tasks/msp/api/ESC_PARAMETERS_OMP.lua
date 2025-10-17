@@ -4,7 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("tasks/msp/api_core.lua"))()
+local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
 local API_NAME = "ESC_PARAMETERS_OMP"
 local MSP_API_CMD_READ = 217

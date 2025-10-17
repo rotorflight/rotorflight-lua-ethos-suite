@@ -4,7 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("tasks/msp/api_core.lua"))()
+local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
 local API_NAME = "BATTERY_INI"
 local INI_FILE = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
