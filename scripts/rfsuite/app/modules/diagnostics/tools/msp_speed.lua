@@ -1,23 +1,9 @@
 --[[
- * Copyright (C) Rotorflight Project
- *
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
-local rfsuite = require("rfsuite") 
+
+local rfsuite = require("rfsuite")
 
 local line = {}
 local fields = {}
@@ -48,43 +34,29 @@ end
 resetStats()
 
 local RateLimit = os.clock()
-local Rate = 0.25 -- how many times per second we can call msp 
+local Rate = 0.25
 
 local function getMSPPidBandwidth()
-    local message = {
-        command = 94, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
-        simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20}
-    }
+    local message = {command = 94, processReply = function(self, buf) doNextMsp = true end, simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20}}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getMSPServos()
     local message = {
-        command = 120, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
+        command = 120,
+        processReply = function(self, buf) doNextMsp = true end,
         simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getMSPPids()
-    local message = {
-        command = 112, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
-        simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0}
-    }
+    local message = {command = 112, processReply = function(self, buf) doNextMsp = true end, simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0}}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getMSP()
-    -- three diff msp queries. 
+
     if getMSPCount == 0 then
         getMSPPidBandwidth()
         getMSPCount = 1
@@ -140,7 +112,6 @@ local function startTest(duration)
         wakeup = function()
             local now = os.clock()
 
-            -- kill if we loose link - but not in sim mode
             if rfsuite.session.telemetryState == false and startTest == true and system:getVersion().simulation ~= true then
                 if testLoader then
                     testLoader:close()
@@ -155,14 +126,12 @@ local function startTest(duration)
 
             testLoader:value((now - startTestTime) * 100 / startTestLength)
 
-            -- close progress box
             if (now - startTestLength) > startTestTime then
                 testLoader:close()
                 testLoader = nil
                 updateStats()
             end
 
-            -- do msp query
             if rfsuite.tasks.msp.mspQueue:isProcessed() and ((now - RateLimit) >= Rate) then
                 RateLimit = now
                 mspSpeedTestStats['total'] = mspSpeedTestStats['total'] + 1
@@ -184,31 +153,33 @@ local function startTest(duration)
 end
 
 local function openSpeedTestDialog()
-    local buttons = {{
-        label = "@i18n(app.modules.msp_speed.seconds_600)@",
-        action = function()
-            startTest(600)
-            return true
-        end
-    }, {
-        label = "@i18n(app.modules.msp_speed.seconds_300)@",
-        action = function()
-            startTest(300)
-            return true
-        end
-    }, {
-        label = "@i18n(app.modules.msp_speed.seconds_120)@",
-        action = function()
-            startTest(120)
-            return true
-        end
-    }, {
-        label = "@i18n(app.modules.msp_speed.seconds_30)@",
-        action = function()
-            startTest(30)
-            return true
-        end
-    }}
+    local buttons = {
+        {
+            label = "@i18n(app.modules.msp_speed.seconds_600)@",
+            action = function()
+                startTest(600)
+                return true
+            end
+        }, {
+            label = "@i18n(app.modules.msp_speed.seconds_300)@",
+            action = function()
+                startTest(300)
+                return true
+            end
+        }, {
+            label = "@i18n(app.modules.msp_speed.seconds_120)@",
+            action = function()
+                startTest(120)
+                return true
+            end
+        }, {
+            label = "@i18n(app.modules.msp_speed.seconds_30)@",
+            action = function()
+                startTest(30)
+                return true
+            end
+        }
+    }
     form.openDialog({title = "@i18n(app.modules.msp_speed.start)@", message = "@i18n(app.modules.msp_speed.start_prompt)@", buttons = buttons, options = TEXT_LEFT})
 end
 
@@ -230,29 +201,11 @@ local function openPage(pidx, title, script)
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "@i18n(app.navigation_menu)@",
-        icon = nil,
-        options = FONT_S,
-        press = function()
-            rfsuite.app.ui.openPage(
-                pageIdx,
-                "@i18n(app.modules.diagnostics.name)@",
-                "diagnostics/diagnostics.lua"
-            )
-        end
-    })
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight},
+                                                   {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, press = function() rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua") end})
     rfsuite.app.formNavigationFields['menu']:focus()
 
-    -- ACTION BUTTON
-    rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "*",
-        icon = nil,
-        options = FONT_S,
-        press = function()
-            openSpeedTestDialog()
-        end
-    })
+    rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {text = "*", icon = nil, options = FONT_S, press = function() openSpeedTestDialog() end})
 
     local posText = {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
 
@@ -305,17 +258,11 @@ local function mspSuccess(self)
     end
 end
 
-local function mspTimeout(self)
-    if testLoader then mspSpeedTestStats['timeouts'] = mspSpeedTestStats['timeouts'] + 1 end
-end
+local function mspTimeout(self) if testLoader then mspSpeedTestStats['timeouts'] = mspSpeedTestStats['timeouts'] + 1 end end
 
-local function mspRetry(self)
-    if testLoader then mspSpeedTestStats['retries'] = mspSpeedTestStats['retries'] + (self.retryCount - 1) end
-end
+local function mspRetry(self) if testLoader then mspSpeedTestStats['retries'] = mspSpeedTestStats['retries'] + (self.retryCount - 1) end end
 
-local function mspChecksum(self)
-    if testLoader then mspSpeedTestStats['checksum'] = mspSpeedTestStats['checksum'] + 1 end
-end
+local function mspChecksum(self) if testLoader then mspSpeedTestStats['checksum'] = mspSpeedTestStats['checksum'] + 1 end end
 
 local function close()
     if testLoader then
@@ -325,26 +272,11 @@ local function close()
 end
 
 local function event(widget, category, value, x, y)
-    -- if close event detected go to section home page
+
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(
-            pageIdx,
-            "@i18n(app.modules.diagnostics.name)@",
-            "diagnostics/diagnostics.lua"
-        )
+        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
         return true
     end
 end
 
-
-return {
-    openPage = openPage,
-    onNavMenu = onNavMenu,
-    mspRetry = mspRetry,
-    mspSuccess = mspSuccess,
-    mspTimeout = mspTimeout,
-    mspChecksum = mspChecksum,
-    event = event,
-    close = close,
-    API = {},
-}
+return {openPage = openPage, onNavMenu = onNavMenu, mspRetry = mspRetry, mspSuccess = mspSuccess, mspTimeout = mspTimeout, mspChecksum = mspChecksum, event = event, close = close, API = {}}

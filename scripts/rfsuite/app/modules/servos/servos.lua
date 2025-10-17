@@ -1,6 +1,10 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
 
--- create 16 servos in disabled state
+local rfsuite = require("rfsuite")
+
 local servoTable = {}
 servoTable = {}
 servoTable['sections'] = {}
@@ -8,7 +12,6 @@ servoTable['sections'] = {}
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
-
 
 local function buildServoTable()
 
@@ -21,20 +24,20 @@ local function buildServoTable()
     end
 
     for i = 1, rfsuite.session.servoCount do
-        -- enable actual number of servos
+
         servoTable[i]['disabled'] = false
 
         if rfsuite.session.swashMode == 0 then
-            -- we do nothing as we cannot determine any servo names
+
         elseif rfsuite.session.swashMode == 1 then
-            -- servo mode is direct - only servo for sure we know name of is tail
+
             if rfsuite.session.tailMode == 0 then
                 servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
                 servoTable[4]['image'] = "tail.png"
                 servoTable[4]['section'] = 1
             end
         elseif rfsuite.session.swashMode == 2 or rfsuite.session.swashMode == 3 or rfsuite.session.swashMode == 4 then
-            -- servo mode is cppm - 
+
             servoTable[1]['title'] = "@i18n(app.modules.servos.cyc_pitch)@"
             servoTable[1]['image'] = "cpitch.png"
 
@@ -45,22 +48,20 @@ local function buildServoTable()
             servoTable[3]['image'] = "cright.png"
 
             if rfsuite.session.tailMode == 0 then
-                -- this is because when swiching models this may or may not have
-                -- been created.
+
                 if servoTable[4] == nil then servoTable[4] = {} end
                 servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
                 servoTable[4]['image'] = "tail.png"
             else
-                -- servoTable[4]['disabled'] = true
+
             end
         elseif rfsuite.session.swashMode == 5 or rfsuite.session.swashMode == 6 then
-            -- servo mode is fpm 90
-            -- servoTable[3]['disabled'] = true 
+
             if rfsuite.session.tailMode == 0 then
                 servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
                 servoTable[4]['image'] = "tail.png"
             else
-                -- servoTable[4]['disabled'] = true                
+
             end
         end
     end
@@ -91,8 +92,6 @@ end
 
 local function openPage(pidx, title, script)
 
-
-
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
@@ -104,7 +103,6 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
     else
@@ -129,15 +127,13 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    -- TEXT ICONS
-    -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
-    -- SMALL ICONS
+
     if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
@@ -145,7 +141,7 @@ local function openPage(pidx, title, script)
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
-    -- LARGE ICONS
+
     if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
@@ -201,8 +197,7 @@ local function openPage(pidx, title, script)
                 text = pvalue.title,
                 icon = rfsuite.app.gfx_buttons["servos"][pidx],
                 options = FONT_S,
-                paint = function()
-                end,
+                paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["servos"] = pidx
                     rfsuite.currentServoIndex = pidx
@@ -228,22 +223,15 @@ end
 
 local function getServoCount(callback, callbackParam)
     local message = {
-        command = 120, -- MSP_SERVO_CONFIGURATIONS
+        command = 120,
         processReply = function(self, buf)
             local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
-            -- update master one in case changed
             rfsuite.session.servoCountNew = servoCount
 
             if callback then callback(callbackParam) end
         end,
-        -- 2 servos
-        -- simulatorResponse = {
-        --        2,
-        --        220, 5, 68, 253, 188, 2, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0,
-        --        221, 5, 68, 253, 188, 2, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-        -- }
-        -- 4 servos
+
         simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
     rfsuite.tasks.msp.mspQueue:add(message)
@@ -256,12 +244,11 @@ local function openPageInit(pidx, title, script)
         openPage(pidx, title, script)
     else
         local message = {
-            command = 120, -- MSP_SERVO_CONFIGURATIONS
+            command = 120,
             processReply = function(self, buf)
                 if #buf >= 10 then
                     local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
-                    -- update master one in case changed
                     rfsuite.session.servoCount = servoCount
                 end
             end,
@@ -270,7 +257,7 @@ local function openPageInit(pidx, title, script)
         rfsuite.tasks.msp.mspQueue:add(message)
 
         local message = {
-            command = 192, -- MSP_SERVO_OVERIDE
+            command = 192,
             processReply = function(self, buf)
                 if #buf >= 10 then
 
@@ -278,7 +265,7 @@ local function openPageInit(pidx, title, script)
                         buf.offset = i
                         local servoOverride = rfsuite.tasks.msp.mspHelper.readU8(buf)
                         if servoOverride == 0 then
-                            rfsuite.utils.log("Servo override: true","debug")
+                            rfsuite.utils.log("Servo override: true", "debug")
                             rfsuite.session.servoOverride = true
                         end
                     end
@@ -292,47 +279,34 @@ local function openPageInit(pidx, title, script)
     end
 end
 
-local function event(widget, category, value, x, y)
-
-
-end
+local function event(widget, category, value, x, y) end
 
 local function onToolMenu(self)
 
     local buttons
     if rfsuite.session.servoOverride == false then
-        buttons = {{
-            label = "@i18n(app.btn_ok_long)@",
-            action = function()
+        buttons = {
+            {
+                label = "@i18n(app.btn_ok_long)@",
+                action = function()
 
-                -- we cant launch the loader here to se rely on the modules
-                -- wakeup function to do this
-                triggerOverRide = true
-                triggerOverRideAll = true
-                return true
-            end
-        }, {
-            label = "CANCEL",
-            action = function()
-                return true
-            end
-        }}
+                    triggerOverRide = true
+                    triggerOverRideAll = true
+                    return true
+                end
+            }, {label = "CANCEL", action = function() return true end}
+        }
     else
-        buttons = {{
-            label = "@i18n(app.btn_ok_long)@",
-            action = function()
+        buttons = {
+            {
+                label = "@i18n(app.btn_ok_long)@",
+                action = function()
 
-                -- we cant launch the loader here to se rely on the modules
-                -- wakeup function to do this
-                triggerOverRide = true
-                return true
-            end
-        }, {
-            label = "@i18n(app.btn_cancel)@",
-            action = function()
-                return true
-            end
-        }}
+                    triggerOverRide = true
+                    return true
+                end
+            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }
     end
     local message
     local title
@@ -344,17 +318,7 @@ local function onToolMenu(self)
         message = "@i18n(app.modules.servos.disable_servo_override_msg)@"
     end
 
-    form.openDialog({
-        width = nil,
-        title = title,
-        message = message,
-        buttons = buttons,
-        wakeup = function()
-        end,
-        paint = function()
-        end,
-        options = TEXT_LEFT
-    })
+    form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
 end
 
@@ -392,10 +356,7 @@ local function servoCenterFocusAllOn(self)
     rfsuite.app.audio.playServoOverideEnable = true
 
     for i = 0, #servoTable do
-        local message = {
-            command = 193, -- MSP_SET_SERVO_OVERRIDE
-            payload = {i}
-        }
+        local message = {command = 193, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
         rfsuite.tasks.msp.mspQueue:add(message)
     end
@@ -406,10 +367,7 @@ end
 local function servoCenterFocusAllOff(self)
 
     for i = 0, #servoTable do
-        local message = {
-            command = 193, -- MSP_SET_SERVO_OVERRIDE
-            payload = {i}
-        }
+        local message = {command = 193, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
         rfsuite.tasks.msp.mspQueue:add(message)
     end
@@ -427,8 +385,8 @@ local function onNavMenu(self)
         rfsuite.app.Page.servoCenterFocusAllOff(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
-    -- rfsuite.app.ui.progressDisplay()
-    if  rfsuite.app.lastMenu == nil then
+
+    if rfsuite.app.lastMenu == nil then
         rfsuite.app.ui.openMainMenu()
     else
         rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
@@ -436,11 +394,8 @@ local function onNavMenu(self)
 
 end
 
-local function onReloadMenu()
-    rfsuite.app.triggers.triggerReloadFull = true
-end
+local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
--- not changing to custom api at present due to complexity of read/write scenario in these modules
 return {
     event = event,
     openPage = openPageInit,
@@ -449,13 +404,7 @@ return {
     servoCenterFocusAllOn = servoCenterFocusAllOn,
     servoCenterFocusAllOff = servoCenterFocusAllOff,
     wakeup = wakeup,
-    navButtons = {
-        menu = true,
-        save = false,
-        reload = true,
-        tool = true,
-        help = true
-    },
-    onReloadMenu = onReloadMenu,    
-    API = {},
+    navButtons = {menu = true, save = false, reload = true, tool = true, help = true},
+    onReloadMenu = onReloadMenu,
+    API = {}
 }

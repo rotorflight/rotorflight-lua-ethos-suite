@@ -1,10 +1,15 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local function findMFG()
     local mfgsList = {}
 
     local mfgdir = "app/modules/esc_tools/mfg/"
-    local mfgs_path = mfgdir 
+    local mfgs_path = mfgdir
 
     for _, v in pairs(system.listFiles(mfgs_path)) do
 
@@ -32,7 +37,6 @@ end
 
 local function openPage(pidx, title, script)
 
-
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
 
@@ -45,8 +49,6 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-
-    -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
     else
@@ -70,15 +72,14 @@ local function openPage(pidx, title, script)
         text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
-        paint = function()
-        end,
+        paint = function() end,
         press = function()
             rfsuite.app.lastIdx = nil
             rfsuite.session.lastPage = nil
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
-            if  rfsuite.app.lastMenu == nil then
+            if rfsuite.app.lastMenu == nil then
                 rfsuite.app.ui.openMainMenu()
             else
                 rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
@@ -92,15 +93,13 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    -- TEXT ICONS
-    -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
-    -- SMALL ICONS
+
     if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
@@ -108,7 +107,7 @@ local function openPage(pidx, title, script)
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
-    -- LARGE ICONS
+
     if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
@@ -117,18 +116,14 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
 
-
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
-
 
     local ESCMenu = assert(loadfile("app/modules/" .. script))()
     local pages = findMFG()
     local lc = 0
     local bx = 0
     local y = 0
-
-
 
     for pidx, pvalue in ipairs(pages) do
 
@@ -150,8 +145,7 @@ local function openPage(pidx, title, script)
             text = pvalue.toolName,
             icon = rfsuite.app.gfx_buttons["escmain"][pidx],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["escmain"] = pidx
                 rfsuite.app.ui.progressDisplay()
@@ -176,8 +170,4 @@ end
 
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-return {
-    pages = pages, 
-    openPage = openPage,
-    API = {},
-}
+return {pages = pages, openPage = openPage, API = {}}

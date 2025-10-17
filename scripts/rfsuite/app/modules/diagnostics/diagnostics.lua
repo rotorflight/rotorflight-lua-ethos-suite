@@ -1,48 +1,19 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
 
-local rfsuite = require("rfsuite") 
+local rfsuite = require("rfsuite")
 local app = rfsuite.app
 local log = rfsuite.utils.log
 
 local S_PAGES = {
-    {
-        name = "@i18n(app.modules.rfstatus.name)@",
-        script = "rfstatus.lua",
-        image = "rfstatus.png",
-        bgtask = false,  -- requires background tasks for icon to be enabled
-        offline = false  -- requires connection to fbl to run
-    }, 
-    {
-        name = "@i18n(app.modules.msp_speed.name)@",
-        script = "msp_speed.lua",
-        image = "msp_speed.png",
-        bgtask = true,  -- requires background tasks for icon to be enabled
-        offline = true  -- requires connection to fbl to run
-    },       
-    {
-        name = "@i18n(app.modules.validate_sensors.name)@",
-        script = "sensors.lua",
-        image = "sensors.png",
-        bgtask = true,  -- requires background tasks for icon to be enabled
-        offline = true  -- requires connection to fbl to run
-    }, 
-    {
-        name = "@i18n(app.modules.fblstatus.name)@",
-        script = "fblstatus.lua",
-        image = "fblstatus.png",
-        bgtask = true,  -- requires background tasks for icon to be enabled
-        offline = true  -- requires connection to fbl to run
-    },     
-    {
-        name = "@i18n(app.modules.info.name)@",
-        script = "info.lua",
-        image = "info.png",
-        bgtask = true,  -- requires background tasks for icon to be enabled
-        offline = true  -- requires connection to fbl to run
-    },      
+    {name = "@i18n(app.modules.rfstatus.name)@", script = "rfstatus.lua", image = "rfstatus.png", bgtask = false, offline = false}, {name = "@i18n(app.modules.msp_speed.name)@", script = "msp_speed.lua", image = "msp_speed.png", bgtask = true, offline = true},
+    {name = "@i18n(app.modules.validate_sensors.name)@", script = "sensors.lua", image = "sensors.png", bgtask = true, offline = true}, {name = "@i18n(app.modules.fblstatus.name)@", script = "fblstatus.lua", image = "fblstatus.png", bgtask = true, offline = true},
+    {name = "@i18n(app.modules.info.name)@", script = "info.lua", image = "info.png", bgtask = true, offline = true}
 }
 
 local function openPage(pidx, title, script)
-
 
     app.triggers.isReady = false
     app.uiState = app.uiStatus.mainMenu
@@ -53,14 +24,8 @@ local function openPage(pidx, title, script)
     app.lastTitle = title
     app.lastScript = script
 
-    -- Clear old icons
-    for i in pairs(app.gfx_buttons) do
-        if i ~= "diagnostics" then
-            app.gfx_buttons[i] = nil
-        end
-    end
+    for i in pairs(app.gfx_buttons) do if i ~= "diagnostics" then app.gfx_buttons[i] = nil end end
 
-    -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
     else
@@ -84,16 +49,15 @@ local function openPage(pidx, title, script)
         text = "MENU",
         icon = nil,
         options = FONT_S,
-        paint = function()
-        end,
+        paint = function() end,
         press = function()
             app.lastIdx = nil
             rfsuite.session.lastPage = nil
 
-            if app.Page and app.Page.onNavMenu then 
-                    app.Page.onNavMenu(app.Page) 
+            if app.Page and app.Page.onNavMenu then
+                app.Page.onNavMenu(app.Page)
             else
-                app.ui.progressDisplay(nil,nil,true)
+                app.ui.progressDisplay(nil, nil, true)
             end
             app.ui.openMainMenu()
         end
@@ -105,15 +69,13 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    -- TEXT ICONS
-    -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = app.radio.buttonPaddingSmall
         buttonW = (app.lcdWidth - padding) / app.radio.buttonsPerRow - padding
         buttonH = app.radio.navbuttonHeight
         numPerRow = app.radio.buttonsPerRow
     end
-    -- SMALL ICONS
+
     if rfsuite.preferences.general.iconsize == 1 then
 
         padding = app.radio.buttonPaddingSmall
@@ -121,7 +83,7 @@ local function openPage(pidx, title, script)
         buttonH = app.radio.buttonHeightSmall
         numPerRow = app.radio.buttonsPerRowSmall
     end
-    -- LARGE ICONS
+
     if rfsuite.preferences.general.iconsize == 2 then
 
         padding = app.radio.buttonPadding
@@ -130,10 +92,8 @@ local function openPage(pidx, title, script)
         numPerRow = app.radio.buttonsPerRow
     end
 
-
     if app.gfx_buttons["diagnostics"] == nil then app.gfx_buttons["diagnostics"] = {} end
     if rfsuite.preferences.menulastselected["diagnostics"] == nil then rfsuite.preferences.menulastselected["diagnostics"] = 1 end
-
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -141,16 +101,11 @@ local function openPage(pidx, title, script)
     local bx = 0
     local y = 0
 
-    if app.formFields then
-        for i = 1, #app.formFields do app.formFields[i] = nil end
-    end
-    if app.formLines then
-        for i = 1, #app.formLines do app.formLines[i] = nil end
-    end
+    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
+    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
-    app.formFieldsOffline  = {}
-    app.formFieldsBGTask   = {}    
-
+    app.formFieldsOffline = {}
+    app.formFieldsBGTask = {}
 
     for pidx, pvalue in ipairs(S_PAGES) do
 
@@ -175,12 +130,11 @@ local function openPage(pidx, title, script)
             text = pvalue.name,
             icon = app.gfx_buttons["diagnostics"][pidx],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["diagnostics"] = pidx
-                app.ui.progressDisplay(nil,nil,true)
-                app.ui.openPage(pidx, "@i18n(app.modules.diagnostics.name)@"  .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
+                app.ui.progressDisplay(nil, nil, true)
+                app.ui.openPage(pidx, "@i18n(app.modules.diagnostics.name)@" .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
             end
         })
 
@@ -200,39 +154,30 @@ end
 local function wakeup()
 
     if not rfsuite.tasks.active() then
-          for i, v in pairs(app.formFieldsBGTask) do
+        for i, v in pairs(app.formFieldsBGTask) do
             if v == true then
-              if app.formFields[i] then
-                app.formFields[i]:enable(false)
-              else
-                log("Main Menu Icon " .. i .. " not found in formFields", "info")
-              end
+                if app.formFields[i] then
+                    app.formFields[i]:enable(false)
+                else
+                    log("Main Menu Icon " .. i .. " not found in formFields", "info")
+                end
             end
-          end 
+        end
     elseif not rfsuite.session.isConnected then
         for i, v in pairs(app.formFieldsOffline) do
             if v == true then
-            if app.formFields[i] and app.formFields[i].enable then
-                app.formFields[i]:enable(false)
-            else
-                log("Main Menu Icon " .. i .. " not found in formFields", "info")
-            end
+                if app.formFields[i] and app.formFields[i].enable then
+                    app.formFields[i]:enable(false)
+                else
+                    log("Main Menu Icon " .. i .. " not found in formFields", "info")
+                end
             end
         end
     else
-        for i, v in pairs(app.formFields) do
-            if app.formFields[i] and app.formFields[i].enable then
-                app.formFields[i]:enable(true)
-            end
-        end               
-    end    
+        for i, v in pairs(app.formFields) do if app.formFields[i] and app.formFields[i].enable then app.formFields[i]:enable(true) end end
+    end
 end
 
 app.uiState = app.uiStatus.pages
 
-return {
-    pages = pages, 
-    openPage = openPage,
-    wakeup = wakeup,
-    API = {},
-}
+return {pages = pages, openPage = openPage, wakeup = wakeup, API = {}}

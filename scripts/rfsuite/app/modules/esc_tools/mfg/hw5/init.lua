@@ -1,9 +1,12 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@"
 local mspHeaderBytes = 2
-
--- rfsuite.tasks.msp.protocol.mspIntervalOveride = 0.8
 
 local function getText(buffer, st, en)
 
@@ -16,26 +19,11 @@ local function getText(buffer, st, en)
     return table.concat(tt)
 end
 
-local function getEscModel(buffer)
-    return getText(buffer, 51, 67)
-end
+local function getEscModel(buffer) return getText(buffer, 51, 67) end
 
-local function getEscVersion(buffer)
-    return getText(buffer, 19, 34)
-end
+local function getEscVersion(buffer) return getText(buffer, 19, 34) end
 
-local function getEscFirmware(buffer)
-    return getText(buffer, 3, 18)
-end
+local function getEscFirmware(buffer) return getText(buffer, 3, 18) end
 
-return {
-    mspapi="ESC_PARAMETERS_HW5",
-    toolName = toolName,
-    image = "hobbywing.png",
-    powerCycle = false,
-    getEscModel = getEscModel,
-    getEscVersion = getEscVersion,
-    getEscFirmware = getEscFirmware,
-    mspHeaderBytes = mspHeaderBytes,
-}
+return {mspapi = "ESC_PARAMETERS_HW5", toolName = toolName, image = "hobbywing.png", powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, mspHeaderBytes = mspHeaderBytes}
 

@@ -1,50 +1,27 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local activateWakeup = false
 
 local apidata = {
-    api = {
-        [1] = 'PID_TUNING',
-    },
+    api = {[1] = 'PID_TUNING'},
     formdata = {
-        labels = {
-        },
-        rows = {
-            "@i18n(app.modules.pids.roll)@",
-            "@i18n(app.modules.pids.pitch)@",
-            "@i18n(app.modules.pids.yaw)@"
-        },
-        cols = {
-            "@i18n(app.modules.pids.p)@",
-            "@i18n(app.modules.pids.i)@",
-            "@i18n(app.modules.pids.d)@",
-            "@i18n(app.modules.pids.f)@",
-            "@i18n(app.modules.pids.o)@",
-            "@i18n(app.modules.pids.b)@"
-        },
+        labels = {},
+        rows = {"@i18n(app.modules.pids.roll)@", "@i18n(app.modules.pids.pitch)@", "@i18n(app.modules.pids.yaw)@"},
+        cols = {"@i18n(app.modules.pids.p)@", "@i18n(app.modules.pids.i)@", "@i18n(app.modules.pids.d)@", "@i18n(app.modules.pids.f)@", "@i18n(app.modules.pids.o)@", "@i18n(app.modules.pids.b)@"},
         fields = {
-            -- P
-            {row = 1, col = 1, mspapi = 1, apikey = "pid_0_P"},
-            {row = 2, col = 1, mspapi = 1, apikey = "pid_1_P"},
-            {row = 3, col = 1, mspapi = 1, apikey = "pid_2_P"},
-            {row = 1, col = 2, mspapi = 1, apikey = "pid_0_I"},
-            {row = 2, col = 2, mspapi = 1, apikey = "pid_1_I"},
-            {row = 3, col = 2, mspapi = 1, apikey = "pid_2_I"},
-            {row = 1, col = 3, mspapi = 1, apikey = "pid_0_D"},
-            {row = 2, col = 3, mspapi = 1, apikey = "pid_1_D"},
-            {row = 3, col = 3, mspapi = 1, apikey = "pid_2_D"},
-            {row = 1, col = 4, mspapi = 1, apikey = "pid_0_F"},
-            {row = 2, col = 4, mspapi = 1, apikey = "pid_1_F"},
-            {row = 3, col = 4, mspapi = 1, apikey = "pid_2_F"},
-            {row = 1, col = 5, mspapi = 1, apikey = "pid_0_O"},
-            {row = 2, col = 5, mspapi = 1, apikey = "pid_1_O"},
-            {row = 1, col = 6, mspapi = 1, apikey = "pid_0_B"},
-            {row = 2, col = 6, mspapi = 1, apikey = "pid_1_B"},
-            {row = 3, col = 6, mspapi = 1, apikey = "pid_2_B"}
-        }
-    }                 
-}
 
+            {row = 1, col = 1, mspapi = 1, apikey = "pid_0_P"}, {row = 2, col = 1, mspapi = 1, apikey = "pid_1_P"}, {row = 3, col = 1, mspapi = 1, apikey = "pid_2_P"}, {row = 1, col = 2, mspapi = 1, apikey = "pid_0_I"}, {row = 2, col = 2, mspapi = 1, apikey = "pid_1_I"},
+            {row = 3, col = 2, mspapi = 1, apikey = "pid_2_I"}, {row = 1, col = 3, mspapi = 1, apikey = "pid_0_D"}, {row = 2, col = 3, mspapi = 1, apikey = "pid_1_D"}, {row = 3, col = 3, mspapi = 1, apikey = "pid_2_D"}, {row = 1, col = 4, mspapi = 1, apikey = "pid_0_F"},
+            {row = 2, col = 4, mspapi = 1, apikey = "pid_1_F"}, {row = 3, col = 4, mspapi = 1, apikey = "pid_2_F"}, {row = 1, col = 5, mspapi = 1, apikey = "pid_0_O"}, {row = 2, col = 5, mspapi = 1, apikey = "pid_1_O"}, {row = 1, col = 6, mspapi = 1, apikey = "pid_0_B"},
+            {row = 2, col = 6, mspapi = 1, apikey = "pid_1_B"}, {row = 3, col = 6, mspapi = 1, apikey = "pid_2_B"}
+        }
+    }
+}
 
 local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
@@ -57,7 +34,6 @@ local function openPage(idx, title, script)
     rfsuite.app.triggers.isReady = false
 
     rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
-    -- collectgarbage()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
@@ -93,8 +69,7 @@ local function openPage(idx, title, script)
     local posX = screenWidth - paddingRight
     local posY = paddingTop
 
-
-    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.utils.log("Merging form data from mspapi", "debug")
     rfsuite.app.Page.fields = rfsuite.app.Page.apidata.formdata.fields
     rfsuite.app.Page.labels = rfsuite.app.Page.apidata.formdata.labels
     rfsuite.app.Page.rows = rfsuite.app.Page.apidata.formdata.rows
@@ -112,7 +87,6 @@ local function openPage(idx, title, script)
         c = c + 1
     end
 
-    -- display each row
     local pidRows = {}
     for ri, rv in ipairs(rfsuite.app.Page.rows) do pidRows[ri] = form.addLine(rv) end
 
@@ -137,35 +111,13 @@ local function openPage(idx, title, script)
         end, function(value)
             if f.postEdit then f.postEdit(rfsuite.app.Page) end
             if f.onChange then f.onChange(rfsuite.app.Page) end
-    
+
             f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
         end)
     end
-    
-end
-
-local function wakeup()
-
-    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-
-        -- update active profile
-        -- the check happens in postLoad          
-        if rfsuite.session.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
-        end
-
-    end
 
 end
 
-return {
-    apidata = apidata,
-    title = "@i18n(app.modules.pids.name)@",
-    reboot = false,
-    eepromWrite = true,
-    refreshOnProfileChange = true,
-    postLoad = postLoad,
-    openPage = openPage,
-    wakeup = wakeup,
-    API = {},
-}
+local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile) end end end
+
+return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, API = {}}

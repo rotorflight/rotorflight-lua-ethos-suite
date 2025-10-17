@@ -1,18 +1,19 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local S_PAGES = {
-    {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png"},
-    {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png"},
-    {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png"},
-    {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png"},
-    {name = "@i18n(app.modules.settings.txt_development)@", script = "development.lua", image = "development.png"},
+    {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png"}, {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png"},
+    {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png"}, {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png"},
+    {name = "@i18n(app.modules.settings.txt_development)@", script = "development.lua", image = "development.png"}
 }
 
 local function openPage(pidx, title, script)
 
-
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
-
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -23,15 +24,8 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    -- Clear old icons
-    for i in pairs(rfsuite.app.gfx_buttons) do
-        if i ~= "settings" then
-            rfsuite.app.gfx_buttons[i] = nil
-        end
-    end
+    for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "settings" then rfsuite.app.gfx_buttons[i] = nil end end
 
-
-    -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
     else
@@ -55,16 +49,15 @@ local function openPage(pidx, title, script)
         text = "MENU",
         icon = nil,
         options = FONT_S,
-        paint = function()
-        end,
+        paint = function() end,
         press = function()
             rfsuite.app.lastIdx = nil
             rfsuite.session.lastPage = nil
 
-            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then 
-                    rfsuite.app.Page.onNavMenu(rfsuite.app.Page) 
+            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then
+                rfsuite.app.Page.onNavMenu(rfsuite.app.Page)
             else
-                rfsuite.app.ui.progressDisplay(nil,nil,true)
+                rfsuite.app.ui.progressDisplay(nil, nil, true)
             end
             rfsuite.app.ui.openMainMenu()
         end
@@ -76,15 +69,13 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    -- TEXT ICONS
-    -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
-    -- SMALL ICONS
+
     if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
@@ -92,7 +83,7 @@ local function openPage(pidx, title, script)
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
-    -- LARGE ICONS
+
     if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
@@ -101,18 +92,14 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
 
-
     if rfsuite.app.gfx_buttons["settings"] == nil then rfsuite.app.gfx_buttons["settings"] = {} end
     if rfsuite.preferences.menulastselected["settings"] == nil then rfsuite.preferences.menulastselected["settings"] = 1 end
-
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
     local lc = 0
     local bx = 0
     local y = 0
-
-
 
     for pidx, pvalue in ipairs(S_PAGES) do
 
@@ -134,11 +121,10 @@ local function openPage(pidx, title, script)
             text = pvalue.name,
             icon = rfsuite.app.gfx_buttons["settings"][pidx],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["settings"] = pidx
-                rfsuite.app.ui.progressDisplay(nil,nil,true)
+                rfsuite.app.ui.progressDisplay(nil, nil, true)
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
             end
         })
@@ -160,8 +146,4 @@ end
 
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-return {
-    pages = pages, 
-    openPage = openPage,
-    API = {},
-}
+return {pages = pages, openPage = openPage, API = {}}

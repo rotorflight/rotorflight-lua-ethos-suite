@@ -1,19 +1,8 @@
 --[[
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * Note: Some icons have been sourced from https://www.flaticon.com/
-]]--
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
 local rfsuite = require("rfsuite")
 
 local timer = {}
@@ -28,14 +17,11 @@ function timer.wakeup()
     local session = rfsuite.session
     local targetSeconds = session and session.modelPreferences and session.modelPreferences.battery.flighttime or 0
 
-    -- Use time from timer session
     local timerSession = session and session.timer
     local elapsed = (timerSession and timerSession.live) or 0
     local elapsedMode = prefs.elapsedalertmode or 0
 
-    if not prefs.timeraudioenable
-        or not targetSeconds or targetSeconds == 0
-        or not session then
+    if not prefs.timeraudioenable or not targetSeconds or targetSeconds == 0 or not session then
         triggered = false
         lastBeepTimer = nil
         preLastBeepTimer = nil
@@ -43,7 +29,6 @@ function timer.wakeup()
         return
     end
 
-    -- Only allow pre/post alerting while actually inflight
     if rfsuite.flightmode.current ~= "inflight" then
         preLastBeepTimer = nil
         lastBeepTimer = nil
@@ -51,7 +36,6 @@ function timer.wakeup()
         return
     end
 
-    -- PRE-TIMER ALERT LOGIC
     if prefs.prealerton then
         local prePeriod = prefs.prealertperiod or 30
         local preInterval = prefs.prealertinterval or 10
@@ -72,7 +56,6 @@ function timer.wakeup()
         preLastBeepTimer = nil
     end
 
-    -- TIMER ELAPSED LOGIC
     if elapsed >= targetSeconds then
         if not triggered then
             if elapsedMode == 0 then
@@ -90,7 +73,6 @@ function timer.wakeup()
             postStartedAt = elapsed
         end
 
-        -- POST-TIMER ALERT LOGIC
         if prefs.postalerton then
             local postPeriod = prefs.postalertperiod or 60
             local postInterval = prefs.postalertinterval or 10

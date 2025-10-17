@@ -1,4 +1,9 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local pages = {}
 
@@ -17,8 +22,6 @@ local powercycleLoaderCounter = 0
 local powercycleLoaderRateLimit = 2
 local showPowerCycleLoaderFinished = false
 
-
-
 local modelField
 local versionField
 local firmwareField
@@ -34,24 +37,19 @@ local function getESCDetails()
 
     if rfsuite.session.escDetails ~= nil then
         escDetails = rfsuite.session.escDetails
-        foundESC = true 
+        foundESC = true
         return
     end
 
-    if foundESC == true then 
-        return
-    end
+    if foundESC == true then return end
 
     local message = {
-        command = 217, -- MSP_STATUS
+        command = 217,
         processReply = function(self, buf)
 
-            local mspBytesCheck = 2 -- we query 2 only unless the flack to cache the init buffer is set
-            if ESC and ESC.mspBufferCache == true then
-                mspBytesCheck = mspBytes
-            end
- 
-            --if #buf >= mspBytesCheck and buf[1] == mspSignature then
+            local mspBytesCheck = 2
+            if ESC and ESC.mspBufferCache == true then mspBytesCheck = mspBytes end
+
             if buf[1] == mspSignature then
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
@@ -59,13 +57,9 @@ local function getESCDetails()
 
                 rfsuite.session.escDetails = escDetails
 
-                if ESC.mspBufferCache == true then
-                    rfsuite.session.escBuffer = buf 
-                end    
+                if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
 
-                if escDetails.model ~= nil  then
-                    foundESC = true
-                end
+                if escDetails.model ~= nil then foundESC = true end
 
             end
 
@@ -83,35 +77,28 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    
-
     local folder = title
 
     ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
     if ESC.mspapi ~= nil then
-        -- we are using the api so get values from that!
+
         local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
         mspSignature = API.mspSignature
         mspHeaderBytes = API.mspHeaderBytes
         simulatorResponse = API.simulatorResponse or {0}
         mspBytes = #simulatorResponse
     else
-        --legacy method
+
         mspSignature = ESC.mspSignature
         mspHeaderBytes = ESC.mspHeaderBytes
         simulatorResponse = ESC.simulatorResponse
         mspBytes = ESC.mspBytes
-    end    
+    end
 
     local app = rfsuite.app
-    if app.formFields then
-        for i = 1, #app.formFields do app.formFields[i] = nil end
-    end
-    if app.formLines then
-        for i = 1, #app.formLines do app.formLines[i] = nil end
-    end
-
+    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
+    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     local windowWidth = rfsuite.app.lcdWidth
     local windowHeight = rfsuite.app.lcdHeight
@@ -125,25 +112,15 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "@i18n(app.navigation_menu)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_tools/esc.lua")
-
-        end
-    })
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight},
+                                                   {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, paint = function() end, press = function() rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_tools/esc.lua") end})
     rfsuite.app.formNavigationFields['menu']:focus()
 
     rfsuite.app.formNavigationFields['refresh'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
         text = "@i18n(app.navigation_reload)@",
         icon = nil,
         options = FONT_S,
-        paint = function()
-        end,
+        paint = function() end,
         press = function()
             rfsuite.app.Page = nil
             local foundESC = false
@@ -171,14 +148,13 @@ local function openPage(pidx, title, script)
         rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
-    -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
-    -- SMALL ICONS
+
     if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
@@ -186,7 +162,7 @@ local function openPage(pidx, title, script)
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
-    -- LARGE ICONS
+
     if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
@@ -201,15 +177,10 @@ local function openPage(pidx, title, script)
     if rfsuite.app.gfx_buttons["esctool"] == nil then rfsuite.app.gfx_buttons["esctool"] = {} end
     if rfsuite.preferences.menulastselected["esctool"] == nil then rfsuite.preferences.menulastselected["esctool"] = 1 end
 
-    for pidx, pvalue in ipairs(ESC.pages) do 
-
+    for pidx, pvalue in ipairs(ESC.pages) do
 
         local section = pvalue
-        local hideSection =
-            (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
-            (section.mspversion   and rfsuite.utils.apiVersionCompare("<", section.mspversion))
-                            --or
-                            --(section.developer and not rfsuite.preferences.developer.devtools)
+        local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or (section.mspversion and rfsuite.utils.apiVersionCompare("<", section.mspversion))
 
         if not pvalue.disablebutton or (pvalue and pvalue.disablebutton(mspBytes) == false) or not hideSection then
 
@@ -231,8 +202,7 @@ local function openPage(pidx, title, script)
                 text = pvalue.title,
                 icon = rfsuite.app.gfx_buttons["esctool"][pvalue.image],
                 options = FONT_S,
-                paint = function()
-                end,
+                paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["esctool"] = pidx
                     rfsuite.app.ui.progressDisplay()
@@ -258,7 +228,7 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.escToolEnableButtons = false
-    --getESCDetails()
+
     collectgarbage()
 end
 
@@ -266,7 +236,6 @@ local function wakeup()
 
     if foundESC == false and rfsuite.tasks.msp.mspQueue:isProcessed() then getESCDetails() end
 
-    -- enable the form
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
 
@@ -343,19 +312,12 @@ end
 
 local function event(widget, category, value, x, y)
 
-    -- if close event detected go to section home page
     if category == EVT_CLOSE and value == 0 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end
         rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_tools/esc.lua")
         return true
     end
 
-
 end
 
-return {
-    openPage = openPage,
-    wakeup = wakeup,
-    event = event,
-    API = {}
-}
+return {openPage = openPage, wakeup = wakeup, event = event, API = {}}

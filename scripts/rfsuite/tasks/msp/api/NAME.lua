@@ -1,79 +1,52 @@
 --[[
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note. Some icons have been sourced from https://www.flaticon.com/
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
-local rfsuite = require("rfsuite") 
+
+local rfsuite = require("rfsuite")
 local core = assert(loadfile("tasks/msp/api_core.lua"))()
 
--- Constants for MSP Commands
-local API_NAME = "NAME" -- API name (must be same as filename)
-local MSP_API_CMD_READ = 10 -- Command identifier 
-local MSP_API_CMD_WRITE = nil -- Command identifier 
-local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
+local API_NAME = "NAME"
+local MSP_API_CMD_READ = 10
+local MSP_API_CMD_WRITE = nil
+local MSP_REBUILD_ON_WRITE = false
 local MSP_MIN_BYTES = 0
 
--- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "name", mandatory = false, type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}, help = "@i18n(api.NAME.name)@"}  -- Variable length name string
-}
+local MSP_API_STRUCTURE_READ_DATA = {{field = "name", mandatory = false, type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}, help = "@i18n(api.NAME.name)@"}}
 
--- filter the structure to remove any params not supported by the running api version
 local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
--- generate a simulatorResponse from the read structure
 local MSP_API_SIMULATOR_RESPONSE = core.buildSimResponse(MSP_API_STRUCTURE_READ)
 
--- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
 
--- Create a new instance
 local handlers = core.createHandlers()
 
--- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
 local function parseMSPData(buf)
     local parsedData = {}
 
-    -- Handle variable-length name
     local name = ""
     local offset = 1
 
     while offset <= #buf do
         local char = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then -- Null terminator found, break
-            break
-        end
+        if char == 0 then break end
         name = name .. string.char(char)
         offset = offset + 1
     end
 
-    if #buf == 0 then
-        name = ""
-    end
+    if #buf == 0 then name = "" end
 
     parsedData["name"] = name
 
-    -- Prepare data for return
     local data = {}
     data['parsed'] = parsedData
     data['buffer'] = buf
@@ -81,53 +54,50 @@ local function parseMSPData(buf)
     return data
 end
 
--- Track write completion without closures
 local lastWriteUUID = nil
--- weak keys/values so finished entries don't pin memory
-local writeDoneRegistry = setmetatable({}, { __mode = "kv" })
 
+local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
 
 local function processReplyStaticRead(self, buf)
     core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-    mspData = result
-    if #buf >= (self.minBytes or 0) then
-      local getComplete = self.getCompleteHandler
-      if getComplete then
-        local complete = getComplete()
-        if complete then complete(self, buf) end
-      end
-    end
-  end)
+        mspData = result
+        if #buf >= (self.minBytes or 0) then
+            local getComplete = self.getCompleteHandler
+            if getComplete then
+                local complete = getComplete()
+                if complete then complete(self, buf) end
+            end
+        end
+    end)
 end
 
 local function processReplyStaticWrite(self, buf)
-  mspWriteComplete = true
-  -- mark this UUID as completed (no module locals touched)
-  if self.uuid then writeDoneRegistry[self.uuid] = true end
+    mspWriteComplete = true
 
-  local getComplete = self.getCompleteHandler
-  if getComplete then
-    local complete = getComplete()
-    if complete then complete(self, buf) end
-  end
+    if self.uuid then writeDoneRegistry[self.uuid] = true end
+
+    local getComplete = self.getCompleteHandler
+    if getComplete then
+        local complete = getComplete()
+        if complete then complete(self, buf) end
+    end
 end
 
 local function errorHandlerStatic(self, buf)
-  local getError = self.getErrorHandler
-  if getError then
-    local err = getError()
-    if err then err(self, buf) end
-  end
+    local getError = self.getErrorHandler
+    if getError then
+        local err = getError()
+        if err then err(self, buf) end
+    end
 end
 
--- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD_READ, -- Specify the MSP command
+        command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            -- Parse the MSP data using the defined structure
+
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
-            if #buf >= 0 then  -- this is a odd one in that we dont know how many bytes we will get!
+            if #buf >= 0 then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
             end
@@ -138,86 +108,59 @@ local function read()
         end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
         uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT  
+        timeout = MSP_API_MSG_TIMEOUT
     }
-    -- Add the message to the processing queue
+
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
-  if MSP_API_CMD_WRITE == nil then
-    rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
-    return
-  end
+    if MSP_API_CMD_WRITE == nil then
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
+        return
+    end
 
-  -- Build payload eagerly (no capture)
-  local payload = suppliedPayload or
-    core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
+    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
-  -- Choose a UUID for this write; if you already set MSP_API_UUID elsewhere, we’ll reuse it
-  local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
-  lastWriteUUID = uuid  -- track the most recent write without a closure
+    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
+    lastWriteUUID = uuid
 
-  local message = {
-    command            = MSP_API_CMD_WRITE,
-    payload            = payload,
-    processReply       = processReplyStaticWrite, -- static, no upvalues
-    errorHandler       = errorHandlerStatic,      -- static, no upvalues
-    simulatorResponse  = {},
+    local message = {
+        command = MSP_API_CMD_WRITE,
+        payload = payload,
+        processReply = processReplyStaticWrite,
+        errorHandler = errorHandlerStatic,
+        simulatorResponse = {},
 
-    uuid               = uuid,
-    timeout            = MSP_API_MSG_TIMEOUT,
+        uuid = uuid,
+        timeout = MSP_API_MSG_TIMEOUT,
 
-    -- provide handler getters so static callbacks can resolve at runtime
-    getCompleteHandler = handlers.getCompleteHandler,
-    getErrorHandler    = handlers.getErrorHandler,
-  }
+        getCompleteHandler = handlers.getCompleteHandler,
+        getErrorHandler = handlers.getErrorHandler
+    }
 
-  rfsuite.tasks.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
--- Function to get the value of a specific field from MSP data
 local function readValue(fieldName)
     if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
     return nil
 end
 
--- Function to set a value dynamically
-local function setValue(fieldName, value)
-    payloadData[fieldName] = value
-end
+local function setValue(fieldName, value) payloadData[fieldName] = value end
 
--- Function to check if the read operation is complete
-local function readComplete()
-    return mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES
-end
+local function readComplete() return mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES end
 
--- Function to check if the write operation is complete
-local function writeComplete()
-    return mspWriteComplete
-end
+local function writeComplete() return mspWriteComplete end
 
--- Function to reset the write completion status
-local function resetWriteStatus()
-    mspWriteComplete = false
-end
+local function resetWriteStatus() mspWriteComplete = false end
 
--- Function to return the parsed MSP data
-local function data()
-    return mspData
-end
+local function data() return mspData end
 
--- set the UUID for the payload
-local function setUUID(uuid)
-    MSP_API_UUID = uuid
-end
+local function setUUID(uuid) MSP_API_UUID = uuid end
 
--- set the timeout for the payload
-local function setTimeout(timeout)
-    MSP_API_MSG_TIMEOUT = timeout
-end
+local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
--- Return the module's API functions
 return {
     read = read,
     write = write,

@@ -1,34 +1,28 @@
- local rfsuite = require("rfsuite")
- 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
 local enableWakeup = false
 local disableMultiplier
 local becAlert
 local rxBattAlert
 
 local apidata = {
-    api = {
-        [1] = 'BATTERY_CONFIG',
-        [2] = 'BATTERY_INI',
-    },
+    api = {[1] = 'BATTERY_CONFIG', [2] = 'BATTERY_INI'},
     formdata = {
-        labels = {
-        },
+        labels = {},
         fields = {
-            {t = "@i18n(app.modules.battery.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"},
-            {t = "@i18n(app.modules.battery.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"},
-            {t = "@i18n(app.modules.battery.warn_cell_voltage)@", mspapi = 1, apikey = "vbatwarningcellvoltage"},
-            {t = "@i18n(app.modules.battery.min_cell_voltage)@", mspapi = 1, apikey = "vbatmincellvoltage"},
-            {t = "@i18n(app.modules.battery.battery_capacity)@", mspapi = 1, apikey = "batteryCapacity"},
-            {t = "@i18n(app.modules.battery.cell_count)@", mspapi = 1, apikey = "batteryCellCount"},
-            {t = "@i18n(app.modules.battery.consumption_warning_percentage)@", min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"},
-            {t = "@i18n(app.modules.battery.timer)@", mspapi = 2, apikey = "flighttime"},
-            {t = "@i18n(app.modules.battery.calcfuel_local)@", mspapi = 2, apikey = "calc_local", type = 1},   
-            {t = "@i18n(app.modules.battery.voltage_multiplier)@", mspapi = 2, apikey = "sag_multiplier"},
-            {t = "@i18n(app.modules.battery.alert_type)@", mspapi = 2, apikey = "alert_type", type = 1},
-            {t = "@i18n(app.modules.battery.bec_voltage_alert)@", mspapi = 2, apikey = "becalertvalue"},
-            {t = "@i18n(app.modules.battery.rx_voltage_alert)@",  mspapi = 2, apikey = "rxalertvalue"},            
+            {t = "@i18n(app.modules.battery.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"}, {t = "@i18n(app.modules.battery.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"},
+            {t = "@i18n(app.modules.battery.warn_cell_voltage)@", mspapi = 1, apikey = "vbatwarningcellvoltage"}, {t = "@i18n(app.modules.battery.min_cell_voltage)@", mspapi = 1, apikey = "vbatmincellvoltage"},
+            {t = "@i18n(app.modules.battery.battery_capacity)@", mspapi = 1, apikey = "batteryCapacity"}, {t = "@i18n(app.modules.battery.cell_count)@", mspapi = 1, apikey = "batteryCellCount"},
+            {t = "@i18n(app.modules.battery.consumption_warning_percentage)@", min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"}, {t = "@i18n(app.modules.battery.timer)@", mspapi = 2, apikey = "flighttime"},
+            {t = "@i18n(app.modules.battery.calcfuel_local)@", mspapi = 2, apikey = "calc_local", type = 1}, {t = "@i18n(app.modules.battery.voltage_multiplier)@", mspapi = 2, apikey = "sag_multiplier"}, {t = "@i18n(app.modules.battery.alert_type)@", mspapi = 2, apikey = "alert_type", type = 1},
+            {t = "@i18n(app.modules.battery.bec_voltage_alert)@", mspapi = 2, apikey = "becalertvalue"}, {t = "@i18n(app.modules.battery.rx_voltage_alert)@", mspapi = 2, apikey = "rxalertvalue"}
         }
-    }                 
+    }
 }
 
 local function postLoad(self)
@@ -49,10 +43,7 @@ local function postLoad(self)
 end
 
 local function wakeup(self)
-        if enableWakeup == false then
-            return
-        end 
-
+    if enableWakeup == false then return end
 
     for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "calc_local" then
@@ -60,24 +51,16 @@ local function wakeup(self)
             if v == 1 then
                 disableMultiplier = true
             else
-                disableMultiplier = false   
+                disableMultiplier = false
             end
         end
     end
 
     if disableMultiplier == true then
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "sag_multiplier" then
-                rfsuite.app.formFields[i]:enable(true)
-            end
-        end
+        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do if f.apikey == "sag_multiplier" then rfsuite.app.formFields[i]:enable(true) end end
     else
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "sag_multiplier" then
-                rfsuite.app.formFields[i]:enable(false)
-            end
-        end
-    end    
+        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do if f.apikey == "sag_multiplier" then rfsuite.app.formFields[i]:enable(false) end end
+    end
 
     for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "alert_type" then
@@ -104,11 +87,4 @@ local function wakeup(self)
     end
 end
 
-return {
-    wakeup = wakeup,
-    apidata = apidata,
-    eepromWrite = true,
-    reboot = false,
-    API = {},
-    postLoad = postLoad,
-}
+return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad}

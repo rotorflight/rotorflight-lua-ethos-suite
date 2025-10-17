@@ -1,30 +1,16 @@
 --[[
- * Copyright (C) Rotorflight Project
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * Optimized MspQueueController
- * - Lower CPU: no O(n) table.remove(1), optional loop throttling, tighter logging guards
- * - Lower RAM/GC: optional deep copy on add (off by default), queue nodes released ASAP
- *
- * Drop-in replacement for the original module API: new(), isProcessed(), processQueue(), clear(), add()
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
-local rfsuite = require("rfsuite") 
 
--- MspQueueController class
+local rfsuite = require("rfsuite")
+
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
--- local module state
 local lastQueueCount = 0
 
---============================--
--- Utilities
---============================--
-
--- Fast FIFO queue with head/tail indices (no shifting)
-local function newQueue()
-    return { first = 1, last = 0, data = {} }
-end
+local function newQueue() return {first = 1, last = 0, data = {}} end
 
 local function qpush(q, v)
     q.last = q.last + 1
@@ -34,16 +20,13 @@ end
 local function qpop(q)
     if q.first > q.last then return nil end
     local v = q.data[q.first]
-    q.data[q.first] = nil -- release reference to help GC
+    q.data[q.first] = nil
     q.first = q.first + 1
     return v
 end
 
-local function qcount(q)
-    return q.last - q.first + 1
-end
+local function qcount(q) return q.last - q.first + 1 end
 
--- Replace the old deepCopy with this safer variant:
 local function cloneArray(src)
     local dst = {}
     for i = 1, #src do dst[i] = src[i] end
@@ -60,39 +43,22 @@ local function cloneMessage(msg)
     local out = {}
     for k, v in pairs(msg) do
         if k == "payload" and type(v) == "table" then
-            out[k] = cloneArray(v)                 -- preserve array semantics
+            out[k] = cloneArray(v)
         elseif k == "simulatorResponse" then
-            out[k] = v                             -- keep as reference
+            out[k] = v
         elseif type(v) == "table" then
-            out[k] = shallowClone(v)               -- shallow only; no recursion
+            out[k] = shallowClone(v)
         else
             out[k] = v
         end
     end
     return setmetatable(out, getmetatable(msg))
 end
--- Safe logging guard
-local function LOG_ENABLED_MSP()
-    return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp
-end
 
-local function LOG_ENABLED_MSP_QUEUE()
-    return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmspQueue
-end
+local function LOG_ENABLED_MSP() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp end
 
---============================--
--- Constructor
---============================--
+local function LOG_ENABLED_MSP_QUEUE() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmspQueue end
 
---[[
-    MspQueueController.new(opts)
-    opts = {
-      timeout = 2.0,            -- per-message timeout
-      maxRetries = 3,           -- retries per message
-      copyOnAdd = false,        -- deep-copy messages when enqueued (set true for strict isolation)
-      loopInterval = 0,         -- throttle processQueue() to every N seconds (0 = no throttle)
-    }
-]]
 function MspQueueController.new(opts)
     opts = opts or {}
     local self = setmetatable({}, MspQueueController)
@@ -106,51 +72,33 @@ function MspQueueController.new(opts)
     self.maxRetries = opts.maxRetries or 3
     self.timeout = opts.timeout or 2.0
 
-
     self.uuid = nil
 
-    -- CPU controls
     self.loopInterval = opts.loopInterval or 0
     self._nextProcessAt = 0
 
-    -- Memory controls
     self.copyOnAdd = opts.copyOnAdd == true
 
-    -- MSP busy watchdog
     self.mspBusyStart = nil
 
     return self
 end
 
---============================--
--- Public helpers
---============================--
+function MspQueueController:queueCount() return qcount(self.queue) end
 
-function MspQueueController:queueCount()
-    return qcount(self.queue)
-end
-
-function MspQueueController:isProcessed()
-    return (self.currentMessage == nil) and (self:queueCount() == 0)
-end
-
---============================--
--- Core processing
---============================--
+function MspQueueController:isProcessed() return (self.currentMessage == nil) and (self:queueCount() == 0) end
 
 function MspQueueController:processQueue()
 
-    -- Optional loop throttling to reduce CPU when called from a hot loop
     if self.loopInterval and self.loopInterval > 0 then
         local now = os.clock()
         if now < self._nextProcessAt then return end
         self._nextProcessAt = now + self.loopInterval
     end
 
-    local mspBusyTimeout = 5.0  -- unblock the busy flag to stop msp stalling other tasks
+    local mspBusyTimeout = 5.0
     self.mspBusyStart = self.mspBusyStart or os.clock()
 
-    -- lightweight, guarded logging
     if LOG_ENABLED_MSP_QUEUE() then
         local count = self:queueCount()
         if count ~= lastQueueCount then
@@ -165,8 +113,6 @@ function MspQueueController:processQueue()
         return
     end
 
-    -- Timeout watchdog for global MSP busy state
-    -- This aims to simply unblock the queue if something goes wrong
     if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
         rfsuite.utils.log("MSP blocked for more than " .. mspBusyTimeout .. " seconds", "info")
         rfsuite.utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
@@ -179,7 +125,6 @@ function MspQueueController:processQueue()
 
     rfsuite.utils.muteSensorLostWarnings()
 
-    -- Load a new current message if needed
     if not self.currentMessage then
         self.currentMessageStartTime = os.clock()
         self.currentMessage = qpop(self.queue)
@@ -188,12 +133,11 @@ function MspQueueController:processQueue()
 
     local cmd, buf, err
 
-    -- Sending cadence controlled by protocol override or default 1s
     local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.25
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
-        -- On real radio: send command only after interval
+
         if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os.clock()) then
             rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
             self.lastTimeCommandSent = os.clock()
@@ -204,13 +148,11 @@ function MspQueueController:processQueue()
 
         rfsuite.tasks.msp.common.mspProcessTxQ()
         cmd, buf, err = rfsuite.tasks.msp.common.mspPollReply()
-        -- defer logging until payload complete
+
     else
-        -- Simulator path
+
         if not self.currentMessage.simulatorResponse then
-            if LOG_ENABLED_MSP() then
-                rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug")
-            end
+            if LOG_ENABLED_MSP() then rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
             self.uuid = nil
             return
@@ -222,7 +164,6 @@ function MspQueueController:processQueue()
         end
     end
 
-    -- Per-message timeout
     if self.currentMessage and (os.clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
@@ -231,14 +172,9 @@ function MspQueueController:processQueue()
         return
     end
 
-    if cmd then
-        self.lastTimeCommandSent = nil
-    end
+    if cmd then self.lastTimeCommandSent = nil end
 
-    -- Success conditions (retain original special-cases for 68 and 217)
-    if (cmd == self.currentMessage.command and not err)
-        or (self.currentMessage.command == 68 and self.retryCount == 2)
-        or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
+    if (cmd == self.currentMessage.command and not err) or (self.currentMessage.command == 68 and self.retryCount == 2) or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
 
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
@@ -251,35 +187,23 @@ function MspQueueController:processQueue()
         self.uuid = nil
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
     elseif self.retryCount > self.maxRetries then
-        -- Hard failure: clear queue and notify
+
         self:clear()
         if self.currentMessage and self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
         if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end
     end
 end
 
---============================--
--- Control
---============================--
-
 function MspQueueController:clear()
     rfsuite.session.mspBusy = false
     self.mspBusyStart = nil
-    -- Reset FIFO quickly
+
     self.queue = newQueue()
     self.currentMessage = nil
     self.uuid = nil
     rfsuite.tasks.msp.common.mspClearTxBuf()
 end
 
---============================--
--- Enqueue
---============================--
-
---[[
-    Adds a message to the MSP queue if telemetry is active and the message is not a duplicate UUID.
-    When copyOnAdd=true (constructor option), a deep copy is made to isolate the queued message from external mutations.
-]]
 function MspQueueController:add(message)
     if not rfsuite.session.telemetryState then return end
     if not message then

@@ -1,30 +1,22 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
 
-
-local rfsuite = require("rfsuite") 
+local rfsuite = require("rfsuite")
 
 local apidata = {
-    api = {
-        [1] = "RC_CONFIG",
-    },
+    api = {[1] = "RC_CONFIG"},
     formdata = {
-        labels = {
-            { t = "@i18n(app.modules.radio_config.stick)@",    label = 1, inline_size = 16 },
-            { t = "@i18n(app.modules.radio_config.throttle)@", label = 2, inline_size = 16 },
-            { t = "",         label = 3, inline_size = 16 },
-            { t = "@i18n(app.modules.radio_config.deadband)@", label = 4, inline_size = 16 }
-        },
+        labels = {{t = "@i18n(app.modules.radio_config.stick)@", label = 1, inline_size = 16}, {t = "@i18n(app.modules.radio_config.throttle)@", label = 2, inline_size = 16}, {t = "", label = 3, inline_size = 16}, {t = "@i18n(app.modules.radio_config.deadband)@", label = 4, inline_size = 16}},
         fields = {
-            { t = "@i18n(app.modules.radio_config.center)@",     label = 1, inline = 2, mspapi = 1, apikey = "rc_center"       },
-            { t = "@i18n(app.modules.radio_config.deflection)@", label = 1, inline = 1, mspapi = 1, apikey = "rc_deflection"   },
-            { t = "@i18n(app.modules.radio_config.arming)@",     label = 2, inline = 2, mspapi = 1, apikey = "rc_arm_throttle" },
-            { t = "@i18n(app.modules.radio_config.min_throttle)@",        label = 2, inline = 1, mspapi = 1, apikey = "rc_min_throttle" },
-            { t = "@i18n(app.modules.radio_config.max_throttle)@",        label = 3, inline = 1, mspapi = 1, apikey = "rc_max_throttle" },
-            { t = "@i18n(app.modules.radio_config.cyclic)@",     label = 4, inline = 2, mspapi = 1, apikey = "rc_deadband"     },
-            { t = "@i18n(app.modules.radio_config.yaw_deadband)@",        label = 4, inline = 1, mspapi = 1, apikey = "rc_yaw_deadband" }
+            {t = "@i18n(app.modules.radio_config.center)@", label = 1, inline = 2, mspapi = 1, apikey = "rc_center"}, {t = "@i18n(app.modules.radio_config.deflection)@", label = 1, inline = 1, mspapi = 1, apikey = "rc_deflection"},
+            {t = "@i18n(app.modules.radio_config.arming)@", label = 2, inline = 2, mspapi = 1, apikey = "rc_arm_throttle"}, {t = "@i18n(app.modules.radio_config.min_throttle)@", label = 2, inline = 1, mspapi = 1, apikey = "rc_min_throttle"},
+            {t = "@i18n(app.modules.radio_config.max_throttle)@", label = 3, inline = 1, mspapi = 1, apikey = "rc_max_throttle"}, {t = "@i18n(app.modules.radio_config.cyclic)@", label = 4, inline = 2, mspapi = 1, apikey = "rc_deadband"},
+            {t = "@i18n(app.modules.radio_config.yaw_deadband)@", label = 4, inline = 1, mspapi = 1, apikey = "rc_yaw_deadband"}
         }
-    }                 
+    }
 }
-
 
 local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
@@ -40,11 +32,4 @@ local function validateThrottleValues(self)
     if min < (arm + 10) then self.fields[4].value = arm + 10 end
 end
 
-return {
-    apidata = apidata,
-    reboot = true,
-    eepromWrite = true,
-    postLoad = postLoad,
-    validateThrottleValues = validateThrottleValues,
-    API = {},
-}
+return {apidata = apidata, reboot = true, eepromWrite = true, postLoad = postLoad, validateThrottleValues = validateThrottleValues, API = {}}

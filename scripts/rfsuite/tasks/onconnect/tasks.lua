@@ -1,10 +1,8 @@
 --[[
- * Copyright (C) Rotorflight Project
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
---]]
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
 local rfsuite = require("rfsuite")
 
 local tasks = {}
@@ -15,28 +13,22 @@ local activeLevel = nil
 local telemetryTypeChanged = false
 
 local TASK_TIMEOUT_SECONDS = 10
-local MAX_RETRIES = 3            -- how many times to retry a timed-out task
-local RETRY_BACKOFF_SECONDS = 1  -- base backoff; actual backoff = base * 2^(attempt-1)
+local MAX_RETRIES = 3
+local RETRY_BACKOFF_SECONDS = 1
 
-
--- Debounce for telemetryTypeChanged -> avoid repeated resets on ELRS/S.Port flaps
-local TYPE_CHANGE_DEBOUNCE = 1.0  -- seconds
+local TYPE_CHANGE_DEBOUNCE = 1.0
 local lastTypeChangeAt = 0
--- Base path and priority levels
+
 local BASE_PATH = "tasks/onconnect/tasks/"
 local PRIORITY_LEVELS = {"high", "medium", "low"}
 
--- Initialize or reset session flags
 local function resetSessionFlags()
     rfsuite.session.onConnect = rfsuite.session.onConnect or {}
-    for _, level in ipairs(PRIORITY_LEVELS) do
-        rfsuite.session.onConnect[level] = false
-    end
-    -- Ensure isConnected resets until high priority completes
+    for _, level in ipairs(PRIORITY_LEVELS) do rfsuite.session.onConnect[level] = false end
+
     rfsuite.session.isConnected = false
 end
 
--- Discover task files in fixed priority order
 function tasks.findTasks()
     if tasksLoaded then return end
 
@@ -55,16 +47,7 @@ function tasks.findTasks()
                 else
                     local module = assert(chunk())
                     if type(module) == "table" and type(module.wakeup) == "function" then
-                        tasksList[name] = {
-                            module = module,
-                            priority = level,
-                            initialized = false,
-                            complete = false,
-                            failed = false,
-                            attempts = 0,
-                            nextEligibleAt = 0,
-                            startTime = nil
-                        }
+                        tasksList[name] = {module = module, priority = level, initialized = false, complete = false, failed = false, attempts = 0, nextEligibleAt = 0, startTime = nil}
                     else
                         rfsuite.utils.log("Invalid task file: " .. fullPath, "info")
                     end
@@ -84,7 +67,7 @@ function tasks.resetAllTasks()
         task.startTime = nil
         task.failed = false
         task.attempts = 0
-        task.nextEligibleAt = 0        
+        task.nextEligibleAt = 0
     end
 
     resetSessionFlags()
@@ -108,11 +91,8 @@ function tasks.wakeup()
         return
     end
 
-    if not tasksLoaded then
-        tasks.findTasks()
-    end
+    if not tasksLoaded then tasks.findTasks() end
 
-    -- Find the first priority level that isn't complete yet.
     activeLevel = nil
     for _, level in ipairs(PRIORITY_LEVELS) do
         if not rfsuite.session.onConnect[level] then
@@ -121,23 +101,16 @@ function tasks.wakeup()
         end
     end
 
-    -- If no active level, everything is finished – nothing to do this cycle.
-    if not activeLevel then
-        return
-    end
+    if not activeLevel then return end
 
     local now = os.clock()
 
-    -- Only run tasks from the active level.
     for name, task in pairs(tasksList) do
         if task.priority == activeLevel then
-            -- Skip failed tasks entirely
+
             if task.failed then goto continue end
 
-            -- Respect backoff window
-            if task.nextEligibleAt and task.nextEligibleAt > now then
-                goto continue
-            end
+            if task.nextEligibleAt and task.nextEligibleAt > now then goto continue end
 
             if not task.initialized then
                 task.initialized = true
@@ -153,21 +126,18 @@ function tasks.wakeup()
                     task.nextEligibleAt = 0
                     rfsuite.utils.log("Completed " .. name, "debug")
                 elseif task.startTime and (now - task.startTime) > TASK_TIMEOUT_SECONDS then
-                    -- Timeout: re-queue with backoff or mark failed
+
                     task.attempts = (task.attempts or 0) + 1
                     if task.attempts <= MAX_RETRIES then
                         local backoff = RETRY_BACKOFF_SECONDS * (2 ^ (task.attempts - 1))
                         task.nextEligibleAt = now + backoff
                         task.initialized = false
                         task.startTime = nil
-                        rfsuite.utils.log(
-                            string.format("Task '%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
-                                        name, task.attempts, MAX_RETRIES, backoff), "info")
+                        rfsuite.utils.log(string.format("Task '%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.", name, task.attempts, MAX_RETRIES, backoff), "info")
                     else
                         task.failed = true
                         task.startTime = nil
-                        rfsuite.utils.log(
-                            string.format("Task '%s' failed after %d attempts. Skipping.", name, MAX_RETRIES), "info")
+                        rfsuite.utils.log(string.format("Task '%s' failed after %d attempts. Skipping.", name, MAX_RETRIES), "info")
                     end
                 end
             end
@@ -175,8 +145,6 @@ function tasks.wakeup()
         end
     end
 
-
-    -- Check if the active level just finished; if so, set flags and return early.
     local levelDone = true
     for _, task in pairs(tasksList) do
         if task.priority == activeLevel and not task.complete then
@@ -213,11 +181,8 @@ function tasks.setTelemetryTypeChanged()
 end
 
 function tasks.active()
-    if not activeLevel then
-        return false
-    end
+    if not activeLevel then return false end
     return true
 end
-
 
 return tasks

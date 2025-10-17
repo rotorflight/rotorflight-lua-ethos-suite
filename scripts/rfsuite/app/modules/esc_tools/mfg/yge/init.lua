@@ -1,4 +1,9 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
 local moduleName = "RF2YGE"
@@ -45,25 +50,11 @@ local function getUInt(page, vals)
     return v
 end
 
-local function getEscModel(buffer)
-    return getEscTypeLabel(buffer)
-end
+local function getEscModel(buffer) return getEscTypeLabel(buffer) end
 
-local function getEscVersion(buffer)
-    return getUInt(buffer, {29, 30, 31, 32})
-end
+local function getEscVersion(buffer) return getUInt(buffer, {29, 30, 31, 32}) end
 
-local function getEscFirmware(buffer)
-    return string.format("%.5f", getUInt(buffer, {25, 26, 27, 28}) / 100000)
-end
+local function getEscFirmware(buffer) return string.format("%.5f", getUInt(buffer, {25, 26, 27, 28}) / 100000) end
 
-return {
-    mspapi = "ESC_PARAMETERS_YGE",
-    toolName = toolName,
-    image = "yge.png",
-    powerCycle = false,
-    getEscModel = getEscModel,
-    getEscVersion = getEscVersion,
-    getEscFirmware = getEscFirmware,
-}
+return {mspapi = "ESC_PARAMETERS_YGE", toolName = toolName, image = "yge.png", powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
 

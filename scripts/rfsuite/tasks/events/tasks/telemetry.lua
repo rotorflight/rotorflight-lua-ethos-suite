@@ -1,39 +1,26 @@
 --[[
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note: Some icons have been sourced from https://www.flaticon.com/
-]]--
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
 local rfsuite = require("rfsuite")
 
-
-local arg = { ... }
+local arg = {...}
 local config = arg[1]
 
 local telemetry = {}
 
 local lastEventTimes = {}
-local lastValues     = {}
+local lastValues = {}
 local lastAlertState = {}
 local rollingSamples = {}
 
-local userpref   = rfsuite.preferences
+local userpref = rfsuite.preferences
 local eventPrefs = (userpref and userpref.events) or {}
 
--- Smartfuel retained as-is, already includes its own timing logic
 local lastSmartfuelAnnounced = nil
-local lastLowFuelAnnounced   = false
-local lastLowFuelRepeat      = 0
+local lastLowFuelAnnounced = false
+local lastLowFuelRepeat = 0
 local lastLowFuelRepeatCount = 0
 
 local function buildSmartfuelThresholds(sel)
@@ -41,12 +28,12 @@ local function buildSmartfuelThresholds(sel)
         return {100, 10}
     elseif sel == 10 then
         local t = {}
-        for i = 100, 10, -10 do t[#t+1] = i end
+        for i = 100, 10, -10 do t[#t + 1] = i end
         return t
     elseif sel == 20 then
         local t = {}
-        for i = 100, 20, -20 do t[#t+1] = i end
-        t[#t+1] = 10
+        for i = 100, 20, -20 do t[#t + 1] = i end
+        t[#t + 1] = 10
         return t
     elseif sel == 25 then
         return {100, 75, 50, 25, 10}
@@ -65,7 +52,6 @@ local function smartfuelCallout(value)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = buildSmartfuelThresholds(smartfuelcallout)
 
-    -- 0% logic (repeats, haptic)
     if value <= 0 then
         local now = os.clock() or os.clock()
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
@@ -90,7 +76,6 @@ local function smartfuelCallout(value)
         lastLowFuelRepeatCount = 0
     end
 
-    -- On first connect, announce the actual % value
     if lastSmartfuelAnnounced == nil then
         rfsuite.utils.playFile("status", "alerts/fuel.wav")
         system.playNumber(math.floor(value + 0.5), UNIT_PERCENT)
@@ -99,7 +84,7 @@ local function smartfuelCallout(value)
     end
 
     local calloutValue = nil
-    -- Find the largest threshold less than or equal to value and not previously called out
+
     for _, t in ipairs(thresholds) do
         if value <= t and lastSmartfuelAnnounced > t then
             calloutValue = t
@@ -113,7 +98,6 @@ local function smartfuelCallout(value)
         lastSmartfuelAnnounced = calloutValue
     end
 end
-
 
 local function shouldAlert(key, interval)
     local now = os.clock() or os.clock()
@@ -135,23 +119,6 @@ local function updateRollingAverage(key, newValue, window)
     return sum / #samples
 end
 
---[[
-eventTable Configuration Options:
-
-Each entry in eventTable supports the following optional fields:
-
-- sensor     : (string) Name of the telemetry sensor to monitor.
-- event      : (function) Function called with (value, interval, window) when sensor updates.
-- interval   : (number) Minimum seconds between repeated alerts while condition persists.
-               If omitted or 0, alert may trigger on every update.
-- window     : (number) Number of recent samples to average before evaluating condition.
-               Used to suppress alerts from momentary fluctuations. Default is 1 (no averaging).
-- debounce   : (number) Minimum seconds between triggers based on value changes (non-threshold events).
-               Used for sensors like profiles or modes to suppress rapid changes.
-
-Only one of `interval` or `debounce` is typically used per entry.
-]]
-
 local eventTable = {
     {
         sensor = "armflags",
@@ -160,12 +127,9 @@ local eventTable = {
             if value == lastValues[key] then return end
             local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
             local filename = armMap[math.floor(value)]
-            if filename then
-                rfsuite.utils.playFile("events", "alerts/" .. filename)
-            end
+            if filename then rfsuite.utils.playFile("events", "alerts/" .. filename) end
         end
-    },
-    {
+    }, {
         sensor = "voltage",
         interval = 10,
         window = 5,
@@ -188,10 +152,7 @@ local eventTable = {
             local rudder = session.rx.values['rudder'] or 0
 
             local suppression = (userpref.general.gimbalsupression or 0.95) * 1024
-            if math.abs(collective) > suppression or math.abs(aileron) > suppression or
-               math.abs(elevator) > suppression or math.abs(rudder) > suppression then
-                return
-            end
+            if math.abs(collective) > suppression or math.abs(aileron) > suppression or math.abs(elevator) > suppression or math.abs(rudder) > suppression then return end
 
             local key = "voltage"
             if avgVoltage < warnVoltage and shouldAlert(key, interval) then
@@ -201,8 +162,7 @@ local eventTable = {
                 lastAlertState[key] = false
             end
         end
-    },
-    {
+    }, {
         sensor = "temp_esc",
         interval = 10,
         window = 5,
@@ -219,8 +179,7 @@ local eventTable = {
                 lastAlertState[key] = false
             end
         end
-    },
-    {
+    }, {
         sensor = "bec_voltage",
         interval = 10,
         window = 5,
@@ -231,11 +190,11 @@ local eventTable = {
             end
 
             local batprefs = (rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery) or {}
-            local alert_type     = tonumber(batprefs.alert_type or 0)
-            local becalertvalue  = tonumber(batprefs.becalertvalue or 6.5)
-            local rxalertvalue   = tonumber(batprefs.rxalertvalue or 7.4)
-            local avgBEC         = updateRollingAverage("bec_voltage", value, window)
-            local key            = "bec_voltage"
+            local alert_type = tonumber(batprefs.alert_type or 0)
+            local becalertvalue = tonumber(batprefs.becalertvalue or 6.5)
+            local rxalertvalue = tonumber(batprefs.rxalertvalue or 7.4)
+            local avgBEC = updateRollingAverage("bec_voltage", value, window)
+            local key = "bec_voltage"
 
             if alert_type == 1 then
                 if avgBEC < becalertvalue and shouldAlert(key, interval) then
@@ -257,29 +216,17 @@ local eventTable = {
                 lastAlertState[key] = false
             end
         end
-    },
-    {
-        sensor = "smartfuel",
-        event = function(value)
-            smartfuelCallout(value)
-        end
-    },
-    {
+    }, {sensor = "smartfuel", event = function(value) smartfuelCallout(value) end}, {
         sensor = "governor",
         event = function(value)
             local key = "governor"
             if value == lastValues[key] then return end
             if not rfsuite.session.isArmed or rfsuite.session.governorMode == 0 then return end
-            local governorMap = {
-                [0] = "off.wav", [1] = "idle.wav", [2] = "spoolup.wav", [3] = "recovery.wav",
-                [4] = "active.wav", [5] = "thr-off.wav", [6] = "lost-hs.wav", [7] = "autorot.wav",
-                [8] = "bailout.wav", [100] = "disabled.wav", [101] = "disarmed.wav"
-            }
+            local governorMap = {[0] = "off.wav", [1] = "idle.wav", [2] = "spoolup.wav", [3] = "recovery.wav", [4] = "active.wav", [5] = "thr-off.wav", [6] = "lost-hs.wav", [7] = "autorot.wav", [8] = "bailout.wav", [100] = "disabled.wav", [101] = "disarmed.wav"}
             local filename = governorMap[math.floor(value)]
             if filename then rfsuite.utils.playFile("events", "gov/" .. filename) end
         end
-    },
-    {
+    }, {
         sensor = "pid_profile",
         debounce = 0.25,
         event = function(value)
@@ -288,8 +235,7 @@ local eventTable = {
             rfsuite.utils.playFile("events", "alerts/profile.wav")
             system.playNumber(math.floor(value))
         end
-    },
-    {
+    }, {
         sensor = "rate_profile",
         debounce = 0.25,
         event = function(value)
@@ -338,7 +284,7 @@ function telemetry.reset()
     lastLowFuelRepeat = 0
     lastLowFuelRepeatCount = 0
     lastEventTimes = {}
-    lastValues     = {}
+    lastValues = {}
     lastAlertState = {}
     rollingSamples = {}
 end

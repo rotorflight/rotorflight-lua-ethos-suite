@@ -1,23 +1,15 @@
 --[[
-    Custom Function Widget
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    wakeupinterval    : number   -- Optional wakeup interval in seconds (set in wrapper)
-    wakeup            : function   -- Custom wakeup function, called with (box, telemetry), should return a table to cache
-    paint             : function   -- Custom paint function, called with (x, y, w, h, box, cache, telemetry)
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
 
-    -- Note: This widget does not process colors, layout, or padding. All rendering and caching logic must be handled in the user's custom functions.
-]]
-local rfsuite = require("rfsuite") 
+local rfsuite = require("rfsuite")
 
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
 
-function render.dirty(box)
-    return true -- Always dirty, since the user-defined functions can change at any time
-end
-
+function render.dirty(box) return true end
 
 function render.wakeup(box)
 
@@ -33,9 +25,7 @@ end
 function render.paint(x, y, w, h, box, telemetry)
     x, y = utils.applyOffset(x, y, box)
     local v = box.paint
-    if type(v) == "function" then
-        v(x, y, w, h, box, box._cache, telemetry)
-    end
+    if type(v) == "function" then v(x, y, w, h, box, box._cache, telemetry) end
 end
 
 return render

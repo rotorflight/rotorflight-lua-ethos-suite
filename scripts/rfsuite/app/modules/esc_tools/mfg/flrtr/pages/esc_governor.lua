@@ -1,4 +1,9 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
 
 local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
@@ -6,31 +11,21 @@ local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
-
 local foundEsc = false
 local foundEscDone = false
 
 local apidata = {
-    api = {
-        [1] = "ESC_PARAMETERS_FLYROTOR",
-    },
+    api = {[1] = "ESC_PARAMETERS_FLYROTOR"},
     formdata = {
-        labels = {
-        },
+        labels = {},
         fields = {
-            { t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov)@",             mspapi = 1, apikey = "governor",        type = 1 },
-            { t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@",           mspapi = 1, apikey = "gov_p"                     },
-            { t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@",           mspapi = 1, apikey = "gov_i"                     },
-            { t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@",      mspapi = 1, apikey = "drive_freq"                },
-            { t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_erpm_max)@",  mspapi = 1, apikey = "motor_erpm_max"            }
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov)@", mspapi = 1, apikey = "governor", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@", mspapi = 1, apikey = "gov_p"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@", mspapi = 1, apikey = "gov_i"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@", mspapi = 1, apikey = "drive_freq"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_erpm_max)@", mspapi = 1, apikey = "motor_erpm_max"}
         }
-    }                 
+    }
 }
 
-
-local function postLoad()
-    rfsuite.app.triggers.closeProgressLoader = true
-end
+local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
@@ -39,13 +34,11 @@ end
 
 local function event(widget, category, value, x, y)
 
-    -- if close event detected go to section home page
     if category == EVT_CLOSE and value == 0 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end
         rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
         return true
     end
-
 
 end
 
@@ -55,12 +48,12 @@ return {
     reboot = false,
     escinfo = escinfo,
     postLoad = postLoad,
-    simulatorResponse =  simulatorResponse,
+    simulatorResponse = simulatorResponse,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " ..  "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@",
     headerLine = rfsuite.escHeaderLineText,
-    progressCounter = 0.5,
+    progressCounter = 0.5
 
 }

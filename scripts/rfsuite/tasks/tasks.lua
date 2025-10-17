@@ -1,51 +1,10 @@
 --[[
-
- * Copyright (C) Rotorflight Project
- *
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-
--- Task scheduler timing notes:
---   - The scheduler tick runs at 20 Hz (every 50 ms).
---   - Spread tasks can run as often as every tick (minimum ~0.05 s).
---   - Non-spread tasks are only checked every other tick (minimum ~0.1 s).
---   - A small random jitter (~+0.1 s) is applied when tasks are loaded, 
---     so very short intervals will often be rounded upward.
---
--- Useful for periodic operations that require sub-second timing.
-
--- The tasks flip with running each on a different cycle is important.
--- It prevents the system 'bogging down' if many tasks are due at the same time.
--- It also helps to spread out CPU load, which is important for accurate CPU timing.
-
--- An example for a task meta info is as follows
-
--- local init = {
---     interval        = 0.25,            -- run every 0.25 seconds.  Note. Minimum interval is ~0.05s
---     script          = "sensors.lua",   -- run this script
---     linkrequired    = true,            -- run this script only if link is established
---     spreadschedule  = false,           -- run on every loop
---     simulatoronly   = false,           -- run this script in simulation mode
---     connected       = true,            -- run this script only if msp is connected
--- }
-
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
+
 local rfsuite = require("rfsuite")
 
-
--- keep these constant / cheap definitions at file scope
 local utils = rfsuite.utils
 local compiler = loadfile
 
@@ -56,22 +15,17 @@ local taskSchedulerPercentage
 local schedulerTick
 local lastSensorName
 local tasks, tasksList = {}, {}
-tasks.heartbeat, tasks.begin = nil, nil  -- begin nil by default
+tasks.heartbeat, tasks.begin = nil, nil
 
 local currentSensor, currentModuleId, currentTelemetryType
 local internalModule, externalModule
 
--- CPU constants (cheap -> keep)
-local CPU_TICK_HZ     = 20
-local SCHED_DT        = 1 / CPU_TICK_HZ
-local OVERDUE_TOL     = SCHED_DT * 0.25
+local CPU_TICK_HZ = 20
+local SCHED_DT = 1 / CPU_TICK_HZ
+local OVERDUE_TOL = SCHED_DT * 0.25
 
-
--- Global runtime rate multiplier (<1.0 = faster, >1.0 = slower)
--- this scales all task intervals deterministically
 tasks.rateMultiplier = tasks.rateMultiplier or 1.0
 
--- Overdue Task logging
 local LOG_OVERDUE_TASKS = false
 
 tasks._justInitialized = false
@@ -81,7 +35,7 @@ tasks._initKeys = nil
 tasks._initIndex = 1
 
 local ethosVersionGood
-local telemetryCheckScheduler = os.clock  -- keep reference, actual timers set later
+local telemetryCheckScheduler = os.clock
 
 local lastCheckAt
 local lastTelemetryType
@@ -95,41 +49,28 @@ local NAME_CHECK_INTERVAL = 2.0
 
 local usingSimulator = system.getVersion().simulation
 
-local tlm 
+local tlm
 
-
--- =========================
--- Profiler config & helpers
--- =========================
--- Zero-overhead when disabled (just a few conditionals).
-tasks.profile = {
-  enabled = false,         -- master switch
-  dumpInterval = 5,        -- seconds between dumps at end of wakeup()
-  minDuration = 0,         -- only record runs >= this many seconds
-  include = nil,           -- optional set: { taskname = true, ... }
-  exclude = nil,           -- optional set: { taskname = true, ... }
-  onDump = nil             -- optional function(snapshot) -> true to suppress default logging
-}
+tasks.profile = {enabled = false, dumpInterval = 5, minDuration = 0, include = nil, exclude = nil, onDump = nil}
 
 local function profWanted(name)
-  if not tasks.profile.enabled then return end
-  if not tasks.profile.enabled then return false end
-  local inc, exc = tasks.profile.include, tasks.profile.exclude
-  if inc and not inc[name] then return false end
-  if exc and exc[name] then return false end
-  return true
+    if not tasks.profile.enabled then return end
+    if not tasks.profile.enabled then return false end
+    local inc, exc = tasks.profile.include, tasks.profile.exclude
+    if inc and not inc[name] then return false end
+    if exc and exc[name] then return false end
+    return true
 end
 
 local function profRecord(task, dur)
-  if not tasks.profile.enabled then return end
-  if dur < (tasks.profile.minDuration or 0) then return end
-  task.duration = dur
-  task.totalDuration = (task.totalDuration or 0) + dur
-  task.runs = (task.runs or 0) + 1
-  task.maxDuration = math.max(task.maxDuration or 0, dur)
+    if not tasks.profile.enabled then return end
+    if dur < (tasks.profile.minDuration or 0) then return end
+    task.duration = dur
+    task.totalDuration = (task.totalDuration or 0) + dur
+    task.runs = (task.runs or 0) + 1
+    task.maxDuration = math.max(task.maxDuration or 0, dur)
 end
 
--- Returns true if the task is active (based on recent run time or triggers)
 function tasks.isTaskActive(name)
     for _, t in ipairs(tasksList) do
         if t.name == name then
@@ -148,45 +89,34 @@ end
 
 local function taskOffset(name, interval)
     local hash = 0
-    for i = 1, #name do
-        hash = (hash * 31 + name:byte(i)) % 100000
-    end
-    local base = (hash % (interval * 1000)) / 1000  -- base hash offset
+    for i = 1, #name do hash = (hash * 31 + name:byte(i)) % 100000 end
+    local base = (hash % (interval * 1000)) / 1000
     local jitter = math.random() * interval
     return (base + jitter) % interval
 end
 
--- Print a human-readable schedule of all tasks
 function tasks.dumpSchedule()
-  local now = os.clock()
-  utils.log("====== Task Schedule Dump ======", "info")
-  for _, t in ipairs(tasksList) do
-    local next_run = t.last_run + t.interval
-    local in_secs  = next_run - now
-    utils.log(
-      string.format(
-        "%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs",
-        t.name, t.interval, t.last_run, in_secs
-      ),
-      "info"
-    )
-  end
-
-
--- Set a new global rate multiplier at runtime; rescales all task intervals deterministically.
-function tasks.setRateMultiplier(mult)
-    mult = tonumber(mult) or 1.0
-    if mult <= 0 then mult = 0.0001 end
-    tasks.rateMultiplier = mult
-    for _, task in ipairs(tasksList) do
-        local base = task.baseInterval or task.interval or 1
-        local j = task.jitter or 0
-        task.interval = (base * mult) + j
+    local now = os.clock()
+    utils.log("====== Task Schedule Dump ======", "info")
+    for _, t in ipairs(tasksList) do
+        local next_run = t.last_run + t.interval
+        local in_secs = next_run - now
+        utils.log(string.format("%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs", t.name, t.interval, t.last_run, in_secs), "info")
     end
-    utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
-end
 
-  utils.log("================================", "info")
+    function tasks.setRateMultiplier(mult)
+        mult = tonumber(mult) or 1.0
+        if mult <= 0 then mult = 0.0001 end
+        tasks.rateMultiplier = mult
+        for _, task in ipairs(tasksList) do
+            local base = task.baseInterval or task.interval or 1
+            local j = task.jitter or 0
+            task.interval = (base * mult) + j
+        end
+        utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
+    end
+
+    utils.log("================================", "info")
 end
 
 function tasks.initialize()
@@ -211,15 +141,7 @@ function tasks.initialize()
                 elseif func then
                     local tconfig = func()
                     if type(tconfig) == "table" and tconfig.interval and tconfig.script then
-                        taskMetadata[dir] = {
-                            interval = tconfig.interval,
-                            script = tconfig.script,
-                            linkrequired = tconfig.linkrequired or false,
-                            connected = tconfig.connected or false,
-                            simulatoronly = tconfig.simulatoronly or false,
-                            spreadschedule = tconfig.spreadschedule or false,
-                            init = initPath
-                        }
+                        taskMetadata[dir] = {interval = tconfig.interval, script = tconfig.script, linkrequired = tconfig.linkrequired or false, connected = tconfig.connected or false, simulatoronly = tconfig.simulatoronly or false, spreadschedule = tconfig.spreadschedule or false, init = initPath}
                     end
                 end
             end
@@ -249,12 +171,11 @@ function tasks.findTasks()
                     local scriptPath = taskPath .. dir .. "/" .. tconfig.script
                     local fn, loadErr = compiler(scriptPath)
                     if fn then
-                        tasks[dir] = fn(config)  -- assumes global 'config'
+                        tasks[dir] = fn(config)
                     else
                         utils.log("Failed to load task script " .. scriptPath .. ": " .. loadErr, "warn")
                     end
 
-                    -- add a small drift to de-synchronize fixed intervals
                     local baseInterval = tconfig.interval or 1
                     local jitter = (math.random() * 0.1)
                     local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
@@ -271,7 +192,7 @@ function tasks.findTasks()
                         spreadschedule = tconfig.spreadschedule or false,
                         simulatoronly = tconfig.simulatoronly or false,
                         last_run = os.clock() - offset,
-                        -- profiling fields
+
                         duration = 0,
                         totalDuration = 0,
                         runs = 0,
@@ -279,14 +200,7 @@ function tasks.findTasks()
                     }
                     table.insert(tasksList, task)
 
-                    taskMetadata[dir] = {
-                        interval = task.interval,
-                        script = task.script,
-                        linkrequired = task.linkrequired,
-                        connected = task.connected,
-                        simulatoronly = task.simulatoronly,
-                        spreadschedule = task.spreadschedule
-                    }
+                    taskMetadata[dir] = {interval = task.interval, script = task.script, linkrequired = task.linkrequired, connected = task.connected, simulatoronly = task.simulatoronly, spreadschedule = task.spreadschedule}
                 end
             end
         end
@@ -308,22 +222,15 @@ local function clearSessionAndQueue()
 
 end
 
--- Telemetry check scheduler: 
 function tasks.telemetryCheckScheduler()
 
     local now = os.clock()
 
     local telemetryState = (tlm and tlm:state()) or false
-    if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then
-        telemetryState = false
-    end
+    if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
-    -- early out if link is down
-    if not telemetryState then
-        return clearSessionAndQueue()
-    end
+    if not telemetryState then return clearSessionAndQueue() end
 
-        -- we must reset if model changes
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
         local newModelPath = model.path()
         if newModelPath ~= lastModelPath then
@@ -333,56 +240,49 @@ function tasks.telemetryCheckScheduler()
         end
     end
 
-    -- fast path: if we already have a sensor, don’t rescan every time
     if currentSensor then
-       rfsuite.session.telemetryState  = true
-       rfsuite.session.telemetrySensor = currentSensor
-       rfsuite.session.telemetryModule = currentModuleId
-       rfsuite.session.telemetryType   = currentTelemetryType 
+        rfsuite.session.telemetryState = true
+        rfsuite.session.telemetrySensor = currentSensor
+        rfsuite.session.telemetryModule = currentModuleId
+        rfsuite.session.telemetryType = currentTelemetryType
 
-       -- catch switching when to fast for telemetry to drop
         if now - lastNameCheckAt >= NAME_CHECK_INTERVAL then
             lastNameCheckAt = now
             if currentSensor:name() ~= lastSensorName then
                 utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
                 lastSensorName = currentSensor:name()
-                currentSensor = nil  -- force re-detect next time           
+                currentSensor = nil
             end
-        end     
+        end
 
-      return
+        return
     end
 
-    -- only do heavy calls when we *don’t* already have a sensor
     if not internalModule or not externalModule then
         internalModule = model.getModule(0)
         externalModule = model.getModule(1)
     end
 
     if internalModule and internalModule:enable() then
-        currentSensor      = system.getSource({ appId = 0xF101 })
-        currentModuleId    = internalModule
+        currentSensor = system.getSource({appId = 0xF101})
+        currentModuleId = internalModule
         currentTelemetryType = "sport"
     elseif externalModule and externalModule:enable() then
-        currentSensor      = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
-        currentModuleId    = externalModule
+        currentSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+        currentModuleId = externalModule
         currentTelemetryType = "crsf"
         if not currentSensor then
-            currentSensor      = system.getSource({ appId = 0xF101 })
+            currentSensor = system.getSource({appId = 0xF101})
             currentTelemetryType = "sport"
         end
     end
 
+    if not currentSensor then return clearSessionAndQueue() end
 
-    if not currentSensor then
-        return clearSessionAndQueue()
-    end
-
-    rfsuite.session.telemetryState  = true
+    rfsuite.session.telemetryState = true
     rfsuite.session.telemetrySensor = currentSensor
     rfsuite.session.telemetryModule = currentModuleId
-    rfsuite.session.telemetryType   = currentTelemetryType
-
+    rfsuite.session.telemetryType = currentTelemetryType
 
     if currentTelemetryType ~= lastTelemetryType then
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
@@ -394,36 +294,26 @@ function tasks.telemetryCheckScheduler()
 end
 
 function tasks.active()
-    -- consider recent task activity as active
-    if tasks.heartbeat and (os.clock() - tasks.heartbeat) < 2 then
-        return true
-    end
+
+    if tasks.heartbeat and (os.clock() - tasks.heartbeat) < 2 then return true end
 
     return false
 end
 
--- compute positive seconds overdue (<= 0 means not yet due)
-local function overdue_seconds(task, now, grace_s)
-  return (now - task.last_run) - (task.interval + (grace_s or 0))
-end
+local function overdue_seconds(task, now, grace_s) return (now - task.last_run) - (task.interval + (grace_s or 0)) end
 
--- All-second logic + sub-second tolerance; returns (ok_to_run, overdue_seconds)
 local function canRunTask(task, now)
-    local hf = task.interval < SCHED_DT           -- high-frequency task
-    local grace = hf and OVERDUE_TOL or (task.interval * 0.25)  -- light grace for slow tasks
+    local hf = task.interval < SCHED_DT
+    local grace = hf and OVERDUE_TOL or (task.interval * 0.25)
 
-    local od = overdue_seconds(task, now, grace)  -- >0 means overdue by that many seconds
+    local od = overdue_seconds(task, now, grace)
 
     local priorityTask = task.name == "msp" or task.name == "callback"
 
     local linkOK = not task.linkrequired or rfsuite.session.telemetryState
-    local connOK = not task.connected    or rfsuite.session.isConnected
+    local connOK = not task.connected or rfsuite.session.isConnected
 
-    local ok =
-        linkOK
-        and connOK
-        and (priorityTask or od >= 0 or not rfsuite.session.mspBusy)
-        and (not task.simulatoronly or usingSimulator)
+    local ok = linkOK and connOK and (priorityTask or od >= 0 or not rfsuite.session.mspBusy) and (not task.simulatoronly or usingSimulator)
 
     return ok, od
 end
@@ -433,13 +323,11 @@ function tasks.wakeup()
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
     local t0 = tasks.heartbeat
-    local loopCpu = 0   -- seconds of CPU spent inside task wakeups this tick
+    local loopCpu = 0
 
     tasks.profile.enabled = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler
 
-    if ethosVersionGood == nil then
-        ethosVersionGood = utils.ethosVersionAtLeast()
-    end
+    if ethosVersionGood == nil then ethosVersionGood = utils.ethosVersionAtLeast() end
     if not ethosVersionGood then return end
 
     if tasks.begin == true then
@@ -458,15 +346,15 @@ function tasks.wakeup()
         local key = tasks._initKeys[tasks._initIndex]
         if key then
             local meta = tasks._initMetadata[key]
-            -- Reuse unified loader (handles init side-effects, module creation, and scheduling)
+
             tasks.load(key, meta)
             tasks._initIndex = tasks._initIndex + 1
             return
         else
-            tasks._initState   = nil
-            tasks._initMetadata= nil
-            tasks._initKeys    = nil
-            tasks._initIndex   = 1
+            tasks._initState = nil
+            tasks._initMetadata = nil
+            tasks._initKeys = nil
+            tasks._initIndex = 1
             utils.log("All tasks initialized.", "info")
             return
         end
@@ -483,11 +371,7 @@ function tasks.wakeup()
                 if okToRun then
                     local elapsed = now - task.last_run
                     if elapsed + OVERDUE_TOL >= task.interval then
-                        if (od or 0) > 0 then
-                            if LOG_OVERDUE_TASKS then
-                                utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "info")
-                            end
-                        end
+                        if (od or 0) > 0 then if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "info") end end
                         local fn = tasks[task.name].wakeup
                         if fn then
                             local c0 = os.clock()
@@ -523,18 +407,10 @@ function tasks.wakeup()
                     local elapsed = now - task.last_run
                     if elapsed >= 2 * task.interval then
                         table.insert(mustRunTasks, task)
-                        if LOG_OVERDUE_TASKS then
-                            utils.log(string.format("[scheduler] %s hard overdue by %.3fs",
-                              task.name, elapsed - 2*task.interval), "info")
-                        end
+                        if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s hard overdue by %.3fs", task.name, elapsed - 2 * task.interval), "info") end
                     elseif elapsed + OVERDUE_TOL >= task.interval then
                         table.insert(normalEligibleTasks, task)
-                        if elapsed - task.interval > 0 then
-                            if LOG_OVERDUE_TASKS then
-                                utils.log(string.format("[scheduler] %s overdue by %.3fs",
-                                  task.name, elapsed - task.interval), "info")
-                            end
-                        end
+                        if elapsed - task.interval > 0 then if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, elapsed - task.interval), "info") end end
                     end
                 end
             end
@@ -544,11 +420,7 @@ function tasks.wakeup()
         table.sort(normalEligibleTasks, function(a, b) return a.last_run < b.last_run end)
 
         local nonSpreadCount = 0
-        for _, task in ipairs(tasksList) do
-            if not task.spreadschedule then
-                nonSpreadCount = nonSpreadCount + 1
-            end
-        end
+        for _, task in ipairs(tasksList) do if not task.spreadschedule then nonSpreadCount = nonSpreadCount + 1 end end
 
         tasksPerCycle = math.ceil(nonSpreadCount * taskSchedulerPercentage)
 
@@ -595,7 +467,6 @@ function tasks.wakeup()
         runSpreadTasks()
     end
 
-    -- Periodic profile dump (only when profiler is on)
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
         local dumpEvery = tasks.profile.dumpInterval or 5
@@ -605,27 +476,18 @@ function tasks.wakeup()
         end
     end
 
-    -- measure how long this wakeup cycle took
-    -- Publish both: summed CPU time and (legacy) wall-ish loop time.
     local t1 = os.clock()
     rfsuite.performance = rfsuite.performance or {}
     rfsuite.performance.taskLoopCpuMs = loopCpu * 1000.0
-    rfsuite.performance.taskLoopTime  = (t1 - t0) * 1000.0
+    rfsuite.performance.taskLoopTime = (t1 - t0) * 1000.0
 end
 
 function tasks.reset()
-    --utils.log("Reset all tasks", "info")
-    for _, task in ipairs(tasksList) do
-        if tasks[task.name].reset then
-            tasks[task.name].reset()
-        end
-    end
-  rfsuite.utils.session()
+
+    for _, task in ipairs(tasksList) do if tasks[task.name].reset then tasks[task.name].reset() end end
+    rfsuite.utils.session()
 end
 
--- =========================
--- Profiling utilities
--- =========================
 function tasks.dumpProfile(opts)
     if not tasks.profile.enabled then return end
     local sortKey = (opts and opts.sort) or "avg"
@@ -633,35 +495,15 @@ function tasks.dumpProfile(opts)
     for _, t in ipairs(tasksList) do
         local runs = t.runs or 0
         local avg = runs > 0 and ((t.totalDuration or 0) / runs) or 0
-        snapshot[#snapshot+1] = {
-            name = t.name,
-            last = t.duration or 0,
-            max  = t.maxDuration or 0,
-            total= t.totalDuration or 0,
-            runs = runs,
-            avg  = avg,
-            interval = t.interval or 0
-        }
+        snapshot[#snapshot + 1] = {name = t.name, last = t.duration or 0, max = t.maxDuration or 0, total = t.totalDuration or 0, runs = runs, avg = avg, interval = t.interval or 0}
     end
-    local order = {
-        avg   = function(a,b) return a.avg   > b.avg   end,
-        last  = function(a,b) return a.last  > b.last  end,
-        max   = function(a,b) return a.max   > b.max   end,
-        total = function(a,b) return a.total > b.total end,
-        runs  = function(a,b) return a.runs  > b.runs  end
-    }
+    local order = {avg = function(a, b) return a.avg > b.avg end, last = function(a, b) return a.last > b.last end, max = function(a, b) return a.max > b.max end, total = function(a, b) return a.total > b.total end, runs = function(a, b) return a.runs > b.runs end}
     table.sort(snapshot, order[sortKey] or order.avg)
 
-    -- Allow consumer to intercept (e.g., UI sink) and suppress logs.
     if tasks.profile.onDump and tasks.profile.onDump(snapshot) then return end
 
     utils.log("====== Task Profile ======", "info")
-    for _, p in ipairs(snapshot) do
-        utils.log(string.format(
-            "%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs",
-            p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval
-        ), "info")
-    end
+    for _, p in ipairs(snapshot) do utils.log(string.format("%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs", p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval), "info") end
     utils.log("================================", "info")
 end
 
@@ -675,191 +517,159 @@ function tasks.resetProfile()
     utils.log("[profile] Cleared profiling stats", "info")
 end
 
-function tasks.event(widget, category, value, x, y)
-    print("Event:", widget, category, value, x, y)
-end
-
+function tasks.event(widget, category, value, x, y) print("Event:", widget, category, value, x, y) end
 
 function tasks.init()
-    -- initialize all mutable runtime state here (no heavy work yet)
-    tasks.rateMultiplier        = tasks.rateMultiplier or 1.0
-    currentTelemetrySensor     = nil
-    tasksPerCycle              = 1
-    taskSchedulerPercentage    = 0.5
-    schedulerTick              = 0
 
-    ethosVersionGood           = nil
-    lastSensorName             = nil
-    lastCheckAt                = nil
+    tasks.rateMultiplier = tasks.rateMultiplier or 1.0
+    currentTelemetrySensor = nil
+    tasksPerCycle = 1
+    taskSchedulerPercentage = 0.5
+    schedulerTick = 0
 
-    -- reset public flags
-    tasks.heartbeat            = nil
-    tasks._justInitialized     = false
+    ethosVersionGood = nil
+    lastSensorName = nil
+    lastCheckAt = nil
 
-    -- fresh task container(s)
-    tasksList                  = {}
-    tasks._initState           = "start"
-    tasks._initMetadata        = nil
-    tasks._initKeys            = nil
-    tasks._initIndex           = 1
+    tasks.heartbeat = nil
+    tasks._justInitialized = false
 
-    -- mark that we should run the discovery/bootstrap on first wakeup tick
-    tasks.begin                = true
+    tasksList = {}
+    tasks._initState = "start"
+    tasks._initMetadata = nil
+    tasks._initKeys = nil
+    tasks._initIndex = 1
 
-    -- Init telemetry sensor
-    tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
+    tasks.begin = true
+
+    tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
 end
 
-
---- Sets the telemetry type changed state for all tasks in the `tasksList`.
--- Iterates through each task in `tasksList` and calls its `setTelemetryTypeChanged` method if it exists.
--- After updating all tasks, invokes the `rfsuite.utils.session()` function.
 function tasks.setTelemetryTypeChanged()
-    for _, task in ipairs(tasksList) do
-        if tasks[task.name].setTelemetryTypeChanged then
-            --rfsuite.utils.log("Notifying task [" .. task.name .. "] of telemetry type change", "info")
-            tasks[task.name].setTelemetryTypeChanged()
+    for _, task in ipairs(tasksList) do if tasks[task.name].setTelemetryTypeChanged then tasks[task.name].setTelemetryTypeChanged() end end
+    rfsuite.utils.session()
+end
+
+function tasks.read() end
+
+function tasks.write() end
+
+function tasks.unload(name)
+
+    local mod = tasks[name]
+    if mod and mod.reset then pcall(mod.reset) end
+
+    if name == "msp" then
+        local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+        if q and q.clear then pcall(function() q:clear() end) end
+    end
+
+    for i, t in ipairs(tasksList) do
+        if t.name == name then
+            table.remove(tasksList, i)
+            break
         end
     end
-  rfsuite.utils.session()
-end
 
-function tasks.read()
-    -- print("onRead:")
-end
-
-function tasks.write()
-    -- print("onWrite:")
-end
-
--- Unload a single task by name (e.g. "msp")
-function tasks.unload(name)
-  -- run task-specific reset/cleanup if present
-  local mod = tasks[name]
-  if mod and mod.reset then
-    pcall(mod.reset)  -- don't let errors stop us
-  end
-
-  -- MSP-specific: clear its queue if present
-  if name == "msp" then
-    local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
-    if q and q.clear then pcall(function() q:clear() end) end  -- same queue used elsewhere
-  end
-
-  -- remove from scheduler list
-  for i, t in ipairs(tasksList) do
-    if t.name == name then
-      table.remove(tasksList, i)
-      break
-    end
-  end
-
-  -- drop module from memory
-  tasks[name] = nil
-  utils.log(string.format("[scheduler] Unloaded task '%s'", tostring(name)), "info")
-  return true
-end
-
--- Load a single task (re-creates module + optional schedule entry)
-function tasks.load(name, meta)
-  -- if metadata wasn't provided, read it via init.lua
-  if not meta then
-    local initPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/init.lua"
-    local initFn, err = compiler(initPath)
-    if not initFn then
-      utils.log("Failed to load init for " .. name .. ": " .. tostring(err), "info")
-      return false
-    end
-    local m = initFn()
-    if type(m) ~= "table" or not m.script then
-      utils.log("Invalid config in " .. initPath, "info")
-      return false
-    end
-    meta = m
-    meta.init = initPath
-  else
-    -- if metadata includes an init path, run it (side-effects) just like bootstrap did
-    if meta.init then
-      local initFn, err = compiler(meta.init)
-      if initFn then pcall(initFn) else utils.log("Failed to run init for " .. name .. ": " .. (err or "unknown"), "info") end
-    end
-  end
-
-  -- compile module
-  local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/" .. meta.script
-  local fn, loadErr = compiler(scriptPath)
-  if not fn then
-    utils.log("Failed to load task script " .. scriptPath .. ": " .. tostring(loadErr), "info")
-    return false
-  end
-
-  -- instantiate module (assumes global 'config')
-  tasks[name] = fn(config)
-
-  -- if meta.interval < 0, load the module but do not schedule it (parity with bootstrap)
-  local baseInterval = tonumber(meta.interval or 1)
-  if baseInterval and baseInterval < 0 then
-    utils.log(string.format("[scheduler] Loaded task '%s' (no schedule; interval < 0)", name), "info")
+    tasks[name] = nil
+    utils.log(string.format("[scheduler] Unloaded task '%s'", tostring(name)), "info")
     return true
-  end
-
-  -- schedule entry (same jitter/offset logic used elsewhere)
-  local jitter   = (math.random() * 0.1)
-  local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
-  local offset   = math.random() * interval
-
-  table.insert(tasksList, {
-    name           = name,
-    interval       = interval,
-    baseInterval   = baseInterval,
-    jitter         = jitter,
-    script         = meta.script,
-    linkrequired   = meta.linkrequired or false,
-    connected      = meta.connected or false,
-    simulatoronly  = meta.simulatoronly or false,
-    spreadschedule = meta.spreadschedule or false,
-    last_run       = os.clock() - offset,
-    duration       = 0,
-    totalDuration  = 0,
-    runs           = 0,
-    maxDuration    = 0
-  })
-
-  utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
-  return true
 end
 
--- Reload a single task safely: unload, then load with known metadata.
+function tasks.load(name, meta)
+
+    if not meta then
+        local initPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/init.lua"
+        local initFn, err = compiler(initPath)
+        if not initFn then
+            utils.log("Failed to load init for " .. name .. ": " .. tostring(err), "info")
+            return false
+        end
+        local m = initFn()
+        if type(m) ~= "table" or not m.script then
+            utils.log("Invalid config in " .. initPath, "info")
+            return false
+        end
+        meta = m
+        meta.init = initPath
+    else
+
+        if meta.init then
+            local initFn, err = compiler(meta.init)
+            if initFn then
+                pcall(initFn)
+            else
+                utils.log("Failed to run init for " .. name .. ": " .. (err or "unknown"), "info")
+            end
+        end
+    end
+
+    local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/" .. meta.script
+    local fn, loadErr = compiler(scriptPath)
+    if not fn then
+        utils.log("Failed to load task script " .. scriptPath .. ": " .. tostring(loadErr), "info")
+        return false
+    end
+
+    tasks[name] = fn(config)
+
+    local baseInterval = tonumber(meta.interval or 1)
+    if baseInterval and baseInterval < 0 then
+        utils.log(string.format("[scheduler] Loaded task '%s' (no schedule; interval < 0)", name), "info")
+        return true
+    end
+
+    local jitter = (math.random() * 0.1)
+    local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
+    local offset = math.random() * interval
+
+    table.insert(tasksList, {
+        name = name,
+        interval = interval,
+        baseInterval = baseInterval,
+        jitter = jitter,
+        script = meta.script,
+        linkrequired = meta.linkrequired or false,
+        connected = meta.connected or false,
+        simulatoronly = meta.simulatoronly or false,
+        spreadschedule = meta.spreadschedule or false,
+        last_run = os.clock() - offset,
+        duration = 0,
+        totalDuration = 0,
+        runs = 0,
+        maxDuration = 0
+    })
+
+    utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
+    return true
+end
+
 function tasks.reload(name)
-  -- 1) Unload (best-effort)
-  tasks.unload(name)
 
-  collectgarbage("collect")
-  collectgarbage("collect")
+    tasks.unload(name)
 
-  -- 2) Prefer cached metadata from initialize(); fall back to reading init.lua
-  local meta = tasks._initMetadata and tasks._initMetadata[name] or nil
+    collectgarbage("collect")
+    collectgarbage("collect")
 
-  -- 3) Attempt load (reuses unified loader, including scheduling rules)
-  local ok = tasks.load(name, meta)
+    local meta = tasks._initMetadata and tasks._initMetadata[name] or nil
 
-  -- 4) Verify scheduling (if interval >= 0 we expect an entry in tasksList)
-  if ok then
-    local scheduled = false
-    for _, t in ipairs(tasksList) do
-      if t.name == name then scheduled = true; break end
+    local ok = tasks.load(name, meta)
+
+    if ok then
+        local scheduled = false
+        for _, t in ipairs(tasksList) do
+            if t.name == name then
+                scheduled = true;
+                break
+            end
+        end
+        if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then utils.log(string.format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn") end
+    else
+        utils.log(string.format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
     end
-    if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then
-      utils.log(string.format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn")
-    end
-  else
-    utils.log(string.format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
-  end
 
-  return ok
+    return ok
 end
-
-
 
 return tasks

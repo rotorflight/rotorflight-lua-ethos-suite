@@ -1,6 +1,10 @@
-local rfsuite = require("rfsuite") 
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
 
--- create 16 servos in disabled state
+local rfsuite = require("rfsuite")
+
 local SBUS_FUNCTIONMASK = 262144
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -10,7 +14,6 @@ local wakeupScheduler = os.clock()
 local validSerialConfig = false
 
 local function openPage(pidx, title, script)
-
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -23,7 +26,6 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    -- size of buttons
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
     else
@@ -48,15 +50,13 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    -- TEXT ICONS
-    -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
-    -- SMALL ICONS
+
     if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
@@ -64,7 +64,7 @@ local function openPage(pidx, title, script)
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
-    -- LARGE ICONS
+
     if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
@@ -101,8 +101,7 @@ local function openPage(pidx, title, script)
             text = "@i18n(app.modules.sbusout.channel_prefix)@" .. "" .. tostring(pidx + 1),
             icon = rfsuite.app.gfx_buttons["sbuschannel"][pidx],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["sbuschannel"] = pidx
                 rfsuite.currentSbusServoIndex = pidx
@@ -126,11 +125,7 @@ local function openPage(pidx, title, script)
     return
 end
 
-local function processSerialConfig(data)
-
-    for i, v in ipairs(data) do if v.functionMask == SBUS_FUNCTIONMASK then validSerialConfig = true end end
-
-end
+local function processSerialConfig(data) for i, v in ipairs(data) do if v.functionMask == SBUS_FUNCTIONMASK then validSerialConfig = true end end end
 
 local function getSerialConfig()
     local message = {
@@ -156,7 +151,6 @@ local function getSerialConfig()
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
-
 local function wakeup()
 
     if enableWakeup == true and validSerialConfig == false then
@@ -173,23 +167,9 @@ local function wakeup()
             rfsuite.app.formFields[pidx]:enable(true)
             if rfsuite.preferences.menulastselected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
         end
-        -- close the progressDisplay
+
     end
 
 end
 
--- not changing to api for this module due to the unusual read/write scenario.
--- its not worth the effort
-return {
-    title = "Sbus Out",
-    openPage = openPage,
-    wakeup = wakeup,
-    navButtons = {
-        menu = true,
-        save = false,
-        reload = false,
-        tool = false,
-        help = true
-    },
-    API = {},
-}
+return {title = "Sbus Out", openPage = openPage, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

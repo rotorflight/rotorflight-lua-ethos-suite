@@ -1,29 +1,18 @@
---[[ 
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note.  Some icons have been sourced from https://www.flaticon.com/
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
-local rfsuite = require("rfsuite") 
 
-local batteryConfigCache      = nil
-local lastVoltages            = {}
-local maxVoltageSamples       = 5
-local voltageStableTime       = nil
-local voltageStabilised       = false
-local stabilizeNotBefore      = nil
-local voltageThreshold        = 0.15
-local preStabiliseDelay       = 1.5
+local rfsuite = require("rfsuite")
+
+local batteryConfigCache = nil
+local lastVoltages = {}
+local maxVoltageSamples = 5
+local voltageStableTime = nil
+local voltageStabilised = false
+local stabilizeNotBefore = nil
+local voltageThreshold = 0.15
+local preStabiliseDelay = 1.5
 
 local telemetry
 local currentMode = rfsuite.flightmode.current or "preflight"
@@ -33,14 +22,9 @@ local lastSensorMode
 local lastFuelPercent = nil
 local lastFuelTimestamp = nil
 
+local maxFuelDropPerSecond = 1
 
--- Very stable, slow decline	    1–5
--- Moderate responsiveness	        6–10
--- Fast decay (minimal clamping)	12+
-local   maxFuelDropPerSecond  = 1   -- percent per second 
-
--- Very slow rise per second to avoid false positives (fuel technically can only go down )
-local maxFuelRisePerSecond = 0.2  -- maximum rise in percent per second
+local maxFuelRisePerSecond = 0.2
 
 local MAX_FALL_PER_SEC = 0.05
 local lastFilteredVoltage = nil
@@ -55,15 +39,12 @@ local function fallingLimitedFilter(current_v, prev_v, dt)
     end
 end
 
--- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)
--- This curve uses a sigmoid approximation to mimic real LiPo discharge behavior
 local dischargeCurveTable = {}
 for i = 0, 100 do
     local v = 3.30 + i * 0.01
     local percent = (v - 3.30) / (4.20 - 3.30) * 100
     dischargeCurveTable[i + 1] = math.floor(math.min(100, math.max(0, percent)) + 0.5)
 end
-
 
 local function resetVoltageTracking()
     lastVoltages = {}
@@ -84,9 +65,7 @@ end
 local function getStickLoadFactor()
     local rx = rfsuite.session.rx.values
     if not rx then return 0 end
-    local sum = 1.0 * math.abs(rx.aileron or 0)
-              + 1.0 * math.abs(rx.elevator or 0)
-              + 1.2 * math.abs(rx.collective or 0)
+    local sum = 1.0 * math.abs(rx.aileron or 0) + 1.0 * math.abs(rx.elevator or 0) + 1.2 * math.abs(rx.collective or 0)
     return math.min(1.0, sum / 3000)
 end
 
@@ -94,7 +73,10 @@ local lastRpm = nil
 local function getRpmDropFactor()
     local rpm = telemetry and telemetry.getSensor and telemetry.getSensor("rpm") or nil
     if not rpm or rpm < 100 then return 0 end
-    if not lastRpm then lastRpm = rpm; return 0 end
+    if not lastRpm then
+        lastRpm = rpm;
+        return 0
+    end
     local drop = (lastRpm - rpm) / lastRpm
     lastRpm = rpm
     return math.max(0, drop)
@@ -102,13 +84,11 @@ local function getRpmDropFactor()
 end
 
 local function applySagCompensation(voltage)
-    if rfsuite.flightmode.current ~= "inflight" then
-        return voltage -- no sag compensation unless we're flying
-    end
+    if rfsuite.flightmode.current ~= "inflight" then return voltage end
     local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.7
     local sagFactor = math.max(getStickLoadFactor(), getRpmDropFactor())
-    -- nonlinear curve that *increases* with multiplier:
-    local compensationScale = multiplier ^ 1.5 -- adjust exponent for sensitivity
+
+    local compensationScale = multiplier ^ 1.5
     return voltage + (compensationScale * sagFactor * 0.5)
 end
 
@@ -119,14 +99,12 @@ local function fuelPercentageCalcByVoltage(voltage, cellCount)
     local reserve = bc.consumptionWarningPercentage or 30
 
     local usableRange = fullV - minV
-    local adjustedMinV = minV + (usableRange * (reserve / 100)) * 1.4 -- 1.4 is a factor to adjust the min voltage for better accuracy
-          
+    local adjustedMinV = minV + (usableRange * (reserve / 100)) * 1.4
+
     local voltagePerCell = voltage / cellCount
 
-    -- Clamp voltage to adjusted usable range
     voltagePerCell = math.max(3.30, math.min(fullV, voltagePerCell))
 
-    -- Remap [adjustedMinV, fullV] → [3.00, 4.20]
     local sigmoidMin, sigmoidMax = 3.30, 4.20
     local scaledV = sigmoidMin + (voltagePerCell - adjustedMinV) / (fullV - adjustedMinV) * (sigmoidMax - sigmoidMin)
 
@@ -137,16 +115,13 @@ local function fuelPercentageCalcByVoltage(voltage, cellCount)
 end
 
 local function smartFuelCalc()
-    if not telemetry then
-        telemetry = rfsuite.tasks.telemetry
-    end
+    if not telemetry then telemetry = rfsuite.tasks.telemetry end
 
     if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then
         resetVoltageTracking()
         return nil
     end
 
-    -- make sure we reset the method if the sensor mode changes
     if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
         if lastSensorMode ~= rfsuite.session.modelPreferences.battery.calc_local then
             resetVoltageTracking()
@@ -155,14 +130,7 @@ local function smartFuelCalc()
     end
 
     local bc = rfsuite.session.batteryConfig
-    local configSig = table.concat({
-        bc.batteryCellCount,
-        bc.batteryCapacity,
-        bc.consumptionWarningPercentage,
-        bc.vbatmaxcellvoltage,
-        bc.vbatmincellvoltage,
-        bc.vbatfullcellvoltage
-    }, ":")
+    local configSig = table.concat({bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage, bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage}, ":")
 
     if configSig ~= batteryConfigCache then
         batteryConfigCache = configSig
@@ -217,8 +185,7 @@ local function smartFuelCalc()
     local compensatedVoltage = applySagCompensation(filteredVoltage / bc.batteryCellCount) * bc.batteryCellCount
     local percent = fuelPercentageCalcByVoltage(compensatedVoltage, bc.batteryCellCount)
     local now = os.clock()
-    if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight")
-    and lastFuelPercent and lastFuelTimestamp then
+    if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight") and lastFuelPercent and lastFuelTimestamp then
 
         local dt = now - lastFuelTimestamp
         local maxDrop = dt * maxFuelDropPerSecond
@@ -231,15 +198,10 @@ local function smartFuelCalc()
         end
     end
 
-    -- always update the last‑seen values so that when you enter flight mode
-    -- the timer resets correctly
-    lastFuelPercent   = percent
+    lastFuelPercent = percent
     lastFuelTimestamp = now
 
     return percent
 end
 
-return {
-    calculate = smartFuelCalc,
-    reset = resetVoltageTracking
-}
+return {calculate = smartFuelCalc, reset = resetVoltageTracking}
