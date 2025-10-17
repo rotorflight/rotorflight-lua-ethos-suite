@@ -345,7 +345,7 @@ function core.buildDeltaPayload(apiname, payload, api_structure, positionmap, re
 
     local editableFields = {}
     for idx, formField in ipairs(rfsuite.app.formFields) do
-        local pageField = rfsuite.app.Page.fields[idx]
+        local pageField = rfsuite.app.Page.apidata.formdata.fields[idx]
         if pageField and pageField.apikey then
             local key = pageField.apikey:match("([^%-]+)%-%>") or pageField.apikey
             editableFields[key] = true

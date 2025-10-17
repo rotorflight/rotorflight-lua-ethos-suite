@@ -494,7 +494,7 @@ end
 function ui.fieldBoolean(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -557,7 +557,7 @@ end
 function ui.fieldChoice(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -602,7 +602,7 @@ end
 function ui.fieldSlider(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -672,7 +672,7 @@ end
 function ui.fieldNumber(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -711,17 +711,17 @@ function ui.fieldNumber(i)
     maxValue = maxValue or 0
 
     formFields[i] = form.addNumberField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        if not (page.fields and page.fields[i]) then
+        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
             return nil
         end
-        return app.utils.getFieldValue(page.fields[i])
+        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -759,7 +759,7 @@ end
 function ui.fieldSource(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -798,17 +798,17 @@ function ui.fieldSource(i)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSourceField(formLines[app.formLineCnt], posField, function()
-        if not (page.fields and page.fields[i]) then
+        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
             return nil
         end
-        return app.utils.getFieldValue(page.fields[i])
+        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -822,7 +822,7 @@ end
 function ui.fieldSensor(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -861,17 +861,17 @@ function ui.fieldSensor(i)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSensorField(formLines[app.formLineCnt], posField, function()
-        if not (page.fields and page.fields[i]) then
+        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
             return nil
         end
-        return app.utils.getFieldValue(page.fields[i])
+        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -885,7 +885,7 @@ end
 function ui.fieldColor(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -924,12 +924,12 @@ function ui.fieldColor(i)
     maxValue = maxValue or 0
 
     formFields[i] = form.addColorField(formLines[app.formLineCnt], posField, function()
-        if not (page.fields and page.fields[i]) then
+        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
         end
-        local color = page.fields[i]
+        local color = page.apidata.formdata.fields[i]
         if type(color) ~= "number" then
             return COLOR_BLACK
         else
@@ -938,7 +938,7 @@ function ui.fieldColor(i)
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -952,7 +952,7 @@ end
 function ui.fieldSwitch(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -991,17 +991,17 @@ function ui.fieldSwitch(i)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSwitchField(formLines[app.formLineCnt], posField, function()
-        if not (page.fields and page.fields[i]) then
+        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
             return nil
         end
-        return app.utils.getFieldValue(page.fields[i])
+        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -1015,7 +1015,7 @@ end
 function ui.fieldStaticText(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -1052,7 +1052,7 @@ end
 function ui.fieldText(i)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.fields
+    local fields = page.apidata.formdata.fields
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -1218,13 +1218,9 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     app.formLineCnt = 0
 
-    utils.log("Merging form data from mspapi", "debug")
-    app.Page.fields = app.Page.apidata.formdata.fields
-    app.Page.labels = app.Page.apidata.formdata.labels
-
-    if app.Page.fields then
-        for i, field in ipairs(app.Page.fields) do
-            local label = app.Page.labels
+    if app.Page.apidata.formdata.fields then
+        for i, field in ipairs(app.Page.apidata.formdata.fields) do
+            local label = app.Page.apidata.formdata.labels
             if rfsuite.session.apiVersion == nil then return end
 
             local valid = (field.apiversion == nil or utils.apiVersionCompare(">=", field.apiversion)) and (field.apiversionlt == nil or utils.apiVersionCompare("<", field.apiversionlt)) and (field.apiversiongt == nil or utils.apiVersionCompare(">", field.apiversiongt)) and
@@ -1496,7 +1492,7 @@ function ui.mspApiUpdateFormAttributes()
     local utils = rfsuite.utils
     local log = utils.log
 
-    if not (app.Page.apidata.formdata and app.Page.apidata.api and app.Page.fields) then
+    if not (app.Page.apidata.formdata and app.Page.apidata.api and app.Page.apidata.formdata.fields) then
         log("app.Page.apidata.formdata or its components are nil", "debug")
         return
     end
@@ -1552,7 +1548,7 @@ function ui.mspApiUpdateFormAttributes()
                             app.ui.injectApiAttributes(formField, f, v)
 
                             local scale = f.scale or 1
-                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] then app.Page.fields[i].value = values[mspapiNAME][apikey] / scale end
+                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] then app.Page.apidata.formdata.fields[i].value = values[mspapiNAME][apikey] / scale end
 
                             if values[mspapiNAME][apikey] == nil then
                                 log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
@@ -1573,7 +1569,7 @@ function ui.mspApiUpdateFormAttributes()
                                 if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
                                     local raw_value = values[mspapiNAME][v.field]
                                     local bit_value = (raw_value >> bidx - 1) & 1
-                                    app.Page.fields[i].value = bit_value / scale
+                                    app.Page.apidata.formdata.fields[i].value = bit_value / scale
                                 end
 
                                 if values[mspapiNAME][v.field] == nil then
@@ -1581,7 +1577,7 @@ function ui.mspApiUpdateFormAttributes()
                                     formField:enable(false)
                                 end
 
-                                app.Page.fields[i].bitmap = bidx - 1
+                                app.Page.apidata.formdata.fields[i].bitmap = bidx - 1
                             end
                         end
                     end
@@ -1820,12 +1816,12 @@ function ui.saveSettings()
         for k, v in pairs(payloadData) do
             local fieldIndex = fieldMap[k]
             if fieldIndex then
-                payloadData[k] = app.Page.fields[fieldIndex].value
+                payloadData[k] = app.Page.apidata.formdata.fields[fieldIndex].value
             elseif fieldMapBitmap[k] then
                 local originalValue = tonumber(v) or 0
                 local newValue = originalValue
                 for bit, idx in pairs(fieldMapBitmap[k]) do
-                    local fieldVal = math.floor(tonumber(app.Page.fields[idx].value) or 0)
+                    local fieldVal = math.floor(tonumber(app.Page.apidata.formdata.fields[idx].value) or 0)
                     local mask = 1 << (bit)
                     if fieldVal ~= 0 then
                         newValue = newValue | mask

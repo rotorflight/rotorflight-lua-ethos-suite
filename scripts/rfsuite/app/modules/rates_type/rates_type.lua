@@ -17,7 +17,7 @@ local apidata = {api = {[1] = 'RC_TUNING'}, formdata = {labels = {}, fields = {{
 local function preSave(self)
     if resetRates == true then
 
-        local table_id = rfsuite.app.Page.fields[1].value
+        local table_id = rfsuite.app.Page.apidata.formdata.fields[1].value
 
         local tables = {}
         tables[0] = "app/modules/rates/ratetables/none.lua"
@@ -35,20 +35,20 @@ local function preSave(self)
             if y.default then
                 local found = false
 
-                for i, v in ipairs(rfsuite.app.Page.fields) do
+                for i, v in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
                     if v.apikey == y.apikey then
 
-                        rfsuite.app.Page.fields[i] = y
+                        rfsuite.app.Page.apidata.formdata.fields[i] = y
                         found = true
                         break
                     end
                 end
 
-                if not found then table.insert(rfsuite.app.Page.fields, y) end
+                if not found then table.insert(rfsuite.app.Page.apidata.formdata.fields, y) end
             end
         end
 
-        for i, v in ipairs(rfsuite.app.Page.fields) do
+        for i, v in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
 
             if v.apikey == "rates_type" then
                 v.value = table_id
@@ -100,7 +100,7 @@ end
 
 local function flagRateChange(self)
 
-    if math.floor(rfsuite.app.Page.fields[1].value) == math.floor(rfsuite.session.activeRateTable) then
+    if math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value) == math.floor(rfsuite.session.activeRateTable) then
         self.extraMsgOnSave = nil
         rfsuite.app.ui.enableAllFields()
         resetRates = false

@@ -49,10 +49,10 @@ local apidata = {
 local function saveServoSettings(self)
 
     local mixIndex = rfsuite.currentSbusServoIndex
-    local mixType = math.floor(rfsuite.app.Page.fields[1].value)
-    local mixSource = math.floor(rfsuite.app.Page.fields[2].value)
-    local mixMin = math.floor(rfsuite.app.Page.fields[3].value)
-    local mixMax = math.floor(rfsuite.app.Page.fields[4].value)
+    local mixType = math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value)
+    local mixSource = math.floor(rfsuite.app.Page.apidata.formdata.fields[2].value)
+    local mixMin = math.floor(rfsuite.app.Page.apidata.formdata.fields[3].value)
+    local mixMax = math.floor(rfsuite.app.Page.apidata.formdata.fields[4].value)
 
     local message = {command = 153, payload = {}}
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixIndex)
@@ -76,7 +76,7 @@ local function onSaveMenuProgress()
 end
 
 local function setMinMaxIndex(self)
-    minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value + 1)
+    minMaxIndex = math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value + 1)
 
     if firstLoad == true then
         firstLoad = false
@@ -86,9 +86,9 @@ local function setMinMaxIndex(self)
         local defaultMax = minmax[minMaxIndex].defaultMax
         local currentSourceMax = minmax[minMaxIndex].sourceMax
 
-        rfsuite.app.Page.fields[2].value = 0
-        rfsuite.app.Page.fields[3].value = defaultMin
-        rfsuite.app.Page.fields[4].value = defaultMax
+        rfsuite.app.Page.apidata.formdata.fields[2].value = 0
+        rfsuite.app.Page.apidata.formdata.fields[3].value = defaultMin
+        rfsuite.app.Page.apidata.formdata.fields[4].value = defaultMax
 
     end
 end
@@ -152,13 +152,13 @@ local function wakeup()
         local currentMax = minmax[minMaxIndex].max
         local currentSourceMax = minmax[minMaxIndex].sourceMax
 
-        if rfsuite.app.Page.fields[2].value and rfsuite.app.Page.fields[2].value >= currentSourceMax then rfsuite.app.Page.fields[2].value = currentSourceMax end
+        if rfsuite.app.Page.apidata.formdata.fields[2].value and rfsuite.app.Page.apidata.formdata.fields[2].value >= currentSourceMax then rfsuite.app.Page.apidata.formdata.fields[2].value = currentSourceMax end
 
-        if rfsuite.app.Page.fields[3].value and rfsuite.app.Page.fields[3].value <= currentMin then rfsuite.app.Page.fields[3].value = currentMin end
-        if rfsuite.app.Page.fields[3].value and rfsuite.app.Page.fields[3].value >= currentMax then rfsuite.app.Page.fields[3].value = currentMax end
+        if rfsuite.app.Page.apidata.formdata.fields[3].value and rfsuite.app.Page.apidata.formdata.fields[3].value <= currentMin then rfsuite.app.Page.apidata.formdata.fields[3].value = currentMin end
+        if rfsuite.app.Page.apidata.formdata.fields[3].value and rfsuite.app.Page.apidata.formdata.fields[3].value >= currentMax then rfsuite.app.Page.apidata.formdata.fields[3].value = currentMax end
 
-        if rfsuite.app.Page.fields[4].value and rfsuite.app.Page.fields[4].value >= currentMax then rfsuite.app.Page.fields[4].value = currentMax end
-        if rfsuite.app.Page.fields[4].value and rfsuite.app.Page.fields[4].value <= currentMin then rfsuite.app.Page.fields[4].value = currentMin end
+        if rfsuite.app.Page.apidata.formdata.fields[4].value and rfsuite.app.Page.apidata.formdata.fields[4].value >= currentMax then rfsuite.app.Page.apidata.formdata.fields[4].value = currentMax end
+        if rfsuite.app.Page.apidata.formdata.fields[4].value and rfsuite.app.Page.apidata.formdata.fields[4].value <= currentMin then rfsuite.app.Page.apidata.formdata.fields[4].value = currentMin end
 
     end
 end

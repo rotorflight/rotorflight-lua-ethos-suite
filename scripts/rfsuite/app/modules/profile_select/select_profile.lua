@@ -73,8 +73,8 @@ local function wakeup()
     if triggerMSPWrite == true then
         triggerMSPWrite = false
 
-        local profileIndex = rfsuite.app.Page.fields[1].value
-        local rateIndex = rfsuite.app.Page.fields[2].value
+        local profileIndex = rfsuite.app.Page.apidata.formdata.fields[1].value
+        local rateIndex = rfsuite.app.Page.apidata.formdata.fields[2].value
         setRateProfile(rateIndex)
         setPidProfile(profileIndex)
     end

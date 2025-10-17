@@ -93,7 +93,7 @@ end
 
 function utils.getInlinePositions(f)
 
-    local lPage = rfsuite.app.Page
+    local lPage = rfsuite.app.Page.apidata.formdata
 
     local function getInlineSize(id)
         if not id then return 13.6 end

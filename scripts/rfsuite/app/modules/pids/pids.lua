@@ -48,8 +48,8 @@ local function openPage(idx, title, script)
 
     rfsuite.app.ui.fieldHeader(title)
     local numCols
-    if rfsuite.app.Page.cols ~= nil then
-        numCols = #rfsuite.app.Page.cols
+    if rfsuite.app.Page.apidata.formdata.cols ~= nil then
+        numCols = #rfsuite.app.Page.apidata.formdata.cols
     else
         numCols = 6
     end
@@ -69,15 +69,9 @@ local function openPage(idx, title, script)
     local posX = screenWidth - paddingRight
     local posY = paddingTop
 
-    rfsuite.utils.log("Merging form data from mspapi", "debug")
-    rfsuite.app.Page.fields = rfsuite.app.Page.apidata.formdata.fields
-    rfsuite.app.Page.labels = rfsuite.app.Page.apidata.formdata.labels
-    rfsuite.app.Page.rows = rfsuite.app.Page.apidata.formdata.rows
-    rfsuite.app.Page.cols = rfsuite.app.Page.apidata.formdata.cols
-
     local c = 1
     while loc > 0 do
-        local colLabel = rfsuite.app.Page.cols[loc]
+        local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
         pos = {x = posX, y = posY, w = w, h = h}
         form.addStaticText(line, pos, colLabel)
         positions[loc] = posX - w + paddingRight
@@ -88,11 +82,11 @@ local function openPage(idx, title, script)
     end
 
     local pidRows = {}
-    for ri, rv in ipairs(rfsuite.app.Page.rows) do pidRows[ri] = form.addLine(rv) end
+    for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do pidRows[ri] = form.addLine(rv) end
 
-    for i = 1, #rfsuite.app.Page.fields do
-        local f = rfsuite.app.Page.fields[i]
-        local l = rfsuite.app.Page.labels
+    for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
+        local f = rfsuite.app.Page.apidata.formdata.fields[i]
+        local l = rfsuite.app.Page.apidata.formdata.labels
         local pageIdx = i
         local currentField = i
 
@@ -101,18 +95,18 @@ local function openPage(idx, title, script)
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
-            if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
+            if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
                 ui.disableAllFields()
                 ui.disableAllNavigationFields()
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
+            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
         end, function(value)
             if f.postEdit then f.postEdit(rfsuite.app.Page) end
             if f.onChange then f.onChange(rfsuite.app.Page) end
 
-            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
         end)
     end
 

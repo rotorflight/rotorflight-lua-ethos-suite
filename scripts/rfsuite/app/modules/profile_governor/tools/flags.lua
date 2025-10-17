@@ -52,9 +52,9 @@ local function wakeup()
             end
         end
 
-        local bypass = (rfsuite.app.Page.fields[FIELD_BYPASS].value == 1)
-        local txPrecomp = (rfsuite.app.Page.fields[FIELD_TX_PRECOMP_CURVE].value == 1)
-        local pidSpoolup = (rfsuite.app.Page.fields[FIELD_PID_SPOOLUP].value == 1)
+        local bypass = (rfsuite.app.Page.apidata.formdata.fields[FIELD_BYPASS].value == 1)
+        local txPrecomp = (rfsuite.app.Page.apidata.formdata.fields[FIELD_TX_PRECOMP_CURVE].value == 1)
+        local pidSpoolup = (rfsuite.app.Page.apidata.formdata.fields[FIELD_PID_SPOOLUP].value == 1)
         local adcVoltage = (rfsuite.session.batteryConfig.voltageMeterSource == 1)
 
         if bypass then

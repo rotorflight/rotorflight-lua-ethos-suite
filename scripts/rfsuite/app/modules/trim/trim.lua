@@ -90,13 +90,13 @@ local function postLoad(self)
         return
     end
 
-    currentRollTrim = rfsuite.app.Page.fields[1].value
-    currentPitchTrim = rfsuite.app.Page.fields[2].value
-    currentCollectiveTrim = rfsuite.app.Page.fields[3].value
+    currentRollTrim = rfsuite.app.Page.apidata.formdata.fields[1].value
+    currentPitchTrim = rfsuite.app.Page.apidata.formdata.fields[2].value
+    currentCollectiveTrim = rfsuite.app.Page.apidata.formdata.fields[3].value
 
-    if rfsuite.session.tailModeActive == 1 or rfsuite.session.tailModeActive == 2 then currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value end
+    if rfsuite.session.tailModeActive == 1 or rfsuite.session.tailModeActive == 2 then currentIdleThrottleTrim = rfsuite.app.Page.apidata.formdata.fields[4].value end
 
-    if rfsuite.session.tailModeActive == 0 then currentYawTrim = rfsuite.app.Page.fields[4].value end
+    if rfsuite.session.tailModeActive == 0 then currentYawTrim = rfsuite.app.Page.apidata.formdata.fields[4].value end
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
@@ -104,7 +104,7 @@ local function wakeup(self)
 
     if inOverRide == true then
 
-        currentRollTrim = rfsuite.app.Page.fields[1].value
+        currentRollTrim = rfsuite.app.Page.apidata.formdata.fields[1].value
         local now = os.clock()
         local settleTime = 0.85
         if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
@@ -116,7 +116,7 @@ local function wakeup(self)
             end
         end
 
-        currentPitchTrim = rfsuite.app.Page.fields[2].value
+        currentPitchTrim = rfsuite.app.Page.apidata.formdata.fields[2].value
         local now = os.clock()
         local settleTime = 0.85
         if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
@@ -127,7 +127,7 @@ local function wakeup(self)
             end
         end
 
-        currentCollectiveTrim = rfsuite.app.Page.fields[3].value
+        currentCollectiveTrim = rfsuite.app.Page.apidata.formdata.fields[3].value
         local now = os.clock()
         local settleTime = 0.85
         if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
@@ -139,7 +139,7 @@ local function wakeup(self)
         end
 
         if rfsuite.session.tailMode == 1 or rfsuite.session.tailMode == 2 then
-            currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
+            currentIdleThrottleTrim = rfsuite.app.Page.apidata.formdata.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
             if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
@@ -152,7 +152,7 @@ local function wakeup(self)
         end
 
         if rfsuite.session.tailMode == 0 then
-            currentYawTrim = rfsuite.app.Page.fields[4].value
+            currentYawTrim = rfsuite.app.Page.apidata.formdata.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
             if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then

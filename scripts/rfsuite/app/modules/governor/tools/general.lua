@@ -25,7 +25,7 @@ local function disableFields() for i, _ in ipairs(rfsuite.app.formFields) do if 
 local function enableFields() for i, _ in ipairs(rfsuite.app.formFields) do if type(rfsuite.app.formFields[i]) == "userdata" then if i ~= 1 and rfsuite.app.formFields[i] then rfsuite.app.formFields[i]:enable(true) end end end end
 
 local function setGovernorMode(self)
-    local currentIndex = math.floor(rfsuite.app.Page.fields[1].value)
+    local currentIndex = math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value)
     if currentIndex == 0 then
         disableFields()
     else
@@ -40,8 +40,8 @@ end
 
 local function postSave(self)
 
-    if rfsuite.session.governorMode ~= rfsuite.app.Page.fields[1].value then
-        rfsuite.session.governorMode = rfsuite.app.Page.fields[1].value
+    if rfsuite.session.governorMode ~= rfsuite.app.Page.apidata.formdata.fields[1].value then
+        rfsuite.session.governorMode = rfsuite.app.Page.apidata.formdata.fields[1].value
         rfsuite.utils.log("Governor mode: " .. rfsuite.session.governorMode, "info")
     end
     return payload

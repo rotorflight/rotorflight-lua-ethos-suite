@@ -30,7 +30,7 @@ local function int8_to_uint8(value) return value & 0xFF end
 
 local function buildFieldMap()
     fieldMap = {}
-    for _, field in ipairs(rfsuite.app.Page.fields or {}) do
+    for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields or {}) do
         if not fieldMap[field.label] then fieldMap[field.label] = {} end
         table.insert(fieldMap[field.label], field)
     end
@@ -45,14 +45,14 @@ local function update_int8()
     if not uint8_dirty then return end
     uint8_dirty = false
 
-    for _, field in ipairs(rfsuite.app.Page.fields or {}) do if field.isINT8 then for _, match in ipairs(fieldMap[field.label] or {}) do if match.isUINT8 then field.value = uint8_to_int8(safeFieldValue(match)) end end end end
+    for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields or {}) do if field.isINT8 then for _, match in ipairs(fieldMap[field.label] or {}) do if match.isUINT8 then field.value = uint8_to_int8(safeFieldValue(match)) end end end end
 end
 
 local function update_uint8()
     if not int8_dirty then return end
     int8_dirty = false
 
-    for _, field in ipairs(rfsuite.app.Page.fields or {}) do if field.isUINT8 then for _, match in ipairs(fieldMap[field.label] or {}) do if match.isINT8 then field.value = int8_to_uint8(safeFieldValue(match)) end end end end
+    for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields or {}) do if field.isUINT8 then for _, match in ipairs(fieldMap[field.label] or {}) do if match.isINT8 then field.value = int8_to_uint8(safeFieldValue(match)) end end end end
 end
 
 local function generateMSPAPI(numLabels)
@@ -109,7 +109,7 @@ local function postLoad()
 end
 
 local function wakeup()
-    if not enableWakeup or not rfsuite.app.Page or not rfsuite.app.Page.fields then return end
+    if not enableWakeup or not rfsuite.app.Page or not rfsuite.app.Page.apidata.formdata.fields then return end
     periodicSync()
 end
 
