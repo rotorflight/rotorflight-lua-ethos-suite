@@ -4,8 +4,6 @@
 
 ### API Version Widget
 
-API Version Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -36,8 +34,6 @@ API Version Widget
 
 ### Arc Gauge Widget
 
-Arc Gauge Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
 Title parameters
@@ -91,8 +87,6 @@ Arc Geometry/Advanced
 
 ### Arm Flags Widget
 
-Arm Flags Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -131,8 +125,6 @@ thresholds = {
 
 ### Attitude Horizon Widget (AH)
 
-Attitude Horizon Widget (AH)
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (default: 0.2)
     pixelsperdeg        : number   -- Pixels per degree for pitch & compass (default: 2.0)
@@ -158,8 +150,6 @@ Attitude Horizon Widget (AH)
 
 ### Bar Gauge Widget
 
-Bar Gauge Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
 Title/label
@@ -241,8 +231,6 @@ Subtext
 
 ### Blackbox Widget
 
-Blackbox Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -276,8 +264,6 @@ Blackbox Widget
 
 ### Clock Widget
 
-Clock Widget
-    Configurable Parameters (box table fields):
 ```
     title               : string                    -- (Optional) Title text
     titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
@@ -306,8 +292,6 @@ Clock Widget
 
 ### Craft Name Widget
 
-Craft Name Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -338,8 +322,6 @@ Craft Name Widget
 
 ### Custom Function Widget
 
-Custom Function Widget
-    Configurable Arguments (box table keys):
 ```
     wakeupinterval    : number   -- Optional wakeup interval in seconds (set in wrapper)
     wakeup            : function   -- Custom wakeup function, called with (box, telemetry), should return a table to cache
@@ -350,8 +332,6 @@ Note: This widget does not process colors, layout, or padding. All rendering and
 
 ### Dial Image Widget
 
-Dial Image Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
 title parameters
@@ -396,11 +376,6 @@ dial image & needle styling
 
 ### Dynamic Power (Watts) Display Widget
 
-Dynamic Power (Watts) Display Widget
-
-    Computes and displays instantaneous, min, max, or average power by reading voltage and current sensors.
-
-    Configurable Parameters (box table fields):
 ```
     title               : string          -- (Optional) Title text displayed above or below the value
     titlepos            : string          -- "top" or "bottom" (default)
@@ -421,8 +396,6 @@ Dynamic Power (Watts) Display Widget
 
 ### Flight Count Widget
 
-Flight Count Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -453,8 +426,6 @@ Flight Count Widget
 
 ### Flight Time Widget
 
-Flight Time Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -483,8 +454,6 @@ Flight Time Widget
 
 ### Governor State Widget
 
-Governor State Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -522,8 +491,6 @@ thresholds = {
 
 ### Image Box Widget
 
-Image Box Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
     image               : string   -- (Optional) Path to image file (no extension needed; .png is tried first, then .bmp)
@@ -552,8 +519,6 @@ Image Box Widget
 
 ### Model Image Widget
 
-Model Image Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -585,9 +550,7 @@ Model Image Widget
 
 ### PID/Rates Profile Display Object
 
-PID/Rates Profile Display Object
-
-    Configurable Parameters (box table fields):
+```
 Profile Source Selection
     object                  : string                    -- Required: must be "pid" or "rates"; maps to telemetry source "pid_profile" or "rate_profile"
     profilecount            : number                    -- (Optional) How many profile numbers to draw (1 to 6, default 6)
@@ -632,16 +595,13 @@ Row Layout and Font Options
     highlightlarger         : boolean                   -- (Optional) If true, enlarges the active index using the next font in the list
 Background
     bgcolor                 : color                     -- (Optional) Widget background color
-
+```
 
 ---
 
 ### Rainbow Gauge Widget
 
-Rainbow Gauge Widget
-
-    Configurable Parameters (box table fields):
-
+```
     wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
 title parameters
     title                   : string    -- (Optional) Title text
@@ -684,14 +644,13 @@ needle styling
     accentcolor             : color     -- (Optional) Needle and hub color
     needlethickness         : number    -- (Optional) Needle width (default: 5)
     needlehubsize           : number    -- (Optional) Needle hub circle radius (default: 7)
-
+```
 
 ---
 
 ### Rainbow Gauge Widget
 
-Rainbow Gauge Widget
-    Configurable Parameters (box table fields):
+```
 Timing
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
 Title parameters
@@ -740,14 +699,12 @@ Battery Ring Mode (Optional fuel-based battery style)
     ringbattsubpaddingright  : number    -- (Optional) Right padding override for subtext
     ringbattsubpaddingtop    : number    -- (Optional) Top padding override for subtext
     ringbattsubpaddingbottom : number    -- (Optional) Bottom padding override for subtext
-
+```
 
 ---
 
 ### Session Value Widget
 
-Session Value Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -777,8 +734,6 @@ Session Value Widget
 
 ### Stats Display Widget
 
-Stats Display Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
 Title & Layout
@@ -823,8 +778,6 @@ To display min stats, set stattype = "min"; for max, omit or set stattype = "max
 
 ### Step Bar Widget
 
-Step Bar Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number    -- (Optional) Wakeup interval in seconds for the widget (set in wrapper)
 Title parameters
@@ -873,8 +826,6 @@ Bar padding parameters
 
 ### Telemetry Value Widget
 
-Telemetry Value Widget
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
@@ -909,9 +860,7 @@ Telemetry Value Widget
 
 ### Text Display Widget (Static/Label)
 
-Text Display Widget (Static/Label)
 
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number          -- Optional wakeup interval in seconds (set in wrapper)
     title               : string          -- (Optional) Title text displayed above or below the value
@@ -946,7 +895,6 @@ If you need dynamic stats or telemetry (min/max/live), use `stats.lua` or other 
 
 Total Flight Time Widget
 
-    Configurable Parameters (box table fields):
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
