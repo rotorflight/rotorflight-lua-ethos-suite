@@ -1,8 +1,5 @@
 # Dashboard Objects
 
-_Generated: 2025-10-17 08:55_
-
-
 ---
 
 ### API Version Widget
