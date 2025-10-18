@@ -321,9 +321,9 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
         return nil
     end
 
-    local positionmap = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.positionmap[apiname]
-    local receivedBytes = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.receivedBytes[apiname]
-    local receivedBytesCount = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.receivedBytesCount[apiname]
+    local positionmap = rfsuite.app.Page.apidata and rfsuite.rfsuite.tasks.msp.api.apidata.positionmap[apiname]
+    local receivedBytes = rfsuite.app.Page.apidata and rfsuite.tasks.msp.api.apidata.receivedreceivedBytes[apiname]
+    local receivedBytesCount = rfsuite.app.Page.apidata and rfsuite.tasks.msp.api.apidata.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
 

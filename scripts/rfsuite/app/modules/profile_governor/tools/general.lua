@@ -81,7 +81,7 @@ local function wakeup()
             end
         end
 
-        local flags = rfsuite.app.Page.apidata.values['GOVERNOR_PROFILE'].governor_flags
+        local flags = rfsuite.tasks.msp.api.apidata.values['GOVERNOR_PROFILE'].governor_flags
         local decodedFlags = decodeGovernorFlags(flags)
 
         if decodedFlags["tx_precomp_curve"] then

@@ -25,7 +25,7 @@ local mytable = apidata.formdata
 
 local function postLoad(self)
 
-    local v = apidata.values[apidata.api[1]].rates_type
+    local v = rfsuite.tasks.msp.api.apidata.values[apidata.api[1]].rates_type
 
     rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable, "debug")
 

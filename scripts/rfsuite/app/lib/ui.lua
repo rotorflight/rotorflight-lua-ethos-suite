@@ -237,6 +237,8 @@ function ui.openMainMenu()
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
+    rfsuite.tasks.msp.api.resetApidata()
+
     app.formFieldsOffline = {}
     app.formFieldsBGTask = {}
     app.lastLabel = nil
@@ -361,6 +363,8 @@ function ui.openMainMenuSub(activesection)
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+
+    rfsuite.tasks.msp.api.resetApidata()    
 
     app.formFieldsOffline = {}
     app.lastLabel = nil
@@ -1485,8 +1489,8 @@ end
 function ui.mspApiUpdateFormAttributes()
 
     local app = rfsuite.app
-    local values = app.Page.apidata.values
-    local structure = app.Page.apidata.structure
+    local values = rfsuite.tasks.msp.api.apidata.values
+    local structure = rfsuite.tasks.msp.api.apidata.structure
 
     local app = rfsuite.app
     local utils = rfsuite.utils
@@ -1612,14 +1616,14 @@ function ui.requestPage()
     end
     state.isProcessing = true
 
-    if not app.Page.apidata.values then
+    if not rfsuite.tasks.msp.api.apidata.values then
         log("requestPage Initialize values on first run", "debug")
-        app.Page.apidata.values = {}
-        app.Page.apidata.structure = {}
-        app.Page.apidata.receivedBytesCount = {}
-        app.Page.apidata.receivedBytes = {}
-        app.Page.apidata.positionmap = {}
-        app.Page.apidata.other = {}
+        rfsuite.tasks.msp.api.apidata.values = {}
+        rfsuite.tasks.msp.api.apidata.structure = {}
+        rfsuite.tasks.msp.api.apidata.receivedBytesCount = {}
+        rfsuite.tasks.msp.api.apidata.receivedBytes = {}
+        rfsuite.tasks.msp.api.apidata.positionmap = {}
+        rfsuite.tasks.msp.api.apidata.other = {}
     end
 
     if state.currentIndex == nil then state.currentIndex = 1 end
@@ -1716,12 +1720,12 @@ function ui.requestPage()
                 return
             end
             log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
-            app.Page.apidata.values[apiKey] = API.data().parsed
-            app.Page.apidata.structure[apiKey] = API.data().structure
-            app.Page.apidata.receivedBytes[apiKey] = API.data().buffer
-            app.Page.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-            app.Page.apidata.positionmap[apiKey] = API.data().positionmap
-            app.Page.apidata.other[apiKey] = API.data().other or {}
+            rfsuite.tasks.msp.api.apidata.values[apiKey] = API.data().parsed
+            rfsuite.tasks.msp.api.apidata.structure[apiKey] = API.data().structure
+            rfsuite.tasks.msp.api.apidata.receivedBytes[apiKey] = API.data().buffer
+            rfsuite.tasks.msp.api.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
+            rfsuite.tasks.msp.api.apidata.positionmap[apiKey] = API.data().positionmap
+            rfsuite.tasks.msp.api.apidata.other[apiKey] = API.data().other or {}
             app.Page.apidata.retryCount[apiKey] = 0
             state.currentIndex = state.currentIndex + 1
             API = nil

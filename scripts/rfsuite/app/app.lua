@@ -244,6 +244,8 @@ function app.close()
     app.triggers.invalidConnectionSetup = false
     app.triggers.profileswitchLast = nil
 
+    rfsuite.tasks.msp.api.resetApidata()
+
     collectgarbage()
     collectgarbage()
 

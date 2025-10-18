@@ -25,7 +25,7 @@ local apidata = {
 
 local function postLoad()
 
-    if rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.other and rfsuite.app.Page.apidata.other['ESC_PARAMETERS_HW5'] then
+    if rfsuite.app.Page.apidata and rfsuite.tasks.msp.api.apidata.other and rfsuite.tasks.msp.api.apidata.other['ESC_PARAMETERS_HW5'] then
         local version
         if rfsuite.session.escDetails and rfsuite.session.escDetails.version then
             version = rfsuite.session.escDetails.version
@@ -33,8 +33,8 @@ local function postLoad()
             version = "default"
         end
 
-        if rfsuite.app.Page.apidata.other['ESC_PARAMETERS_HW5'][version] then
-            local newVoltage = rfsuite.app.Page.apidata.other['ESC_PARAMETERS_HW5'][version]
+        if rfsuite.tasks.msp.api.apidata.other['ESC_PARAMETERS_HW5'][version] then
+            local newVoltage = rfsuite.tasks.msp.api.apidata.other['ESC_PARAMETERS_HW5'][version]
 
             local voltageTable = rfsuite.app.utils.convertPageValueTable(newVoltage, -1)
 
