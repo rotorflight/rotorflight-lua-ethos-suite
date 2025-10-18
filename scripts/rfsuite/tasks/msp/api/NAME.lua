@@ -125,19 +125,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -161,17 +149,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

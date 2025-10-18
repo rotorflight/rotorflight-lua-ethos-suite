@@ -58,20 +58,7 @@ local function getThemeOptionKey(W)
     end
 end
 
-local themeOptions = {
-
-    ls_full = {thickness = 60, valuepaddingtop = 45, gaugepadding = 20},
-
-    ls_std = {thickness = 40, valuepaddingtop = 35, gaugepadding = 10},
-
-    ms_full = {thickness = 40, valuepaddingtop = 35, gaugepadding = 15},
-
-    ms_std = {thickness = 30, valuepaddingtop = 30, gaugepadding = 5},
-
-    ss_full = {thickness = 50, valuepaddingtop = 40, gaugepadding = 5},
-
-    ss_std = {thickness = 30, valuepaddingtop = 30, gaugepadding = 5}
-}
+local themeOptions = {ls_full = {thickness = 60, valuepaddingtop = 45, gaugepadding = 20}, ls_std = {thickness = 40, valuepaddingtop = 35, gaugepadding = 10}, ms_full = {thickness = 40, valuepaddingtop = 35, gaugepadding = 15}, ms_std = {thickness = 30, valuepaddingtop = 30, gaugepadding = 5}, ss_full = {thickness = 50, valuepaddingtop = 40, gaugepadding = 5}, ss_std = {thickness = 30, valuepaddingtop = 30, gaugepadding = 5}}
 
 local lastScreenW = nil
 local boxes_cache = nil

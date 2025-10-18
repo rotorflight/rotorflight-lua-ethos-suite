@@ -31,9 +31,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.fblstatus.fbl_date)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.fbl_time)@", value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.fblstatus.arming_flags)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.dataflash_free_space)@", value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.fblstatus.real_time_load)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.cpu_load)@", value = "-", type = displayType, disable = disableType, position = displayPos}
+            {t = "@i18n(app.modules.fblstatus.fbl_date)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.fbl_time)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.arming_flags)@", value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.fblstatus.dataflash_free_space)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.real_time_load)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.cpu_load)@", value = "-", type = displayType, disable = disableType, position = displayPos}
         }
     }
 }
@@ -256,20 +255,4 @@ local function onNavMenu()
     rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
 end
 
-return {
-    apidata = apidata,
-    reboot = false,
-    eepromWrite = false,
-    minBytes = 0,
-    wakeup = wakeup,
-    refreshswitch = false,
-    simulatorResponse = {},
-    postLoad = postLoad,
-    postRead = postRead,
-    eraseDataflash = eraseDataflash,
-    onToolMenu = onToolMenu,
-    onNavMenu = onNavMenu,
-    event = event,
-    navButtons = {menu = true, save = false, reload = false, tool = true, help = false},
-    API = {}
-}
+return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = true, help = false}, API = {}}

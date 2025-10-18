@@ -28,14 +28,12 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.temperature_unit)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.celcius)@", 0}, {"@i18n(app.modules.settings.fahrenheit)@", 1}}, function() return config.temperature_unit or 0 end,
-                                                 function(newValue) config.temperature_unit = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.celcius)@", 0}, {"@i18n(app.modules.settings.fahrenheit)@", 1}}, function() return config.temperature_unit or 0 end, function(newValue) config.temperature_unit = newValue end)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.altitude_unit)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.meters)@", 0}, {"@i18n(app.modules.settings.feet)@", 1}}, function() return config.altitude_unit or 0 end,
-                                                 function(newValue) config.altitude_unit = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.meters)@", 0}, {"@i18n(app.modules.settings.feet)@", 1}}, function() return config.altitude_unit or 0 end, function(newValue) config.altitude_unit = newValue end)
 
     for i, field in ipairs(rfsuite.app.formFields) do if field and field.enable then field:enable(true) end end
     rfsuite.app.navButtons.save = true

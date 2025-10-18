@@ -70,7 +70,7 @@ end
 
 local function postLoad(self)
 
-    local v = apidata.values[apidata.api[1]].rates_type
+    local v = rfsuite.tasks.msp.api.apidata.values[apidata.api[1]].rates_type
 
     rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable, "debug")
 
@@ -114,18 +114,4 @@ end
 
 local function postEepromWrite(self) if resetRates == true then doFullReload = true end end
 
-return {
-    apidata = apidata,
-    title = "@i18n(app.modules.rates_advanced.rates_type)@",
-    reboot = false,
-    eepromWrite = true,
-    refreshOnRateChange = true,
-    rTableName = rTableName,
-    flagRateChange = flagRateChange,
-    postLoad = postLoad,
-    wakeup = wakeup,
-    preSave = preSave,
-    postEepromWrite = postEepromWrite,
-    extraMsgOnSave = extraMsgOnSave,
-    API = {}
-}
+return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.rates_type)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}

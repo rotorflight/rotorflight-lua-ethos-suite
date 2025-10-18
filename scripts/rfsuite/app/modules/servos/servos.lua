@@ -217,7 +217,7 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-    collectgarbage()
+
     return
 end
 
@@ -396,15 +396,4 @@ end
 
 local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
-return {
-    event = event,
-    openPage = openPageInit,
-    onToolMenu = onToolMenu,
-    onNavMenu = onNavMenu,
-    servoCenterFocusAllOn = servoCenterFocusAllOn,
-    servoCenterFocusAllOff = servoCenterFocusAllOff,
-    wakeup = wakeup,
-    navButtons = {menu = true, save = false, reload = true, tool = true, help = true},
-    onReloadMenu = onReloadMenu,
-    API = {}
-}
+return {event = event, openPage = openPageInit, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}, onReloadMenu = onReloadMenu, API = {}}

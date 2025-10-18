@@ -79,4 +79,24 @@ function apiLoader.load(apiName)
     return api
 end
 
+function apiLoader.resetApidata()
+
+    if apiLoader.apidata.values then for i, v in pairs(apiLoader.apidata.values) do apiLoader.apidata.values[i] = nil end end
+
+    if apiLoader.apidata.structure then for i, v in pairs(apiLoader.apidata.structure) do apiLoader.apidata.structure[i] = nil end end
+
+    if apiLoader.apidata.receivedBytesCount then for i, v in pairs(apiLoader.apidata.receivedBytesCount) do apiLoader.apidata.receivedBytesCount[i] = nil end end
+
+    if apiLoader.apidata.receivedBytes then for i, v in pairs(apiLoader.apidata.receivedBytes) do apiLoader.apidata.receivedBytes[i] = nil end end
+
+    if apiLoader.apidata.positionmap then for i, v in pairs(apiLoader.apidata.positionmap) do apiLoader.apidata.positionmap[i] = nil end end
+
+    if apiLoader.apidata.other then for i, v in pairs(apiLoader.apidata.other) do apiLoader.apidata.other[i] = nil end end
+
+    apiLoader.apidata = {}
+
+end
+
+apiLoader.apidata = {}
+
 return apiLoader

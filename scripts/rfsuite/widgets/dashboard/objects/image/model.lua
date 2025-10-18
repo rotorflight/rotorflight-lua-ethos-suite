@@ -116,8 +116,7 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cfg or {}
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, nil, nil, nil, nil, nil, c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor, c.image, c.imagewidth, c.imageheight, c.imagealign)
+    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, nil, nil, nil, nil, nil, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor, c.image, c.imagewidth, c.imageheight, c.imagealign)
 end
 
 render.scheduler = 2.0

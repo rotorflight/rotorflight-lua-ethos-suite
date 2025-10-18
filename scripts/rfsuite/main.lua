@@ -10,6 +10,7 @@ local _ENV = setmetatable({rfsuite = rfsuite}, {__index = _G, __newindex = funct
 
 if not FONT_M then FONT_M = FONT_STD end
 
+-- LuaFormatter off
 local config = {
     toolName = "Rotorflight",
     icon = lcd.loadMask("app/gfx/icon.png"),
@@ -23,6 +24,7 @@ local config = {
     defaultRateProfile = 4,
     watchdogParam = 10
 }
+-- LuaFormatter on
 
 config.ethosVersionString = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
 
@@ -154,22 +156,7 @@ local function register_widgets(widgetList)
             end
             rfsuite.widgets[base] = scriptModule
 
-            system.registerWidget({
-                name = v.name,
-                key = v.key,
-                event = scriptModule.event,
-                create = scriptModule.create,
-                paint = scriptModule.paint,
-                wakeup = scriptModule.wakeup,
-                build = scriptModule.build,
-                close = scriptModule.close,
-                configure = scriptModule.configure,
-                read = scriptModule.read,
-                write = scriptModule.write,
-                persistent = scriptModule.persistent or false,
-                menu = scriptModule.menu,
-                title = scriptModule.title
-            })
+            system.registerWidget({name = v.name, key = v.key, event = scriptModule.event, create = scriptModule.create, paint = scriptModule.paint, wakeup = scriptModule.wakeup, build = scriptModule.build, close = scriptModule.close, configure = scriptModule.configure, read = scriptModule.read, write = scriptModule.write, persistent = scriptModule.persistent or false, menu = scriptModule.menu, title = scriptModule.title})
         end
     end
 end

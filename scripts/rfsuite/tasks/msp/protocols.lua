@@ -10,10 +10,7 @@ local config = arg[1]
 
 local protocol = {}
 
-local supportedProtocols = {
-    sport = {mspTransport = "sp.lua", mspProtocol = "sport", maxTxBufferSize = 6, maxRxBufferSize = 6, maxRetries = 10, saveTimeout = 10.0, cms = {}, pageReqTimeout = 15},
-    crsf = {mspTransport = "crsf.lua", mspProtocol = "crsf", maxTxBufferSize = 8, maxRxBufferSize = 58, maxRetries = 5, saveTimeout = 10.0, cms = {}, pageReqTimeout = 10}
-}
+local supportedProtocols = {sport = {mspTransport = "sp.lua", mspProtocol = "sport", maxTxBufferSize = 6, maxRxBufferSize = 6, maxRetries = 10, saveTimeout = 10.0, cms = {}, pageReqTimeout = 15}, crsf = {mspTransport = "crsf.lua", mspProtocol = "crsf", maxTxBufferSize = 8, maxRxBufferSize = 58, maxRetries = 5, saveTimeout = 10.0, cms = {}, pageReqTimeout = 10}}
 
 function protocol.getProtocol()
     if rfsuite.session and rfsuite.session.telemetryType then if rfsuite.session.telemetryType == "crsf" then return supportedProtocols.crsf end end

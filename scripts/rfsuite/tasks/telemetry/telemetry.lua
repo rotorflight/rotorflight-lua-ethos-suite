@@ -80,37 +80,16 @@ local onchangeInitialized = false
 
 local sensorTable = {
 
-    rssi = {
-        name = "@i18n(sensors.rssi)@",
-        mandatory = true,
-        stats = true,
-        switch_alerts = true,
-        unit = UNIT_PERCENT,
-        unit_string = "%",
-        sensors = {sim = {{appId = 0xF010, subId = 0}}, sport = {{appId = 0xF010, subId = 0}}, crsf = {{crsfId = 0x14, subId = 2}}, crsfLegacy = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}}}
-    },
+    rssi = {name = "@i18n(sensors.rssi)@", mandatory = true, stats = true, switch_alerts = true, unit = UNIT_PERCENT, unit_string = "%", sensors = {sim = {{appId = 0xF010, subId = 0}}, sport = {{appId = 0xF010, subId = 0}}, crsf = {{crsfId = 0x14, subId = 2}}, crsfLegacy = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}}}},
 
-    link = {
-        name = "@i18n(sensors.link)@",
-        mandatory = true,
-        stats = true,
-        switch_alerts = true,
-        unit = UNIT_DB,
-        unit_string = "dB",
-        sensors = {sim = {{appId = 0xF101, subId = 0}}, sport = {{appId = 0xF101, subId = 0}, "RSSI"}, crsf = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}, "Rx RSSI1"}, crsfLegacy = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}, "RSSI 1", "RSSI 2"}}
-    },
+    link = {name = "@i18n(sensors.link)@", mandatory = true, stats = true, switch_alerts = true, unit = UNIT_DB, unit_string = "dB", sensors = {sim = {{appId = 0xF101, subId = 0}}, sport = {{appId = 0xF101, subId = 0}, "RSSI"}, crsf = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}, "Rx RSSI1"}, crsfLegacy = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}, "RSSI 1", "RSSI 2"}}},
 
     armflags = {
         name = "@i18n(sensors.arming_flags)@",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
-        sensors = {
-            sim = {{uid = 0x5001, unit = nil, dec = nil, value = function() return simSensors('armflags') end, min = 0, max = 2}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}},
-            crsfLegacy = {nil}
-        },
+        sensors = {sim = {{uid = 0x5001, unit = nil, dec = nil, value = function() return simSensors('armflags') end, min = 0, max = 2}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}}, crsfLegacy = {nil}},
         onchange = function(value) rfsuite.session.isArmed = (value == 1 or value == 3) end
     },
 
@@ -130,16 +109,7 @@ local sensorTable = {
         }
     },
 
-    rpm = {
-        name = "@i18n(sensors.headspeed)@",
-        mandatory = true,
-        stats = true,
-        set_telemetry_sensors = 60,
-        switch_alerts = true,
-        unit = UNIT_RPM,
-        unit_string = "rpm",
-        sensors = {sim = {{uid = 0x5003, unit = UNIT_RPM, dec = nil, value = function() return simSensors('rpm') end, min = 0, max = 2000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}}, crsfLegacy = {"GPS Alt"}}
-    },
+    rpm = {name = "@i18n(sensors.headspeed)@", mandatory = true, stats = true, set_telemetry_sensors = 60, switch_alerts = true, unit = UNIT_RPM, unit_string = "rpm", sensors = {sim = {{uid = 0x5003, unit = UNIT_RPM, dec = nil, value = function() return simSensors('rpm') end, min = 0, max = 2000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}}, crsfLegacy = {"GPS Alt"}}},
 
     current = {
         name = "@i18n(sensors.current)@",
@@ -164,12 +134,7 @@ local sensorTable = {
         set_telemetry_sensors = 23,
         switch_alerts = true,
         unit = UNIT_DEGREE,
-        sensors = {
-            sim = {{uid = 0x5005, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_esc') end, min = 0, max = 100}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, mspgt = 12.08}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1047}},
-            crsfLegacy = {"GPS Speed"}
-        },
+        sensors = {sim = {{uid = 0x5005, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_esc') end, min = 0, max = 100}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, mspgt = 12.08}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1047}}, crsfLegacy = {"GPS Speed"}},
         localizations = function(value, paramMin, paramMax, paramThresholds)
             if value == nil then return nil, UNIT_DEGREE, nil, paramMin, paramMax, paramThresholds end
 
@@ -204,12 +169,7 @@ local sensorTable = {
         set_telemetry_sensors = 52,
         switch_alerts = true,
         unit = UNIT_DEGREE,
-        sensors = {
-            sim = {{uid = 0x5006, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_mcu') end, min = 0, max = 100}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}},
-            crsfLegacy = {"GPS Sats"}
-        },
+        sensors = {sim = {{uid = 0x5006, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_mcu') end, min = 0, max = 100}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}}, crsfLegacy = {"GPS Sats"}},
         localizations = function(value, paramMin, paramMax, paramThresholds)
             if value == nil then return nil, UNIT_DEGREE, nil, paramMin, paramMax, paramThresholds end
             local min = paramMin or 0
@@ -233,106 +193,23 @@ local sensorTable = {
         end
     },
 
-    fuel = {
-        name = "@i18n(sensors.fuel)@",
-        mandatory = false,
-        stats = true,
-        set_telemetry_sensors = 6,
-        switch_alerts = true,
-        unit = UNIT_PERCENT,
-        unit_string = "%",
-        sensors = {sim = {{uid = 0x5007, unit = UNIT_PERCENT, dec = 0, value = function() return simSensors('fuel') end, min = 0, max = 100}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}}, crsfLegacy = {"Rx Batt%"}}
-    },
+    fuel = {name = "@i18n(sensors.fuel)@", mandatory = false, stats = true, set_telemetry_sensors = 6, switch_alerts = true, unit = UNIT_PERCENT, unit_string = "%", sensors = {sim = {{uid = 0x5007, unit = UNIT_PERCENT, dec = 0, value = function() return simSensors('fuel') end, min = 0, max = 100}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}}, crsfLegacy = {"Rx Batt%"}}},
 
-    smartfuel = {
-        name = "@i18n(sensors.smartfuel)@",
-        mandatory = false,
-        stats = true,
-        switch_alerts = true,
-        unit = UNIT_PERCENT,
-        unit_string = "%",
-        sensors = {sim = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}}, crsfLegacy = nil}
-    },
+    smartfuel = {name = "@i18n(sensors.smartfuel)@", mandatory = false, stats = true, switch_alerts = true, unit = UNIT_PERCENT, unit_string = "%", sensors = {sim = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}}, crsfLegacy = nil}},
 
-    smartconsumption = {
-        name = "@i18n(sensors.smartconsumption)@",
-        mandatory = false,
-        stats = true,
-        switch_alerts = true,
-        unit = UNIT_MILLIAMPERE_HOUR,
-        unit_string = "mAh",
-        sensors = {sim = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}}, crsfLegacy = nil}
-    },
+    smartconsumption = {name = "@i18n(sensors.smartconsumption)@", mandatory = false, stats = true, switch_alerts = true, unit = UNIT_MILLIAMPERE_HOUR, unit_string = "mAh", sensors = {sim = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}}, crsfLegacy = nil}},
 
-    consumption = {
-        name = "@i18n(sensors.consumption)@",
-        mandatory = true,
-        stats = true,
-        set_telemetry_sensors = 5,
-        switch_alerts = true,
-        unit = UNIT_MILLIAMPERE_HOUR,
-        unit_string = "mAh",
-        sensors = {
-            sim = {{uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0, value = function() return simSensors('consumption') end, min = 0, max = 5000}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}},
-            crsfLegacy = {"Rx Cons"}
-        }
-    },
+    consumption = {name = "@i18n(sensors.consumption)@", mandatory = true, stats = true, set_telemetry_sensors = 5, switch_alerts = true, unit = UNIT_MILLIAMPERE_HOUR, unit_string = "mAh", sensors = {sim = {{uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0, value = function() return simSensors('consumption') end, min = 0, max = 5000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}}, crsfLegacy = {"Rx Cons"}}},
 
-    governor = {
-        name = "@i18n(sensors.governor)@",
-        mandatory = true,
-        stats = false,
-        set_telemetry_sensors = 93,
-        sensors = {
-            sim = {{uid = 0x5009, unit = nil, dec = 0, value = function() return simSensors('governor') end, min = 0, max = 200}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}},
-            crsfLegacy = {"Flight mode"}
-        }
-    },
+    governor = {name = "@i18n(sensors.governor)@", mandatory = true, stats = false, set_telemetry_sensors = 93, sensors = {sim = {{uid = 0x5009, unit = nil, dec = 0, value = function() return simSensors('governor') end, min = 0, max = 200}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}}, crsfLegacy = {"Flight mode"}}},
 
-    adj_f = {
-        name = "@i18n(sensors.adj_func)@",
-        mandatory = true,
-        stats = false,
-        set_telemetry_sensors = 99,
-        sensors = {sim = {{uid = 0x5010, unit = nil, dec = 0, value = function() return simSensors('adj_f') end, min = 0, max = 10}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}}, crsfLegacy = {nil}}
-    },
+    adj_f = {name = "@i18n(sensors.adj_func)@", mandatory = true, stats = false, set_telemetry_sensors = 99, sensors = {sim = {{uid = 0x5010, unit = nil, dec = 0, value = function() return simSensors('adj_f') end, min = 0, max = 10}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}}, crsfLegacy = {nil}}},
 
-    adj_v = {
-        name = "@i18n(sensors.adj_val)@",
-        mandatory = true,
-        stats = false,
-        sensors = {sim = {{uid = 0x5011, unit = nil, dec = 0, value = function() return simSensors('adj_v') end, min = 0, max = 2000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}}, crsfLegacy = {nil}}
-    },
+    adj_v = {name = "@i18n(sensors.adj_val)@", mandatory = true, stats = false, sensors = {sim = {{uid = 0x5011, unit = nil, dec = 0, value = function() return simSensors('adj_v') end, min = 0, max = 2000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}}, crsfLegacy = {nil}}},
 
-    pid_profile = {
-        name = "@i18n(sensors.pid_profile)@",
-        mandatory = true,
-        stats = false,
-        set_telemetry_sensors = 95,
-        sensors = {
-            sim = {{uid = 0x5012, unit = nil, dec = 0, value = function() return simSensors('pid_profile') end, min = 0, max = 6}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}},
-            crsfLegacy = {nil}
-        }
-    },
+    pid_profile = {name = "@i18n(sensors.pid_profile)@", mandatory = true, stats = false, set_telemetry_sensors = 95, sensors = {sim = {{uid = 0x5012, unit = nil, dec = 0, value = function() return simSensors('pid_profile') end, min = 0, max = 6}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}}, crsfLegacy = {nil}}},
 
-    rate_profile = {
-        name = "@i18n(sensors.rate_profile)@",
-        mandatory = true,
-        stats = false,
-        set_telemetry_sensors = 96,
-        sensors = {
-            sim = {{uid = 0x5013, unit = nil, dec = 0, value = function() return simSensors('rate_profile') end, min = 0, max = 6}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}},
-            crsfLegacy = {nil}
-        }
-    },
+    rate_profile = {name = "@i18n(sensors.rate_profile)@", mandatory = true, stats = false, set_telemetry_sensors = 96, sensors = {sim = {{uid = 0x5013, unit = nil, dec = 0, value = function() return simSensors('rate_profile') end, min = 0, max = 6}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}}, crsfLegacy = {nil}}},
 
     throttle_percent = {
         name = "@i18n(sensors.throttle_pct)@",
@@ -341,21 +218,10 @@ local sensorTable = {
         set_telemetry_sensors = 15,
         unit = UNIT_PERCENT,
         unit_string = "%",
-        sensors = {
-            sim = {{uid = 0x5014, unit = nil, dec = 0, value = function() return simSensors('throttle_percent') end, min = 0, max = 100}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}},
-            crsfLegacy = {nil}
-        }
+        sensors = {sim = {{uid = 0x5014, unit = nil, dec = 0, value = function() return simSensors('throttle_percent') end, min = 0, max = 100}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}}, crsfLegacy = {nil}}
     },
 
-    armdisableflags = {
-        name = "@i18n(sensors.armdisableflags)@",
-        mandatory = true,
-        stats = false,
-        set_telemetry_sensors = 91,
-        sensors = {sim = {{uid = 0x5015, unit = nil, dec = nil, value = function() return simSensors('armdisableflags') end, min = 0, max = 65536}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5123}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1203}}, crsfLegacy = {nil}}
-    },
+    armdisableflags = {name = "@i18n(sensors.armdisableflags)@", mandatory = true, stats = false, set_telemetry_sensors = 91, sensors = {sim = {{uid = 0x5015, unit = nil, dec = nil, value = function() return simSensors('armdisableflags') end, min = 0, max = 65536}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5123}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1203}}, crsfLegacy = {nil}}},
 
     altitude = {
         name = "@i18n(sensors.altitude)@",
@@ -382,84 +248,24 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_VOLT,
         unit_string = "V",
-        sensors = {
-            sim = {{uid = 0x5017, unit = UNIT_VOLT, dec = 2, value = function() return simSensors('bec_voltage') end, min = 0, max = 3000}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049}},
-            crsfLegacy = {nil}
-        }
+        sensors = {sim = {{uid = 0x5017, unit = UNIT_VOLT, dec = 2, value = function() return simSensors('bec_voltage') end, min = 0, max = 3000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049}}, crsfLegacy = {nil}}
     },
 
-    cell_count = {
-        name = "@i18n(sensors.cell_count)@",
-        mandatory = false,
-        stats = false,
-        sensors = {sim = {{uid = 0x5018, unit = nil, dec = 0, value = function() return simSensors('cell_count') end, min = 0, max = 50}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5260}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1020}}, crsfLegacy = {nil}}
-    },
+    cell_count = {name = "@i18n(sensors.cell_count)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5018, unit = nil, dec = 0, value = function() return simSensors('cell_count') end, min = 0, max = 50}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5260}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1020}}, crsfLegacy = {nil}}},
 
-    accx = {
-        name = "@i18n(sensors.accx)@",
-        mandatory = false,
-        stats = false,
-        sensors = {sim = {{uid = 0x5019, unit = UNIT_G, dec = 3, value = function() return simSensors('accx') end, min = -4000, max = 4000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0700}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1111}}, crsfLegacy = {nil}}
-    },
+    accx = {name = "@i18n(sensors.accx)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5019, unit = UNIT_G, dec = 3, value = function() return simSensors('accx') end, min = -4000, max = 4000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0700}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1111}}, crsfLegacy = {nil}}},
 
-    accy = {
-        name = "@i18n(sensors.accy)@",
-        mandatory = false,
-        stats = false,
-        sensors = {sim = {{uid = 0x5020, unit = UNIT_G, dec = 3, value = function() return simSensors('accy') end, min = -4000, max = 4000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0710}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1112}}, crsfLegacy = {nil}}
-    },
+    accy = {name = "@i18n(sensors.accy)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5020, unit = UNIT_G, dec = 3, value = function() return simSensors('accy') end, min = -4000, max = 4000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0710}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1112}}, crsfLegacy = {nil}}},
 
-    accz = {
-        name = "@i18n(sensors.accz)@",
-        mandatory = false,
-        stats = false,
-        sensors = {sim = {{uid = 0x5021, unit = UNIT_G, dec = 3, value = function() return simSensors('accz') end, min = -4000, max = 4000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0720}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1113}}, crsfLegacy = {nil}}
-    },
+    accz = {name = "@i18n(sensors.accz)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5021, unit = UNIT_G, dec = 3, value = function() return simSensors('accz') end, min = -4000, max = 4000}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0720}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1113}}, crsfLegacy = {nil}}},
 
-    attyaw = {
-        name = "@i18n(sensors.attyaw)@",
-        mandatory = false,
-        stats = false,
-        sensors = {sim = {{uid = 0x5022, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attyaw') end, min = -1800, max = 3600}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5210}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1103}}, crsfLegacy = {nil}}
-    },
+    attyaw = {name = "@i18n(sensors.attyaw)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5022, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attyaw') end, min = -1800, max = 3600}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5210}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1103}}, crsfLegacy = {nil}}},
 
-    attroll = {
-        name = "@i18n(sensors.attroll)@",
-        mandatory = false,
-        stats = false,
-        sensors = {
-            sim = {{uid = 0x5023, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attroll') end, min = -1800, max = 3600}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0730, subId = 0}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1102}},
-            crsfLegacy = {nil}
-        }
-    },
+    attroll = {name = "@i18n(sensors.attroll)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5023, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attroll') end, min = -1800, max = 3600}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0730, subId = 0}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1102}}, crsfLegacy = {nil}}},
 
-    attpitch = {
-        name = "@i18n(sensors.attpitch)@",
-        mandatory = false,
-        stats = false,
-        sensors = {
-            sim = {{uid = 0x5024, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attpitch') end, min = -1800, max = 3600}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0730, subId = 1}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1101}},
-            crsfLegacy = {nil}
-        }
-    },
+    attpitch = {name = "@i18n(sensors.attpitch)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5024, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attpitch') end, min = -1800, max = 3600}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0730, subId = 1}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1101}}, crsfLegacy = {nil}}},
 
-    groundspeed = {
-        name = "@i18n(sensors.groundspeed)@",
-        mandatory = false,
-        stats = false,
-        sensors = {
-            sim = {{uid = 0x5025, unit = UNIT_KNOT, dec = 1, value = function() return simSensors('groundspeed') end, min = -1800, max = 3600}},
-            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0830, subId = 1}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1128}},
-            crsfLegacy = {nil}
-        }
-    }
+    groundspeed = {name = "@i18n(sensors.groundspeed)@", mandatory = false, stats = false, sensors = {sim = {{uid = 0x5025, unit = UNIT_KNOT, dec = 1, value = function() return simSensors('groundspeed') end, min = -1800, max = 3600}}, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0830, subId = 1}}, crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1128}}, crsfLegacy = {nil}}}
 }
 
 function telemetry.getSensorProtocol() return protocol end

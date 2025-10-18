@@ -44,9 +44,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.info.version)@", value = version, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.ethos_version)@", value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.info.rf_version)@", value = rfVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.fc_version)@", value = fcVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.info.msp_version)@", value = apiVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.msp_transport)@", value = string.upper(mspTransport), type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.version)@", value = version, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.ethos_version)@", value = ethosVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.rf_version)@", value = rfVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "@i18n(app.modules.info.fc_version)@", value = fcVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.msp_version)@", value = apiVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.msp_transport)@", value = string.upper(mspTransport), type = displayType, disable = disableType, position = displayPos},
             {t = "@i18n(app.modules.info.supported_versions)@", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.simulation)@", value = simulation, type = displayType, disable = disableType, position = displayPos}
         }
     }

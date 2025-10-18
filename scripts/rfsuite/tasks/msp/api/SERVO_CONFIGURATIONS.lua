@@ -30,8 +30,7 @@ local function generateMSPStructureRead(servoCount)
     local MSP_API_STRUCTURE = {{field = "servo_count", type = "U8"}}
 
     local servo_fields = {
-        {field = "mid", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.mid)@"}, {field = "min", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.min)@"}, {field = "max", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.max)@"},
-        {field = "rneg", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rneg)@"}, {field = "rpos", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rpos)@"}, {field = "rate", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rate)@"},
+        {field = "mid", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.mid)@"}, {field = "min", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.min)@"}, {field = "max", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.max)@"}, {field = "rneg", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rneg)@"}, {field = "rpos", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rpos)@"}, {field = "rate", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rate)@"},
         {field = "speed", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.speed)@"}, {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
     }
 
@@ -113,20 +112,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -141,19 +127,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -177,17 +151,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

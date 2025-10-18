@@ -25,7 +25,7 @@ local mytable = apidata.formdata
 
 local function postLoad(self)
 
-    local v = apidata.values[apidata.api[1]].rates_type
+    local v = rfsuite.tasks.msp.api.apidata.values[apidata.api[1]].rates_type
 
     rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable, "debug")
 
@@ -179,10 +179,7 @@ local function openPage(idx, title, script)
 
 end
 
-local function wakeup()
-
-    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeRateProfile ~= nil then if rfsuite.app.formFields['title'] then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end end end
-end
+local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeRateProfile ~= nil then if rfsuite.app.formFields['title'] then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end end end end
 
 local function onHelpMenu()
 
@@ -193,18 +190,4 @@ local function onHelpMenu()
 
 end
 
-return {
-    apidata = apidata,
-    title = "@i18n(app.modules.rates.name)@",
-    reboot = false,
-    eepromWrite = true,
-    refreshOnRateChange = true,
-    rows = mytable.rows,
-    cols = mytable.cols,
-    flagRateChange = flagRateChange,
-    postLoad = postLoad,
-    openPage = openPage,
-    wakeup = wakeup,
-    onHelpMenu = onHelpMenu,
-    API = {}
-}
+return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, API = {}}

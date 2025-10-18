@@ -244,8 +244,7 @@ function app.close()
     app.triggers.invalidConnectionSetup = false
     app.triggers.profileswitchLast = nil
 
-    collectgarbage()
-    collectgarbage()
+    rfsuite.tasks.msp.api.resetApidata()
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
 

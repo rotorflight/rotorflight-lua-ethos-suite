@@ -12,8 +12,7 @@ local MSP_API_CMD_WRITE = 202
 local MSP_REBUILD_ON_WRITE = false
 
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "a_value_1", type = "U8", apiVersion = 12.06, simResponse = {20}, help = "@i18n(api.API_TEMPLATE.a_value_1)@"}, {field = "a_value_2", type = "U8", apiVersion = 12.06, simResponse = {5}, help = "@i18n(api.API_TEMPLATE.a_value_2)@"},
-    {field = "a_value_3", type = "U8", apiVersion = 12.06, simResponse = {10}, help = "@i18n(api.API_TEMPLATE.a_value_3)@"}, {field = "a_value_4", type = "U8", apiVersion = 12.06, simResponse = {20}, help = "@i18n(api.API_TEMPLATE.a_value_4)@"},
+    {field = "a_value_1", type = "U8", apiVersion = 12.06, simResponse = {20}, help = "@i18n(api.API_TEMPLATE.a_value_1)@"}, {field = "a_value_2", type = "U8", apiVersion = 12.06, simResponse = {5}, help = "@i18n(api.API_TEMPLATE.a_value_2)@"}, {field = "a_value_3", type = "U8", apiVersion = 12.06, simResponse = {10}, help = "@i18n(api.API_TEMPLATE.a_value_3)@"}, {field = "a_value_4", type = "U8", apiVersion = 12.06, simResponse = {20}, help = "@i18n(api.API_TEMPLATE.a_value_4)@"},
     {field = "a_value_5", type = "U6", apiVersion = 12.06, simResponse = {20, 30}, help = "@i18n(api.API_TEMPLATE.a_value_5)@"}
 }
 
@@ -74,20 +73,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -102,19 +88,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -138,17 +112,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

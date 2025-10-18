@@ -12,12 +12,9 @@ local MSP_API_CMD_WRITE = 67
 local MSP_REBUILD_ON_WRITE = false
 
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rc_center", type = "U16", apiVersion = 12.06, simResponse = {220, 5}, min = 1400, max = 1600, default = 1500, unit = "us", help = "@i18n(api.RC_CONFIG.rc_center)@"},
-    {field = "rc_deflection", type = "U16", apiVersion = 12.06, simResponse = {254, 1}, min = 200, max = 700, default = 510, unit = "us", help = "@i18n(api.RC_CONFIG.rc_deflection)@"},
-    {field = "rc_arm_throttle", type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 850, max = 1500, default = 1050, unit = "us", help = "@i18n(api.RC_CONFIG.rc_arm_throttle)@"},
-    {field = "rc_min_throttle", type = "U16", apiVersion = 12.06, simResponse = {242, 3}, min = 860, max = 1500, default = 1100, unit = "us", help = "@i18n(api.RC_CONFIG.rc_min_throttle)@"},
-    {field = "rc_max_throttle", type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 1510, max = 2150, default = 1900, unit = "us", help = "@i18n(api.RC_CONFIG.rc_max_throttle)@"},
-    {field = "rc_deadband", type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 100, default = 2, unit = "us", help = "@i18n(api.RC_CONFIG.rc_deadband)@"},
+    {field = "rc_center", type = "U16", apiVersion = 12.06, simResponse = {220, 5}, min = 1400, max = 1600, default = 1500, unit = "us", help = "@i18n(api.RC_CONFIG.rc_center)@"}, {field = "rc_deflection", type = "U16", apiVersion = 12.06, simResponse = {254, 1}, min = 200, max = 700, default = 510, unit = "us", help = "@i18n(api.RC_CONFIG.rc_deflection)@"},
+    {field = "rc_arm_throttle", type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 850, max = 1500, default = 1050, unit = "us", help = "@i18n(api.RC_CONFIG.rc_arm_throttle)@"}, {field = "rc_min_throttle", type = "U16", apiVersion = 12.06, simResponse = {242, 3}, min = 860, max = 1500, default = 1100, unit = "us", help = "@i18n(api.RC_CONFIG.rc_min_throttle)@"},
+    {field = "rc_max_throttle", type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 1510, max = 2150, default = 1900, unit = "us", help = "@i18n(api.RC_CONFIG.rc_max_throttle)@"}, {field = "rc_deadband", type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 100, default = 2, unit = "us", help = "@i18n(api.RC_CONFIG.rc_deadband)@"},
     {field = "rc_yaw_deadband", type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 100, default = 2, unit = "us", help = "@i18n(api.RC_CONFIG.rc_yaw_deadband)@"}
 }
 
@@ -78,20 +75,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -106,19 +90,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -142,17 +114,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

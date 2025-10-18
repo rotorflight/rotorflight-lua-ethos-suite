@@ -13,10 +13,7 @@ local MSP_REBUILD_ON_WRITE = false
 local MSP_SIGNATURE = 0xA5
 local MSP_HEADER_BYTES = 2
 
-local escMode = {
-    "@i18n(api.ESC_PARAMETERS_YGE.tbl_modefree)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeext)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeheli)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modestore)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeglider)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeair)@",
-    "@i18n(api.ESC_PARAMETERS_YGE.tbl_modef3a)@"
-}
+local escMode = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_modefree)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeext)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeheli)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modestore)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeglider)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeair)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modef3a)@"}
 local direction = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_reverse)@"}
 local cuttoff = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_off)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_slowdown)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_cutoff)@"}
 local cuttoffVoltage = {"2.9 V", "3.0 V", "3.1 V", "3.2 V", "3.3 V", "3.4 V"}
@@ -31,29 +28,18 @@ local freewheel = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_off)@", "@i18n(api.ESC_PARA
 local flags_bitmap = {{field = "direction", tableIdxInc = -1, table = direction}, {field = "f3cauto", tableIdxInc = -1, table = offOn}, {field = "keepmah", tableIdxInc = -1, table = offOn}, {field = "bec12v", tableIdxInc = -1, table = offOn}}
 
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature", type = "U8", apiVersion = 12.07, simResponse = {165}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_signature)@"}, {field = "esc_command", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_command)@"},
-    {field = "esc_model", type = "U8", apiVersion = 12.07, simResponse = {32}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_model)@"}, {field = "esc_version", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_version)@"},
-    {field = "governor", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 1, max = #escMode, table = escMode, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_YGE.governor)@"},
-    {field = "lv_bec_voltage", type = "U16", apiVersion = 12.07, simResponse = {55, 0}, unit = "v", min = 55, max = 84, scale = 10, decimals = 1, help = "@i18n(api.ESC_PARAMETERS_YGE.lv_bec_voltage)@"},
-    {field = "timing", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = #motorTiming, tableIdxInc = -1, table = motorTiming, help = "@i18n(api.ESC_PARAMETERS_YGE.timing)@"},
-    {field = "acceleration", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.acceleration)@"}, {field = "gov_p", type = "U16", apiVersion = 12.07, simResponse = {4, 0}, min = 1, max = 10, help = "@i18n(api.ESC_PARAMETERS_YGE.gov_p)@"},
-    {field = "gov_i", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 1, max = 10, help = "@i18n(api.ESC_PARAMETERS_YGE.gov_i)@"},
-    {field = "throttle_response", type = "U16", apiVersion = 12.07, simResponse = {1, 0}, min = 0, max = #throttleResponse, tableIdxInc = -1, table = throttleResponse, help = "@i18n(api.ESC_PARAMETERS_YGE.throttle_response)@"},
-    {field = "auto_restart_time", type = "U16", apiVersion = 12.07, simResponse = {1, 0}, min = 0, max = #cuttoff, tableIdxInc = -1, table = cuttoff, help = "@i18n(api.ESC_PARAMETERS_YGE.auto_restart_time)@"},
-    {field = "cell_cutoff", type = "U16", apiVersion = 12.07, simResponse = {2, 0}, min = 0, max = #cuttoffVoltage, tableIdxInc = -1, table = cuttoffVoltage, help = "@i18n(api.ESC_PARAMETERS_YGE.cell_cutoff)@"},
-    {field = "active_freewheel", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 0, max = #freewheel, tableIdxInc = -1, table = freewheel, help = "@i18n(api.ESC_PARAMETERS_YGE.active_freewheel)@"},
-    {field = "esc_type", type = "U16", apiVersion = 12.07, simResponse = {80, 3}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_type)@"}, {field = "firmware_version", type = "U32", apiVersion = 12.07, simResponse = {131, 148, 1, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.firmware_version)@"},
-    {field = "serial_number", type = "U32", apiVersion = 12.07, simResponse = {30, 170, 0, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.serial_number)@"}, {field = "unknown_1", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_1)@"},
-    {field = "stick_zero_us", type = "U16", apiVersion = 12.07, simResponse = {86, 4}, min = 900, max = 1900, unit = "us", help = "@i18n(api.ESC_PARAMETERS_YGE.stick_zero_us)@"},
-    {field = "stick_range_us", type = "U16", apiVersion = 12.07, simResponse = {22, 3}, min = 600, max = 1500, unit = "us", help = "@i18n(api.ESC_PARAMETERS_YGE.stick_range_us)@"},
-    {field = "unknown_2", type = "U16", apiVersion = 12.07, simResponse = {163, 15}, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_2)@"}, {field = "motor_poll_pairs", type = "U16", apiVersion = 12.07, simResponse = {1, 0}, min = 1, max = 100, help = "@i18n(api.ESC_PARAMETERS_YGE.motor_poll_pairs)@"},
-    {field = "pinion_teeth", type = "U16", apiVersion = 12.07, simResponse = {2, 0}, min = 1, max = 255, help = "@i18n(api.ESC_PARAMETERS_YGE.pinion_teeth)@"},
-    {field = "main_teeth", type = "U16", apiVersion = 12.07, simResponse = {2, 0}, min = 1, max = 1800, help = "@i18n(api.ESC_PARAMETERS_YGE.main_teeth)@"},
-    {field = "min_start_power", type = "U16", apiVersion = 12.07, simResponse = {20, 0}, min = 0, max = 26, unit = "%", help = "@i18n(api.ESC_PARAMETERS_YGE.min_start_power)@"},
-    {field = "max_start_power", type = "U16", apiVersion = 12.07, simResponse = {20, 0}, min = 0, max = 31, unit = "%", help = "@i18n(api.ESC_PARAMETERS_YGE.max_start_power)@"},
-    {field = "unknown_3", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_3)@"}, {field = "flags", type = "U8", apiVersion = 12.07, simResponse = {0}, bitmap = flags_bitmap, help = "@i18n(api.ESC_PARAMETERS_YGE.flags)@"},
-    {field = "unknown_4", type = "U8", apiVersion = 12.07, simResponse = {0}, min = 0, max = 1, tableIdxInc = -1, table = offOn, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_4)@"},
-    {field = "current_limit", type = "U16", apiVersion = 12.07, simResponse = {2, 19}, unit = "A", min = 1, max = 65500, decimals = 2, scale = 100, help = "@i18n(api.ESC_PARAMETERS_YGE.current_limit)@"}
+    {field = "esc_signature", type = "U8", apiVersion = 12.07, simResponse = {165}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_signature)@"}, {field = "esc_command", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_command)@"}, {field = "esc_model", type = "U8", apiVersion = 12.07, simResponse = {32}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_model)@"},
+    {field = "esc_version", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_version)@"}, {field = "governor", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 1, max = #escMode, table = escMode, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_YGE.governor)@"},
+    {field = "lv_bec_voltage", type = "U16", apiVersion = 12.07, simResponse = {55, 0}, unit = "v", min = 55, max = 84, scale = 10, decimals = 1, help = "@i18n(api.ESC_PARAMETERS_YGE.lv_bec_voltage)@"}, {field = "timing", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = #motorTiming, tableIdxInc = -1, table = motorTiming, help = "@i18n(api.ESC_PARAMETERS_YGE.timing)@"},
+    {field = "acceleration", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.acceleration)@"}, {field = "gov_p", type = "U16", apiVersion = 12.07, simResponse = {4, 0}, min = 1, max = 10, help = "@i18n(api.ESC_PARAMETERS_YGE.gov_p)@"}, {field = "gov_i", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 1, max = 10, help = "@i18n(api.ESC_PARAMETERS_YGE.gov_i)@"},
+    {field = "throttle_response", type = "U16", apiVersion = 12.07, simResponse = {1, 0}, min = 0, max = #throttleResponse, tableIdxInc = -1, table = throttleResponse, help = "@i18n(api.ESC_PARAMETERS_YGE.throttle_response)@"}, {field = "auto_restart_time", type = "U16", apiVersion = 12.07, simResponse = {1, 0}, min = 0, max = #cuttoff, tableIdxInc = -1, table = cuttoff, help = "@i18n(api.ESC_PARAMETERS_YGE.auto_restart_time)@"},
+    {field = "cell_cutoff", type = "U16", apiVersion = 12.07, simResponse = {2, 0}, min = 0, max = #cuttoffVoltage, tableIdxInc = -1, table = cuttoffVoltage, help = "@i18n(api.ESC_PARAMETERS_YGE.cell_cutoff)@"}, {field = "active_freewheel", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 0, max = #freewheel, tableIdxInc = -1, table = freewheel, help = "@i18n(api.ESC_PARAMETERS_YGE.active_freewheel)@"},
+    {field = "esc_type", type = "U16", apiVersion = 12.07, simResponse = {80, 3}, help = "@i18n(api.ESC_PARAMETERS_YGE.esc_type)@"}, {field = "firmware_version", type = "U32", apiVersion = 12.07, simResponse = {131, 148, 1, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.firmware_version)@"}, {field = "serial_number", type = "U32", apiVersion = 12.07, simResponse = {30, 170, 0, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.serial_number)@"},
+    {field = "unknown_1", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_1)@"}, {field = "stick_zero_us", type = "U16", apiVersion = 12.07, simResponse = {86, 4}, min = 900, max = 1900, unit = "us", help = "@i18n(api.ESC_PARAMETERS_YGE.stick_zero_us)@"}, {field = "stick_range_us", type = "U16", apiVersion = 12.07, simResponse = {22, 3}, min = 600, max = 1500, unit = "us", help = "@i18n(api.ESC_PARAMETERS_YGE.stick_range_us)@"},
+    {field = "unknown_2", type = "U16", apiVersion = 12.07, simResponse = {163, 15}, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_2)@"}, {field = "motor_poll_pairs", type = "U16", apiVersion = 12.07, simResponse = {1, 0}, min = 1, max = 100, help = "@i18n(api.ESC_PARAMETERS_YGE.motor_poll_pairs)@"}, {field = "pinion_teeth", type = "U16", apiVersion = 12.07, simResponse = {2, 0}, min = 1, max = 255, help = "@i18n(api.ESC_PARAMETERS_YGE.pinion_teeth)@"},
+    {field = "main_teeth", type = "U16", apiVersion = 12.07, simResponse = {2, 0}, min = 1, max = 1800, help = "@i18n(api.ESC_PARAMETERS_YGE.main_teeth)@"}, {field = "min_start_power", type = "U16", apiVersion = 12.07, simResponse = {20, 0}, min = 0, max = 26, unit = "%", help = "@i18n(api.ESC_PARAMETERS_YGE.min_start_power)@"},
+    {field = "max_start_power", type = "U16", apiVersion = 12.07, simResponse = {20, 0}, min = 0, max = 31, unit = "%", help = "@i18n(api.ESC_PARAMETERS_YGE.max_start_power)@"}, {field = "unknown_3", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_3)@"}, {field = "flags", type = "U8", apiVersion = 12.07, simResponse = {0}, bitmap = flags_bitmap, help = "@i18n(api.ESC_PARAMETERS_YGE.flags)@"},
+    {field = "unknown_4", type = "U8", apiVersion = 12.07, simResponse = {0}, min = 0, max = 1, tableIdxInc = -1, table = offOn, help = "@i18n(api.ESC_PARAMETERS_YGE.unknown_4)@"}, {field = "current_limit", type = "U16", apiVersion = 12.07, simResponse = {2, 19}, unit = "A", min = 1, max = 65500, decimals = 2, scale = 100, help = "@i18n(api.ESC_PARAMETERS_YGE.current_limit)@"}
 }
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
@@ -113,20 +99,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -141,19 +114,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -177,20 +138,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout,
-    mspSignature = MSP_SIGNATURE,
-    mspHeaderBytes = MSP_HEADER_BYTES,
-    simulatorResponse = MSP_API_SIMULATOR_RESPONSE
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout, mspSignature = MSP_SIGNATURE, mspHeaderBytes = MSP_HEADER_BYTES, simulatorResponse = MSP_API_SIMULATOR_RESPONSE}

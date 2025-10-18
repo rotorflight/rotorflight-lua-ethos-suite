@@ -9,18 +9,7 @@ local folder = "scorp"
 
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
-local apidata = {
-    api = {[1] = "ESC_PARAMETERS_SCORPION"},
-    formdata = {
-        labels = {},
-        fields = {
-
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.esc_mode)@", type = 1, mspapi = 1, apikey = "esc_mode"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.rotation)@", type = 1, mspapi = 1, apikey = "rotation"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.bec_voltage)@", type = 1, mspapi = 1, apikey = "bec_voltage"}
-
-        }
-    }
-}
+local apidata = {api = {[1] = "ESC_PARAMETERS_SCORPION"}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.esc_tools.mfg.scorp.esc_mode)@", type = 1, mspapi = 1, apikey = "esc_mode"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.rotation)@", type = 1, mspapi = 1, apikey = "rotation"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.bec_voltage)@", type = 1, mspapi = 1, apikey = "bec_voltage"}}}}
 
 local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 

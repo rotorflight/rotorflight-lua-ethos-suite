@@ -159,42 +159,8 @@ end
 
 function utils.themeColors()
     local colorMode = {
-        dark = {
-            textcolor = "white",
-            titlecolor = "white",
-            bgcolor = "black",
-            fillcolor = "green",
-            fillwarncolor = "orange",
-            fillcritcolor = "red",
-            fillbgcolor = "grey",
-            accentcolor = "white",
-            rssifillcolor = "green",
-            rssifillbgcolor = "darkgrey",
-            txaccentcolor = "grey",
-            txfillcolor = "green",
-            txbgfillcolor = "darkgrey",
-            tbbgcolor = "headergrey",
-            cntextcolor = "white",
-            tbtextcolor = "white"
-        },
-        light = {
-            textcolor = "lmgrey",
-            titlecolor = "lmgrey",
-            bgcolor = "white",
-            fillcolor = "lightgreen",
-            fillwarncolor = "lightorange",
-            fillcritcolor = "lightred",
-            fillbgcolor = "lightgrey",
-            accentcolor = "darkgrey",
-            rssifillcolor = "lightgreen",
-            rssifillbgcolor = "grey",
-            txaccentcolor = "white",
-            txfillcolor = "lightgreen",
-            txbgfillcolor = "grey",
-            tbbgcolor = "darkgrey",
-            cntextcolor = "white",
-            tbtextcolor = "white"
-        }
+        dark = {textcolor = "white", titlecolor = "white", bgcolor = "black", fillcolor = "green", fillwarncolor = "orange", fillcritcolor = "red", fillbgcolor = "grey", accentcolor = "white", rssifillcolor = "green", rssifillbgcolor = "darkgrey", txaccentcolor = "grey", txfillcolor = "green", txbgfillcolor = "darkgrey", tbbgcolor = "headergrey", cntextcolor = "white", tbtextcolor = "white"},
+        light = {textcolor = "lmgrey", titlecolor = "lmgrey", bgcolor = "white", fillcolor = "lightgreen", fillwarncolor = "lightorange", fillcritcolor = "lightred", fillbgcolor = "lightgrey", accentcolor = "darkgrey", rssifillcolor = "lightgreen", rssifillbgcolor = "grey", txaccentcolor = "white", txfillcolor = "lightgreen", txbgfillcolor = "grey", tbbgcolor = "darkgrey", cntextcolor = "white", tbtextcolor = "white"}
     }
     return lcd.darkMode() and colorMode.dark or colorMode.light
 end
@@ -242,26 +208,7 @@ function utils.getTxBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_wa
     }
 end
 
-local function txTextBox(colorMode, headeropts)
-    return {
-        col = 6,
-        row = 1,
-        type = "text",
-        subtype = "telemetry",
-        source = "txbatt",
-        title = "Tx Batt",
-        titlepos = "bottom",
-        titlefont = "FONT_XXS",
-        valuealign = "center",
-        unit = "v",
-        valuepaddingtop = 8,
-        valuepaddingleft = 8,
-        font = headeropts.txbattfont,
-        decimals = 1,
-        bgcolor = colorMode.tbbgcolor,
-        textcolor = colorMode.tbtextcolor
-    }
-end
+local function txTextBox(colorMode, headeropts) return {col = 6, row = 1, type = "text", subtype = "telemetry", source = "txbatt", title = "Tx Batt", titlepos = "bottom", titlefont = "FONT_XXS", valuealign = "center", unit = "v", valuepaddingtop = 8, valuepaddingleft = 8, font = headeropts.txbattfont, decimals = 1, bgcolor = colorMode.tbbgcolor, textcolor = colorMode.tbtextcolor} end
 
 local function txDigitalBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
     return {
@@ -307,9 +254,7 @@ function utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
 
     return {
 
-        {col = 1, row = 1, colspan = 2, type = "text", subtype = "craftname", font = headeropts.font, valuealign = "left", valuepaddingleft = 5, bgcolor = colorMode.tbbgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.cntextcolor},
-
-        {col = 3, row = 1, colspan = 3, type = "image", subtype = "image", bgcolor = colorMode.tbbgcolor}, txBox, {
+        {col = 1, row = 1, colspan = 2, type = "text", subtype = "craftname", font = headeropts.font, valuealign = "left", valuepaddingleft = 5, bgcolor = colorMode.tbbgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.cntextcolor}, {col = 3, row = 1, colspan = 3, type = "image", subtype = "image", bgcolor = colorMode.tbbgcolor}, txBox, {
             col = 7,
             row = 1,
             type = "gauge",
@@ -496,8 +441,7 @@ function utils.resolveThemeColorArray(colorkey, arr)
     return resolved
 end
 
-function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright,
-                   valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
+function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
 
     local DEFAULT_TITLE_PADDING = 0
     local DEFAULT_VALUE_PADDING = 6

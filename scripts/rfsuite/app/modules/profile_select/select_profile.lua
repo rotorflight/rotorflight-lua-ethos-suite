@@ -17,10 +17,7 @@ local saveCounter = 0
 local triggerSaveCounter = false
 local triggerMSPWrite = false
 
-local apidata = {
-    api = {[1] = "STATUS"},
-    formdata = {labels = {}, fields = {{t = "@i18n(app.modules.profile_select.pid_profile)@", type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "@i18n(app.modules.profile_select.rate_profile)@", type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}
-}
+local apidata = {api = {[1] = "STATUS"}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.profile_select.pid_profile)@", type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "@i18n(app.modules.profile_select.rate_profile)@", type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}}
 
 local function postLoad(self) rfsuite.app.triggers.closeProgressLoader = true end
 

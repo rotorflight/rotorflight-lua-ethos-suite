@@ -12,14 +12,12 @@ local MSP_API_CMD_WRITE = 159
 local MSP_REBUILD_ON_WRITE = false
 
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "exp_uint1", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}, help = "@i18n(api.EXPERIMENTAL.exp_uint1)@"}, {field = "exp_uint2", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}, help = "@i18n(api.EXPERIMENTAL.exp_uint2)@"},
-    {field = "exp_uint3", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {60}, help = "@i18n(api.EXPERIMENTAL.exp_uint3)@"}, {field = "exp_uint4", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {200}, help = "@i18n(api.EXPERIMENTAL.exp_uint4)@"},
-    {field = "exp_uint5", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint5)@"}, {field = "exp_uint6", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}, help = "@i18n(api.EXPERIMENTAL.exp_uint6)@"},
-    {field = "exp_uint7", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {6}, help = "@i18n(api.EXPERIMENTAL.exp_uint7)@"}, {field = "exp_uint8", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}, help = "@i18n(api.EXPERIMENTAL.exp_uint8)@"},
-    {field = "exp_uint9", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint9)@"}, {field = "exp_uint10", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {40}, help = "@i18n(api.EXPERIMENTAL.exp_uint10)@"},
-    {field = "exp_uint11", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}, help = "@i18n(api.EXPERIMENTAL.exp_uint11)@"}, {field = "exp_uint12", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {6}, help = "@i18n(api.EXPERIMENTAL.exp_uint12)@"},
-    {field = "exp_uint13", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}, help = "@i18n(api.EXPERIMENTAL.exp_uint13)@"}, {field = "exp_uint14", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint14)@"},
-    {field = "exp_uint15", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint15)@"}, {field = "exp_uint16", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint16)@"}
+    {field = "exp_uint1", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}, help = "@i18n(api.EXPERIMENTAL.exp_uint1)@"}, {field = "exp_uint2", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}, help = "@i18n(api.EXPERIMENTAL.exp_uint2)@"}, {field = "exp_uint3", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {60}, help = "@i18n(api.EXPERIMENTAL.exp_uint3)@"},
+    {field = "exp_uint4", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {200}, help = "@i18n(api.EXPERIMENTAL.exp_uint4)@"}, {field = "exp_uint5", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint5)@"}, {field = "exp_uint6", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}, help = "@i18n(api.EXPERIMENTAL.exp_uint6)@"},
+    {field = "exp_uint7", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {6}, help = "@i18n(api.EXPERIMENTAL.exp_uint7)@"}, {field = "exp_uint8", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}, help = "@i18n(api.EXPERIMENTAL.exp_uint8)@"}, {field = "exp_uint9", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint9)@"},
+    {field = "exp_uint10", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {40}, help = "@i18n(api.EXPERIMENTAL.exp_uint10)@"}, {field = "exp_uint11", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}, help = "@i18n(api.EXPERIMENTAL.exp_uint11)@"}, {field = "exp_uint12", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {6}, help = "@i18n(api.EXPERIMENTAL.exp_uint12)@"},
+    {field = "exp_uint13", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}, help = "@i18n(api.EXPERIMENTAL.exp_uint13)@"}, {field = "exp_uint14", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint14)@"}, {field = "exp_uint15", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint15)@"},
+    {field = "exp_uint16", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}, help = "@i18n(api.EXPERIMENTAL.exp_uint16)@"}
 }
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
@@ -79,20 +77,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -107,19 +92,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -143,17 +116,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

@@ -18,10 +18,7 @@ local apidata = {
     api = {[1] = "ESC_PARAMETERS_FLYROTOR"},
     formdata = {
         labels = {},
-        fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov)@", mspapi = 1, apikey = "governor", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@", mspapi = 1, apikey = "gov_p"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@", mspapi = 1, apikey = "gov_i"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@", mspapi = 1, apikey = "drive_freq"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_erpm_max)@", mspapi = 1, apikey = "motor_erpm_max"}
-        }
+        fields = {{t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov)@", mspapi = 1, apikey = "governor", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@", mspapi = 1, apikey = "gov_p"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@", mspapi = 1, apikey = "gov_i"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@", mspapi = 1, apikey = "drive_freq"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_erpm_max)@", mspapi = 1, apikey = "motor_erpm_max"}}
     }
 }
 
@@ -42,18 +39,4 @@ local function event(widget, category, value, x, y)
 
 end
 
-return {
-    apidata = apidata,
-    eepromWrite = true,
-    reboot = false,
-    escinfo = escinfo,
-    postLoad = postLoad,
-    simulatorResponse = simulatorResponse,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
-    onNavMenu = onNavMenu,
-    event = event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@",
-    headerLine = rfsuite.escHeaderLineText,
-    progressCounter = 0.5
-
-}
+return {apidata = apidata, eepromWrite = true, reboot = false, escinfo = escinfo, postLoad = postLoad, simulatorResponse = simulatorResponse, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}, onNavMenu = onNavMenu, event = event, pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@", headerLine = rfsuite.escHeaderLineText, progressCounter = 0.5}

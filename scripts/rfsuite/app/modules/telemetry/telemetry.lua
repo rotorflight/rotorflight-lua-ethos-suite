@@ -333,20 +333,4 @@ local function mspTimeout()
     rfsuite.app.ui.enableNavigationField('menu')
 end
 
-return {
-    mspData = mspData,
-    openPage = openPage,
-    eepromWrite = true,
-    mspSuccess = mspSuccess,
-    mspRetry = mspRetry,
-    mspTimeout = mspTimeout,
-    onSaveMenu = onSaveMenu,
-    onToolMenu = onToolMenu,
-    reboot = false,
-    wakeup = wakeup,
-    API = {},
-    config = config,
-    configLoaded = configLoaded,
-    configApplied = configApplied,
-    navButtons = {menu = true, save = true, reload = true, tool = true, help = false}
-}
+return {mspData = mspData, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, mspTimeout = mspTimeout, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}

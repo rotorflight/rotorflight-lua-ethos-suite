@@ -13,15 +13,7 @@ local tasks
 local firstWakeup = true
 
 local msp_sensors = {
-    DATAFLASH_SUMMARY = {
-        interval_armed = -1,
-        interval_disarmed = 5,
-        fields = {
-            flags = {sensorname = "BBL Flags", sessionname = {"bblFlags"}, appId = 0x5FFF, unit = UNIT_RAW},
-            total = {sensorname = "BBL Size", sessionname = {"bblSize"}, appId = 0x5FFE, unit = UNIT_RAW},
-            used = {sensorname = "BBL Used", sessionname = {"bblUsed"}, appId = 0x5FFD, unit = UNIT_RAW}
-        }
-    },
+    DATAFLASH_SUMMARY = {interval_armed = -1, interval_disarmed = 5, fields = {flags = {sensorname = "BBL Flags", sessionname = {"bblFlags"}, appId = 0x5FFF, unit = UNIT_RAW}, total = {sensorname = "BBL Size", sessionname = {"bblSize"}, appId = 0x5FFE, unit = UNIT_RAW}, used = {sensorname = "BBL Used", sessionname = {"bblUsed"}, appId = 0x5FFD, unit = UNIT_RAW}}},
 
     BATTERY_CONFIG = {
         interval_armed = -1,

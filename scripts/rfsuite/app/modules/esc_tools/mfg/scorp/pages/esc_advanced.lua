@@ -12,9 +12,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.soft_start_time)@", mspapi = 1, apikey = "soft_start_time"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.runup_time)@", mspapi = 1, apikey = "runup_time"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.bailout)@", mspapi = 1, apikey = "bailout"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.gov_proportional)@", mspapi = 1, apikey = "gov_proportional"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.gov_integral)@", mspapi = 1, apikey = "gov_integral"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.motor_startup_sound)@", mspapi = 1, apikey = "motor_startup_sound", type = 1}
+            {t = "@i18n(app.modules.esc_tools.mfg.scorp.soft_start_time)@", mspapi = 1, apikey = "soft_start_time"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.runup_time)@", mspapi = 1, apikey = "runup_time"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.bailout)@", mspapi = 1, apikey = "bailout"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.gov_proportional)@", mspapi = 1, apikey = "gov_proportional"},
+            {t = "@i18n(app.modules.esc_tools.mfg.scorp.gov_integral)@", mspapi = 1, apikey = "gov_integral"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.motor_startup_sound)@", mspapi = 1, apikey = "motor_startup_sound", type = 1}
         }
     }
 }

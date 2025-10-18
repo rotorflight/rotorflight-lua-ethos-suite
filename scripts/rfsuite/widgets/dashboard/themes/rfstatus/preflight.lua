@@ -86,8 +86,7 @@ local function buildBoxes(W)
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
 
     return {
-        {col = 1, row = 1, rowspan = 2, colspan = 2, type = "image", subtype = "model"},
-        {col = 1, row = 3, colspan = 1, type = "text", subtype = "telemetry", source = "link", nosource = "-", title = "@i18n(widgets.dashboard.lq):upper()@", unit = "dB", titlepos = "bottom", transform = "floor", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
+        {col = 1, row = 1, rowspan = 2, colspan = 2, type = "image", subtype = "model"}, {col = 1, row = 3, colspan = 1, type = "text", subtype = "telemetry", source = "link", nosource = "-", title = "@i18n(widgets.dashboard.lq):upper()@", unit = "dB", titlepos = "bottom", transform = "floor", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
         {col = 2, row = 3, type = "time", subtype = "flight", titlepos = "bottom", title = "@i18n(widgets.dashboard.timer):upper()@", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor}, {
             col = 1,
             row = 4,
@@ -100,8 +99,7 @@ local function buildBoxes(W)
             titlecolor = colorMode.textcolor,
             textcolor = colorMode.textcolor,
             thresholds = {
-                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"},
-                {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
+                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             }
         }, {
@@ -167,42 +165,9 @@ local function buildBoxes(W)
                     textcolor = colorMode.textcolor
                 }
             }
-        },
-        {col = 3, row = 3, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "current", nosource = "-", title = "@i18n(widgets.dashboard.current):upper()@", unit = "A", titlepos = "bottom", font = opts.font, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
-        {
-            col = 6,
-            row = 1,
-            rowspan = 2,
-            colspan = 3,
-            type = "text",
-            subtype = "telemetry",
-            source = "smartfuel",
-            nosource = "-",
-            title = "@i18n(widgets.dashboard.fuel):upper()@",
-            unit = "%",
-            titlepos = "bottom",
-            font = opts.font,
-            transform = "floor",
-            thresholds = {{value = 30, textcolor = colorMode.fillcritcolor}, {value = 60, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcolor}},
-            titlecolor = colorMode.textcolor,
-            textcolor = colorMode.textcolor
-        }, {
-            col = 6,
-            row = 3,
-            colspan = 3,
-            rowspan = 2,
-            type = "text",
-            subtype = "telemetry",
-            source = "rpm",
-            nosource = "-",
-            title = "@i18n(widgets.dashboard.rpm):upper()@",
-            unit = "rpm",
-            titlepos = "bottom",
-            font = opts.font,
-            transform = "floor",
-            titlecolor = colorMode.textcolor,
-            textcolor = colorMode.textcolor
-        }
+        }, {col = 3, row = 3, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "current", nosource = "-", title = "@i18n(widgets.dashboard.current):upper()@", unit = "A", titlepos = "bottom", font = opts.font, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
+        {col = 6, row = 1, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "smartfuel", nosource = "-", title = "@i18n(widgets.dashboard.fuel):upper()@", unit = "%", titlepos = "bottom", font = opts.font, transform = "floor", thresholds = {{value = 30, textcolor = colorMode.fillcritcolor}, {value = 60, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcolor}}, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
+        {col = 6, row = 3, colspan = 3, rowspan = 2, type = "text", subtype = "telemetry", source = "rpm", nosource = "-", title = "@i18n(widgets.dashboard.rpm):upper()@", unit = "rpm", titlepos = "bottom", font = opts.font, transform = "floor", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor}
     }
 
 end

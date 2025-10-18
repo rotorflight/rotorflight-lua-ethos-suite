@@ -11,8 +11,7 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.yge.min_start_power)@", mspapi = 1, apikey = "min_start_power"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.max_start_power)@", mspapi = 1, apikey = "max_start_power"},
-            {t = "@i18n(app.modules.esc_tools.mfg.yge.throttle_response)@", type = 1, mspapi = 1, apikey = "throttle_response"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.timing)@", type = 1, mspapi = 1, apikey = "timing"},
+            {t = "@i18n(app.modules.esc_tools.mfg.yge.min_start_power)@", mspapi = 1, apikey = "min_start_power"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.max_start_power)@", mspapi = 1, apikey = "max_start_power"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.throttle_response)@", type = 1, mspapi = 1, apikey = "throttle_response"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.timing)@", type = 1, mspapi = 1, apikey = "timing"},
             {t = "@i18n(app.modules.esc_tools.mfg.yge.active_freewheel)@", type = 1, mspapi = 1, apikey = "active_freewheel"}
 
         }
@@ -39,17 +38,4 @@ local function event(widget, category, value, x, y)
 
 end
 
-return {
-    apidata = apidata,
-    eepromWrite = true,
-    reboot = false,
-    escinfo = escinfo,
-    svTiming = 0,
-    svFlags = 0,
-    postLoad = postLoad,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
-    onNavMenu = onNavMenu,
-    event = event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.yge.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.yge.advanced)@",
-    headerLine = rfsuite.escHeaderLineText
-}
+return {apidata = apidata, eepromWrite = true, reboot = false, escinfo = escinfo, svTiming = 0, svFlags = 0, postLoad = postLoad, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}, onNavMenu = onNavMenu, event = event, pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.yge.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.yge.advanced)@", headerLine = rfsuite.escHeaderLineText}

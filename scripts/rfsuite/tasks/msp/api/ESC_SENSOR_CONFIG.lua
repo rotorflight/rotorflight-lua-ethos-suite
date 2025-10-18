@@ -14,16 +14,11 @@ local MSP_REBUILD_ON_WRITE = false
 local escTypes = {"NONE", "BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY", "RECORD"}
 local onOff = {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@", "@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"}
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "protocol", type = "U8", apiVersion = 12.06, simResponse = {0}, table = escTypes, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.protocol)@"},
-    {field = "half_duplex", type = "U8", apiVersion = 12.06, simResponse = {0}, default = 0, min = 1, max = 2, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.half_duplex)@"},
-    {field = "update_hz", type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help = "@i18n(api.ESC_SENSOR_CONFIG.update_hz)@"},
-    {field = "current_offset", type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.current_offset)@"},
-    {field = "hw4_current_offset", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_offset)@"},
-    {field = "hw4_current_gain", type = "U8", apiVersion = 12.06, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_gain)@"},
-    {field = "hw4_voltage_gain", type = "U8", apiVersion = 12.06, simResponse = {30}, min = 0, max = 250, default = 30, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_voltage_gain)@"},
-    {field = "pin_swap", type = "U8", apiVersion = 12.07, simResponse = {0}, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.pin_swap)@"},
-    {field = "voltage_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.voltage_correction)@"},
-    {field = "current_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.current_correction)@"},
+    {field = "protocol", type = "U8", apiVersion = 12.06, simResponse = {0}, table = escTypes, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.protocol)@"}, {field = "half_duplex", type = "U8", apiVersion = 12.06, simResponse = {0}, default = 0, min = 1, max = 2, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.half_duplex)@"},
+    {field = "update_hz", type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help = "@i18n(api.ESC_SENSOR_CONFIG.update_hz)@"}, {field = "current_offset", type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.current_offset)@"},
+    {field = "hw4_current_offset", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_offset)@"}, {field = "hw4_current_gain", type = "U8", apiVersion = 12.06, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_gain)@"},
+    {field = "hw4_voltage_gain", type = "U8", apiVersion = 12.06, simResponse = {30}, min = 0, max = 250, default = 30, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_voltage_gain)@"}, {field = "pin_swap", type = "U8", apiVersion = 12.07, simResponse = {0}, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.pin_swap)@"},
+    {field = "voltage_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.voltage_correction)@"}, {field = "current_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.current_correction)@"},
     {field = "consumption_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.consumption_correction)@"}
 }
 
@@ -84,20 +79,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -112,19 +94,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -148,17 +118,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

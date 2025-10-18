@@ -89,7 +89,7 @@ function frsky.setFblSensors(fblIds)
     end
 
     if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then rfsuite.tasks.sensors.sid = nil end
-    collectgarbage("collect")
+
 end
 
 frsky.setFblSensors(rfsuite.session.telemetryConfig)

@@ -57,7 +57,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    collectgarbage('collect')
+
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
@@ -68,7 +68,7 @@ function ui.progressDisplay(title, message, speed)
                     app.triggers.closeProgressLoader = false
                     app.dialogs.progressSpeed = false
                     app.triggers.closeProgressLoaderNoisProcessed = false
-                    collectgarbage('collect')
+
                 end
             end
 
@@ -91,7 +91,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.dialogs.progressSpeed = false
-                    collectgarbage('collect')
+
                 end
             end
 
@@ -137,7 +137,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
                     app.dialogs.save:close()
-                    collectgarbage('collect')
+
                 end
             elseif tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
@@ -147,7 +147,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveProgressCounter = 0
                     app.triggers.closeSave = false
                     app.triggers.isSaving = false
-                    collectgarbage('collect')
+
                 end
             else
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
@@ -165,7 +165,7 @@ function ui.progressDisplaySave(message)
                 app.triggers.isSaving = false
                 app.Page = app.PageTmp
                 app.PageTmp = nil
-                collectgarbage('collect')
+
             end
         end
     })
@@ -236,6 +236,8 @@ function ui.openMainMenu()
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+
+    rfsuite.tasks.msp.api.resetApidata()
 
     app.formFieldsOffline = {}
     app.formFieldsBGTask = {}
@@ -351,6 +353,7 @@ function ui.openMainMenu()
     utils.reportMemoryUsage("app.openMainMenu", "end")
 
     collectgarbage('collect')
+    collectgarbage('collect')
 end
 
 function ui.openMainMenuSub(activesection)
@@ -361,6 +364,8 @@ function ui.openMainMenuSub(activesection)
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+
+    rfsuite.tasks.msp.api.resetApidata()
 
     app.formFieldsOffline = {}
     app.lastLabel = nil
@@ -482,6 +487,7 @@ function ui.openMainMenuSub(activesection)
 
     utils.reportMemoryUsage("app.openMainMenuSub", "end")
 
+    collectgarbage('collect')
     collectgarbage('collect')
 end
 
@@ -1196,7 +1202,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
         app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
-
+        collectgarbage('collect')
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
     end
@@ -1223,8 +1229,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
             local label = app.Page.apidata.formdata.labels
             if rfsuite.session.apiVersion == nil then return end
 
-            local valid = (field.apiversion == nil or utils.apiVersionCompare(">=", field.apiversion)) and (field.apiversionlt == nil or utils.apiVersionCompare("<", field.apiversionlt)) and (field.apiversiongt == nil or utils.apiVersionCompare(">", field.apiversiongt)) and
-                              (field.apiversionlte == nil or utils.apiVersionCompare("<=", field.apiversionlte)) and (field.apiversiongte == nil or utils.apiVersionCompare(">=", field.apiversiongte)) and (field.enablefunction == nil or field.enablefunction())
+            local valid = (field.apiversion == nil or utils.apiVersionCompare(">=", field.apiversion)) and (field.apiversionlt == nil or utils.apiVersionCompare("<", field.apiversionlt)) and (field.apiversiongt == nil or utils.apiVersionCompare(">", field.apiversiongt)) and (field.apiversionlte == nil or utils.apiVersionCompare("<=", field.apiversionlte)) and (field.apiversiongte == nil or utils.apiVersionCompare(">=", field.apiversiongte)) and
+                              (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
                 app.ui.fieldLabel(field, i, label)
@@ -1261,6 +1267,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "end")
 
+    collectgarbage('collect')
     collectgarbage('collect')
 end
 
@@ -1485,8 +1492,8 @@ end
 function ui.mspApiUpdateFormAttributes()
 
     local app = rfsuite.app
-    local values = app.Page.apidata.values
-    local structure = app.Page.apidata.structure
+    local values = rfsuite.tasks.msp.api.apidata.values
+    local structure = rfsuite.tasks.msp.api.apidata.structure
 
     local app = rfsuite.app
     local utils = rfsuite.utils
@@ -1612,14 +1619,14 @@ function ui.requestPage()
     end
     state.isProcessing = true
 
-    if not app.Page.apidata.values then
+    if not rfsuite.tasks.msp.api.apidata.values then
         log("requestPage Initialize values on first run", "debug")
-        app.Page.apidata.values = {}
-        app.Page.apidata.structure = {}
-        app.Page.apidata.receivedBytesCount = {}
-        app.Page.apidata.receivedBytes = {}
-        app.Page.apidata.positionmap = {}
-        app.Page.apidata.other = {}
+        rfsuite.tasks.msp.api.apidata.values = {}
+        rfsuite.tasks.msp.api.apidata.structure = {}
+        rfsuite.tasks.msp.api.apidata.receivedBytesCount = {}
+        rfsuite.tasks.msp.api.apidata.receivedBytes = {}
+        rfsuite.tasks.msp.api.apidata.positionmap = {}
+        rfsuite.tasks.msp.api.apidata.other = {}
     end
 
     if state.currentIndex == nil then state.currentIndex = 1 end
@@ -1660,8 +1667,7 @@ function ui.requestPage()
                     app.triggers.closeProgressLoader = true
                 end
                 checkForUnresolvedTimeouts()
-                collectgarbage('collect')
-                collectgarbage('collect')
+
             end
             return
         end
@@ -1716,16 +1722,16 @@ function ui.requestPage()
                 return
             end
             log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
-            app.Page.apidata.values[apiKey] = API.data().parsed
-            app.Page.apidata.structure[apiKey] = API.data().structure
-            app.Page.apidata.receivedBytes[apiKey] = API.data().buffer
-            app.Page.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-            app.Page.apidata.positionmap[apiKey] = API.data().positionmap
-            app.Page.apidata.other[apiKey] = API.data().other or {}
+            rfsuite.tasks.msp.api.apidata.values[apiKey] = API.data().parsed
+            rfsuite.tasks.msp.api.apidata.structure[apiKey] = API.data().structure
+            rfsuite.tasks.msp.api.apidata.receivedBytes[apiKey] = API.data().buffer
+            rfsuite.tasks.msp.api.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
+            rfsuite.tasks.msp.api.apidata.positionmap[apiKey] = API.data().positionmap
+            rfsuite.tasks.msp.api.apidata.other[apiKey] = API.data().other or {}
             app.Page.apidata.retryCount[apiKey] = 0
             state.currentIndex = state.currentIndex + 1
             API = nil
-            collectgarbage('collect')
+
             tasks.callback.inSeconds(0.5, processNextAPI)
         end)
 
@@ -1739,7 +1745,7 @@ function ui.requestPage()
             retryCount = retryCount + 1
             app.Page.apidata.retryCount[apiKey] = retryCount
             API = nil
-            collectgarbage('collect')            
+
             if retryCount < 3 then
                 log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
                 tasks.callback.inSeconds(0.5, processNextAPI)
@@ -1770,7 +1776,7 @@ function ui.saveSettings()
 
     local mspapi = app.Page.apidata
     local apiList = mspapi.api
-    local values = mspapi.values
+    local values = rfsuite.tasks.msp.api.apidata.values
 
     local totalRequests = #apiList
     local completedRequests = 0
@@ -1784,7 +1790,7 @@ function ui.saveSettings()
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "start")
 
         local payloadData = values[apiNAME]
-        local payloadStructure = mspapi.structure[apiNAME]
+        local payloadStructure = rfsuite.tasks.msp.api.apidata.structure[apiNAME]
 
         local API = tasks.msp.api.load(apiNAME)
         API.setErrorHandler(function(self, buf) app.triggers.saveFailed = true end)
@@ -1792,7 +1798,7 @@ function ui.saveSettings()
             completedRequests = completedRequests + 1
             log("API " .. apiNAME .. " write complete", "debug")
             API = nil
-            collectgarbage('collect')
+
             if completedRequests == totalRequests then
                 log("All API requests have been completed!", "debug")
                 if app.Page.postSave then app.Page.postSave(app.Page) end
