@@ -1,3 +1,10 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
 local wrapper = {}
 
 local renders = rfsuite.widgets.dashboard.renders
@@ -13,25 +20,16 @@ end
 
 function wrapper.wakeup(box)
 
-    -- Ensure model preferences and telemetry are available
-    if not utils.isModelPrefsReady() then
-        utils.resetBoxCache(box)
-    end
+    if not utils.isModelPrefsReady() then utils.resetBoxCache(box) end
 
-    -- Wakeup interval control using optional parameter (wakeupinterval)
     if box.wakeupinterval ~= nil then
-        local now      = os.clock()
+        local now = os.clock()
 
-        -- initialize on first use
         box._wakeupInterval = box._wakeupInterval
-        box._lastWakeup     = box._lastWakeup     or 0
+        box._lastWakeup = box._lastWakeup or 0
 
-        -- if not enough time has passed, bail out
-        if now - box._lastWakeup < box._wakeupInterval then
-            return
-        end
+        if now - box._lastWakeup < box._wakeupInterval then return end
 
-        -- record this wakeup
         box._lastWakeup = now
     end
 
@@ -39,11 +37,11 @@ function wrapper.wakeup(box)
 
     if not renders[subtype] then
         local path = folder .. subtype .. ".lua"
-        local loader = rfsuite.compiler.loadfile(path)
+        local loader = loadfile(path)
         if loader then
             renders[subtype] = loader()
         else
-            return -- silently fail or log error
+            return
         end
     end
 

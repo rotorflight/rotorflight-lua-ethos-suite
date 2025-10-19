@@ -27,7 +27,8 @@ SEE THE TOP OF EACH WIDGET OBJECT FILE.
 -- ACTUAL DASHBOARD CONFIG BELOW (edit/add your widgets here!)
 --------------------------------------------------------------------------------
 ]]
-
+ local rfsuite = require("rfsuite")
+ 
 local layout = {
     cols = 3,
     rows = 3,

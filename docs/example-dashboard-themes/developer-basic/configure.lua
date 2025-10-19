@@ -1,3 +1,4 @@
+ local rfsuite = require("rfsuite")
 local activateWakeup = false
 
 -- temp var to hold config while editing
