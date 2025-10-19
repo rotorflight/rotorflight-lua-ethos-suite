@@ -68,40 +68,7 @@ function core.load(apiName)
     return api
 end
 
-local TYPE_SIZES = {
-    U8 = 1,
-    S8 = 1,
-    U16 = 2,
-    S16 = 2,
-    U24 = 3,
-    S24 = 3,
-    U32 = 4,
-    S32 = 4,
-    U40 = 5,
-    S40 = 5,
-    U48 = 6,
-    S48 = 6,
-    U56 = 7,
-    S56 = 7,
-    U64 = 8,
-    S64 = 8,
-    U72 = 9,
-    S72 = 9,
-    U80 = 10,
-    S80 = 10,
-    U88 = 11,
-    S88 = 11,
-    U96 = 12,
-    S96 = 12,
-    U104 = 13,
-    S104 = 13,
-    U112 = 14,
-    S112 = 14,
-    U120 = 15,
-    S120 = 15,
-    U128 = 16,
-    S128 = 16
-}
+local TYPE_SIZES = {U8 = 1, S8 = 1, U16 = 2, S16 = 2, U24 = 3, S24 = 3, U32 = 4, S32 = 4, U40 = 5, S40 = 5, U48 = 6, S48 = 6, U56 = 7, S56 = 7, U64 = 8, S64 = 8, U72 = 9, S72 = 9, U80 = 10, S80 = 10, U88 = 11, S88 = 11, U96 = 12, S96 = 12, U104 = 13, S104 = 13, U112 = 14, S112 = 14, U120 = 15, S120 = 15, U128 = 16, S128 = 16}
 local function get_type_size(data_type)
     if data_type == nil then return TYPE_SIZES end
     return TYPE_SIZES[data_type] or 1
@@ -321,19 +288,17 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
         return nil
     end
 
-    local positionmap = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.positionmap[apiname]
-    local receivedBytes = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.receivedBytes[apiname]
-    local receivedBytesCount = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.receivedBytesCount[apiname]
+    local positionmap = rfsuite.tasks.msp.api.apidata.positionmap[apiname]
+    local receivedBytes = rfsuite.tasks.msp.api.apidata.receivedBytes[apiname]
+    local receivedBytesCount = rfsuite.tasks.msp.api.apidata.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
 
     if noDelta == true then useDelta = false end
 
     if useDelta then
-
         return core.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
     else
-
         return core.buildFullPayload(apiname, payload, api_structure)
     end
 end

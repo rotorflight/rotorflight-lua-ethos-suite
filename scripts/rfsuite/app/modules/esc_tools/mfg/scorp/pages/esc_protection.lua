@@ -11,8 +11,7 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.protection_delay)@", mspapi = 1, apikey = "protection_delay"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.cutoff_handling)@", mspapi = 1, apikey = "cutoff_handling"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.max_temperature)@", mspapi = 1, apikey = "max_temperature"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.max_current)@", mspapi = 1, apikey = "max_current"},
+            {t = "@i18n(app.modules.esc_tools.mfg.scorp.protection_delay)@", mspapi = 1, apikey = "protection_delay"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.cutoff_handling)@", mspapi = 1, apikey = "cutoff_handling"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.max_temperature)@", mspapi = 1, apikey = "max_temperature"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.max_current)@", mspapi = 1, apikey = "max_current"},
             {t = "@i18n(app.modules.esc_tools.mfg.scorp.min_voltage)@", mspapi = 1, apikey = "min_voltage"}, {t = "@i18n(app.modules.esc_tools.mfg.scorp.max_used)@", mspapi = 1, apikey = "max_used"}
         }
     }

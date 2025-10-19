@@ -140,9 +140,7 @@ function tasks.initialize()
                     utils.log("Error loading " .. initPath .. ": " .. err, "info")
                 elseif func then
                     local tconfig = func()
-                    if type(tconfig) == "table" and tconfig.interval and tconfig.script then
-                        taskMetadata[dir] = {interval = tconfig.interval, script = tconfig.script, linkrequired = tconfig.linkrequired or false, connected = tconfig.connected or false, simulatoronly = tconfig.simulatoronly or false, spreadschedule = tconfig.spreadschedule or false, init = initPath}
-                    end
+                    if type(tconfig) == "table" and tconfig.interval and tconfig.script then taskMetadata[dir] = {interval = tconfig.interval, script = tconfig.script, linkrequired = tconfig.linkrequired or false, connected = tconfig.connected or false, simulatoronly = tconfig.simulatoronly or false, spreadschedule = tconfig.spreadschedule or false, init = initPath} end
                 end
             end
         end
@@ -181,23 +179,7 @@ function tasks.findTasks()
                     local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
                     local offset = taskOffset(dir, interval)
 
-                    local task = {
-                        name = dir,
-                        interval = interval,
-                        baseInterval = baseInterval,
-                        jitter = jitter,
-                        script = tconfig.script,
-                        linkrequired = tconfig.linkrequired or false,
-                        connected = tconfig.connected or false,
-                        spreadschedule = tconfig.spreadschedule or false,
-                        simulatoronly = tconfig.simulatoronly or false,
-                        last_run = os.clock() - offset,
-
-                        duration = 0,
-                        totalDuration = 0,
-                        runs = 0,
-                        maxDuration = 0
-                    }
+                    local task = {name = dir, interval = interval, baseInterval = baseInterval, jitter = jitter, script = tconfig.script, linkrequired = tconfig.linkrequired or false, connected = tconfig.connected or false, spreadschedule = tconfig.spreadschedule or false, simulatoronly = tconfig.simulatoronly or false, last_run = os.clock() - offset, duration = 0, totalDuration = 0, runs = 0, maxDuration = 0}
                     table.insert(tasksList, task)
 
                     taskMetadata[dir] = {interval = task.interval, script = task.script, linkrequired = task.linkrequired, connected = task.connected, simulatoronly = task.simulatoronly, spreadschedule = task.spreadschedule}
@@ -381,13 +363,10 @@ function tasks.wakeup()
                             loopCpu = loopCpu + dur
                             if profWanted(task.name) then
                                 profRecord(task, dur)
-                                if not ok then
-                                    print(("Error in task %q wakeup: %s"):format(task.name, err))
-                                    collectgarbage("collect")
-                                end
+                                if not ok then print(("Error in task %q wakeup: %s"):format(task.name, err)) end
                             elseif not ok then
                                 print(("Error in task %q wakeup: %s"):format(task.name, err))
-                                collectgarbage("collect")
+
                             end
                         end
                         task.last_run = now
@@ -433,10 +412,7 @@ function tasks.wakeup()
                 local dur = c1 - c0
                 loopCpu = loopCpu + dur
                 if profWanted(task.name) then profRecord(task, dur) end
-                if not ok then
-                    print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
-                    collectgarbage("collect")
-                end
+                if not ok then print(("Error in task %q wakeup (must-run): %s"):format(task.name, err)) end
             end
             task.last_run = now
         end
@@ -451,10 +427,7 @@ function tasks.wakeup()
                 local dur = c1 - c0
                 loopCpu = loopCpu + dur
                 if profWanted(task.name) then profRecord(task, dur) end
-                if not ok then
-                    print(("Error in task %q wakeup: %s"):format(task.name, err))
-                    collectgarbage("collect")
-                end
+                if not ok then print(("Error in task %q wakeup: %s"):format(task.name, err)) end
             end
             task.last_run = now
         end
@@ -624,22 +597,7 @@ function tasks.load(name, meta)
     local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
     local offset = math.random() * interval
 
-    table.insert(tasksList, {
-        name = name,
-        interval = interval,
-        baseInterval = baseInterval,
-        jitter = jitter,
-        script = meta.script,
-        linkrequired = meta.linkrequired or false,
-        connected = meta.connected or false,
-        simulatoronly = meta.simulatoronly or false,
-        spreadschedule = meta.spreadschedule or false,
-        last_run = os.clock() - offset,
-        duration = 0,
-        totalDuration = 0,
-        runs = 0,
-        maxDuration = 0
-    })
+    table.insert(tasksList, {name = name, interval = interval, baseInterval = baseInterval, jitter = jitter, script = meta.script, linkrequired = meta.linkrequired or false, connected = meta.connected or false, simulatoronly = meta.simulatoronly or false, spreadschedule = meta.spreadschedule or false, last_run = os.clock() - offset, duration = 0, totalDuration = 0, runs = 0, maxDuration = 0})
 
     utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
     return true
@@ -648,9 +606,6 @@ end
 function tasks.reload(name)
 
     tasks.unload(name)
-
-    collectgarbage("collect")
-    collectgarbage("collect")
 
     local meta = tasks._initMetadata and tasks._initMetadata[name] or nil
 

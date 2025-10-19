@@ -5473,6 +5473,21 @@
           "needs_translation": false,
           "translation": "Generale"
         },
+        "txt_hs_loader": {
+          "english": "Progress Loader",
+          "needs_translation": true,
+          "translation": "Progress Loader"
+        },
+        "txt_hs_loader_fastclose": {
+          "english": "CLOSE ASAP",
+          "needs_translation": true,
+          "translation": "CLOSE ASAP"
+        },
+        "txt_hs_loader_wait": {
+          "english": "CLOSE AT 100%",
+          "needs_translation": true,
+          "translation": "CLOSE AT 100%"
+        },
         "txt_iconsize": {
           "english": "Icon Size",
           "needs_translation": false,

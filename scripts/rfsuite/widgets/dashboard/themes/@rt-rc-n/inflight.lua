@@ -47,20 +47,7 @@ local function getThemeOptionKey(W)
     end
 end
 
-local themeOptions = {
-
-    ls_full = {thickness = 60, gaugepadding = 0, valuepaddingtop = 40},
-
-    ls_std = {thickness = 35, gaugepadding = 0, valuepaddingtop = 25},
-
-    ms_full = {thickness = 35, gaugepadding = 5, valuepaddingtop = 35},
-
-    ms_std = {thickness = 20, valuepaddingtop = 25, gaugepadding = 0},
-
-    ss_full = {thickness = 40, gaugepadding = 5, valuepaddingtop = 35},
-
-    ss_std = {thickness = 25, gaugepadding = 0, valuepaddingtop = 25}
-}
+local themeOptions = {ls_full = {thickness = 60, gaugepadding = 0, valuepaddingtop = 40}, ls_std = {thickness = 35, gaugepadding = 0, valuepaddingtop = 25}, ms_full = {thickness = 35, gaugepadding = 5, valuepaddingtop = 35}, ms_std = {thickness = 20, valuepaddingtop = 25, gaugepadding = 0}, ss_full = {thickness = 40, gaugepadding = 5, valuepaddingtop = 35}, ss_std = {thickness = 25, gaugepadding = 0, valuepaddingtop = 25}}
 
 local lastScreenW = nil
 local boxes_cache = nil
@@ -140,15 +127,13 @@ local function buildBoxes(W)
             type = "text",
             subtype = "governor",
             thresholds = {
-                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"},
-                {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
+                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             },
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.titlecolor
-        }, {col = 4, row = 13, rowspan = 2, type = "time", subtype = "flight", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor},
-        {col = 3, row = 13, rowspan = 2, type = "text", subtype = "telemetry", source = "rpm", unit = "rpm", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor},
+        }, {col = 4, row = 13, rowspan = 2, type = "time", subtype = "flight", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor}, {col = 3, row = 13, rowspan = 2, type = "text", subtype = "telemetry", source = "rpm", unit = "rpm", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor},
         {col = 2, row = 13, rowspan = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor}
     }
 end

@@ -47,6 +47,8 @@ def _match_long_bracket(s: str, i: int) -> Optional[int]:
         return eqs
     return None
 
+# Preserve LuaFormatter toggles (do not strip these)
+_LUA_FMT_TOGGLE = re.compile(r"--\s*LuaFormatter\s+(?:off|on)\b", re.IGNORECASE)
 
 def strip_lua_comments(code: str) -> str:
     """Remove real Lua comments while preserving strings (', ", [=[ ]=])."""
@@ -69,6 +71,18 @@ def strip_lua_comments(code: str) -> str:
                         long_eqs = eqs
                         i = j + 2 + eqs
                         continue
+
+                # --- preserve LuaFormatter on/off toggles ---
+                eol = code.find("\n", i)
+                end = n if eol == -1 else eol
+                line_comment = code[i:end]
+                if _LUA_FMT_TOGGLE.match(line_comment):
+                    out.append(line_comment)
+                    i = end
+                    continue
+                # --------------------------------------------------
+
+
                 state = LINE_COM
                 i += 2
                 continue
@@ -288,7 +302,7 @@ def main():
     )
     parser.add_argument("root", nargs="?", default=".", help="Root directory to scan (default: current dir)")
     parser.add_argument("-x", "--exclude", action="append", default=[], help=f"Directory to exclude (default: {', '.join(sorted(DEFAULT_EXCLUDES))})")
-    parser.add_argument("--column-limit", type=int, default=300, help="Column limit (default: 300)")
+    parser.add_argument("--column-limit", type=int, default=500, help="Column limit (default: 500)")
     parser.add_argument("--jobs", type=int, default=os.cpu_count() or 4, help="Parallelism (default: CPU count)")
     parser.add_argument("--extra", nargs=argparse.REMAINDER, default=[], help="Extra args passed to lua-format (put them after --extra)")
     parser.add_argument("--dry-run", action="store_true", help="Do not modify files; just report which would change")

@@ -13,8 +13,8 @@ local MSP_REBUILD_ON_WRITE = false
 
 local MSP_API_STRUCTURE_READ_DATA
 
+-- LuaFormatter off
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-
     local gov_modeTable = {[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_external)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"}
     local throttleTypeTable = {[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_auto_on)@"}
 
@@ -42,11 +42,9 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "gov_wot_collective", type = "S8", apiVersion = 12.09, simResponse = {246}, unit = "%", min = -100, max = 100, default = -10, help = "@i18n(api.GOVERNOR_CONFIG.gov_wot_collective)@"},
         {field = "governor_idle_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 100, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_idle_throttle)@"},
         {field = "governor_auto_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 100, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_auto_throttle)@"}
-
     }
 
 else
-
     local gov_modeTable = {[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_passthrough)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_standard)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode1)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode2)@"}
 
     MSP_API_STRUCTURE_READ_DATA = {
@@ -61,11 +59,14 @@ else
         {field = "gov_autorotation_bailout_time", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_bailout_time)@"},
         {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = 12.06, simResponse = {50, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_min_entry_time)@"},
         {field = "gov_handover_throttle", type = "U8", apiVersion = 12.06, simResponse = {10}, min = 10, max = 50, unit = "%", default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_handover_throttle)@"},
-        {field = "gov_pwr_filter", type = "U8", apiVersion = 12.06, simResponse = {5}, help = "@i18n(api.GOVERNOR_CONFIG.gov_pwr_filter)@"}, {field = "gov_rpm_filter", type = "U8", apiVersion = 12.06, simResponse = {10}, help = "@i18n(api.GOVERNOR_CONFIG.gov_rpm_filter)@"},
-        {field = "gov_tta_filter", type = "U8", apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_tta_filter)@"}, {field = "gov_ff_filter", type = "U8", apiVersion = 12.06, simResponse = {10}, help = "@i18n(api.GOVERNOR_CONFIG.gov_ff_filter)@"},
+        {field = "gov_pwr_filter", type = "U8", apiVersion = 12.06, simResponse = {5}, help = "@i18n(api.GOVERNOR_CONFIG.gov_pwr_filter)@"},
+        {field = "gov_rpm_filter", type = "U8", apiVersion = 12.06, simResponse = {10}, help = "@i18n(api.GOVERNOR_CONFIG.gov_rpm_filter)@"},
+        {field = "gov_tta_filter", type = "U8", apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_tta_filter)@"},
+        {field = "gov_ff_filter", type = "U8", apiVersion = 12.06, simResponse = {10}, help = "@i18n(api.GOVERNOR_CONFIG.gov_ff_filter)@"},
         {field = "gov_spoolup_min_throttle", type = "U8", apiVersion = 12.08, simResponse = {5}, min = 0, max = 50, unit = "%", default = 0, help = "@i18n(api.GOVERNOR_CONFIG.gov_spoolup_min_throttle)@"}
     }
 end
+-- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
@@ -124,20 +125,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -152,19 +140,7 @@ local function write(suppliedPayload)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -188,17 +164,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

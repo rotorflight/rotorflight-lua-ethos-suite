@@ -99,55 +99,12 @@ local function buildBoxes(W)
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
 
     return {
-        {col = 1, row = 1, colspan = 8, rowspan = 4, type = "image", subtype = "model", bgcolor = colorMode.bgcolor},
-        {col = 1, row = 5, colspan = 4, rowspan = 2, type = "time", subtype = "flight", title = "@i18n(widgets.dashboard.time):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 1, row = 1, colspan = 8, rowspan = 4, type = "image", subtype = "model", bgcolor = colorMode.bgcolor}, {col = 1, row = 5, colspan = 4, rowspan = 2, type = "time", subtype = "flight", title = "@i18n(widgets.dashboard.time):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
         {col = 5, row = 5, colspan = 4, rowspan = 2, type = "text", subtype = "blackbox", title = "@i18n(widgets.dashboard.blackbox):upper()@", titlepos = "bottom", decimals = 0, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
         {col = 5, row = 7, colspan = 2, rowspan = 2, type = "time", subtype = "count", title = "@i18n(widgets.dashboard.flights):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {
-            col = 1,
-            row = 7,
-            colspan = 2,
-            rowspan = 2,
-            type = "text",
-            subtype = "telemetry",
-            source = "pid_profile",
-            title = "@i18n(widgets.dashboard.profile):upper()@",
-            titlepos = "bottom",
-            transform = "floor",
-            titlecolor = colorMode.titlecolor,
-            textcolor = colorMode.titlecolor,
-            bgcolor = colorMode.bgcolor
-        },
-        {
-            col = 3,
-            row = 7,
-            colspan = 2,
-            rowspan = 2,
-            type = "text",
-            subtype = "telemetry",
-            source = "rate_profile",
-            title = "@i18n(widgets.dashboard.rates):upper()@",
-            titlepos = "bottom",
-            transform = "floor",
-            titlecolor = colorMode.titlecolor,
-            textcolor = colorMode.titlecolor,
-            bgcolor = colorMode.bgcolor
-        }, {
-            col = 7,
-            row = 7,
-            colspan = 2,
-            rowspan = 2,
-            type = "text",
-            subtype = "telemetry",
-            source = "link",
-            unit = "dB",
-            title = "@i18n(widgets.dashboard.lq):upper()@",
-            titlepos = "bottom",
-            transform = "floor",
-            titlecolor = colorMode.titlecolor,
-            textcolor = colorMode.titlecolor,
-            bgcolor = colorMode.bgcolor
-        }, {
+        {col = 1, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "pid_profile", title = "@i18n(widgets.dashboard.profile):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 3, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "rate_profile", title = "@i18n(widgets.dashboard.rates):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 7, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", title = "@i18n(widgets.dashboard.lq):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor}, {
             col = 9,
             row = 1,
             colspan = 12,

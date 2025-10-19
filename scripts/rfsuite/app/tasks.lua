@@ -23,8 +23,7 @@ end
 
 local function profileRateChangeDetection()
     local app = rfsuite.app
-    if not (app.Page and (app.Page.refreshOnProfileChange or app.Page.refreshOnRateChange or app.Page.refreshFullOnProfileChange or app.Page.refreshFullOnRateChange) and app.uiState == app.uiStatus.pages and not app.triggers.isSaving and not app.dialogs.saveDisplay and
-        not app.dialogs.progressDisplay and rfsuite.tasks.msp.mspQueue:isProcessed()) then return end
+    if not (app.Page and (app.Page.refreshOnProfileChange or app.Page.refreshOnRateChange or app.Page.refreshFullOnProfileChange or app.Page.refreshFullOnRateChange) and app.uiState == app.uiStatus.pages and not app.triggers.isSaving and not app.dialogs.saveDisplay and not app.dialogs.progressDisplay and rfsuite.tasks.msp.mspQueue:isProcessed()) then return end
 
     local now = os.clock()
     local interval = (rfsuite.tasks.telemetry.getSensorSource("pid_profile") and rfsuite.tasks.telemetry.getSensorSource("rate_profile")) and 0.1 or 1.5

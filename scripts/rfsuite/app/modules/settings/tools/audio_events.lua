@@ -125,10 +125,7 @@ local function openPage(pageIdx, title, script)
         setFieldEnabled(rfsuite.app.formFields[fuelFields.repeats], val)
         setFieldEnabled(rfsuite.app.formFields[fuelFields.haptic], val)
     end)
-    local calloutChoices = {
-        {"@i18n(app.modules.settings.fuel_callout_default)@", 0}, {"@i18n(app.modules.settings.fuel_callout_5)@", 5}, {"@i18n(app.modules.settings.fuel_callout_10)@", 10}, {"@i18n(app.modules.settings.fuel_callout_20)@", 20}, {"@i18n(app.modules.settings.fuel_callout_25)@", 25},
-        {"@i18n(app.modules.settings.fuel_callout_50)@", 50}
-    }
+    local calloutChoices = {{"@i18n(app.modules.settings.fuel_callout_default)@", 0}, {"@i18n(app.modules.settings.fuel_callout_5)@", 5}, {"@i18n(app.modules.settings.fuel_callout_10)@", 10}, {"@i18n(app.modules.settings.fuel_callout_20)@", 20}, {"@i18n(app.modules.settings.fuel_callout_25)@", 25}, {"@i18n(app.modules.settings.fuel_callout_50)@", 50}}
     local fuelThresh = fuelPanel:addLine("@i18n(app.modules.settings.fuel_callout_percent)@")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1

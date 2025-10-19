@@ -77,8 +77,7 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
         for i, field in ipairs(fields) do
             local label = labels
             local version = rfsuite.session.apiVersion
-            local valid = (field.apiversion == nil or field.apiversion <= version) and (field.apiversionlt == nil or field.apiversionlt > version) and (field.apiversiongt == nil or field.apiversiongt < version) and (field.apiversionlte == nil or field.apiversionlte >= version) and
-                              (field.apiversiongte == nil or field.apiversiongte <= version) and (field.enablefunction == nil or field.enablefunction())
+            local valid = (field.apiversion == nil or field.apiversion <= version) and (field.apiversionlt == nil or field.apiversionlt > version) and (field.apiversiongt == nil or field.apiversiongt < version) and (field.apiversionlte == nil or field.apiversionlte >= version) and (field.apiversiongte == nil or field.apiversiongte <= version) and (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
                 rfsuite.app.ui.fieldLabel(field, i, label)
@@ -124,17 +123,4 @@ local function wakeup()
     end
 end
 
-return {
-
-    reboot = false,
-    eepromWrite = true,
-    title = "Copy",
-    openPage = openPage,
-    wakeup = wakeup,
-    onSaveMenu = onSaveMenu,
-    labels = labels,
-    fields = fields,
-    getDestinationPidProfile = getDestinationPidProfile,
-    API = {},
-    navButtons = {menu = true, save = true, reload = false, tool = false, help = true}
-}
+return {reboot = false, eepromWrite = true, title = "Copy", openPage = openPage, wakeup = wakeup, onSaveMenu = onSaveMenu, labels = labels, fields = fields, getDestinationPidProfile = getDestinationPidProfile, API = {}, navButtons = {menu = true, save = true, reload = false, tool = false, help = true}}

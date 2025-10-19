@@ -47,8 +47,7 @@ local function drawFilledRoundedRectangle(x, y, w, h, r)
     end
 end
 
-local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegments, batteryspacing, fillbgcolor, fillcolor, batteryframe, batteryframethickness, accentcolor, battery, batterysegmentpaddingtop, batterysegmentpaddingbottom, batterysegmentpaddingleft, batterysegmentpaddingright,
-                              cappaddingleft, cappaddingright, cappaddingtop, cappaddingbottom)
+local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegments, batteryspacing, fillbgcolor, fillcolor, batteryframe, batteryframethickness, accentcolor, battery, batterysegmentpaddingtop, batterysegmentpaddingbottom, batterysegmentpaddingleft, batterysegmentpaddingright, cappaddingleft, cappaddingright, cappaddingtop, cappaddingbottom)
 
     local frameThickness = batteryframethickness or 4
     local segments = batterysegments or 5
@@ -400,8 +399,7 @@ function render.paint(x, y, w, h, box)
     end
 
     local g = box._geom
-    local needGeo = (not g) or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.gpad_left ~=
-                        (c.gpad_left or 0) or g.gpad_right ~= (c.gpad_right or 0) or g.gpad_top ~= (c.gpad_top or 0) or g.gpad_bottom ~= (c.gpad_bottom or 0)
+    local needGeo = (not g) or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.gpad_left ~= (c.gpad_left or 0) or g.gpad_right ~= (c.gpad_right or 0) or g.gpad_top ~= (c.gpad_top or 0) or g.gpad_bottom ~= (c.gpad_bottom or 0)
 
     if needGeo then
         g = g or {}
@@ -441,8 +439,7 @@ function render.paint(x, y, w, h, box)
     local gauge_x, gauge_y, gauge_w, gauge_h = g.gauge_x, g.gauge_y, g.gauge_w, g.gauge_h
 
     if c.batteryframe or c.battery then
-        drawBatteryBox(gauge_x, gauge_y, gauge_w, gauge_h, c.percent, c.gaugeorientation, c.batterysegments, c.batteryspacing, c.fillbgcolor, c.fillcolor, c.batteryframe, c.batteryframethickness, c.accentcolor, c.battery, c.batterysegmentpaddingtop, c.batterysegmentpaddingbottom,
-            c.batterysegmentpaddingleft, c.batterysegmentpaddingright, c.cappaddingleft, c.cappaddingright, c.cappaddingtop, c.cappaddingbottom)
+        drawBatteryBox(gauge_x, gauge_y, gauge_w, gauge_h, c.percent, c.gaugeorientation, c.batterysegments, c.batteryspacing, c.fillbgcolor, c.fillcolor, c.batteryframe, c.batteryframethickness, c.accentcolor, c.battery, c.batterysegmentpaddingtop, c.batterysegmentpaddingbottom, c.batterysegmentpaddingleft, c.batterysegmentpaddingright, c.cappaddingleft, c.cappaddingright, c.cappaddingtop, c.cappaddingbottom)
     else
 
         lcd.color(c.fillbgcolor)
@@ -490,8 +487,7 @@ function render.paint(x, y, w, h, box)
         boxValue = nil
         boxUnit = nil
     end
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, boxValue, boxUnit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft,
-        c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
+    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, boxValue, boxUnit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
 
     c.battadvpaddingleft = tonumber(c.battadvpaddingleft) or 0
     c.battadvpaddingright = tonumber(c.battadvpaddingright) or 0
@@ -522,8 +518,7 @@ function render.paint(x, y, w, h, box)
 
         utils.box(startX + c.battadvpaddingleft, startY + c.battadvpaddingtop, blockW - c.battadvpaddingleft - c.battadvpaddingright, h1, nil, nil, c.battadvvaluealign, c.battadvfont, 0, textColor, 0, 0, 0, 0, 0, line1, nil, c.battadvfont, c.battadvvaluealign, textColor, 0, 0, 0, 0, 0, nil)
 
-        utils.box(startX + c.battadvpaddingleft, startY + c.battadvpaddingtop + h1 + c.battadvgap, blockW - c.battadvpaddingleft - c.battadvpaddingright, h2, nil, nil, c.battadvvaluealign, c.battadvfont, 0, textColor, 0, 0, 0, 0, 0, line2, nil, c.battadvfont, c.battadvvaluealign, textColor, 0, 0, 0,
-            0, 0, nil)
+        utils.box(startX + c.battadvpaddingleft, startY + c.battadvpaddingtop + h1 + c.battadvgap, blockW - c.battadvpaddingleft - c.battadvpaddingright, h2, nil, nil, c.battadvvaluealign, c.battadvfont, 0, textColor, 0, 0, 0, 0, 0, line2, nil, c.battadvfont, c.battadvvaluealign, textColor, 0, 0, 0, 0, 0, nil)
     end
 end
 

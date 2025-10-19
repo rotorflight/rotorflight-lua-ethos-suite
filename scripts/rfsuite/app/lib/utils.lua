@@ -182,14 +182,14 @@ function utils.settingsSaved()
         app.utils.invalidatePages()
         app.triggers.closeSave = true
     end
-    collectgarbage()
+
 end
 
 function utils.invalidatePages()
     app.Page = nil
     app.pageState = app.pageStatus.display
     app.saveTS = 0
-    collectgarbage()
+
 end
 
 return utils

@@ -16,8 +16,7 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.cell_count)@", mspapi = 1, apikey = "cell_count"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.bec_voltage)@", mspapi = 1, apikey = "bec_voltage", type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_direction)@", mspapi = 1, apikey = "motor_direction", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.soft_start)@", mspapi = 1, apikey = "soft_start"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.cell_count)@", mspapi = 1, apikey = "cell_count"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.bec_voltage)@", mspapi = 1, apikey = "bec_voltage", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_direction)@", mspapi = 1, apikey = "motor_direction", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.soft_start)@", mspapi = 1, apikey = "soft_start"},
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.fan_control)@", mspapi = 1, apikey = "fan_control", type = 1}
         }
     }

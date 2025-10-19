@@ -10,6 +10,7 @@ local _ENV = setmetatable({rfsuite = rfsuite}, {__index = _G, __newindex = funct
 
 if not FONT_M then FONT_M = FONT_STD end
 
+-- LuaFormatter off
 local config = {
     toolName = "Rotorflight",
     icon = lcd.loadMask("app/gfx/icon.png"),
@@ -23,6 +24,7 @@ local config = {
     defaultRateProfile = 4,
     watchdogParam = 10
 }
+-- LuaFormatter on
 
 config.ethosVersionString = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
 
@@ -35,7 +37,7 @@ rfsuite.performance = performance
 rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config)
 
 local userpref_defaults = {
-    general = {iconsize = 2, syncname = false, gimbalsupression = 0.85, txbatt_type = 0},
+    general = {iconsize = 2, syncname = false, gimbalsupression = 0.85, txbatt_type = 0, hs_loader = 0},
     localizations = {temperature_unit = 0, altitude_unit = 0},
     dashboard = {theme_preflight = "system/default", theme_inflight = "system/default", theme_postflight = "system/default"},
     events = {armflags = true, voltage = true, governor = true, pid_profile = true, rate_profile = true, esc_temp = false, escalertvalue = 90, smartfuel = true, smartfuelcallout = 0, smartfuelrepeats = 1, smartfuelhaptic = false, adj_v = false, adj_f = false},
@@ -154,22 +156,7 @@ local function register_widgets(widgetList)
             end
             rfsuite.widgets[base] = scriptModule
 
-            system.registerWidget({
-                name = v.name,
-                key = v.key,
-                event = scriptModule.event,
-                create = scriptModule.create,
-                paint = scriptModule.paint,
-                wakeup = scriptModule.wakeup,
-                build = scriptModule.build,
-                close = scriptModule.close,
-                configure = scriptModule.configure,
-                read = scriptModule.read,
-                write = scriptModule.write,
-                persistent = scriptModule.persistent or false,
-                menu = scriptModule.menu,
-                title = scriptModule.title
-            })
+            system.registerWidget({name = v.name, key = v.key, event = scriptModule.event, create = scriptModule.create, paint = scriptModule.paint, wakeup = scriptModule.wakeup, build = scriptModule.build, close = scriptModule.close, configure = scriptModule.configure, read = scriptModule.read, write = scriptModule.write, persistent = scriptModule.persistent or false, menu = scriptModule.menu, title = scriptModule.title})
         end
     end
 end

@@ -15,12 +15,9 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.battery.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"}, {t = "@i18n(app.modules.battery.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"},
-            {t = "@i18n(app.modules.battery.warn_cell_voltage)@", mspapi = 1, apikey = "vbatwarningcellvoltage"}, {t = "@i18n(app.modules.battery.min_cell_voltage)@", mspapi = 1, apikey = "vbatmincellvoltage"},
-            {t = "@i18n(app.modules.battery.battery_capacity)@", mspapi = 1, apikey = "batteryCapacity"}, {t = "@i18n(app.modules.battery.cell_count)@", mspapi = 1, apikey = "batteryCellCount"},
-            {t = "@i18n(app.modules.battery.consumption_warning_percentage)@", min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"}, {t = "@i18n(app.modules.battery.timer)@", mspapi = 2, apikey = "flighttime"},
-            {t = "@i18n(app.modules.battery.calcfuel_local)@", mspapi = 2, apikey = "calc_local", type = 1}, {t = "@i18n(app.modules.battery.voltage_multiplier)@", mspapi = 2, apikey = "sag_multiplier"}, {t = "@i18n(app.modules.battery.alert_type)@", mspapi = 2, apikey = "alert_type", type = 1},
-            {t = "@i18n(app.modules.battery.bec_voltage_alert)@", mspapi = 2, apikey = "becalertvalue"}, {t = "@i18n(app.modules.battery.rx_voltage_alert)@", mspapi = 2, apikey = "rxalertvalue"}
+            {t = "@i18n(app.modules.battery.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"}, {t = "@i18n(app.modules.battery.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"}, {t = "@i18n(app.modules.battery.warn_cell_voltage)@", mspapi = 1, apikey = "vbatwarningcellvoltage"}, {t = "@i18n(app.modules.battery.min_cell_voltage)@", mspapi = 1, apikey = "vbatmincellvoltage"}, {t = "@i18n(app.modules.battery.battery_capacity)@", mspapi = 1, apikey = "batteryCapacity"},
+            {t = "@i18n(app.modules.battery.cell_count)@", mspapi = 1, apikey = "batteryCellCount"}, {t = "@i18n(app.modules.battery.consumption_warning_percentage)@", min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"}, {t = "@i18n(app.modules.battery.timer)@", mspapi = 2, apikey = "flighttime"}, {t = "@i18n(app.modules.battery.calcfuel_local)@", mspapi = 2, apikey = "calc_local", type = 1},
+            {t = "@i18n(app.modules.battery.voltage_multiplier)@", mspapi = 2, apikey = "sag_multiplier"}, {t = "@i18n(app.modules.battery.alert_type)@", mspapi = 2, apikey = "alert_type", type = 1}, {t = "@i18n(app.modules.battery.bec_voltage_alert)@", mspapi = 2, apikey = "becalertvalue"}, {t = "@i18n(app.modules.battery.rx_voltage_alert)@", mspapi = 2, apikey = "rxalertvalue"}
         }
     }
 }

@@ -50,8 +50,7 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.timer_elapsed_alert_mode)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"Beep", 0}, {"Multi Beep", 1}, {"Timer Elapsed", 2}, {"Timer Seconds", 3}}, function() return config.elapsedalertmode or 0 end,
-                                                 function(newValue) config.elapsedalertmode = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"Beep", 0}, {"Multi Beep", 1}, {"Timer Elapsed", 2}, {"Timer Seconds", 3}}, function() return config.elapsedalertmode or 0 end, function(newValue) config.elapsedalertmode = newValue end)
     idxChoice = formFieldCount
 
     local prePanel = form.addExpansionPanel("@i18n(app.modules.settings.timer_prealert_options)@")

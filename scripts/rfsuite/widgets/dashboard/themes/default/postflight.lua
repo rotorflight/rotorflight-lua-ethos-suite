@@ -87,23 +87,8 @@ local function buildBoxes(W)
 
     return {
 
-        {col = 1, row = 1, type = "time", subtype = "flight", font = opts.font, title = "@i18n(widgets.dashboard.flight_duration)@", titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-        {col = 1, row = 2, type = "time", subtype = "total", font = opts.font, title = "@i18n(widgets.dashboard.total_flight_duration)@", titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor}, {
-            col = 2,
-            row = 1,
-            type = "text",
-            subtype = "stats",
-            font = opts.font,
-            stattype = "min",
-            source = "voltage",
-            title = "@i18n(widgets.dashboard.min_volts_cell)@",
-            titlepos = "bottom",
-            bgcolor = colorMode.bgcolor,
-            unit = "V",
-            transform = function(v) return maxVoltageToCellVoltage(v) end,
-            textcolor = colorMode.textcolor,
-            titlecolor = colorMode.titlecolor
-        },
+        {col = 1, row = 1, type = "time", subtype = "flight", font = opts.font, title = "@i18n(widgets.dashboard.flight_duration)@", titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor}, {col = 1, row = 2, type = "time", subtype = "total", font = opts.font, title = "@i18n(widgets.dashboard.total_flight_duration)@", titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+        {col = 2, row = 1, type = "text", subtype = "stats", font = opts.font, stattype = "min", source = "voltage", title = "@i18n(widgets.dashboard.min_volts_cell)@", titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
         {col = 2, row = 2, type = "text", subtype = "stats", font = opts.font, stattype = "min", source = "link", title = "@i18n(widgets.dashboard.link_min)@", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor}
     }
 

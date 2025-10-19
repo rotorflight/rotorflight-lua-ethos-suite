@@ -86,7 +86,7 @@ local function postLoad()
     uint8_dirty = true
     enableWakeup = false
 
-    if rfsuite.app.Page.apidata.receivedBytesCount['EXPERIMENTAL'] == 0 then
+    if rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL'] == 0 then
         rfsuite.app.triggers.closeProgressLoader = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.ui.disableAllNavigationFields()
@@ -94,9 +94,9 @@ local function postLoad()
         return
     end
 
-    if total_bytes ~= rfsuite.app.Page.apidata.receivedBytesCount['EXPERIMENTAL'] then
+    if total_bytes ~= rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL'] then
 
-        rfsuite.preferences.developer.mspexpbytes = rfsuite.app.Page.apidata.receivedBytesCount['EXPERIMENTAL']
+        rfsuite.preferences.developer.mspexpbytes = rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL']
         rfsuite.app.triggers.reloadFull = true
     end
 

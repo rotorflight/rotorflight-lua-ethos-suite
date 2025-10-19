@@ -11,7 +11,13 @@ local MSP_API_CMD_READ = 1
 
 local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion])
 
-local MSP_API_STRUCTURE_READ = {{field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@"}, {field = "version_major", type = "U8", help = "@i18n(api.API_VERSION.version_major)@"}, {field = "version_minor", type = "U8", help = "@i18n(api.API_VERSION.version_minor)@"}}
+-- LuaFormatter off
+local MSP_API_STRUCTURE_READ = {
+    { field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@" },
+    { field = "version_major",   type = "U8", help = "@i18n(api.API_VERSION.version_major)@" },
+    { field = "version_minor",   type = "U8", help = "@i18n(api.API_VERSION.version_minor)@" },
+}
+-- LuaFormatter on
 
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ
 
@@ -45,20 +51,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 

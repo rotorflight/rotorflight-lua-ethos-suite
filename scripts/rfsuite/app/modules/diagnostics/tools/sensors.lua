@@ -257,19 +257,4 @@ local function onNavMenu()
     rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
 end
 
-return {
-    reboot = false,
-    eepromWrite = false,
-    minBytes = 0,
-    wakeup = wakeup,
-    refreshswitch = false,
-    simulatorResponse = {},
-    postLoad = postLoad,
-    postRead = postRead,
-    openPage = openPage,
-
-    onNavMenu = onNavMenu,
-    event = event,
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-    API = {}
-}
+return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

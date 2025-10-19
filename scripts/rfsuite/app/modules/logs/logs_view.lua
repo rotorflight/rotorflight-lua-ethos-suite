@@ -548,19 +548,7 @@ local function updatePaintCache()
     for _, v in ipairs(logData) do
         if v.graph then
             paintCache.currentLane = paintCache.currentLane + 1
-            paintCache.points[paintCache.currentLane] = {
-                points = paginate_table(v.data, paintCache.step_size, paintCache.position, paintCache.decimationFactor),
-                color = v.color,
-                pen = v.pen,
-                minimum = v.minimum,
-                maximum = v.maximum,
-                keyname = v.keyname,
-                keyunit = v.keyunit,
-                keyminmax = v.keyminmax,
-                keyfloor = v.keyfloor,
-                name = v.name,
-                keyindex = v.keyindex
-            }
+            paintCache.points[paintCache.currentLane] = {points = paginate_table(v.data, paintCache.step_size, paintCache.position, paintCache.decimationFactor), color = v.color, pen = v.pen, minimum = v.minimum, maximum = v.maximum, keyname = v.keyname, keyunit = v.keyunit, keyminmax = v.keyminmax, keyfloor = v.keyfloor, name = v.name, keyindex = v.keyindex}
         end
     end
 

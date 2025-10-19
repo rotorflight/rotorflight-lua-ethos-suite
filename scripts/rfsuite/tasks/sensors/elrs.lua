@@ -144,24 +144,7 @@ local function decAdjFunc(d, p)
     return nil, p
 end
 
-local DECODERS = {
-    decNil = decNil,
-    decU8 = decU8,
-    decS8 = decS8,
-    decU16 = decU16,
-    decS16 = decS16,
-    decU24 = decU24,
-    decS24 = decS24,
-    decU32 = decU32,
-    decS32 = decS32,
-    decCellV = decCellV,
-    decCells = decCells,
-    decControl = decControl,
-    decAttitude = decAttitude,
-    decAccel = decAccel,
-    decLatLong = decLatLong,
-    decAdjFunc = decAdjFunc
-}
+local DECODERS = {decNil = decNil, decU8 = decU8, decS8 = decS8, decU16 = decU16, decS16 = decS16, decU24 = decU24, decS24 = decS24, decU32 = decU32, decS32 = decS32, decCellV = decCellV, decCells = decCells, decControl = decControl, decAttitude = decAttitude, decAccel = decAccel, decLatLong = decLatLong, decAdjFunc = decAdjFunc}
 
 local _elrsMapBuilt = false
 
@@ -185,7 +168,6 @@ local function ensureElrsMap()
     end
 
     if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then rfsuite.tasks.sensors.sid = nil end
-    collectgarbage("collect")
 
     _elrsMapBuilt = true
 end
@@ -209,7 +191,7 @@ function elrs.setFblSensors(list)
         end
 
         if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then rfsuite.tasks.sensors.sid = nil end
-        collectgarbage("collect")
+
     end
 end
 

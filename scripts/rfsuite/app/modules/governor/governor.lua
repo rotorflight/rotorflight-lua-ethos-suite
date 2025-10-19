@@ -5,11 +5,7 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {
-    [1] = {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
-    [2] = {name = "@i18n(app.modules.governor.menu_time)@", script = "time.lua", image = "time.png"},
-    [3] = {name = "@i18n(app.modules.governor.menu_filters)@", script = "filters.lua", image = "filters.png"}
-}
+local S_PAGES = {[1] = {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"}, [2] = {name = "@i18n(app.modules.governor.menu_time)@", script = "time.lua", image = "time.png"}, [3] = {name = "@i18n(app.modules.governor.menu_filters)@", script = "filters.lua", image = "filters.png"}}
 
 local enableWakeup = false
 local prevConnectedState = nil
@@ -128,7 +124,7 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-    collectgarbage()
+
     enableWakeup = true
     return
 end
