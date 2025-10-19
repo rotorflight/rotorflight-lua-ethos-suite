@@ -658,7 +658,9 @@ return {
             ["led_color"] = "Colore LED",
             ["motor_temp"] = "Temperatura Motore",
             ["response_speed"] = "Velocita' risposta",
-            ["battery_capacity"] = "Capacita' Batteria"
+            ["battery_capacity"] = "Capacita' Batteria",
+            ["auto_restart_time"] = "Auto restart time",
+            ["restart_acc"] = "Restart Acc"
           },
           ["scorp"] = {
             ["esc_mode"] = "Modo ESC",

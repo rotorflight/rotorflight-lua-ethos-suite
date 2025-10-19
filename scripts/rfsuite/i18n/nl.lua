@@ -658,7 +658,9 @@ return {
             ["led_color"] = "LED kleur",
             ["motor_temp"] = "Motor temperatuur",
             ["response_speed"] = "Reactiesnelheid",
-            ["battery_capacity"] = "Batterij capaciteit"
+            ["battery_capacity"] = "Batterij capaciteit",
+            ["auto_restart_time"] = "Auto restart time",
+            ["restart_acc"] = "Restart Acc"
           },
           ["scorp"] = {
             ["esc_mode"] = "ESC Modus",
