@@ -22,7 +22,6 @@ local apidata = {
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.response_speed)@", mspapi = 1, apikey = "response_speed"}, 
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.buzzer_volume)@", mspapi = 1, apikey = "buzzer_volume"}, 
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.current_gain)@", mspapi = 1, apikey = "current_gain"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@", mspapi = 1, apikey = "drive_freq"}
         }
     }
 }
