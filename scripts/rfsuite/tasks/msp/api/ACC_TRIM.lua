@@ -11,7 +11,12 @@ local MSP_API_CMD_READ = 240
 local MSP_API_CMD_WRITE = 239
 local MSP_REBUILD_ON_WRITE = false
 
-local MSP_API_STRUCTURE_READ_DATA = {{field = "pitch", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.pitch)@"}, {field = "roll", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.roll)@"}}
+-- LuaFormatter off
+local MSP_API_STRUCTURE_READ_DATA = {
+    { field = "pitch", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.pitch)@" },
+    { field = "roll",  type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.roll)@" },
+}
+-- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 

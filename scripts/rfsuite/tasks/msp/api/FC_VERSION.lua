@@ -10,7 +10,13 @@ local API_NAME = "FC_VERSION"
 local MSP_API_CMD_READ = 3
 local MSP_API_SIMULATOR_RESPONSE = {4, 5, 1}
 
-local MSP_API_STRUCTURE_READ = {{field = "version_major", type = "U8", help = "@i18n(api.FC_VERSION.version_major)@"}, {field = "version_minor", type = "U8", help = "@i18n(api.FC_VERSION.version_minor)@"}, {field = "version_patch", type = "U8", help = "@i18n(api.FC_VERSION.version_patch)@"}}
+-- LuaFormatter off
+local MSP_API_STRUCTURE_READ = {
+    { field = "version_major", type = "U8", help = "@i18n(api.FC_VERSION.version_major)@" },
+    { field = "version_minor", type = "U8", help = "@i18n(api.FC_VERSION.version_minor)@" },
+    { field = "version_patch", type = "U8", help = "@i18n(api.FC_VERSION.version_patch)@" },
+}
+-- LuaFormatter on
 
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ
 

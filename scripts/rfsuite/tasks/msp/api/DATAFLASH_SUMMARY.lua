@@ -11,10 +11,14 @@ local MSP_API_CMD_READ = 70
 local MSP_API_CMD_WRITE = nil
 local MSP_REBUILD_ON_WRITE = false
 
+-- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "flags", type = "U8", apiVersion = 12.06, mandatory = false, simResponse = {3}, help = "@i18n(api.DATAFLASH_SUMMARY.flags)@"}, {field = "sectors", type = "U32", apiVersion = 12.06, mandatory = false, simResponse = {235, 3, 0, 0}, help = "@i18n(api.DATAFLASH_SUMMARY.sectors)@"}, {field = "total", type = "U32", apiVersion = 12.06, mandatory = false, simResponse = {0, 0, 214, 7}, help = "@i18n(api.DATAFLASH_SUMMARY.total)@"},
-    {field = "used", type = "U32", apiVersion = 12.06, mandatory = false, simResponse = {0, 112, 13, 0}, help = "@i18n(api.DATAFLASH_SUMMARY.used)@"}
+    { field = "flags",   type = "U8",  apiVersion = 12.06, mandatory = false, simResponse = {3},               help = "@i18n(api.DATAFLASH_SUMMARY.flags)@" },
+    { field = "sectors", type = "U32", apiVersion = 12.06, mandatory = false, simResponse = {235, 3, 0, 0},    help = "@i18n(api.DATAFLASH_SUMMARY.sectors)@" },
+    { field = "total",   type = "U32", apiVersion = 12.06, mandatory = false, simResponse = {0, 0, 214, 7},    help = "@i18n(api.DATAFLASH_SUMMARY.total)@" },
+    { field = "used",    type = "U32", apiVersion = 12.06, mandatory = false, simResponse = {0, 112, 13, 0},   help = "@i18n(api.DATAFLASH_SUMMARY.used)@" }
 }
+-- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 

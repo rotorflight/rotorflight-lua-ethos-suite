@@ -28,18 +28,33 @@ local autoRestart = {"@i18n(api.ESC_PARAMETERS_XDFLY.tbl_off)@", "90s"}
 local srFunc = {"@i18n(api.ESC_PARAMETERS_XDFLY.tbl_on)@", "@i18n(api.ESC_PARAMETERS_XDFLY.tbl_off)@"}
 local govMode = {"@i18n(api.ESC_PARAMETERS_XDFLY.tbl_escgov)@", "@i18n(api.ESC_PARAMETERS_XDFLY.tbl_extgov)@", "@i18n(api.ESC_PARAMETERS_XDFLY.tbl_fwgov)@"}
 
+-- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature", type = "U8", apiVersion = 12.07, simResponse = {166}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_signature)@"}, {field = "esc_command", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_command)@"}, {field = "esc_model", type = "U8", apiVersion = 12.07, simResponse = {23}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_model)@"},
-    {field = "esc_version", type = "U8", apiVersion = 12.07, simResponse = {3}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_version)@"}, {field = "governor", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = govMode, help = "@i18n(api.ESC_PARAMETERS_XDFLY.governor)@"}, {field = "cell_cutoff", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = lowVoltage, help = "@i18n(api.ESC_PARAMETERS_XDFLY.cell_cutoff)@"},
-    {field = "timing", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = timing, help = "@i18n(api.ESC_PARAMETERS_XDFLY.timing)@"}, {field = "lv_bec_voltage", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becLvVoltage, help = "@i18n(api.ESC_PARAMETERS_XDFLY.lv_bec_voltage)@"},
-    {field = "motor_direction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection, help = "@i18n(api.ESC_PARAMETERS_XDFLY.motor_direction)@"}, {field = "gov_p", type = "U16", apiVersion = 12.07, simResponse = {4, 0}, min = 1, max = 10, default = 5, offset = 1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.gov_p)@"},
-    {field = "gov_i", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 1, max = 10, default = 5, offset = 1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.gov_i)@"}, {field = "acceleration", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = accel, help = "@i18n(api.ESC_PARAMETERS_XDFLY.acceleration)@"},
-    {field = "auto_restart_time", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart, help = "@i18n(api.ESC_PARAMETERS_XDFLY.auto_restart_time)@"}, {field = "hv_bec_voltage", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becHvVoltage, help = "@i18n(api.ESC_PARAMETERS_XDFLY.hv_bec_voltage)@"},
-    {field = "startup_power", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = startupPower, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.startup_power)@"}, {field = "brake_type", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = brakeType, help = "@i18n(api.ESC_PARAMETERS_XDFLY.brake_type)@"},
-    {field = "brake_force", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 100, default = 0, unit = "%", help = "@i18n(api.ESC_PARAMETERS_XDFLY.brake_force)@"}, {field = "sr_function", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = srFunc, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.sr_function)@"},
-    {field = "capacity_correction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 20, default = 10, offset = -10, unit = "%", help = "@i18n(api.ESC_PARAMETERS_XDFLY.capacity_correction)@"}, {field = "motor_poles", type = "U16", apiVersion = 12.07, simResponse = {9, 0}, min = 1, max = 55, default = 10, step = 1, offset = 1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.motor_poles)@"},
-    {field = "led_color", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor, help = "@i18n(api.ESC_PARAMETERS_XDFLY.led_color)@"}, {field = "smart_fan", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = fanControl, help = "@i18n(api.ESC_PARAMETERS_XDFLY.smart_fan)@"}, {field = "activefields", type = "U32", apiVersion = 12.07, simResponse = {238, 255, 1, 0}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.activefields)@"}
+    {field = "esc_signature", type = "U8", apiVersion = 12.07, simResponse = {166}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_signature)@"},
+    {field = "esc_command", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_command)@"},
+    {field = "esc_model", type = "U8", apiVersion = 12.07, simResponse = {23}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_model)@"},
+    {field = "esc_version", type = "U8", apiVersion = 12.07, simResponse = {3}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.esc_version)@"},
+    {field = "governor", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = govMode, help = "@i18n(api.ESC_PARAMETERS_XDFLY.governor)@"},
+    {field = "cell_cutoff", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = lowVoltage, help = "@i18n(api.ESC_PARAMETERS_XDFLY.cell_cutoff)@"},
+    {field = "timing", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = timing, help = "@i18n(api.ESC_PARAMETERS_XDFLY.timing)@"},
+    {field = "lv_bec_voltage", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becLvVoltage, help = "@i18n(api.ESC_PARAMETERS_XDFLY.lv_bec_voltage)@"},
+    {field = "motor_direction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection, help = "@i18n(api.ESC_PARAMETERS_XDFLY.motor_direction)@"},
+    {field = "gov_p", type = "U16", apiVersion = 12.07, simResponse = {4, 0}, min = 1, max = 10, default = 5, offset = 1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.gov_p)@"},
+    {field = "gov_i", type = "U16", apiVersion = 12.07, simResponse = {3, 0}, min = 1, max = 10, default = 5, offset = 1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.gov_i)@"},
+    {field = "acceleration", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = accel, help = "@i18n(api.ESC_PARAMETERS_XDFLY.acceleration)@"},
+    {field = "auto_restart_time", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart, help = "@i18n(api.ESC_PARAMETERS_XDFLY.auto_restart_time)@"},
+    {field = "hv_bec_voltage", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becHvVoltage, help = "@i18n(api.ESC_PARAMETERS_XDFLY.hv_bec_voltage)@"},
+    {field = "startup_power", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = startupPower, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.startup_power)@"},
+    {field = "brake_type", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = brakeType, help = "@i18n(api.ESC_PARAMETERS_XDFLY.brake_type)@"},
+    {field = "brake_force", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 100, default = 0, unit = "%", help = "@i18n(api.ESC_PARAMETERS_XDFLY.brake_force)@"},
+    {field = "sr_function", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = srFunc, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.sr_function)@"},
+    {field = "capacity_correction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 20, default = 10, offset = -10, unit = "%", help = "@i18n(api.ESC_PARAMETERS_XDFLY.capacity_correction)@"},
+    {field = "motor_poles", type = "U16", apiVersion = 12.07, simResponse = {9, 0}, min = 1, max = 55, default = 10, step = 1, offset = 1, help = "@i18n(api.ESC_PARAMETERS_XDFLY.motor_poles)@"},
+    {field = "led_color", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor, help = "@i18n(api.ESC_PARAMETERS_XDFLY.led_color)@"},
+    {field = "smart_fan", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = fanControl, help = "@i18n(api.ESC_PARAMETERS_XDFLY.smart_fan)@"},
+    {field = "activefields", type = "U32", apiVersion = 12.07, simResponse = {238, 255, 1, 0}, help = "@i18n(api.ESC_PARAMETERS_XDFLY.activefields)@"}
 }
+-- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 

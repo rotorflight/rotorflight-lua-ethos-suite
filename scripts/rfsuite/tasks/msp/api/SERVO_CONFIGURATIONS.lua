@@ -26,18 +26,26 @@ local handlers = core.createHandlers()
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
+-- LuaFormatter off
 local function generateMSPStructureRead(servoCount)
     local MSP_API_STRUCTURE = {{field = "servo_count", type = "U8"}}
 
     local servo_fields = {
-        {field = "mid", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.mid)@"}, {field = "min", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.min)@"}, {field = "max", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.max)@"}, {field = "rneg", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rneg)@"}, {field = "rpos", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rpos)@"}, {field = "rate", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rate)@"},
-        {field = "speed", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.speed)@"}, {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
+        {field = "mid",   type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.mid)@"},
+        {field = "min",   type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.min)@"},
+        {field = "max",   type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.max)@"},
+        {field = "rneg",  type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rneg)@"},
+        {field = "rpos",  type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rpos)@"},
+        {field = "rate",  type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rate)@"},
+        {field = "speed", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.speed)@"},
+        {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
     }
 
     for i = 1, servoCount do for _, field in ipairs(servo_fields) do table.insert(MSP_API_STRUCTURE, {field = string.format("servo_%d_%s", i, field.field), type = field.type, apiVersion = 12.07}) end end
 
     return MSP_API_STRUCTURE
 end
+-- LuaFormatter on
 
 local function processMSPData(buf, MSP_API_STRUCTURE_READ)
     local data = {servos = {}}

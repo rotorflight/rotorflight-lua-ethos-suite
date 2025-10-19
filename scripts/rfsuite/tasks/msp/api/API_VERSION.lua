@@ -11,7 +11,13 @@ local MSP_API_CMD_READ = 1
 
 local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion])
 
-local MSP_API_STRUCTURE_READ = {{field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@"}, {field = "version_major", type = "U8", help = "@i18n(api.API_VERSION.version_major)@"}, {field = "version_minor", type = "U8", help = "@i18n(api.API_VERSION.version_minor)@"}}
+-- LuaFormatter off
+local MSP_API_STRUCTURE_READ = {
+    { field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@" },
+    { field = "version_major",   type = "U8", help = "@i18n(api.API_VERSION.version_major)@" },
+    { field = "version_minor",   type = "U8", help = "@i18n(api.API_VERSION.version_minor)@" },
+}
+-- LuaFormatter on
 
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ
 

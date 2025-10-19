@@ -9,7 +9,11 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/ms
 local API_NAME = "RTC"
 local MSP_API_CMD_WRITE = 246
 
-local MSP_STRUCTURE_WRITE = {{field = "seconds", type = "U32"}, {field = "milliseconds", type = "U16"}}
+-- LuaFormatter off
+local MSP_STRUCTURE_WRITE = {
+    {field = "seconds", type = "U32"}, {field = "milliseconds", type = "U16"}
+}
+-- LuaFormatter on
 
 local mspWriteComplete = false
 

@@ -12,7 +12,11 @@ local MSP_API_CMD_WRITE = nil
 local MSP_REBUILD_ON_WRITE = false
 local MSP_MIN_BYTES = 0
 
-local MSP_API_STRUCTURE_READ_DATA = {{field = "name", mandatory = false, type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}, help = "@i18n(api.NAME.name)@"}}
+-- LuaFormatter off
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field="name",mandatory=false,type="U8",apiVersion=12.06,simResponse={80,105,108,111,116},help="@i18n(api.NAME.name)@"}
+}
+-- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 

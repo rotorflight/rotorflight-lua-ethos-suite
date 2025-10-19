@@ -14,7 +14,12 @@ local MSP_API_SIMULATOR_RESPONSE = {}
 local MSP_MIN_BYTES = 0
 
 local MSP_API_STRUCTURE_READ = {}
-local MSP_API_STRUCTURE_WRITE = {{field = "rebootMode", type = "U8", apiVersion = 12.06, simResponse = {0}}}
+
+-- LuaFormatter off
+local MSP_API_STRUCTURE_WRITE = {
+    {field = "rebootMode", type = "U8", apiVersion = 12.06, simResponse = {0}}
+}
+-- LuaFormatter on
 
 local mspData = nil
 local mspWriteComplete = false
