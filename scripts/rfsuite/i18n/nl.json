@@ -2113,6 +2113,11 @@
               "needs_translation": false,
               "translation": "Geavanceerd"
             },
+            "auto_restart_time": {
+              "english": "Auto restart time",
+              "needs_translation": true,
+              "translation": "Auto restart time"
+            },
             "basic": {
               "english": "Basic",
               "needs_translation": false,
@@ -2217,6 +2222,11 @@
               "english": "Response speed",
               "needs_translation": false,
               "translation": "Reactiesnelheid"
+            },
+            "restart_acc": {
+              "english": "Restart acceleration",
+              "needs_translation": true,
+              "translation": "Restart acceleration"
             },
             "soft_start": {
               "english": "Soft start",

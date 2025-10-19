@@ -1011,6 +1011,16 @@
           }
         },
         "flrtr": {
+          "auto_restart_time": {
+            "english": "Auto restart time",
+            "translation": "Auto restart time",
+            "needs_translation": true
+          },
+          "restart_acc": {
+            "english": "Restart acceleration",
+            "translation": "Restart acceleration",
+            "needs_translation": true
+          },
           "gov": {
             "english": "Governor",
             "translation": "Governor",
