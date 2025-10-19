@@ -205,6 +205,21 @@
         "translation": "Modellname synchronisieren",
         "needs_translation": false
       },
+      "txt_hs_loader": {
+        "english": "Progress Loader",
+        "translation": "Progress Loader",
+        "needs_translation": true
+      },
+      "txt_hs_loader_fastclose": {
+        "english": "CLOSE ASAP",
+        "translation": "CLOSE ASAP",
+        "needs_translation": true
+      },
+      "txt_hs_loader_wait": {
+        "english": "CLOSE AT 100%",
+        "translation": "CLOSE AT 100%",
+        "needs_translation": true
+      },
       "txt_devtools": {
         "english": "Developer Tools",
         "translation": "Entwickler-Werkzeuge",

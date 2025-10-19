@@ -37,7 +37,7 @@ rfsuite.performance = performance
 rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config)
 
 local userpref_defaults = {
-    general = {iconsize = 2, syncname = false, gimbalsupression = 0.85, txbatt_type = 0},
+    general = {iconsize = 2, syncname = false, gimbalsupression = 0.85, txbatt_type = 0, hs_loader = 0},
     localizations = {temperature_unit = 0, altitude_unit = 0},
     dashboard = {theme_preflight = "system/default", theme_inflight = "system/default", theme_postflight = "system/default"},
     events = {armflags = true, voltage = true, governor = true, pid_profile = true, rate_profile = true, esc_temp = false, escalertvalue = 90, smartfuel = true, smartfuelcallout = 0, smartfuelrepeats = 1, smartfuelhaptic = false, adj_v = false, adj_f = false},

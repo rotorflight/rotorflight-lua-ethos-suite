@@ -51,6 +51,7 @@ function ui.progressDisplay(title, message, speed)
             elseif isProcessing then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
             elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then
+                if rfsuite.preferences.general.hs_loader == 0 then mult = mult * 2  end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
@@ -60,6 +61,7 @@ function ui.progressDisplay(title, message, speed)
 
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
+                if rfsuite.preferences.general.hs_loader == 0 then mult = mult * 1.5  end 
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
