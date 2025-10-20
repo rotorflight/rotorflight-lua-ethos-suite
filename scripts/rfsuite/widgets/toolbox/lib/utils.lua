@@ -49,7 +49,7 @@ function utils.box(title, msg)
 
     end
 
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL}
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
 
     local maxW, maxH = w, h
     local bestFont = FONT_XXS

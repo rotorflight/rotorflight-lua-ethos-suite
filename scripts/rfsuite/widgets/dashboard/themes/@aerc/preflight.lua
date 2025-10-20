@@ -49,15 +49,15 @@ end
 
 local themeOptions = {
 
-    ls_full = {font = "FONT_XXL", advfont = "FONT_M", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
+    ls_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
 
-    ls_std = {font = "FONT_XL", advfont = "FONT_M", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 18, batteryframethickness = 3, titlepaddingbottom = 25, valuepaddingleft = 55, valuepaddingtop = 5, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 8, cappaddingright = 5},
+    ls_std = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 18, batteryframethickness = 3, titlepaddingbottom = 25, valuepaddingleft = 55, valuepaddingtop = 5, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 8, cappaddingright = 5},
 
-    ms_full = {font = "FONT_XXL", advfont = "FONT_M", titlefont = "FONT_XXS", brfont = "FONT_L", thickness = 19, batteryframethickness = 3, titlepaddingbottom = 20, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 2, cappaddingright = 2},
+    ms_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XXS", brfont = "FONT_L", thickness = 19, batteryframethickness = 3, titlepaddingbottom = 20, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 2, cappaddingright = 2},
 
     ms_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XXS", brfont = "FONT_L", thickness = 14, batteryframethickness = 2, titlepaddingbottom = 10, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 3, cappaddingright = 3},
 
-    ss_full = {font = "FONT_XL", advfont = "FONT_M", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 25, batteryframethickness = 3, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 25, valuepaddingbottom = 15, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 5, cappaddingright = 3},
+    ss_full = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 25, batteryframethickness = 3, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 25, valuepaddingbottom = 15, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 5, cappaddingright = 3},
 
     ss_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XXS", brfont = "FONT_XL", thickness = 14, batteryframethickness = 2, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 15, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 5, battadvpaddingtop = 0, cappaddingright = 3}
 }

@@ -13,6 +13,51 @@ local firstRun = true
 
 local initTime = os.clock()
 
+-- === Speak-collision avoidance & debug ===
+local DEBUG_SPEECH = false   -- set true to print filenames that will play
+local SPEAK_WAV_MS  = 450    -- estimated duration per wav file (ms)
+local SPEAK_NUM_MS  = 600    -- estimated duration for system.playNumber (ms)
+local speakingUntil = 0      -- os.clock() time when we can start the next sequence
+
+local function canSpeak(now)
+    return now >= speakingUntil
+end
+
+local function speakWavs(adjFuncId, wavs, now)
+    if not wavs or #wavs == 0 then return end
+    local playFile = rfsuite.utils and rfsuite.utils.playFile
+    -- Build list of filenames once for debug and for playback
+    local files = {}
+    for i = 1, #wavs do
+        files[i] = wavs[i] .. ".wav"
+    end
+
+    -- Single-line debug print of the whole sequence
+    if DEBUG_SPEECH then
+        print(string.format("[DEBUG] adjfunc %d will play: %s", adjFuncId, table.concat(files, ", ")))
+    end
+
+    if playFile then
+        for i = 1, #files do
+            playFile("adjfunctions", files[i])
+        end
+    end
+
+    -- advance the speak lock by the estimated total duration
+    speakingUntil = now + ((SPEAK_WAV_MS * #files) / 1000.0)
+end
+
+local function speakNumber(n, now)
+    if system and system.playNumber then
+        if DEBUG_SPEECH then
+            print(string.format("[DEBUG] playNumber: %s", tostring(n)))
+        end
+        system.playNumber(n)
+        -- ensure the speak lock covers at least the number duration
+        speakingUntil = math.max(speakingUntil, now + (SPEAK_NUM_MS / 1000.0))
+    end
+end
+
 local adjWavs = {
     [5] = {"pitch", "rate"},
     [6] = {"roll", "rate"},
@@ -93,13 +138,12 @@ local adjfuncAdjValue = nil
 local adjfuncAdjFunction = nil
 local adjfuncAdjValueOld = nil
 local adjfuncAdjFunctionOld = nil
-local adjfuncAdjTimer = os.clock()
+-- local adjfuncAdjTimer = os.clock()  -- removed: no longer used (2s timer eliminated)
 local adjfuncAdjfuncIdChanged = false
 local adjfuncAdjfuncValueChanged = false
 local adjfuncAdjJustUp = false
 local adjfuncAdjJustUpCounter
-local adjfuncPendingFuncAnnounce = false
-local adjfuncPendingFuncAnnounce = false
+local adjfuncPendingFuncAnnounce = false  -- fixed: removed duplicate declaration
 
 function adjfunc.wakeup()
     local now = os.clock()
@@ -116,17 +160,28 @@ function adjfunc.wakeup()
 
     adjfuncAdjfuncIdChanged = (adjfuncAdjFunction ~= adjfuncAdjFunctionOld)
     adjfuncAdjfuncValueChanged = (adjfuncAdjValue ~= adjfuncAdjValueOld)
+
+    -- If a function announcement is pending, try to speak it (collision-avoided)
     if adjfuncPendingFuncAnnounce and not firstRun and events.adj_f then
         local wavs = adjWavs[adjfuncAdjFunction]
         if wavs then
-            local playFile = rfsuite.utils and rfsuite.utils.playFile
-            if playFile then for i = 1, #wavs do playFile("adjfunctions", wavs[i] .. ".wav") end end
+            if canSpeak(now) then
+                speakWavs(adjfuncAdjFunction, wavs, now)
+                adjfuncPendingFuncAnnounce = false
+                adjfuncAdjfuncIdChanged = false
+            else
+                -- keep pending flag; we'll retry next wakeup
+            end
+        else
+            -- nothing to say for this id
             adjfuncPendingFuncAnnounce = false
-            adjfuncAdjfuncIdChanged = false
         end
     end
-    if adjfuncAdjfuncIdChanged then adjfuncPendingFuncAnnounce = true end
-    if adjfuncAdjfuncIdChanged then adjfuncPendingFuncAnnounce = true end
+
+    -- When the function id changes, mark we need to announce its name
+    if adjfuncAdjfuncIdChanged then
+        adjfuncPendingFuncAnnounce = true
+    end
 
     if adjfuncAdjJustUp == true then
         adjfuncAdjJustUpCounter = (adjfuncAdjJustUpCounter or 0) + 1
@@ -136,23 +191,36 @@ function adjfunc.wakeup()
     else
         if adjfuncAdjFunction ~= 0 then
             adjfuncAdjJustUpCounter = 0
-            if (now - adjfuncAdjTimer) >= 2 then
-                if adjfuncPendingFuncAnnounce and not firstRun and events.adj_f then
-                    local wavs = adjWavs[adjfuncAdjFunction]
-                    if wavs then
-                        local playFile = rfsuite.utils and rfsuite.utils.playFile
-                        if playFile then for i = 1, #wavs do playFile("adjfunctions", wavs[i] .. ".wav") end end
-                        adjfuncPendingFuncAnnounce = false
-                    end
-                end
 
-                if adjfuncAdjfuncValueChanged or adjfuncAdjfuncIdChanged then
-                    if (adjfuncAdjValue ~= nil) and (not firstRun) and events.adj_v then if system and system.playNumber then system.playNumber(adjfuncAdjValue) end end
+            -- Try to announce function-name WAVs if pending (no timer; collision avoided by lock)
+            if adjfuncPendingFuncAnnounce and not firstRun and events.adj_f then
+                local wavs = adjWavs[adjfuncAdjFunction]
+                if wavs then
+                    if canSpeak(now) then
+                        speakWavs(adjfuncAdjFunction, wavs, now)
+                        adjfuncPendingFuncAnnounce = false
+                    else
+                        -- still pending
+                    end
+                else
+                    adjfuncPendingFuncAnnounce = false
+                end
+            end
+
+            -- If the value changed (or id changed), speak the number—only when channel is free
+            if (adjfuncAdjfuncValueChanged or adjfuncAdjfuncIdChanged) then
+                if (adjfuncAdjValue ~= nil) and (not firstRun) and events.adj_v then
+                    if canSpeak(now) then
+                        speakNumber(adjfuncAdjValue, now)
+                        adjfuncAdjfuncValueChanged = false
+                        firstRun = false
+                    else
+                        -- leave 'adjfuncAdjfuncValueChanged' true so we retry next wakeup
+                    end
+                else
                     adjfuncAdjfuncValueChanged = false
                     firstRun = false
                 end
-
-                adjfuncAdjTimer = now
             end
         end
     end

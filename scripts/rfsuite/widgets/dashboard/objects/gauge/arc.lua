@@ -86,7 +86,7 @@ function render.wakeup(box)
         cfg.titlepaddingright = getParam(box, "titlepaddingright")
         cfg.titlepaddingtop = getParam(box, "titlepaddingtop")
         cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
-        cfg.font = getParam(box, "font") or "FONT_M"
+        cfg.font = getParam(box, "font") or "FONT_STD"
         cfg.maxfont = getParam(box, "maxfont") or "FONT_S"
         cfg.decimals = getParam(box, "decimals")
         cfg.valuealign = getParam(box, "valuealign")

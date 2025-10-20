@@ -51,9 +51,9 @@ local themeOptions = {
 
     ls_full = {font = "FONT_XXL", thickness = 28, gaugepadding = 10, gaugepaddingbottom = 40, maxpaddingtop = 60, maxpaddingleft = 20, valuepaddingbottom = 25, vgaugepaddingbottom = 10, maxfont = "FONT_L", batteryspacing = 2},
 
-    ls_std = {font = "FONT_XXL", thickness = 25, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 40, maxpaddingleft = 10, valuepaddingbottom = 0, vgaugepaddingbottom = 4, maxfont = "FONT_M", batteryspacing = 1},
+    ls_std = {font = "FONT_XXL", thickness = 25, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 40, maxpaddingleft = 10, valuepaddingbottom = 0, vgaugepaddingbottom = 4, maxfont = "FONT_STD", batteryspacing = 1},
 
-    ms_full = {font = "FONT_XL", thickness = 17, gaugepadding = 5, gaugepaddingbottom = 20, maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 15, vgaugepaddingbottom = 6, maxfont = "FONT_M", batteryspacing = 1},
+    ms_full = {font = "FONT_XL", thickness = 17, gaugepadding = 5, gaugepaddingbottom = 20, maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 15, vgaugepaddingbottom = 6, maxfont = "FONT_STD", batteryspacing = 1},
 
     ms_std = {font = "FONT_XL", thickness = 14, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 20, maxpaddingleft = 10, valuepaddingbottom = 0, vgaugepaddingbottom = 0, maxfont = "FONT_S", batteryspacing = 1},
 

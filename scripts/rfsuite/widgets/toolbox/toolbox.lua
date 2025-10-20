@@ -34,7 +34,7 @@ local function screenError(msg, border, pct, padX, padY)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
 
     local maxW, maxH = w * pct, h * pct
     local bestFont, bestW, bestH = FONT_XXS, 0, 0
@@ -121,7 +121,7 @@ function toolbox.paint(widget)
 
     if type(msg) == "string" then
 
-        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL}
+        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
 
         local maxW, maxH = w * 0.9, h
         local bestFont = FONT_XXS

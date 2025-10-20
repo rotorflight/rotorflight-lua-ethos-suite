@@ -110,7 +110,7 @@ function render.wakeup(box)
         max = max,
         showvalue = showvalue,
         titlepos = "bottom",
-        font = getParam(box, "font") or "FONT_M",
+        font = getParam(box, "font") or "FONT_STD",
         textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
         bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),

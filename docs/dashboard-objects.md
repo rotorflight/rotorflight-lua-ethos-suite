@@ -66,7 +66,7 @@ Value/Source parameters
     valuepaddingbottom  : number    -- (Optional) Bottom padding for value
 Maxval parameters
     arcmax              : bool      -- (Optional) Draw arcmac gauge within the outer arc (false by default)
-    maxfont             : font      -- (Optional) Font for max value label (e.g., FONT_XS, FONT_S, FONT_M, default: FONT_S)
+    maxfont             : font      -- (Optional) Font for max value label (e.g., FONT_XS, FONT_S, FONT_STD, default: FONT_S)
     maxtextcolor        : color     -- (Optional) Max text color (theme/text fallback)
     maxpadding          : number    -- (Optional) Padding (Y-offset) below arc center for max value label (default: 0)
     maxpaddingleft      : number    -- (Optional) Additional X-offset for max label (default: 0)
@@ -209,7 +209,7 @@ Battery-style bar options
     cappaddingbottom      : number   -- (Optional) Padding from the bottom edge of the cap (default: 0)
 Battery Advanced Info (Optional overlay for battery/fuel bar)
     battadv         : bool      -- (Optional) If true, shows advanced battery/fuel telemetry info lines (voltage, per-cell voltage, consumption, cell count)
-    battadvfont             : font      -- Font for advanced info lines (e.g., "FONT_XS", "FONT_M"). Defaults to FONT_XS if unset
+    battadvfont             : font      -- Font for advanced info lines (e.g., "FONT_XS", "FONT_STD"). Defaults to FONT_XS if unset
     battadvblockalign       : string    -- Horizontal alignment of the entire info block: "left", "center", or "right" (default: "right")
     battadvvaluealign       : string    -- Text alignment within each info line: "left", "center", or "right" (default: "left")
     battadvpadding          : number    -- Padding (pixels) applied to all sides unless overridden by individual paddings (default: 4)
@@ -689,7 +689,7 @@ Geometry
     thickness           : number    -- (Optional) Ring thickness in pixels (default is proportional to radius)
 Battery Ring Mode (Optional fuel-based battery style)
     ringbatt                 : bool      -- If true, draws 360° fill ring based on fuel (%) and shows mAh consumption
-    ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_M; default: FONT_XS)
+    ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_STD; default: FONT_XS)
     innerringcolor           : color     -- Color of the inner decorative ring in ringbatt mode (default: white)
     ringbattsubtext          : string|bool -- (Optional) Overrides subtext below value in ringbatt mode (set "" or false to hide)
     innerringthickness       : number    -- (Optional) Thickness of inner decorative ring in ringbatt mode (default: 8)
