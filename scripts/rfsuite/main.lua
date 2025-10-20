@@ -8,7 +8,7 @@ package.loaded.rfsuite = rfsuite
 
 local _ENV = setmetatable({rfsuite = rfsuite}, {__index = _G, __newindex = function(_, k) print("attempt to create global '" .. tostring(k) .. "'", 2) end})
 
-if not FONT_M then FONT_M = FONT_STD end
+if not FONT_STD then FONT_STD = FONT_STD end
 
 -- LuaFormatter off
 local config = {
@@ -85,7 +85,7 @@ local function unsupported_tool()
         paint = function()
             local w, h = lcd.getWindowSize()
             lcd.color(lcd.RGB(255, 255, 255, 1))
-            lcd.font(FONT_M)
+            lcd.font(FONT_STD)
             local msg = rfsuite.config.ethosVersionString
             local tw, th = lcd.getTextSize(msg)
             lcd.drawText((w - tw) / 2, (h - th) / 2, msg)
@@ -103,7 +103,7 @@ local function unsupported_i18n()
         paint = function()
             local w, h = lcd.getWindowSize()
             lcd.color(lcd.RGB(255, 255, 255, 1))
-            lcd.font(FONT_M)
+            lcd.font(FONT_STD)
             local msg = "i18n not compiled - download a release version"
             local tw, th = lcd.getTextSize(msg)
             lcd.drawText((w - tw) / 2, (h - th) / 2, msg)

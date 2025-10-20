@@ -128,7 +128,7 @@ function render.wakeup(box)
         titlepaddingright = getParam(box, "titlepaddingright"),
         titlepaddingtop = getParam(box, "titlepaddingtop"),
         titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font = getParam(box, "font") or "FONT_M",
+        font = getParam(box, "font") or "FONT_STD",
         decimals = getParam(box, "decimals"),
         valuealign = getParam(box, "valuealign"),
         valuepadding = getParam(box, "valuepadding"),
@@ -216,7 +216,7 @@ function render.paint(x, y, w, h, box)
             textX = x + (w - tw) / 2 + (padL - padR)
         end
 
-        lcd.font(_G[c.font] or FONT_M)
+        lcd.font(_G[c.font] or FONT_STD)
         local _, mainH = lcd.getTextSize("0")
         local centerY = y + h / 2
         local textY = centerY + mainH / 2 + padT - padB

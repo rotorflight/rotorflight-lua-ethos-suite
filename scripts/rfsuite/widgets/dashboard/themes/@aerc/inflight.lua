@@ -51,15 +51,15 @@ local themeOptions = {
 
     ls_full = {font = "FONT_XXL", advfont = "FONT_L", thickness = 26, gaugepadding = 10, gaugepaddingbottom = 40, maxpaddingtop = 60, maxpaddingleft = 20, valuepaddingbottom = 25, fuelpaddingbottom = 10, maxfont = "FONT_L"},
 
-    ls_std = {font = "FONT_XL", advfont = "FONT_M", thickness = 22, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 35, maxpaddingleft = 15, valuepaddingbottom = 0, fuelpaddingbottom = 10, maxfont = "FONT_M"},
+    ls_std = {font = "FONT_XL", advfont = "FONT_STD", thickness = 22, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 35, maxpaddingleft = 15, valuepaddingbottom = 0, fuelpaddingbottom = 10, maxfont = "FONT_STD"},
 
-    ms_full = {font = "FONT_XXL", advfont = "FONT_M", thickness = 15, gaugepadding = 5, gaugepaddingbottom = 20, maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 15, fuelpaddingbottom = 5, maxfont = "FONT_S"},
+    ms_full = {font = "FONT_XXL", advfont = "FONT_STD", thickness = 15, gaugepadding = 5, gaugepaddingbottom = 20, maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 15, fuelpaddingbottom = 5, maxfont = "FONT_S"},
 
-    ms_std = {font = "FONT_XXL", advfont = "FONT_M", thickness = 13, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 20, maxpaddingleft = 10, valuepaddingbottom = 0, fuelpaddingbottom = 10, maxfont = "FONT_S"},
+    ms_std = {font = "FONT_XXL", advfont = "FONT_STD", thickness = 13, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 20, maxpaddingleft = 10, valuepaddingbottom = 0, fuelpaddingbottom = 10, maxfont = "FONT_S"},
 
-    ss_full = {font = "FONT_XXL", advfont = "FONT_M", thickness = 19, gaugepadding = 5, gaugepaddingbottom = 20, maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 10, fuelpaddingbottom = 5, maxfont = "FONT_S"},
+    ss_full = {font = "FONT_XXL", advfont = "FONT_STD", thickness = 19, gaugepadding = 5, gaugepaddingbottom = 20, maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 10, fuelpaddingbottom = 5, maxfont = "FONT_S"},
 
-    ss_std = {font = "FONT_XL", advfont = "FONT_M", thickness = 17, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 25, maxpaddingleft = 10, valuepaddingbottom = 0, fuelpaddingbottom = 0, maxfont = "FONT_S"}
+    ss_std = {font = "FONT_XL", advfont = "FONT_STD", thickness = 17, gaugepadding = 0, gaugepaddingbottom = 0, maxpaddingtop = 25, maxpaddingleft = 10, valuepaddingbottom = 0, fuelpaddingbottom = 0, maxfont = "FONT_S"}
 }
 
 local lastScreenW = nil
@@ -100,7 +100,7 @@ local function buildBoxes(W)
             valuealign = "left",
             valuepaddingleft = 85,
             valuepaddingbottom = opts.fuelpaddingbottom,
-            battadvfont = "FONT_M",
+            battadvfont = "FONT_STD",
             font = opts.font,
             battadvpaddingright = 5,
             battadvvaluealign = "right",

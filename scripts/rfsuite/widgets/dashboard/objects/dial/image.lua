@@ -125,7 +125,7 @@ function render.wakeup(box)
         titlepaddingright = getParam(box, "titlepaddingright"),
         titlepaddingtop = getParam(box, "titlepaddingtop"),
         titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font = getParam(box, "font") or "FONT_M",
+        font = getParam(box, "font") or "FONT_STD",
         textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         valuealign = getParam(box, "valuealign"),
         valuepadding = getParam(box, "valuepadding"),

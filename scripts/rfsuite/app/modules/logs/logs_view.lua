@@ -460,7 +460,7 @@ local function openPage(pidx, title, script, logfile, displaymode, dirname)
     rfsuite.app.formFields[2] = form.addButton(line, posField, {
         text = "-",
         icon = nil,
-        options = FONT_M,
+        options = FONT_STD,
         press = function()
             if zoomLevel > 1 then
                 zoomLevel = zoomLevel - 1
@@ -482,7 +482,7 @@ local function openPage(pidx, title, script, logfile, displaymode, dirname)
     rfsuite.app.formFields[3] = form.addButton(line, posField, {
         text = "+",
         icon = nil,
-        options = FONT_M,
+        options = FONT_STD,
         press = function()
             if zoomLevel < zoomCount then
                 zoomLevel = zoomLevel + 1
