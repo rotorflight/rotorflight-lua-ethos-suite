@@ -434,11 +434,19 @@ function tasks.wakeup()
     end
 
     local cycleFlip = schedulerTick % 2
-    if cycleFlip == 0 then
-        runNonSpreadTasks()
+    if ((rfsuite.app and rfsuite.app.guiIsRunning) or not rfsuite.session.isConnected) and rfsuite.session.mspBusy then
+        if cycleFlip == 0 then
+            if tasks.msp then tasks.msp.wakeup() end
+        else
+            if tasks.callback then tasks.callback.wakeup() end
+        end
     else
-        runSpreadTasks()
-    end
+        if cycleFlip == 0 then
+            runNonSpreadTasks()
+        else
+            runSpreadTasks()
+        end
+    end    
 
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now

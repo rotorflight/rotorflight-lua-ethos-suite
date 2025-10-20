@@ -32,7 +32,7 @@ msp.protocol.mspPoll = transport.mspPoll
 
 msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
-msp.mspQueue.loopInterval = 0.01
+msp.mspQueue.loopInterval = 0.025
 msp.mspQueue.copyOnAdd = true
 msp.mspQueue.timeout = 2.0
 
