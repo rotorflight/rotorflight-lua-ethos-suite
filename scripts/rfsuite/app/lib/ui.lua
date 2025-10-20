@@ -40,7 +40,7 @@ function ui.progressDisplay(title, message, speed)
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
             local mult = 1
-            if app.dialogs.progressSpeed then mult = 2 end
+            if app.dialogs.progressSpeed then mult = 1.5 end
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
             local apiV = tostring(rfsuite.session.apiVersion)
