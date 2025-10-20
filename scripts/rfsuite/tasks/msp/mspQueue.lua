@@ -139,11 +139,13 @@ function MspQueueController:processQueue()
     if not system:getVersion().simulation then
 
         if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os.clock()) then
-            rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
-            self.lastTimeCommandSent = os.clock()
-            self.currentMessageStartTime = self.lastTimeCommandSent
-            self.retryCount = self.retryCount + 1
-            if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
+            if self.currentMessage then
+                rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+                self.lastTimeCommandSent = os.clock()
+                self.currentMessageStartTime = self.lastTimeCommandSent
+                self.retryCount = self.retryCount + 1
+                if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
+            end    
         end
 
         rfsuite.tasks.msp.common.mspProcessTxQ()
