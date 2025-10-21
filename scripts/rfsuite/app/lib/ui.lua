@@ -230,14 +230,58 @@ function ui.disableNavigationField(x)
     if field then field:enable(false) end
 end
 
-function ui.openMainMenu()
-
+function ui.resetPageState(activesection)
     local app = rfsuite.app
 
-    utils.reportMemoryUsage("app.openMainMenu", "start")
+    if app.formFields then
+        for i = 1, #app.formFields do
+            app.formFields[i] = nil
+        end
+    end
 
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    if app.formLines then
+        for i = 1, #app.formLines do
+            app.formLines[i] = nil
+        end
+    end
+
+    if app.Page and app.Page.apidata then
+        if app.Page.apidata.formdata then
+            if app.Page.apidata.formdata.rows then
+                for i = 1, #app.Page.apidata.formdata.rows do
+                    app.Page.apidata.formdata.rows[i] = nil
+                end
+            end
+            if app.Page.apidata.formdata.cols then
+                for i = 1, #app.Page.apidata.formdata.cols do
+                    app.Page.apidata.formdata.cols[i] = nil
+                end
+            end
+            if app.Page.apidata.formdata.fields then
+                for i = 1, #app.Page.apidata.formdata.fields do
+                    app.Page.apidata.formdata.fields[i] = nil
+                end
+            end
+            if app.Page.apidata.formdata.labels then
+                for i = 1, #app.Page.apidata.formdata.labels do
+                    app.Page.apidata.formdata.labels[i] = nil
+                end
+            end
+        end
+
+        if app.Page.apidata.api then
+            for i = 1, #app.Page.apidata.api do
+                app.Page.apidata.api[i] = nil
+            end
+        end
+        if app.Page.apidata.api_reversed then
+            for i = 1, #app.Page.apidata.api_reversed do
+                app.Page.apidata.api_reversed[i] = nil
+            end
+        end
+
+        app.Page.apidata = nil
+    end
 
     rfsuite.tasks.msp.api.resetApidata()
 
@@ -247,22 +291,49 @@ function ui.openMainMenu()
     app.isOfflinePage = false
     app.Page = nil
     app.PageTmp = nil
-
-    if tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
-
-    if not app.gfx_buttons["mainmenu"] then app.gfx_buttons["mainmenu"] = {} end
     app.lastMenu = nil
-
-    for k in pairs(app.gfx_buttons) do if k ~= "mainmenu" then app.gfx_buttons[k] = nil end end
-
-    app.triggers.isReady = false
-    app.uiState = app.uiStatus.mainMenu
-
-    form.clear()
-
     app.lastIdx = nil
     app.lastTitle = nil
     app.lastScript = nil
+
+    rfsuite.session.lastPage = nil
+    app.triggers.isReady = false
+    app.uiState = app.uiStatus.mainMenu
+    app.triggers.disableRssiTimeout = false
+
+    if activesection then
+        if not app.gfx_buttons[activesection] then
+            app.gfx_buttons[activesection] = {}
+        end
+        for k in pairs(app.gfx_buttons) do
+            if k ~= activesection then
+                app.gfx_buttons[k] = nil
+            end
+        end
+    else
+        if not app.gfx_buttons["mainmenu"] then
+            app.gfx_buttons["mainmenu"] = {}
+        end
+        for k in pairs(app.gfx_buttons) do
+            if k ~= "mainmenu" then
+                app.gfx_buttons[k] = nil
+            end
+        end
+    end
+
+    collectgarbage('collect')
+end
+
+function ui.openMainMenu()
+    local app = rfsuite.app
+
+    ui.resetPageState()
+
+    utils.reportMemoryUsage("app.openMainMenu", "start")
+
+    if tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
+
+    form.clear()
 
     if preferences.general.iconsize == nil or preferences.general.iconsize == "" then
         preferences.general.iconsize = 1
@@ -361,36 +432,14 @@ end
 function ui.openMainMenuSub(activesection)
 
     local app = rfsuite.app
+    ui.resetPageState(activesection)
+
 
     utils.reportMemoryUsage("app.openMainMenuSub", "start")
-
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
-
-    rfsuite.tasks.msp.api.resetApidata()
-
-    app.formFieldsOffline = {}
-    app.lastLabel = nil
-    app.isOfflinePage = false
-    app.lastMenu = activesection
-    app.Page = nil
-    app.PageTmp = nil
-
-    if not app.gfx_buttons[activesection] then app.gfx_buttons[activesection] = {} end
-
-    for k in pairs(app.gfx_buttons) do if k ~= activesection then app.gfx_buttons[k] = nil end end
 
     if not utils.ethosVersionAtLeast(config.ethosVersion) then return end
 
     local MainMenu = app.MainMenu
-
-    app.lastIdx = nil
-    app.lastTitle = nil
-    app.lastScript = nil
-    rfsuite.session.lastPage = nil
-    app.triggers.isReady = false
-    app.uiState = app.uiStatus.mainMenu
-    app.triggers.disableRssiTimeout = false
 
     preferences.general.iconsize = tonumber(preferences.general.iconsize) or 1
 
