@@ -1101,8 +1101,8 @@
             "translation": "Volume du buzzer",
             "needs_translation": false
           },
-          "timing_angle": {
-            "english": "Timing angle",
+          "electrical_angle": {
+            "english": "Electrical angle",
             "translation": "Angle de timing",
             "needs_translation": false
           },

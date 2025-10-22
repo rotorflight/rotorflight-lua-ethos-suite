@@ -202,10 +202,10 @@
         "needs_translation": false,
         "translation": "Minimum throttle value"
       },
-      "timing_angle": {
-        "english": "Timing angle for the motor",
+      "electrical_angle": {
+        "english": "Electrical angle for the motor",
         "needs_translation": false,
-        "translation": "Timing angle for the motor"
+        "translation": "Electrical angle for the motor"
       }
     },
     "ESC_PARAMETERS_HW5": {
@@ -2253,10 +2253,10 @@
               "needs_translation": false,
               "translation": "Throttle protocol"
             },
-            "timing_angle": {
-              "english": "Timing angle",
+            "electrical_angle": {
+              "english": "Electrical angle",
               "needs_translation": false,
-              "translation": "Timing angle"
+              "translation": "Electrical angle"
             }
           },
           "hw5": {

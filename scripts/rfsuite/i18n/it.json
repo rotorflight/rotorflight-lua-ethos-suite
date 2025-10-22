@@ -202,8 +202,8 @@
         "needs_translation": false,
         "translation": "Valore Minimo gas"
       },
-      "timing_angle": {
-        "english": "Timing angle for the motor",
+      "electrical_angle": {
+        "english": "Electrical angle for the motor",
         "needs_translation": false,
         "translation": "Angolo Timing per il motore"
       }
@@ -2253,10 +2253,10 @@
               "needs_translation": false,
               "translation": "Protocollo Gas/Throttle"
             },
-            "timing_angle": {
-              "english": "Timing angle",
+            "electrical_angle": {
+              "english": "Electrical angle",
               "needs_translation": false,
-              "translation": "Timing angle"
+              "translation": "Electrical angle"
             }
           },
           "hw5": {

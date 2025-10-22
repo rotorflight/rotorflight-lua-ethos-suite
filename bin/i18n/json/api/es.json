@@ -321,8 +321,8 @@
       "translation": "Valor de integral para el governor",
       "needs_translation": false
     },
-    "timing_angle": {
-      "english": "Timing angle for the motor",
+    "electrical_angle": {
+      "english": "Electrical angle for the motor",
       "translation": "Angulo de timing para el motor",
       "needs_translation": false
     },

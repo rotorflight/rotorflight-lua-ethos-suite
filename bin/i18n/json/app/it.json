@@ -1101,9 +1101,9 @@
             "translation": "Volume Buzzer",
             "needs_translation": false
           },
-          "timing_angle": {
-            "english": "Timing angle",
-            "translation": "Timing angle",
+          "electrical_angle": {
+            "english": "Electrical angle",
+            "translation": "Electrical angle",
             "needs_translation": false
           },
           "governor": {

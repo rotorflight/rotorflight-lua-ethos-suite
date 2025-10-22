@@ -85,7 +85,7 @@ return {
             ["tbl_cw"] = "CW",
             ["soft_start"] = "Soft start value",
             ["gov_i"] = "Integral value for the governor",
-            ["electrical_angle"] = "Timing angle for the motor",
+            ["electrical_angle"] = "Electrical angle for the motor",
             ["response_speed"] = "Response speed for the motor",
             ["current_gain"] = "Gain value for the current sensor",
             ["tbl_linear_thr"] = "Linear Throttle",

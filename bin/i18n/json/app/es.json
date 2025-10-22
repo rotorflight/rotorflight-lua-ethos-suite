@@ -1101,8 +1101,8 @@
             "translation": "Volumen del Buzzer",
             "needs_translation": false
           },
-          "timing_angle": {
-            "english": "Timing angle",
+          "electrical_angle": {
+            "english": "Electrical angle",
             "translation": "Angulo de Timing",
             "needs_translation": false
           },

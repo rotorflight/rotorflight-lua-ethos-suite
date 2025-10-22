@@ -202,8 +202,8 @@
         "needs_translation": false,
         "translation": "Valeur minimale des gaz"
       },
-      "timing_angle": {
-        "english": "Timing angle for the motor",
+      "electrical_angle": {
+        "english": "Electrical angle for the motor",
         "needs_translation": false,
         "translation": "Angle de synchronisation pour le moteur"
       }
@@ -2253,8 +2253,8 @@
               "needs_translation": false,
               "translation": "Protocole des gaz"
             },
-            "timing_angle": {
-              "english": "Timing angle",
+            "electrical_angle": {
+              "english": "Electrical angle",
               "needs_translation": false,
               "translation": "Angle de timing"
             }

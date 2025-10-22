@@ -1101,8 +1101,8 @@
             "translation": "Piep volume",
             "needs_translation": false
           },
-          "timing_angle": {
-            "english": "Timing angle",
+          "electrical_angle": {
+            "english": "Electrical angle",
             "translation": "Motor Timing",
             "needs_translation": false
           },
