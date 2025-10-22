@@ -13,7 +13,7 @@ local MSP_REBUILD_ON_WRITE = false
 local MSP_SIGNATURE = 0x73
 local MSP_HEADER_BYTES = 2
 
-local tblLed = {"CUSTOM", "BLACK", "RED", "GREEN", "BLUE", "YELLOW", "MAGENTA", "CYAN", "WHITE", "ORANGE", "GRAY", "MAROON", "DARK_GREEN", "NAVY", "PURPLE", "TEAL", "SILVER", "PINK", "GOLD", "BROWN", "LIGHT_BLUE", "FL_PINK", "FL_ORANGE", "FL_LIME", "FL_MINT", "FL_CYAN", "FL_PURPLE", "FL_HOT_PINK", "FL_LIGHT_YELLOW", "FL_AQUAMARINE", "FL_GOLD", "FL_DEEP_PINK", "FL_NEON_GREEN", "FL_ORANGE_RED"}
+local tblLed = {"CUSTOM", "OFF", "RED", "GREEN", "BLUE", "YELLOW", "MAGENTA", "CYAN", "WHITE", "ORANGE", "GRAY", "MAROON", "DARK_GREEN", "NAVY", "PURPLE", "TEAL", "SILVER", "PINK", "GOLD", "BROWN", "LIGHT_BLUE", "FL_PINK", "FL_ORANGE", "FL_LIME", "FL_MINT", "FL_CYAN", "FL_PURPLE", "FL_HOT_PINK", "FL_LIGHT_YELLOW", "FL_AQUAMARINE", "FL_GOLD", "FL_DEEP_PINK", "FL_NEON_GREEN", "FL_ORANGE_RED"}
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
@@ -32,7 +32,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "low_voltage_protection", type = "U8", apiVersion = 12.07, simResponse = {30}, min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.low_voltage_protection)@"},
     {field = "temperature_protection", type = "U8", apiVersion = 12.07, simResponse = {125}, min = 50, max = 135, default = 125, unit = "°", help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.temperature_protection)@"},
     {field = "bec_voltage", type = "U8", apiVersion = 12.07, simResponse = {1}, table = {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_disabled)@", "7.5V", "8.0V", "8.5V", "12.0V"}, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.bec_voltage)@"},
-    {field = "timing_angle", type = "U8", apiVersion = 12.07, simResponse = {0}, table = {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_auto)@", "1°", "2°", "3°", "4°", "5°", "6°", "7°", "8°", "9°", "10°"}, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.timing_angle)@"},
+    {field = "electrical_angle", type = "U8", apiVersion = 12.07, simResponse = {0}, table = {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_auto)@", "1°", "2°", "3°", "4°", "5°", "6°", "7°", "8°", "9°", "10°"}, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.electrical_angle)@"},
     {field = "motor_direction", type = "U8", apiVersion = 12.07, simResponse = {0}, table = {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_cw)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_ccw)@"}, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.motor_direction)@"},
     {field = "starting_torque", type = "U8", apiVersion = 12.07, simResponse = {3}, min = 1, max = 15, default = 3, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.starting_torque)@"},
     {field = "response_speed", type = "U8", apiVersion = 12.07, simResponse = {5}, min = 1, max = 15, default = 5, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.response_speed)@"},

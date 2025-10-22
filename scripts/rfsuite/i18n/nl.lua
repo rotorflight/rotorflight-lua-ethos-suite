@@ -75,7 +75,7 @@ return {
             ["tbl_auto"] = "Auto",
             ["starting_torque"] = "Start koppel voor de motor",
             ["cell_count"] = "Aantal cellen in de batterij",
-            ["motor_erpm_max"] = "Maximale RPM",
+            ["motor_erpm_max"] = "Maximale ERPM",
             ["throttle_max"] = "Maximale throttle waarde",
             ["tbl_ccw"] = "CCW",
             ["tbl_escgov"] = "ESC Governor",
@@ -85,7 +85,7 @@ return {
             ["tbl_cw"] = "CW",
             ["soft_start"] = "Soft start waarde",
             ["gov_i"] = "Integral gain voor de governor",
-            ["timing_angle"] = "Timing voor de motor",
+            ["electrical_angle"] = "Timing voor de motor",
             ["response_speed"] = "Respons snelheid voor de motor",
             ["current_gain"] = "Gain waarde voor stroomsensor",
             ["tbl_linear_thr"] = "Linear Throttle",
@@ -577,7 +577,7 @@ return {
                         ["other"] = "Ander",
                         ["temperature_protection"] = "Temperatuur beveilig.",
                         ["buzzer_volume"] = "Piep volume",
-                        ["timing_angle"] = "Motor Timing",
+                        ["electrical_angle"] = "Elektrische hoek",
                         ["governor"] = "Governor",
                         ["advanced"] = "Geavanceerd",
                         ["gov_i"] = "Gov-I",
@@ -589,8 +589,8 @@ return {
                         ["motor_temp"] = "Motor temperatuur",
                         ["response_speed"] = "Reactiesnelheid",
                         ["battery_capacity"] = "Batterij capaciteit",
-                        ["auto_restart_time"] = "Auto restart time",
-                        ["restart_acc"] = "Restart Acc"
+                        ["auto_restart_time"] = "Auto herstart tijd",
+                        ["restart_acc"] = "Herstartversnelling"
                     },
                     ["scorp"] = {
                         ["esc_mode"] = "ESC Modus",

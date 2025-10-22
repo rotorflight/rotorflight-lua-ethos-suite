@@ -75,7 +75,7 @@ return {
             ["tbl_auto"] = "Auto",
             ["starting_torque"] = "Starting torque for the motor",
             ["cell_count"] = "Number of cells in the battery",
-            ["motor_erpm_max"] = "Maximum RPM",
+            ["motor_erpm_max"] = "Maximum ERPM",
             ["throttle_max"] = "Maximum throttle value",
             ["tbl_ccw"] = "CCW",
             ["tbl_escgov"] = "ESC Governor",
@@ -85,7 +85,7 @@ return {
             ["tbl_cw"] = "CW",
             ["soft_start"] = "Soft start value",
             ["gov_i"] = "Integral value for the governor",
-            ["timing_angle"] = "Timing angle for the motor",
+            ["electrical_angle"] = "Timing angle for the motor",
             ["response_speed"] = "Response speed for the motor",
             ["current_gain"] = "Gain value for the current sensor",
             ["tbl_linear_thr"] = "Linear Throttle",
@@ -577,7 +577,7 @@ return {
                         ["other"] = "Other",
                         ["temperature_protection"] = "Temperature protection",
                         ["buzzer_volume"] = "Buzzer volume",
-                        ["timing_angle"] = "Timing angle",
+                        ["electrical_angle"] = "Electrical angle",
                         ["governor"] = "Governor",
                         ["advanced"] = "Advanced",
                         ["gov_i"] = "Gov-I",
@@ -589,8 +589,8 @@ return {
                         ["motor_temp"] = "Motor temperture",
                         ["response_speed"] = "Response speed",
                         ["battery_capacity"] = "Battery capacity",
-                        ["auto_restart_time"] = "Auto restart time",
-                        ["restart_acc"] = "Restart Acc"
+                        ["auto_restart_time"] = "Auto Restart Time",
+                        ["restart_acc"] = "Restart Accelerazione"
                     },
                     ["scorp"] = {
                         ["esc_mode"] = "ESC Mode",

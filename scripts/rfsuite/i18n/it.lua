@@ -75,7 +75,7 @@ return {
             ["tbl_auto"] = "Automatique",
             ["starting_torque"] = "Coppia iniziale per il motore",
             ["cell_count"] = "Numero di celle nella batteria",
-            ["motor_erpm_max"] = "RPM Massimi",
+            ["motor_erpm_max"] = "ERPM Massimi",
             ["throttle_max"] = "Valore Massimo Gas",
             ["tbl_ccw"] = "Antiorario",
             ["tbl_escgov"] = "ESC Governor",
@@ -85,7 +85,7 @@ return {
             ["tbl_cw"] = "Orario",
             ["soft_start"] = "Valore Soft start",
             ["gov_i"] = "Valore Integrale per il governor",
-            ["timing_angle"] = "Angolo Timing per il motore",
+            ["electrical_angle"] = "Angolo Timing per il motore",
             ["response_speed"] = "Velocita' di Risposta per il motore",
             ["current_gain"] = "Valore Guadagno per il sensore corrente",
             ["tbl_linear_thr"] = "Linear Throttle",
@@ -592,7 +592,7 @@ return {
                         ["other"] = "Altro",
                         ["temperature_protection"] = "Temperatura di protezione",
                         ["buzzer_volume"] = "Volume Buzzer",
-                        ["timing_angle"] = "Timing angle",
+                        ["electrical_angle"] = "Electrical angle",
                         ["governor"] = "Governor",
                         ["advanced"] = "Avanzato",
                         ["gov_i"] = "Gov-I",
@@ -604,8 +604,8 @@ return {
                         ["motor_temp"] = "Temperatura Motore",
                         ["response_speed"] = "Velocita' risposta",
                         ["battery_capacity"] = "Capacita' Batteria",
-                        ["auto_restart_time"] = "Auto restart time",
-                        ["restart_acc"] = "Restart Acc"
+                        ["auto_restart_time"] = "Tempo di Auto Riavvio",
+                        ["restart_acc"] = "Restart Accelerazione"
                     },
                     ["scorp"] = {
                         ["esc_mode"] = "Modo ESC",
