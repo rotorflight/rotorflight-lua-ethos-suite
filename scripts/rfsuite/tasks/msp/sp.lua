@@ -24,9 +24,12 @@ function transport.sportTelemetryPop()
 end
 
 transport.mspSend = function(payload)
-    local dataId = payload[1] + (payload[2] << 8)
-    local value = 0
-    for i = 3, #payload do value = value + (payload[i] << ((i - 3) * 8)) end
+    local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
+    local v3 = payload[3] or 0
+    local v4 = payload[4] or 0
+    local v5 = payload[5] or 0
+    local v6 = payload[6] or 0
+    local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
 
     return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
 end
