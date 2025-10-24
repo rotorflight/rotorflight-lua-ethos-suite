@@ -260,7 +260,7 @@ function utils.playFile(pkg, file)
     if av:sub(1, 1) == "/" then av = av:sub(2) end
 
     local wavUser = "SCRIPTS:/rfsuite.user/audio/user/" .. pkg .. "/" .. file
-    local wavLocale = "SCRIPTS:/rfsuite.user/audio/" .. av .. "/" .. pkg .. "/" .. file
+    local wavLocale = "SCRIPTS:/rfsuite/audio/" .. av .. "/" .. pkg .. "/" .. file
     local wavDefault = "SCRIPTS:/rfsuite/audio/en/default/" .. pkg .. "/" .. file
 
     local path
