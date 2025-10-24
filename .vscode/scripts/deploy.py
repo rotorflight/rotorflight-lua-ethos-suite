@@ -210,6 +210,36 @@ def _record_tail_pid_and_cleanup():
         pass
     atexit.register(lambda: os.path.exists(SERIAL_PIDFILE) and os.remove(SERIAL_PIDFILE))
 
+def copy_language_soundpack(out_dir, lang="en"):
+    """
+    Copy the physical sound pack for the chosen language into scripts/rfsuite/audio.
+    Uses the standalone .vscode/scripts/copy_soundpack.py if present; otherwise falls back to a simple copytree.
+    """
+    git_src = config['git_src']
+    src = os.path.join(git_src, 'bin', 'sound-generator', 'soundpack', lang)
+    dest = os.path.join(out_dir, 'audio', lang)  # <-- language-specific subfolder
+    script = os.path.join(git_src, '.vscode', 'scripts', 'copy_soundpack.py')
+
+    if not os.path.isdir(src):
+        print(f"[AUDIO] Skipping: soundpack not found at {src}")
+        return
+
+    os.makedirs(dest, exist_ok=True)
+
+    try:
+        if os.path.isfile(script):
+            print(f"[AUDIO] Copying soundpack ({lang}) → {dest}")
+            subprocess.run([sys.executable, script, src, dest], check=True)
+        else:
+            print(f"[AUDIO] Standalone script not found at {script}; doing simple copy.")
+            # dirs_exist_ok requires Python 3.8+
+            shutil.copytree(src, dest, dirs_exist_ok=True)
+    except subprocess.CalledProcessError as e:
+        print(f"[AUDIO] copy_soundpack.py failed: {e}")
+    except Exception as e:
+        print(f"[AUDIO] Fallback copy failed: {e}")
+
+
 def throttled_copyfile(src, dst):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     written_since_pause = 0
@@ -979,7 +1009,8 @@ def copy_files(src_override, fileext, targets, lang="en"):
                     if f.endswith('.lua'):
                         shutil.copy(os.path.join(r,f), out_dir)
 
-            resolve_i18n_tags_in_place(out_dir, lang)           
+            resolve_i18n_tags_in_place(out_dir, lang)    
+            copy_language_soundpack(out_dir, lang)       
 
         # fast
         elif fileext == 'fast':
@@ -1069,6 +1100,7 @@ def copy_files(src_override, fileext, targets, lang="en"):
                 bar_update.close()
 
             resolve_i18n_tags_in_place(out_dir, lang) 
+            copy_language_soundpack(out_dir, lang)    
 
             if not copied:
                 print("Fast deploy: nothing to update.")
@@ -1078,6 +1110,7 @@ def copy_files(src_override, fileext, targets, lang="en"):
             srcall = os.path.join(git_src, 'scripts', tgt)
             safe_full_copy(srcall, out_dir)
             resolve_i18n_tags_in_place(out_dir, lang)
+            copy_language_soundpack(out_dir, lang)    
             flush_fs()
             time.sleep(2)
 
