@@ -60,7 +60,6 @@ local function getESCDetails()
                 if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
 
                 if escDetails.model ~= nil then foundESC = true end
-
             end
 
         end,
@@ -271,6 +270,8 @@ local function wakeup()
 
     if showPowerCycleLoaderInProgress == true then
 
+        rfsuite.app.triggers.escPowerCycleLoader = true
+
         local now = os.clock()
         if (now - powercycleLoaderRateLimit) >= 2 then
 
@@ -292,7 +293,8 @@ local function wakeup()
             end
 
         end
-
+    else
+        rfsuite.app.triggers.escPowerCycleLoader = false    
     end
 
     if showPowerCycleLoader == true then

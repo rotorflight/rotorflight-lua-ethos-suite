@@ -128,6 +128,7 @@ function app.create()
         app.triggers.wasConnected = false
         app.triggers.isArmed = false
         app.triggers.showSaveArmedWarning = false
+        app.triggers.escPowerCycleLoader = false
 
         app.tasks = assert(compile("app/tasks.lua"))()
 
@@ -239,6 +240,7 @@ function app.close()
     app.dialogs.nolinkDisplay = false
     app.dialogs.nolinkValueCounter = 0
     app.triggers.telemetryState = nil
+    app.triggers.escPowerCycleLoader = false
     app.dialogs.progressDisplayEsc = false
     app.triggers.wasConnected = false
     app.triggers.invalidConnectionSetup = false

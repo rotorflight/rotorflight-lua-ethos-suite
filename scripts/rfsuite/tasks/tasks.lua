@@ -211,6 +211,11 @@ function tasks.telemetryCheckScheduler()
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
+    if rfsuite.app and rfsuite.app.triggers and rfsuite.app.triggers.escPowerCycleLoader then
+        utils.log("Skip teardown as esc powercycle is loaded", "info")
+        return
+    end
+
     if not telemetryState then return clearSessionAndQueue() end
 
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
