@@ -145,7 +145,7 @@ function MspQueueController:processQueue()
                 self.currentMessageStartTime = self.lastTimeCommandSent
                 self.retryCount = self.retryCount + 1
                 if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
-            end    
+            end
         end
 
         rfsuite.tasks.msp.common.mspProcessTxQ()

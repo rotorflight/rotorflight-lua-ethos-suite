@@ -13,6 +13,7 @@ local config = arg[1]
 function utils.session()
     rfsuite.session = {
 
+        escDetails = nil,
         tailMode = nil,
         swashMode = nil,
         rateProfile = nil,

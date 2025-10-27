@@ -78,12 +78,10 @@ local function mainMenuIconEnableDisable()
                 end
             end
         end
-    elseif app.triggers.escPowerCycleLoader then
-        log("ESC Power Cycle Loader Active - Skipping Offline Mode Check", "info")
-    elseif not app.isOfflinePage  then
-        if not rfsuite.session.isConnected then 
+    elseif not app.isOfflinePage and not app.triggers.escPowerCycleLoader then
+        if not rfsuite.session.isConnected then
             log("Entering Offline Mode", "info")
-            app.ui.openMainMenu() 
+            app.ui.openMainMenu()
         end
     end
 end

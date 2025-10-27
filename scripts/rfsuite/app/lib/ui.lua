@@ -51,7 +51,7 @@ function ui.progressDisplay(title, message, speed)
             elseif isProcessing then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
             elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then
-                if rfsuite.preferences.general.hs_loader == 0 then mult = mult * 2  end
+                if rfsuite.preferences.general.hs_loader == 0 then mult = mult * 2 end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
@@ -61,7 +61,7 @@ function ui.progressDisplay(title, message, speed)
 
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
-                if rfsuite.preferences.general.hs_loader == 0 then mult = mult * 1.5  end 
+                if rfsuite.preferences.general.hs_loader == 0 then mult = mult * 1.5 end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
@@ -233,52 +233,20 @@ end
 function ui.resetPageState(activesection)
     local app = rfsuite.app
 
-    if app.formFields then
-        for i = 1, #app.formFields do
-            app.formFields[i] = nil
-        end
-    end
+    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
 
-    if app.formLines then
-        for i = 1, #app.formLines do
-            app.formLines[i] = nil
-        end
-    end
+    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     if app.Page and app.Page.apidata then
         if app.Page.apidata.formdata then
-            if app.Page.apidata.formdata.rows then
-                for i = 1, #app.Page.apidata.formdata.rows do
-                    app.Page.apidata.formdata.rows[i] = nil
-                end
-            end
-            if app.Page.apidata.formdata.cols then
-                for i = 1, #app.Page.apidata.formdata.cols do
-                    app.Page.apidata.formdata.cols[i] = nil
-                end
-            end
-            if app.Page.apidata.formdata.fields then
-                for i = 1, #app.Page.apidata.formdata.fields do
-                    app.Page.apidata.formdata.fields[i] = nil
-                end
-            end
-            if app.Page.apidata.formdata.labels then
-                for i = 1, #app.Page.apidata.formdata.labels do
-                    app.Page.apidata.formdata.labels[i] = nil
-                end
-            end
+            if app.Page.apidata.formdata.rows then for i = 1, #app.Page.apidata.formdata.rows do app.Page.apidata.formdata.rows[i] = nil end end
+            if app.Page.apidata.formdata.cols then for i = 1, #app.Page.apidata.formdata.cols do app.Page.apidata.formdata.cols[i] = nil end end
+            if app.Page.apidata.formdata.fields then for i = 1, #app.Page.apidata.formdata.fields do app.Page.apidata.formdata.fields[i] = nil end end
+            if app.Page.apidata.formdata.labels then for i = 1, #app.Page.apidata.formdata.labels do app.Page.apidata.formdata.labels[i] = nil end end
         end
 
-        if app.Page.apidata.api then
-            for i = 1, #app.Page.apidata.api do
-                app.Page.apidata.api[i] = nil
-            end
-        end
-        if app.Page.apidata.api_reversed then
-            for i = 1, #app.Page.apidata.api_reversed do
-                app.Page.apidata.api_reversed[i] = nil
-            end
-        end
+        if app.Page.apidata.api then for i = 1, #app.Page.apidata.api do app.Page.apidata.api[i] = nil end end
+        if app.Page.apidata.api_reversed then for i = 1, #app.Page.apidata.api_reversed do app.Page.apidata.api_reversed[i] = nil end end
 
         app.Page.apidata = nil
     end
@@ -302,23 +270,11 @@ function ui.resetPageState(activesection)
     app.triggers.disableRssiTimeout = false
 
     if activesection then
-        if not app.gfx_buttons[activesection] then
-            app.gfx_buttons[activesection] = {}
-        end
-        for k in pairs(app.gfx_buttons) do
-            if k ~= activesection then
-                app.gfx_buttons[k] = nil
-            end
-        end
+        if not app.gfx_buttons[activesection] then app.gfx_buttons[activesection] = {} end
+        for k in pairs(app.gfx_buttons) do if k ~= activesection then app.gfx_buttons[k] = nil end end
     else
-        if not app.gfx_buttons["mainmenu"] then
-            app.gfx_buttons["mainmenu"] = {}
-        end
-        for k in pairs(app.gfx_buttons) do
-            if k ~= "mainmenu" then
-                app.gfx_buttons[k] = nil
-            end
-        end
+        if not app.gfx_buttons["mainmenu"] then app.gfx_buttons["mainmenu"] = {} end
+        for k in pairs(app.gfx_buttons) do if k ~= "mainmenu" then app.gfx_buttons[k] = nil end end
     end
 
     collectgarbage('collect')
@@ -433,7 +389,6 @@ function ui.openMainMenuSub(activesection)
 
     local app = rfsuite.app
     ui.resetPageState(activesection)
-
 
     utils.reportMemoryUsage("app.openMainMenuSub", "start")
 

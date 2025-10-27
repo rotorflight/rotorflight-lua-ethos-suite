@@ -63,6 +63,7 @@ function app.create()
         app.isOfflinePage = false
         app.uiState = app.uiStatus.init
         app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
+        app.escPowerCycleLoader = false
 
         app.audio = {}
         app.audio.playTimeout = false
@@ -128,7 +129,6 @@ function app.create()
         app.triggers.wasConnected = false
         app.triggers.isArmed = false
         app.triggers.showSaveArmedWarning = false
-        app.triggers.escPowerCycleLoader = false
 
         app.tasks = assert(compile("app/tasks.lua"))()
 
@@ -224,6 +224,7 @@ function app.close()
     app.guiIsRunning = false
     app.offlineMode = false
     app.uiState = app.uiStatus.init
+    app.escPowerCycleLoader = false
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then app.Page.close() end
 
@@ -240,7 +241,6 @@ function app.close()
     app.dialogs.nolinkDisplay = false
     app.dialogs.nolinkValueCounter = 0
     app.triggers.telemetryState = nil
-    app.triggers.escPowerCycleLoader = false
     app.dialogs.progressDisplayEsc = false
     app.triggers.wasConnected = false
     app.triggers.invalidConnectionSetup = false

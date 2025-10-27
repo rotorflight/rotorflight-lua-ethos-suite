@@ -206,15 +206,12 @@ end
 
 function tasks.telemetryCheckScheduler()
 
+    if rfsuite.app and rfsuite.app.triggers and rfsuite.app.escPowerCycleLoader then return end
+
     local now = os.clock()
 
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
-
-    if rfsuite.app and rfsuite.app.triggers and rfsuite.app.triggers.escPowerCycleLoader then
-        utils.log("Skip teardown as esc powercycle is loaded", "info")
-        return
-    end
 
     if not telemetryState then return clearSessionAndQueue() end
 
@@ -439,7 +436,7 @@ function tasks.wakeup()
     end
 
     local cycleFlip = schedulerTick % 2
-    if ((rfsuite.app and rfsuite.app.guiIsRunning) or not rfsuite.session.isConnected) and rfsuite.session.mspBusy then
+    if ((rfsuite.app and rfsuite.app.guiIsRunning and not rfsuite.app.escPowerCycleLoader) or not rfsuite.session.isConnected) and rfsuite.session.mspBusy then
         if cycleFlip == 0 then
             if tasks.msp then tasks.msp.wakeup() end
         else
@@ -451,7 +448,7 @@ function tasks.wakeup()
         else
             runSpreadTasks()
         end
-    end    
+    end
 
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
