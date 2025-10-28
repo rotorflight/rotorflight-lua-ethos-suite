@@ -436,19 +436,33 @@ function tasks.wakeup()
     end
 
     local cycleFlip = schedulerTick % 2
+
     if ((rfsuite.app and rfsuite.app.guiIsRunning and not rfsuite.app.escPowerCycleLoader) or not rfsuite.session.isConnected) and rfsuite.session.mspBusy then
         if cycleFlip == 0 then
-            if tasks.msp then tasks.msp.wakeup() end
+            if tasks.msp then
+                local ok, err = pcall(function()
+                    tasks.msp.wakeup()
+                end)
+                if not ok then print("[ERROR][tasks.msp.wakeup]", err) end
+            end
         else
-            if tasks.callback then tasks.callback.wakeup() end
+            if tasks.callback then
+                local ok, err = pcall(function()
+                    tasks.callback.wakeup()
+                end)
+                if not ok then print("[ERROR][tasks.callback.wakeup]", err) end
+            end
         end
     else
         if cycleFlip == 0 then
-            runNonSpreadTasks()
+            local ok, err = pcall(runNonSpreadTasks)
+            if not ok then print("[ERROR][runNonSpreadTasks]", err) end
         else
-            runSpreadTasks()
+            local ok, err = pcall(runSpreadTasks)
+            if not ok then print("[ERROR][runSpreadTasks]", err) end
         end
     end
+
 
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
