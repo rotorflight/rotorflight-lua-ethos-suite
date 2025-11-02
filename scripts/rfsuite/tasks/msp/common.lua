@@ -55,7 +55,7 @@ end
 
 -- ===== Global version selection =============================================
 -- Single global selector (default v1). Switch at runtime via setProtocolVersion.
-local _mspVersion = 1
+local _mspVersion = 2
 local function setProtocolVersion(v)
     v = tonumber(v)
     _mspVersion = (v == 2) and 2 or 1
@@ -244,42 +244,115 @@ function handlers.v2.processTxQ()
         " idx=" .. tostring(mspTxIdx) .. " lastReq=" .. tostring(mspLastReq))
 
     local payload = {}
-    payload[1] = _mkStatusByte(mspTxIdx == 1)  -- carries v2 bits when _mspVersion==2
-    mspSeq = (mspSeq + 1) & 0x0F
+    payload[1] = _mkStatusByte(mspTxIdx == 1)  -- will set v2 bits via _mkStatusByte
+    mspSeq = (mspSeq + 1) % 16
 
     local i = 2
-    while (i <= rfsuite.tasks.msp.protocol.maxTxBufferSize) and mspTxIdx <= #mspTxBuf do
+    while (i <= rfsuite.tasks.msp.protocol.maxTxBufferSize) and (mspTxIdx <= #mspTxBuf) do
         payload[i] = mspTxBuf[mspTxIdx]
         mspTxIdx = mspTxIdx + 1
-        -- TODO(v2): replace with MSPv2 checksum/CRC (currently mirrors v1 XOR)
-        mspTxCRC = mspTxCRC ~ (payload[i] or 0)
         i = i + 1
     end
 
-    if i <= rfsuite.tasks.msp.protocol.maxTxBufferSize then
-        -- TODO(v2): finalize CRC/footer placement per MSPv2
-        payload[i] = mspTxCRC
-        for j = i + 1, rfsuite.tasks.msp.protocol.maxTxBufferSize do payload[j] = 0 end
-        _hex(payload, rfsuite.tasks.msp.protocol.maxTxBufferSize)
-        mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
-        rfsuite.tasks.msp.protocol.mspSend(payload)
-        return false
+    -- If this was the final chunk, pad and send; no CRC/footer for v2.
+    for j = i, rfsuite.tasks.msp.protocol.maxTxBufferSize do
+        payload[j] = payload[j] or 0
     end
 
     _hex(payload, rfsuite.tasks.msp.protocol.maxTxBufferSize)
     rfsuite.tasks.msp.protocol.mspSend(payload)
+
+    if mspTxIdx > #mspTxBuf then
+        mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
+        return false
+    end
+
     return true
 end
 
 function handlers.v2.sendRequest(cmd, payload)
-    -- Enqueue shape matches v1; on-wire differences handled in processTxQ.
-    return handlers.v1.sendRequest(cmd, payload)
+    if type(cmd) ~= "number" or type(payload) ~= "table" then
+        _log(1, "Refused to send(v2): invalid command or payload")
+        return nil
+    end
+    if #mspTxBuf ~= 0 then
+        _log(1, "Busy(v2): previous TX not finished, drop cmd=" .. tostring(cmd))
+        return nil
+    end
+
+    local len  = #payload
+    local cmd1 = cmd % 256
+    local cmd2 = math.floor(cmd / 256) % 256
+    local len1 = len % 256
+    local len2 = math.floor(len / 256) % 256
+
+    mspTxBuf = { 0, cmd1, cmd2, len1, len2 }
+    for i = 1, len do
+        mspTxBuf[#mspTxBuf + 1] = payload[i] % 256
+    end
+
+    mspLastReq = cmd
+    mspTxIdx   = 1
+    mspTxCRC   = 0 -- no MSP-level CRC for v2
+    _log(2, "Enqueued(v2) cmd=" .. tostring(cmd) .. " len=" .. tostring(len))
+    _hex(mspTxBuf, rfsuite.tasks.msp.protocol.maxTxBufferSize)
 end
 
 function handlers.v2.receivedReply(payload)
-    -- TODO(v2): parse v2 header, sequence, assemble buffer, verify CRC
-    _log(1, "MSPv2 RX path not implemented yet")
-    return nil
+    local idx = 1
+    local status = payload[idx] or 0
+    local version = bit32 and bit32.rshift(bit32.band(status, 0x60), 5) or ((status & 0x60) >> 5)
+    local start   = (status & 0x10) ~= 0
+    local seq     =  status % 16
+    idx = idx + 1
+
+    if start then
+        mspRxBuf   = {}
+        mspRxError = (status & 0x80) ~= 0
+
+        local flags = payload[idx] or 0; idx = idx + 1
+        local cmd1  = payload[idx] or 0; idx = idx + 1
+        local cmd2  = payload[idx] or 0; idx = idx + 1
+        local len1  = payload[idx] or 0; idx = idx + 1
+        local len2  = payload[idx] or 0; idx = idx + 1
+
+        mspRxReq  = (cmd2 * 256) + cmd1
+        mspRxSize = (len2 * 256) + len1
+        mspRxCRC  = 0
+        mspStarted = (mspRxReq == mspLastReq)
+
+        _log(2, ("RXv2 start: ver=%d seq=%d flags=0x%02X size=%d req=%d started=%s")
+            :format(version or 2, seq, flags, mspRxSize, mspRxReq, tostring(mspStarted)))
+    else
+        -- Must be a continuation: check sequencing
+        if (not mspStarted) or (((mspRemoteSeq + 1) % 16) ~= seq) then
+            _log(1, ("RXv2 out-of-seq or not started: last=%d got=%d started=%s")
+                :format(mspRemoteSeq or -1, seq, tostring(mspStarted)))
+            mspStarted = false
+            return nil
+        end
+    end
+
+    -- Copy as many data bytes as fit in this chunk
+    while (idx <= rfsuite.tasks.msp.protocol.maxRxBufferSize) and (#mspRxBuf < mspRxSize) do
+        mspRxBuf[#mspRxBuf + 1] = payload[idx]
+        idx = idx + 1
+    end
+
+    -- If we used the whole rx window, expect more chunks
+    if idx > rfsuite.tasks.msp.protocol.maxRxBufferSize then
+        mspRemoteSeq = seq
+        _log(3, "RXv2 continuation expected; seq=" .. tostring(seq) ..
+            " collected=" .. tostring(#mspRxBuf) .. "/" .. tostring(mspRxSize))
+        return false
+    end
+
+    -- Final chunk reached
+    mspStarted = false
+    _log(2, ("RXv2 complete: seq=%d len=%d req=%d err=%s")
+        :format(seq, #mspRxBuf, mspRxReq, tostring(mspRxError)))
+    _hex(mspRxBuf, rfsuite.tasks.msp.protocol.maxRxBufferSize)
+    return true
 end
 
 function handlers.v2.pollReply()
