@@ -53,8 +53,20 @@ local function _hex(buf, maxLen)
 end
 -- ============================================================================
 
-local MSP_VERSION = (1 << 5)
-local MSP_STARTFLAG = (1 << 4)
+-- ===== Global version selection =============================================
+-- Single global selector (default v1). Switch at runtime via setProtocolVersion.
+local _mspVersion = 1
+local function setProtocolVersion(v)
+    v = tonumber(v)
+    _mspVersion = (v == 2) and 2 or 1
+    _log(1, "MSP protocol set to v" .. tostring(_mspVersion))
+end
+local function getProtocolVersion() return _mspVersion end
+
+-- ===== Protocol constants ====================================================
+-- bit layout used by our chunk header (status byte)
+local MSP_VERSION_BIT = (1 << 5)  -- v1 uses these bits today
+local MSP_STARTFLAG   = (1 << 4)
 
 local mspSeq = 0
 local mspRemoteSeq = 0
@@ -69,16 +81,35 @@ local mspTxBuf = {}
 local mspTxIdx = 1
 local mspTxCRC = 0
 
-local function mspProcessTxQ()
+-- status byte helper (versions share the same shape for now)
+local function _mkStatusByte(isStart)
+    local versionBits = (_mspVersion == 2) and (2 << 5) or MSP_VERSION_BIT
+    local status = (mspSeq + versionBits)
+    if isStart then status = status + MSP_STARTFLAG end
+    return status & 0x7F
+end
+
+-- ===== TX/RX helpers =========================================================
+local function mspClearTxBuf()
+    _log(2, "Clearing TX buffer (discard " .. tostring(#mspTxBuf) .. " bytes)")
+    mspTxBuf = {}
+    mspTxIdx = 1
+    mspTxCRC = 0
+end
+
+-- ===== Versioned handlers ====================================================
+local handlers = { v1 = {}, v2 = {} }
+
+-- ---------- MSPv1: current behaviour (moved verbatim) -----------------------
+function handlers.v1.processTxQ()
     if #mspTxBuf == 0 then return false end
 
-    _log(2, "TXQ size=" .. tostring(#mspTxBuf) ..
+    _log(2, "TXQ(v1) size=" .. tostring(#mspTxBuf) ..
         " idx=" .. tostring(mspTxIdx) .. " lastReq=" .. tostring(mspLastReq))
 
     local payload = {}
-    payload[1] = mspSeq + MSP_VERSION
+    payload[1] = _mkStatusByte(mspTxIdx == 1)  -- v1 bits
     mspSeq = (mspSeq + 1) & 0x0F
-    if mspTxIdx == 1 then payload[1] = payload[1] + MSP_STARTFLAG end
 
     local i = 2
     while (i <= rfsuite.tasks.msp.protocol.maxTxBufferSize) and mspTxIdx <= #mspTxBuf do
@@ -92,24 +123,19 @@ local function mspProcessTxQ()
         payload[i] = mspTxCRC
         for j = i + 1, rfsuite.tasks.msp.protocol.maxTxBufferSize do payload[j] = 0 end
         _log(3, "TX frame final chunk; CRC=" .. string.format("0x%02X", mspTxCRC))
-
         _hex(payload, rfsuite.tasks.msp.protocol.maxTxBufferSize)
-
-        mspTxBuf = {}
-        mspTxIdx = 1
-        mspTxCRC = 0
+        mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
         rfsuite.tasks.msp.protocol.mspSend(payload)
         return false
     end
 
     _log(3, "TX frame partial chunk sent (continuation)")
     _hex(payload, rfsuite.tasks.msp.protocol.maxTxBufferSize)
-
     rfsuite.tasks.msp.protocol.mspSend(payload)
     return true
 end
 
-local function mspSendRequest(cmd, payload)
+function handlers.v1.sendRequest(cmd, payload)
     if not cmd or type(payload) ~= "table" then
         _log(1, "Refused to send: invalid command or payload")
         return nil
@@ -129,7 +155,7 @@ local function mspSendRequest(cmd, payload)
     _hex(mspTxBuf, rfsuite.tasks.msp.protocol.maxTxBufferSize)
 end
 
-local function mspReceivedReply(payload)
+function handlers.v1.receivedReply(payload)
     local idx = 1
     local status = payload[idx]
     local version = (status & 0x60) >> 5
@@ -191,7 +217,7 @@ local function mspReceivedReply(payload)
     return true
 end
 
-local function mspPollReply()
+function handlers.v1.pollReply()
     local startTime = os.clock()
     _log(3, "Polling for reply (100ms budget)")
 
@@ -199,7 +225,7 @@ local function mspPollReply()
         local mspData = rfsuite.tasks.msp.protocol.mspPoll()
         if mspData then
             _log(3, "Polled data available")
-            if mspReceivedReply(mspData) then
+            if handlers.v1.receivedReply(mspData) then
                 _log(2, "Reply ready for lastReq=" .. tostring(mspLastReq))
                 mspLastReq = 0
                 return mspRxReq, mspRxBuf, mspRxError
@@ -210,19 +236,80 @@ local function mspPollReply()
     return nil, nil, nil
 end
 
-local function mspClearTxBuf()
-    _log(2, "Clearing TX buffer (discard " .. tostring(#mspTxBuf) .. " bytes)")
-    mspTxBuf = {}
-    mspTxIdx = 1
-    mspTxCRC = 0
+-- ---------- MSPv2: stub (TBD header & CRC) ----------------------------------
+function handlers.v2.processTxQ()
+    if #mspTxBuf == 0 then return false end
+
+    _log(2, "TXQ(v2) size=" .. tostring(#mspTxBuf) ..
+        " idx=" .. tostring(mspTxIdx) .. " lastReq=" .. tostring(mspLastReq))
+
+    local payload = {}
+    payload[1] = _mkStatusByte(mspTxIdx == 1)  -- carries v2 bits when _mspVersion==2
+    mspSeq = (mspSeq + 1) & 0x0F
+
+    local i = 2
+    while (i <= rfsuite.tasks.msp.protocol.maxTxBufferSize) and mspTxIdx <= #mspTxBuf do
+        payload[i] = mspTxBuf[mspTxIdx]
+        mspTxIdx = mspTxIdx + 1
+        -- TODO(v2): replace with MSPv2 checksum/CRC (currently mirrors v1 XOR)
+        mspTxCRC = mspTxCRC ~ (payload[i] or 0)
+        i = i + 1
+    end
+
+    if i <= rfsuite.tasks.msp.protocol.maxTxBufferSize then
+        -- TODO(v2): finalize CRC/footer placement per MSPv2
+        payload[i] = mspTxCRC
+        for j = i + 1, rfsuite.tasks.msp.protocol.maxTxBufferSize do payload[j] = 0 end
+        _hex(payload, rfsuite.tasks.msp.protocol.maxTxBufferSize)
+        mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
+        rfsuite.tasks.msp.protocol.mspSend(payload)
+        return false
+    end
+
+    _hex(payload, rfsuite.tasks.msp.protocol.maxTxBufferSize)
+    rfsuite.tasks.msp.protocol.mspSend(payload)
+    return true
 end
 
--- Public API (added set/get logging for comprehensive debugging)
+function handlers.v2.sendRequest(cmd, payload)
+    -- Enqueue shape matches v1; on-wire differences handled in processTxQ.
+    return handlers.v1.sendRequest(cmd, payload)
+end
+
+function handlers.v2.receivedReply(payload)
+    -- TODO(v2): parse v2 header, sequence, assemble buffer, verify CRC
+    _log(1, "MSPv2 RX path not implemented yet")
+    return nil
+end
+
+function handlers.v2.pollReply()
+    local startTime = os.clock()
+    _log(3, "Polling for v2 reply (100ms budget)")
+    while os.clock() - startTime < 0.1 do
+        local mspData = rfsuite.tasks.msp.protocol.mspPoll()
+        if mspData and handlers.v2.receivedReply(mspData) then
+            mspLastReq = 0
+            return mspRxReq, mspRxBuf, mspRxError
+        end
+    end
+    return nil, nil, nil
+end
+
+-- ===== Dispatcher ============================================================
+local function _h() return (_mspVersion == 2) and handlers.v2 or handlers.v1 end
+local function mspProcessTxQ() return _h().processTxQ() end
+local function mspSendRequest(cmd, payload) return _h().sendRequest(cmd, payload) end
+local function mspPollReply() return _h().pollReply() end
+
+-- Public API
 return {
     mspProcessTxQ = mspProcessTxQ,
     mspSendRequest = mspSendRequest,
     mspPollReply = mspPollReply,
     mspClearTxBuf = mspClearTxBuf,
     setLogging = setLogging,
-    getLogging = getLogging
+    getLogging = getLogging,
+    -- new global version API
+    setProtocolVersion = setProtocolVersion,
+    getProtocolVersion = getProtocolVersion,
 }
