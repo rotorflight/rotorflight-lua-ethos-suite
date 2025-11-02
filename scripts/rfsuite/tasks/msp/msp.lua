@@ -48,11 +48,6 @@ function msp.wakeup()
 
     if rfsuite.session.telemetrySensor == nil then return end
 
-    if not msp.sensor then
-        msp.sensor = sport.getSensor({primId = 0x32})
-        msp.sensor:module(rfsuite.session.telemetrySensor:module())
-    end
-
     if not msp.sensorTlm then
         msp.sensorTlm = sport.getSensor()
         msp.sensorTlm:module(rfsuite.session.telemetrySensor:module())
@@ -107,10 +102,7 @@ function msp.wakeup()
     end
 
     if state == true then
-
         msp.mspQueue:processQueue()
-
-        if msp.onConnectChecksInit == true then if rfsuite.session.telemetrySensor then msp.sensor:module(rfsuite.session.telemetrySensor:module()) end end
     else
         msp.mspQueue:clear()
     end
@@ -121,7 +113,6 @@ function msp.setTelemetryTypeChanged() telemetryTypeChanged = true end
 
 function msp.reset()
     rfsuite.tasks.msp.mspQueue:clear()
-    msp.sensor = nil
     msp.activeProtocol = nil
     msp.onConnectChecksInit = true
     delayStartTime = nil
