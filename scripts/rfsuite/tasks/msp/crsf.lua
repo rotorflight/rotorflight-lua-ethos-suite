@@ -16,13 +16,16 @@ local CRSF_FRAMETYPE_MSP_WRITE = 0x7C
 
 local crsfMspCmd = 0
 
-if crsf.getSensor ~= nil then
-    local sensor = crsf.getSensor()
-    transport.popFrame = function() return sensor:popFrame() end
-    transport.pushFrame = function(x, y) return sensor:pushFrame(x, y) end
-else
-    transport.popFrame = function() return crsf.popFrame() end
-    transport.pushFrame = function(x, y) return crsf.pushFrame(x, y) end
+local sensor
+
+transport.popFrame = function() 
+    if not sensor then sensor = crsf.getSensor() end
+    return sensor:popFrame() 
+end
+
+transport.pushFrame = function(x, y) 
+    if not sensor then sensor = crsf.getSensor() end
+    return sensor:pushFrame(x, y) 
 end
 
 transport.mspSend = function(payload)
