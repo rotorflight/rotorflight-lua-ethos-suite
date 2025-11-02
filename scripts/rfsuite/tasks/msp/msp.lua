@@ -48,11 +48,6 @@ function msp.wakeup()
 
     if rfsuite.session.telemetrySensor == nil then return end
 
-    if not msp.sensorTlm then
-        msp.sensorTlm = sport.getSensor()
-        msp.sensorTlm:module(rfsuite.session.telemetrySensor:module())
-    end
-
     if rfsuite.session.resetMSP and not delayPending then
         delayStartTime = os.clock()
         delayPending = true
@@ -116,7 +111,6 @@ function msp.reset()
     msp.activeProtocol = nil
     msp.onConnectChecksInit = true
     delayStartTime = nil
-    msp.sensorTlm = nil
     delayPending = false
 end
 

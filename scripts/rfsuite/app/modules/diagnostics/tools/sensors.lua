@@ -21,6 +21,8 @@ local invalidSensors = rfsuite.tasks.telemetry.validateSensors()
 
 local repairSensors = false
 
+local sensorTlm = nil
+
 local progressLoader
 local progressLoaderCounter = 0
 local doDiscoverNotify = false
@@ -154,13 +156,22 @@ local function wakeup()
 
     if doDiscoverNotify == true then
 
+        if not sensorTlm then
+            if not rfsuite.session.telemetrySensor then return false end
+
+            sensorTlm = sport.getSensor()
+            sensorTlm:module(rfsuite.session.telemetrySensor:module())
+
+            if not sensorTlm then return false end
+        end
+
         doDiscoverNotify = false
 
         local buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}
 
         if rfsuite.utils.ethosVersionAtLeast({1, 6, 3}) then
             rfsuite.utils.log("Starting discover sensors", "info")
-            rfsuite.tasks.msp.sensorTlm:discover()
+            sensorTlm:discover()
         else
             form.openDialog({width = nil, title = "@i18n(app.modules.validate_sensors.name)@", message = "@i18n(app.modules.validate_sensors.msg_repair_fin)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
         end
