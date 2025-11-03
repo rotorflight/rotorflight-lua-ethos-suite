@@ -40,6 +40,8 @@ msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks
 msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
 msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
 
+msp.common.setLogging("trace", { hexdump = true })
+
 local delayDuration = 2
 local delayStartTime = nil
 local delayPending = false

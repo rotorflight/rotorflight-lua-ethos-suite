@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 
 -- ===== Logging controls ======================================================
 -- Levels: 0=off, 1=basic, 2=verbose, 3=trace
-local _mspLogLevel = 3
+local _mspLogLevel = 0
 local _mspHexDump   = false
 local _mspPrefix    = "[MSP] "
 
@@ -37,7 +37,7 @@ end
 
 local function _log(level, msg)
     if _mspLogLevel >= level then
-        print(_mspPrefix .. msg)
+        --print(_mspPrefix .. msg)
     end
 end
 
@@ -301,31 +301,33 @@ end
 function handlers.v2.receivedReply(payload)
     local idx = 1
     local status = payload[idx] or 0
-    local version = bit32 and bit32.rshift(bit32.band(status, 0x60), 5) or ((status & 0x60) >> 5)
+    local version = (status & 0x60) >> 5
     local start   = (status & 0x10) ~= 0
-    local seq     =  status % 16
+    local seq     =  status & 0x0F
     idx = idx + 1
 
     if start then
+        -- Start of a new v2 frame: reset state and read the fixed 5-byte header.
         mspRxBuf   = {}
         mspRxError = (status & 0x80) ~= 0
 
+        -- MSPv2 header: [flags][cmd LSB][cmd MSB][len LSB][len MSB]
         local flags = payload[idx] or 0; idx = idx + 1
         local cmd1  = payload[idx] or 0; idx = idx + 1
         local cmd2  = payload[idx] or 0; idx = idx + 1
         local len1  = payload[idx] or 0; idx = idx + 1
         local len2  = payload[idx] or 0; idx = idx + 1
 
-        mspRxReq  = (cmd2 * 256) + cmd1
-        mspRxSize = (len2 * 256) + len1
-        mspRxCRC  = 0
+        mspRxReq   = ((cmd2 & 0xFF) << 8) | (cmd1 & 0xFF)
+        mspRxSize  = (((len2 & 0xFF) << 8) | (len1 & 0xFF)) & 0xFFFF
+        mspRxCRC   = 0 -- no MSP-level CRC in v2 (transport ensures integrity)
         mspStarted = (mspRxReq == mspLastReq)
 
         _log(2, ("RXv2 start: ver=%d seq=%d flags=0x%02X size=%d req=%d started=%s")
-            :format(version or 2, seq, flags, mspRxSize, mspRxReq, tostring(mspStarted)))
+            :format(version, seq, flags, mspRxSize, mspRxReq, tostring(mspStarted)))
     else
-        -- Must be a continuation: check sequencing
-        if (not mspStarted) or (((mspRemoteSeq + 1) % 16) ~= seq) then
+        -- Continuation: enforce in-sequence delivery only when we are in a started transfer.
+        if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
             _log(1, ("RXv2 out-of-seq or not started: last=%d got=%d started=%s")
                 :format(mspRemoteSeq or -1, seq, tostring(mspStarted)))
             mspStarted = false
@@ -333,21 +335,32 @@ function handlers.v2.receivedReply(payload)
         end
     end
 
-    -- Copy as many data bytes as fit in this chunk
+    -- Copy payload bytes from this chunk into the assembly buffer
     while (idx <= rfsuite.tasks.msp.protocol.maxRxBufferSize) and (#mspRxBuf < mspRxSize) do
         mspRxBuf[#mspRxBuf + 1] = payload[idx]
         idx = idx + 1
     end
 
-    -- If we used the whole rx window, expect more chunks
-    if idx > rfsuite.tasks.msp.protocol.maxRxBufferSize then
+    -- Determine if we still need more data overall (independent of how much of the window we used)
+    local needMore = (#mspRxBuf < mspRxSize)
+
+    if needMore then
+        -- We still need bytes; remember this seq and ask for/await more.
         mspRemoteSeq = seq
-        _log(3, "RXv2 continuation expected; seq=" .. tostring(seq) ..
-            " collected=" .. tostring(#mspRxBuf) .. "/" .. tostring(mspRxSize))
+
+        -- If we consumed the entire rx window, it's definitely a continuation case on small transports like S.Port.
+        if idx > rfsuite.tasks.msp.protocol.maxRxBufferSize then
+            _log(3, "RXv2 continuation expected; seq=" .. tostring(seq) ..
+                " collected=" .. tostring(#mspRxBuf) .. "/" .. tostring(mspRxSize))
+        else
+            -- Some transports may deliver short frames; still not done, so keep polling.
+            _log(3, "RXv2 partial; awaiting more bytes (seq=" .. tostring(seq) ..
+                " collected=" .. tostring(#mspRxBuf) .. "/" .. tostring(mspRxSize) .. ")")
+        end
         return false
     end
 
-    -- Final chunk reached
+    -- All data collected (covers zero-length replies too)
     mspStarted = false
     _log(2, ("RXv2 complete: seq=%d len=%d req=%d err=%s")
         :format(seq, #mspRxBuf, mspRxReq, tostring(mspRxError)))
@@ -355,11 +368,15 @@ function handlers.v2.receivedReply(payload)
     return true
 end
 
+
 function handlers.v2.pollReply()
     local startTime = os.clock()
     _log(3, "Polling for v2 reply (100ms budget)")
     while os.clock() - startTime < 0.1 do
         local mspData = rfsuite.tasks.msp.protocol.mspPoll()
+
+
+        
         if mspData and handlers.v2.receivedReply(mspData) then
             mspLastReq = 0
             return mspRxReq, mspRxBuf, mspRxError
