@@ -37,7 +37,7 @@ end
 
 local function _log(level, msg)
     if _mspLogLevel >= level then
-        --print(_mspPrefix .. msg)
+        rfsuite.utils.log(_mspPrefix .. msg,"info")
     end
 end
 
