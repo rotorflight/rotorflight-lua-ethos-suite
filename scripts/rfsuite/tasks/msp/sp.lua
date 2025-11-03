@@ -49,6 +49,7 @@ local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 local function sportTelemetryPop()
     local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
 
+
     if sensorId and not (sensorId == lastSensorId and frameId == lastFrameId and dataId == lastDataId and value == lastValue) then
         lastSensorId, lastFrameId, lastDataId, lastValue = sensorId, frameId, dataId, value
         return sensorId, frameId, dataId, value
@@ -59,12 +60,46 @@ end
 
 transport.mspPoll = function()
     local sensorId, frameId, dataId, value = sportTelemetryPop()
-
     if not sensorId then return nil end
 
-    if (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then return {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF} end
+    -- Accept FC-origin frames; for v2 some stacks use 0x30 as well as 0x32
+    if (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID)
+       and (frameId == REPLY_FRAME_ID or frameId == REQUEST_FRAME_ID) then
+
+        local status = dataId & 0xFF
+        local ver    = (status >> 5) & 0x03  -- 2 = MSPv2
+
+        if ver == 2 then
+            -- S.Port reply word (little endian):
+            -- value = 0xVVVVVVVV → v0 = LSB … v3 = MSB
+            local v0 =  value        & 0xFF  -- first data/req byte
+            local v1 = (value >> 8)  & 0xFF  -- flags / data
+            local v2 = (value >> 16) & 0xFF  -- SIZE (observed on your POPs)
+            local v3 = (value >> 24) & 0xFF  -- extra / data
+            local start = (status & 0x10) ~= 0
+
+            if start then
+                -- MSPv2 START: byte2 must be SIZE, then data bytes.
+                -- Your frames look like: v2=size, payload in v0,v1,v3.
+                rfsuite.utils.log("MSPv2 START frame received: size=" .. tostring(v2),"info")
+                return { status, v2, v0, v1, v3, 0x00 }
+            else
+                -- MSPv2 CONT: status then 4 data bytes
+                rfsuite.utils.log("MSPv2 CONT frame received " .. string.format("data=0x%02X%02X%02X%02X", v0, v1, v2, v3),"info")
+                return { status, v0, v1, v2, v3, 0x00 }
+            end
+        end
+
+        -- MSPv0/v1 (legacy) — unchanged mapping that already works for you
+        return {
+            dataId & 0xFF, (dataId >> 8) & 0xFF,
+            value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF
+        }
+    end
 
     return nil
 end
+
+
 
 return transport
