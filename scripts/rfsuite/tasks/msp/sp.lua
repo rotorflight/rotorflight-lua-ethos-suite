@@ -40,14 +40,10 @@ function transport.sportTelemetryPop()
 end
 
 transport.mspSend = function(payload)
-    local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
-    local v3 = payload[3] or 0
-    local v4 = payload[4] or 0
-    local v5 = payload[5] or 0
-    local v6 = payload[6] or 0
-    local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
-
-    return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
+  local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
+  local v3, v4, v5, v6 = payload[3] or 0, payload[4] or 0, payload[5] or 0, payload[6] or 0
+  local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
+  return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
 end
 
 transport.mspRead = function(cmd) return rfsuite.tasks.msp.common.mspSendRequest(cmd, {}) end
@@ -62,40 +58,25 @@ local function sportTelemetryPop()
 end
 
 transport.mspPoll = function()
-    while true do
-        local sensorId, frameId, dataId, value = sportTelemetryPop()
-        if not sensorId then return nil end
-
-        if not ((sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID) then goto continue end
-
-        local status = dataId & 0xFF
-        local app_hi = (dataId >> 8) & 0xFF
-        local b0 = value & 0xFF
-        local b1 = (value >> 8) & 0xFF
-        local b2 = (value >> 16) & 0xFF
-        local b3 = (value >> 24) & 0xFF
-
-        local pv = (rfsuite and rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.getProtocolVersion) and rfsuite.tasks.msp.common.getProtocolVersion() or 1
-
-        if pv == 2 then
-            local isStart = (status & 0x10) ~= 0
-            if isStart then
-
-                local out = {status, app_hi, b0, b1, b2, b3}
-                return out
-            else
-
-                local out = {status, app_hi, b0, b1, b2, b3}
-                return out
-            end
-        else
-
-            local out = {status, app_hi, b0, b1, b2, b3}
-            return out
-        end
-
-        ::continue::
+  while true do
+    local sensorId, frameId, dataId, value = sportTelemetryPop()
+    if not sensorId then
+      return nil
     end
-end
+    -- Accept any physId; reply frames are identified by primId==REPLY_FRAME_ID (0x32)
+    if frameId == REPLY_FRAME_ID then
+      local bytes = {
+        dataId & 0xFF,
+        (dataId >> 8) & 0xFF,
+        value & 0xFF,
+        (value >> 8) & 0xFF,
+        (value >> 16) & 0xFF,
+        (value >> 24) & 0xFF
+      }
+      return bytes
+    end
+    -- otherwise keep looping until the batch is empty
+  end
+end  
 
 return transport
