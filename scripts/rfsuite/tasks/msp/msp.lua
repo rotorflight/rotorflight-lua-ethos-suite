@@ -40,7 +40,7 @@ msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks
 msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
 msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
 msp.common.setProtocolVersion(2)  
-msp.common.setLogging("trace", {hexdump = true})
+msp.common.setLogging("off", {hexdump = true})
 
 
 local delayDuration = 2
