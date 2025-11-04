@@ -39,8 +39,7 @@ msp.mspQueue.timeout = 2.0
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspHelper.lua"))()
 msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
 msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
-
-msp.common.setLogging("trace", { hexdump = true })
+msp.common.setLogging("off", {hexdump = true})
 
 local delayDuration = 2
 local delayStartTime = nil

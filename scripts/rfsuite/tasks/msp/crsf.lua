@@ -18,14 +18,14 @@ local crsfMspCmd = 0
 
 local sensor
 
-transport.popFrame = function() 
+transport.popFrame = function()
     if not sensor then sensor = crsf.getSensor() end
-    return sensor:popFrame() 
+    return sensor:popFrame()
 end
 
-transport.pushFrame = function(x, y) 
+transport.pushFrame = function(x, y)
     if not sensor then sensor = crsf.getSensor() end
-    return sensor:pushFrame(x, y) 
+    return sensor:pushFrame(x, y)
 end
 
 transport.mspSend = function(payload)

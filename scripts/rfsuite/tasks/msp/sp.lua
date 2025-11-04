@@ -13,36 +13,23 @@ local FPORT_REMOTE_SENSOR_ID = 0x00
 local REQUEST_FRAME_ID = 0x30
 local REPLY_FRAME_ID = 0x32
 
--- MSPv2 assembly state
-local v2_inflight  = false
+local v2_inflight = false
 local v2_remaining = 0
-local v2_req       = nil           -- tracks request id (v0)
-local v2_seq       = nil           -- low 4 bits of status
+local v2_req = nil
+local v2_seq = nil
 local function v2_get_seq(st) return st & 0x0F end
 
 local lastSensorId, lastFrameId, lastDataId, lastValue
 
 local sensor
 
-local function _isInboundReply(sensorId, frameId)
-  return (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID)
-         and frameId == REPLY_FRAME_ID
-end
+local function _isInboundReply(sensorId, frameId) return (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID end
 
-local function _map_subframe(dataId, value)
-  return {
-    dataId        & 0xFF,              -- HEAD (seq | start | error)
-    (dataId >> 8) & 0xFF,              -- NEXT0 (size/cmd on START, data[0] on CONT)
-    value         & 0xFF,              -- NEXT1
-    (value >> 8)  & 0xFF,              -- NEXT2
-    (value >> 16) & 0xFF,              -- NEXT3
-    (value >> 24) & 0xFF,              -- NEXT4
-  }
-end
+local function _map_subframe(dataId, value) return {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF} end
 
-function transport.sportTelemetryPush(sensorId, frameId, dataId, value) 
+function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
     if not sensor then sensor = sport.getSensor({primId = 0x32}) end
-    return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value}) 
+    return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
 end
 
 function transport.sportTelemetryPop()
@@ -69,58 +56,46 @@ transport.mspWrite = function(cmd, payload) return rfsuite.tasks.msp.common.mspS
 
 local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 
-
--- Replace sportTelemetryPop() with the simple, no-dedup version
 local function sportTelemetryPop()
-  local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-  return sensorId, frameId, dataId, value
+    local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
+    return sensorId, frameId, dataId, value
 end
-
 
 transport.mspPoll = function()
-    local sensorId, frameId, dataId, value = sportTelemetryPop()
-    if not sensorId then return nil end
+    while true do
+        local sensorId, frameId, dataId, value = sportTelemetryPop()
+        if not sensorId then return nil end
 
-    -- Only FC replies
-    if not ( (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID)
-             and frameId == REPLY_FRAME_ID ) then
-        return nil
-    end
+        if not ((sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID) then goto continue end
 
-    local status = dataId & 0xFF
-    local app_hi = (dataId >> 8) & 0xFF
-    local b0 =  value        & 0xFF
-    local b1 = (value >> 8)  & 0xFF
-    local b2 = (value >> 16) & 0xFF
-    local b3 = (value >> 24) & 0xFF
+        local status = dataId & 0xFF
+        local app_hi = (dataId >> 8) & 0xFF
+        local b0 = value & 0xFF
+        local b1 = (value >> 8) & 0xFF
+        local b2 = (value >> 16) & 0xFF
+        local b3 = (value >> 24) & 0xFF
 
-    -- Use the negotiated/forced protocol version from common.lua (not reply bits)
-    local pv = (rfsuite and rfsuite.tasks and rfsuite.tasks.msp and
-                rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.getProtocolVersion)
-               and rfsuite.tasks.msp.common.getProtocolVersion() or 1
+        local pv = (rfsuite and rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.getProtocolVersion) and rfsuite.tasks.msp.common.getProtocolVersion() or 1
 
-    if pv == 2 then
-        local isStart = (status & 0x10) ~= 0
-        if isStart then
-            -- v2 START: [status][flags][cmd1][cmd2][len1][len2]
-            local out = { status, app_hi, b0, b1, b2, b3 }
-            -- (optional logging)
-            return out
+        if pv == 2 then
+            local isStart = (status & 0x10) ~= 0
+            if isStart then
+
+                local out = {status, app_hi, b0, b1, b2, b3}
+                return out
+            else
+
+                local out = {status, app_hi, b0, b1, b2, b3}
+                return out
+            end
         else
-            -- v2 CONT: [status][d0][d1][d2][d3][d4]
-            local out = { status, app_hi, b0, b1, b2, b3 }
-            -- (optional logging)
+
+            local out = {status, app_hi, b0, b1, b2, b3}
             return out
         end
+
+        ::continue::
     end
-
-    -- MSPv1 (technically correct): always forward the exact 6 on-wire bytes
-    local out = { status, app_hi, b0, b1, b2, b3 }
-    return out
 end
-
-
-
-
 
 return transport
