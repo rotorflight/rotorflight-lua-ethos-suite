@@ -22,7 +22,8 @@ local config = {
     baseDir = "rfsuite",
     preferences = "rfsuite.user",
     defaultRateProfile = 4,
-    watchdogParam = 10
+    watchdogParam = 10,
+    mspProtocolVersion = 1
 }
 -- LuaFormatter on
 

@@ -5,6 +5,8 @@
 
 local rfsuite = require("rfsuite")
 
+local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
+
 local arg = {...}
 local config = arg[1]
 
@@ -39,7 +41,7 @@ msp.mspQueue.timeout = 2.0
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspHelper.lua"))()
 msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
 msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
-msp.common.setProtocolVersion(2)  
+msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)  
 msp.common.setLogging("off", {hexdump = true})
 
 
