@@ -24,6 +24,22 @@ local lastSensorId, lastFrameId, lastDataId, lastValue
 
 local sensor
 
+local function _isInboundReply(sensorId, frameId)
+  return (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID)
+         and frameId == REPLY_FRAME_ID
+end
+
+local function _map_subframe(dataId, value)
+  return {
+    dataId        & 0xFF,              -- HEAD (seq | start | error)
+    (dataId >> 8) & 0xFF,              -- NEXT0 (size/cmd on START, data[0] on CONT)
+    value         & 0xFF,              -- NEXT1
+    (value >> 8)  & 0xFF,              -- NEXT2
+    (value >> 16) & 0xFF,              -- NEXT3
+    (value >> 24) & 0xFF,              -- NEXT4
+  }
+end
+
 function transport.sportTelemetryPush(sensorId, frameId, dataId, value) 
     if not sensor then sensor = sport.getSensor({primId = 0x32}) end
     return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value}) 
@@ -54,87 +70,55 @@ transport.mspWrite = function(cmd, payload) return rfsuite.tasks.msp.common.mspS
 local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 
 
+-- Replace sportTelemetryPop() with the simple, no-dedup version
 local function sportTelemetryPop()
-    local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-
-
-    if sensorId and not (sensorId == lastSensorId and frameId == lastFrameId and dataId == lastDataId and value == lastValue) then
-        lastSensorId, lastFrameId, lastDataId, lastValue = sensorId, frameId, dataId, value
-        return sensorId, frameId, dataId, value
-    end
-
-    return nil
+  local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
+  return sensorId, frameId, dataId, value
 end
 
---[[
-local function sportTelemetryPop()
-    -- NO de-dup while we diagnose v2: always forward the frame.
-    local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-    return sensorId, frameId, dataId, value
-end
-]]--
 
 transport.mspPoll = function()
     local sensorId, frameId, dataId, value = sportTelemetryPop()
     if not sensorId then return nil end
 
-    -- Accept FC-origin frames; some stacks may emit v2 cont on 0x30 too
-    if (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID)
-       and (frameId == REPLY_FRAME_ID or frameId == REQUEST_FRAME_ID) then
-
-        local status = dataId & 0xFF
-        local ver    = (status >> 5) & 0x03   -- 0/1=legacy, 2=MSPv2
-
-        if ver == 2 then
-            -- SmartPort: we can deliver 5 bytes after status: appId_hi + 4 value bytes
-            local app_hi = (dataId >> 8) & 0xFF
-            local b0 =  value        & 0xFF
-            local b1 = (value >> 8)  & 0xFF
-            local b2 = (value >> 16) & 0xFF
-            local b3 = (value >> 24) & 0xFF
-            local isStart = (status & 0x10) ~= 0
-
-            if isStart then
-                -- MSPv2 START header expected by common.lua:
-                --   [status][flags][cmd1][cmd2][len1][len2]
-                local out = { (status | 0x10) & 0xFF, app_hi, b0, b1, b2, b3 }
-                if rfsuite and rfsuite.utils and rfsuite.utils.log then
-                    rfsuite.utils.log(
-                        string.format(
-                            "MSPv2 START frame: status=%02X flags=%02X cmd=%u size=%u",
-                            out[1], out[2], (out[4] << 8) | out[3], (out[6] << 8) | out[5]
-                        ),
-                        "info"
-                    )
-                    rfsuite.utils.log(
-                        string.format("[sp->common v2 START] %02X %02X %02X %02X %02X %02X",
-                                      out[1], out[2], out[3], out[4], out[5], out[6]), "debug")
-                end
-                return out
-            else
-                -- MSPv2 CONT payload expected by common.lua:
-                --   [status][d0][d1][d2][d3][d4]
-                local out = { status & 0xFF, app_hi, b0, b1, b2, b3 }
-                if rfsuite and rfsuite.utils and rfsuite.utils.log then
-                    rfsuite.utils.log(
-                        string.format("MSPv2 CONT frame: status=%02X data=[%02X %02X %02X %02X %02X]",
-                                      out[1], out[2], out[3], out[4], out[5], out[6]),
-                        "info"
-                    )
-                end
-                return out
-            end
-        end
-
-        -- MSPv0/v1 legacy path (unchanged)
-        return {
-            dataId & 0xFF, (dataId >> 8) & 0xFF,
-            value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF
-        }
+    -- Only FC replies
+    if not ( (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID)
+             and frameId == REPLY_FRAME_ID ) then
+        return nil
     end
 
-    return nil
+    local status = dataId & 0xFF
+    local app_hi = (dataId >> 8) & 0xFF
+    local b0 =  value        & 0xFF
+    local b1 = (value >> 8)  & 0xFF
+    local b2 = (value >> 16) & 0xFF
+    local b3 = (value >> 24) & 0xFF
+
+    -- Use the negotiated/forced protocol version from common.lua (not reply bits)
+    local pv = (rfsuite and rfsuite.tasks and rfsuite.tasks.msp and
+                rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.getProtocolVersion)
+               and rfsuite.tasks.msp.common.getProtocolVersion() or 1
+
+    if pv == 2 then
+        local isStart = (status & 0x10) ~= 0
+        if isStart then
+            -- v2 START: [status][flags][cmd1][cmd2][len1][len2]
+            local out = { status, app_hi, b0, b1, b2, b3 }
+            -- (optional logging)
+            return out
+        else
+            -- v2 CONT: [status][d0][d1][d2][d3][d4]
+            local out = { status, app_hi, b0, b1, b2, b3 }
+            -- (optional logging)
+            return out
+        end
+    end
+
+    -- MSPv1 (technically correct): always forward the exact 6 on-wire bytes
+    local out = { status, app_hi, b0, b1, b2, b3 }
+    return out
 end
+
 
 
 
