@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 
 local enableWakeup = false
 
-local mspData = nil
+local apidata = nil
 local config = {}
 local triggerSave = false
 local configLoaded = false
@@ -211,7 +211,9 @@ local function wakeup()
                     if rfsuite.app.formFields then for i, v in pairs(rfsuite.app.formFields) do if v and v.enable then v:enable(true) end end end
 
                     local data = API.data()
-                    rfsuite.app.Page.mspData = data
+                    rfsuite.tasks.msp.api.apidata = data
+                    rfsuite.tasks.msp.api.apidata.receivedBytes = {}
+                    rfsuite.tasks.msp.api.apidata.receivedBytesCount = {}
 
                     for _, value in pairs(data.parsed) do if value ~= 0 then rfsuite.app.Page.config[value] = true end end
                 end
@@ -238,7 +240,7 @@ local function wakeup()
         end)
         WRITEAPI.setErrorHandler(function(self, buf) rfsuite.utils.log("Write to fbl failed.", "info") end)
 
-        local buffer = rfsuite.app.Page.mspData["buffer"]
+        local buffer = rfsuite.tasks.msp.api.apidata["buffer"]
 
         local slotsStrBefore = table.concat(buffer, ",")
 
@@ -333,4 +335,6 @@ local function mspTimeout()
     rfsuite.app.ui.enableNavigationField('menu')
 end
 
-return {mspData = mspData, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, mspTimeout = mspTimeout, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}
+local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
+
+return {apidata = apidata, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, mspTimeout = mspTimeout, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, onReloadMenu = onReloadMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}
