@@ -40,10 +40,10 @@ function transport.sportTelemetryPop()
 end
 
 transport.mspSend = function(payload)
-  local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
-  local v3, v4, v5, v6 = payload[3] or 0, payload[4] or 0, payload[5] or 0, payload[6] or 0
-  local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
-  return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
+    local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
+    local v3, v4, v5, v6 = payload[3] or 0, payload[4] or 0, payload[5] or 0, payload[6] or 0
+    local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
+    return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
 end
 
 transport.mspRead = function(cmd) return rfsuite.tasks.msp.common.mspSendRequest(cmd, {}) end
@@ -58,25 +58,16 @@ local function sportTelemetryPop()
 end
 
 transport.mspPoll = function()
-  while true do
-    local sensorId, frameId, dataId, value = sportTelemetryPop()
-    if not sensorId then
-      return nil
+    while true do
+        local sensorId, frameId, dataId, value = sportTelemetryPop()
+        if not sensorId then return nil end
+
+        if frameId == REPLY_FRAME_ID then
+            local bytes = {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF}
+            return bytes
+        end
+
     end
-    -- Accept any physId; reply frames are identified by primId==REPLY_FRAME_ID (0x32)
-    if frameId == REPLY_FRAME_ID then
-      local bytes = {
-        dataId & 0xFF,
-        (dataId >> 8) & 0xFF,
-        value & 0xFF,
-        (value >> 8) & 0xFF,
-        (value >> 16) & 0xFF,
-        (value >> 24) & 0xFF
-      }
-      return bytes
-    end
-    -- otherwise keep looping until the batch is empty
-  end
-end  
+end
 
 return transport
