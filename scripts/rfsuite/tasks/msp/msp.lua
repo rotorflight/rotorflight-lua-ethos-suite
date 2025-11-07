@@ -42,7 +42,6 @@ msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks
 msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
 msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/common.lua"))()
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
-msp.common.setLogging("off", {hexdump = true})
 
 local delayDuration = 2
 local delayStartTime = nil
