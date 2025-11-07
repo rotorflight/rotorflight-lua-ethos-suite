@@ -88,12 +88,10 @@ local function mspSendRequest(cmd, payload)
     if #mspTxBuf ~= 0 then return nil end
 
     if _mspVersion == 1 then
-        print("MSPv1 send request cmd=" .. tostring(cmd) .. " len=" .. tostring(#payload))
         mspTxBuf[1] = #payload
         mspTxBuf[2] = cmd & 0xFF
         for i = 1, #payload do mspTxBuf[i + 2] = payload[i] & 0xFF end
     else
-        print("MSPv2 send request cmd=" .. tostring(cmd) .. " len=" .. tostring(#payload))
         local len = #payload
         local cmd1 = cmd % 256
         local cmd2 = math.floor(cmd / 256) % 256
