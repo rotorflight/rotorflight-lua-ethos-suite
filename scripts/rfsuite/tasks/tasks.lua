@@ -202,6 +202,14 @@ local function clearSessionAndQueue()
     currentModuleId = nil
     currentTelemetryType = nil
 
+    if rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.setProtocolVersion then
+        pcall(rfsuite.tasks.msp.common.setProtocolVersion, 1)
+    end
+    if rfsuite.config and rfsuite.session then
+        rfsuite.config.mspProtocolVersion = 1
+        rfsuite.session.mspProtocolVersion = 1
+    end
+
 end
 
 function tasks.telemetryCheckScheduler()
