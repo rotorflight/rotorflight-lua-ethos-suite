@@ -334,7 +334,11 @@ function core.buildDeltaPayload(apiname, payload, api_structure, positionmap, re
                 field.mspapi = mspapi
                 rfsuite.utils.log("[buildDeltaPayload] Converted api field '" .. field.api .. "' to mspapi=" .. tostring(mspapi) .. " apikey=" .. tostring(apikey), "info")
             end
-            if not actual_fields[field.apikey] then actual_fields[field.apikey] = field end
+            if not field.apikey then
+                rfsuite.utils.log("[buildDeltaPayload] Missing apikey for field: " .. tostring(field.api), "info")
+            else
+                if not actual_fields[field.apikey] then actual_fields[field.apikey] = field end
+            end
         end
     end
 
