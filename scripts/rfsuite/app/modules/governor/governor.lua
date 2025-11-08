@@ -139,7 +139,7 @@ end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+    rfsuite.app.ui.openMainMenuSub('advanced')
     return true
 end
 
