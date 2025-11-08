@@ -102,6 +102,11 @@
         "needs_translation": false,
         "translation": "PWM drive frequency"
       },
+      "electrical_angle": {
+        "english": "Electrical angle for the motor",
+        "needs_translation": false,
+        "translation": "Timing voor de motor"
+      },
       "gov_i": {
         "english": "Integral value for the governor",
         "needs_translation": false,
@@ -201,11 +206,6 @@
         "english": "Minimum throttle value",
         "needs_translation": false,
         "translation": "Minimale throttle waarde"
-      },
-      "electrical_angle": {
-        "english": "Electrical angle for the motor",
-        "needs_translation": false,
-        "translation": "Timing voor de motor"
       }
     },
     "ESC_PARAMETERS_HW5": {
@@ -2153,6 +2153,11 @@
               "needs_translation": false,
               "translation": "Drive frequency"
             },
+            "electrical_angle": {
+              "english": "Electrical angle",
+              "needs_translation": false,
+              "translation": "Motor Timing"
+            },
             "fan_control": {
               "english": "Fan control",
               "needs_translation": false,
@@ -2252,11 +2257,6 @@
               "english": "Throttle protocol",
               "needs_translation": false,
               "translation": "Throttle protocol"
-            },
-            "electrical_angle": {
-              "english": "Electrical angle",
-              "needs_translation": false,
-              "translation": "Motor Timing"
             }
           },
           "hw5": {
@@ -3237,9 +3237,14 @@
           "translation": "Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n"
         },
         "idle_collective": {
-          "english": "Idle Collective",
+          "english": "Col->Idle Throttle",
           "needs_translation": false,
           "translation": "Stationair collectief"
+        },
+        "menu_curves": {
+          "english": "Curves",
+          "needs_translation": true,
+          "translation": "Curves"
         },
         "menu_filters": {
           "english": "Filters",
@@ -3317,7 +3322,7 @@
           "translation": "Tracking time"
         },
         "wot_collective": {
-          "english": "WOT Collective",
+          "english": "Col->Full Throttle",
           "needs_translation": false,
           "translation": "Volgas collectief"
         }
