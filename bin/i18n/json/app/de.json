@@ -2704,6 +2704,11 @@
         "translation": "Filter",
         "needs_translation": false
       },
+      "menu_curves": {
+        "english": "Curves",
+        "translation": "Curves",
+        "needs_translation": true
+      },
       "menu_time": {
         "english": "Ramp Time",
         "translation": "Rampezeit",
@@ -2745,12 +2750,12 @@
         "needs_translation": false
       },
       "idle_collective": {
-        "english": "Idle Collective",
+        "english": "Col->Idle Throttle",
         "translation": "Kollektiv-Leerlauf",
         "needs_translation": false
       },
       "wot_collective": {
-        "english": "WOT Collective",
+        "english": "Col->Full Throttle",
         "translation": "Kollektiv-Vollgas",
         "needs_translation": false
       },

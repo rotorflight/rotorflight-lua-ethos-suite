@@ -13,24 +13,36 @@ local FPORT_REMOTE_SENSOR_ID = 0x00
 local REQUEST_FRAME_ID = 0x30
 local REPLY_FRAME_ID = 0x32
 
+local v2_inflight = false
+local v2_remaining = 0
+local v2_req = nil
+local v2_seq = nil
+local function v2_get_seq(st) return st & 0x0F end
+
 local lastSensorId, lastFrameId, lastDataId, lastValue
 
-function transport.sportTelemetryPush(sensorId, frameId, dataId, value) return rfsuite.tasks.msp.sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value}) end
+local sensor
+
+local function _isInboundReply(sensorId, frameId) return (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID end
+
+local function _map_subframe(dataId, value) return {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF} end
+
+function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
+    if not sensor then sensor = sport.getSensor({primId = 0x32}) end
+    return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
+end
 
 function transport.sportTelemetryPop()
-    local frame = rfsuite.tasks.msp.sensor:popFrame()
+    if not sensor then sensor = sport.getSensor({primId = 0x32}) end
+    local frame = sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
     return frame:physId(), frame:primId(), frame:appId(), frame:value()
 end
 
 transport.mspSend = function(payload)
     local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
-    local v3 = payload[3] or 0
-    local v4 = payload[4] or 0
-    local v5 = payload[5] or 0
-    local v6 = payload[6] or 0
+    local v3, v4, v5, v6 = payload[3] or 0, payload[4] or 0, payload[5] or 0, payload[6] or 0
     local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
-
     return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
 end
 
@@ -42,23 +54,20 @@ local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 
 local function sportTelemetryPop()
     local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-
-    if sensorId and not (sensorId == lastSensorId and frameId == lastFrameId and dataId == lastDataId and value == lastValue) then
-        lastSensorId, lastFrameId, lastDataId, lastValue = sensorId, frameId, dataId, value
-        return sensorId, frameId, dataId, value
-    end
-
-    return nil
+    return sensorId, frameId, dataId, value
 end
 
 transport.mspPoll = function()
-    local sensorId, frameId, dataId, value = sportTelemetryPop()
+    while true do
+        local sensorId, frameId, dataId, value = sportTelemetryPop()
+        if not sensorId then return nil end
 
-    if not sensorId then return nil end
+        if frameId == REPLY_FRAME_ID then
+            local bytes = {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF}
+            return bytes
+        end
 
-    if (sensorId == SPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then return {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF} end
-
-    return nil
+    end
 end
 
 return transport

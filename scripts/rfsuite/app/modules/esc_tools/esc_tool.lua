@@ -232,7 +232,7 @@ end
 
 local function wakeup()
 
-    if foundESC == false and rfsuite.tasks.msp.mspQueue:isProcessed() then getESCDetails() end
+    if foundESC == false then getESCDetails() end
 
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
@@ -271,10 +271,10 @@ local function wakeup()
 
     if showPowerCycleLoaderInProgress == true then
 
+        rfsuite.app.escPowerCycleLoader = true
+
         local now = os.clock()
         if (now - powercycleLoaderRateLimit) >= 2 then
-
-            getESCDetails()
 
             powercycleLoaderRateLimit = now
             powercycleLoaderCounter = powercycleLoaderCounter + 5
@@ -292,7 +292,8 @@ local function wakeup()
             end
 
         end
-
+    else
+        rfsuite.app.escPowerCycleLoader = false
     end
 
     if showPowerCycleLoader == true then

@@ -12,6 +12,8 @@ local frsky_legacy = {}
 
 frsky_legacy.name = "frsky_legacy"
 
+local sensorTlm = nil
+
 local MAX_FRAMES_PER_WAKEUP = 32
 local MAX_TIME_BUDGET = 0.004
 
@@ -137,9 +139,7 @@ end
 
 local function telemetryPop()
 
-    if not rfsuite.tasks.msp.sensorTlm then return false end
-
-    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
+    local frame = sensorTlm:popFrame()
     if frame == nil then return false end
     if not frame.physId or not frame.primId then return false end
 
@@ -167,9 +167,16 @@ function frsky_legacy.wakeup()
         return
     end
 
+    if not sensorTlm then
+        print("Sensor telemetry module initialized")
+        sensorTlm = sport.getSensor()
+        sensorTlm:module(rfsuite.session.telemetrySensor:module())
+        return
+    end
+
     if not (rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then return end
 
-    if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
+    if rfsuite.tasks.msp.mspQueue:isProcessed() then
         local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)
         rfsuite.utils.log("FRSKY: Discovery active, draining all frames", "info")
         if discoverActive then

@@ -13,6 +13,7 @@ local config = arg[1]
 function utils.session()
     rfsuite.session = {
 
+        escDetails = nil,
         tailMode = nil,
         swashMode = nil,
         rateProfile = nil,
@@ -330,7 +331,12 @@ function utils.joinTableItems(tbl, delimiter)
     return table.concat(padded, delimiter, sIdx, #tbl)
 end
 
-function utils.log(msg, level) if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end end
+function utils.log(msg, level) 
+    if rfsuite.preferences.developer.loglevel == "off" then 
+        return 
+    end
+    if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end 
+end
 
 function utils.print_r(node, maxDepth, currentDepth)
     maxDepth = maxDepth or 5
@@ -488,7 +494,7 @@ function utils.logMsp(cmd, rwState, buf, err)
     if rfsuite.preferences.developer.logmsp then
         local payload = rfsuite.utils.joinTableItems(buf, ", ")
         rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
-        if err then rfsuite.utils.log("Error: " .. err, "info") end
+        if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
     end
 end
 

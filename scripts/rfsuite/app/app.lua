@@ -63,6 +63,7 @@ function app.create()
         app.isOfflinePage = false
         app.uiState = app.uiStatus.init
         app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
+        app.escPowerCycleLoader = false
 
         app.audio = {}
         app.audio.playTimeout = false
@@ -223,6 +224,7 @@ function app.close()
     app.guiIsRunning = false
     app.offlineMode = false
     app.uiState = app.uiStatus.init
+    app.escPowerCycleLoader = false
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then app.Page.close() end
 
@@ -244,7 +246,7 @@ function app.close()
     app.triggers.invalidConnectionSetup = false
     app.triggers.profileswitchLast = nil
 
-    rfsuite.tasks.msp.api.resetApidata()
+    if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
 

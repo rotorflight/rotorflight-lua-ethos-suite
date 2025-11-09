@@ -8,6 +8,8 @@ local rfsuite = require("rfsuite")
 local arg = {...}
 local config = arg[1]
 
+local sensorTlm = nil
+
 local frsky = {}
 frsky.name = "frsky"
 
@@ -196,9 +198,8 @@ local function renameSensor(physId, primId, appId, frameValue)
 end
 
 local function telemetryPop()
-    if not rfsuite.tasks.msp.sensorTlm then return false end
 
-    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
+    local frame = sensorTlm:popFrame()
     if frame == nil then return false end
     if not frame.physId or not frame.primId then return false end
 
@@ -222,6 +223,13 @@ function frsky.wakeup()
     end
     if not (rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then return end
 
+    if not sensorTlm then
+        sensorTlm = sport.getSensor()
+        sensorTlm:module(rfsuite.session.telemetrySensor:module())
+        frsky.reset()
+        return
+    end
+
     local fp = slotsFingerprint()
     if fp ~= _lastSlotsFp then
         _lastSlotsFp = fp
@@ -229,8 +237,7 @@ function frsky.wakeup()
         frsky.reset()
     end
 
-    if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
-
+    if rfsuite.tasks.msp.mspQueue:isProcessed() then
         if telemetryActive() and rfsuite.session.telemetrySensor and hasPendingActions() then
             local n = 0
             while telemetryPop() do
