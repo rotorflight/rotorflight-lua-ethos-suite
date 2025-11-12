@@ -2,6 +2,7 @@
   Copyright (C) 2025 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
+
 local rfsuite = require("rfsuite")
 
 local arg = {...}
@@ -23,24 +24,18 @@ end
 local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
-sensors['lasttime']  = {}
+sensors['lasttime'] = {}
 
 local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
 
--- Soft cap on number of sensor publishes per telemetry frame (decoding still proceeds).
--- Tune if you still hit instruction limits.
 elrs.publishBudgetPerFrame = 40
 
--- Always-visible meta UIDs (debug counters), bypass relevance filtering.
-local META_UID = { [0xEE01]=true, [0xEE02]=true }
+local META_UID = {[0xEE01] = true, [0xEE02] = true}
 
--- (Optional) If true, do NOT allow-all before telemetryConfig is known.
--- Set to false to keep legacy behavior of allowing all SIDs until config is available.
 elrs.strictUntilConfig = false
 
--- Map from Rotorflight telem "slot id" -> ELRS sensor SIDs (hex strings).
 local sidLookup = {
     [1] = {'0x1001'},
     [3] = {'0x1011'},
@@ -128,21 +123,17 @@ local sidLookup = {
     [104] = {'0xDB04'},
     [105] = {'0xDB05'},
     [106] = {'0xDB06'},
-    [107] = {'0xDB07'},
+    [107] = {'0xDB07'}
 }
 
--- === Relevance filter from session.telemetryConfig =========================
--- We only "listen" (i.e., update/create) sensors that are configured.
--- If telemetryConfig is unavailable, we fall back to allow-all (unless strictUntilConfig is true).
 elrs._relevantSig = nil
 elrs._relevantSidSet = nil
 
 local function telemetrySlotsSignature(slots)
     local parts = {}
-    for i, v in ipairs(slots) do parts[#parts+1] = tostring(v or 0) end
+    for i, v in ipairs(slots) do parts[#parts + 1] = tostring(v or 0) end
     return table.concat(parts, ",")
 end
-
 
 local function resetSensors()
     sensors['uid'] = {}
@@ -151,19 +142,18 @@ local function resetSensors()
 end
 
 local function rebuildRelevantSidSet()
-    -- Build relevance set ONCE when config is first available.
+
     if elrs._relevantSidSet ~= nil then return end
     local cfg = rfsuite and rfsuite.session and rfsuite.session.telemetryConfig
     if not cfg then
-        -- allow-all until we know the config (unless strict)
+
         elrs._relevantSidSet = nil
         return
     end
     elrs._relevantSidSet = {}
-    -- (Compute the signature once and stash, in case you need to reference later)
+
     elrs._relevantSig = telemetrySlotsSignature(cfg)
 
-    -- map slot IDs -> ELRS sensor SIDs using sidLookup below
     for _, slotId in ipairs(cfg) do
         local apps = sidLookup[slotId]
         if apps then
@@ -175,16 +165,11 @@ local function rebuildRelevantSidSet()
     end
 end
 
-
 local function sidIsRelevant(sid)
     if META_UID[sid] then return true end
-    if elrs._relevantSidSet == nil then
-        -- unknown config -> treat all as relevant unless strict
-        return not elrs.strictUntilConfig
-    end
+    if elrs._relevantSidSet == nil then return not elrs.strictUntilConfig end
     return elrs._relevantSidSet[sid] == true
 end
--- ==========================================================================
 
 local function nowMs() return math.floor(os.clock() * 1000) end
 local REFRESH_INTERVAL_MS = 2500
@@ -210,7 +195,7 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
     if value then
         sensors['uid'][uid]:value(value)
         sensors['lastvalue'][uid] = value
-        sensors['lasttime'][uid]  = nowMs()
+        sensors['lasttime'][uid] = nowMs()
     end
 end
 
@@ -218,7 +203,7 @@ local function refreshStaleSensors()
     local t = nowMs()
     for uid, s in pairs(sensors['uid']) do
         local last = sensors['lastvalue'][uid]
-        local lt   = sensors['lasttime'][uid]
+        local lt = sensors['lasttime'][uid]
         if s and last and lt and (t - lt) > REFRESH_INTERVAL_MS then
             s:value(last)
             sensors['lasttime'][uid] = t
@@ -230,15 +215,12 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
 
     if rfsuite.session.telemetryState == false then return end
 
-    -- Only create/update sensors we care about
     if not sidIsRelevant(uid) then return end
 
     if sensors['uid'][uid] == nil then
         sensors['uid'][uid] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
         if sensors['uid'][uid] == nil then
-            if rfsuite.utils and rfsuite.utils.log then
-                rfsuite.utils.log("Create sensor: " .. tostring(uid), "debug")
-            end
+            if rfsuite.utils and rfsuite.utils.log then rfsuite.utils.log("Create sensor: " .. tostring(uid), "debug") end
             createTelemetrySensor(uid, name, unit, dec, value, min, max)
         end
     else
@@ -246,13 +228,13 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then
                 sensors['uid'][uid]:value(value)
                 sensors['lastvalue'][uid] = value
-                sensors['lasttime'][uid]  = nowMs()
+                sensors['lasttime'][uid] = nowMs()
             end
 
             if sensors['uid'][uid]:state() == false then
                 sensors['uid'][uid] = nil
                 sensors['lastvalue'][uid] = nil
-                sensors['lasttime'][uid]  = nil
+                sensors['lasttime'][uid] = nil
             end
 
         end
@@ -372,8 +354,6 @@ local function decAdjFunc(data, pos)
     setTelemetryValue(0x1222, 0, 0, val, UNIT_RAW, 0, "Adj. Value")
     return nil, pos
 end
-
-
 
 local sensorsList = {
 
@@ -557,9 +537,7 @@ function elrs.crossfirePop()
         local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
 
-        if rfsuite.session.telemetryState == false then
-            resetSensors()
-        end
+        if rfsuite.session.telemetryState == false then resetSensors() end
 
         return false
     else
@@ -585,7 +563,7 @@ function elrs.crossfirePop()
                     sid, ptr = decU16(data, ptr)
                     local sensor = sensorsList[sid]
                     if sensor then
-                        -- Always decode to move the pointer correctly.
+
                         local prev = ptr
                         local ok, v, np = pcall(sensor.dec, data, ptr)
                         if not ok then break end
@@ -600,7 +578,7 @@ function elrs.crossfirePop()
                         break
                     end
                 end
-                -- meta/debug counters (not filtered)
+
                 setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
                 setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647)
 
@@ -618,19 +596,16 @@ function elrs.wakeup()
     if not rfsuite.session.isConnected then return end
     if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
 
-    -- Ensure our relevance set is up to date (idempotent; builds once)
     rebuildRelevantSidSet()
 
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
         local n = 0
-        while elrs.crossfirePop() do 
-            if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then 
-                break 
-            end 
+        while elrs.crossfirePop() do
+            if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end
             n = n + 1
-            if n >= 50 then break end            
+            if n >= 50 then break end
         end
-        -- Gently refresh stale sensors so UI doesn't freeze on brief gaps
+
         refreshStaleSensors()
     else
         resetSensors()
