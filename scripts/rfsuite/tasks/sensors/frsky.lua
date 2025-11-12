@@ -357,6 +357,8 @@ end
 
 function frsky.wakeup()
 
+    if not rfsuite.session.isConnected then return end
+    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end   
 
     if not sensorTlm then
         sensorTlm = sport.getSensor()
