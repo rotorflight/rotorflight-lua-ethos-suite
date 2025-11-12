@@ -28,6 +28,147 @@ local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
 
+
+-- Map from Rotorflight telem "slot id" -> ELRS sensor SIDs (hex strings).
+local sidLookup = {
+    [1] = {'0x1001'},
+    [3] = {'0x1011'},
+    [4] = {'0x1012'},
+    [5] = {'0x1013'},
+    [6] = {'0x1014'},
+    [7] = {'0x1020'},
+    [8] = {'0x1021'},
+    [9] = {'0x102F'},
+    [10] = {'0x1030'},
+    [11] = {'0x1031'},
+    [12] = {'0x1032'},
+    [13] = {'0x1033'},
+    [14] = {'0x1034'},
+    [15] = {'0x1035'},
+    [17] = {'0x1041'},
+    [18] = {'0x1042'},
+    [19] = {'0x1043'},
+    [20] = {'0x1044'},
+    [21] = {'0x1045'},
+    [22] = {'0x1046'},
+    [23] = {'0x1047'},
+    [24] = {'0x1048'},
+    [25] = {'0x1049'},
+    [26] = {'0x104A'},
+    [27] = {'0x104E'},
+    [28] = {'0x104F'},
+    [30] = {'0x1051'},
+    [31] = {'0x1052'},
+    [32] = {'0x1053'},
+    [33] = {'0x1054'},
+    [36] = {'0x1057'},
+    [41] = {'0x105F'},
+    [42] = {'0x1080'},
+    [43] = {'0x1081'},
+    [44] = {'0x1082'},
+    [45] = {'0x1083'},
+    [46] = {'0x1090'},
+    [47] = {'0x1091'},
+    [48] = {'0x1092'},
+    [49] = {'0x1093'},
+    [50] = {'0x10A0'},
+    [51] = {'0x10A1'},
+    [52] = {'0x10A3'},
+    [57] = {'0x10B1'},
+    [58] = {'0x10B2'},
+    [59] = {'0x10B3'},
+    [60] = {'0x10C0'},
+    [61] = {'0x10C1'},
+    [64] = {'0x1100', '0x1101', '0x1102', '0x1103'},
+    [65] = {'0x1101'},
+    [66] = {'0x1102'},
+    [67] = {'0x1103'},
+    [68] = {'0x1110', '0x1111', '0x1112', '0x1113'},
+    [69] = {'0x1111'},
+    [70] = {'0x1112'},
+    [71] = {'0x1113'},
+    [73] = {'0x1121'},
+    [74] = {'0x1122'},
+    [75] = {'0x1123'},
+    [76] = {'0x1124'},
+    [77] = {'0x1125', '0x112B'},
+    [78] = {'0x1126'},
+    [79] = {'0x1127'},
+    [80] = {'0x1128'},
+    [81] = {'0x1129'},
+    [82] = {'0x112A'},
+    [85] = {'0x1141'},
+    [86] = {'0x1142'},
+    [87] = {'0x1143'},
+    [88] = {'0x1200'},
+    [89] = {'0x1201'},
+    [90] = {'0x1202'},
+    [91] = {'0x1203'},
+    [92] = {'0x1204'},
+    [93] = {'0x1205'},
+    [95] = {'0x1211'},
+    [96] = {'0x1212'},
+    [98] = {'0x1213'},
+    [99] = {'0x1220', '0x1221', '0x1222'},
+    [100] = {'0xDB00'},
+    [101] = {'0xDB01'},
+    [102] = {'0xDB02'},
+    [103] = {'0xDB03'},
+    [104] = {'0xDB04'},
+    [105] = {'0xDB05'},
+    [106] = {'0xDB06'},
+    [107] = {'0xDB07'},
+}
+
+-- === Relevance filter from session.telemetryConfig =========================
+-- We only "listen" (i.e., update/create) sensors that are configured.
+-- If telemetryConfig is unavailable, we fall back to allow-all.
+elrs._relevantSig = nil
+elrs._relevantSidSet = nil
+
+local function telemetrySlotsSignature(slots)
+    local parts = {}
+    for i, v in ipairs(slots) do parts[#parts+1] = tostring(v or 0) end
+    return table.concat(parts, ",")
+end
+
+local function rebuildRelevantSidSet()
+    elrs._relevantSidSet = {}
+    local cfg = rfsuite and rfsuite.session and rfsuite.session.telemetryConfig
+    if not cfg then
+        -- allow-all until we know the config
+        elrs._relevantSidSet = nil
+        return
+    end
+
+    local sig = telemetrySlotsSignature(cfg)
+    if elrs._relevantSig == sig and elrs._relevantSidSet and next(elrs._relevantSidSet) ~= nil then
+        return
+    end
+    elrs._relevantSig = sig
+    elrs._relevantSidSet = {}
+
+    -- map slot IDs -> ELRS sensor SIDs using sidLookup below
+    for _, slotId in ipairs(cfg) do
+        local apps = sidLookup[slotId]
+        if apps then
+            for _, hex in ipairs(apps) do
+                local sid = tonumber(hex)
+                if sid then elrs._relevantSidSet[sid] = true end
+            end
+        end
+    end
+end
+
+local function sidIsRelevant(sid)
+    if elrs._relevantSidSet == nil then
+        -- unknown config -> treat all as relevant
+        return true
+    end
+    return elrs._relevantSidSet[sid] == true
+end
+-- ==========================================================================
+
 local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
 
     if rfsuite.session.telemetryState == false then return end
@@ -53,10 +194,15 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
 
     if rfsuite.session.telemetryState == false then return end
 
+    -- Only create/update sensors we care about
+    if not sidIsRelevant(uid) then return end
+
     if sensors['uid'][uid] == nil then
         sensors['uid'][uid] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
         if sensors['uid'][uid] == nil then
-            rfsuite.utils.log("Create sensor: " .. uid, "debug")
+            if rfsuite.utils and rfsuite.utils.log then
+                rfsuite.utils.log("Create sensor: " .. tostring(uid), "debug")
+            end
             createTelemetrySensor(uid, name, unit, dec, value, min, max)
         end
     else
@@ -186,97 +332,9 @@ local function decAdjFunc(data, pos)
     return nil, pos
 end
 
-local sidLookup = {
-    [1] = {'0x1001'},
-    [3] = {'0x1011'},
-    [4] = {'0x1012'},
-    [5] = {'0x1013'},
-    [6] = {'0x1014'},
-    [7] = {'0x1020'},
-    [8] = {'0x1021'},
-    [9] = {'0x102F'},
-    [10] = {'0x1030'},
-    [11] = {'0x1031'},
-    [12] = {'0x1032'},
-    [13] = {'0x1033'},
-    [14] = {'0x1034'},
-    [15] = {'0x1035'},
-    [17] = {'0x1041'},
-    [18] = {'0x1042'},
-    [19] = {'0x1043'},
-    [20] = {'0x1044'},
-    [21] = {'0x1045'},
-    [22] = {'0x1046'},
-    [23] = {'0x1047'},
-    [24] = {'0x1048'},
-    [25] = {'0x1049'},
-    [26] = {'0x104A'},
-    [27] = {'0x104E'},
-    [28] = {'0x104F'},
-    [30] = {'0x1051'},
-    [31] = {'0x1052'},
-    [32] = {'0x1053'},
-    [33] = {'0x1054'},
-    [36] = {'0x1057'},
-    [41] = {'0x105F'},
-    [42] = {'0x1080'},
-    [43] = {'0x1081'},
-    [44] = {'0x1082'},
-    [45] = {'0x1083'},
-    [46] = {'0x1090'},
-    [47] = {'0x1091'},
-    [48] = {'0x1092'},
-    [49] = {'0x1093'},
-    [50] = {'0x10A0'},
-    [51] = {'0x10A1'},
-    [52] = {'0x10A3'},
-    [57] = {'0x10B1'},
-    [58] = {'0x10B2'},
-    [59] = {'0x10B3'},
-    [60] = {'0x10C0'},
-    [61] = {'0x10C1'},
-    [64] = {'0x1100', '0x1101', '0x1102', '0x1103'},
-    [65] = {'0x1101'},
-    [66] = {'0x1102'},
-    [67] = {'0x1103'},
-    [68] = {'0x1110', '0x1111', '0x1112', '0x1113'},
-    [69] = {'0x1111'},
-    [70] = {'0x1112'},
-    [71] = {'0x1113'},
-    [73] = {'0x1121'},
-    [74] = {'0x1122'},
-    [75] = {'0x1123'},
-    [76] = {'0x1124'},
-    [77] = {'0x1125', '0x112B'},
-    [78] = {'0x1126'},
-    [79] = {'0x1127'},
-    [80] = {'0x1128'},
-    [81] = {'0x1129'},
-    [82] = {'0x112A'},
-    [85] = {'0x1141'},
-    [86] = {'0x1142'},
-    [87] = {'0x1143'},
-    [88] = {'0x1200'},
-    [89] = {'0x1201'},
-    [90] = {'0x1202'},
-    [91] = {'0x1203'},
-    [92] = {'0x1204'},
-    [93] = {'0x1205'},
-    [95] = {'0x1211'},
-    [96] = {'0x1212'},
-    [98] = {'0x1213'},
-    [99] = {'0x1220', '0x1221', '0x1222'},
-    [100] = {'0xDB00'},
-    [101] = {'0xDB01'},
-    [102] = {'0xDB02'},
-    [103] = {'0xDB03'},
-    [104] = {'0xDB04'},
-    [105] = {'0xDB05'},
-    [106] = {'0xDB06'},
-    [107] = {'0xDB07'},
-}
 
-elrs.RFSensors = {
+
+local sensorsList = {
 
     [0x1000] = {name = "NULL", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decNil},
 
@@ -454,7 +512,7 @@ elrs.telemetryFrameCount = 0
 
 function elrs.crossfirePop()
 
-    if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or rfsuite.session.telemetryState == false) then
+    if (CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true or rfsuite.session.telemetryState == false) then
         local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
 
@@ -472,6 +530,10 @@ function elrs.crossfirePop()
             if command == CRSF_FRAME_CUSTOM_TELEM then
                 local fid, sid, val
                 local ptr = 3
+
+                -- refresh relevant set once per frame if needed (cheap when unchanged)
+                rebuildRelevantSidSet()
+
                 fid, ptr = decU8(data, ptr)
                 local delta = (fid - elrs.telemetryFrameId) & 0xFF
                 if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
@@ -480,14 +542,19 @@ function elrs.crossfirePop()
                 while ptr < #data do
 
                     sid, ptr = decU16(data, ptr)
-                    local sensor = elrs.RFSensors[sid]
+                    local sensor = sensorsList[sid]
                     if sensor then
+                        -- Always decode to move the pointer correctly,
+                        -- but only publish if this SID is relevant.
                         val, ptr = sensor.dec(data, ptr)
-                        if val then setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max) end
+                        if val and sidIsRelevant(sid) then
+                            setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
+                        end
                     else
                         break
                     end
                 end
+                -- meta/debug counters (not filtered)
                 setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
                 setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647)
 
@@ -501,9 +568,11 @@ function elrs.crossfirePop()
 end
 
 function elrs.wakeup()
+    -- Ensure our relevance set is up to date (idempotent)
+    rebuildRelevantSidSet()
 
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        while elrs.crossfirePop() do if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then break end end
+        while elrs.crossfirePop() do if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end end
     else
         sensors['uid'] = {}
         sensors['lastvalue'] = {}
@@ -513,6 +582,8 @@ end
 function elrs.reset()
     sensors.uid = {}
     sensors.lastvalue = {}
+    elrs._relevantSidSet = nil
+    elrs._relevantSig = nil
 end
 
 return elrs
