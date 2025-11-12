@@ -8,13 +8,13 @@
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": [
         "--config-env", "RFSUITE_CONFIG",
-        "--launch",
-        "--lang", "en",
+        "--lang", "en"
       ],
       "console": "integratedTerminal",
-      "subProcess": false, // prevents auto-attach to child procs
+      "subProcess": false,
       "justMyCode": true,
-      "stopOnEntry": false,     
+      "stopOnEntry": false,
+      "postDebugTask": "ethos start"
     },
     {
       "name": "Deploy & Launch [Fast]",
@@ -24,78 +24,14 @@
       "args": [
         "--config-env", "RFSUITE_CONFIG",
         "--fileext", "fast",
-        "--launch",
         "--lang", "en",
       ],
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-    },   
-    {
-      "name": "Deploy & Choose",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--choose",
-        "--launch",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },
-    {
-      "name": "Deploy & Choose [Fast]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--choose",
-        "--launch",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },
-    {
-      "name": "Deploy & Launch [choose lang]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--launch",
-        "--lang", "${input:i18nLocale}",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false, // prevents auto-attach to child procs
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },
-    {
-      "name": "Deploy & Choose [choose lang]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--choose",
-        "--launch",
-        "--lang", "${input:i18nLocale}",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },         
+      "postDebugTask": "ethos start"      
+    },       
     {
       "name": "Deploy Radio",
       "type": "debugpy",
@@ -180,24 +116,7 @@
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": ["--config-env", "RFSUITE_CONFIG", "--clear-lock"],
       "console": "integratedTerminal",
-      "justMyCode": true,
-      "noDebug": true
+      "justMyCode": true
     } 
   ],
-  "inputs": [
-    {
-      "id": "i18nLocale",
-      "type": "pickString",
-      "description": "Choose language",
-      "options": [
-        "en",
-        "de",
-        "fr",
-        "es",
-        "it",
-        "nl",
-      ],
-      "default": "en"
-    }
-  ]
 }

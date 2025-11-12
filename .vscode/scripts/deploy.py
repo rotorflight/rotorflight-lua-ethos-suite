@@ -992,6 +992,19 @@ def copy_files(src_override, fileext, targets, lang="en"):
     for i, t in enumerate(targets, 1):
         dest = t['dest']; sim = t.get('simulator')
         print(f"[{i}/{len(targets)}] -> {t['name']} @ {dest}")
+
+        # If the configured destination does not exist, fall back to <git_src>\simulator\scripts
+        if not os.path.isdir(dest):
+            fallback = os.path.normpath(os.path.join(git_src, 'simulator', 'scripts'))
+            try:
+                os.makedirs(fallback, exist_ok=True)
+                print(f"[DEST] '{dest}' not found. Using fallback: {fallback}")
+                # Update the target in-place so subsequent steps (patch/minify/etc.) see the resolved path
+                t['dest'] = fallback
+                dest = fallback
+            except Exception as e:
+                print(f"[DEST ERROR] Could not create fallback folder at {fallback}: {e}")
+                raise
         out_dir = os.path.join(dest, tgt)
 
 
@@ -1284,7 +1297,7 @@ def main():
 
         # now just tail the serial output (until Ctrl+C)
         return tail_serial_debug(vid=v, pid=p, baud=b, retries=r, delay=d, name_hint=nh)
-    elif args.radio:
+    elif False:  # radio mode removed
         # Make sure the radio storage is available (serial OFF => mass storage ON)
         print("[ETHOS] Disabling serial debug before copy to protect filesystem…")
         ethos_serial(config['ethossuite_bin'], 'stop')
@@ -1300,24 +1313,16 @@ def main():
             except Exception:
                 print("", end="", flush=True)
             return 1
-        targets = [{'name': 'Radio', 'dest': rd, 'simulator': None}]
-    else:
-        tlist=config['deploy_targets']
-        if args.choose:
-            targets=choose_target(tlist)
-        elif args.all:
-            targets=tlist
-        else:
-            targets=[t for t in tlist if t.get('default')]
+            # Always deploy to <git_src>\simulator\scripts (deploy_targets removed)
+    fixed_dest = os.path.normpath(os.path.join(config['git_src'], 'simulator', 'scripts'))
+    os.makedirs(fixed_dest, exist_ok=True)
+    targets = [{'name': 'Simulator', 'dest': fixed_dest, 'simulator': None}]
 
-    if not targets:
-        print('No targets.')
-        sys.exit(1)
 
     copy_files(args.src, args.fileext, targets, lang=args.lang)
 
     # After copying to radio, ensure logger runs on real hardware (not only simulator)
-    if args.radio:
+    if False:  # radio mode removed
         for t in targets:
             out_root = os.path.join(t['dest'], config['tgt_name'])
             patch_logger_init(out_root)
