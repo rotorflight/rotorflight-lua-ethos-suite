@@ -8,10 +8,15 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
-local cacheExpireTime = 10
+local cacheExpireTime = 30
 local lastCacheFlushTime = os.clock()
+local sensorTlm = nil
 
 frsky.name = "frsky"
+frsky._provisioned = false
+frsky.createSensorCache = {}
+frsky.renameSensorCache = {}
+frsky.dropSensorCache = {}
 
 local sidLookup = {
     [1] = {'0x5100'},
@@ -187,6 +192,7 @@ local function createSensor(physId, primId, appId, frameValue)
 
                 frsky.createSensorCache[appId] = model.createSensor()
                 frsky.createSensorCache[appId]:name(v.name)
+                frsky.createSensorCache[appId]:type(SENSOR_TYPE_SPORT)
                 frsky.createSensorCache[appId]:appId(appId)
                 frsky.createSensorCache[appId]:physId(physId)
                 frsky.createSensorCache[appId]:module(rfsuite.session.telemetrySensor:module())
@@ -257,19 +263,107 @@ local function renameSensor(physId, primId, appId, frameValue)
 
 end
 
-local function telemetryPop()
-    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
-    if frame == nil then return false end
 
-    if not frame.physId or not frame.primId then return end
+local function ensureSensorsFromConfig()
 
-    createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    return true
+    -- quick exit after first successful run
+    if frsky._provisioned then return end
+
+    local cfg = rfsuite and rfsuite.session and rfsuite.session.telemetryConfig
+    if not cfg then return end
+
+    -- Try to grab physId/module from the current telemetry sensor; best-effort
+    local telePhysId, teleModule
+    if sensorTlm then
+        telePhysId = 27
+        teleModule = sensorTlm:module()
+    else
+        return
+    end
+
+    -- Walk configured sensor IDs -> appIds via sidLookup
+    for _, sid in ipairs(cfg) do
+        local apps = sidLookup[sid]
+        if apps then
+            for _, hex in ipairs(apps) do
+                local appId = tonumber(hex)
+                if appId then
+                    -- CREATE if needed
+                    local meta = createSensorList[appId]
+                    if meta then
+                        if frsky.createSensorCache[appId] == nil then
+                            frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+                        end
+                        if frsky.createSensorCache[appId] == nil then
+                            log("Creating sensor: " .. meta.name, "info")
+                            local s = model.createSensor()
+                            s:name(meta.name)
+                            s:appId(appId)
+                            if telePhysId then s:physId(telePhysId) end
+                            if teleModule then s:module(teleModule) end
+                            -- default wide range
+                            s:minimum(-1000000000)
+                            s:maximum(2147483647)
+                            if meta.unit ~= nil then
+                                s:unit(meta.unit)
+                                s:protocolUnit(meta.unit)
+                            end
+                            if meta.decimals ~= nil then
+                                s:decimals(meta.decimals)
+                                s:protocolDecimals(meta.decimals)
+                            end
+                            if meta.minimum ~= nil then s:minimum(meta.minimum) end
+                            if meta.maximum ~= nil then s:maximum(meta.maximum) end
+                            frsky.createSensorCache[appId] = s
+                        end
+                    end
+
+                    -- RENAME if matches only-if guard
+                    local rn = renameSensorList[appId]
+                    if rn then
+                        if frsky.renameSensorCache[appId] == nil then
+                            frsky.renameSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+                        end
+                        local src = frsky.renameSensorCache[appId]
+                        if src and src:name() == rn.onlyifname then
+                            log("Rename sensor: " .. rn.name, "info")
+                            src:name(rn.name)
+                        end
+                    end
+
+                    -- DROP legacy-only sensors if apiVersion < 12.08
+                    if rfsuite.session.apiVersion ~= nil and rfsuite.session.apiVersion < 12.08 then
+                        local drop = dropSensorList[appId]
+                        if drop then
+                            if frsky.dropSensorCache[appId] == nil then
+                                frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+                            end
+                            local src = frsky.dropSensorCache[appId]
+                            if src then
+                                log("Drop sensor: " .. drop.name, "info")
+                                src:drop()
+                                frsky.dropSensorCache[appId] = nil -- dropped; clear cache
+                            end
+                        end
+                    end
+
+                end
+            end
+        end
+    end
+    frsky._provisioned = true
 end
 
+
 function frsky.wakeup()
+
+
+    if not sensorTlm then
+        sensorTlm = sport.getSensor()
+        sensorTlm:module(rfsuite.session.telemetrySensor:module())
+
+        if not sensorTlm then return false end
+    end
 
     local function clearCaches()
         frsky.createSensorCache = {}
@@ -284,7 +378,7 @@ function frsky.wakeup()
 
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    ensureSensorsFromConfig()
 
 end
 
@@ -292,6 +386,7 @@ function frsky.reset()
     frsky.createSensorCache = {}
     frsky.dropSensorCache = {}
     frsky.renameSensorCache = {}
+    frsky._provisioned = false
 end
 
 return frsky
