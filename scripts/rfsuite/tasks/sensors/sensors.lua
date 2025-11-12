@@ -95,10 +95,5 @@ function sensors.reset()
 
 end
 
-function sensors.getSid()
-    if sensors.sid then return sensors.sid end
-    sensors.sid = assert(loadfile("tasks/sensors/sid.lua"))(config)
-    return sensors.sid
-end
 
 return sensors
