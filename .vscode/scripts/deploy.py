@@ -1311,10 +1311,19 @@ def main():
                 import winsound
                 winsound.MessageBeep()
             except Exception:
-                print("", end="", flush=True)
+                print("\a", end="", flush=True)
             return 1
-            # Always deploy to <git_src>\simulator\scripts (deploy_targets removed)
-    fixed_dest = os.path.normpath(os.path.join(config['git_src'], 'simulator', 'scripts'))
+
+    # Always deploy to <git_src>\simulator\[<firmware>]\scripts
+    # ETHOS_FIRMWARE is expected to be set by VS Code (e.g. from ${config:ethos.firmware})
+    firmware = os.environ.get("ETHOS_FIRMWARE")
+
+    path_parts = [config['git_src'], 'simulator']
+    if firmware:
+        path_parts.append(firmware)
+    path_parts.append('scripts')
+
+    fixed_dest = os.path.normpath(os.path.join(*path_parts))
     os.makedirs(fixed_dest, exist_ok=True)
     targets = [{'name': 'Simulator', 'dest': fixed_dest, 'simulator': None}]
 

@@ -2,11 +2,34 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "ethos start",
+      "label": "ethosSetFirmware",
+      "type": "process",
+      "command": "${command:ethos.setFirmware}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "ethosSetRoot",
+      "type": "process",
+      "command": "${command:ethos.setRoot}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },    
+    {
+      "label": "ethosStart",
       "type": "process",
       "command": "${command:ethos.start}",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
-    }
+    },
+    {
+      "label": "ethosStartChain",
+      "dependsOn": [
+        "ethosSetFirmware",
+        "ethosSetRoot",
+        "ethosStart"
+      ],
+      "dependsOrder": "sequence"   // ensures they run 1 → 2 → 3
+    }    
   ]
 }

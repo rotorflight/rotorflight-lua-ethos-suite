@@ -1,0 +1,4 @@
+{
+    "ethos.firmware": "X20S_FCC",
+    "ethos.root": "simulator/${config:ethos.firmware}"
+}

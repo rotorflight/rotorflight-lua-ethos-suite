@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Deploy & Launch",
+      "name": "Deploy & Launch [X20S]",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -10,14 +10,17 @@
         "--config-env", "RFSUITE_CONFIG",
         "--lang", "en"
       ],
+      "env": {
+        "ETHOS_FIRMWARE": "${config:ethos.firmware}"
+      },
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "postDebugTask": "ethos start"
+      "postDebugTask": "ethosStart"       
     },
     {
-      "name": "Deploy & Launch [Fast]",
+      "name": "Deploy & Launch [Fast]  [X20S]",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -26,12 +29,33 @@
         "--fileext", "fast",
         "--lang", "en",
       ],
+      "env": {
+        "ETHOS_FIRMWARE": "${config:ethos.firmware}"
+      },      
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "postDebugTask": "ethos start"      
-    },       
+      "postDebugTask": "ethosStart"       
+    },
+    {
+      "name": "Deploy & Choose",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--lang", "en"
+      ],
+      "env": {
+        "ETHOS_FIRMWARE": "X18S_FCC"
+      },
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "postDebugTask": "ethosStartX18S"       
+    },           
     {
       "name": "Deploy Radio",
       "type": "debugpy",
