@@ -2,145 +2,86 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Deploy & Launch [X20S]",
+      "name": "Deploy & Launch [X20S_FCC]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--lang", "en"
-      ],
-      "env": {
-        "ETHOS_FIRMWARE": "${config:ethos.firmware}"
-      },
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "postDebugTask": "ethosStart"       
+      "preLaunchTask": "Deploy & Launch [X20S_FCC]",
+      "postDebugTask": "ethos.Start"
     },
-    {
-      "name": "Deploy & Launch [Fast]  [X20S]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--lang", "en",
-      ],
-      "env": {
-        "ETHOS_FIRMWARE": "${config:ethos.firmware}"
-      },      
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-      "postDebugTask": "ethosStart"       
-    },
-    {
-      "name": "Deploy & Choose",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--lang", "en"
-      ],
-      "env": {
-        "ETHOS_FIRMWARE": "X18S_FCC"
-      },
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-      "postDebugTask": "ethosStartX18S"       
-    },           
     {
       "name": "Deploy Radio",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--radio",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio"
     },
     {
       "name": "Deploy Radio [Fast]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--radio",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio [Fast]"
     },
     {
       "name": "Deploy Radio + Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--radio",
-        "--radio-debug",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio + Serial Debug"
     },
     {
       "name": "Deploy Radio + Serial Debug [Fast]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--radio",
-        "--radio-debug",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio + Serial Debug [Fast]"
     },
     {
       "name": "Radio: Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--radio",
-        "--connect-only",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal"
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+
+      "preLaunchTask": "Radio: Serial Debug"
     },
     {
       "name": "Clear locks",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--config-env", "RFSUITE_CONFIG", "--clear-lock"],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
-      "justMyCode": true
-    } 
-  ],
+      "justMyCode": true,
+
+      "preLaunchTask": "Clear locks"
+    }
+  ]
 }

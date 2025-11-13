@@ -2,34 +2,133 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "ethosSetFirmware",
+      "label": "Deploy & Launch [X20S_FCC]",
       "type": "process",
-      "command": "${command:ethos.setFirmware}",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--lang", "en"
+      ],
+      "options": {
+        "env": {
+          "ETHOS_FIRMWARE": "${config:ethos.firmware}"
+        }
+      },
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
     },
     {
-      "label": "ethosSetRoot",
+      "label": "Deploy Radio",
       "type": "process",
-      "command": "${command:ethos.setRoot}",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--radio",
+        "--lang", "en"
+      ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
-    },    
+    },
     {
-      "label": "ethosStart",
+      "label": "Deploy Radio [Fast]",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--fileext", "fast",
+        "--radio",
+        "--lang", "en"
+      ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Deploy Radio + Serial Debug",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--radio",
+        "--radio-debug",
+        "--lang", "en"
+      ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Deploy Radio + Serial Debug [Fast]",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--fileext", "fast",
+        "--radio",
+        "--radio-debug",
+        "--lang", "en"
+      ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Radio: Serial Debug",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--radio",
+        "--connect-only",
+        "--lang", "en"
+      ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Clear locks",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "--config-env", "RFSUITE_CONFIG",
+        "--clear-lock"
+      ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "ethos.Start",
       "type": "process",
       "command": "${command:ethos.start}",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
     },
     {
-      "label": "ethosStartChain",
+      "label": "ethos.SetFirmware",
+      "type": "process",
+      "command": "${command:ethos.setFirmware}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "ethos.SetRoot",
+      "type": "process",
+      "command": "${command:ethos.setRoot}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "ethos.StartChain",
       "dependsOn": [
         "ethosSetFirmware",
         "ethosSetRoot",
         "ethosStart"
       ],
       "dependsOrder": "sequence"   // ensures they run 1 → 2 → 3
-    }    
+    },    
   ]
 }
