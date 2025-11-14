@@ -802,7 +802,7 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
                     for f in files:
                         if f.endswith(('.lua','.luac')):
                             os.remove(os.path.join(r,f))
-            scr = os.path.join(git_src, 'scripts', tgt)
+            scr = os.path.join(git_src, 'src', tgt)
             os.makedirs(out_dir, exist_ok=True)
             for r,_,files in os.walk(scr):
                 for f in files:
@@ -812,7 +812,7 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
             run_steps(steps, out_dir, lang)
 
         elif fileext == 'fast':
-            scr = os.path.join(git_src, 'scripts', tgt)
+            scr = os.path.join(git_src, 'src', tgt)
 
             if os.path.isdir(out_dir):
                 removed = 0
@@ -890,7 +890,7 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
                 print("Fast deploy: nothing to update.")
 
         else:
-            srcall = os.path.join(git_src, 'scripts', tgt)
+            srcall = os.path.join(git_src, 'src', tgt)
             safe_full_copy(srcall, out_dir)
             run_steps(steps, out_dir, lang)
             flush_fs()

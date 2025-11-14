@@ -32,7 +32,7 @@ jobs:
           echo "GIT_VER=commit-${SHORT_SHA}" >> $GITHUB_ENV
           echo "sha7=${SHORT_SHA}" >> $GITHUB_OUTPUT
 
-      # Build merged JSON for the specific locale (writes to scripts/rfsuite/i18n/<locale>.json)
+      # Build merged JSON for the specific locale (writes to src/rfsuite/i18n/<locale>.json)
       - name: Build i18n for this locale
         run: python bin/i18n/build-single-json.py --only ${{ matrix.lang }}
 
@@ -42,7 +42,7 @@ jobs:
         run: |
           STAGE="build/${{ matrix.lang }}/scripts"
           mkdir -p "$STAGE"
-          rsync -a scripts/ "$STAGE"/
+          rsync -a src/ "$STAGE"/
           echo "STAGE=$STAGE" >> $GITHUB_ENV
 
       # Update version in the staged copy
