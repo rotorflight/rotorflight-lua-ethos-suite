@@ -6,7 +6,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--lang", "en"
       ],
@@ -23,7 +23,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--radio",
         "--lang", "en"
@@ -36,7 +36,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--fileext", "fast",
         "--radio",
@@ -50,7 +50,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--radio",
         "--radio-debug",
@@ -64,7 +64,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--fileext", "fast",
         "--radio",
@@ -79,7 +79,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--radio",
         "--connect-only",
@@ -93,7 +93,7 @@
       "type": "process",
       "command": "python",
       "args": [
-        "${workspaceFolder}/.vscode/scripts/deploy.py",
+        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--config-env", "RFSUITE_CONFIG",
         "--clear-lock"
       ],
