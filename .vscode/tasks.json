@@ -135,5 +135,12 @@
       ],
       "dependsOrder": "sequence"   // ensures they run 1 → 2 → 3
     },    
+    {
+      "label": "ethos.OpenTelemetry",
+      "type": "process",
+      "command": "${command:ethos.openTelemetry}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    }   
   ]
 }

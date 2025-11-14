@@ -85,6 +85,17 @@
       "postDebugTask": "ethos.SetFirmware"
     },      
     {
+      "name": "Ethos Telemetry Settings",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "postDebugTask": "ethos.OpenTelemetry"
+    },     
+    {
       "name": "Clear locks",
       "type": "debugpy",
       "request": "launch",
