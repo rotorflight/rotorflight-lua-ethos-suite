@@ -212,33 +212,18 @@ def _record_tail_pid_and_cleanup():
     atexit.register(lambda: os.path.exists(SERIAL_PIDFILE) and os.remove(SERIAL_PIDFILE))
 
 def copy_language_soundpack(out_dir, lang="en"):
-    """
-    Copy the physical sound pack for the chosen language into scripts/rfsuite/audio.
-    Uses the standalone .vscode/scripts/copy_soundpack.py if present; otherwise falls back to a simple copytree.
-    """
-    git_src = config['git_src']
-    src = os.path.join(git_src, 'bin', 'sound-generator', 'soundpack', lang)
-    dest = os.path.join(out_dir, 'audio', lang)  # <-- language-specific subfolder
-    script = os.path.join(git_src, '.vscode', 'scripts', 'copy_soundpack.py')
+    """Thin wrapper: delegate to .vscode/scripts/deploy_step_soundpack.py"""
+    git_src = config["git_src"]
+    step = os.path.join(git_src, ".vscode", "scripts", "deploy_step_soundpack.py")
 
-    if not os.path.isdir(src):
-        print(f"[AUDIO] Skipping: soundpack not found at {src}")
+    if not os.path.isfile(step):
+        print(f"[AUDIO] Skipping: step script not found at {step}")
         return
 
-    os.makedirs(dest, exist_ok=True)
-
-    try:
-        if os.path.isfile(script):
-            print(f"[AUDIO] Copying soundpack ({lang}) → {dest}")
-            subprocess.run([sys.executable, script, src, dest], check=True)
-        else:
-            print(f"[AUDIO] Standalone script not found at {script}; doing simple copy.")
-            shutil.copytree(src, dest, dirs_exist_ok=True)
-    except subprocess.CalledProcessError as e:
-        print(f"[AUDIO] copy_soundpack.py failed: {e}")
-    except Exception as e:
-        print(f"[AUDIO] Fallback copy failed: {e}")
-
+    subprocess.run(
+        [sys.executable, step, "--out-dir", out_dir, "--lang", lang, "--git-src", git_src],
+        check=True,
+    )
 
 def throttled_copyfile(src, dst):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -765,19 +750,18 @@ def choose_target(targets):
 
 
 def resolve_i18n_tags_in_place(out_dir, lang="en"):
-    json_path = os.path.join(out_dir, "i18n", f"{lang}.json")
-    if not os.path.isfile(json_path):
-        json_path = os.path.join(config['git_src'], "scripts", "rfsuite", "i18n", f"{lang}.json")
-    if not os.path.isfile(json_path):
-        print(f"[I18N] Skipping: {lang}.json not found at {json_path}")
+    """Thin wrapper: delegate to .vscode/scripts/deploy_step_i18n.py"""
+    git_src = config["git_src"]
+    step = os.path.join(git_src, ".vscode", "scripts", "deploy_step_i18n.py")
+
+    if not os.path.isfile(step):
+        print(f"[I18N] Skipping: step script not found at {step}")
         return
 
-    resolver = os.path.join(config['git_src'], ".vscode", "scripts", "resolve_i18n_tags.py")
-    if not os.path.isfile(resolver):
-        print(f"[I18N] Skipping: resolver not found at {resolver}")
-        return
-    print(f"[I18N] Resolving @i18n(...)@ tags (lang={lang})…")
-    subprocess.run([sys.executable, resolver, "--json", json_path, "--root", out_dir], check=True)
+    subprocess.run(
+        [sys.executable, step, "--out-dir", out_dir, "--lang", lang, "--git-src", git_src],
+        check=True,
+    )
 
 
 def copy_files(src_override, fileext, targets, lang="en"):
