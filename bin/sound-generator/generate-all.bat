@@ -37,6 +37,6 @@ REM Italian - Default
 python generate-googleapi.py --only-missing --json json/it.json --voice it-IT-Wavenet-B --base-dir it --variant default --engine google 
 
 REM copy just english to the release folder
-xcopy soundpack\en\ ..\..\scripts\rfsuite\audio\en\ /E /I /Y
+xcopy soundpack\en\ ..\..\src\rfsuite\audio\en\ /E /I /Y
 
 endlocal

@@ -139,7 +139,7 @@ class GoogleCloudTextToSpeechGenerator(BaseGenerator):
 def build(engine, voice, speed, json_file, cache_dir, base_dir, variant,
           only_missing=False, recreate_cache=False):
     # verify required audio path
-    required_audio_path = os.path.join('..', '..', 'scripts', 'rfsuite', 'audio')
+    required_audio_path = os.path.join('..', '..', 'src', 'rfsuite', 'audio')
     if not os.path.exists(required_audio_path):
         print(f"Error: Required audio path not found: {required_audio_path}")
         return 1
