@@ -7,7 +7,9 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--lang", "en"
+        "--lang", "en",
+        "--step", "i18n",
+        "--step", "soundpack"           
       ],
       "options": {
         "env": {
@@ -24,7 +26,9 @@
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
-        "--lang", "en"
+        "--lang", "en",
+        "--step", "i18n",
+        "--step", "soundpack"   
       ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
@@ -37,7 +41,9 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--fileext", "fast",
         "--radio",
-        "--lang", "en"
+        "--lang", "en",
+        "--step", "i18n",
+        "--step", "soundpack"   
       ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
@@ -50,7 +56,9 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
         "--radio-debug",
-        "--lang", "en"
+        "--lang", "en",
+        "--step", "i18n",
+        "--step", "soundpack"   
       ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
@@ -64,7 +72,9 @@
         "--fileext", "fast",
         "--radio",
         "--radio-debug",
-        "--lang", "en"
+        "--lang", "en",
+        "--step", "i18n",
+        "--step", "soundpack"   
       ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
@@ -77,7 +87,9 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
         "--connect-only",
-        "--lang", "en"
+        "--lang", "en",
+        "--step", "i18n",
+        "--step", "soundpack"   
       ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }

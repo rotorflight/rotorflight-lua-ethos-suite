@@ -211,19 +211,6 @@ def _record_tail_pid_and_cleanup():
         pass
     atexit.register(lambda: os.path.exists(SERIAL_PIDFILE) and os.remove(SERIAL_PIDFILE))
 
-def copy_language_soundpack(out_dir, lang="en"):
-    """Thin wrapper: delegate to .vscode/scripts/deploy_step_soundpack.py"""
-    git_src = config["git_src"]
-    step = os.path.join(git_src, ".vscode", "scripts", "deploy_step_soundpack.py")
-
-    if not os.path.isfile(step):
-        print(f"[AUDIO] Skipping: step script not found at {step}")
-        return
-
-    subprocess.run(
-        [sys.executable, step, "--out-dir", out_dir, "--lang", lang, "--git-src", git_src],
-        check=True,
-    )
 
 def throttled_copyfile(src, dst):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -731,40 +718,63 @@ def count_files(dirpath, ext=None):
         total += len(files)
     return total
 
-def choose_target(targets):
-    print("Available targets:")
-    for i, t in enumerate(targets, 1):
-        mark = '*' if t.get('default') else ' '
-        print(f" [{i}] {t['name']} {mark}")
-    idx = None
-    while idx is None:
-        try:
-            sel = int(input("Select number: "))
-            if 1 <= sel <= len(targets):
-                idx = sel - 1
-            else:
-                print("Out of range")
-        except ValueError:
-            print("Enter a number")
-    return [targets[idx]]
+def run_step_script(step, out_dir, lang="en"):
+    """
+    Generic step runner.
 
-
-def resolve_i18n_tags_in_place(out_dir, lang="en"):
-    """Thin wrapper: delegate to .vscode/scripts/deploy_step_i18n.py"""
+    Conventions:
+      - If `step` ends with '.py' or contains a path separator,
+          treat it as a path (absolute or relative to git_src).
+      - Otherwise, look for:
+          <git_src>/.vscode/scripts/deploy_step_<step>.py
+    The step script is called as:
+      python <script> --out-dir OUT --lang LANG --git-src GIT_SRC
+    """
     git_src = config["git_src"]
-    step = os.path.join(git_src, ".vscode", "scripts", "deploy_step_i18n.py")
 
-    if not os.path.isfile(step):
-        print(f"[I18N] Skipping: step script not found at {step}")
+    # Determine script path
+    if step.endswith(".py") or os.sep in step or "/" in step:
+        script_path = step
+        if not os.path.isabs(script_path):
+            script_path = os.path.join(git_src, script_path)
+    else:
+        script_path = os.path.join(
+            git_src, ".vscode", "scripts", f"deploy_step_{step}.py"
+        )
+
+    script_path = os.path.normpath(script_path)
+
+    if not os.path.isfile(script_path):
+        print(f"[STEP] Skipping '{step}': script not found at {script_path}")
         return
 
-    subprocess.run(
-        [sys.executable, step, "--out-dir", out_dir, "--lang", lang, "--git-src", git_src],
-        check=True,
-    )
+    cmd = [
+        sys.executable,
+        script_path,
+        "--out-dir", out_dir,
+        "--lang", lang,
+        "--git-src", git_src,
+    ]
+
+    print(f"[STEP] Running '{step}' → {script_path}")
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"[STEP] Step '{step}' failed with exit code {e.returncode}")
+    except Exception as e:
+        print(f"[STEP] Step '{step}' crashed: {e}")
 
 
-def copy_files(src_override, fileext, targets, lang="en"):
+def run_steps(steps, out_dir, lang="en"):
+    """Run all requested steps (if any) for this output directory."""
+    if not steps:
+        return
+    for step in steps:
+        run_step_script(step, out_dir, lang=lang)
+
+
+
+def copy_files(src_override, fileext, targets, lang="en", steps=None):
     global pbar
     git_src = src_override or config['git_src']
     tgt = config['tgt_name']
@@ -799,8 +809,7 @@ def copy_files(src_override, fileext, targets, lang="en"):
                     if f.endswith('.lua'):
                         shutil.copy(os.path.join(r,f), out_dir)
 
-            resolve_i18n_tags_in_place(out_dir, lang)
-            copy_language_soundpack(out_dir, lang)
+            run_steps(steps, out_dir, lang)
 
         elif fileext == 'fast':
             scr = os.path.join(git_src, 'scripts', tgt)
@@ -875,8 +884,7 @@ def copy_files(src_override, fileext, targets, lang="en"):
                     bar_update.update(1)
                 bar_update.close()
 
-            resolve_i18n_tags_in_place(out_dir, lang)
-            copy_language_soundpack(out_dir, lang)
+            run_steps(steps, out_dir, lang)
 
             if not copied:
                 print("Fast deploy: nothing to update.")
@@ -884,8 +892,7 @@ def copy_files(src_override, fileext, targets, lang="en"):
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
             safe_full_copy(srcall, out_dir)
-            resolve_i18n_tags_in_place(out_dir, lang)
-            copy_language_soundpack(out_dir, lang)
+            run_steps(steps, out_dir, lang)
             flush_fs()
             time.sleep(2)
 
@@ -954,7 +961,6 @@ def main():
     p.add_argument('--src')
     p.add_argument('--fileext')
     p.add_argument('--all', action='store_true')
-    p.add_argument('--choose', action='store_true')
     p.add_argument('--launch', action='store_true')
     p.add_argument('--radio', action='store_true')
     p.add_argument('--radio-debug', action='store_true')
@@ -969,6 +975,10 @@ def main():
                    help='Delete ALL deploy-*.lock files in the system temp and exit.')
     p.add_argument('--print-lock', action='store_true',
                    help='Print the lock file path for this project and exit.')
+    p.add_argument('--step', dest='steps', action='append',
+                   help='Additional deploy steps to run (e.g. i18n, soundpack). '
+                        'Can be given multiple times.'
+    )    
 
     args = p.parse_args()
     DEPLOY_TO_RADIO = args.radio
@@ -1085,7 +1095,7 @@ def main():
         targets = [{'name': 'Simulator', 'dest': fixed_dest, 'simulator': None}]
 
     # -------------------------------------------------------------------------
-    copy_files(args.src, args.fileext, targets, lang=args.lang)
+    copy_files(args.src, args.fileext, targets, lang=args.lang, steps=args.steps)
 
     if args.launch and not args.radio:
         launch_sims(targets)
