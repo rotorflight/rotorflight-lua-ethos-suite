@@ -7,7 +7,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--lang", "en"
       ],
       "options": {
@@ -24,7 +23,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--radio",
         "--lang", "en"
       ],
@@ -37,7 +35,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--fileext", "fast",
         "--radio",
         "--lang", "en"
@@ -51,7 +48,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--radio",
         "--radio-debug",
         "--lang", "en"
@@ -65,7 +61,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--fileext", "fast",
         "--radio",
         "--radio-debug",
@@ -80,7 +75,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--radio",
         "--connect-only",
         "--lang", "en"
@@ -94,7 +88,6 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--config-env", "ETHOSUITE_CONFIG",
         "--clear-lock"
       ],
       "problemMatcher": [],
