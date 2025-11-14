@@ -506,6 +506,9 @@ else:
     print("[ERROR] No deploy.json found in git root or .vscode/")
     sys.exit(1)
 
+# NEW: Debug which base config file we are using
+print(f"[CONFIG] Using base config file: {cfg_path}")
+
 try:
     with open(cfg_path, "r") as f:
         user_cfg = json.load(f)
@@ -1000,10 +1003,15 @@ def main():
                 override_cfg = json.load(f)
             if isinstance(override_cfg, dict):
                 config.update(override_cfg)
+                # NEW: Debug which override config file is loaded
+                print(f"[CONFIG] Loaded override config file: {os.path.abspath(args.config)}")
             else:
                 print(f"[CONFIG WARN] Override config at {args.config} is not a JSON object; ignoring.")
         except json.JSONDecodeError as e:
             print(f"[CONFIG WARN] Failed to parse override JSON config file at {args.config}: {e}")
+
+    # NEW: Always show the effective config source used for locks & overrides
+    print(f"[CONFIG] Effective config source (for locks & overrides): {os.path.abspath(args.config)}")
 
     if args.print_lock:
         print(_lock_path_for_config(args.config))
