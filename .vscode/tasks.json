@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Deploy & Launch [X20S_FCC]",
+      "label": "Deploy & Launch [SIM]",
       "type": "process",
       "command": "python",
       "args": [
@@ -18,7 +18,7 @@
       },
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
-    },
+    },  
     {
       "label": "Deploy Radio",
       "type": "process",
@@ -129,9 +129,9 @@
     {
       "label": "ethos.StartChain",
       "dependsOn": [
-        "ethosSetFirmware",
-        "ethosSetRoot",
-        "ethosStart"
+        "ethos.SetFirmware",
+        "ethos.SetRoot",
+        "ethos.Start"
       ],
       "dependsOrder": "sequence"   // ensures they run 1 → 2 → 3
     },    
