@@ -10,14 +10,14 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local theme_section = "system/@default"
+local theme_section = "system/timer"
 
 local THEME_DEFAULTS = {v_min = 18.0, v_max = 25.2}
 
 local function getUserVoltageOverride(which)
     local prefs = rfsuite.session and rfsuite.session.modelPreferences
-    if prefs and prefs["system/@default"] then
-        local v = tonumber(prefs["system/@default"][which])
+    if prefs and prefs["system/timer"] then
+        local v = tonumber(prefs["system/timer"][which])
 
         if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
         if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
