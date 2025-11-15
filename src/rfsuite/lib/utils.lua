@@ -48,6 +48,7 @@ function utils.session()
         telemetryModule = nil,
         telemetryModelChanged = nil,
         telemetryConfig = nil,
+        telemetryModuleNumber = nil,
 
         mspBusy = false,
 

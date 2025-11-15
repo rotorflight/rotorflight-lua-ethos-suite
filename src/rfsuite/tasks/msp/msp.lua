@@ -115,6 +115,7 @@ function msp.reset()
     msp.onConnectChecksInit = true
     delayStartTime = nil
     delayPending = false
+    if transport and transport.reset then transport.reset() end
 end
 
 return msp

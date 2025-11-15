@@ -28,12 +28,18 @@ local function _isInboundReply(sensorId, frameId) return (sensorId == SPORT_REMO
 local function _map_subframe(dataId, value) return {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF} end
 
 function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
-    if not sensor then sensor = sport.getSensor({primId = 0x32}) end
+    if not sensor then 
+        sensor = sport.getSensor({primId = 0x32}) 
+        sensor:module(rfsuite.session.telemetryModuleNumber or 0)
+    end
     return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
 end
 
 function transport.sportTelemetryPop()
-    if not sensor then sensor = sport.getSensor({primId = 0x32}) end
+    if not sensor then     
+        sensor = sport.getSensor({primId = 0x32}) 
+        sensor:module(rfsuite.session.telemetryModuleNumber or 0)
+    end
     local frame = sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
     return frame:physId(), frame:primId(), frame:appId(), frame:value()
@@ -68,6 +74,10 @@ transport.mspPoll = function()
         end
 
     end
+end
+
+function transport.reset()
+    sensor = nil
 end
 
 return transport
