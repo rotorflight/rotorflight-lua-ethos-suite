@@ -9,7 +9,8 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--lang", "en",
         "--step", "i18n",
-        "--step", "soundpack"           
+        "--step", "soundpack",
+        "--step", "sensors"           
       ],
       "options": {
         "env": {
@@ -28,7 +29,8 @@
         "--radio",
         "--lang", "en",
         "--step", "i18n",
-        "--step", "soundpack"   
+        "--step", "soundpack",
+        "--step", "sensors"     
       ],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
