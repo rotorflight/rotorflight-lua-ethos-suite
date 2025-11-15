@@ -5,6 +5,6 @@
 
 local rfsuite = require("rfsuite")
 
-local init = {name = "Basic Timer", preflight = "timer.lua", inflight = "timer.lua", postflight = "timer.lua", configure = "configure.lua", standalone = false}
+local init = {name = "Basic Timer", preflight = "preflight.lua", inflight = "inflight.lua", postflight = "postflight.lua", standalone = false}
 
 return init
