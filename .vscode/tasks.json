@@ -143,6 +143,15 @@
       "command": "${command:ethos.openTelemetry}",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
-    }   
+    },
+    {
+      "label": "Run RFSuite Sensor Tool",
+      "type": "process",
+      "command": "${workspaceFolder}/bin/sensors/sensors.exe",
+      "options": {
+        "cwd": "${workspaceFolder}/bin/sensors"
+      },
+      "problemMatcher": []
+    }      
   ]
 }

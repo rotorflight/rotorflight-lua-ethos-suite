@@ -8,63 +8,24 @@ import os
 
 SENSOR_FILE_EXT = ".lua"
 
-# Require config path from RFSUITE_CONFIG env var
-CONFIG_PATH = os.environ.get('RFSUITE_CONFIG')
-
-if not CONFIG_PATH:
-    print("[CONFIG ERROR] Environment variable RFSUITE_CONFIG is not set.")
-    sys.exit(1)
-
-CONFIG_PATH = Path(CONFIG_PATH)
-
-if not CONFIG_PATH.exists():
-    print(f"[CONFIG ERROR] Config file not found at path: {CONFIG_PATH}")
-    sys.exit(1)
-
 
 class SensorApp:
-    def __init__(self, root, config_path=CONFIG_PATH):
+
+    def __init__(self, root, config_path=None):
         self.root = root
         self.root.title("Sensor Editor")
 
-        # Load configuration
-        try:
-            with open(config_path) as f:
-                config = json.load(f)
-        except Exception as e:
-            raise FileNotFoundError(f"Could not load config.json at {config_path}: {e}")
+        # The script layout is:
+        #   GITREPO/bin/sensors/sensors.exe
+        #   or GITREPO/bin/sensors/src/sensors.py
+        # Sensors live under:
+        #   GITREPO/simulator/<target>/scripts/rfsuite/sim/sensors
 
-        # Target script name
-        tgt_name = config.get('tgt_name')
-        if not tgt_name:
-            raise KeyError("'tgt_name' must be defined in config.json")
-        self.tgt_name = tgt_name  # store for path resolution
+        # Fixed scripts subfolder name under each simulator target
+        self.tgt_name = "rfsuite"
 
-        git_src = config.get('git_src')
-        tgt_name = config.get('tgt_name')
-
-        if not git_src or not tgt_name:
-            raise KeyError("'git_src' and 'tgt_name' must be defined in config.json")
-
-        scripts_path = Path(git_src) / 'scripts' / tgt_name
-
-        if not scripts_path.exists():
-            raise FileNotFoundError(f"Scripts path does not exist: {scripts_path}")
-
-        self.rf_src = scripts_path
-
-
-        # Determine deployment target paths
-        deploy_targets = config.get('deploy_targets', [])
-        self.dest_paths = []  # Only update deployment targets, not the git source
-        for target in deploy_targets:
-            dest = target.get('dest')
-            if dest:
-                path = Path(dest)
-                if path.exists():
-                    self.dest_paths.append(path)
-        if not self.dest_paths:
-            raise FileNotFoundError("No valid 'dest' paths found in config.json deploy_targets")
+        # Auto-discover all simulator targets with a matching sensors folder
+        self.dest_paths = self._discover_simulator_targets()
 
         # Load icon
         possible_icons = []
@@ -82,6 +43,48 @@ class SensorApp:
 
         self.controls = {}
         self.load_config()
+
+    def _discover_simulator_targets(self):
+        """
+        Discover all simulator targets that contain:
+            ../../simulator/<target>/scripts/rfsuite/sim/sensors
+
+        Returns a list of Path objects pointing to the 'scripts' folder
+        for each matching simulator target.
+        """
+        if getattr(sys, "frozen", False):
+            # Running as an .exe (PyInstaller)
+            base_dir = Path(sys.executable).resolve().parent
+        else:
+            # Running as a .py script
+            base_dir = Path(__file__).resolve().parent
+
+        # From either src/ or sensors/, ../../simulator gives us GITREPO/simulator
+        simulator_root = base_dir.parent.parent / "simulator"
+
+        if not simulator_root.exists():
+            raise FileNotFoundError(
+                f"Simulator root not found at expected path: {simulator_root}"
+            )
+
+        dest_paths = []
+        for target_dir in simulator_root.iterdir():
+            if not target_dir.is_dir():
+                continue
+
+            scripts_dir = target_dir / "scripts"
+            sensors_dir = scripts_dir / "rfsuite" / "sim" / "sensors"
+
+            if sensors_dir.exists():
+                print(f"[DEBUG] Found sensors dir: {sensors_dir}")
+                dest_paths.append(scripts_dir)
+
+        if not dest_paths:
+            raise FileNotFoundError(
+                f"No sensor folders found under: {simulator_root}/<target>/scripts/rfsuite/sim/sensors"
+            )
+
+        return dest_paths
 
     def load_config(self):
         possible_xml = [
@@ -137,7 +140,8 @@ class SensorApp:
             control.pack(side='left')
         elif sensor_type == 'select':
             control = ttk.Combobox(row, textvariable=value_var, state='readonly')
-            options = [opt.get('label') for opt in sensor_elem.findall('Option')]
+            options = [opt.get('label')
+                       for opt in sensor_elem.findall('Option')]
             values = [opt.get('value') for opt in sensor_elem.findall('Option')]
             control['values'] = options
             value_map = dict(zip(options, values))
@@ -202,6 +206,7 @@ class SensorApp:
                         print(f"[DEBUG] Failed to write {out_path}: {e}")
             except Exception as e:
                 print(f"Error saving {name}: {e}")
+
 
 if __name__ == '__main__':
     root = tk.Tk()

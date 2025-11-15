@@ -85,6 +85,17 @@
       "postDebugTask": "ethos.SetFirmware"
     },      
     {
+      "name": "Run RFSuite Sensor Tool",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "postDebugTask": "Run RFSuite Sensor Tool"
+    },  
+    {
       "name": "Ethos Telemetry Settings",
       "type": "debugpy",
       "request": "launch",
