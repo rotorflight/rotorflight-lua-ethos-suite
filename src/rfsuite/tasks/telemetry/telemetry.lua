@@ -104,7 +104,7 @@ local sensorTable = {
         sensors = {
             sim = {{uid = 0x5002, unit = UNIT_VOLT, dec = 2, value = function() return simSensors('voltage') end, min = 0, max = 3000}},
             sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0211}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0218}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x021A}},
-            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080}},
+            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},"Rx Batt"},
             crsfLegacy = {"Rx Batt"}
         }
     },
