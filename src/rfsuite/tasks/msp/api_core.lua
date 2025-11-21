@@ -24,7 +24,7 @@ local function loadAPI(apiName)
     local apiFilePath = api_path .. apiName .. ".lua"
 
     if cached_file_exists(apiFilePath) then
-        local apiModule = compiler.dofile(apiFilePath)
+        local apiModule = dofile(apiFilePath)
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
 

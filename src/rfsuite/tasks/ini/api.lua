@@ -15,7 +15,7 @@ function M.load(apiName)
 
     local apiFile = apidir .. apiName .. ".lua"
 
-    local ok, apiDef = pcall(function() return compiler.dofile(apiFile) end)
+    local ok, apiDef = pcall(function() return dofile(apiFile) end)
     assert(ok and type(apiDef) == "table", "Failed to load API module: " .. apiFile)
 
     local instance = {}

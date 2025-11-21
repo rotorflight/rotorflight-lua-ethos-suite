@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local utils = rfsuite.utils
-local compiler = loadfile
 
 local currentTelemetrySensor
 local tasksPerCycle
@@ -135,7 +134,7 @@ function tasks.initialize()
         for _, dir in pairs(system.listFiles(taskPath)) do
             if dir ~= "." and dir ~= ".." and not dir:match("%.%a+$") then
                 local initPath = taskPath .. dir .. "/init.lua"
-                local func, err = compiler(initPath)
+                local func, err = loadfile(initPath)
                 if err then
                     utils.log("Error loading " .. initPath .. ": " .. err, "info")
                 elseif func then
@@ -158,7 +157,7 @@ function tasks.findTasks()
     for _, dir in pairs(system.listFiles(taskPath)) do
         if dir ~= "." and dir ~= ".." and not dir:match("%.%a+$") then
             local initPath = taskPath .. dir .. "/init.lua"
-            local func, err = compiler(initPath)
+            local func, err = loadfile(initPath)
             if err then
                 utils.log("Error loading " .. initPath .. ": " .. err, "info")
             elseif func then
@@ -167,7 +166,7 @@ function tasks.findTasks()
                     utils.log("Invalid configuration in " .. initPath, "debug")
                 else
                     local scriptPath = taskPath .. dir .. "/" .. tconfig.script
-                    local fn, loadErr = compiler(scriptPath)
+                    local fn, loadErr = loadfile(scriptPath)
                     if fn then
                         tasks[dir] = fn(config)
                     else
@@ -584,7 +583,7 @@ function tasks.load(name, meta)
 
     if not meta then
         local initPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/init.lua"
-        local initFn, err = compiler(initPath)
+        local initFn, err = loadfile(initPath)
         if not initFn then
             utils.log("Failed to load init for " .. name .. ": " .. tostring(err), "info")
             return false
@@ -599,7 +598,7 @@ function tasks.load(name, meta)
     else
 
         if meta.init then
-            local initFn, err = compiler(meta.init)
+            local initFn, err = loadfile(meta.init)
             if initFn then
                 pcall(initFn)
             else
@@ -609,7 +608,7 @@ function tasks.load(name, meta)
     end
 
     local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. name .. "/" .. meta.script
-    local fn, loadErr = compiler(scriptPath)
+    local fn, loadErr = loadfile(scriptPath)
     if not fn then
         utils.log("Failed to load task script " .. scriptPath .. ": " .. tostring(loadErr), "info")
         return false
