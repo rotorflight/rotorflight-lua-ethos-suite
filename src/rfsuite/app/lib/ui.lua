@@ -503,10 +503,10 @@ function ui.getLabel(id, page)
     return nil
 end
 
-function ui.fieldBoolean(i)
+function ui.fieldBoolean(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -566,10 +566,10 @@ function ui.fieldBoolean(i)
     if f.disable then formFields[i]:enable(false) end
 end
 
-function ui.fieldChoice(i)
+function ui.fieldChoice(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -611,10 +611,10 @@ function ui.fieldChoice(i)
     if f.disable then formFields[i]:enable(false) end
 end
 
-function ui.fieldSlider(i)
+function ui.fieldSlider(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -681,10 +681,10 @@ function ui.fieldSlider(i)
 
 end
 
-function ui.fieldNumber(i)
+function ui.fieldNumber(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -768,10 +768,10 @@ function ui.fieldNumber(i)
     end
 end
 
-function ui.fieldSource(i)
+function ui.fieldSource(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -831,10 +831,10 @@ function ui.fieldSource(i)
 
 end
 
-function ui.fieldSensor(i)
+function ui.fieldSensor(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -894,10 +894,10 @@ function ui.fieldSensor(i)
 
 end
 
-function ui.fieldColor(i)
+function ui.fieldColor(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -961,10 +961,10 @@ function ui.fieldColor(i)
 
 end
 
-function ui.fieldSwitch(i)
+function ui.fieldSwitch(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -1024,10 +1024,10 @@ function ui.fieldSwitch(i)
 
 end
 
-function ui.fieldStaticText(i)
+function ui.fieldStaticText(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields
@@ -1061,10 +1061,10 @@ function ui.fieldStaticText(i)
     if f.step then currentField:step(f.step) end
 end
 
-function ui.fieldText(i)
+function ui.fieldText(i,lf)
     local app = rfsuite.app
     local page = app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
     local f = fields[i]
     local formLines = app.formLines
     local formFields = app.formFields

@@ -82,15 +82,15 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
             if field.hidden ~= true and valid then
                 rfsuite.app.ui.fieldLabel(field, i, label)
                 if field.type == 0 then
-                    rfsuite.app.ui.fieldStaticText(i)
+                    rfsuite.app.ui.fieldStaticText(i,fields)
                 elseif field.table or field.type == 1 then
-                    rfsuite.app.ui.fieldChoice(i)
+                    rfsuite.app.ui.fieldChoice(i,fields)
                 elseif field.type == 2 then
-                    rfsuite.app.ui.fieldNumber(i)
+                    rfsuite.app.ui.fieldNumber(i,fields)
                 elseif field.type == 3 then
-                    rfsuite.app.ui.fieldText(i)
+                    rfsuite.app.ui.fieldText(i,fields)
                 else
-                    rfsuite.app.ui.fieldNumber(i)
+                    rfsuite.app.ui.fieldNumber(i,fields)
                 end
             else
                 rfsuite.app.formFields[i] = {}
