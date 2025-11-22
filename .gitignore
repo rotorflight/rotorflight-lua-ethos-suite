@@ -1,6 +1,8 @@
 *~
 **/.DS_Store
 *.orig.png
-scripts/rfsuite.zip
+src/rfsuite.zip
 /bin/sound-generator/soundpack/user/*.wav
 *subprocess_conout.cpython-312.*
+simulator/*
+deploy.json

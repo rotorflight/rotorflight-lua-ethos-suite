@@ -50,7 +50,7 @@
   {
     "file": "events/alerts/lowfuel.wav",
     "english": "Low Fuel",
-    "translation": "Wenig Treibstoff",
+    "translation": "Niedriger Kraftstoffstand",
     "needs_translation": false
   },
   {
@@ -86,19 +86,19 @@
   {
     "file": "events/alerts/becvolt.wav",
     "english": "BEC Voltage Warning",
-    "translation": "BEC Spannung Warnung",
+    "translation": "BEC-Spannungswarnung",
     "needs_translation": false
   },
   {
     "file": "events/alerts/esctemp.wav",
     "english": "ESC Temperature Warning",
-    "translation": "ESC Temperatur Warnung",
+    "translation": "ESC-Temperaturwarnung",
     "needs_translation": false
   },
   {
     "file": "events/alerts/rxvolt.wav",
     "english": "RX Batt Voltage Warning",
-    "translation": "Empfänger Akku Spannung Warnung",
+    "translation": "Empfängerakkuspannungswarnung",
     "needs_translation": false
   },
   {
@@ -140,7 +140,7 @@
   {
     "file": "events/gov/lost-hs.wav",
     "english": "Governor - Lost Headspeed",
-    "translation": "Drehzahlregler - Kopfgeschwindigkeit nicht verfügbar",
+    "translation": "Drehzahlregler - Rotordrehzahl nicht verfügbar",
     "needs_translation": false
   },
   {
@@ -410,67 +410,67 @@
   {
     "file": "status/alerts/current.wav",
     "english": "Current",
-    "translation": "Stroom",
+    "translation": "Strom",
     "needs_translation": false
   },
   {
     "file": "status/alerts/esc.wav",
     "english": "Esc Temperature",
-    "translation": "Esc Temperatuur",
+    "translation": "ESC-Temperatur",
     "needs_translation": false
   },
   {
     "file": "status/alerts/mcu.wav",
     "english": "MCU Temperature",
-    "translation": "MCU Temperatuur",
+    "translation": "MCU-Temperatur",
     "needs_translation": false
   },
   {
     "file": "status/alerts/fuel.wav",
     "english": "Fuel",
-    "translation": "Brandstof",
+    "translation": "Kraftstoff",
     "needs_translation": false
   },
   {
     "file": "status/alerts/headspeed.wav",
     "english": "Head Speed",
-    "translation": "Rotortoerental",
+    "translation": "Rotordrehzahl",
     "needs_translation": false
   },
   {
     "file": "status/alerts/lowfuel.wav",
     "english": "Low Fuel",
-    "translation": "Laag brandstof",
+    "translation": "Niedriger Kraftstoffstand",
     "needs_translation": false
   },
   {
     "file": "status/alerts/lowvoltage.wav",
     "english": "Low Voltage",
-    "translation": "Laag Voltage",
+    "translation": "Unterspannung",
     "needs_translation": false
   },
   {
     "file": "status/alerts/lq.wav",
     "english": "Link Quality",
-    "translation": "Link kwaliteit",
+    "translation": "Linkqualität",
     "needs_translation": false
   },
   {
     "file": "status/alerts/remaining.wav",
     "english": "remaining",
-    "translation": "Over",
+    "translation": "verbleibend",
     "needs_translation": false
   },
   {
     "file": "status/alerts/timer.wav",
     "english": "timer",
-    "translation": "timer",
+    "translation": "Timer",
     "needs_translation": false
   },
   {
     "file": "status/alerts/voltage.wav",
     "english": "voltage",
-    "translation": "voltage",
+    "translation": "Spannung",
     "needs_translation": false
   }
 ]

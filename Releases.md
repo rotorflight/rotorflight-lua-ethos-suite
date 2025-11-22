@@ -1,3 +1,15 @@
+# 2.3.0-20251111
+
+Snapshot release of Ethos Suite.
+
+- MSPv2 support
+- Fix memory leak
+- Fix power cycle / loader issue - skorpion esc
+- Flyrotor ESC updates
+- MSP Boost Mode
+- Loader Speed Improvements
+
+
 # 2.3.0-20251010
 
 Snapshot release of Ethos Suite.

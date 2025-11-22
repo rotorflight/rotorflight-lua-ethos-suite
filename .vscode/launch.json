@@ -2,202 +2,119 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Deploy & Launch",
+      "name": "Deploy & Launch [SIM]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--launch",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false, // prevents auto-attach to child procs
-      "justMyCode": true,
-      "stopOnEntry": false,     
-    },
-    {
-      "name": "Deploy & Launch [Fast]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--launch",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+      "preLaunchTask": "Deploy & Launch [SIM]",
+      "postDebugTask": "ethos.Start"
     },   
-    {
-      "name": "Deploy & Choose",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--choose",
-        "--launch",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },
-    {
-      "name": "Deploy & Choose [Fast]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--choose",
-        "--launch",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },
-    {
-      "name": "Deploy & Launch [choose lang]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--launch",
-        "--lang", "${input:i18nLocale}",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false, // prevents auto-attach to child procs
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },
-    {
-      "name": "Deploy & Choose [choose lang]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--choose",
-        "--launch",
-        "--lang", "${input:i18nLocale}",
-      ],
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-    },         
     {
       "name": "Deploy Radio",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--radio",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio"
     },
     {
       "name": "Deploy Radio [Fast]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--radio",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio [Fast]"
     },
     {
       "name": "Deploy Radio + Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--radio",
-        "--radio-debug",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio + Serial Debug"
     },
     {
       "name": "Deploy Radio + Serial Debug [Fast]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--fileext", "fast",
-        "--radio",
-        "--radio-debug",
-        "--lang", "en",
-      ],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
+
+      "preLaunchTask": "Deploy Radio + Serial Debug [Fast]"
     },
     {
       "name": "Radio: Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": [
-        "--config-env", "RFSUITE_CONFIG",
-        "--radio",
-        "--connect-only",
-        "--lang", "en",
-      ],
-      "console": "integratedTerminal"
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+
+      "preLaunchTask": "Radio: Serial Debug"
     },
+    {
+      "name": "Switch Ethos Firmware",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "postDebugTask": "ethos.SetFirmware"
+    },      
+    {
+      "name": "Run RFSuite Sensor Tool",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "postDebugTask": "Run RFSuite Sensor Tool"
+    },  
+    {
+      "name": "Ethos Telemetry Settings",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "postDebugTask": "ethos.OpenTelemetry"
+    },     
     {
       "name": "Clear locks",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--config-env", "RFSUITE_CONFIG", "--clear-lock"],
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
       "console": "integratedTerminal",
       "justMyCode": true,
-      "noDebug": true
-    } 
-  ],
-  "inputs": [
-    {
-      "id": "i18nLocale",
-      "type": "pickString",
-      "description": "Choose language",
-      "options": [
-        "en",
-        "de",
-        "fr",
-        "es",
-        "it",
-        "nl",
-      ],
-      "default": "en"
+
+      "preLaunchTask": "Clear locks"
     }
   ]
 }

@@ -50,7 +50,7 @@ jobs:
         run: |
           STAGE="build/${{ matrix.lang }}/scripts"
           mkdir -p "$STAGE"
-          rsync -a scripts/ "$STAGE"/
+          rsync -a src/ "$STAGE"/
           echo "STAGE=$STAGE" >> $GITHUB_ENV
 
       - name: Resolve i18n tags (locale=${{ matrix.lang }})

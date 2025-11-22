@@ -14,19 +14,20 @@ import atexit, signal, tempfile
 import platform
 from hashlib import md5
 from glob import glob
+from pathlib import Path
 
 MIN_ETHOSSUITE_VERSION = "1.7.0"
 
-SERIAL_PIDFILE = os.path.join(tempfile.gettempdir(), "rfdeploy-serial.pid")
+SERIAL_PIDFILE = os.path.join(tempfile.gettempdir(), "deploy-serial.pid")
 DEPLOY_TO_RADIO = False  # flag to control radio-only behavior
 THROTTLE_EXTS = None  # unused when throttling all copies
 THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
-THROTTLE_CHUNK = 32 * 1024          # 16 KiB
-THROTTLE_PAUSE_EVERY = 64 * 1024  # pause+fsync every 64 KiB written
-THROTTLE_PAUSE_S = 0.1             # 200 ms
+THROTTLE_CHUNK = 32 * 1024          # 32 KiB
+THROTTLE_PAUSE_EVERY = 64 * 1024    # pause+fsync every 64 KiB written
+THROTTLE_PAUSE_S = 0.1              # 100 ms
 
 # --- single-instance lock helpers --------------------------------------------
-LOCK_DEFAULT_NAME = "rfdeploy.single.lock"
+LOCK_DEFAULT_NAME = "deploy.single.lock"
 if os.name == "nt":
     import msvcrt
 else:
@@ -130,7 +131,7 @@ class SingleInstance:
 def _lock_path_for_config(config_path: str) -> str:
     """Compute the exact lock file path used for this project/config."""
     proj_key = md5(os.path.abspath(config_path).encode("utf-8")).hexdigest()[:8]
-    lock_name = f"rfdeploy-{proj_key}.lock"
+    lock_name = f"deploy-{proj_key}.lock"
     return os.path.join(tempfile.gettempdir(), lock_name)
 
 def parse_version(v: str):
@@ -210,40 +211,10 @@ def _record_tail_pid_and_cleanup():
         pass
     atexit.register(lambda: os.path.exists(SERIAL_PIDFILE) and os.remove(SERIAL_PIDFILE))
 
-def copy_language_soundpack(out_dir, lang="en"):
-    """
-    Copy the physical sound pack for the chosen language into scripts/rfsuite/audio.
-    Uses the standalone .vscode/scripts/copy_soundpack.py if present; otherwise falls back to a simple copytree.
-    """
-    git_src = config['git_src']
-    src = os.path.join(git_src, 'bin', 'sound-generator', 'soundpack', lang)
-    dest = os.path.join(out_dir, 'audio', lang)  # <-- language-specific subfolder
-    script = os.path.join(git_src, '.vscode', 'scripts', 'copy_soundpack.py')
-
-    if not os.path.isdir(src):
-        print(f"[AUDIO] Skipping: soundpack not found at {src}")
-        return
-
-    os.makedirs(dest, exist_ok=True)
-
-    try:
-        if os.path.isfile(script):
-            print(f"[AUDIO] Copying soundpack ({lang}) → {dest}")
-            subprocess.run([sys.executable, script, src, dest], check=True)
-        else:
-            print(f"[AUDIO] Standalone script not found at {script}; doing simple copy.")
-            # dirs_exist_ok requires Python 3.8+
-            shutil.copytree(src, dest, dirs_exist_ok=True)
-    except subprocess.CalledProcessError as e:
-        print(f"[AUDIO] copy_soundpack.py failed: {e}")
-    except Exception as e:
-        print(f"[AUDIO] Fallback copy failed: {e}")
-
 
 def throttled_copyfile(src, dst):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     written_since_pause = 0
-    # raw (unbuffered) file handles so we control write cadence precisely
     with open(src, 'rb', buffering=0) as fsrc, open(dst, 'wb', buffering=0) as fdst:
         while True:
             chunk = fsrc.read(THROTTLE_CHUNK)
@@ -260,64 +231,21 @@ def throttled_copyfile(src, dst):
                 time.sleep(THROTTLE_PAUSE_S)
                 written_since_pause = 0
 
-        # final drain
         fdst.flush()
         try:
             os.fsync(fdst.fileno())
         except OSError:
             pass
 
-    # Match shutil.copy's behavior of preserving basic permission bits
     try:
         shutil.copymode(src, dst)
     except Exception:
         pass
 
 
-
-def minify_lua_file(filepath):
-    print(f"[MINIFY] (luamin) Processing: {filepath}")
-
-    # Try to resolve luamin executable
-    luamin_cmd = shutil.which("luamin")
-
-    if not luamin_cmd:
-        # Fallback for Windows NPM global installs
-        luamin_cmd = os.path.expandvars(r"%APPDATA%\\npm\\luamin.cmd")
-
-        if not os.path.exists(luamin_cmd):
-            print("[MINIFY ERROR] 'luamin' not found in PATH or %APPDATA%\\npm.")
-            print("Please run: npm install -g luamin")
-            return
-
-    try:
-        result = subprocess.run(
-            [luamin_cmd, '-f', filepath],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            encoding='utf-8',  # ✅ force proper decoding
-            errors='replace'   # ✅ optional: replace invalid chars to avoid crash
-        )
-
-        if result.returncode != 0:
-            print(f"[MINIFY ERROR] Failed to minify {filepath}:\n{result.stderr}")
-            return
-
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(result.stdout)
-
-        #print(f"[MINIFY] (luamin) Done: {filepath}")
-
-    except Exception as e:
-        print(f"[MINIFY ERROR] Exception during luamin run: {e}")
-
 def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
     """
-    Ask Ethos Suite for the SCRIPTS path. Robust against chatty output:
-    - Prefer explicit path lines (e.g. 'E:\\scripts')
-    - Else parse the 'New removable disks: [...]' blob and use mountpoint + '\\scripts'
-    - Else fall back to scanning drive letters for an existing '\\scripts'
+    Ask Ethos Suite for the SCRIPTS path. Robust against chatty output.
     """
     import re, json, string
 
@@ -326,11 +254,15 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
 
     def _clean(line: str) -> str:
         line = (line or "").strip().strip('"').strip("'")
-        if not line: return ""
+        if not line:
+            return ""
         low = line.lower()
-        if low.startswith("exit code"): return ""
-        if low.startswith("new removable disks"): return line  # keep for JSON parse
-        if line.startswith("{") or line.startswith("["): return line
+        if low.startswith("exit code"):
+            return ""
+        if low.startswith("new removable disks"):
+            return line  # keep for JSON parse
+        if line.startswith("{") or line.startswith("["):
+            return line
         return line
 
     def _scan_drives_for_scripts():
@@ -352,27 +284,21 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
 
             raw = res.stdout or ""
             lines = [_clean(l) for l in raw.splitlines() if l.strip()]
-            # 1) Prefer explicit path-like lines
             candidates = [l for l in lines if path_re.match(l)]
             existing = [os.path.normpath(p) for p in candidates if os.path.isdir(os.path.normpath(p))]
             if existing:
-                # Prefer the one whose basename is 'scripts'
                 preferred = [p for p in existing if os.path.basename(p).lower() == "scripts"]
                 return preferred[0] if preferred else existing[0]
             if candidates:
-                # If nothing exists yet, return the most plausible; wait_for_scripts_mount() will verify
                 preferred = [p for p in candidates if "scripts" in p.lower()]
                 return os.path.normpath(preferred[0] if preferred else candidates[0])
 
-            # 2) Parse the "New removable disks:  [...]" blob if present
             blob_lines = [l for l in lines if l.lower().startswith("new removable disks")]
             if blob_lines:
-                # Extract JSON array portion (first '[' ... last ']')
                 blob = blob_lines[-1]
                 try:
                     start = blob.index('['); end = blob.rindex(']') + 1
                     arr = json.loads(blob[start:end])
-                    # Prefer the entry with radioDisk == 'radio', else first that has a mountpoint
                     choice = None
                     for item in arr:
                         if item.get("radioDisk") == "radio":
@@ -389,12 +315,10 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
                 except Exception:
                     pass
 
-            # 3) Last resort: scan mounted drive letters for an existing \scripts
             scanned = _scan_drives_for_scripts()
             if scanned:
                 return scanned
 
-            # No usable hint; let caller retry
             raise RuntimeError("No path-like output from Ethos Suite; mount not ready yet.")
         except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
             last_err = e
@@ -404,119 +328,9 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
             else:
                 raise last_err
 
-    """
-    Ask Ethos Suite for the SCRIPTS path. Returns a normalized existing path.
-    Skips noisy lines like "New removable disks: [...]".
-    """
-    import re
 
-    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
-    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//)[^\r\n]+$')  # Windows drive, \\?\ or UNC
-
-    def _clean(line: str) -> str:
-        # Strip quotes and whitespace
-        line = line.strip().strip('"').strip("'")
-        # Ignore obvious noise
-        if not line:
-            return ""
-        if line.lower().startswith("exit code"):
-            return ""
-        if line.lower().startswith("new removable disks"):
-            return ""
-        if line.startswith("{") or line.startswith("["):
-            return ""
-        return line
-
-    last_err = None
-    for attempt in range(retries + 1):
-        try:
-            res = subprocess.run(cmd, text=True, capture_output=True, timeout=15)
-            if res.returncode != 0:
-                raise subprocess.CalledProcessError(res.returncode, cmd, output=res.stdout, stderr=res.stderr)
-
-            raw_lines = (res.stdout or "").splitlines()
-            # Clean and filter
-            candidates = []
-            for l in raw_lines:
-                c = _clean(l)
-                if not c:
-                    continue
-                # Prefer things that look like paths, ideally ending with "scripts"
-                if path_re.match(c):
-                    candidates.append(c)
-
-            # Heuristics: prefer existing paths, then those that contain \scripts
-            existing = [os.path.normpath(p) for p in candidates if os.path.isdir(os.path.normpath(p))]
-            if existing:
-                # If multiple, prefer one whose basename is 'scripts'
-                preferred = [p for p in existing if os.path.basename(p).lower() == "scripts"]
-                return preferred[0] if preferred else existing[0]
-
-            # If nothing exists yet, still try best-looking candidate (may mount a moment later)
-            if candidates:
-                # Prefer entries that contain 'scripts'
-                preferred = [p for p in candidates if "scripts" in p.lower()]
-                return os.path.normpath(preferred[0] if preferred else candidates[0])
-
-            # No usable line; fall through to retry
-            raise RuntimeError("No path-like output from Ethos Suite.")
-
-        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
-            last_err = e
-            if attempt < retries:
-                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
-                time.sleep(delay)
-            else:
-                raise last_err
-
-
-    """
-    Ask Ethos Suite for the SCRIPTS path. Retries after `delay` seconds
-    if the tool returns no path or fails. Raises on final failure.
-    """
-    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
-    last_err = None
-
-    for attempt in range(retries + 1):
-        try:
-            result = subprocess.run(
-                cmd,
-                text=True,
-                capture_output=True,
-                timeout=15
-            )
-
-            if result.returncode != 0:
-                raise subprocess.CalledProcessError(
-                    result.returncode, cmd, output=result.stdout, stderr=result.stderr
-                )
-
-            lines = [l.strip() for l in (result.stdout or "").splitlines() if l.strip()]
-            if not lines:
-                raise RuntimeError("No output from Ethos Suite.")
-
-            # If the last line starts with 'exit code', grab the previous one
-            if lines[-1].lower().startswith("exit code") and len(lines) >= 2:
-                path_line = lines[-2]
-            else:
-                path_line = lines[-1]
-
-            return os.path.normpath(path_line)
-
-        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
-            last_err = e
-            if attempt < retries:
-                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
-                time.sleep(delay)
-            else:
-                raise last_err
-            
-# Permission handler for Windows rm errors
 def on_rm_error(func, path, exc_info):
-    """Resilient rm error handler:
-    - ignore if the path vanished
-    - chmod + retry with small backoff for common transient Windows errors
-    """
+    """Resilient rm error handler."""
     e = exc_info[1]
     if isinstance(e, FileNotFoundError):
         return
@@ -532,7 +346,6 @@ def on_rm_error(func, path, exc_info):
         except FileNotFoundError:
             return
         except OSError as oe:
-            # 5=Access denied, 32=Sharing violation, 483=Fatal device hw error
             if getattr(oe, "winerror", 0) in (5, 32, 483):
                 time.sleep(0.2 * (i + 1))
                 continue
@@ -548,14 +361,12 @@ def flush_fs():
         print(f"[WARN] os.sync failed: {e}")
 
 
-# Throttled, progress-bar deletion to play nice with slow devices
 DELETE_BATCH = 1
 DELETE_PAUSE_S = 0.10  # 100ms
 
 def throttled_rmtree(root, batch=DELETE_BATCH, pause=DELETE_PAUSE_S):
     if not os.path.exists(root):
         return
-    # Collect files for a stable progress bar
     files = []
     for dp, _, fs in os.walk(root):
         for f in fs:
@@ -580,8 +391,6 @@ def throttled_rmtree(root, batch=DELETE_BATCH, pause=DELETE_PAUSE_S):
                     time.sleep(pause * (attempt + 1))
                     attempt += 1
                     continue
-                # Give up on odd errors rather than crash the whole deploy
-                # (old file may be locked by AV or indexing; we'll try removing the directory later)
                 break
 
         bar.update(1)
@@ -591,7 +400,6 @@ def throttled_rmtree(root, batch=DELETE_BATCH, pause=DELETE_PAUSE_S):
 
     bar.close()
 
-    # Remove directories bottom-up; ignore stubborn remnants
     for dp, dns, _ in sorted(os.walk(root), key=lambda t: t[0], reverse=True):
         for d in dns:
             try:
@@ -617,29 +425,21 @@ def delete_tree(path):
         time.sleep(DELETE_PAUSE_S)
 
 
-
 def safe_full_copy(srcall, out_dir):
-    """Safer full-copy for slow FAT32 targets:
-    - If current target exists, rotate it to '<target>.old'
-    - Delete the '<target>.old' folder
-    - Copy new files freshly into '<target>'
-    Includes small delays + best-effort flushes to give the device time to settle.
-    """
+    """Safer full-copy for slow FAT32 targets."""
     global pbar
     if os.path.isdir(out_dir):
         old_dir = out_dir + ".old"
 
-        # If a previous backup exists, remove it first
         if os.path.isdir(old_dir):
             print("Deleting previous backup…")
             delete_tree(old_dir)
             flush_fs()
             time.sleep(2)
 
-        # Rotate current folder to .old
         try:
             print(f"Renaming existing to {os.path.basename(old_dir)}…")
-            os.replace(out_dir, old_dir)  # Atomic on same volume
+            os.replace(out_dir, old_dir)
         except Exception as e:
             print(f"[WARN] Rename failed ({e}). Falling back to direct delete.")
             print("Deleting files…")
@@ -647,7 +447,6 @@ def safe_full_copy(srcall, out_dir):
         flush_fs()
         time.sleep(2)
 
-        # Delete the rotated .old folder
         if os.path.isdir(old_dir):
             print("Deleting files…")
             delete_tree(old_dir)
@@ -660,46 +459,55 @@ def safe_full_copy(srcall, out_dir):
     shutil.copytree(srcall, out_dir, dirs_exist_ok=True, copy_function=copy_verbose)
     pbar.close()
 
-# parse args early so we can know --config-env
-_p = argparse.ArgumentParser(add_help=False)
-_p.add_argument("--config-env", help="Name of env var that contains the config path")
-_early, _ = _p.parse_known_args()
+# --- config: derive repo root and load deploy.json ----------------------------
+ROOT = Path(__file__).resolve().parents[2]
 
-env_name = _early.config_env 
-CONFIG_PATH = os.environ.get(env_name)
+ROOT_CONFIG = ROOT / "deploy.json"
+VSCODE_CONFIG = ROOT / ".vscode/deploy.json"
 
-if not CONFIG_PATH:
-    print(f"[CONFIG ERROR] Environment variable '{env_name}' is not set.")
+config = {
+    "git_src": str(ROOT),
+}
+
+cfg_path = None
+if ROOT_CONFIG.exists():
+    cfg_path = ROOT_CONFIG
+elif VSCODE_CONFIG.exists():
+    cfg_path = VSCODE_CONFIG
+else:
+    print("[ERROR] No deploy.json found in git root or .vscode/")
     sys.exit(1)
 
-if not os.path.exists(CONFIG_PATH):
-    print(f"[CONFIG ERROR] Config file not found at path: {CONFIG_PATH}")
-    sys.exit(1)
+# NEW: Debug which base config file we are using
+print(f"[CONFIG] Using base config file: {cfg_path}")
 
 try:
-    with open(CONFIG_PATH) as f:
-        config = json.load(f)
-except json.JSONDecodeError as e:
-    print(f"[CONFIG ERROR] Failed to parse JSON config file: {e}")
+    with open(cfg_path, "r") as f:
+        user_cfg = json.load(f)
+    if not isinstance(user_cfg, dict):
+        raise ValueError("Config JSON must contain an object at the top level.")
+    config.update(user_cfg)
+except Exception as e:
+    print(f"[ERROR] Failed to load config: {e}")
     sys.exit(1)
+
+if "tgt_name" not in config or not config["tgt_name"]:
+    print(f"[ERROR] Missing 'tgt_name' in {cfg_path}. Aborting.")
+    sys.exit(1)
+
+CONFIG_PATH = str(cfg_path)
 
 pbar = None
 
-
 # === Ethos Serial + Serial Tail helpers =======================================
 
-DEFAULT_SERIAL_VID = "0483"  # STM32 VCP / HID used by FrSky radios in Ethos logs
+DEFAULT_SERIAL_VID = "0483"
 DEFAULT_SERIAL_PID = "5750"
 DEFAULT_SERIAL_BAUD = 115200
 DEFAULT_SERIAL_RETRIES = 10
-DEFAULT_SERIAL_DELAY = 1.0    # seconds between attempts
+DEFAULT_SERIAL_DELAY = 1.0
 
 def ethos_serial(ethossuite_bin, action, radio=None):
-    """
-    Start/stop Ethos serial debug mode.
-    action: 'start' or 'stop'
-    Returns (rc, stdout, stderr) and prints tool output.
-    """
     cmd = [ethossuite_bin, "--serial", action, "--radio", "auto"]
     if radio:
         cmd += ["--radio", radio]
@@ -718,9 +526,6 @@ def ethos_serial(ethossuite_bin, action, radio=None):
 
 
 def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
-    """
-    Poll Ethos for the SCRIPTS path until the directory actually exists.
-    """
     last_err = None
     for i in range(attempts):
         try:
@@ -733,8 +538,6 @@ def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
             print(f"[ETHOS] Waiting for radio drive ({i+1}/{attempts})…")
             time.sleep(delay)
     raise RuntimeError(f"Radio drive did not mount: {last_err}")
-
-
 
 
 def _find_com_port_by_vid_pid(vid_hex, pid_hex):
@@ -757,19 +560,15 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no
         print("[SERIAL] No serial ports detected.")
         return None
 
-    # Debug dump so you can see what's actually present
     print("[SERIAL] Detected ports:")
     for p in ports:
         desc = p.description or ''
         iface = getattr(p, 'interface', None) or ''
         print(f"  - device={p.device} vid={p.vid} pid={p.pid} desc='{desc}' iface='{iface}' hwid='{p.hwid}'")
 
-    # 1) Strict VID/PID match if provided
-    # Helper to parse PID from the HWID string (e.g. 'USB VID:PID=0483:5750 ...')
     def _pid_from_hwid(hw):
         try:
             hw = hw or ""
-            # find ...PID=hhhh:pppp...
             token = "PID="
             if token in hw:
                 rhs = hw.split(token, 1)[1]
@@ -779,7 +578,6 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no
             pass
         return None
 
-    # 1) Strict VID/PID match if provided (no fuzzy fallback)
     if vid_hex and pid_hex:
         try:
             vid = int(vid_hex, 16)
@@ -793,11 +591,9 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no
                         return p.device
                 except Exception:
                     pass
-            # If strict match not found, be conservative: keep waiting; do NOT choose another PID.
             print(f"[SERIAL] No exact VID:PID match yet ({vid_hex}:{pid_hex}). Will keep scanning.")
             return None
 
-    # 2) If only VID is known, prefer same-VID ports, and among them prefer PID from hwid/attr == desired
     if vid_hex and not pid_hex:
         try:
             vid = int(vid_hex, 16)
@@ -811,19 +607,16 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no
             except Exception:
                 pass
         if candidates:
-            # Prefer 5750 if present (either via attribute or parsed from HWID)
             def _score(cp):
                 cp_pid = getattr(cp, "pid", None)
                 hw_pid = _pid_from_hwid(getattr(cp, "hwid", None)) if prefer_pid_from_hwid else None
                 pid_val = cp_pid if cp_pid is not None else hw_pid
-                # Highest priority for 0x5750, then anything else but de-prioritize 0x5740
                 if pid_val == 0x5750: return 0
                 if pid_val == 0x5740: return 2
                 return 1
             best = sorted(candidates, key=_score)[0]
             return best.device
 
-    # 3) Only if no VID/PID are provided AND allowed, use fuzzy hints
     if allow_fuzzy_if_no_vidpid and not vid_hex and not pid_hex:
         hints = [h.lower() for h in [name_hint, "frsky", "serial", "stm", "vcp", "x20", "x18", "x14"] if h]
         for p in ports:
@@ -833,33 +626,20 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no
 
     return None
 
-    vid = int(vid_hex, 16)
-    pid = int(pid_hex, 16)
-    for p in list_ports.comports():
-        try:
-            if p.vid == vid and p.pid == pid:
-                return p.device  # e.g. 'COM7'
-        except Exception:
-            continue
-    return None
-
 
 def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
                       baud=DEFAULT_SERIAL_BAUD, retries=DEFAULT_SERIAL_RETRIES,
                       delay=DEFAULT_SERIAL_DELAY, newline=b'\n', name_hint="Serial"):
-    "Try to attach to the radio serial log N times; print lines until Ctrl+C."
     try:
         import serial
     except Exception:
         print("[SERIAL] pyserial not installed. Install with: pip install pyserial")
         return 2
 
-    # Give Windows a moment to enumerate after enabling serial
     time.sleep(1.5)
 
     port = None
     for i in range(retries):
-        # Strict VID/PID only; do not fall back to fuzzy when VID/PID are known
         port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint,
                               allow_fuzzy_if_no_vidpid=False)
         if port:
@@ -872,8 +652,6 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
         return 3
 
     print(f"[SERIAL] Connecting to {port} @ {baud} …")
-    # Some Windows setups expose the COM device and then rebind the driver briefly.
-    # Try multiple times to open the port before giving up; if it disappears, rescan.
     open_attempts = 8
     for attempt in range(1, open_attempts+1):
         try:
@@ -881,13 +659,11 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
             break
         except FileNotFoundError as e:
             print(f"[SERIAL] Open attempt {attempt}/{open_attempts} -> device vanished; rescanning…")
-            # Rescan for a replacement port that matches
             port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint)
             if not port:
                 import time as _t; _t.sleep(delay)
             continue
         except Exception as e:
-            # e.g. PermissionError / SerialException("Access is denied"), or still binding
             print(f"[SERIAL] Open attempt {attempt}/{open_attempts} failed: {e}")
             import time as _t; _t.sleep(delay)
             continue
@@ -927,11 +703,11 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
 def copy_verbose(src, dst):
     pbar.update(1)
     if DEPLOY_TO_RADIO:
-        throttled_copyfile(src, dst)   # paced writes for the radio
-        flush_fs(); 
-        time.sleep(0.05)        
+        throttled_copyfile(src, dst)
+        flush_fs()
+        time.sleep(0.05)
     else:
-        shutil.copy(src, dst)          # normal fast copy for everything else
+        shutil.copy(src, dst)
 
 
 def count_files(dirpath, ext=None):
@@ -942,48 +718,63 @@ def count_files(dirpath, ext=None):
         total += len(files)
     return total
 
-# Interactive chooser
-def choose_target(targets):
-    print("Available targets:")
-    for i, t in enumerate(targets, 1):
-        mark = '*' if t.get('default') else ' '
-        print(f" [{i}] {t['name']} {mark}")
-    idx = None
-    while idx is None:
-        try:
-            sel = int(input("Select number: "))
-            if 1 <= sel <= len(targets):
-                idx = sel - 1
-            else:
-                print("Out of range")
-        except ValueError:
-            print("Enter a number")
-    return [targets[idx]]
+def run_step_script(step, out_dir, lang="en"):
+    """
+    Generic step runner.
 
+    Conventions:
+      - If `step` ends with '.py' or contains a path separator,
+          treat it as a path (absolute or relative to git_src).
+      - Otherwise, look for:
+          <git_src>/.vscode/scripts/deploy_step_<step>.py
+    The step script is called as:
+      python <script> --out-dir OUT --lang LANG --git-src GIT_SRC
+    """
+    git_src = config["git_src"]
 
-def resolve_i18n_tags_in_place(out_dir, lang="en"):
-    # Path to the merged JSON created by step 1
-    json_path = os.path.join(out_dir, "i18n", f"{lang}.json")  # because scripts/rfsuite/** got copied already
-    if not os.path.isfile(json_path):
-        # Fallback for local build before copy, if needed:
-        json_path = os.path.join(config['git_src'], "scripts", "rfsuite", "i18n", f"{lang}.json")
-    if not os.path.isfile(json_path):
-        print(f"[I18N] Skipping: {lang}.json not found at {json_path}")
+    # Determine script path
+    if step.endswith(".py") or os.sep in step or "/" in step:
+        script_path = step
+        if not os.path.isabs(script_path):
+            script_path = os.path.join(git_src, script_path)
+    else:
+        script_path = os.path.join(
+            git_src, ".vscode", "scripts", f"deploy_step_{step}.py"
+        )
+
+    script_path = os.path.normpath(script_path)
+
+    if not os.path.isfile(script_path):
+        print(f"[STEP] Skipping '{step}': script not found at {script_path}")
         return
-    # Call the standalone resolver
-    import subprocess, sys
-    resolver = os.path.join(config['git_src'], ".vscode", "scripts", "resolve_i18n_tags.py")
-    if not os.path.isfile(resolver):
-        print(f"[I18N] Skipping: resolver not found at {resolver}")
+
+    cmd = [
+        sys.executable,
+        script_path,
+        "--out-dir", out_dir,
+        "--lang", lang,
+        "--git-src", git_src,
+    ]
+
+    print(f"[STEP] Running '{step}' → {script_path}")
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"[STEP] Step '{step}' failed with exit code {e.returncode}")
+    except Exception as e:
+        print(f"[STEP] Step '{step}' crashed: {e}")
+
+
+def run_steps(steps, out_dir, lang="en"):
+    """Run all requested steps (if any) for this output directory."""
+    if not steps:
         return
-    print(f"[I18N] Resolving @i18n(...)@ tags (lang={lang})…")
-    subprocess.run([sys.executable, resolver, "--json", json_path, "--root", out_dir], check=True)
+    for step in steps:
+        run_step_script(step, out_dir, lang=lang)
 
 
 
-# Copy logic
-
-def copy_files(src_override, fileext, targets, lang="en"):
+def copy_files(src_override, fileext, targets, lang="en", steps=None):
     global pbar
     git_src = src_override or config['git_src']
     tgt = config['tgt_name']
@@ -992,31 +783,37 @@ def copy_files(src_override, fileext, targets, lang="en"):
     for i, t in enumerate(targets, 1):
         dest = t['dest']; sim = t.get('simulator')
         print(f"[{i}/{len(targets)}] -> {t['name']} @ {dest}")
+
+        if not os.path.isdir(dest):
+            fallback = os.path.normpath(os.path.join(git_src, 'simulator', 'scripts'))
+            try:
+                os.makedirs(fallback, exist_ok=True)
+                print(f"[DEST] '{dest}' not found. Using fallback: {fallback}")
+                t['dest'] = fallback
+                dest = fallback
+            except Exception as e:
+                print(f"[DEST ERROR] Could not create fallback folder at {fallback}: {e}")
+                raise
         out_dir = os.path.join(dest, tgt)
 
-
-        # .lua only
         if fileext == '.lua':
             if os.path.isdir(out_dir):
                 for r, _, files in os.walk(out_dir):
                     for f in files:
                         if f.endswith(('.lua','.luac')):
                             os.remove(os.path.join(r,f))
-            scr = os.path.join(git_src, 'scripts', tgt)
+            scr = os.path.join(git_src, 'src', tgt)
             os.makedirs(out_dir, exist_ok=True)
             for r,_,files in os.walk(scr):
                 for f in files:
                     if f.endswith('.lua'):
                         shutil.copy(os.path.join(r,f), out_dir)
 
-            resolve_i18n_tags_in_place(out_dir, lang)    
-            copy_language_soundpack(out_dir, lang)       
+            run_steps(steps, out_dir, lang)
 
-        # fast
         elif fileext == 'fast':
-            scr = os.path.join(git_src, 'scripts', tgt)
+            scr = os.path.join(git_src, 'src', tgt)
 
-            # ensure no leftover .luac files in target
             if os.path.isdir(out_dir):
                 removed = 0
                 for r, _, files in os.walk(out_dir):
@@ -1030,11 +827,8 @@ def copy_files(src_override, fileext, targets, lang="en"):
                 if removed:
                     print(f"Fast deploy cleanup: removed {removed} stale .luac file(s).")
 
-
-            # FAT/exFAT timestamp slack (seconds)
             TS_SLACK = 2.0
 
-            # Collect a stable list first (so bars have fixed totals)
             files_all = []
             for r, _, files in os.walk(scr):
                 for f in files:
@@ -1044,11 +838,10 @@ def copy_files(src_override, fileext, targets, lang="en"):
                     files_all.append((srcf, dstf, rel))
 
             def needs_copy_with_md5(srcf, dstf):
-                """Return True if dstf should be updated from srcf (size/mtime with slack, else MD5)."""
                 try:
                     ss = os.stat(srcf)
                 except FileNotFoundError:
-                    return False  # source vanished
+                    return False
                 if not os.path.exists(dstf):
                     return True
                 try:
@@ -1056,39 +849,31 @@ def copy_files(src_override, fileext, targets, lang="en"):
                 except FileNotFoundError:
                     return True
 
-                # 1) Different size → copy
                 if ss.st_size != ds.st_size:
                     return True
-                # 2) Source meaningfully newer → copy
                 if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
                     return True
-                # 3) Otherwise, verify by MD5
                 try:
                     return file_md5(srcf) != file_md5(dstf)
                 except Exception:
-                    # If hashing fails for any reason, be safe
                     return True
 
-            # ===== Pass 1: Verify (MD5) =====
             to_copy = []
             if files_all:
                 bar_verify = tqdm(total=len(files_all), desc="Verifying (MD5)")
                 for srcf, dstf, rel in files_all:
-                    # Ensure parent exists before we check/copy later
                     os.makedirs(os.path.dirname(dstf), exist_ok=True)
                     if needs_copy_with_md5(srcf, dstf):
                         to_copy.append((srcf, dstf, rel))
                     bar_verify.update(1)
                 bar_verify.close()
 
-            # ===== Pass 2: Update only what changed =====
             copied = 0
             if to_copy:
                 bar_update = tqdm(total=len(to_copy), desc="Updating files")
                 for srcf, dstf, rel in to_copy:
                     if DEPLOY_TO_RADIO:
                         throttled_copyfile(srcf, dstf)
-                        # After copy to 'out_dir' for each target:
                         flush_fs()
                         time.sleep(0.05)
                     else:
@@ -1099,32 +884,22 @@ def copy_files(src_override, fileext, targets, lang="en"):
                     bar_update.update(1)
                 bar_update.close()
 
-            resolve_i18n_tags_in_place(out_dir, lang) 
-            copy_language_soundpack(out_dir, lang)    
+            run_steps(steps, out_dir, lang)
 
             if not copied:
                 print("Fast deploy: nothing to update.")
-    
-        # full
+
         else:
-            srcall = os.path.join(git_src, 'scripts', tgt)
+            srcall = os.path.join(git_src, 'src', tgt)
             safe_full_copy(srcall, out_dir)
-            resolve_i18n_tags_in_place(out_dir, lang)
-            copy_language_soundpack(out_dir, lang)    
+            run_steps(steps, out_dir, lang)
             flush_fs()
             time.sleep(2)
 
             print(f"Done: {t['name']}\n")
 
 
-
 def patch_logger_init(out_root):
-    """
-    Set simulatoronly=false in tasks/logger/init.lua, robustly:
-    - ignores inline comments (-- ...)
-    - preserves spacing and trailing comma
-    - matches bare or bracketed keys: simulatoronly or ["simulatoronly"]
-    """
     import os, re
     target_file = os.path.join(out_root, 'tasks', 'logger', 'init.lua')
     try:
@@ -1145,7 +920,7 @@ def patch_logger_init(out_root):
         )
 
         for i, line in enumerate(lines):
-            code, sep, comment = line.partition('--')   # only touch code part
+            code, sep, comment = line.partition('--')
             m = key_re.search(code)
             if m:
                 code = (
@@ -1166,7 +941,6 @@ def patch_logger_init(out_root):
         print(f"[PATCH] Failed to edit {target_file}: {e}")
 
 
-# Launch sims
 def launch_sims(targets):
     for t in targets:
         sim = t.get('simulator')
@@ -1175,42 +949,41 @@ def launch_sims(targets):
             out = subprocess_conout.subprocess_conout(sim, nrows=9999, encode=True)
             print(out)
 
-# Main
+
 def main():
     global DEPLOY_TO_RADIO
     p = argparse.ArgumentParser(description='Deploy & launch')
-    p = argparse.ArgumentParser(description='Deploy & launch')
     p.add_argument(
-        '--config-env',
-        help='Name of env var that contains the config path (eg: PROJECT_CONFIG)'
+        '--config',
+        default=CONFIG_PATH,
+        help='Optional path to a JSON config file (Ethos/serial settings).'
     )
-    p.add_argument('--config', default=CONFIG_PATH)
     p.add_argument('--src')
     p.add_argument('--fileext')
     p.add_argument('--all', action='store_true')
-    p.add_argument('--choose', action='store_true')
     p.add_argument('--launch', action='store_true')
     p.add_argument('--radio', action='store_true')
     p.add_argument('--radio-debug', action='store_true')
-    p.add_argument('--minify',    action='store_true')
     p.add_argument('--connect-only', action='store_true')
     p.add_argument('--lang', default=os.environ.get("RFSUITE_LANG", "en"),
                    help='Locale to resolve (e.g. en, de, fr). Defaults to env RFSUITE_LANG or "en".')
     p.add_argument('--force', action='store_true',
                    help='Take over a stale single-instance lock if the previous run crashed.')
-    # maintenance / self-contained “menu” operations
     p.add_argument('--clear-lock', action='store_true',
                    help='Delete ONLY the current project lock and exit.')
     p.add_argument('--clear-all-locks', action='store_true',
-                   help='Delete ALL rfdeploy-*.lock files in the system temp and exit.')
+                   help='Delete ALL deploy-*.lock files in the system temp and exit.')
     p.add_argument('--print-lock', action='store_true',
-                   help='Print the lock file path for this project and exit.')    
+                   help='Print the lock file path for this project and exit.')
+    p.add_argument('--step', dest='steps', action='append',
+                   help='Additional deploy steps to run (e.g. i18n, soundpack). '
+                        'Can be given multiple times.'
+    )    
 
     args = p.parse_args()
+    DEPLOY_TO_RADIO = args.radio
 
-    DEPLOY_TO_RADIO = args.radio 
-
-    DEPLOY_PIDFILE = os.path.join(tempfile.gettempdir(), "rfdeploy-copy.pid")
+    DEPLOY_PIDFILE = os.path.join(tempfile.gettempdir(), "deploy-copy.pid")
     try:
         with open(DEPLOY_PIDFILE, "w") as f:
             f.write(str(os.getpid()))
@@ -1218,13 +991,22 @@ def main():
         pass
     atexit.register(lambda: os.path.exists(DEPLOY_PIDFILE) and os.remove(DEPLOY_PIDFILE))
 
+    if args.config and os.path.abspath(args.config) != os.path.abspath(CONFIG_PATH) and os.path.exists(args.config):
+        try:
+            with open(args.config) as f:
+                override_cfg = json.load(f)
+            if isinstance(override_cfg, dict):
+                config.update(override_cfg)
+                # NEW: Debug which override config file is loaded
+                print(f"[CONFIG] Loaded override config file: {os.path.abspath(args.config)}")
+            else:
+                print(f"[CONFIG WARN] Override config at {args.config} is not a JSON object; ignoring.")
+        except json.JSONDecodeError as e:
+            print(f"[CONFIG WARN] Failed to parse override JSON config file at {args.config}: {e}")
 
-    # load override config
-    if args.config != CONFIG_PATH:
-        with open(args.config) as f:
-            config.update(json.load(f))
+    # NEW: Always show the effective config source used for locks & overrides
+    print(f"[CONFIG] Effective config source (for locks & overrides): {os.path.abspath(args.config)}")
 
-    # --- self-contained maintenance commands (handled BEFORE acquiring lock) ---
     if args.print_lock:
         print(_lock_path_for_config(args.config))
         return 0
@@ -1232,7 +1014,7 @@ def main():
     if args.clear_all_locks:
         tmp = tempfile.gettempdir()
         removed = 0
-        for f in glob(os.path.join(tmp, "rfdeploy-*.lock")):
+        for f in glob(os.path.join(tmp, "deploy-*.lock")):
             try:
                 os.remove(f)
                 print(f"Removed: {f}")
@@ -1255,24 +1037,23 @@ def main():
             print(f"Could not remove: {path} — {e}", file=sys.stderr)
             return 1
 
-
-    # --- acquire single-instance lock (project-scoped by config path) ----------
     proj_key = md5(os.path.abspath(args.config).encode("utf-8")).hexdigest()[:8]
-    lock_name = f"rfdeploy-{proj_key}.lock"
+    lock_name = f"deploy-{proj_key}.lock"
     try:
         SingleInstance(name=lock_name, force=args.force).acquire()
     except RuntimeError as e:
         print(str(e), file=sys.stderr)
-        return 1            
+        return 1
 
-    # Sanity check Ethos Suite version
     ethos_bin = config.get('ethossuite_bin')
     if ethos_bin and not check_ethossuite_version(ethos_bin, min_version=MIN_ETHOSSUITE_VERSION):
         sys.exit(1)
 
-    # select targets
+    # --- target selection: RADIO vs SIMULATOR ---------------------------------
+    targets = []
+
     if args.radio and args.connect_only:
-        # enable serial mode on the radio
+        # Just enable serial & tail logs; no copying
         ethos_serial(config['ethossuite_bin'], 'start')
 
         v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
@@ -1282,13 +1063,12 @@ def main():
         d = float(config.get('serial_retry_delay', DEFAULT_SERIAL_DELAY))
         nh = str(config.get('serial_name_hint', "Serial"))
 
-        # now just tail the serial output (until Ctrl+C)
         return tail_serial_debug(vid=v, pid=p, baud=b, retries=r, delay=d, name_hint=nh)
-    elif args.radio:
-        # Make sure the radio storage is available (serial OFF => mass storage ON)
+
+    if args.radio and not args.connect_only:
+        # RADIO DEPLOY: use Ethos Suite to locate the radio SCRIPTS path
         print("[ETHOS] Disabling serial debug before copy to protect filesystem…")
         ethos_serial(config['ethossuite_bin'], 'stop')
-        # Wait for the radio drive to mount and obtain the SCRIPTS path
         try:
             rd = wait_for_scripts_mount(config['ethossuite_bin'], attempts=10, delay=2)
         except Exception as e:
@@ -1298,50 +1078,31 @@ def main():
                 import winsound
                 winsound.MessageBeep()
             except Exception:
-                print("", end="", flush=True)
+                print("\a", end="", flush=True)
             return 1
+
         targets = [{'name': 'Radio', 'dest': rd, 'simulator': None}]
     else:
-        tlist=config['deploy_targets']
-        if args.choose:
-            targets=choose_target(tlist)
-        elif args.all:
-            targets=tlist
-        else:
-            targets=[t for t in tlist if t.get('default')]
+        # SIMULATOR DEPLOY: always to <git_src>\simulator\[firmware]\scripts
+        firmware = os.environ.get("ETHOS_FIRMWARE")
+        path_parts = [config['git_src'], 'simulator']
+        if firmware:
+            path_parts.append(firmware)
+        path_parts.append('scripts')
 
-    if not targets:
-        print('No targets.')
-        sys.exit(1)
+        fixed_dest = os.path.normpath(os.path.join(*path_parts))
+        os.makedirs(fixed_dest, exist_ok=True)
+        targets = [{'name': 'Simulator', 'dest': fixed_dest, 'simulator': None}]
 
-    copy_files(args.src, args.fileext, targets, lang=args.lang)
-
-    # After copying to radio, ensure logger runs on real hardware (not only simulator)
-    if args.radio:
-        for t in targets:
-            out_root = os.path.join(t['dest'], config['tgt_name'])
-            patch_logger_init(out_root)
-
-    if args.minify:
-        print("→ Minifying Lua files…")
-        for t in targets:
-            out_root = os.path.join(t['dest'], config['tgt_name'])
-            for dirpath, _, files in os.walk(out_root):
-                for fn in files:
-                    if fn.endswith('.lua'):
-                        minify_lua_file(os.path.join(dirpath, fn))
-        print("✓ Minification complete.")
+    # -------------------------------------------------------------------------
+    copy_files(args.src, args.fileext, targets, lang=args.lang, steps=args.steps)
 
     if args.launch and not args.radio:
         launch_sims(targets)
 
-
-    
-    # If deploying to radio without debug, still re-enable serial
     if args.radio and not args.radio_debug:
         ethos_serial(config['ethossuite_bin'], 'start')
 
-    # If deploying to radio WITH debug, (re)enable serial and attach with retries
     if args.radio and args.radio_debug:
         _kill_previous_tail_if_any()
         rc, _, _ = ethos_serial(config['ethossuite_bin'], 'start')
@@ -1357,12 +1118,10 @@ def main():
         nh = str(config.get('serial_name_hint', "Serial"))
 
         tail_serial_debug(vid=v, pid=p, baud=b, retries=r, delay=d, name_hint=nh)
-    
 
-if __name__=='__main__':
+if __name__ == '__main__':
     rc = main()
     try:
-        import sys
         sys.exit(rc if isinstance(rc, int) else 0)
     except SystemExit:
         pass
