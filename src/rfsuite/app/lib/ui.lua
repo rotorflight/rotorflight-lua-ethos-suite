@@ -395,6 +395,8 @@ function ui.openMainMenuSub(activesection)
     if not utils.ethosVersionAtLeast(config.ethosVersion) then return end
 
     local MainMenu = app.MainMenu
+    
+    app.lastMenu = activesection
 
     preferences.general.iconsize = tonumber(preferences.general.iconsize) or 1
 
