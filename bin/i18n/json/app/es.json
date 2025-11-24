@@ -1012,12 +1012,12 @@
         },
         "flrtr": {
           "auto_restart_time": {
-            "english": "Auto restart time",
+            "english": "Auto Bailout Time",
             "translation": "Auto restart time",
             "needs_translation": true
           },
           "restart_acc": {
-            "english": "Restart acceleration",
+            "english": "Auto Bailout Accel",
             "translation": "Restart acceleration",
             "needs_translation": true
           },
@@ -1027,27 +1027,27 @@
             "needs_translation": false
           },
           "motor_temp_sensor": {
-            "english": "Motor temp sensor",
+            "english": "Motor Temperture Sensor",
             "translation": "Sensor temp. motor",
             "needs_translation": false
           },
           "starting_torque": {
-            "english": "Starting torque",
+            "english": "Starting Power",
             "translation": "Torque de Inicio",
             "needs_translation": false
           },
           "cell_count": {
-            "english": "Cell count",
+            "english": "LiPo Cell Count",
             "translation": "Nro. de Celdas",
             "needs_translation": false
           },
           "gov_p": {
-            "english": "Gov-P",
+            "english": "Governor P",
             "translation": "Gov-P",
             "needs_translation": false
           },
           "motor_erpm_max": {
-            "english": "Motor ERPM max",
+            "english": "Maximum Motor ERPM",
             "translation": "Max ERPM Motor",
             "needs_translation": false
           },
@@ -1057,32 +1057,32 @@
             "needs_translation": false
           },
           "low_voltage_protection": {
-            "english": "Low voltage protection",
+            "english": "Low Voltage Limit",
             "translation": "Proteccion bajo voltaje",
             "needs_translation": false
           },
           "drive_freq": {
-            "english": "Drive frequency",
+            "english": "Drive Frequency",
             "translation": "Drive frequency",
             "needs_translation": false
           },
           "telemetry_protocol": {
-            "english": "Telemetry protocol",
+            "english": "Telemetry Protocol",
             "translation": "Protocolo de telemetria",
             "needs_translation": false
           },
           "motor_direction": {
-            "english": "Motor direction",
+            "english": "Motor Direction",
             "translation": "Direccion del Motor",
             "needs_translation": false
           },
           "throttle_protocol": {
-            "english": "Throttle protocol",
+            "english": "Throttle Protocol",
             "translation": "Protocolo de acelerador",
             "needs_translation": false
           },
           "soft_start": {
-            "english": "Soft start",
+            "english": "Soft Start Time",
             "translation": "Arranque Suave",
             "needs_translation": false
           },
@@ -1092,17 +1092,17 @@
             "needs_translation": false
           },
           "temperature_protection": {
-            "english": "Temperature protection",
+            "english": "Temperature Limit",
             "translation": "Proteccion Temperatura",
             "needs_translation": false
           },
           "buzzer_volume": {
-            "english": "Buzzer volume",
+            "english": "Beeper Volume",
             "translation": "Volumen del Buzzer",
             "needs_translation": false
           },
           "electrical_angle": {
-            "english": "Electrical angle",
+            "english": "Electrical Angle",
             "translation": "Angulo de Timing",
             "needs_translation": false
           },
@@ -1111,53 +1111,58 @@
             "translation": "Governor",
             "needs_translation": false
           },
+          "esc_mode": {
+            "english": "ESC Mode",
+            "translation": "ESC Mode",
+            "needs_translation": true
+          },
           "advanced": {
             "english": "Advanced",
             "translation": "Avanzado",
             "needs_translation": false
           },
           "gov_i": {
-            "english": "Gov-I",
+            "english": "Governor I",
             "translation": "Gov-I",
             "needs_translation": false
           },
           "bec_voltage": {
-            "english": "BEC voltage",
+            "english": "SBEC Voltage",
             "translation": "Voltaje BEC",
             "needs_translation": false
           },
           "fan_control": {
-            "english": "Fan control",
+            "english": "Cooling Fan Mode",
             "translation": "Control de Ventilador",
             "needs_translation": false
           },
           "basic": {
-            "english": "Basic",
+            "english": "General",
             "translation": "Basico",
             "needs_translation": false
           },
           "current_gain": {
-            "english": "Current gain",
+            "english": "Current Gain",
             "translation": "Ganancia Corriente",
             "needs_translation": false
           },
           "led_color": {
-            "english": "LED color",
+            "english": "LED Color",
             "translation": "Color LED",
             "needs_translation": false
           },
           "motor_temp": {
-            "english": "Motor temperture",
+            "english": "Motor Temperture Limit",
             "translation": "Temperatura del motor",
             "needs_translation": false
           },
           "response_speed": {
-            "english": "Response speed",
+            "english": "Response Speed",
             "translation": "Velocidad de Respuesta",
             "needs_translation": false
           },
           "battery_capacity": {
-            "english": "Battery capacity",
+            "english": "Capacity Limit",
             "translation": "Capacidad de la bateria",
             "needs_translation": false
           }

@@ -1047,8 +1047,8 @@
             "needs_translation": false
           },
           "motor_erpm_max": {
-            "english": "Maximun Motor ERPM",
-            "translation": "Maximun Motor ERPM",
+            "english": "Maximum Motor ERPM",
+            "translation": "Maximum Motor ERPM",
             "needs_translation": false
           },
           "name": {

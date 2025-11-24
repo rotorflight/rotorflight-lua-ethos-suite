@@ -247,7 +247,7 @@
       "needs_translation": false
     },
     "throttle_min": {
-      "english": "Minimum throttle value",
+      "english": "Minimum throttle calibration value",
       "translation": "Minimaler Gaswert",
       "needs_translation": false
     },
@@ -257,12 +257,12 @@
       "needs_translation": false
     },
     "tbl_auto": {
-      "english": "Auto",
+      "english": "Automatic",
       "translation": "Auto",
       "needs_translation": false
     },
     "starting_torque": {
-      "english": "Starting torque for the motor",
+      "english": "Starting power for the motor",
       "translation": "Anlaufmoment fuer den Motor",
       "needs_translation": false
     },
@@ -272,22 +272,22 @@
       "needs_translation": false
     },
     "motor_erpm_max": {
-      "english": "Maximum RPM",
+      "english": "Maximum motor electrical rpm",
       "translation": "Maximale RPM",
       "needs_translation": false
     },
     "throttle_max": {
-      "english": "Maximum throttle value",
+      "english": "Maximum throttle calibration value",
       "translation": "Maximaler Gaswert",
       "needs_translation": false
     },
     "tbl_ccw": {
-      "english": "CCW",
+      "english": "Reversed",
       "translation": "CCW",
       "needs_translation": false
     },
     "tbl_escgov": {
-      "english": "Esc Governor",
+      "english": "ESC Governor",
       "translation": "ESC-Governor",
       "needs_translation": false
     },
@@ -297,7 +297,7 @@
       "needs_translation": false
     },
     "tbl_automatic": {
-      "english": "Automatic",
+      "english": "Temp Control",
       "translation": "Automatisch",
       "needs_translation": false
     },
@@ -307,12 +307,12 @@
       "needs_translation": false
     },
     "tbl_cw": {
-      "english": "CW",
+      "english": "Normal",
       "translation": "CW",
       "needs_translation": false
     },
     "soft_start": {
-      "english": "Soft start value",
+      "english": "Soft start time",
       "translation": "Wert fuer sanftes Anlaufen",
       "needs_translation": false
     },
@@ -347,7 +347,7 @@
       "needs_translation": false
     },
     "buzzer_volume": {
-      "english": "Buzzer volume",
+      "english": "Beeper volume",
       "translation": "Summerlautstaerke",
       "needs_translation": false
     },
