@@ -257,8 +257,8 @@
       "needs_translation": false
     },
     "tbl_auto": {
-      "english": "Auto",
-      "translation": "Auto",
+      "english": "Automatic",
+      "translation": "Automatic",
       "needs_translation": false
     },
     "starting_torque": {
