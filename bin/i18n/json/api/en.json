@@ -297,8 +297,8 @@
       "needs_translation": false
     },
     "tbl_automatic": {
-      "english": "Automatic",
-      "translation": "Automatic",
+      "english": "Temp Control",
+      "translation": "Temp Control",
       "needs_translation": false
     },
     "low_voltage_protection": {

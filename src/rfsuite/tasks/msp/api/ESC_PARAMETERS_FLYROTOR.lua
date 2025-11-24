@@ -27,7 +27,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_hardware", type = "U8", apiVersion = 12.07, simResponse = {0}, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.esc_hardware)@"},
     {field = "throttle_min", type = "U16", apiVersion = 12.07, simResponse = {4, 76}, byteorder = "big", help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.throttle_min)@"},
     {field = "throttle_max", type = "U16", apiVersion = 12.07, simResponse = {7, 148}, byteorder = "big", help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.throttle_max)@"},
-    {field = "governor", type = "U8", apiVersion = 12.07, simResponse = {0}, table = {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_escgov)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_linear_thr)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_rf_gov)@"}, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.governor)@"},
+    {field = "esc_mode", type = "U8", apiVersion = 12.07, simResponse = {0}, table = {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_escgov)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_linear_thr)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_rf_gov)@"}, tableIdxInc = -1, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.governor)@"},
     {field = "cell_count", type = "U8", apiVersion = 12.07, simResponse = {6}, min = 4, max = 14, default = 6, help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.cell_count)@"},
     {field = "low_voltage_protection", type = "U8", apiVersion = 12.07, simResponse = {30}, min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.low_voltage_protection)@"},
     {field = "temperature_protection", type = "U8", apiVersion = 12.07, simResponse = {125}, min = 50, max = 135, default = 125, unit = "°", help = "@i18n(api.ESC_PARAMETERS_FLYROTOR.temperature_protection)@"},

@@ -1111,6 +1111,11 @@
             "translation": "Governor",
             "needs_translation": false
           },
+          "esc_mode": {
+            "english": "ESC Mode",
+            "translation": "ESC Mode",
+            "needs_translation": false
+          },
           "advanced": {
             "english": "Advanced",
             "translation": "Advanced",
