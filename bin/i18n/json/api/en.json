@@ -247,8 +247,8 @@
       "needs_translation": false
     },
     "throttle_min": {
-      "english": "Minimum throttle value",
-      "translation": "Minimum throttle value",
+      "english": "Minimum throttle calibration value",
+      "translation": "Minimum throttle calibration value",
       "needs_translation": false
     },
     "tbl_disabled": {
@@ -262,8 +262,8 @@
       "needs_translation": false
     },
     "starting_torque": {
-      "english": "Starting torque for the motor",
-      "translation": "Starting torque for the motor",
+      "english": "Starting power for the motor",
+      "translation": "Starting power for the motor",
       "needs_translation": false
     },
     "cell_count": {
@@ -272,23 +272,23 @@
       "needs_translation": false
     },
     "motor_erpm_max": {
-      "english": "Maximum RPM",
-      "translation": "Maximum RPM",
+      "english": "Maximum motor electrical rpm",
+      "translation": "Maximum motor electrical rpm",
       "needs_translation": false
     },
     "throttle_max": {
-      "english": "Maximum throttle value",
-      "translation": "Maximum throttle value",
+      "english": "Maximum throttle calibration value",
+      "translation": "Maximum throttle calibration value",
       "needs_translation": false
     },
     "tbl_ccw": {
-      "english": "CCW",
-      "translation": "CCW",
+      "english": "Reversed",
+      "translation": "Reversed",
       "needs_translation": false
     },
     "tbl_escgov": {
-      "english": "Esc Governor",
-      "translation": "Esc Governor",
+      "english": "ESC Governor",
+      "translation": "ESC Governor",
       "needs_translation": false
     },
     "temperature_protection": {
@@ -307,13 +307,13 @@
       "needs_translation": false
     },
     "tbl_cw": {
-      "english": "CW",
-      "translation": "CW",
+      "english": "Normal",
+      "translation": "Normal",
       "needs_translation": false
     },
     "soft_start": {
-      "english": "Soft start value",
-      "translation": "Soft start value",
+      "english": "Soft start time",
+      "translation": "Soft start time",
       "needs_translation": false
     },
     "gov_i": {
@@ -347,8 +347,8 @@
       "needs_translation": false
     },
     "buzzer_volume": {
-      "english": "Buzzer volume",
-      "translation": "Buzzer volume",
+      "english": "Beeper volume",
+      "translation": "Beeper volume",
       "needs_translation": false
     },
     "drive_freq": {

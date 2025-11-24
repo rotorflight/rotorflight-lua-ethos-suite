@@ -1012,13 +1012,13 @@
         },
         "flrtr": {
           "auto_restart_time": {
-            "english": "Auto restart time",
-            "translation": "Auto restart time",
+            "english": "Auto Bailout Time",
+            "translation": "Auto Bailout Time",
             "needs_translation": false
           },
           "restart_acc": {
-            "english": "Restart acceleration",
-            "translation": "Restart acceleration",
+            "english": "Auto Bailout Accel",
+            "translation": "Auto Bailout Accel",
             "needs_translation": false
           },
           "gov": {
@@ -1027,28 +1027,28 @@
             "needs_translation": false
           },
           "motor_temp_sensor": {
-            "english": "Motor temp sensor",
-            "translation": "Motor temp sensor",
+            "english": "Motor Temperture Sensor",
+            "translation": "Motor Temperture Sensor",
             "needs_translation": false
           },
           "starting_torque": {
-            "english": "Starting torque",
-            "translation": "Starting torque",
+            "english": "Starting Power",
+            "translation": "Starting Power",
             "needs_translation": false
           },
           "cell_count": {
-            "english": "Cell count",
-            "translation": "Cell count",
+            "english": "LiPo Cell Count",
+            "translation": "LiPo Cell Count",
             "needs_translation": false
           },
           "gov_p": {
-            "english": "Gov-P",
-            "translation": "Gov-P",
+            "english": "Governor P",
+            "translation": "Governor P",
             "needs_translation": false
           },
           "motor_erpm_max": {
-            "english": "Motor ERPM max",
-            "translation": "Motor ERPM max",
+            "english": "Maximun Motor ERPM",
+            "translation": "Maximun Motor ERPM",
             "needs_translation": false
           },
           "name": {
@@ -1057,33 +1057,33 @@
             "needs_translation": false
           },
           "low_voltage_protection": {
-            "english": "Low voltage protection",
-            "translation": "Low voltage protection",
+            "english": "Low Voltage Limit",
+            "translation": "Low Voltage Limit",
             "needs_translation": false
           },
           "drive_freq": {
-            "english": "Drive frequency",
-            "translation": "Drive frequency",
+            "english": "Drive Frequency",
+            "translation": "Drive Frequency",
             "needs_translation": false
           },
           "telemetry_protocol": {
-            "english": "Telemetry protocol",
-            "translation": "Telemetry protocol",
+            "english": "Telemetry Protocol",
+            "translation": "Telemetry Protocol",
             "needs_translation": false
           },
           "motor_direction": {
-            "english": "Motor direction",
-            "translation": "Motor direction",
+            "english": "Motor Direction",
+            "translation": "Motor Direction",
             "needs_translation": false
           },
           "throttle_protocol": {
-            "english": "Throttle protocol",
-            "translation": "Throttle protocol",
+            "english": "Throttle Protocol",
+            "translation": "Throttle Protocol",
             "needs_translation": false
           },
           "soft_start": {
-            "english": "Soft start",
-            "translation": "Soft start",
+            "english": "Soft Start Time",
+            "translation": "Soft Start Time",
             "needs_translation": false
           },
           "other": {
@@ -1092,18 +1092,18 @@
             "needs_translation": false
           },
           "temperature_protection": {
-            "english": "Temperature protection",
-            "translation": "Temperature protection",
+            "english": "Temperature Limit",
+            "translation": "Temperature Limit",
             "needs_translation": false
           },
           "buzzer_volume": {
-            "english": "Buzzer volume",
-            "translation": "Buzzer volume",
+            "english": "Beeper Volume",
+            "translation": "Beeper Volume",
             "needs_translation": false
           },
           "electrical_angle": {
-            "english": "Electrical angle",
-            "translation": "Electrical angle",
+            "english": "Electrical Angle",
+            "translation": "Electrical Angle",
             "needs_translation": false
           },
           "governor": {
@@ -1117,48 +1117,48 @@
             "needs_translation": false
           },
           "gov_i": {
-            "english": "Gov-I",
-            "translation": "Gov-I",
+            "english": "Governor I",
+            "translation": "Governor I",
             "needs_translation": false
           },
           "bec_voltage": {
-            "english": "BEC voltage",
-            "translation": "BEC voltage",
+            "english": "SBEC Voltage",
+            "translation": "SBEC Voltage",
             "needs_translation": false
           },
           "fan_control": {
-            "english": "Fan control",
-            "translation": "Fan control",
+            "english": "Cooling Fan Mode",
+            "translation": "Cooling Fan Mode",
             "needs_translation": false
           },
           "basic": {
-            "english": "Basic",
-            "translation": "Basic",
+            "english": "General",
+            "translation": "General",
             "needs_translation": false
           },
           "current_gain": {
-            "english": "Current gain",
-            "translation": "Current gain",
+            "english": "Current Gain",
+            "translation": "Current Gain",
             "needs_translation": false
           },
           "led_color": {
-            "english": "LED color",
-            "translation": "LED color",
+            "english": "LED Color",
+            "translation": "LED Color",
             "needs_translation": false
           },
           "motor_temp": {
-            "english": "Motor temperture",
-            "translation": "Motor temperture",
+            "english": "Motor Temperture Limit",
+            "translation": "Motor Temperture Limit",
             "needs_translation": false
           },
           "response_speed": {
-            "english": "Response speed",
-            "translation": "Response speed",
+            "english": "Response Speed",
+            "translation": "Response Speed",
             "needs_translation": false
           },
           "battery_capacity": {
-            "english": "Battery capacity",
-            "translation": "Battery capacity",
+            "english": "Capacity Limit",
+            "translation": "Capacity Limit",
             "needs_translation": false
           }
         },
