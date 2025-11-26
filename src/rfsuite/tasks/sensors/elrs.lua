@@ -549,9 +549,7 @@ function elrs.crossfirePop()
         local command, data = elrs.popFrame(CRSF_FRAME_CUSTOM_TELEM)
 
         if not command or not data then return false end
-        if command ~= CRSF_FRAME_CUSTOM_TELEM then
-            return true
-        end
+
         if command and data then
 
             if command == CRSF_FRAME_CUSTOM_TELEM then
@@ -567,9 +565,8 @@ function elrs.crossfirePop()
                 elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
 
                 local published = 0
-                local dataLen = #data
-                
-                while ptr < dataLen do
+      
+                while ptr < #data do
 
                     sid, ptr = decU16(data, ptr)
                     local sensor = sensorsList[sid]
