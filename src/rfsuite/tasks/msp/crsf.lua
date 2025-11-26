@@ -18,9 +18,9 @@ local crsfMspCmd = 0
 
 local sensor
 
-transport.popFrame = function()
+transport.popFrame = function(...)
     if not sensor then sensor = crsf.getSensor() end
-    return sensor:popFrame()
+    return sensor:popFrame(...)
 end
 
 transport.pushFrame = function(x, y)
@@ -28,9 +28,11 @@ transport.pushFrame = function(x, y)
     return sensor:pushFrame(x, y)
 end
 
+local payloadOut = {0,0}
 transport.mspSend = function(payload)
-    local payloadOut = {CRSF_ADDRESS_BETAFLIGHT, CRSF_ADDRESS_RADIO_TRANSMITTER}
-    for i = 1, #(payload) do payloadOut[i + 2] = payload[i] end
+    payloadOut[1], payloadOut[2] = CRSF_ADDRESS_BETAFLIGHT, CRSF_ADDRESS_RADIO_TRANSMITTER
+    for i = 1, #payload do payloadOut[i+2] = payload[i] end
+    for j = #payload+3, #payloadOut do payloadOut[j] = nil end -- trim
     return transport.pushFrame(crsfMspCmd, payloadOut)
 end
 
@@ -45,16 +47,14 @@ transport.mspWrite = function(cmd, payload)
 end
 
 transport.mspPoll = function()
-    while true do
-        local cmd, data = transport.popFrame()
-        if cmd == CRSF_FRAMETYPE_MSP_RESP and data[1] == CRSF_ADDRESS_RADIO_TRANSMITTER and data[2] == CRSF_ADDRESS_BETAFLIGHT then
-            local mspData = {}
-            for i = 3, #data do mspData[i - 2] = data[i] end
-            return mspData
-        elseif cmd == nil then
-            return nil
-        end
+    local cmd, data = transport.popFrame(CRSF_FRAMETYPE_MSP_RESP, CRSF_FRAMETYPE_MSP_RESP)
+    if not cmd then return nil end
+    if data[1] ~= CRSF_ADDRESS_RADIO_TRANSMITTER or data[2] ~= CRSF_ADDRESS_BETAFLIGHT then
+        return nil
     end
+    local out = {}
+    for i = 3, #data do out[i - 2] = data[i] end
+    return out
 end
 
 return transport
