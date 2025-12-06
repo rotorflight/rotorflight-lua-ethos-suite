@@ -1547,6 +1547,148 @@
       "needs_translation": false
     }
   },
+  "ESC_PARAMETERS_ZTW": {
+    "tbl_jadegreen": {
+      "english": "JADE GREEN",
+      "translation": "JADE GREEN",
+      "needs_translation": true
+    },
+    "tbl_off": {
+      "english": "Off",
+      "translation": "Off",
+      "needs_translation": true
+    },
+    "tbl_low": {
+      "english": "Low",
+      "translation": "Low",
+      "needs_translation": true
+    },
+    "tbl_orange": {
+      "english": "ORANGE",
+      "translation": "ORANGE",
+      "needs_translation": true
+    },
+    "tbl_fmfw": {
+      "english": "Fixed Wing",
+      "translation": "Fixed Wing",
+      "needs_translation": true
+    },
+    "tbl_ccw": {
+      "english": "CCW",
+      "translation": "CCW",
+      "needs_translation": true
+    },
+    "tbl_medium": {
+      "english": "Medium",
+      "translation": "Medium",
+      "needs_translation": true
+    },
+    "tbl_yellow": {
+      "english": "YELLOW",
+      "translation": "YELLOW",
+      "needs_translation": true
+    },
+    "tbl_reverse": {
+      "english": "Reverse",
+      "translation": "Reverse",
+      "needs_translation": true
+    },
+    "tbl_red": {
+      "english": "Red",
+      "translation": "Red",
+      "needs_translation": true
+    },
+    "tbl_high": {
+      "english": "High",
+      "translation": "High",
+      "needs_translation": true
+    },
+    "tbl_auto": {
+      "english": "Auto",
+      "translation": "Auto",
+      "needs_translation": true
+    },
+    "tbl_cw": {
+      "english": "CW",
+      "translation": "CW",
+      "needs_translation": true
+    },
+    "tbl_fmheli": {
+      "english": "Helicopter",
+      "translation": "Helicopter",
+      "needs_translation": true
+    },
+    "tbl_purple": {
+      "english": "PURPLE",
+      "translation": "PURPLE",
+      "needs_translation": true
+    },
+    "tbl_green": {
+      "english": "GREEN",
+      "translation": "GREEN",
+      "needs_translation": true
+    },
+    "tbl_blue": {
+      "english": "BLUE",
+      "translation": "BLUE",
+      "needs_translation": true
+    },
+    "tbl_slow": {
+      "english": "Slow",
+      "translation": "Slow",
+      "needs_translation": true
+    },
+    "tbl_normal": {
+      "english": "Normal",
+      "translation": "Normal",
+      "needs_translation": true
+    },
+    "tbl_fast": {
+      "english": "Fast",
+      "translation": "Fast",
+      "needs_translation": true
+    },
+    "tbl_escgov": {
+      "english": "ESC Governor",
+      "translation": "ESC Governor",
+      "needs_translation": true
+    },
+    "tbl_white": {
+      "english": "WHITE",
+      "translation": "WHITE",
+      "needs_translation": true
+    },
+    "tbl_cyan": {
+      "english": "CYAN",
+      "translation": "CYAN",
+      "needs_translation": true
+    },
+    "tbl_vslow": {
+      "english": "Very Slow",
+      "translation": "Very Slow",
+      "needs_translation": true
+    },
+    "tbl_extgov": {
+      "english": "External Governor",
+      "translation": "External Governor",
+      "needs_translation": true
+    },
+    "tbl_pink": {
+      "english": "PINK",
+      "translation": "PINK",
+      "needs_translation": true
+    },
+    "tbl_fwgov": {
+      "english": "Fixed Wing",
+      "translation": "Fixed Wing",
+      "needs_translation": true
+    },
+    "tbl_on": {
+      "english": "On",
+      "translation": "On",
+      "needs_translation": true
+    }
+  },
   "ESC_PARAMETERS_OMP": {
     "tbl_jadegreen": {
       "english": "JADE GREEN",

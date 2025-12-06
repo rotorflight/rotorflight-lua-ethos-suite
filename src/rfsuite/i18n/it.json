@@ -773,6 +773,148 @@
         "translation": "*non Usato*"
       }
     },
+    "ESC_PARAMETERS_ZTW": {
+      "tbl_auto": {
+        "english": "Auto",
+        "needs_translation": true,
+        "translation": "Auto"
+      },
+      "tbl_blue": {
+        "english": "BLUE",
+        "needs_translation": true,
+        "translation": "BLUE"
+      },
+      "tbl_ccw": {
+        "english": "CCW",
+        "needs_translation": true,
+        "translation": "CCW"
+      },
+      "tbl_cw": {
+        "english": "CW",
+        "needs_translation": true,
+        "translation": "CW"
+      },
+      "tbl_cyan": {
+        "english": "CYAN",
+        "needs_translation": true,
+        "translation": "CYAN"
+      },
+      "tbl_escgov": {
+        "english": "ESC Governor",
+        "needs_translation": true,
+        "translation": "ESC Governor"
+      },
+      "tbl_extgov": {
+        "english": "External Governor",
+        "needs_translation": true,
+        "translation": "External Governor"
+      },
+      "tbl_fast": {
+        "english": "Fast",
+        "needs_translation": true,
+        "translation": "Fast"
+      },
+      "tbl_fmfw": {
+        "english": "Fixed Wing",
+        "needs_translation": true,
+        "translation": "Fixed Wing"
+      },
+      "tbl_fmheli": {
+        "english": "Helicopter",
+        "needs_translation": true,
+        "translation": "Helicopter"
+      },
+      "tbl_fwgov": {
+        "english": "Fixed Wing",
+        "needs_translation": true,
+        "translation": "Fixed Wing"
+      },
+      "tbl_green": {
+        "english": "GREEN",
+        "needs_translation": true,
+        "translation": "GREEN"
+      },
+      "tbl_high": {
+        "english": "High",
+        "needs_translation": true,
+        "translation": "High"
+      },
+      "tbl_jadegreen": {
+        "english": "JADE GREEN",
+        "needs_translation": true,
+        "translation": "JADE GREEN"
+      },
+      "tbl_low": {
+        "english": "Low",
+        "needs_translation": true,
+        "translation": "Low"
+      },
+      "tbl_medium": {
+        "english": "Medium",
+        "needs_translation": true,
+        "translation": "Medium"
+      },
+      "tbl_normal": {
+        "english": "Normal",
+        "needs_translation": true,
+        "translation": "Normal"
+      },
+      "tbl_off": {
+        "english": "Off",
+        "needs_translation": true,
+        "translation": "Off"
+      },
+      "tbl_on": {
+        "english": "On",
+        "needs_translation": true,
+        "translation": "On"
+      },
+      "tbl_orange": {
+        "english": "ORANGE",
+        "needs_translation": true,
+        "translation": "ORANGE"
+      },
+      "tbl_pink": {
+        "english": "PINK",
+        "needs_translation": true,
+        "translation": "PINK"
+      },
+      "tbl_purple": {
+        "english": "PURPLE",
+        "needs_translation": true,
+        "translation": "PURPLE"
+      },
+      "tbl_red": {
+        "english": "Red",
+        "needs_translation": true,
+        "translation": "Red"
+      },
+      "tbl_reverse": {
+        "english": "Reverse",
+        "needs_translation": true,
+        "translation": "Reverse"
+      },
+      "tbl_slow": {
+        "english": "Slow",
+        "needs_translation": true,
+        "translation": "Slow"
+      },
+      "tbl_vslow": {
+        "english": "Very Slow",
+        "needs_translation": true,
+        "translation": "Very Slow"
+      },
+      "tbl_white": {
+        "english": "WHITE",
+        "needs_translation": true,
+        "translation": "WHITE"
+      },
+      "tbl_yellow": {
+        "english": "YELLOW",
+        "needs_translation": true,
+        "translation": "YELLOW"
+      }
+    },
     "ESC_SENSOR_CONFIG": {
       "consumption_correction": {
         "english": "Adjust the consumption correction",
@@ -2842,6 +2984,113 @@
               "english": "Motor Timing",
               "needs_translation": false,
               "translation": "Timing Motore"
+            }
+          },
+          "ztw": {
+            "acceleration": {
+              "english": "Acceleration",
+              "needs_translation": true,
+              "translation": "Acceleration"
+            },
+            "advanced": {
+              "english": "Advanced",
+              "needs_translation": true,
+              "translation": "Advanced"
+            },
+            "auto_restart_time": {
+              "english": "Auto Restart Time",
+              "needs_translation": true,
+              "translation": "Auto Restart Time"
+            },
+            "basic": {
+              "english": "Basic",
+              "needs_translation": true,
+              "translation": "Basic"
+            },
+            "brake_force": {
+              "english": "Brake Force",
+              "needs_translation": true,
+              "translation": "Brake Force"
+            },
+            "capacity_correction": {
+              "english": "Capacity Correction",
+              "needs_translation": true,
+              "translation": "Capacity Correction"
+            },
+            "cell_cutoff": {
+              "english": "Cell Cutoff",
+              "needs_translation": true,
+              "translation": "Cell Cutoff"
+            },
+            "gov": {
+              "english": "Governor",
+              "needs_translation": true,
+              "translation": "Governor"
+            },
+            "gov_i": {
+              "english": "Gov-I",
+              "needs_translation": true,
+              "translation": "Gov-I"
+            },
+            "gov_p": {
+              "english": "Gov-P",
+              "needs_translation": true,
+              "translation": "Gov-P"
+            },
+            "governor": {
+              "english": "Governor",
+              "needs_translation": true,
+              "translation": "Governor"
+            },
+            "hv_bec_voltage": {
+              "english": "HV BEC Voltage",
+              "needs_translation": true,
+              "translation": "HV BEC Voltage"
+            },
+            "led_color": {
+              "english": "LED Color",
+              "needs_translation": true,
+              "translation": "LED Color"
+            },
+            "lv_bec_voltage": {
+              "english": "LV BEC Voltage",
+              "needs_translation": true,
+              "translation": "LV BEC Voltage"
+            },
+            "motor_direction": {
+              "english": "Motor Direction",
+              "needs_translation": true,
+              "translation": "Motor Direction"
+            },
+            "motor_poles": {
+              "english": "Motor Poles",
+              "needs_translation": true,
+              "translation": "Motor Poles"
+            },
+            "name": {
+              "english": "ZTW",
+              "needs_translation": true,
+              "translation": "OMPHOBBY"
+            },
+            "smart_fan": {
+              "english": "Smart Fan",
+              "needs_translation": true,
+              "translation": "Smart Fan"
+            },
+            "sr_function": {
+              "english": "SR Function",
+              "needs_translation": true,
+              "translation": "SR Function"
+            },
+            "startup_power": {
+              "english": "Startup Power",
+              "needs_translation": true,
+              "translation": "Startup Power"
+            },
+            "timing": {
+              "english": "Timing",
+              "needs_translation": true,
+              "translation": "Timing"
             }
           }
         },
