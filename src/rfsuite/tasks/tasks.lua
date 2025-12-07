@@ -289,7 +289,7 @@ end
 
 function tasks.active()
 
-    if tasks.heartbeat and (os.clock() - tasks.heartbeat) < 2 then return true end
+    if tasks.heartbeat and (os.clock() - tasks.heartbeat) < 5 then return true end
 
     return false
 end
