@@ -92,7 +92,9 @@ local function noLinkProgressUpdate()
         if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-            app.ui.progressDisplay("@i18n(app.msg_connecting)@", "@i18n(app.msg_connecting_to_fbl)@", true)
+            if app.ui then
+                app.ui.progressDisplay("@i18n(app.msg_connecting)@", "@i18n(app.msg_connecting_to_fbl)@", true)
+            end
             app.dialogs.nolinkDisplay = true
         end
     end
