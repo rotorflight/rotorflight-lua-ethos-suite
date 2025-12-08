@@ -1138,6 +1138,11 @@
             "translation": "Motor Temperture Sensor",
             "needs_translation": false
           },
+          "active_freewheel": {
+            "english": "Active Freewheeling",
+            "translation": "Active Freewheeling",
+            "needs_translation": false
+          },
           "starting_torque": {
             "english": "Starting Power",
             "translation": "Starting Power",

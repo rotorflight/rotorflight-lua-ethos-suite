@@ -16,7 +16,16 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.cell_count)@", mspapi = 1, apikey = "cell_count"}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.bec_voltage)@", mspapi = 1, apikey = "bec_voltage", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_direction)@", mspapi = 1, apikey = "motor_direction", type = 1}, {t = "@i18n(app.modules.esc_tools.mfg.flrtr.soft_start)@", mspapi = 1, apikey = "soft_start"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.cell_count)@", mspapi = 1, apikey = "cell_count"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.low_voltage_protection)@", mspapi = 1, apikey = "low_voltage_protection"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.temperature_protection)@", mspapi = 1, apikey = "temperature_protection"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.bec_voltage)@", mspapi = 1, apikey = "bec_voltage", type = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.electrical_angle)@", mspapi = 1, apikey = "electrical_angle", type = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_direction)@", mspapi = 1, apikey = "motor_direction", type = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.starting_torque)@", mspapi = 1, apikey = "starting_torque"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.response_speed)@", mspapi = 1, apikey = "response_speed"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.buzzer_volume)@", mspapi = 1, apikey = "buzzer_volume"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.current_gain)@", mspapi = 1, apikey = "current_gain"},
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.fan_control)@", mspapi = 1, apikey = "fan_control", type = 1}
         }
     }
