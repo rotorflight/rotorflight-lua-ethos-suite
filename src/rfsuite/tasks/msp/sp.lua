@@ -29,16 +29,16 @@ local function _map_subframe(dataId, value) return {dataId & 0xFF, (dataId >> 8)
 
 function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
     if not sensor then 
-        sensor = sport.getSensor({primId = 0x32}) 
-        sensor:module(rfsuite.session.telemetryModuleNumber or 0)
+        local activeModule = rfsuite.session.telemetryModuleNumber or 0
+        sensor = sport.getSensor({module = activeModule, primId = 0x32}) 
     end
     return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
 end
 
 function transport.sportTelemetryPop()
-    if not sensor then     
-        sensor = sport.getSensor({primId = 0x32}) 
-        sensor:module(rfsuite.session.telemetryModuleNumber or 0)
+    if not sensor then  
+        local activeModule = rfsuite.session.telemetryModuleNumber or 0           
+        sensor = sport.getSensor({module = activeModule, primId = 0x32}) 
     end
     local frame = sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
