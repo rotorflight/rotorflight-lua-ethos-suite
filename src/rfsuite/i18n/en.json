@@ -142,6 +142,11 @@
         "needs_translation": false,
         "translation": "Starting power for the motor"
       },
+      "tbl_alwaysoff": {
+        "english": "Always Off",
+        "needs_translation": false,
+        "translation": "Always Off"
+      },
       "tbl_alwayson": {
         "english": "Always On",
         "needs_translation": false,
@@ -2250,6 +2255,11 @@
       "esc_tools": {
         "mfg": {
           "flrtr": {
+            "active_freewheel": {
+              "english": "Active Freewheeling",
+              "needs_translation": false,
+              "translation": "Active Freewheeling"
+            },
             "advanced": {
               "english": "Advanced",
               "needs_translation": false,

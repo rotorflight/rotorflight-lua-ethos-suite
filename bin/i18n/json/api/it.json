@@ -246,6 +246,11 @@
       "translation": "Attivo",
       "needs_translation": false
     },
+    "tbl_alwaysoff": {
+      "english": "Always Off",
+      "translation": "Always Off",
+      "needs_translation": true
+    },
     "throttle_min": {
       "english": "Minimum throttle calibration value",
       "translation": "Valore Minimo gas",
