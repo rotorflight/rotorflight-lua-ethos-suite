@@ -36,7 +36,7 @@ msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
 msp.mspQueue.loopInterval = 0.031
 msp.mspQueue.copyOnAdd = true
-msp.mspQueue.timeout = 2.0
+msp.mspQueue.timeout = msp.protocol.mspQueueTimeout or 2.0
 
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/mspHelper.lua"))()
 msp.api = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api.lua"))()
