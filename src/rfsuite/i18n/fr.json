@@ -2620,9 +2620,9 @@
               "translation": "Poles moteur"
             },
             "name": {
-              "english": "OMPHOBBY",
+              "english": "OMP",
               "needs_translation": false,
-              "translation": "OMPHOBBY"
+              "translation": "OMP"
             },
             "smart_fan": {
               "english": "Smart Fan",
@@ -3070,7 +3070,7 @@
             "name": {
               "english": "ZTW",
               "needs_translation": true,
-              "translation": "OMPHOBBY"
+              "translation": "OMP"
             },
             "smart_fan": {
               "english": "Smart Fan",

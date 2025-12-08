@@ -2620,9 +2620,9 @@
               "translation": "Motor Poles"
             },
             "name": {
-              "english": "OMPHOBBY",
+              "english": "OMP",
               "needs_translation": false,
-              "translation": "OMPHOBBY"
+              "translation": "OMP"
             },
             "smart_fan": {
               "english": "Smart Fan",

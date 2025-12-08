@@ -542,7 +542,7 @@ return {
                         ["gov"] = "Governor",
                         ["brake_force"] = "Remkracht",
                         ["sr_function"] = "SR Function",
-                        ["name"] = "OMPHOBBY",
+                        ["name"] = "OMP",
                         ["lv_bec_voltage"] = "LV BEC Spanning",
                         ["auto_restart_time"] = "Auto herstart tijd",
                         ["acceleration"] = "Acceleratie",

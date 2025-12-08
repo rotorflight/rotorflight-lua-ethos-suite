@@ -925,8 +925,8 @@
             "needs_translation": false
           },
           "name": {
-            "english": "OMPHOBBY",
-            "translation": "OMPHOBBY",
+            "english": "OMP",
+            "translation": "OMP",
             "needs_translation": false
           },
           "lv_bec_voltage": {
@@ -1033,7 +1033,7 @@
           },
           "name": {
             "english": "ZTW",
-            "translation": "OMPHOBBY",
+            "translation": "ZTW",
             "needs_translation": true
           },
           "lv_bec_voltage": {
