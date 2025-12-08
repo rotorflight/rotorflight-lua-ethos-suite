@@ -34,6 +34,11 @@ local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
 local function getESCDetails()
+    if not ESC then return end
+    if not ESC.mspapi then return end
+    if not mspSignature then return end
+    if not mspBytes then return end
+    if not rfsuite.tasks.msp.mspQueue:isProcessed() then return end
 
     if rfsuite.session.escDetails ~= nil then
         escDetails = rfsuite.session.escDetails
@@ -43,32 +48,28 @@ local function getESCDetails()
 
     if foundESC == true then return end
 
-    local message = {
-        command = 217,
-        processReply = function(self, buf)
 
-            local mspBytesCheck = 2
-            if ESC and ESC.mspBufferCache == true then mspBytesCheck = mspBytes end
+    local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
 
-            if buf[1] == mspSignature then
-                escDetails.model = ESC.getEscModel(buf)
-                escDetails.version = ESC.getEscVersion(buf)
-                escDetails.firmware = ESC.getEscFirmware(buf)
+    API.setCompleteHandler(function(self, buf)
 
-                rfsuite.session.escDetails = escDetails
+        local signature = API.readValue("esc_signature")
+        if signature == mspSignature and #buf == mspBytes then
+            escDetails.model = ESC.getEscModel(buf)
+            escDetails.version = ESC.getEscVersion(buf)
+            escDetails.firmware = ESC.getEscFirmware(buf)
 
-                if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
+            rfsuite.session.escDetails = escDetails
 
-                if escDetails.model ~= nil then foundESC = true end
+            if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
 
-            end
+            if escDetails.model ~= nil then foundESC = true end
+        end
 
-        end,
-        uuid = "123e4567-e89b-12d3-b456-426614174201",
-        simulatorResponse = simulatorResponse
-    }
+    end)
+    API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
+    API.read()
 
-    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function openPage(pidx, title, script)
@@ -232,7 +233,9 @@ end
 
 local function wakeup()
 
-    if foundESC == false then getESCDetails() end
+    if foundESC == false then
+        getESCDetails()
+    end
 
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
