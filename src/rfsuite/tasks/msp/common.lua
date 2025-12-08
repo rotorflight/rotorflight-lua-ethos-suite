@@ -8,6 +8,7 @@ local rfsuite = require("rfsuite")
 local function proto() return rfsuite.tasks.msp.protocol end
 local function maxTx() return proto().maxTxBufferSize end
 local function maxRx() return proto().maxRxBufferSize end
+local function pollBudget() return proto().mspPollBudget or 0.1 end
 
 local _mspVersion = 1
 local MSP_VERSION_BIT = (1 << 5)
@@ -176,10 +177,10 @@ local function _receivedReply(payload)
     return true
 end
 
-local function mspPollReply(msBudget)
-    msBudget = (msBudget or 100) / 1000.0
+local function mspPollReply()
+    local budget = pollBudget() or 0.1
     local startTime = os.clock()
-    while os.clock() - startTime < msBudget do
+    while os.clock() - startTime < budget do
         local pkt = proto().mspPoll()
         if pkt and _receivedReply(pkt) then
             mspLastReq = 0
