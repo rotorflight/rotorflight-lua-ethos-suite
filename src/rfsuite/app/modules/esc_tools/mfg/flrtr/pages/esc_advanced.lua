@@ -17,7 +17,7 @@ local apidata = {
         fields = {
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.auto_restart_time)@", mspapi = 1, apikey = "auto_restart_time"},
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.restart_acc)@", mspapi = 1, apikey = "restart_acc"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.active_freewheel)@", mspapi = 1, apikey = "active_freewheel", apiversiongte = 12.08},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.active_freewheel)@", mspapi = 1, apikey = "active_freewheel", type = 1},
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@", mspapi = 1, apikey = "drive_freq"}
         }
     }
