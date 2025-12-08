@@ -12,12 +12,14 @@ local SPORT_REMOTE_SENSOR_ID = 0x1B
 local FPORT_REMOTE_SENSOR_ID = 0x00
 local REQUEST_FRAME_ID = 0x30
 local REPLY_FRAME_ID = 0x32
+local MSP_STARTFLAG = (1 << 4)
 
 local v2_inflight = false
 local v2_remaining = 0
 local v2_req = nil
 local v2_seq = nil
 local function v2_get_seq(st) return st & 0x0F end
+local in_reply = false 
 
 local lastSensorId, lastFrameId, lastDataId, lastValue
 
@@ -63,16 +65,29 @@ local function sportTelemetryPop()
     return sensorId, frameId, dataId, value
 end
 
+
 transport.mspPoll = function()
     while true do
         local sensorId, frameId, dataId, value = sportTelemetryPop()
         if not sensorId then return nil end
 
-        if frameId == REPLY_FRAME_ID then
-            local bytes = {dataId & 0xFF, (dataId >> 8) & 0xFF, value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF}
-            return bytes
+        if not _isInboundReply(sensorId, frameId) then
+            goto continue
         end
 
+        local bytes = _map_subframe(dataId, value)
+        local status = bytes[1] or 0
+
+        if (status & MSP_STARTFLAG) ~= 0 then
+            in_reply = true
+            return bytes
+        elseif in_reply then
+            return bytes
+        else
+            goto continue
+        end
+        
+        ::continue::
     end
 end
 
