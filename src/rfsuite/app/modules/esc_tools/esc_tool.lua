@@ -322,4 +322,11 @@ local function event(widget, category, value, x, y)
 
 end
 
-return {openPage = openPage, wakeup = wakeup, event = event, API = {}}
+local function mspPollBudget()
+    if ESC and ESC.mspPollBudget then
+        return ESC.mspPollBudget
+    end
+    return 0.1
+end
+
+return {openPage = openPage, wakeup = wakeup, event = event, API = {}, mspPollBudget = mspPollBudget}
