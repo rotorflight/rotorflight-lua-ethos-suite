@@ -89,10 +89,8 @@ transport.mspPoll = function()
             if expect_seq ~= nil then
                 local next_seq = (expect_seq + 1) & 0x0F
                 if seq == expect_seq then
-                    -- duplicate continuation (retry) -> drop silently
                     goto continue
                 elseif seq ~= next_seq then
-                    -- out-of-order / wrong stream -> HARD RESET
                     in_reply = false
                     expect_seq = nil
                     goto continue
