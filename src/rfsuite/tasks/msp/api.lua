@@ -9,6 +9,11 @@ local apiLoader = {}
 
 apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
 
+apiLoader._apiCache = apiLoader._apiCache or {}
+apiLoader._apiCacheOrder = apiLoader._apiCacheOrder or {}  
+apiLoader._apiCacheMax = apiLoader._apiCacheMax or 10   
+
+
 local apidir = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api/"
 local api_path = apidir
 
@@ -74,8 +79,33 @@ end
 function apiLoader.clearFileExistsCache() apiLoader._fileExistsCache = {} end
 
 function apiLoader.load(apiName)
+    local cached = apiLoader._apiCache[apiName]
+    if cached then
+        -- move this apiName to the end (MRU position)
+        for i, name in ipairs(apiLoader._apiCacheOrder) do
+            if name == apiName then
+                table.remove(apiLoader._apiCacheOrder, i)
+                break
+            end
+        end
+        table.insert(apiLoader._apiCacheOrder, apiName)
+        return cached
+    end
+
     local api = loadAPI(apiName)
-    if api == nil then utils.log("Unable to load " .. apiName, "debug") end
+    if api == nil then
+        utils.log("Unable to load " .. apiName, "debug")
+        return nil
+    end
+
+    apiLoader._apiCache[apiName] = api
+    table.insert(apiLoader._apiCacheOrder, apiName)
+
+    if #apiLoader._apiCacheOrder > apiLoader._apiCacheMax then
+        local oldest = table.remove(apiLoader._apiCacheOrder, 1)
+        apiLoader._apiCache[oldest] = nil
+    end
+
     return api
 end
 
