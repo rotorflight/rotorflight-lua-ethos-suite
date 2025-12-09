@@ -152,6 +152,10 @@ local function _receivedReply(payload)
     else
         if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
             mspStarted = false
+            mspRxBuf = {}
+            mspRxSize = 0
+            mspRxCRC = 0
+            mspRemoteSeq = 0
             return nil
         end
     end

@@ -81,12 +81,22 @@ transport.mspPoll = function()
         local seq = status_seq(status)
 
         if is_start(status) then
+            -- (Re)start of a reply: always reset local tracking
             in_reply = true
             expect_seq = seq
             return bytes
         elseif in_reply then
-            if expect_seq ~= nil and ((expect_seq + 1) & 0x0F) ~= seq then
-                goto continue
+            if expect_seq ~= nil then
+                local next_seq = (expect_seq + 1) & 0x0F
+                if seq == expect_seq then
+                    -- duplicate continuation (retry) -> drop silently
+                    goto continue
+                elseif seq ~= next_seq then
+                    -- out-of-order / wrong stream -> HARD RESET
+                    in_reply = false
+                    expect_seq = nil
+                    goto continue
+                end
             end
             expect_seq = seq
             return bytes
