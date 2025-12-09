@@ -19,7 +19,11 @@ local v2_remaining = 0
 local v2_req = nil
 local v2_seq = nil
 local function v2_get_seq(st) return st & 0x0F end
-local in_reply = false 
+local in_reply = false
+local expect_seq = nil
+
+local function status_seq(st) return st & 0x0F end
+local function is_start(st) return (st & MSP_STARTFLAG) ~= 0 end
 
 local lastSensorId, lastFrameId, lastDataId, lastValue
 
@@ -70,23 +74,24 @@ transport.mspPoll = function()
     while true do
         local sensorId, frameId, dataId, value = sportTelemetryPop()
         if not sensorId then return nil end
-
-        if not _isInboundReply(sensorId, frameId) then
-            goto continue
-        end
+        if not _isInboundReply(sensorId, frameId) then goto continue end
 
         local bytes = _map_subframe(dataId, value)
         local status = bytes[1] or 0
+        local seq = status_seq(status)
 
-        if (status & MSP_STARTFLAG) ~= 0 then
+        if is_start(status) then
             in_reply = true
+            expect_seq = seq
             return bytes
         elseif in_reply then
+            if expect_seq ~= nil and ((expect_seq + 1) & 0x0F) ~= seq then
+                goto continue
+            end
+            expect_seq = seq
             return bytes
-        else
-            goto continue
         end
-        
+
         ::continue::
     end
 end
