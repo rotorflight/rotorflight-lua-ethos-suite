@@ -23,7 +23,7 @@ local supportedProtocols = {
     pageReqTimeout   = 15,
     mspIntervalOveride = 0.25,  
     mspQueueTimeout    = 4.0, 
-    mspPollBudget      = 0.25
+    mspPollBudget      = 0.15
   },
 
   crsf = {

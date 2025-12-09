@@ -8,7 +8,11 @@ local rfsuite = require("rfsuite")
 local function proto() return rfsuite.tasks.msp.protocol end
 local function maxTx() return proto().maxTxBufferSize end
 local function maxRx() return proto().maxRxBufferSize end
-local function pollBudget() return proto().mspPollBudget or 0.1 end
+local function pollBudget()
+    local budget = (rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.mspPollBudget)  or proto().mspPollBudget or 0.1
+    return type(budget) == "function" and budget() or budget
+end
+
 
 local _mspVersion = 1
 local MSP_VERSION_BIT = (1 << 5)
