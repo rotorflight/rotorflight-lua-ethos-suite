@@ -35,14 +35,12 @@ local function profileRateChangeDetection()
         if rfsuite.session.activeProfileLast and app.Page.refreshOnProfileChange and rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast then
             app.triggers.reload = not app.Page.refreshFullOnProfileChange
             app.triggers.reloadFull = app.Page.refreshFullOnProfileChange
-            return
         end
 
         app.utils.getCurrentRateProfile()
         if rfsuite.session.activeRateProfileLast and app.Page.refreshOnRateChange and rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast then
             app.triggers.reload = not app.Page.refreshFullOnRateChange
             app.triggers.reloadFull = app.Page.refreshFullOnRateChange
-            return
         end
     end
 end
