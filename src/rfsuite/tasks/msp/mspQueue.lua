@@ -225,4 +225,19 @@ function MspQueueController:add(message)
     return self
 end
 
+function MspQueueController:pendingByteCost()
+    local total = 0
+
+    local function add(msg)
+        if not msg then return end
+        local rx = msg.minBytes or 0
+        local tx = (msg.payload and #msg.payload) or 0
+        total = total + math.max(rx, tx)
+    end
+
+    add(self.currentMessage)
+    for i = self.queue.first, self.queue.last do add(self.queue.data[i]) end
+    return total
+end
+
 return MspQueueController.new()

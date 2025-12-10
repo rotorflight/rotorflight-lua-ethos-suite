@@ -8,11 +8,6 @@ local rfsuite = require("rfsuite")
 local function proto() return rfsuite.tasks.msp.protocol end
 local function maxTx() return proto().maxTxBufferSize end
 local function maxRx() return proto().maxRxBufferSize end
-local function pollBudget()
-    local budget = (rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.mspPollBudget)  or proto().mspPollBudget or 0.1
-    return type(budget) == "function" and budget() or budget
-end
-
 
 local _mspVersion = 1
 local MSP_VERSION_BIT = (1 << 5)
@@ -35,6 +30,44 @@ local function setProtocolVersion(v)
     v = tonumber(v)
     _mspVersion = (v == 2) and 2 or 1
 end
+
+
+local function pollBudget()
+
+    -- tuning knobs (gentle defaults)
+    local TUNE = {
+    threshold_windows = 6,   -- start boosting after 6 poll windows
+    step_seconds      = 0.03,-- add per extra window beyond threshold
+    cap_seconds       = 0.35 -- hard cap
+    }
+
+    -- protocol base + throughput (e.g., SPORT=0.15s & 6 B/poll)
+    local proto   = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
+    local base    = proto.mspPollBudget or 0.10
+    local perPoll = proto.maxRxBufferSize or 6
+
+    -- only the message actually being sent right now
+    local q   = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    local msg = q and q.currentMessage
+    local rx  = (msg and msg.minBytes) or 0
+    local tx  = (msg and msg.payload and #msg.payload) or 0
+    local pending = math.max(rx, tx)    -- the active message's byte cost
+
+    -- start boosting after N windows (e.g., 6*6=36 B on SPORT)
+    local threshold = (TUNE.threshold_windows * perPoll)
+    local boost = 0
+    if perPoll > 0 and pending > threshold then
+        local extraWindows = math.ceil((pending - threshold) / perPoll)
+        boost = extraWindows * TUNE.step_seconds
+    end
+
+    -- final with hard cap
+    local final = base + boost
+    if final > TUNE.cap_seconds then final = TUNE.cap_seconds end
+
+    return final
+end
+
 
 local function getProtocolVersion() return _mspVersion end
 
