@@ -11,7 +11,18 @@ local fields = {}
 local calibrate = false
 local calibrateComplete = false
 
-local apidata = {api = {[1] = 'ACC_TRIM'}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.accelerometer.roll)@", mspapi = 1, apikey = "roll"}, {t = "@i18n(app.modules.accelerometer.pitch)@", mspapi = 1, apikey = "pitch"}}}}
+local apidata = {
+    api = {
+        [1] = 'ACC_TRIM'
+    },
+    formdata = {
+        labels = {},
+        fields = {
+            { t = "@i18n(app.modules.accelerometer.roll)@",  mspapi = 1, apikey = "roll" },
+            { t = "@i18n(app.modules.accelerometer.pitch)@", mspapi = 1, apikey = "pitch" }
+        }
+    }
+}
 
 local function onToolMenu(self)
 

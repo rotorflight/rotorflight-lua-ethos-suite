@@ -8,15 +8,42 @@ local rfsuite = require("rfsuite")
 local activateWakeup = false
 
 local apidata = {
-    api = {[1] = 'PID_TUNING'},
+    api = {
+        [1] = 'PID_TUNING'
+    },
     formdata = {
         labels = {},
-        rows = {"@i18n(app.modules.pids.roll)@", "@i18n(app.modules.pids.pitch)@", "@i18n(app.modules.pids.yaw)@"},
-        cols = {"@i18n(app.modules.pids.p)@", "@i18n(app.modules.pids.i)@", "@i18n(app.modules.pids.d)@", "@i18n(app.modules.pids.f)@", "@i18n(app.modules.pids.o)@", "@i18n(app.modules.pids.b)@"},
+        rows = {
+            "@i18n(app.modules.pids.roll)@",
+            "@i18n(app.modules.pids.pitch)@",
+            "@i18n(app.modules.pids.yaw)@"
+        },
+        cols = {
+            "@i18n(app.modules.pids.p)@",
+            "@i18n(app.modules.pids.i)@",
+            "@i18n(app.modules.pids.d)@",
+            "@i18n(app.modules.pids.f)@",
+            "@i18n(app.modules.pids.o)@",
+            "@i18n(app.modules.pids.b)@"
+        },
         fields = {
-
-            {row = 1, col = 1, mspapi = 1, apikey = "pid_0_P"}, {row = 2, col = 1, mspapi = 1, apikey = "pid_1_P"}, {row = 3, col = 1, mspapi = 1, apikey = "pid_2_P"}, {row = 1, col = 2, mspapi = 1, apikey = "pid_0_I"}, {row = 2, col = 2, mspapi = 1, apikey = "pid_1_I"}, {row = 3, col = 2, mspapi = 1, apikey = "pid_2_I"}, {row = 1, col = 3, mspapi = 1, apikey = "pid_0_D"}, {row = 2, col = 3, mspapi = 1, apikey = "pid_1_D"}, {row = 3, col = 3, mspapi = 1, apikey = "pid_2_D"},
-            {row = 1, col = 4, mspapi = 1, apikey = "pid_0_F"}, {row = 2, col = 4, mspapi = 1, apikey = "pid_1_F"}, {row = 3, col = 4, mspapi = 1, apikey = "pid_2_F"}, {row = 1, col = 5, mspapi = 1, apikey = "pid_0_O"}, {row = 2, col = 5, mspapi = 1, apikey = "pid_1_O"}, {row = 1, col = 6, mspapi = 1, apikey = "pid_0_B"}, {row = 2, col = 6, mspapi = 1, apikey = "pid_1_B"}, {row = 3, col = 6, mspapi = 1, apikey = "pid_2_B"}
+            {row = 1, col = 1, mspapi = 1, apikey = "pid_0_P"},
+            {row = 2, col = 1, mspapi = 1, apikey = "pid_1_P"},
+            {row = 3, col = 1, mspapi = 1, apikey = "pid_2_P"},
+            {row = 1, col = 2, mspapi = 1, apikey = "pid_0_I"},
+            {row = 2, col = 2, mspapi = 1, apikey = "pid_1_I"},
+            {row = 3, col = 2, mspapi = 1, apikey = "pid_2_I"},
+            {row = 1, col = 3, mspapi = 1, apikey = "pid_0_D"},
+            {row = 2, col = 3, mspapi = 1, apikey = "pid_1_D"},
+            {row = 3, col = 3, mspapi = 1, apikey = "pid_2_D"},
+            {row = 1, col = 4, mspapi = 1, apikey = "pid_0_F"},
+            {row = 2, col = 4, mspapi = 1, apikey = "pid_1_F"},
+            {row = 3, col = 4, mspapi = 1, apikey = "pid_2_F"},
+            {row = 1, col = 5, mspapi = 1, apikey = "pid_0_O"},
+            {row = 2, col = 5, mspapi = 1, apikey = "pid_1_O"},
+            {row = 1, col = 6, mspapi = 1, apikey = "pid_0_B"},
+            {row = 2, col = 6, mspapi = 1, apikey = "pid_1_B"},
+            {row = 3, col = 6, mspapi = 1, apikey = "pid_2_B"}
         }
     }
 }

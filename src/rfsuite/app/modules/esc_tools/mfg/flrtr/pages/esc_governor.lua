@@ -15,14 +15,16 @@ local foundEsc = false
 local foundEscDone = false
 
 local apidata = {
-    api = {[1] = "ESC_PARAMETERS_FLYROTOR"},
+    api = {
+        [1] = "ESC_PARAMETERS_FLYROTOR"
+    },
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.esc_mode)@", mspapi = 1, apikey = "esc_mode", type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.soft_start)@", mspapi = 1, apikey = "soft_start"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@", mspapi = 1, apikey = "gov_p"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@", mspapi = 1, apikey = "gov_i"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.esc_mode)@",        mspapi = 1, apikey = "esc_mode",        type = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.soft_start)@",      mspapi = 1, apikey = "soft_start"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@",          mspapi = 1, apikey = "gov_p"},
+            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@",          mspapi = 1, apikey = "gov_i"},
             {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_erpm_max)@", mspapi = 1, apikey = "motor_erpm_max"}
         }
     }

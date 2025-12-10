@@ -5,7 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {[1] = {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"}, [2] = {name = "@i18n(app.modules.governor.menu_flags)@", script = "flags.lua", image = "flags.png"}}
+local S_PAGES = {
+    [1] = { name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png" },
+    [2] = { name = "@i18n(app.modules.governor.menu_flags)@", script = "flags.lua", image = "flags.png" }
+}
 
 local enableWakeup = false
 local prevConnectedState = nil

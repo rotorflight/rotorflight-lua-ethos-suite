@@ -32,7 +32,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.sbusout.type)@", min = 0, max = 16, mspapi = 1, apikey = "Type_" .. ch + 1, table = {[0] = "@i18n(app.modules.sbusout.receiver)@", "@i18n(app.modules.sbusout.mixer)@", "@i18n(app.modules.sbusout.servo)@", "@i18n(app.modules.sbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}, {t = "@i18n(app.modules.sbusout.source)@", min = 0, max = 15, mspapi = 1, apikey = "Index_" .. ch + 1, help = "sbusOutSource"},
+            {t = "@i18n(app.modules.sbusout.type)@", min = 0, max = 16, mspapi = 1, apikey = "Type_" .. ch + 1, table = {[0] = "@i18n(app.modules.sbusout.receiver)@", "@i18n(app.modules.sbusout.mixer)@", "@i18n(app.modules.sbusout.servo)@", "@i18n(app.modules.sbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}, 
+            {t = "@i18n(app.modules.sbusout.source)@", min = 0, max = 15, mspapi = 1, apikey = "Index_" .. ch + 1, help = "sbusOutSource"},
             {t = "@i18n(app.modules.sbusout.min)@", min = -2000, max = 2000, mspapi = 1, apikey = "RangeLow_" .. ch + 1, help = "sbusOutMin"}, {t = "@i18n(app.modules.sbusout.max)@", min = -2000, max = 2000, mspapi = 1, apikey = "RangeHigh_" .. ch + 1, help = "sbusOutMax"}
         }
     }

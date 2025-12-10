@@ -44,13 +44,64 @@ rfsuite.performance = performance
 rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config)
 
 local userpref_defaults = {
-    general = {iconsize = 2, syncname = false, gimbalsupression = 0.85, txbatt_type = 0, hs_loader = 0},
-    localizations = {temperature_unit = 0, altitude_unit = 0},
-    dashboard = {theme_preflight = "system/default", theme_inflight = "system/default", theme_postflight = "system/default"},
-    events = {armflags = true, voltage = true, governor = true, pid_profile = true, rate_profile = true, esc_temp = false, escalertvalue = 90, smartfuel = true, smartfuelcallout = 0, smartfuelrepeats = 1, smartfuelhaptic = false, adj_v = false, adj_f = false},
+    general = {
+        iconsize = 2,
+        syncname = false,
+        gimbalsupression = 0.85,
+        txbatt_type = 0,
+        hs_loader = 0
+    },
+    localizations = {
+        temperature_unit = 0,
+        altitude_unit = 0
+    },
+    dashboard = {
+        theme_preflight = "system/default",
+        theme_inflight = "system/default",
+        theme_postflight = "system/default"
+    },
+    events = {
+        armflags = true,
+        voltage = true,
+        governor = true,
+        pid_profile = true,
+        rate_profile = true,
+        esc_temp = false,
+        escalertvalue = 90,
+        smartfuel = true,
+        smartfuelcallout = 0,
+        smartfuelrepeats = 1,
+        smartfuelhaptic = false,
+        adj_v = false,
+        adj_f = false
+    },
     switches = {},
-    developer = {compile = true, devtools = false, logtofile = false, loglevel = "off", logmsp = false, logobjprof = false, logmspQueue = false, memstats = false, taskprofiler = false, mspexpbytes = 8, apiversion = 2, overlaystats = false, overlaygrid = false, overlaystatsadmin = false},
-    timer = {timeraudioenable = false, elapsedalertmode = 0, prealerton = false, postalerton = false, prealertinterval = 10, prealertperiod = 30, postalertinterval = 10, postalertperiod = 30},
+    developer = {
+        compile = true,
+        devtools = false,
+        logtofile = false,
+        loglevel = "off",
+        logmsp = false,
+        logobjprof = false,
+        logmspQueue = false,
+        memstats = false,
+        taskprofiler = false,
+        mspexpbytes = 8,
+        apiversion = 2,
+        overlaystats = false,
+        overlaygrid = false,
+        overlaystatsadmin = false
+    },
+    timer = {
+        timeraudioenable = false,
+        elapsedalertmode = 0,
+        prealerton = false,
+        postalerton = false,
+        prealertinterval = 10,
+        prealertperiod = 30,
+        postalertinterval = 10,
+        postalertperiod = 30
+    },
     menulastselected = {}
 }
 
@@ -119,9 +170,29 @@ local function unsupported_i18n()
     }
 end
 
-local function register_main_tool() system.registerSystemTool({event = rfsuite.app.event, name = rfsuite.config.toolName, icon = rfsuite.config.icon, create = rfsuite.app.create, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close}) end
+local function register_main_tool()
+    system.registerSystemTool({
+        event  = rfsuite.app.event,
+        name   = rfsuite.config.toolName,
+        icon   = rfsuite.config.icon,
+        create = rfsuite.app.create,
+        wakeup = rfsuite.app.wakeup,
+        paint  = rfsuite.app.paint,
+        close  = rfsuite.app.close
+    })
+end
 
-local function register_bg_task() system.registerTask({name = rfsuite.config.bgTaskName, key = rfsuite.config.bgTaskKey, wakeup = rfsuite.tasks.wakeup, event = rfsuite.tasks.event, init = rfsuite.tasks.init, read = rfsuite.tasks.read, write = rfsuite.tasks.write}) end
+local function register_bg_task()
+    system.registerTask({
+        name  = rfsuite.config.bgTaskName,
+        key   = rfsuite.config.bgTaskKey,
+        wakeup = rfsuite.tasks.wakeup,
+        event = rfsuite.tasks.event,
+        init  = rfsuite.tasks.init,
+        read  = rfsuite.tasks.read,
+        write = rfsuite.tasks.write
+    })
+end
 
 local function load_widget_cache(cachePath)
     local loadf, loadErr = loadfile(cachePath)

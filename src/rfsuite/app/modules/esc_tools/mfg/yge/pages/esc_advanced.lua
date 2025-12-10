@@ -7,13 +7,17 @@ local rfsuite = require("rfsuite")
 local folder = "yge"
 
 local apidata = {
-    api = {[1] = "ESC_PARAMETERS_YGE"},
+    api = {
+        [1] = "ESC_PARAMETERS_YGE"
+    },
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.yge.min_start_power)@", mspapi = 1, apikey = "min_start_power"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.max_start_power)@", mspapi = 1, apikey = "max_start_power"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.throttle_response)@", type = 1, mspapi = 1, apikey = "throttle_response"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.timing)@", type = 1, mspapi = 1, apikey = "timing"},
-            {t = "@i18n(app.modules.esc_tools.mfg.yge.active_freewheel)@", type = 1, mspapi = 1, apikey = "active_freewheel"}
-
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.min_start_power)@", mspapi = 1, apikey = "min_start_power" },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.max_start_power)@", mspapi = 1, apikey = "max_start_power" },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.throttle_response)@", type = 1, mspapi = 1, apikey = "throttle_response" },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.timing)@", type = 1, mspapi = 1, apikey = "timing" },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.active_freewheel)@", type = 1, mspapi = 1, apikey = "active_freewheel" }
         }
     }
 }
