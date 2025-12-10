@@ -22,7 +22,7 @@ function utils.session()
         activeProfile = nil,
         activeRateProfile = nil,
         activeProfileLast = nil,
-        activeRateLast = nil,
+        activeRateProfileLast = nil,
 
         servoCount = nil,
         servoOverride = nil,

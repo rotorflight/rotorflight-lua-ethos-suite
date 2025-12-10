@@ -30,12 +30,15 @@ local function profileRateChangeDetection()
 
     if (now - (app.profileCheckScheduler or 0)) >= interval then
         app.profileCheckScheduler = now
+
         app.utils.getCurrentProfile()
         if rfsuite.session.activeProfileLast and app.Page.refreshOnProfileChange and rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast then
             app.triggers.reload = not app.Page.refreshFullOnProfileChange
             app.triggers.reloadFull = app.Page.refreshFullOnProfileChange
             return
         end
+
+        app.utils.getCurrentRateProfile()
         if rfsuite.session.activeRateProfileLast and app.Page.refreshOnRateChange and rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast then
             app.triggers.reload = not app.Page.refreshFullOnRateChange
             app.triggers.reloadFull = app.Page.refreshFullOnRateChange
