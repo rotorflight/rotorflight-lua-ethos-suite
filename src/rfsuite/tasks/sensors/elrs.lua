@@ -12,6 +12,8 @@ local elrs = {}
 
 elrs.name = "elrs"
 
+local ethosVersionAtLeast170 = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor(...)
     elrs.popFrame = function(...)
@@ -197,7 +199,11 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
         sensors['uid'][uid]:protocolUnit(unit)
     end
     if value then
-        sensors['uid'][uid]:value(value)
+        if ethosVersionAtLeast170 then
+            sensors['uid'][uid]:rawValue(value)
+        else
+            sensors['uid'][uid]:value(value)
+        end
         sensors['lastvalue'][uid] = value
         sensors['lasttime'][uid] = nowMs()
     end
