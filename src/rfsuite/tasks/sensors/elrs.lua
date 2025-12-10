@@ -618,12 +618,7 @@ function elrs.wakeup()
 
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
         local n = 0
-        while elrs.crossfirePop() do
-            if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end
-            n = n + 1
-            if n >= 50 then break end
-        end
-
+        while elrs.crossfirePop() do end
         refreshStaleSensors()
     else
         resetSensors()
