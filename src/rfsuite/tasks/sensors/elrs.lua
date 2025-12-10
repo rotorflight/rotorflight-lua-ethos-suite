@@ -12,7 +12,7 @@ local elrs = {}
 
 elrs.name = "elrs"
 
-local ethosVersionAtLeast170 = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
 
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor(...)
@@ -199,7 +199,7 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
         sensors['uid'][uid]:protocolUnit(unit)
     end
     if value then
-        if ethosVersionAtLeast170 then
+        if useRawValue then
             sensors['uid'][uid]:rawValue(value)
         else
             sensors['uid'][uid]:value(value)
@@ -215,7 +215,11 @@ local function refreshStaleSensors()
         local last = sensors['lastvalue'][uid]
         local lt = sensors['lasttime'][uid]
         if s and last and lt and (t - lt) > REFRESH_INTERVAL_MS then
-            s:value(last)
+            if useRawValue then
+                s:rawValue(last)
+            else
+                s:value(last)
+            end    
             sensors['lasttime'][uid] = t
         end
     end
@@ -236,7 +240,11 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
     else
         if sensors['uid'][uid] then
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then
-                sensors['uid'][uid]:value(value)
+                if useRawValue then
+                    sensors['uid'][uid]:rawValue(value)
+                else
+                    sensors['uid'][uid]:value(value)
+                end
                 sensors['lastvalue'][uid] = value
                 sensors['lasttime'][uid] = nowMs()
             end

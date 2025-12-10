@@ -18,7 +18,7 @@ local lastWakeupTimeDrop = 0
 local wakeupIntervalDrop = 120
 local firstRun = true
 
-local ethosVersionAtLeast170 = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
 
 local sim = {}
 sim.name = "sim"
@@ -79,7 +79,13 @@ local function createSensor(uid, name, unit, dec, value, min, max)
         sensor:protocolUnit(unit)
     end
 
-    if value then sensor:value(value) end
+    if value then 
+        if useRawValue then
+            sensor:rawValue(value)
+        else
+            sensor:value(value)
+        end
+    end
 
     sensors.uid[uid] = sensor
     sensors.lastvalue[uid] = value
@@ -111,7 +117,7 @@ local function updateSensorValue(uid, value)
         local lastVal = sensors.lastvalue[uid]
         local lastUpdate = sensors.lastupdate[uid] or 0
         if value ~= lastVal or (now - lastUpdate) >= REFRESH_INTERVAL then
-            if ethosVersionAtLeast170 then
+            if useRawValue then
                 sensors.uid[uid]:rawValue(value)
             else
                 sensors.uid[uid]:value(value)
