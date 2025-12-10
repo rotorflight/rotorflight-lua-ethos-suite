@@ -81,7 +81,6 @@ transport.mspPoll = function()
         local seq = status_seq(status)
 
         if is_start(status) then
-            -- (Re)start of a reply: always reset local tracking
             in_reply = true
             expect_seq = seq
             return bytes
