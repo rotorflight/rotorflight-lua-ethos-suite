@@ -648,7 +648,7 @@ needle styling
 
 ---
 
-### Rainbow Gauge Widget
+### Ring Gauge Widget
 
 ```
 Timing

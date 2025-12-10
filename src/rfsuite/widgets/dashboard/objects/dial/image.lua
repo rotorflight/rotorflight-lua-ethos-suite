@@ -3,6 +3,47 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
+title parameters
+    title                   : string    -- (Optional) Title text
+    titlealign              : string    -- (Optional) "center", "left", "right"
+    titlefont               : font      -- (Optional) Title font (e.g., font_l, font_xl)
+    titlespacing            : number    -- (Optional) Gap below title
+    titlecolor              : color     -- (Optional) Title text color
+    titlepadding            : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft        : number    -- (Optional)
+    titlepaddingright       : number    -- (Optional)
+    titlepaddingtop         : number    -- (Optional)
+    titlepaddingbottom      : number    -- (Optional)
+value / source parameters
+    value                   : any       -- (Optional) Static value to display if telemetry is not present
+    source                  : string    -- Telemetry sensor name
+    transform               : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", etc.)
+    decimals                : number    -- (Optional) Decimal precision
+    novalue                 : string    -- (Optional) Text if telemetry is missing (default: "-")
+    unit                    : string    -- (Optional) Unit label ("" hides unit)
+    font                    : font      -- (Optional) Value font (e.g. font_l)
+    valuealign              : string    -- (Optional) "center", "left", "right"
+    textcolor               : color     -- (Optional) Text color
+    valuepadding            : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft        : number    -- (Optional)
+    valuepaddingright       : number    -- (Optional)
+    valuepaddingtop         : number    -- (Optional)
+    valuepaddingbottom      : number    -- (Optional)
+dial image & needle styling
+    dial                    : string|number|function -- Dial image selector (used for asset path)
+    scalefactor             : number   -- (Optional) Image scale multiplier (default: 0.4)
+    needlecolor             : color    -- (Optional) Needle color (default: theme)
+    needlehubcolor          : color    -- (Optional) Hub color (default: theme)
+    needlethickness         : number   -- (Optional) Needle width in pixels (default: 3)
+    needlehubsize           : number   -- (Optional) Hub circle radius in pixels (default: needle thickness + 2)
+    needlestartangle        : number   -- (Optional) Needle starting angle in degrees (default: 135)
+    needlesweepangle        : number   -- (Optional) Needle sweep angle in degrees (default: 270)
+
+    bgcolor                 : color    -- Widget background color (default: theme fallback)
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

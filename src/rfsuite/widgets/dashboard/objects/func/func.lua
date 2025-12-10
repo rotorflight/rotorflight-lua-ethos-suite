@@ -3,6 +3,13 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval    : number   -- Optional wakeup interval in seconds (set in wrapper)
+    wakeup            : function   -- Custom wakeup function, called with (box, telemetry), should return a table to cache
+    paint             : function   -- Custom paint function, called with (x, y, w, h, box, cache, telemetry)
+Note: This widget does not process colors, layout, or padding. All rendering and caching logic must be handled in the user's custom functions.
+]] --
+
 local rfsuite = require("rfsuite")
 
 local render = {}

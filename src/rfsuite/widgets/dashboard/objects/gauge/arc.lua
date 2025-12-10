@@ -3,6 +3,56 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+   wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
+Title parameters
+    title               : string    -- (Optional) Title text
+    titlepos            : string    -- (Optional) If `title` is present but `titlepos` is not set, title is placed at the top by default.
+    titlealign          : string    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font      -- (Optional) Title font (e.g., FONT_L, FONT_XL)
+    titlespacing        : number    -- (Optional) Vertical gap between title and value
+    titlecolor          : color     -- (Optional) Title text color (theme/text fallback)
+    titlepadding        : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number    -- (Optional) Left padding for title
+    titlepaddingright   : number    -- (Optional) Right padding for title
+    titlepaddingtop     : number    -- (Optional) Top padding for title
+    titlepaddingbottom  : number    -- (Optional) Bottom padding for title
+Value/Source parameters
+    value               : any       -- (Optional) Static value to display if telemetry is not present
+    source              : string    -- Telemetry sensor source name (e.g., "voltage", "current")
+    transform           : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table     -- (Optional) List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue             : string    -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string    -- (Optional) Unit label to append to value ("" hides, default resolves dynamically)
+    font                : font      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    valuealign          : string    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color     -- (Optional) Value text color (theme/text fallback)
+    valuepadding        : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number    -- (Optional) Left padding for value
+    valuepaddingright   : number    -- (Optional) Right padding for value
+    valuepaddingtop     : number    -- (Optional) Top padding for value
+    valuepaddingbottom  : number    -- (Optional) Bottom padding for value
+Maxval parameters
+    arcmax              : bool      -- (Optional) Draw arcmac gauge within the outer arc (false by default)
+    maxfont             : font      -- (Optional) Font for max value label (e.g., FONT_XS, FONT_S, FONT_STD, default: FONT_S)
+    maxtextcolor        : color     -- (Optional) Max text color (theme/text fallback)
+    maxpadding          : number    -- (Optional) Padding (Y-offset) below arc center for max value label (default: 0)
+    maxpaddingleft      : number    -- (Optional) Additional X-offset for max label (default: 0)
+    maxpaddingtop       : number    -- (Optional) Additional Y-offset for max label (default: 0)
+Appearance/Theming
+    bgcolor             : color     -- (Optional) Widget background color (theme fallback)
+    fillbgcolor         : color     -- (Optional) Arc background color (theme fallback)
+    fillcolor           : color     -- (Optional) Arc foreground color (theme fallback)
+    maxprefix           : string    -- (Optional) Prefix for max value label (default: "+")
+Arc Geometry/Advanced
+    min                 : number    -- (Optional) Minimum value of the arc (default: 0)
+    max                 : number    -- (Optional) Maximum value of the arc (default: 100)
+    thickness           : number    -- (Optional) Arc thickness in pixels
+    gaugepadding        : number    -- (Optional) Horizontal-only padding applied to arc radius (shrinks arc from left/right only)
+    gaugepaddingbottom  : number    -- (Optional) Extra space added below arc region, pushing arc upward (vertical only)
+]]--
+
 local rfsuite = require("rfsuite")
 
 local render = {}

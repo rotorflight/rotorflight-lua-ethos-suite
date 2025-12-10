@@ -3,6 +3,57 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+Timing
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
+Title parameters
+    title               : string    -- (Optional) Title text
+    titlepos            : string    -- (Optional) If `title` is present but `titlepos` is not set, title is placed at the top by default
+    titlealign          : string    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font      -- (Optional) Title font (e.g., FONT_L, FONT_XL)
+    titlespacing        : number    -- (Optional) Vertical gap between title and value
+    titlecolor          : color     -- (Optional) Title text color (theme/text fallback)
+    titlepadding        : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number    -- (Optional) Left padding for title
+    titlepaddingright   : number    -- (Optional) Right padding for title
+    titlepaddingtop     : number    -- (Optional) Top padding for title
+    titlepaddingbottom  : number    -- (Optional) Bottom padding for title
+Value/Source parameters
+    value               : any       -- (Optional) Static value to display if telemetry is not present
+    source              : string    -- Telemetry sensor source name (e.g., "temp_esc")
+    transform           : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table     -- (Optional) List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue             : string    -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string    -- (Optional) Unit label to append to value ("" hides, default resolves dynamically)
+    font                : font      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    valuealign          : string    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color     -- (Optional) Value text color (theme/text fallback)
+    valuepadding        : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number    -- (Optional) Left padding for value
+    valuepaddingright   : number    -- (Optional) Right padding for value
+    valuepaddingtop     : number    -- (Optional) Top padding for value
+    valuepaddingbottom  : number    -- (Optional) Bottom padding for value
+Appearance/Theming
+    bgcolor             : color     -- (Optional) Widget background color (theme fallback)
+    fillbgcolor         : color     -- (Optional) Ring background color (theme fallback)
+    fillcolor           : color     -- (Optional) Ring foreground color (theme fallback)
+Geometry
+    thickness           : number    -- (Optional) Ring thickness in pixels (default is proportional to radius)
+Battery Ring Mode (Optional fuel-based battery style)
+    ringbatt                 : bool      -- If true, draws 360° fill ring based on fuel (%) and shows mAh consumption
+    ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_STD; default: FONT_XS)
+    innerringcolor           : color     -- Color of the inner decorative ring in ringbatt mode (default: white)
+    ringbattsubtext          : string|bool -- (Optional) Overrides subtext below value in ringbatt mode (set "" or false to hide)
+    innerringthickness       : number    -- (Optional) Thickness of inner decorative ring in ringbatt mode (default: 8)
+    ringbattsubalign         : string    -- (Optional) "left", "center", or "right" alignment of subtext (default: center under value)
+    ringbattsubpadding       : number    -- (Optional) General padding (px) for subtext (applies if per-side not set)
+    ringbattsubpaddingleft   : number    -- (Optional) Left padding override for subtext
+    ringbattsubpaddingright  : number    -- (Optional) Right padding override for subtext
+    ringbattsubpaddingtop    : number    -- (Optional) Top padding override for subtext
+    ringbattsubpaddingbottom : number    -- (Optional) Bottom padding override for subtext
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}
