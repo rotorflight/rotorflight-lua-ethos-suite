@@ -656,4 +656,40 @@ function tasks.reload(name)
     return ok
 end
 
+function tasks.isIdle()
+    local now = os.clock()
+
+    -- MSP busy = definitely not idle
+    if rfsuite.session.mspBusy then
+        return false
+    end
+
+    -- Check each scheduled task
+    for _, task in ipairs(tasksList) do
+        -- Is this a task that has a wakeup?
+        local mod = tasks[task.name]
+        if mod and mod.wakeup then
+            local elapsed = now - task.last_run
+
+            -- Due to run?
+            if elapsed + OVERDUE_TOL >= task.interval then
+                return false
+            end
+        end
+    end
+
+    -- If callback task recently fired, system not idle yet
+    if tasks.isTaskActive("callback") then
+        return false
+    end
+
+    -- If MSP task recently fired, also not idle
+    if tasks.isTaskActive("msp") then
+        return false
+    end
+
+    return true
+end
+
+
 return tasks
