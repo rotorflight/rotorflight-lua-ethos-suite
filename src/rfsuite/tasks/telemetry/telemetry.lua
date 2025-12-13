@@ -144,7 +144,8 @@ local sensorTable = {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041},
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051},
-                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080}
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
+                {crsfId = 8},
             },
             crsfLegacy = {"Rx Batt"}
         }
