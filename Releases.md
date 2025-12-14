@@ -1,3 +1,13 @@
+# 2.3.0-20251214
+
+Snaopshot release of Ethos Suite
+
+ - Support for ZTW and OMP Fwd Programming
+ - MSP protocol improvements
+ - Improve cpu load on radio (disk churn)
+ - Improve elrs telemetry (cpu load)
+ - Various minor fixes
+
 # 2.3.0-20251111
 
 Snapshot release of Ethos Suite.
