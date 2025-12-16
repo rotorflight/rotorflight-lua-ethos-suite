@@ -9,9 +9,6 @@ local apiLoader = {}
 
 -- Caches to avoid repeated disk checks and module loads
 apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
-apiLoader._apiCache        = apiLoader._apiCache or {}
-apiLoader._apiCacheOrder   = apiLoader._apiCacheOrder or {} -- MRU list
-apiLoader._apiCacheMax     = apiLoader._apiCacheMax or 10    -- Max cached modules
 
 local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api/"
 local api_path = apidir
@@ -89,36 +86,14 @@ function apiLoader.clearFileExistsCache()
     apiLoader._fileExistsCache = {}
 end
 
--- Load an API module with caching (LRU-like)
+-- Load an API module
 function apiLoader.load(apiName)
-    local cached = apiLoader._apiCache[apiName]
-    if cached then
-        -- Move to MRU position
-        for i, name in ipairs(apiLoader._apiCacheOrder) do
-            if name == apiName then
-                table.remove(apiLoader._apiCacheOrder, i)
-                break
-            end
-        end
-        table.insert(apiLoader._apiCacheOrder, apiName)
-        return cached
-    end
 
     -- Load from disk
     local api = loadAPI(apiName)
     if api == nil then
         utils.log("Unable to load " .. apiName, "debug")
         return nil
-    end
-
-    -- Add to cache
-    apiLoader._apiCache[apiName] = api
-    table.insert(apiLoader._apiCacheOrder, apiName)
-
-    -- Enforce max cache size (drop oldest)
-    if #apiLoader._apiCacheOrder > apiLoader._apiCacheMax then
-        local oldest = table.remove(apiLoader._apiCacheOrder, 1)
-        apiLoader._apiCache[oldest] = nil
     end
 
     return api
