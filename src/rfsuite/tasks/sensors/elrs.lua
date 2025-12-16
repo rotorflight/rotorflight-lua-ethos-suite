@@ -41,8 +41,7 @@ elrs.publishBudgetPerFrame = 50  -- If everything works this should never be rea
 local META_UID = {
     [0xEE01] = true, 
     [0xEE02] = true,
-    [0xEE03] = true,
-    [0xEE04] = true
+    [0xEE03] = true
 }
 
 elrs.strictUntilConfig = false
