@@ -17,8 +17,12 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.omp.lv_bec_voltage)@", activeFieldPos = 5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"}, {t = "@i18n(app.modules.esc_tools.mfg.omp.hv_bec_voltage)@", activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"}, {t = "@i18n(app.modules.esc_tools.mfg.omp.motor_direction)@", activeFieldPos = 6, type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "@i18n(app.modules.esc_tools.mfg.omp.startup_power)@", activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"}, {t = "@i18n(app.modules.esc_tools.mfg.omp.led_color)@", activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"}, {t = "@i18n(app.modules.esc_tools.mfg.omp.smart_fan)@", activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.lv_bec_voltage)@",    activeFieldPos = 5,  type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.hv_bec_voltage)@",    activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.motor_direction)@",   activeFieldPos = 6,  type = 1, mspapi = 1, apikey = "motor_direction"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.startup_power)@",     activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.led_color)@",         activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
+            {t = "@i18n(app.modules.esc_tools.mfg.omp.smart_fan)@",         activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
         }
     }
 }

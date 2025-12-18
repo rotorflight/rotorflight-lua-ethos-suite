@@ -3,6 +3,51 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
+title parameters
+    title                   : string    -- (Optional) Title text
+    titlealign              : string    -- (Optional) "center", "left", "right"
+    titlefont               : font      -- (Optional) Title font (e.g., font_l, font_xl)
+    titlespacing            : number    -- (Optional) Gap below title
+    titlecolor              : color     -- (Optional) Title text color
+    titlepadding            : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft        : number    -- (Optional)
+    titlepaddingright       : number    -- (Optional)
+    titlepaddingtop         : number    -- (Optional)
+    titlepaddingbottom      : number    -- (Optional)
+value / source parameters
+    value                   : any       -- (Optional) Static value to display if telemetry is not present
+    showvalue               : bool      -- (Optional) If false, hides the main value text (default true)
+    source                  : string    -- Telemetry sensor name
+    transform               : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", etc.)
+    decimals                : number    -- (Optional) Decimal precision
+    novalue                 : string    -- (Optional) Text if telemetry is missing (default: "-")
+    unit                    : string    -- (Optional) Unit label ("" hides unit)
+    font                    : font      -- (Optional) Value font (e.g., font_l)
+    valuealign              : string    -- (Optional) "center", "left", "right"
+    textcolor               : color     -- (Optional) Text color
+    valuepadding            : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft        : number    -- (Optional)
+    valuepaddingright       : number    -- (Optional)
+    valuepaddingtop         : number    -- (Optional)
+    valuepaddingbottom      : number    -- (Optional)
+arc band parameters
+    bandlabels              : table     -- List of labels for each band (e.g. {"Low", "Med", "High"})
+    bandcolors              : table     -- List of band colors (e.g. {lcd.RGB(180,50,50), lcd.RGB(...)})
+    bandlabeloffset         : number    -- (Optional) Outward for left/right labels (default 18)
+    bandlabeloffsettop      : number    -- (Optional) Down from the arc edge for the top label (default 8)
+    bandlabelfont           : font      -- (Optional) Font for band labels (e.g. FONT_XS, FONT_S). Defaults to FONT_XS
+appearance / theming
+    bgcolor                 : color     -- (Optional) Widget background color
+    fillbgcolor             : color     -- (Optional) Arc background color (optional)
+    titlecolor              : color     -- (Optional) Title text color fallback
+needle styling
+    accentcolor             : color     -- (Optional) Needle and hub color
+    needlethickness         : number    -- (Optional) Needle width (default: 5)
+    needlehubsize           : number    -- (Optional) Needle hub circle radius (default: 7)
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

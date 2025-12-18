@@ -3,6 +3,47 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
+Title & Layout
+    title               : string                    -- (Optional) Title text
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font                      -- (Optional) Title font (e.g., FONT_L, FONT_XL)
+    titlespacing        : number                    -- (Optional) Vertical gap between title and value
+    titlecolor          : color                     -- (Optional) Title text color (theme fallback if nil)
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+Stat Source & Value
+    source              : string                    -- (Required for stat mode) Telemetry sensor name used to fetch stats (e.g., "rpm", "current")
+    stattype            : string                    -- (Optional) Which stat to show ("max", "min", "avg", etc; default: "max")
+    value               : any                       -- (Optional, advanced) Static value. If omitted, widget shows the selected stat for 'source'
+Value Display
+    unit                : string                    -- (Optional) Dynamic localized unit displayed by default, you can use override this or "" to hide unit
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color                     -- (Optional) Value text color (theme fallback if nil)
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
+General
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    transform           : string|function|number    -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number                    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table                     -- (Optional) List of threshold tables: {value=..., textcolor=...}
+    novalue             : string                    -- (Optional) Text shown if value is missing (default: "-")
+
+    Notes:
+The widget only displays stat values (not live telemetry). "source" and "stattype" select which telemetry stat to show.
+"unit" always overrides; if not set, unit is resolved from telemetry.sensorTable[source] if available.
+To display min stats, set stattype = "min"; for max, omit or set stattype = "max".
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

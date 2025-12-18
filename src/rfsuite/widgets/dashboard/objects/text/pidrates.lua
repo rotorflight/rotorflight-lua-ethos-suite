@@ -3,6 +3,53 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+Profile Source Selection
+    object                  : string                    -- Required: must be "pid" or "rates"; maps to telemetry source "pid_profile" or "rate_profile"
+    profilecount            : number                    -- (Optional) How many profile numbers to draw (1 to 6, default 6)
+Telemetry and Value Handling
+    value                   : number                    -- (Optional) Static fallback value if telemetry is unavailable
+    transform               : string|function|number    -- (Optional) Value transform logic (e.g., "floor", multiplier, or custom function)
+    decimals                : number                    -- (Optional) Decimal precision for transformed value
+    thresholds              : table                     -- (Optional) Value threshold list: { value=..., textcolor=... }
+    novalue                 : string                    -- (Optional) Fallback text if no telemetry or static value is available
+    unit                    : string                    -- (Optional) Placeholder only; not used in this object
+Value Styling and Alignment
+    font                    : font                      -- (Optional) Font for profile number text
+    textcolor               : color                     -- (Optional) Text color for inactive profile / rates
+    fillcolor               : color                     -- (Optional) Text color for active profile / rates
+    valuealign              : string                    -- (Optional) Ignored; profile numbers are always centered
+    valuepadding            : number                    -- (Optional) General padding around value area (overridden by sides)
+    valuepaddingleft        : number
+    valuepaddingright       : number
+    valuepaddingtop         : number
+    valuepaddingbottom      : number
+Title Styling
+    title                   : string                    -- (Optional) Title label (e.g., "Active Profile")
+    titlepos                : string                    -- (Optional) "top" or "bottom"
+    titlealign              : string                    -- (Optional) Title alignment: "center", "left", or "right"
+    titlefont               : font                      -- (Optional) Title font (e.g., FONT_L)
+    titlespacing            : number                    -- (Optional) Gap between title and profile number row
+    titlecolor              : color                     -- (Optional) Title text color
+    titlepadding            : number                    -- (Optional) General padding around title (overridden by sides)
+    titlepaddingleft        : number
+    titlepaddingright       : number
+    titlepaddingtop         : number
+    titlepaddingbottom      : number
+Row Layout and Font Options
+    rowalign                : string                    -- (Optional) Alignment for number row: "left", "center", or "right"
+    rowspacing              : number                    -- (Optional) Spacing between profile numbers (default: width / profilecount)
+    rowfont                 : font                      -- (Optional) Font for profile numbers (fallbacks to `font`)
+    rowpadding              : number                    -- (Optional) General padding for number row (overridden by sides)
+    rowpaddingleft          : number
+    rowpaddingright         : number
+    rowpaddingtop           : number
+    rowpaddingbottom        : number
+    highlightlarger         : boolean                   -- (Optional) If true, enlarges the active index using the next font in the list
+Background
+    bgcolor                 : color                     -- (Optional) Widget background color
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

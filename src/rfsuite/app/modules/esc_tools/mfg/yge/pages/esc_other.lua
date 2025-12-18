@@ -11,12 +11,19 @@ local foundEsc = false
 local foundEscDone = false
 
 local apidata = {
-    api = {[1] = "ESC_PARAMETERS_YGE"},
+    api = {
+        [1] = "ESC_PARAMETERS_YGE"
+    },
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.yge.gov_p)@", mspapi = 1, apikey = "gov_p"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.gov_i)@", mspapi = 1, apikey = "gov_i"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.motor_pole_pairs)@", mspapi = 1, apikey = "motor_pole_pairs"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.main_teeth)@", mspapi = 1, apikey = "main_teeth"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.pinion_teeth)@", mspapi = 1, apikey = "pinion_teeth"},
-            {t = "@i18n(app.modules.esc_tools.mfg.yge.stick_zero_us)@", mspapi = 1, apikey = "stick_zero_us"}, {t = "@i18n(app.modules.esc_tools.mfg.yge.stick_range_us)@", mspapi = 1, apikey = "stick_range_us"}
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.gov_p)@",      mspapi = 1, apikey = "gov_p"          },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.gov_i)@",      mspapi = 1, apikey = "gov_i"          },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.motor_pole_pairs)@", mspapi = 1, apikey = "motor_pole_pairs" },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.main_teeth)@", mspapi = 1, apikey = "main_teeth"    },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.pinion_teeth)@", mspapi = 1, apikey = "pinion_teeth"  },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.stick_zero_us)@", mspapi = 1, apikey = "stick_zero_us" },
+            { t = "@i18n(app.modules.esc_tools.mfg.yge.stick_range_us)@", mspapi = 1, apikey = "stick_range_us" }
         }
     }
 }

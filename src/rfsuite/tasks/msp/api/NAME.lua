@@ -43,7 +43,9 @@ local function parseMSPData(buf)
     while offset <= #buf do
         local char = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
         if char == 0 then break end
-        name = name .. string.char(char)
+        if char then
+            name = name .. string.char(char)
+        end    
         offset = offset + 1
     end
 

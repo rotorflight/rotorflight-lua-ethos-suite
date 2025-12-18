@@ -7,7 +7,6 @@ local rfsuite = require("rfsuite")
 
 local utils = {}
 local app = rfsuite.app
-local session = rfsuite.session
 local rfutils = rfsuite.utils
 local tasks = rfsuite.tasks
 
@@ -15,6 +14,7 @@ local arg = {...}
 local config = arg[1]
 
 function utils.getRSSI()
+    local session = rfsuite.session
     if rfsuite.simevent.rflink == 1 then return 0 end
 
     if app.offlineMode == true then return 100 end
@@ -130,10 +130,9 @@ function utils.getInlinePositions(f)
 end
 
 function utils.getCurrentProfile()
+    local session = rfsuite.session
     local pidProfile = tasks.telemetry.getSensor("pid_profile")
-    local rateProfile = tasks.telemetry.getSensor("rate_profile")
-
-    if (pidProfile ~= nil and rateProfile ~= nil) then
+    if pidProfile ~= nil then
         session.activeProfileLast = session.activeProfile
         local p = pidProfile
         if p ~= nil then
@@ -141,7 +140,14 @@ function utils.getCurrentProfile()
         else
             session.activeProfile = nil
         end
+    end
+end
 
+function utils.getCurrentRateProfile()
+    local session = rfsuite.session
+    local rateProfile = tasks.telemetry.getSensor("rate_profile")
+
+    if rateProfile ~= nil then
         session.activeRateProfileLast = session.activeRateProfile
         local r = rateProfile
         if r ~= nil then
@@ -155,7 +161,7 @@ end
 function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, rest) return first:upper() .. rest:lower() end) end
 
 function utils.settingsSaved()
-
+    local session = rfsuite.session
     local mspEepromWrite = {
         command = 250,
         processReply = function(self, buf)

@@ -17,9 +17,13 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.ztw.timing)@", activeFieldPos = 4, mspapi = 1, type = 1, apikey = "timing"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.acceleration)@", activeFieldPos = 9, mspapi = 1, type = 1, apikey = "acceleration"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.brake_force)@", activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
-            {t = "@i18n(app.modules.esc_tools.mfg.ztw.sr_function)@", activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.capacity_correction)@", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.auto_restart_time)@", activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
-            {t = "@i18n(app.modules.esc_tools.mfg.ztw.cell_cutoff)@", activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.timing)@",          activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.acceleration)@",    activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.brake_force)@",     activeFieldPos = 14, mspapi = 1,         apikey = "brake_force"},
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.sr_function)@",      activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.capacity_correction)@", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.auto_restart_time)@", activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
+            {t = "@i18n(app.modules.esc_tools.mfg.ztw.cell_cutoff)@",      activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
         }
     }
 }

@@ -12,6 +12,8 @@ local elrs = {}
 
 elrs.name = "elrs"
 
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor(...)
     elrs.popFrame = function(...)
@@ -34,9 +36,13 @@ local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
 
-elrs.publishBudgetPerFrame = 40
+elrs.publishBudgetPerFrame = 50  -- If everything works this should never be reached.  we use it as a safeguard.
 
-local META_UID = {[0xEE01] = true, [0xEE02] = true}
+local META_UID = {
+    [0xEE01] = true, 
+    [0xEE02] = true,
+    [0xEE03] = true
+}
 
 elrs.strictUntilConfig = false
 
@@ -197,7 +203,11 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
         sensors['uid'][uid]:protocolUnit(unit)
     end
     if value then
-        sensors['uid'][uid]:value(value)
+        if useRawValue then
+            sensors['uid'][uid]:rawValue(value)
+        else
+            sensors['uid'][uid]:value(value)
+        end
         sensors['lastvalue'][uid] = value
         sensors['lasttime'][uid] = nowMs()
     end
@@ -209,7 +219,11 @@ local function refreshStaleSensors()
         local last = sensors['lastvalue'][uid]
         local lt = sensors['lasttime'][uid]
         if s and last and lt and (t - lt) > REFRESH_INTERVAL_MS then
-            s:value(last)
+            if useRawValue then
+                s:rawValue(last)
+            else
+                s:value(last)
+            end    
             sensors['lasttime'][uid] = t
         end
     end
@@ -230,7 +244,11 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
     else
         if sensors['uid'][uid] then
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then
-                sensors['uid'][uid]:value(value)
+                if useRawValue then
+                    sensors['uid'][uid]:rawValue(value)
+                else
+                    sensors['uid'][uid]:value(value)
+                end
                 sensors['lastvalue'][uid] = value
                 sensors['lasttime'][uid] = nowMs()
             end
@@ -534,10 +552,12 @@ local sensorsList = {
 elrs.telemetryFrameId = 0
 elrs.telemetryFrameSkip = 0
 elrs.telemetryFrameCount = 0
+elrs._lastFrameMs = nil
+elrs._haveFrameId = false
 
 function elrs.crossfirePop()
 
-    if (CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true or rfsuite.session.telemetryState == false) then
+    if (rfsuite.session.telemetryState == false) then
         local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
 
@@ -549,45 +569,58 @@ function elrs.crossfirePop()
         local command, data = elrs.popFrame(CRSF_FRAME_CUSTOM_TELEM)
         if command and data then
 
-            if command == CRSF_FRAME_CUSTOM_TELEM then
-                local fid, sid, val
-                local ptr = 3
+            local fid, sid, val
+            local ptr = 3
 
-                rebuildRelevantSidSet()
+            rebuildRelevantSidSet()
 
-                fid, ptr = decU8(data, ptr)
+            fid, ptr = decU8(data, ptr)
+            if elrs._haveFrameId then
                 local delta = (fid - elrs.telemetryFrameId) & 0xFF
-                if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
-                elrs.telemetryFrameId = fid
-                elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
+                if delta > 1 then
+                    elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + (delta - 1)
+                end
+            else
+                -- First frame after (re)connect: establish baseline, don’t count skips.
+                elrs._haveFrameId = true
+            end
+            elrs.telemetryFrameId = fid
+            elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
 
-                local published = 0
-                while ptr < #data do
+            -- Frame timing (ms between received custom telemetry frames)
+            local tnow = nowMs()
+            if elrs._lastFrameMs ~= nil then
+                local dt = tnow - elrs._lastFrameMs
+                setTelemetryValue(0xEE03, 0, 0, dt, UNIT_MILLISECOND, 0, "Frame Δms", 0, 60000)
+            end
+            elrs._lastFrameMs = tnow
 
-                    sid, ptr = decU16(data, ptr)
-                    local sensor = sensorsList[sid]
-                    if sensor then
+            local published = 0
+            while ptr < #data do
 
-                        local prev = ptr
-                        local ok, v, np = pcall(sensor.dec, data, ptr)
-                        if not ok then break end
-                        ptr = np or prev
-                        if ptr <= prev then break end
+                sid, ptr = decU16(data, ptr)
+                local sensor = sensorsList[sid]
+                if sensor then
 
-                        if v and published < (elrs.publishBudgetPerFrame or 40) then
+                    local prev = ptr
+                    local ok, v, np = pcall(sensor.dec, data, ptr)
+                    if not ok then break end
+                    ptr = np or prev
+                    if ptr <= prev then break end
+
+                    if v then
+                        if published < (elrs.publishBudgetPerFrame or 40) then
                             setTelemetryValue(sid, 0, 0, v, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
                             published = published + 1
                         end
-                    else
-                        break
                     end
+                else
+                    break
                 end
-
-                setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
-                setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647)
-
             end
 
+            setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
+            setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647)
             return true
         end
 
@@ -603,13 +636,7 @@ function elrs.wakeup()
     rebuildRelevantSidSet()
 
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        local n = 0
-        while elrs.crossfirePop() do
-            if CRSF_PAUSE_TELEMETRY == true or rfsuite.session.mspBusy == true then break end
-            n = n + 1
-            if n >= 50 then break end
-        end
-
+        while elrs.crossfirePop() do end
         refreshStaleSensors()
     else
         resetSensors()
@@ -621,6 +648,11 @@ function elrs.reset()
     elrs._relevantSidSet = nil
     elrs._relevantSig = nil
     _lastSlotsSig = nil
+    elrs.telemetryFrameId = 0
+    elrs.telemetryFrameSkip = 0
+    elrs.telemetryFrameCount = 0
+    elrs._lastFrameMs = nil
+    elrs._haveFrameId = false    
 end
 
 return elrs

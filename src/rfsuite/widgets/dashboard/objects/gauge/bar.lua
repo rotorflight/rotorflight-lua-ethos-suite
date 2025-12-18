@@ -3,6 +3,84 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
+Title/label
+    title                   : string    -- (Optional) Title text
+    titlepos                : string    -- (Optional) "top" or "bottom"
+    titlealign              : string    -- (Optional) "center", "left", "right"
+    titlefont               : font      -- (Optional) Title font (e.g., FONT_L)
+    titlespacing            : number    -- (Optional) Vertical gap below title
+    titlecolor              : color     -- (Optional) Title text color (theme/text fallback)
+    titlepadding            : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft        : number    -- (Optional)
+    titlepaddingright       : number    -- (Optional)
+    titlepaddingtop         : number    -- (Optional)
+    titlepaddingbottom      : number    -- (Optional)
+Value/source
+    value                   : any       -- (Optional) Static value to display if no telemetry
+    hidevalue               : bool      -- (Optional) If true, do not display the value text (default: false; value is shown)
+    source                  : string    -- (Optional) Telemetry sensor source name
+    transform               : string|function|number -- (Optional) Value transformation
+    decimals                : number    -- (Optional) Number of decimal places for display
+    thresholds              : table     -- (Optional) List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue                 : string    -- (Optional) Text shown if value missing (default: "-")
+    unit                    : string    -- (Optional) Unit label, "" to hide, or nil to auto-resolve
+    font                    : font      -- (Optional) Value font (e.g., FONT_L)
+    valuealign              : string    -- (Optional) "center", "left", "right"
+    textcolor               : color     -- (Optional) Value text color (theme/text fallback)
+    valuepadding            : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft        : number    -- (Optional)
+    valuepaddingright       : number    -- (Optional)
+    valuepaddingtop         : number    -- (Optional)
+    valuepaddingbottom      : number    -- (Optional)
+Bar geometry/appearance
+    min                     : number    -- (Optional) Min value (alias for gaugemin)
+    max                     : number    -- (Optional) Max value (alias for gaugemax)
+    gaugeorientation        : string    -- (Optional) "vertical" or "horizontal"
+    gaugepaddingleft        : number    -- (Optional)
+    gaugepaddingright       : number    -- (Optional)
+    gaugepaddingtop         : number    -- (Optional)
+    gaugepaddingbottom      : number    -- (Optional)
+    roundradius             : number    -- (Optional) Corner radius to apply rounding on edges of the bar
+Appearance/Theming
+    bgcolor                 : color     -- (Optional) Widget background color (theme fallback)
+    fillbgcolor             : color     -- (Optional) Bar background color (theme fallback)
+    fillcolor               : color     -- (Optional) Bar fill color (theme fallback)
+Battery-style bar options
+    batteryframe            : bool      -- (Optional) Draw battery frame & cap around the bar (applies to both standard and segmented bars)
+    battery                 : bool      -- (Optional) If true, draw a segmented battery bar instead of a standard fill bar
+    batteryframethickness   : number    -- (Optional) Battery frame outline thickness (default: 2)
+    batterysegments         : number    -- (Optional) Number of segments for segmented battery bar (default: 6)
+    batteryspacing          : number    -- (Optional) Spacing (pixels) between battery segments (default: 2)
+    batterysegmentpaddingtop    : number   -- (Optional) Padding (pixels) from the top of each horizontal segment (default: 0)
+    batterysegmentpaddingbottom : number   -- (Optional) Padding (pixels) from the bottom of each horizontal segment (default: 0)
+    accentcolor             : color     -- (Optional) Color for the battery frame and cap (theme fallback)
+    cappaddingleft        : number   -- (Optional) Padding from the left edge of the cap (default: 0)
+    cappaddingright       : number   -- (Optional) Padding from the right edge of the cap (default: 0)
+    cappaddingtop         : number   -- (Optional) Padding from the top edge of the cap (default: 0)
+    cappaddingbottom      : number   -- (Optional) Padding from the bottom edge of the cap (default: 0)
+Battery Advanced Info (Optional overlay for battery/fuel bar)
+    battadv         : bool      -- (Optional) If true, shows advanced battery/fuel telemetry info lines (voltage, per-cell voltage, consumption, cell count)
+    battadvfont             : font      -- Font for advanced info lines (e.g., "FONT_XS", "FONT_STD"). Defaults to FONT_XS if unset
+    battadvblockalign       : string    -- Horizontal alignment of the entire info block: "left", "center", or "right" (default: "right")
+    battadvvaluealign       : string    -- Text alignment within each info line: "left", "center", or "right" (default: "left")
+    battadvpadding          : number    -- Padding (pixels) applied to all sides unless overridden by individual paddings (default: 4)
+    battadvpaddingleft      : number    -- Padding (pixels) on the left side of the info block (overrides battadvpadding)
+    battadvpaddingright     : number    -- Padding (pixels) on the right side of the info block (overrides battadvpadding)
+    battadvpaddingtop       : number    -- Padding (pixels) above the first info line (overrides battadvpadding)
+    battadvpaddingbottom    : number    -- Padding (pixels) below the last info line (overrides battadvpadding)
+    battadvgap              : number    -- Vertical gap (pixels) between info lines (default: 5)
+Subtext
+    subtext              : string   -- (Optional) A line of subtext to draw inside the bar (usually below value)
+    subtextfont          : font     -- (Optional) Font for subtext (default: FONT_XS)
+    subtextalign         : string   -- (Optional) "center", "left", or "right" (default: "left")
+    subtextpaddingleft   : number   -- (Optional) Padding from left edge of bar (default: 0)
+    subtextpaddingright  : number   -- (Optional) Padding from right edge of bar (default: 0)
+    subtextpaddingtop    : number   -- (Optional) Extra offset from top of bar (default: 0)
+    subtextpaddingbottom : number   -- (Optional) Padding above bottom of bar (default: 0)
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

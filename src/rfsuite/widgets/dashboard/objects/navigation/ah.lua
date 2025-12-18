@@ -3,6 +3,28 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (default: 0.2)
+    pixelsperdeg        : number   -- Pixels per degree for pitch & compass (default: 2.0)
+    dynamicscalemin     : number   -- Minimum scale factor (default: 1.05)
+    dynamicscalemax     : number   -- Maximum scale factor (default: 1.95)
+    showarc             : bool     -- Show arc markers (default: true)
+    showladder          : bool     -- Show pitch ladder (default: true)
+    showcompass         : bool     -- Show compass ribbon (default: true)
+    showaltitude        : bool     -- Show altitude bar on right (default: false)
+    showgroundspeed           : bool     -- Show groundspeed bar on left (default: false)
+    arccolor            : color    -- Color for arc markings (default: white)
+    laddercolor         : color    -- Color for pitch ladder (default: white)
+    compasscolor        : color    -- Color for compass (default: white)
+    crosshaircolor      : color    -- Color for central cross marker (default: white)
+    altitudecolor       : color    -- Color for altitude bar (default: white)
+    groundspeedcolor          : color    -- Color for groundspeed bar (default: white)
+    altitudemin         : number   -- Minimum displayed altitude (default: 0)
+    altitudemax         : number   -- Maximum displayed altitude (default: 200)
+    groundspeedmin            : number   -- Minimum displayed groundspeed (default: 0)
+    groundspeedmax            : number   -- Maximum displayed groundspeed (default: 100)
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

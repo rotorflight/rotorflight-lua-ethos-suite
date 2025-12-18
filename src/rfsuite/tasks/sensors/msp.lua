@@ -12,6 +12,8 @@ local log
 local tasks
 local firstWakeup = true
 
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+
 local msp_sensors = {
     DATAFLASH_SUMMARY = {interval_armed = -1, interval_disarmed = 5, fields = {flags = {sensorname = "BBL Flags", sessionname = {"bblFlags"}, appId = 0x5FFF, unit = UNIT_RAW}, total = {sensorname = "BBL Size", sessionname = {"bblSize"}, appId = 0x5FFE, unit = UNIT_RAW}, used = {sensorname = "BBL Used", sessionname = {"bblUsed"}, appId = 0x5FFD, unit = UNIT_RAW}}},
 
@@ -139,7 +141,11 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
     end
 
     if last == nil or math.abs(v - last) >= VALUE_EPSILON or stale then
-        sensor:value(v)
+        if useRawValue then
+            sensor:rawValue(v)
+        else
+            sensor:value(v)
+        end
         lastValue[appId] = v
         lastPush[appId] = nowc
     end

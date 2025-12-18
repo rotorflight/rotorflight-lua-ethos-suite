@@ -26,6 +26,8 @@ local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
 
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+
 local function calculateFuel()
 
     if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
@@ -130,7 +132,11 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         local now = os.clock()
         local stale = (now - (lastPush[appId] or 0)) >= FORCE_REFRESH_INTERVAL
         if last == nil or math.abs(v - last) >= VALUE_EPSILON or stale then
-            sensorCache[appId]:value(v)
+            if useRawValue then
+                sensorCache[appId]:rawValue(v)
+            else
+                sensorCache[appId]:value(v)
+            end
             lastValue[appId] = v
             lastPush[appId] = now
         end

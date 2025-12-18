@@ -3,6 +3,34 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
+    title               : string                    -- (Optional) Title text
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font                      -- (Optional) Title font (e.g., FONT_L, FONT_XL), dynamic by default
+    titlespacing        : number                    -- (Optional) Gap between title and image
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    font                : font                      -- (Unused, for consistency)
+    valuealign          : string                    -- (Unused, for consistency)
+    textcolor           : color                     -- (Unused, for consistency)
+    valuepadding        : number                    -- (Optional) Padding for image (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for image
+    valuepaddingright   : number                    -- (Optional) Right padding for image
+    valuepaddingtop     : number                    -- (Optional) Top padding for image
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for image
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    image               : string                    -- (Auto) Image path, auto-resolved from model name or ID
+    imagewidth          : number                    -- (Optional) Image width (px)
+    imageheight         : number                    -- (Optional) Image height (px)
+    imagealign          : string                    -- (Optional) Image alignment ("center", "left", "right", "top", "bottom")
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

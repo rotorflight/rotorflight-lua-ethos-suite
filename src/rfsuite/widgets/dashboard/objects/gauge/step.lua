@@ -3,6 +3,51 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+   wakeupinterval      : number    -- (Optional) Wakeup interval in seconds for the widget (set in wrapper)
+Title parameters
+    title               : string    -- (Optional) Title text (e.g., "2.4G", "Lora")
+    titlepos            : string    -- (Optional) Title position ("top" or "bottom")
+    titlealign          : string    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font      -- (Optional) Title font (e.g., FONT_L, FONT_XL), dynamic by default
+    titlespacing        : number    -- (Optional) Vertical gap between title and bar/value
+    titlecolor          : color     -- (Optional) Title text color (theme/text fallback if nil)
+    titlepadding        : number    -- (Optional) Title padding (all sides unless overridden)
+    titlepaddingleft    : number    -- (Optional) Left padding for title
+    titlepaddingright   : number    -- (Optional) Right padding for title
+    titlepaddingtop     : number    -- (Optional) Top padding for title
+    titlepaddingbottom  : number    -- (Optional) Bottom padding for title
+Value/telemetry parameters
+    value               : number    -- (Optional) Static value to display if no telemetry
+    hidevalue           : bool      -- (Optional) If true, value/unit will NOT be displayed (default: false)
+    source              : string    -- (Optional) Telemetry sensor source name (e.g., "rssi", "voltage", "current")
+    transform           : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table     -- (Optional) List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue             : string    -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string    -- (Optional) Unit label to append to value ("" hides, default resolves dynamically)
+    font                : font      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    valuealign          : string    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color     -- (Optional) Value text color (theme/text fallback if nil)
+    valuepadding        : number    -- (Optional) Value padding (all sides unless overridden)
+    valuepaddingleft    : number    -- (Optional) Left padding for value
+    valuepaddingright   : number    -- (Optional) Right padding for value
+    valuepaddingtop     : number    -- (Optional) Top padding for value
+    valuepaddingbottom  : number    -- (Optional) Bottom padding for value
+Step bar parameters
+    stepcount           : number    -- (Optional) Number of steps/bars to draw (default: 4)
+    stepgap             : number    -- (Optional) Pixel gap between each step/bar (default: 1)
+    fillcolor           : color     -- (Optional) Color for active steps (theme fallback, or resolved by thresholds)
+    fillbgcolor         : color     -- (Optional) Color for inactive steps (theme fallback)
+    bgcolor             : color     -- (Optional) Widget background color (theme fallback if nil)
+Bar padding parameters
+    barpadding          : number    -- (Optional) Bar padding (all sides unless overridden)
+    barpaddingleft      : number    -- (Optional) Left padding for bar
+    barpaddingright     : number    -- (Optional) Right padding for bar
+    barpaddingtop       : number    -- (Optional) Top padding for bar
+    barpaddingbottom    : number    -- (Optional) Bottom padding for bar
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

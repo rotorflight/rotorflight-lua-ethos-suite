@@ -39,7 +39,7 @@ local wakeupScheduler = 0
 
 local lastModelPath = model.path()
 local lastModelPathCheckAt = 0
-local PATH_CHECK_INTERVAL = 1.0
+local PATH_CHECK_INTERVAL = 2.5
 
 local objectWakeupIndex = 1
 local objectWakeupsPerCycle = nil
@@ -942,9 +942,9 @@ function dashboard.paint(widget)
 
     if os.clock() - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
         local newModelPath = model.path()
+        lastModelPathCheckAt = os.clock()
         if newModelPath ~= lastModelPath then
             lastModelPath = newModelPath
-            lastModelPathCheckAt = os.clock()
 
             local W, H = lcd.getWindowSize()
             local loaderY = (isFullScreen and headerLayout.height) or 0
@@ -1067,7 +1067,7 @@ end
 
 function dashboard.wakeup(widget)
 
-    if rfsuite.session and rfsuite.session.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
+    if rfsuite.session and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
     local now = os.clock()
     local visible = lcd.isVisible()

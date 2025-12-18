@@ -17,8 +17,18 @@ local foundEsc = false
 local foundEscDone = false
 
 local apidata = {
-    api = {[1] = "ESC_PARAMETERS_ZTW"},
-    formdata = {labels = {}, fields = {{t = "@i18n(app.modules.esc_tools.mfg.ztw.gov)@", activeFieldPos = 2, type = 1, mspapi = 1, apikey = "governor"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.gov_p)@", activeFieldPos = 6, mspapi = 1, apikey = "gov_p"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.gov_i)@", activeFieldPos = 7, mspapi = 1, apikey = "gov_i"}, {t = "@i18n(app.modules.esc_tools.mfg.ztw.motor_poles)@", activeFieldPos = 17, mspapi = 1, apikey = "motor_poles"}}}
+    api = {
+        [1] = "ESC_PARAMETERS_ZTW"
+    },
+    formdata = {
+        labels = {},
+        fields = {
+            { t = "@i18n(app.modules.esc_tools.mfg.ztw.gov)@",       activeFieldPos = 2,  type = 1, mspapi = 1, apikey = "governor" },
+            { t = "@i18n(app.modules.esc_tools.mfg.ztw.gov_p)@",     activeFieldPos = 6,  mspapi = 1, apikey = "gov_p" },
+            { t = "@i18n(app.modules.esc_tools.mfg.ztw.gov_i)@",      activeFieldPos = 7,  mspapi = 1, apikey = "gov_i" },
+            { t = "@i18n(app.modules.esc_tools.mfg.ztw.motor_poles)@", activeFieldPos = 17, mspapi = 1, apikey = "motor_poles" }
+        }
+    }
 }
 
 for i = #apidata.formdata.fields, 1, -1 do

@@ -3,6 +3,23 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+    title               : string          -- (Optional) Title text displayed above or below the value
+    titlepos            : string          -- "top" or "bottom" (default)
+    titlealign          : string          -- "center", "left", or "right"
+    titlefont           : font            -- Font for title (e.g., FONT_L)
+    titlespacing        : number          -- Vertical gap between title and value (pixels)
+    titlecolor          : color           -- Title text color
+    titlepadding        : number          -- Padding for title (all sides)
+    font                : font            -- Font for value (e.g., FONT_XL)
+    valuealign          : string          -- "center", "left", or "right"
+    textcolor           : color           -- Value text color
+    valuepadding        : number          -- Padding for value (all sides)
+    bgcolor             : color           -- Widget background color
+    novalue             : string          -- Text to show if sensors unavailable (default: "-")
+    source              : string          -- "current", "min", "max", or "avg" (default: "current")
+]]
+
 local rfsuite = require("rfsuite")
 
 local render = {}

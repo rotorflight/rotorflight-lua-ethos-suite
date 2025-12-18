@@ -14,9 +14,20 @@ if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable =
 
 local rows
 if rfsuite.utils.apiVersionCompare(">=", "12.08") then
-    rows = {"@i18n(app.modules.rates_advanced.response_time)@", "@i18n(app.modules.rates_advanced.acc_limit)@", "@i18n(app.modules.rates_advanced.setpoint_boost_gain)@", "@i18n(app.modules.rates_advanced.setpoint_boost_cutoff)@", "@i18n(app.modules.rates_advanced.dyn_ceiling_gain)@", "@i18n(app.modules.rates_advanced.dyn_deadband_gain)@", "@i18n(app.modules.rates_advanced.dyn_deadband_filter)@"}
+    rows = {
+        "@i18n(app.modules.rates_advanced.response_time)@",
+        "@i18n(app.modules.rates_advanced.acc_limit)@",
+        "@i18n(app.modules.rates_advanced.setpoint_boost_gain)@",
+        "@i18n(app.modules.rates_advanced.setpoint_boost_cutoff)@",
+        "@i18n(app.modules.rates_advanced.dyn_ceiling_gain)@",
+        "@i18n(app.modules.rates_advanced.dyn_deadband_gain)@",
+        "@i18n(app.modules.rates_advanced.dyn_deadband_filter)@"
+    }
 else
-    rows = {"@i18n(app.modules.rates_advanced.response_time)@", "@i18n(app.modules.rates_advanced.acc_limit)@"}
+    rows = {
+        "@i18n(app.modules.rates_advanced.response_time)@",
+        "@i18n(app.modules.rates_advanced.acc_limit)@"
+    }
 end
 
 local apidata = {
@@ -25,15 +36,32 @@ local apidata = {
         name = "@i18n(app.modules.rates_advanced.dynamics)@",
         labels = {},
         rows = rows,
-        cols = {"@i18n(app.modules.rates_advanced.roll)@", "@i18n(app.modules.rates_advanced.pitch)@", "@i18n(app.modules.rates_advanced.yaw)@", "@i18n(app.modules.rates_advanced.col)@"},
+        cols = {
+            "@i18n(app.modules.rates_advanced.roll)@",
+            "@i18n(app.modules.rates_advanced.pitch)@",
+            "@i18n(app.modules.rates_advanced.yaw)@",
+            "@i18n(app.modules.rates_advanced.col)@"
+        },
         fields = {
-
-            {row = 1, col = 1, mspapi = 1, apikey = "response_time_1"}, {row = 1, col = 2, mspapi = 1, apikey = "response_time_2"}, {row = 1, col = 3, mspapi = 1, apikey = "response_time_3"}, {row = 1, col = 4, mspapi = 1, apikey = "response_time_4"}, {row = 2, col = 1, mspapi = 1, apikey = "accel_limit_1"}, {row = 2, col = 2, mspapi = 1, apikey = "accel_limit_2"}, {row = 2, col = 3, mspapi = 1, apikey = "accel_limit_3"}, {row = 2, col = 4, mspapi = 1, apikey = "accel_limit_4"},
-
-            {row = 3, col = 1, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08}, {row = 3, col = 2, mspapi = 1, apikey = "setpoint_boost_gain_2", apiversiongte = 12.08}, {row = 3, col = 3, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = 12.08}, {row = 3, col = 4, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = 12.08}, {row = 4, col = 1, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = 12.08},
-            {row = 4, col = 2, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = 12.08}, {row = 4, col = 3, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = 12.08}, {row = 4, col = 4, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = 12.08}, {row = 5, col = 3, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08}, {row = 6, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
+            {row = 1, col = 1, mspapi = 1, apikey = "response_time_1"},
+            {row = 1, col = 2, mspapi = 1, apikey = "response_time_2"},
+            {row = 1, col = 3, mspapi = 1, apikey = "response_time_3"},
+            {row = 1, col = 4, mspapi = 1, apikey = "response_time_4"},
+            {row = 2, col = 1, mspapi = 1, apikey = "accel_limit_1"},
+            {row = 2, col = 2, mspapi = 1, apikey = "accel_limit_2"},
+            {row = 2, col = 3, mspapi = 1, apikey = "accel_limit_3"},
+            {row = 2, col = 4, mspapi = 1, apikey = "accel_limit_4"},
+            {row = 3, col = 1, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08},
+            {row = 3, col = 2, mspapi = 1, apikey = "setpoint_boost_gain_2", apiversiongte = 12.08},
+            {row = 3, col = 3, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = 12.08},
+            {row = 3, col = 4, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = 12.08},
+            {row = 4, col = 1, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = 12.08},
+            {row = 4, col = 2, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = 12.08},
+            {row = 4, col = 3, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = 12.08},
+            {row = 4, col = 4, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = 12.08},
+            {row = 5, col = 3, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
+            {row = 6, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
             {row = 7, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08}
-
         }
     }
 }
