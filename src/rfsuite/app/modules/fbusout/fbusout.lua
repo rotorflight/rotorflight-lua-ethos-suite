@@ -1,0 +1,175 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+local FBUS_FUNCTIONMASK = 524288
+local triggerOverRide = false
+local triggerOverRideAll = false
+local lastServoCountTime = os.clock()
+local enableWakeup = false
+local wakeupScheduler = os.clock()
+local validSerialConfig = false
+
+local function openPage(pidx, title, script)
+
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+
+    rfsuite.app.triggers.isReady = false
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+
+    form.clear()
+
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
+
+    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
+        rfsuite.preferences.general.iconsize = 1
+    else
+        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
+    end
+
+    local w, h = lcd.getWindowSize()
+    local windowWidth = w
+    local windowHeight = h
+    local padding = rfsuite.app.radio.buttonPadding
+
+    local sc
+    local panel
+
+    local buttonW = 100
+    local x = windowWidth - buttonW - 10
+
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.fbusout.title)@" .. "")
+
+    local buttonW
+    local buttonH
+    local padding
+    local numPerRow
+
+    if rfsuite.preferences.general.iconsize == 0 then
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonH = rfsuite.app.radio.navbuttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+
+    if rfsuite.preferences.general.iconsize == 1 then
+
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = rfsuite.app.radio.buttonWidthSmall
+        buttonH = rfsuite.app.radio.buttonHeightSmall
+        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+    end
+
+    if rfsuite.preferences.general.iconsize == 2 then
+
+        padding = rfsuite.app.radio.buttonPadding
+        buttonW = rfsuite.app.radio.buttonWidth
+        buttonH = rfsuite.app.radio.buttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+
+    local lc = 0
+    local bx = 0
+    local y = 0
+
+    if rfsuite.app.gfx_buttons["fbuschannel"] == nil then rfsuite.app.gfx_buttons["fbuschannel"] = {} end
+    if rfsuite.preferences.menulastselected["fbuschannel"] == nil then rfsuite.preferences.menulastselected["fbuschannel"] = 0 end
+    if rfsuite.currentFbusServoIndex == nil then rfsuite.currentFbusServoIndex = 0 end
+
+    for pidx = 0, 15 do
+
+        if lc == 0 then
+            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+        end
+
+        if lc >= 0 then bx = (buttonW + padding) * lc end
+
+        if rfsuite.preferences.general.iconsize ~= 0 then
+            if rfsuite.app.gfx_buttons["fbuschannel"][pidx] == nil then rfsuite.app.gfx_buttons["fbuschannel"][pidx] = lcd.loadMask("app/modules/fbusout/gfx/ch" .. tostring(pidx + 1) .. ".png") end
+        else
+            rfsuite.app.gfx_buttons["fbuschannel"][pidx] = nil
+        end
+
+        rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = "@i18n(app.modules.fbusout.channel_prefix)@" .. "" .. tostring(pidx + 1),
+            icon = rfsuite.app.gfx_buttons["fbuschannel"][pidx],
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                rfsuite.preferences.menulastselected["fbuschannel"] = pidx
+                rfsuite.currentFbusServoIndex = pidx
+                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.fbusout.channel_page)@" .. "" .. tostring(rfsuite.currentFbusServoIndex + 1), "fbusout/fbusout_tool.lua")
+            end
+        })
+
+        rfsuite.app.formFields[pidx]:enable(false)
+
+        lc = lc + 1
+        if lc == numPerRow then lc = 0 end
+
+    end
+
+    rfsuite.app.triggers.closeProgressLoader = true
+    rfsuite.app.triggers.closeProgressLoaderNoisProcessed = true
+
+    enableWakeup = true
+
+    return
+end
+
+local function processSerialConfig(data) for i, v in ipairs(data) do if v.functionMask == FBUS_FUNCTIONMASK then validSerialConfig = true end end end
+
+local function getSerialConfig()
+    local message = {
+        command = 54,
+        processReply = function(self, buf)
+            local data = {}
+
+            buf.offset = 1
+            for i = 1, 6 do
+                data[i] = {}
+                data[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
+                data[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            end
+
+            processSerialConfig(data)
+        end,
+        simulatorResponse = {20 , 1  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 0  , 0  , 0  , 8  , 0  , 5  , 4  , 0  , 5  , 1  , 0  , 4  , 0  , 0  , 5  , 4  , 0  , 5  , 2  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 3  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 4  , 64 , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 5  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  }
+    }
+    rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+local function wakeup()
+
+    if enableWakeup == true and validSerialConfig == false then
+
+        local now = os.clock()
+        if (now - wakeupScheduler) >= 0.5 then
+            wakeupScheduler = now
+
+            getSerialConfig()
+
+        end
+    elseif enableWakeup == true and validSerialConfig == true then
+        for pidx = 0, 15 do
+            rfsuite.app.formFields[pidx]:enable(true)
+            if rfsuite.preferences.menulastselected["fbuschannel"] == rfsuite.currentFbusServoIndex then rfsuite.app.formFields[rfsuite.currentFbusServoIndex]:focus() end
+        end
+
+    end
+
+end
+
+return {title = "Fbus Out", openPage = openPage, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

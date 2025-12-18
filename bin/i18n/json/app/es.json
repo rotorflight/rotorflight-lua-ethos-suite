@@ -2616,6 +2616,143 @@
         "needs_translation": false
       }
     },
+    "fbusout": {
+      "title": {
+        "english": "FBUS Output",
+        "translation": "FBUS Output",
+        "needs_translation": true
+      },
+      "help_fields_source": {
+        "english": "Source id for the mix, counting from 0-15.",
+        "translation": "Source id for the mix, counting from 0-15.",
+        "needs_translation": true
+      },
+      "help_default_p4": {
+        "english": "- For motors, use 0, 1000.",
+        "translation": "- For motors, use 0, 1000.",
+        "needs_translation": true
+      },
+      "ch_prefix": {
+        "english": "CH",
+        "translation": "CH",
+        "needs_translation": true
+      },
+      "channel_prefix": {
+        "english": "CHANNEL ",
+        "translation": "CHANNEL ",
+        "needs_translation": true
+      },
+      "saving": {
+        "english": "Saving",
+        "translation": "Saving",
+        "needs_translation": true
+      },
+      "name": {
+        "english": "FBUS Out",
+        "translation": "FBUS Out",
+        "needs_translation": true
+      },
+      "channel_page": {
+        "english": "Fbus out / CH",
+        "translation": "Fbus out / CH",
+        "needs_translation": true
+      },
+      "receiver": {
+        "english": "Receiver",
+        "translation": "Receiver",
+        "needs_translation": true
+      },
+      "servo": {
+        "english": "Servo",
+        "translation": "Servo",
+        "needs_translation": true
+      },
+      "type": {
+        "english": "Type",
+        "translation": "Type",
+        "needs_translation": true
+      },
+      "saving_data": {
+        "english": "Saving data...",
+        "translation": "Saving data...",
+        "needs_translation": true
+      },
+      "help_fields_max": {
+        "english": "The maximum pwm value to send",
+        "translation": "The maximum pwm value to send",
+        "needs_translation": true
+      },
+      "motor": {
+        "english": "Motor",
+        "translation": "Motor",
+        "needs_translation": true
+      },
+      "help_default_p5": {
+        "english": "- Or you can customize your own mapping.",
+        "translation": "- Or you can customize your own mapping.",
+        "needs_translation": true
+      },
+      "help_default_p1": {
+        "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "translation": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "needs_translation": true
+      },
+      "max": {
+        "english": "Max",
+        "translation": "Max",
+        "needs_translation": true
+      },
+      "save_prompt": {
+        "english": "Save current page to flight controller?",
+        "translation": "Save current page to flight controller?",
+        "needs_translation": true
+      },
+      "help_fields_min": {
+        "english": "The minimum pwm value to send.",
+        "translation": "The minimum pwm value to send.",
+        "needs_translation": true
+      },
+      "mixer": {
+        "english": "Mixer",
+        "translation": "Mixer",
+        "needs_translation": true
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": true
+      },
+      "cancel": {
+        "english": "CANCEL",
+        "translation": "CANCEL",
+        "needs_translation": true
+      },
+      "help_default_p2": {
+        "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "translation": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "needs_translation": true
+      },
+      "save_settings": {
+        "english": "Save settings",
+        "translation": "Save settings",
+        "needs_translation": true
+      },
+      "min": {
+        "english": "Min",
+        "translation": "Min",
+        "needs_translation": true
+      },
+      "help_default_p3": {
+        "english": "- For mixer rules, use -1000, 1000.",
+        "translation": "- For mixer rules, use -1000, 1000.",
+        "needs_translation": true
+      },
+      "source": {
+        "english": "Source",
+        "translation": "Source",
+        "needs_translation": true
+      }
+    },
     "profile_rescue": {
       "help_p4": {
         "english": "Hover: How much collective to maintain a steady hover.",
