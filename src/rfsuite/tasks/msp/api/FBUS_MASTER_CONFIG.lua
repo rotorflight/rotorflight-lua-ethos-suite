@@ -6,7 +6,7 @@
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
-local API_NAME = "FBUS_OUTPUT_CONFIG"
+local API_NAME = "FBUS_MASTER_CONFIG"
 local MSP_API_CMD_READ = 156
 local MSP_API_CMD_WRITE = 157
 local MSP_REBUILD_ON_WRITE = true

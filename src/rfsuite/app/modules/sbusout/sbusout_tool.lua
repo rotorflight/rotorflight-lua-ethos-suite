@@ -156,4 +156,6 @@ local function wakeup()
     end
 end
 
-return {apidata = apidata, reboot = false, eepromWrite = true, postLoad = postLoad, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, setMinMaxIndex = setMinMaxIndex, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}, event = event, API = {}}
+local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
+
+return {apidata = apidata, reboot = false, eepromWrite = true, postLoad = postLoad, onNavMenu = onNavMenu, onReloadMenu = onReloadMenu, onSaveMenu = onSaveMenu, setMinMaxIndex = setMinMaxIndex, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}, event = event, API = {}}
