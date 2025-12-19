@@ -51,8 +51,8 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixIndex)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixType)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixSource)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, mixMin)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, mixMax)
+    rfsuite.tasks.msp.mspHelper.writeS16(message.payload, mixMin)
+    rfsuite.tasks.msp.mspHelper.writeS16(message.payload, mixMax)
 
     rfsuite.tasks.msp.mspQueue:add(message)
 
