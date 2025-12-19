@@ -11,7 +11,7 @@ local MSP_API_CMD_READ = 156
 local MSP_API_CMD_WRITE = 157
 local MSP_REBUILD_ON_WRITE = true
 
-local function generateSbusApiStructure(numChannels)
+local function generateFbusApiStructure(numChannels)
     local structure = {}
 
     for i = 1, numChannels do
@@ -24,9 +24,15 @@ local function generateSbusApiStructure(numChannels)
     return structure
 end
 
-local MSP_API_STRUCTURE_READ_DATA = generateSbusApiStructure(16)
+local MSP_API_STRUCTURE_READ_DATA = generateFbusApiStructure(16)
 
-local MSP_API_STRUCTURE_WRITE = {{field = "target_channel", type = "U8", apiVersion = 12.06}, {field = "source_type", type = "U8", apiVersion = 12.06}, {field = "source_index", type = "U8", apiVersion = 12.06}, {field = "source_range_low", type = "S16", apiVersion = 12.06}, {field = "source_range_high", type = "S16", apiVersion = 12.06}}
+local MSP_API_STRUCTURE_WRITE = {
+    {field = "target_channel", type = "U8", apiVersion = 12.09},
+    {field = "source_type", type = "U8", apiVersion = 12.09},
+    {field = "source_index", type = "U8", apiVersion = 12.09},
+    {field = "source_range_low", type = "S16", apiVersion = 12.09},
+    {field = "source_range_high", type = "S16", apiVersion = 12.09}
+}
 
 local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
