@@ -47,7 +47,7 @@ local function saveServoSettings(self)
     local mixMin = math.floor(rfsuite.app.Page.apidata.formdata.fields[3].value)
     local mixMax = math.floor(rfsuite.app.Page.apidata.formdata.fields[4].value)
 
-    local message = {command = 153, payload = {}}
+    local message = {command = 153, payload = {}, processReply = function() end}
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixIndex)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixType)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixSource)
@@ -56,7 +56,7 @@ local function saveServoSettings(self)
 
     rfsuite.tasks.msp.mspQueue:add(message)
 
-    local mspEepromWrite = {command = 153, simulatorResponse = {}}
+    local mspEepromWrite = {command = 250, simulatorResponse = {}, processReply = function() end}
     rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
 
 end
