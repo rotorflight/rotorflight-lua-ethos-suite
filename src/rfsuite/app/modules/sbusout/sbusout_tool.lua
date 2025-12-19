@@ -56,9 +56,6 @@ local function saveServoSettings(self)
 
     rfsuite.tasks.msp.mspQueue:add(message)
 
-    local mspEepromWrite = {command = 250, simulatorResponse = {}, processReply = function() end}
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
-
 end
 
 local function onSaveMenuProgress()
