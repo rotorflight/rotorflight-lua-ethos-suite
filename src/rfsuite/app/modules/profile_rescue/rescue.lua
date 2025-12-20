@@ -22,8 +22,8 @@ local apidata = {
             {t = "",                                              label = 7, inline_size = 40.15}
         },
         fields = {
-            {t = "@i18n(app.modules.profile_rescue.mode_enable)@",       inline = 1, label = 0, mspapi = 1, apikey = "rescue_mode"},
-            {t = "@i18n(app.modules.profile_rescue.flip_upright)@",      inline = 1, label = 0, mspapi = 1, apikey = "rescue_flip_mode"},
+            {t = "@i18n(app.modules.profile_rescue.mode_enable)@",       inline = 1, type = 1, mspapi = 1, apikey = "rescue_mode"},
+            {t = "@i18n(app.modules.profile_rescue.flip_upright)@",      inline = 1, type = 1, mspapi = 1, apikey = "rescue_flip_mode"},
             {t = "@i18n(app.modules.profile_rescue.collective)@",        inline = 2, label = 1, mspapi = 1, apikey = "rescue_pull_up_collective"},
             {t = "@i18n(app.modules.profile_rescue.time)@",              inline = 1, label = 1, mspapi = 1, apikey = "rescue_pull_up_time"},
             {t = "@i18n(app.modules.profile_rescue.collective)@",        inline = 2, label = 2, mspapi = 1, apikey = "rescue_climb_collective"},
