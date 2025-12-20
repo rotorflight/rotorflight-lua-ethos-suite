@@ -414,15 +414,6 @@ local function mspSuccess() end
 
 local function mspRetry() end
 
-local function mspTimeout()
-    rfsuite.utils.log("MSP operation timed out", "info")
-
-    rfsuite.app.audio.playTimeout = true
-    rfsuite.app.ui.disableAllFields()
-    rfsuite.app.ui.disableAllNavigationFields()
-    rfsuite.app.ui.enableNavigationField('menu')
-end
-
 local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
-return {apidata = apidata, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, mspTimeout = mspTimeout, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, onReloadMenu = onReloadMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}
+return {apidata = apidata, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, onReloadMenu = onReloadMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}
