@@ -272,6 +272,8 @@ local function applySettings()
         rebootFC()
     end)
     EAPI.write()
+
+    rfsuite.app.triggers.closeSaveFake = true
 end
 
 local function getDefaultSensors(sensorListFromApi)
