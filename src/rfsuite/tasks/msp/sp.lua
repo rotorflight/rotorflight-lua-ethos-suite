@@ -69,6 +69,7 @@ function transport.sportTelemetryPop()
     if not sensor then
         local activeModule = rfsuite.session.telemetryModuleNumber or 0
         sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID})
+        return nil, nil, nil, nil
     end
     local frame = sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
