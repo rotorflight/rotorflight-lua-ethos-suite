@@ -97,15 +97,10 @@ end
 -- Maintain last popped frame
 local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 
-local function sportTelemetryPop()
-    local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-    return sensorId, frameId, dataId, value
-end
-
 -- Poll FrSky telemetry for incoming MSP reply frames
 transport.mspPoll = function()
     while true do
-        local sensorId, frameId, dataId, value = sportTelemetryPop()
+        local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
         if not sensorId then return nil end
 
         -- Only process reply frames from recognized MSP sensors
