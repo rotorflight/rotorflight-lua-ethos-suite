@@ -45,6 +45,14 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
+local function splitCSV(str)
+    local t = {}
+    for part in string.gmatch(str, "([^,]+)") do
+        t[#t + 1] = part:gsub("^%s*(.-)%s*$", "%1") -- trim
+    end
+    return t
+end
+
 function render.invalidate(box) box._cfg = nil end
 
 function render.dirty(box)
@@ -101,21 +109,58 @@ function render.wakeup(box)
     local raw = telemetry and telemetry.getSensor("governor")
     local displayValue = rfsuite.utils.getGovernorState(raw)
 
+    -- Loading dots
     if raw == nil then
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
+
+        -- reset CSV state
+        box._csvParts = nil
+        box._csvIndex = nil
+        box._csvLastTick = nil
     end
 
-    if displayValue == nil or displayValue == "" then displayValue = getParam(box, "novalue") or "-" end
+    -- CSV handling
+    if type(displayValue) == "string" and string.find(displayValue, ",", 1, true) then
+        -- Initialise CSV state if new or changed
+        if box._csvRaw ~= displayValue then
+            box._csvRaw = displayValue
+            box._csvParts = splitCSV(displayValue)
+            box._csvIndex = 1
+            box._csvLastTick = os.clock()
+        end
 
-    box._dynamicTextColor = utils.resolveThresholdColor(displayValue, box, "textcolor", "textcolor") or cfg.defaultTextColor
+        -- Rotate every 1s
+        if box._csvParts and #box._csvParts > 0 then
+            local now = os.clock()
+            if now - (box._csvLastTick or 0) >= 1.5 then  -- 1.5 seconds per value
+                box._csvIndex = (box._csvIndex % #box._csvParts) + 1
+                box._csvLastTick = now
+            end
+            displayValue = box._csvParts[box._csvIndex]
+        end
+    else
+        -- Not CSV → clear state
+        box._csvParts = nil
+        box._csvIndex = nil
+        box._csvLastTick = nil
+        box._csvRaw = nil
+    end
+
+    if displayValue == nil or displayValue == "" then
+        displayValue = getParam(box, "novalue") or "-"
+    end
+
+    box._dynamicTextColor =
+        utils.resolveThresholdColor(displayValue, box, "textcolor", "textcolor")
+        or cfg.defaultTextColor
 
     box._isLoadingDots = (raw == nil)
-
     box._currentDisplayValue = displayValue
 end
+
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
