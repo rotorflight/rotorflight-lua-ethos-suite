@@ -1067,8 +1067,6 @@ end
 
 function dashboard.wakeup(widget)
 
-    if rfsuite.session and not (rfsuite.session and rfsuite.session.isConnected) then return end
-
     local now = os.clock()
     local visible = lcd.isVisible()
     local admin = rfsuite.app and rfsuite.app.guiIsRunning
