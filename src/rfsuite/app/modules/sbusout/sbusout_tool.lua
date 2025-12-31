@@ -19,11 +19,13 @@ local servoCount = rfsuite.session.servoCount or 6
 local motorCount = 1
 if rfsuite.session.tailMode == 0 then motorCount = 2 end
 
+
 local minmax = {}
-minmax[1] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}
-minmax[2] = {min = -1000, max = 1000, sourceMax = 24, defaultMin = -1000, defaultMax = 1000}
-minmax[3] = {min = 1000, max = 2000, sourceMax = servoCount, defaultMin = 1000, defaultMax = 2000}
-minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaultMax = 1000}
+minmax[0] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- none
+minmax[1] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- rx
+minmax[2] = {min = -1000, max = 1000, sourceMax = 24, defaultMin = -1000, defaultMax = 1000}        -- mixer
+minmax[3] = {min = 1000, max = 2000, sourceMax = servoCount, defaultMin = 1000, defaultMax = 2000}  -- servo
+minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaultMax = 1000}        -- motor
 
 local enableWakeup = false
 
@@ -32,12 +34,21 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.sbusout.type)@", min = 0, max = 16, mspapi = 1, apikey = "Type_" .. ch + 1, table = {[0] = "@i18n(app.modules.sbusout.receiver)@", "@i18n(app.modules.sbusout.mixer)@", "@i18n(app.modules.sbusout.servo)@", "@i18n(app.modules.sbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}, 
+            {t = "@i18n(app.modules.sbusout.type)@", min = 0, max = 16, mspapi = 1, apikey = "Type_" .. ch + 1, table = {[0] = "NONE", [1] = "@i18n(app.modules.sbusout.receiver)@", [2] = "@i18n(app.modules.sbusout.mixer)@", [3] = "@i18n(app.modules.sbusout.servo)@", [4] = "@i18n(app.modules.sbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}, 
             {t = "@i18n(app.modules.sbusout.source)@", min = 0, max = 15, mspapi = 1, apikey = "Index_" .. ch + 1, help = "sbusOutSource"},
             {t = "@i18n(app.modules.sbusout.min)@", min = -2000, max = 2000, mspapi = 1, apikey = "RangeLow_" .. ch + 1, help = "sbusOutMin"}, {t = "@i18n(app.modules.sbusout.max)@", min = -2000, max = 2000, mspapi = 1, apikey = "RangeHigh_" .. ch + 1, help = "sbusOutMax"}
         }
     }
 }
+
+local function saveToEeprom()
+    local mspEepromWrite = {
+        command = 250, 
+        simulatorResponse = {}, 
+        processReply = function() rfsuite.utils.log("EEPROM write command sent","info") end
+    }
+    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+end
 
 local function saveServoSettings(self)
 
@@ -47,7 +58,7 @@ local function saveServoSettings(self)
     local mixMin = math.floor(rfsuite.app.Page.apidata.formdata.fields[3].value)
     local mixMax = math.floor(rfsuite.app.Page.apidata.formdata.fields[4].value)
 
-    local message = {command = 153, payload = {}, processReply = function() end}
+    local message = {command = 153, payload = {}, processReply = function() saveToEeprom() end}
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixIndex)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixType)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixSource)
@@ -66,7 +77,7 @@ local function onSaveMenuProgress()
 end
 
 local function setMinMaxIndex(self)
-    minMaxIndex = math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value + 1)
+    minMaxIndex = math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value)
 
     if firstLoad == true then
         firstLoad = false
