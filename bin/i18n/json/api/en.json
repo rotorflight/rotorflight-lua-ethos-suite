@@ -1246,13 +1246,13 @@
       "needs_translation": false
     },
     "tbl_throttle_type_off_idle_on": {
-      "english": "OFF_IDLE_ON",
-      "translation": "OFF_IDLE_ON",
+      "english": "SWITCH",
+      "translation": "SWITCH",
       "needs_translation": false
     },
     "tbl_throttle_type_off_idle_auto_on": {
-      "english": "OFF_IDLE_AUTO_ON",
-      "translation": "OFF_IDLE_AUTO_ON",
+      "english": "FUNCTION",
+      "translation": "FUNCTION",
       "needs_translation": false
     },
     "governor_idle_throttle": {

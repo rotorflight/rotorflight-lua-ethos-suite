@@ -1246,12 +1246,12 @@
       "needs_translation": false
     },
     "tbl_throttle_type_off_idle_on": {
-      "english": "OFF_IDLE_ON",
+      "english": "SWITCH",
       "translation": "SPENTO_MINIMO_ACC",
       "needs_translation": false
     },
     "tbl_throttle_type_off_idle_auto_on": {
-      "english": "OFF_IDLE_AUTO_ON",
+      "english": "FUNCTION",
       "translation": "SPENTO_MINIMO_AUTO_ACC",
       "needs_translation": false
     },

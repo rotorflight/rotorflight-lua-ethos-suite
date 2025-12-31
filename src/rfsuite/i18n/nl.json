@@ -1176,12 +1176,12 @@
         "translation": "NORMAAL"
       },
       "tbl_throttle_type_off_idle_auto_on": {
-        "english": "OFF_IDLE_AUTO_ON",
+        "english": "FUNCTION",
         "needs_translation": false,
         "translation": "UIT_STATIONAIR_AUTO_AAN"
       },
       "tbl_throttle_type_off_idle_on": {
-        "english": "OFF_IDLE_ON",
+        "english": "SWITCH",
         "needs_translation": false,
         "translation": "UIT_STATIONAIR_AAN"
       },

@@ -15,8 +15,18 @@ local MSP_API_STRUCTURE_READ_DATA
 
 -- LuaFormatter off
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-    local gov_modeTable = {[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_external)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"}
-    local throttleTypeTable = {[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@", "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_auto_on)@"}
+    local gov_modeTable = {
+        [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@",
+        "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_external)@",
+        "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@",
+        "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"
+    }
+    local throttleTypeTable = {
+        [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@",
+        "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@",
+        "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@",
+        "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_auto_on)@"
+    }
 
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "gov_mode", type = "U8", apiVersion = 12.09, simResponse = {2}, min = 0, max = #gov_modeTable, table = gov_modeTable, help = "@i18n(api.GOVERNOR_CONFIG.gov_mode)@"},
@@ -25,23 +35,33 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "gov_tracking_time", type = "U16", apiVersion = 12.09, simResponse = {20, 0}, min = 0, max = 100, unit = "%/s", default = 10, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_tracking_time)@"},
         {field = "gov_recovery_time", type = "U16", apiVersion = 12.09, simResponse = {20, 0}, min = 0, max = 100, unit = "%/s", default = 21, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_recovery_time)@"},
         {field = "gov_throttle_hold_timeout", type = "U16", apiVersion = 12.09, simResponse = {50, 0}, min = 0, max = 250, unit = "s", default = 5, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_throttle_hold_timeout)@"},
-        {field = "gov_lost_headspeed_timeout", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_lost_headspeed_timeout)@"},
-        {field = "gov_autorotation_timeout", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_timeout)@"},
-        {field = "gov_autorotation_bailout_time", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_bailout_time)@"},
-        {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_min_entry_time)@"},
+        {field = "spare_0", type = "U16", apiVersion = 12.09, simResponse = {0, 0}}, 
+        {field = "gov_autorotation_timeout", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_timeout)@"},  
+        {field = "spare_1", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},
+        {field = "spare_2", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},
         {field = "gov_handover_throttle", type = "U8", apiVersion = 12.09, simResponse = {20}, min = 0, max = 50, unit = "%", default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_handover_throttle)@"},
         {field = "gov_pwr_filter", type = "U8", apiVersion = 12.09, simResponse = {20}, unit = "Hz", min = 0, max = 250, default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_pwr_filter)@"},
         {field = "gov_rpm_filter", type = "U8", apiVersion = 12.09, simResponse = {20}, unit = "Hz", min = 0, max = 250, default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_rpm_filter)@"},
         {field = "gov_tta_filter", type = "U8", apiVersion = 12.09, simResponse = {0}, unit = "Hz", min = 0, max = 250, default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_tta_filter)@"},
         {field = "gov_ff_filter", type = "U8", apiVersion = 12.09, simResponse = {10}, unit = "Hz", min = 0, max = 25, default = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_ff_filter)@"},
-        {field = "gov_spoolup_min_throttle", type = "U8", apiVersion = 12.09, simResponse = {0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_spoolup_min_throttle)@"},
+        {field = "spare_3", type = "U8", apiVersion = 12.09, simResponse = {0}},
         {field = "gov_d_filter", type = "U8", apiVersion = 12.09, simResponse = {50}, unit = "Hz", min = 0, max = 250, default = 50, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_d_filter)@"},
         {field = "gov_spooldown_time", type = "U16", apiVersion = 12.09, simResponse = {30, 0}, min = 0, max = 600, unit = "%/s", default = 100, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_spooldown_time)@"},
         {field = "gov_throttle_type", type = "U8", apiVersion = 12.09, simResponse = {0}, min = 0, max = #throttleTypeTable, table = throttleTypeTable, help = "@i18n(api.GOVERNOR_CONFIG.gov_throttle_type)@"},
-        {field = "gov_idle_collective", type = "S8", apiVersion = 12.09, simResponse = {161}, unit = "%", min = -100, max = 100, default = -95, help = "@i18n(api.GOVERNOR_CONFIG.gov_idle_collective)@"},
-        {field = "gov_wot_collective", type = "S8", apiVersion = 12.09, simResponse = {246}, unit = "%", min = -100, max = 100, default = -10, help = "@i18n(api.GOVERNOR_CONFIG.gov_wot_collective)@"},
+        {field = "spare_4", type = "S8", apiVersion = 12.09, simResponse = {0}},
+        {field = "spare_5", type = "S8", apiVersion = 12.09, simResponse = {0}},
         {field = "governor_idle_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_idle_throttle)@"},
-        {field = "governor_auto_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_auto_throttle)@"}
+        {field = "governor_auto_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_auto_throttle)@"},
+        {field = "governor_throttle_curve_1", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_2", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_3", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_4", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_5", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_6", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_7", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_8", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "governor_throttle_curve_9", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        
     }
 
 else

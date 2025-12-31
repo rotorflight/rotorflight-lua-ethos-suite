@@ -1176,12 +1176,12 @@
         "translation": "NORMAL"
       },
       "tbl_throttle_type_off_idle_auto_on": {
-        "english": "OFF_IDLE_AUTO_ON",
+        "english": "FUNCTION",
         "needs_translation": false,
         "translation": "ARRET_RALENTI_AUTO_ALLUME"
       },
       "tbl_throttle_type_off_idle_on": {
-        "english": "OFF_IDLE_ON",
+        "english": "SWITCH",
         "needs_translation": false,
         "translation": "ARRET_RALENTI_ALLUME"
       },
