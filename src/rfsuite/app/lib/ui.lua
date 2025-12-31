@@ -28,6 +28,8 @@ function ui.progressDisplay(title, message, speed)
         app.dialogs.progressSpeed = false
     end
 
+    local reachedTimeout = false
+
     app.dialogs.progressDisplay = true
     app.dialogs.progressWatchDog = os.clock()
     app.dialogs.progress = form.openProgressDialog({
@@ -74,7 +76,8 @@ function ui.progressDisplay(title, message, speed)
                 end
             end
 
-            if app.dialogs.progressWatchDog and tasks.msp and (os.clock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true then
+            if app.dialogs.progressWatchDog and tasks.msp and (os.clock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and reachedTimeout == false then
+                reachedTimeout = true
                 app.audio.playTimeout = true
                 app.dialogs.progress:message("@i18n(app.error_timed_out)@")
                 app.dialogs.progress:closeAllowed(true)
@@ -84,6 +87,11 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressCounter = 0
                 app.dialogs.progressSpeed = false
                 app.dialogs.progressDisplay = false
+
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')                
+
             end
 
             if not tasks.msp then
@@ -107,6 +115,8 @@ end
 
 function ui.progressDisplaySave(message)
     local app = rfsuite.app
+
+    local reachedTimeout = false
 
     app.dialogs.saveDisplay = true
     app.dialogs.saveWatchDog = os.clock()
@@ -156,8 +166,8 @@ function ui.progressDisplaySave(message)
             end
 
             local timeout = tonumber(tasks.msp.protocol.saveTimeout + 5)
-            if (app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout) or (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed()) and app.dialogs.saveDisplay == true then
-
+            if (app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout) and reachedTimeout == false or (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed()) and app.dialogs.saveDisplay == true and reachedTimeout == false then
+                reachedTimeout = true
                 app.audio.playTimeout = true
                 app.dialogs.save:message("@i18n(app.error_timed_out)@")
                 app.dialogs.save:closeAllowed(true)

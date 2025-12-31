@@ -160,10 +160,6 @@ function MspQueueController:processQueue()
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
-        if cmd then
-            local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
-            if LOG_ENABLED_MSP() then rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err) end
-        end
     end
 
     -- Per-message timeout

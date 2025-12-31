@@ -69,6 +69,7 @@ function transport.sportTelemetryPop()
     if not sensor then
         local activeModule = rfsuite.session.telemetryModuleNumber or 0
         sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID})
+        return nil, nil, nil, nil
     end
     local frame = sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
@@ -97,15 +98,10 @@ end
 -- Maintain last popped frame
 local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 
-local function sportTelemetryPop()
-    local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-    return sensorId, frameId, dataId, value
-end
-
 -- Poll FrSky telemetry for incoming MSP reply frames
 transport.mspPoll = function()
     while true do
-        local sensorId, frameId, dataId, value = sportTelemetryPop()
+        local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
         if not sensorId then return nil end
 
         -- Only process reply frames from recognized MSP sensors

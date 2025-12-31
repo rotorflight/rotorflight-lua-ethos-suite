@@ -232,15 +232,33 @@ end
 local function mspPollReply()
     local budget = pollBudget() or 0.1
     local startTime = os.clock()
+
+    local MAX_NIL_POLLS = 100
+    local nilPolls = 0
+
     while os.clock() - startTime < budget do
         local pkt = proto().mspPoll()
-        if pkt and _receivedReply(pkt) then
-            mspLastReq = 0
-            return mspRxReq, mspRxBuf, mspRxError
+
+        if pkt == nil then
+            nilPolls = nilPolls + 1
+            if nilPolls >= MAX_NIL_POLLS then
+                -- early exit due to too many nil polls
+                return nil, nil, nil
+            end
+        else
+            -- reset counter once we get something
+            nilPolls = 0
+
+            if _receivedReply(pkt) then
+                mspLastReq = 0
+                return mspRxReq, mspRxBuf, mspRxError
+            end
         end
     end
+
     return nil, nil, nil
 end
+
 
 return {
     setProtocolVersion = setProtocolVersion,

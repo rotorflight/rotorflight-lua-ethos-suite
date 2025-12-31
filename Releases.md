@@ -1,3 +1,22 @@
+# 2.3.0-20251221
+
+Snapshot release of Ethos Suite
+
+- Fix bug in s.port msp communication
+- Guard / Prevent repeat audio playing in certain odd alert situations
+- Fbus out configuration
+- Fix sensor support for RF2.1
+
+# 2.3.0-20251214
+
+Snapshot release of Ethos Suite
+
+ - Support for ZTW and OMP Fwd Programming
+ - MSP protocol improvements
+ - Improve cpu load on radio (disk churn)
+ - Improve elrs telemetry (cpu load)
+ - Various minor fixes
+
 # 2.3.0-20251111
 
 Snapshot release of Ethos Suite.

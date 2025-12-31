@@ -36,9 +36,13 @@ local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
 
-elrs.publishBudgetPerFrame = 80
+elrs.publishBudgetPerFrame = 50  -- If everything works this should never be reached.  we use it as a safeguard.
 
-local META_UID = {[0xEE01] = true, [0xEE02] = true}
+local META_UID = {
+    [0xEE01] = true, 
+    [0xEE02] = true,
+    [0xEE03] = true
+}
 
 elrs.strictUntilConfig = false
 
@@ -548,6 +552,8 @@ local sensorsList = {
 elrs.telemetryFrameId = 0
 elrs.telemetryFrameSkip = 0
 elrs.telemetryFrameCount = 0
+elrs._lastFrameMs = nil
+elrs._haveFrameId = false
 
 function elrs.crossfirePop()
 
@@ -569,10 +575,25 @@ function elrs.crossfirePop()
             rebuildRelevantSidSet()
 
             fid, ptr = decU8(data, ptr)
-            local delta = (fid - elrs.telemetryFrameId) & 0xFF
-            if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
+            if elrs._haveFrameId then
+                local delta = (fid - elrs.telemetryFrameId) & 0xFF
+                if delta > 1 then
+                    elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + (delta - 1)
+                end
+            else
+                -- First frame after (re)connect: establish baseline, don’t count skips.
+                elrs._haveFrameId = true
+            end
             elrs.telemetryFrameId = fid
             elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
+
+            -- Frame timing (ms between received custom telemetry frames)
+            local tnow = nowMs()
+            if elrs._lastFrameMs ~= nil then
+                local dt = tnow - elrs._lastFrameMs
+                setTelemetryValue(0xEE03, 0, 0, dt, UNIT_MILLISECOND, 0, "Frame Δms", 0, 60000)
+            end
+            elrs._lastFrameMs = tnow
 
             local published = 0
             while ptr < #data do
@@ -587,9 +608,11 @@ function elrs.crossfirePop()
                     ptr = np or prev
                     if ptr <= prev then break end
 
-                    if v and published < (elrs.publishBudgetPerFrame or 40) then
-                        setTelemetryValue(sid, 0, 0, v, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
-                        published = published + 1
+                    if v then
+                        if published < (elrs.publishBudgetPerFrame or 40) then
+                            setTelemetryValue(sid, 0, 0, v, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
+                            published = published + 1
+                        end
                     end
                 else
                     break
@@ -625,6 +648,11 @@ function elrs.reset()
     elrs._relevantSidSet = nil
     elrs._relevantSig = nil
     _lastSlotsSig = nil
+    elrs.telemetryFrameId = 0
+    elrs.telemetryFrameSkip = 0
+    elrs.telemetryFrameCount = 0
+    elrs._lastFrameMs = nil
+    elrs._haveFrameId = false    
 end
 
 return elrs

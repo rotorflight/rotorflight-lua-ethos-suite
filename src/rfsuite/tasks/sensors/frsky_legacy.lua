@@ -9,6 +9,7 @@ local arg = {...}
 local config = arg[1]
 local cacheExpireTime = 10
 local lastCacheFlushTime = os.clock()
+local sensorTlm
 
 local frsky_legacy = {}
 
@@ -124,7 +125,15 @@ end
 
 local function telemetryPop()
 
-    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
+    if not sensorTlm then
+        sensorTlm = sport.getSensor()
+        sensorTlm:module(rfsuite.session.telemetrySensor:module())
+
+        if not sensorTlm then return false end
+    end    
+
+    local frame = sensorTlm:popFrame()
+
     if frame == nil then return false end
 
     if not frame.physId or not frame.primId then return end
@@ -150,7 +159,9 @@ function frsky_legacy.wakeup()
 
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
+         while telemetryPop() do end
+    end
 
 end
 

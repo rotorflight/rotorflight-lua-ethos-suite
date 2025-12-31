@@ -3337,6 +3337,143 @@
           "translation": "Unsupported"
         }
       },
+      "fbusout": {
+        "cancel": {
+          "english": "CANCEL",
+          "needs_translation": false,
+          "translation": "CANCEL"
+        },
+        "ch_prefix": {
+          "english": "CH",
+          "needs_translation": false,
+          "translation": "CH"
+        },
+        "channel_page": {
+          "english": "Fbus out / CH",
+          "needs_translation": false,
+          "translation": "Fbus out / CH"
+        },
+        "channel_prefix": {
+          "english": "CHANNEL ",
+          "needs_translation": false,
+          "translation": "CHANNEL "
+        },
+        "help_default_p1": {
+          "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+          "needs_translation": false,
+          "translation": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port."
+        },
+        "help_default_p2": {
+          "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+          "needs_translation": false,
+          "translation": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos."
+        },
+        "help_default_p3": {
+          "english": "- For mixer rules, use -1000, 1000.",
+          "needs_translation": false,
+          "translation": "- For mixer rules, use -1000, 1000."
+        },
+        "help_default_p4": {
+          "english": "- For motors, use 0, 1000.",
+          "needs_translation": false,
+          "translation": "- For motors, use 0, 1000."
+        },
+        "help_default_p5": {
+          "english": "- Or you can customize your own mapping.",
+          "needs_translation": false,
+          "translation": "- Or you can customize your own mapping."
+        },
+        "help_fields_max": {
+          "english": "The maximum pwm value to send",
+          "needs_translation": false,
+          "translation": "The maximum pwm value to send"
+        },
+        "help_fields_min": {
+          "english": "The minimum pwm value to send.",
+          "needs_translation": false,
+          "translation": "The minimum pwm value to send."
+        },
+        "help_fields_source": {
+          "english": "Source id for the mix, counting from 0-15.",
+          "needs_translation": false,
+          "translation": "Source id for the mix, counting from 0-15."
+        },
+        "max": {
+          "english": "Max",
+          "needs_translation": false,
+          "translation": "Max"
+        },
+        "min": {
+          "english": "Min",
+          "needs_translation": false,
+          "translation": "Min"
+        },
+        "mixer": {
+          "english": "Mixer",
+          "needs_translation": false,
+          "translation": "Mixer"
+        },
+        "motor": {
+          "english": "Motor",
+          "needs_translation": false,
+          "translation": "Motor"
+        },
+        "name": {
+          "english": "FBUS Out",
+          "needs_translation": false,
+          "translation": "FBUS Out"
+        },
+        "ok": {
+          "english": "OK",
+          "needs_translation": false,
+          "translation": "OK"
+        },
+        "receiver": {
+          "english": "Receiver",
+          "needs_translation": false,
+          "translation": "Receiver"
+        },
+        "save_prompt": {
+          "english": "Save current page to flight controller?",
+          "needs_translation": false,
+          "translation": "Save current page to flight controller?"
+        },
+        "save_settings": {
+          "english": "Save settings",
+          "needs_translation": false,
+          "translation": "Save settings"
+        },
+        "saving": {
+          "english": "Saving",
+          "needs_translation": false,
+          "translation": "Saving"
+        },
+        "saving_data": {
+          "english": "Saving data...",
+          "needs_translation": false,
+          "translation": "Saving data..."
+        },
+        "servo": {
+          "english": "Servo",
+          "needs_translation": false,
+          "translation": "Servo"
+        },
+        "source": {
+          "english": "Source",
+          "needs_translation": false,
+          "translation": "Source"
+        },
+        "title": {
+          "english": "FBUS Output",
+          "needs_translation": true,
+          "translation": "FBUS Output"
+        },
+        "type": {
+          "english": "Type",
+          "needs_translation": false,
+          "translation": "Type"
+        }
+      },
       "filters": {
         "center": {
           "english": "Center",

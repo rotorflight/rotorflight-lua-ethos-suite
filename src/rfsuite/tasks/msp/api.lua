@@ -9,9 +9,9 @@ local apiLoader = {}
 
 -- Caches to avoid repeated disk checks and module loads
 apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
-apiLoader._apiCache        = apiLoader._apiCache or {}
-apiLoader._apiCacheOrder   = apiLoader._apiCacheOrder or {} -- MRU list
-apiLoader._apiCacheMax     = apiLoader._apiCacheMax or 10    -- Max cached modules
+apiLoader._chunkCache      = apiLoader._chunkCache or {}      -- apiName -> compiled loader function
+apiLoader._chunkCacheOrder = apiLoader._chunkCacheOrder or {} -- MRU list (optional)
+apiLoader._chunkCacheMax   = apiLoader._chunkCacheMax or 5    -- optional cap
 
 local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api/"
 local api_path = apidir
@@ -21,6 +21,37 @@ local firstLoadAPI = true -- Used to lazily bind helper references
 local mspHelper
 local utils
 local callback
+
+-- Retrieve (and cache) compiled chunk for an API module
+local function getChunk(apiName, apiFilePath)
+    local chunk = apiLoader._chunkCache[apiName]
+    if chunk then
+        -- MRU touch (optional)
+        for i, name in ipairs(apiLoader._chunkCacheOrder) do
+            if name == apiName then table.remove(apiLoader._chunkCacheOrder, i); break end
+        end
+        table.insert(apiLoader._chunkCacheOrder, apiName)
+        return chunk
+    end
+
+    -- Compile from disk once
+    local loaderFn, err = loadfile(apiFilePath)
+    if not loaderFn then
+        utils.log("Error compiling API '" .. apiName .. "': " .. tostring(err), "debug")
+        return nil
+    end
+
+    apiLoader._chunkCache[apiName] = loaderFn
+    table.insert(apiLoader._chunkCacheOrder, apiName)
+
+    -- Enforce max (optional)
+    if #apiLoader._chunkCacheOrder > apiLoader._chunkCacheMax then
+        local oldest = table.remove(apiLoader._chunkCacheOrder, 1)
+        apiLoader._chunkCache[oldest] = nil
+    end
+
+    return loaderFn
+end
 
 -- Cached file-exists wrapper
 local function cached_file_exists(path)
@@ -45,7 +76,14 @@ local function loadAPI(apiName)
 
     -- Check file before loading
     if cached_file_exists(apiFilePath) then
-        local apiModule = dofile(apiFilePath)
+        local chunk = getChunk(apiName, apiFilePath)
+        if not chunk then return nil end
+
+        local ok, apiModule = pcall(chunk)
+        if not ok then
+            utils.log("Error running API '" .. apiName .. "': " .. tostring(apiModule), "debug")
+            return nil
+        end
 
         -- Valid API modules must expose read or write
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
@@ -89,36 +127,14 @@ function apiLoader.clearFileExistsCache()
     apiLoader._fileExistsCache = {}
 end
 
--- Load an API module with caching (LRU-like)
+-- Load an API module
 function apiLoader.load(apiName)
-    local cached = apiLoader._apiCache[apiName]
-    if cached then
-        -- Move to MRU position
-        for i, name in ipairs(apiLoader._apiCacheOrder) do
-            if name == apiName then
-                table.remove(apiLoader._apiCacheOrder, i)
-                break
-            end
-        end
-        table.insert(apiLoader._apiCacheOrder, apiName)
-        return cached
-    end
 
     -- Load from disk
     local api = loadAPI(apiName)
     if api == nil then
         utils.log("Unable to load " .. apiName, "debug")
         return nil
-    end
-
-    -- Add to cache
-    apiLoader._apiCache[apiName] = api
-    table.insert(apiLoader._apiCacheOrder, apiName)
-
-    -- Enforce max cache size (drop oldest)
-    if #apiLoader._apiCacheOrder > apiLoader._apiCacheMax then
-        local oldest = table.remove(apiLoader._apiCacheOrder, 1)
-        apiLoader._apiCache[oldest] = nil
     end
 
     return api
@@ -151,6 +167,12 @@ function apiLoader.resetApidata()
     end
 
     apiLoader.apidata = {}
+end
+
+-- Clear cached compiled chunks
+function apiLoader.clearChunkCache()
+    apiLoader._chunkCache = {}
+    apiLoader._chunkCacheOrder = {}
 end
 
 apiLoader.apidata = {}
