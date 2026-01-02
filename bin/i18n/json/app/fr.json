@@ -3294,10 +3294,65 @@
       }
     },
     "mixer": {
+      "swash": {
+        "english": "Swash",
+        "translation": "Swash",
+        "needs_translation": true
+      },
+      "aileron_direction": {
+        "english": "Aileron Direction",
+        "translation": "Aileron Direction",
+        "needs_translation": true
+      },
+      "elevator_direction": {
+        "english": "Elevator Direction",
+        "translation": "Elevator Direction",
+        "needs_translation": true
+      },
+      "collective_direction": {
+        "english": "Collective Direction",
+        "translation": "Collective Direction",
+        "needs_translation": true
+      },
+      "yaw_direction": {
+        "english": "Yaw Direction",
+        "translation": "Yaw Direction",
+        "needs_translation": true
+      },
+      "settings": {
+        "english": "Settings",
+        "translation": "Settings",
+        "needs_translation": true
+      },
+      "trims": {
+        "english": "Trims",
+        "translation": "Trims",
+        "needs_translation": true
+      },
+      "tail": {
+        "english": "Tail",
+        "translation": "Tail",
+        "needs_translation": true
+      },
       "help_p1": {
         "english": "Adust swash plate geometry, phase angles, and limits.",
         "translation": "Ajustez la geometrie du plateau cyclique, les angles de phase et les limites. TTA : Precompensation pour l'aide a l'anticouple",
         "needs_translation": false
+      },
+      "swash_type": {
+        "english": "Swash Type",
+        "translation": "Swash Type",
+        "needs_translation": true
+      },
+      "main_rotor_dir": {
+        "english": "Rotor Direction",
+        "translation": "Rotor Direction",
+        "needs_translation": true
+      },
+      "tail_rotor_mode": {
+        "english": "Tail Mode",
+        "translation": "Tail Mode",
+        "needs_translation": true
       },
       "collective_tilt_correction_pos": {
         "english": "Positive",

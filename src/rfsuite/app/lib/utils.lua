@@ -46,6 +46,7 @@ function utils.convertPageValueTable(tbl, inc)
     return thetable
 end
 
+
 function utils.getFieldValue(f)
     local v = f.value or 0
 

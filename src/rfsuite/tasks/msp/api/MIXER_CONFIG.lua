@@ -14,7 +14,7 @@ local MSP_REBUILD_ON_WRITE = false
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "main_rotor_dir", type = "U8",  apiVersion = 12.06, simResponse = {0}, table = {"@i18n(api.MIXER_CONFIG.tbl_cw)@", "@i18n(api.MIXER_CONFIG.tbl_ccw)@"}, tableIdxInc = -1, help = "@i18n(api.MIXER_CONFIG.main_rotor_dir)@" },
-    { field = "tail_rotor_mode", type = "U8", apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.MIXER_CONFIG.tail_rotor_mode)@" },
+    { field = "tail_rotor_mode", type = "U8", apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.MIXER_CONFIG.tail_rotor_mode)@" , table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1},
     { field = "tail_motor_idle", type = "U8", apiVersion = 12.06, simResponse = {0}, default = 0, unit = "%", min = 0, max = 250, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.tail_motor_idle)@" },
     { field = "tail_center_trim", type = "S16", apiVersion = 12.06, simResponse = {165, 1}, default = 0, min = -500, max = 500, decimals = 1, scale = 10, mult = 0.239923224568138, help = "@i18n(api.MIXER_CONFIG.tail_center_trim)@" },
     { field = "swash_type", type = "U8", apiVersion = 12.06, simResponse = {0}, table = {"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1, help = "@i18n(api.MIXER_CONFIG.swash_type)@" },

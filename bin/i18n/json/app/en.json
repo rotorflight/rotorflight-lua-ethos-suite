@@ -3294,9 +3294,64 @@
       }
     },
     "mixer": {
+      "swash": {
+        "english": "Swash",
+        "translation": "Swash",
+        "needs_translation": false
+      },
+      "aileron_direction": {
+        "english": "Aileron Direction",
+        "translation": "Aileron Direction",
+        "needs_translation": false
+      },
+      "elevator_direction": {
+        "english": "Elevator Direction",
+        "translation": "Elevator Direction",
+        "needs_translation": false
+      },
+      "collective_direction": {
+        "english": "Collective Direction",
+        "translation": "Collective Direction",
+        "needs_translation": false
+      },
+      "yaw_direction": {
+        "english": "Yaw Direction",
+        "translation": "Yaw Direction",
+        "needs_translation": false
+      },
+      "settings": {
+        "english": "Settings",
+        "translation": "Settings",
+        "needs_translation": false
+      },
+      "trims": {
+        "english": "Trims",
+        "translation": "Trims",
+        "needs_translation": false
+      },
+      "tail": {
+        "english": "Tail",
+        "translation": "Tail",
+        "needs_translation": false
+      },
       "help_p1": {
         "english": "Adust swash plate geometry, phase angles, and limits.",
         "translation": "Adust swash plate geometry, phase angles, and limits.",
+        "needs_translation": false
+      },
+      "swash_type": {
+        "english": "Swash Type",
+        "translation": "Swash Type",
+        "needs_translation": false
+      },
+      "main_rotor_dir": {
+        "english": "Rotor Direction",
+        "translation": "Rotor Direction",
+        "needs_translation": false
+      },
+      "tail_rotor_mode": {
+        "english": "Tail Mode",
+        "translation": "Tail Mode",
         "needs_translation": false
       },
       "collective_tilt_correction_pos": {

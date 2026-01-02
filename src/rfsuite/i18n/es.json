@@ -1333,6 +1333,33 @@
         "english": "CW",
         "needs_translation": false,
         "translation": "Horario"
+      },
+      "tbl_tail_bidirectional": {
+        "english": "Bidirectional",
+        "needs_translation": true,
+        "translation": "Bidirectional"
+      },
+      "tbl_tail_motororized_tail": {
+        "english": "Motorized Tail",
+        "needs_translation": true,
+        "translation": "Motorized Tail"
+      },
+      "tbl_tail_variable_pitch": {
+        "english": "Variable Pitch",
+        "needs_translation": true,
+        "translation": "Variable Pitch"
+      }
+    },
+    "MIXER_INPUT": {
+      "tbl_normal": {
+        "english": "Normal",
+        "needs_translation": true,
+        "translation": "Normal"
+      },
+      "tbl_reversed": {
+        "english": "Reversed",
+        "needs_translation": true,
+        "translation": "Reversed"
       }
     },
     "MOTOR_CONFIG": {
@@ -3808,6 +3835,16 @@
         }
       },
       "mixer": {
+        "aileron_direction": {
+          "english": "Aileron Direction",
+          "needs_translation": true,
+          "translation": "Aileron Direction"
+        },
+        "collective_direction": {
+          "english": "Collective Direction",
+          "needs_translation": true,
+          "translation": "Collective Direction"
+        },
         "collective_tilt_correction": {
           "english": "Collective Tilt Correction",
           "needs_translation": false,
@@ -3823,6 +3860,11 @@
           "needs_translation": false,
           "translation": "Positivo"
         },
+        "elevator_direction": {
+          "english": "Elevator Direction",
+          "needs_translation": true,
+          "translation": "Elevator Direction"
+        },
         "geo_correction": {
           "english": "Geo Correction",
           "needs_translation": false,
@@ -3833,10 +3875,25 @@
           "needs_translation": false,
           "translation": "Ajuste de geometría del swashplate, ángulos de fase, y límites."
         },
+        "main_rotor_dir": {
+          "english": "Rotor Direction",
+          "needs_translation": true,
+          "translation": "Rotor Direction"
+        },
         "name": {
           "english": "Mixer",
           "needs_translation": false,
           "translation": "Mezclador"
+        },
+        "settings": {
+          "english": "Settings",
+          "needs_translation": true,
+          "translation": "Settings"
+        },
+        "swash": {
+          "english": "Swash",
+          "needs_translation": true,
+          "translation": "Swash"
         },
         "swash_phase": {
           "english": "Phase Angle",
@@ -3853,10 +3910,35 @@
           "needs_translation": false,
           "translation": "Precomp TTA"
         },
+        "swash_type": {
+          "english": "Swash Type",
+          "needs_translation": true,
+          "translation": "Swash Type"
+        },
+        "tail": {
+          "english": "Tail",
+          "needs_translation": true,
+          "translation": "Tail"
+        },
         "tail_motor_idle": {
           "english": "Tail Idle Thr%",
           "needs_translation": false,
           "translation": "% Acel Ralentí Cola"
+        },
+        "tail_rotor_mode": {
+          "english": "Tail Mode",
+          "needs_translation": true,
+          "translation": "Tail Mode"
+        },
+        "trims": {
+          "english": "Trims",
+          "needs_translation": true,
+          "translation": "Trims"
+        },
+        "yaw_direction": {
+          "english": "Yaw Direction",
+          "needs_translation": true,
+          "translation": "Yaw Direction"
         }
       },
       "msp_exp": {

@@ -232,12 +232,9 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-    if rfsuite.app.lastMenu == nil then
-        rfsuite.app.ui.openMainMenu()
-    else
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
-    end
+    rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
 
 end
+
 
 return {apidata = apidata, eepromWrite = true, reboot = false, mixerOff = mixerOff, mixerOn = mixerOn, postLoad = postLoad, onToolMenu = onToolMenu, onNavMenu = onNavMenu, wakeup = wakeup, saveData = saveData, navButtons = {menu = true, save = true, reload = true, tool = true, help = true}, API = {}}
