@@ -9,8 +9,8 @@ local S_PAGES = {
     [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" },
     [2] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png" },
     [3] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },
-    [4] = { name = "@i18n(app.modules.mixer.directions)@", script = "directions.lua", image = "directions.png" },
-    [5] = { name = "@i18n(app.modules.mixer.configuration)@", script = "configuration.lua", image = "configuration.png" }
+    [4] = { name = "@i18n(app.modules.mixer.directions)@", script = "directions.lua", image = "directions.png" , apiversion="12.09"},
+    [5] = { name = "@i18n(app.modules.mixer.configuration)@", script = "configuration.lua", image = "configuration.png" ,}
 }
 
 local enableWakeup = false
@@ -118,6 +118,13 @@ local function openPage(pidx, title, script)
         })
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+
+        if pvalue.apiversion ~= nil then
+            local apiVersionSupported = rfsuite.utils.apiVersionCompare(">=", pvalue.apiversion)
+            if not apiVersionSupported then
+                rfsuite.app.formFields[pidx]:enable(false)
+            end
+        end
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
