@@ -25,17 +25,17 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "max_stabilized_roll",  type = "U16", apiVersion = 12.06, simResponse = { 226, 4 } },
 
     -- 2: MIXER_IN_STABILIZED_PITCH
-    { field = "rate_stabilized_pitch", type = "U16", apiVersion = 12.06, simResponse = { 250, 0 } },
+    { field = "rate_stabilized_pitch", type = "U16", apiVersion = 12.06, simResponse = { 250, 0 } , tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
     { field = "min_stabilized_pitch",  type = "U16", apiVersion = 12.06, simResponse = { 30, 251 } },
     { field = "max_stabilized_pitch",  type = "U16", apiVersion = 12.06, simResponse = { 226, 4 } },
 
     -- 3: MIXER_IN_STABILIZED_YAW
-    { field = "rate_stabilized_yaw", type = "U16", apiVersion = 12.06, simResponse = { 250, 0 } },
+    { field = "rate_stabilized_yaw", type = "U16", apiVersion = 12.06, simResponse = { 250, 0 } , tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
     { field = "min_stabilized_yaw",  type = "U16", apiVersion = 12.06, simResponse = { 30, 251 } },
     { field = "max_stabilized_yaw",  type = "U16", apiVersion = 12.06, simResponse = { 226, 4 } },
 
     -- 4: MIXER_IN_STABILIZED_COLLECTIVE
-    { field = "rate_stabilized_collective", type = "U16", apiVersion = 12.06, simResponse = { 250, 0 } },
+    { field = "rate_stabilized_collective", type = "U16", apiVersion = 12.06, simResponse = { 250, 0 } , tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
     { field = "min_stabilized_collective",  type = "U16", apiVersion = 12.06, simResponse = { 30, 251 } },
     { field = "max_stabilized_collective",  type = "U16", apiVersion = 12.06, simResponse = { 226, 4 } },
 

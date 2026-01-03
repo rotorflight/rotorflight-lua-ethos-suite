@@ -195,6 +195,24 @@ function MspQueueController:processQueue()
                     logPayload = self.currentMessage.payload
                 end
 
+                local logPayload
+                if rwState == "WRITE" then
+                    logPayload = self.currentMessage.payload
+                else
+                    local tx = self.currentMessage.payload
+                    if tx and #tx > 0 then
+                        logPayload = {}
+                        -- TX bytes first
+                        for i = 1, #tx do logPayload[#logPayload + 1] = tx[i] end
+                        -- separator (non-byte) for readability; logMsp should print it as-is
+                        logPayload[#logPayload + 1] = "|"
+                        -- RX bytes second
+                        for i = 1, #(buf or {}) do logPayload[#logPayload + 1] = buf[i] end
+                    else
+                        logPayload = buf
+                    end
+                end
+
                 rfsuite.utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
