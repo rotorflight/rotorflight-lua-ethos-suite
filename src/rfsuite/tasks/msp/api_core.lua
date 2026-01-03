@@ -371,7 +371,7 @@ function core.buildDeltaPayload(apiname, payload, api_structure, positionmap, re
                     if api == mspapi then mspapi = i; break end
                 end
                 field.apikey = apikey
-                field.mspapi = msp.api
+                field.mspapi = mspapi
                 utils.log("[buildDeltaPayload] Converted API field", "info")
             end
 
