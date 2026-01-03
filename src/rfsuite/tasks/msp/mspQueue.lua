@@ -139,7 +139,7 @@ function MspQueueController:processQueue()
     if not system:getVersion().simulation then
         -- Real MSP: send if interval allows
         if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os.clock()) then
-            if self.currentMessage then
+            if self.currentMessage then        
                 rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
                 self.lastTimeCommandSent = os.clock()
                 self.currentMessageStartTime = self.lastTimeCommandSent
@@ -181,8 +181,21 @@ function MspQueueController:processQueue()
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
             if cmd and LOG_ENABLED_MSP() then
-                local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
-                rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)
+                local rwState
+                if self.currentMessage.isWrite ~= nil then
+                    rwState = self.currentMessage.isWrite and "WRITE" or "READ"
+                else
+                    -- legacy heuristic
+                    rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
+                end
+                local logPayload
+                if rwState == "READ" then
+                    logPayload = buf
+                else
+                    logPayload = self.currentMessage.payload
+                end
+
+                rfsuite.utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
         self.currentMessage = nil
