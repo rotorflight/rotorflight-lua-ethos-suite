@@ -144,7 +144,7 @@ local function saveMixerInputs()
 
             API.write()
         end
-
+        app.Page.apidata.apiState.isProcessing = false
         return
     end
 
@@ -199,6 +199,7 @@ local function saveMixerInputs()
 
         API.write()
     end
+    app.Page.apidata.apiState.isProcessing = false
 end
 
 
