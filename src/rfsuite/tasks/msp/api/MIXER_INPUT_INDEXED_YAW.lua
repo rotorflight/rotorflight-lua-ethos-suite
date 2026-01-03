@@ -15,9 +15,9 @@ local FIXED_INDEX = 3
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rate", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
-    { field = "min",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
-    { field = "max",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
+    { field = "yaw_rate", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
+    { field = "yaw_min",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
+    { field = "yaw_max",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
 }
 
 -- LuaFormatter on
@@ -30,9 +30,9 @@ local MSP_API_STRUCTURE_WRITE = {
     { field = "index", type = "U8" },
 
     -- mixer input values
-    { field = "rate",  type = "U16" },
-    { field = "min",   type = "U16" },
-    { field = "max",   type = "U16" },
+    { field = "yaw_rate",  type = "U16" },
+    { field = "yaw_min",   type = "U16" },
+    { field = "yaw_max",   type = "U16" },
 }
 -- LuaFormatter on
 
@@ -114,9 +114,9 @@ local function write(suppliedPayload)
 
     local v = {
         index = FIXED_INDEX,
-        rate  = (payloadData.rate ~= nil) and payloadData.rate or curRate,
-        min   = (payloadData.min  ~= nil) and payloadData.min  or curMin,
-        max   = (payloadData.max  ~= nil) and payloadData.max  or curMax,
+        yaw_rate  = (payloadData.yaw_rate ~= nil) and payloadData.yaw_rate or curYawRate,
+        yaw_min   = (payloadData.yaw_min  ~= nil) and payloadData.yaw_min  or curYawMin,
+        yaw_max   = (payloadData.yaw_max  ~= nil) and payloadData.yaw_max  or curYawMax,
     }
 
     local payload = core.buildFullPayload(API_NAME, v, MSP_API_STRUCTURE_WRITE)
@@ -130,7 +130,7 @@ local function write(suppliedPayload)
         processReply = processReplyStaticWrite,
         errorHandler = errorHandlerStatic,
         simulatorResponse = {},
-        uuid = (MSP_API_UUID or API_NAME) .. FIXED_INDEX,
+        uuid = lastWriteUUID,
         timeout = MSP_API_MSG_TIMEOUT,
         getCompleteHandler = handlers.getCompleteHandler,
         getErrorHandler = handlers.getErrorHandler

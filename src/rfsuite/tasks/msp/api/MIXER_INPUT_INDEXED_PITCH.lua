@@ -15,9 +15,9 @@ local FIXED_INDEX = 2
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rate", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
-    { field = "min",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
-    { field = "max",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
+    { field = "pitch_rate", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
+    { field = "pitch_min",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
+    { field = "pitch_max",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
 }
 
 -- LuaFormatter on
@@ -30,9 +30,9 @@ local MSP_API_STRUCTURE_WRITE = {
     { field = "index", type = "U8" },
 
     -- mixer input values
-    { field = "rate",  type = "U16" },
-    { field = "min",   type = "U16" },
-    { field = "max",   type = "U16" },
+    { field = "pitch_rate",  type = "U16" },
+    { field = "pitch_min",   type = "U16" },
+    { field = "pitch_max",   type = "U16" },
 }
 -- LuaFormatter on
 
@@ -114,9 +114,9 @@ local function write(suppliedPayload)
 
     local v = {
         index = FIXED_INDEX,
-        rate  = (payloadData.rate ~= nil) and payloadData.rate or curRate,
-        min   = (payloadData.min  ~= nil) and payloadData.min  or curMin,
-        max   = (payloadData.max  ~= nil) and payloadData.max  or curMax,
+        pitch_rate  = (payloadData.pitch_rate ~= nil) and payloadData.pitch_rate or curPitchRate,
+        pitch_min   = (payloadData.pitch_min  ~= nil) and payloadData.pitch_min  or curPitchMin,
+        pitch_max   = (payloadData.pitch_max  ~= nil) and payloadData.pitch_max  or curPitchMax,
     }
 
     local payload = core.buildFullPayload(API_NAME, v, MSP_API_STRUCTURE_WRITE)
@@ -130,7 +130,7 @@ local function write(suppliedPayload)
         processReply = processReplyStaticWrite,
         errorHandler = errorHandlerStatic,
         simulatorResponse = {},
-        uuid = uuid .. FIXED_INDEX,
+        uuid = lastWriteUUID,
         timeout = MSP_API_MSG_TIMEOUT,
         getCompleteHandler = handlers.getCompleteHandler,
         getErrorHandler = handlers.getErrorHandler
