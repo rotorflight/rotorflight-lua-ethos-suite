@@ -9,7 +9,8 @@ local S_PAGES = {
     [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" },
     [2] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png" },
     [3] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },
-    [4] = { name = "@i18n(app.modules.mixer.settings)@", script = "settings.lua", image = "settings.png" }
+    [4] = { name = "@i18n(app.modules.mixer.directions)@", script = "directions.lua", image = "directions.png" },
+    [5] = { name = "@i18n(app.modules.mixer.configuration)@", script = "configuration.lua", image = "configuration.png" }
 }
 
 local enableWakeup = false
@@ -144,7 +145,7 @@ end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openMainMenuSub('advanced')
+    rfsuite.app.ui.openMainMenuSub('hardware')
     return true
 end
 

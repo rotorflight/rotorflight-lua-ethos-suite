@@ -3836,14 +3836,14 @@
       },
       "mixer": {
         "aileron_direction": {
-          "english": "Aileron Direction",
+          "english": "Aileron",
           "needs_translation": true,
-          "translation": "Aileron Direction"
+          "translation": "Aileron"
         },
         "collective_direction": {
-          "english": "Collective Direction",
+          "english": "Collective",
           "needs_translation": true,
-          "translation": "Collective Direction"
+          "translation": "Collective"
         },
         "collective_tilt_correction": {
           "english": "Collective Tilt Correction",
@@ -3860,15 +3860,30 @@
           "needs_translation": false,
           "translation": "Positive"
         },
-        "elevator_direction": {
-          "english": "Elevator Direction",
+        "configuration": {
+          "english": "Configuration",
           "needs_translation": true,
-          "translation": "Elevator Direction"
+          "translation": "Configuration"
+        },
+        "directions": {
+          "english": "Mix Directions",
+          "needs_translation": true,
+          "translation": "Mix Directions"
+        },
+        "elevator_direction": {
+          "english": "Elevator",
+          "needs_translation": true,
+          "translation": "Elevator"
         },
         "geo_correction": {
           "english": "Geo Correction",
           "needs_translation": false,
           "translation": "Geo Correction"
+        },
+        "geometry": {
+          "english": "Geometry",
+          "needs_translation": true,
+          "translation": "Geometry"
         },
         "help_p1": {
           "english": "Adust swash plate geometry, phase angles, and limits.",
@@ -3936,9 +3951,9 @@
           "translation": "Trims"
         },
         "yaw_direction": {
-          "english": "Yaw Direction",
+          "english": "Yaw",
           "needs_translation": true,
-          "translation": "Yaw Direction"
+          "translation": "Yaw"
         }
       },
       "msp_exp": {
