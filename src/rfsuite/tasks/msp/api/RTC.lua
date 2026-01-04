@@ -61,6 +61,7 @@ local function write()
 
     local message = {
         command = MSP_API_CMD_WRITE,
+        apiname = API_NAME,
         payload = {},
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
