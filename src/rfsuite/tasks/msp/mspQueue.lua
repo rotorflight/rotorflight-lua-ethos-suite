@@ -248,7 +248,7 @@ function MspQueueController:add(message)
         return
     end
     if message.uuid and self.uuid == message.uuid then
-        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid, "debug") end
+        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid, "info") end
         return
     end
     if message.uuid then self.uuid = message.uuid end

@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
 local API_NAME = "MIXER_INPUT_INDEXED_YAW"
-local MSP_API_CMD_READ = 170
+local MSP_API_CMD_READ = 174
 local MSP_API_CMD_WRITE = 171
 local MSP_REBUILD_ON_WRITE = true
 
@@ -97,7 +97,7 @@ local function read()
         processReply = processReplyStaticRead,
         errorHandler = errorHandlerStatic,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = (MSP_API_UUID or API_NAME) .. FIXED_INDEX,
+        uuid = uuid,
         timeout = MSP_API_MSG_TIMEOUT,
         getCompleteHandler = handlers.getCompleteHandler,
         getErrorHandler = handlers.getErrorHandler,
@@ -122,7 +122,7 @@ local function write(suppliedPayload)
     local payload = core.buildFullPayload(API_NAME, v, MSP_API_STRUCTURE_WRITE)
 
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
-    lastWriteUUID = uuid .. FIXED_INDEX
+    lastWriteUUID = uuid
 
     local message = {
         command = MSP_API_CMD_WRITE,
@@ -130,7 +130,7 @@ local function write(suppliedPayload)
         processReply = processReplyStaticWrite,
         errorHandler = errorHandlerStatic,
         simulatorResponse = {},
-        uuid = (MSP_API_UUID or API_NAME) .. FIXED_INDEX,
+        uuid = uuid,
         timeout = MSP_API_MSG_TIMEOUT,
         getCompleteHandler = handlers.getCompleteHandler,
         getErrorHandler = handlers.getErrorHandler

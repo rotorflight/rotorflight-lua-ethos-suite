@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
 local API_NAME = "MIXER_INPUT_INDEXED_COLLECTIVE"
-local MSP_API_CMD_READ = 170
+local MSP_API_CMD_READ = 174
 local MSP_API_CMD_WRITE = 171
 local MSP_REBUILD_ON_WRITE = true
 
