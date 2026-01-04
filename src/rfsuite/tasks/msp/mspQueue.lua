@@ -68,6 +68,7 @@ function MspQueueController.new(opts)
     self.timeout = opts.timeout or 2.0
 
     self.uuid = nil -- last processed UUID
+    self.apiname = nil -- last processed API name
 
     self.loopInterval = opts.loopInterval or 0 -- optional rate limit
     self._nextProcessAt = 0
@@ -159,6 +160,7 @@ function MspQueueController:processQueue()
             if LOG_ENABLED_MSP() then rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
             self.uuid = nil
+            self.apiname = nil 
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
@@ -170,6 +172,7 @@ function MspQueueController:processQueue()
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
+        self.apiname = nil 
         return
     end
 
@@ -220,6 +223,7 @@ function MspQueueController:processQueue()
         end
         self.currentMessage = nil
         self.uuid = nil
+        self.apiname = nil
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
 
     -- Too many retries → reset
@@ -237,6 +241,7 @@ function MspQueueController:clear()
     self.queue = newQueue()
     self.currentMessage = nil
     self.uuid = nil
+    self.apiname = nil
     rfsuite.tasks.msp.common.mspClearTxBuf()
 end
 
@@ -247,11 +252,17 @@ function MspQueueController:add(message)
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Unable to queue - nil message.", "debug") end
         return
     end
-    if message.uuid and self.uuid == message.uuid then
-        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid, "debug") end
+    -- allow apiname to distinguish otherwise identical MSP calls
+    local key = message.uuid
+    if message.apiname then
+        key = (key or "") .. ":" .. message.apiname
+    end
+
+    if key and self.uuid == key then
+        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with key " .. key, "info") end
         return
     end
-    if message.uuid then self.uuid = message.uuid end
+    if key then self.uuid = key end
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
     qpush(self.queue, toQueue)
     return self
