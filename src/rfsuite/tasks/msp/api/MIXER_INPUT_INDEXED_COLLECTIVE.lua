@@ -91,6 +91,7 @@ local function read()
 
     local message = {
         command = MSP_API_CMD_READ,
+        apiname = API_NAME,
         payload = { FIXED_INDEX }, 
         structure = MSP_API_STRUCTURE_READ,
         minBytes = MSP_MIN_BYTES,
@@ -126,6 +127,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
+        apiname = API_NAME,
         payload = payload,
         processReply = processReplyStaticWrite,
         errorHandler = errorHandlerStatic,
