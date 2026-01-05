@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 
 local S_PAGES = {
     [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" },
-    [2] = { name = "@i18n(app.modules.mixer.geometry)@", script = "geometry.lua", image = "geometry.png" },    
+    [2] = { name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png" },    
     [3] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png" },
     [4] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },
 }

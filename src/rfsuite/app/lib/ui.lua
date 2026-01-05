@@ -1246,7 +1246,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     app.formLineCnt = 0
 
-    if app.Page.apidata.formdata.fields then
+    if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
             if rfsuite.session.apiVersion == nil then return end

@@ -3294,6 +3294,26 @@
       }
     },
     "mixer": {
+      "cyclic_calibration": {
+        "english": "Cyclic Calibration",
+        "translation": "Cyclic Calibration",
+        "needs_translation": true
+      },
+      "collective_calibration": {
+        "english": "Collective Calibration",
+        "translation": "Collective Calibration",
+        "needs_translation": true
+      },
+      "cyclic_pitch_limit": {
+        "english": "Cyclic Pitch Limit",
+        "translation": "Cyclic Pitch Limit",
+        "needs_translation": true
+      },
+      "collective_pitch_limit": {
+        "english": "Collective Pitch Limit",
+        "translation": "Collective Pitch Limit",
+        "needs_translation": true
+      },
       "swash": {
         "english": "Swash",
         "translation": "Swash",
@@ -3371,8 +3391,13 @@
       },
       "collective_tilt_correction_pos": {
         "english": "Positive",
-        "translation": "Positiv",
-        "needs_translation": false
+        "translation": "Collective Tilt Correction +",
+        "needs_translation": true
+      },
+      "collective_tilt_correction_neg": {
+        "english": "Negative",
+        "translation": "Collective Tilt Correction -",
+        "needs_translation": true
       },
       "geo_correction": {
         "english": "Geo Correction",
@@ -3387,11 +3412,6 @@
       "name": {
         "english": "Mixer",
         "translation": "Mischer",
-        "needs_translation": false
-      },
-      "collective_tilt_correction_neg": {
-        "english": "Negative",
-        "translation": "Negativ",
         "needs_translation": false
       },
       "tail_motor_idle": {

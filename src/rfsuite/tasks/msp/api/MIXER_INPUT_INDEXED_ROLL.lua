@@ -16,7 +16,7 @@ local FIXED_INDEX = 1
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "rate_stabilized_roll", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
-    { field = "min_stabilized_roll",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
+    { field = "min_stabilized_roll",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 }},
     { field = "max_stabilized_roll",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
 }
 

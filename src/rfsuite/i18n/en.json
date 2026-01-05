@@ -3840,10 +3840,20 @@
           "needs_translation": false,
           "translation": "Aileron Direction"
         },
+        "collective_calibration": {
+          "english": "Collective Calibration",
+          "needs_translation": false,
+          "translation": "Collective Calibration"
+        },
         "collective_direction": {
           "english": "Collective Direction",
           "needs_translation": false,
           "translation": "Collective Direction"
+        },
+        "collective_pitch_limit": {
+          "english": "Collective Pitch Limit",
+          "needs_translation": false,
+          "translation": "Collective Pitch Limit"
         },
         "collective_tilt_correction": {
           "english": "Collective Tilt Correction",
@@ -3864,6 +3874,16 @@
           "english": "Configuration",
           "needs_translation": false,
           "translation": "Configuration"
+        },
+        "cyclic_calibration": {
+          "english": "Cyclic Calibration",
+          "needs_translation": false,
+          "translation": "Cyclic Calibration"
+        },
+        "cyclic_pitch_limit": {
+          "english": "Cyclic Pitch Limit",
+          "needs_translation": false,
+          "translation": "Cyclic Pitch Limit"
         },
         "directions": {
           "english": "Mix Directions",
