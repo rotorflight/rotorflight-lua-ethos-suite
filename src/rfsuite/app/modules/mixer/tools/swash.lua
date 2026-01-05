@@ -20,8 +20,6 @@ local apidata = {
             {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    api = "MIXER_CONFIG:collective_tilt_correction_pos", inline = 1, label = 1, apiversiongte = 12.08},
             {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    api = "MIXER_CONFIG:collective_tilt_correction_neg", inline = 1, label = 2, apiversiongte = 12.08},
             {t = "@i18n(app.modules.mixer.swash_phase)@",                       api = "MIXER_CONFIG:swash_phase"},
-            {t = "@i18n(app.modules.mixer.swash_tta_precomp)@",                 api = "MIXER_CONFIG:swash_tta_precomp"},
-
         }
     }
 }
