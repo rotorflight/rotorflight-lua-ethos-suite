@@ -13,6 +13,8 @@ local apidata = {
         labels = {
         },
         fields = {
+            {t = "@i18n(app.modules.trim.tail_motor_idle)@",    mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
+            {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end},
             {t = "@i18n(app.modules.mixer.swash_tta_precomp)@",                 api = "MIXER_CONFIG:swash_tta_precomp"},
 
         }
