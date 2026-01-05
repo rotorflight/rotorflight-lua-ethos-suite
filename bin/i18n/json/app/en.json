@@ -3315,23 +3315,23 @@
         "needs_translation": false
       },
       "aileron_direction": {
-        "english": "Aileron",
-        "translation": "Aileron",
+        "english": "Aileron Direction",
+        "translation": "Aileron Direction",
         "needs_translation": false
       },
       "elevator_direction": {
-        "english": "Elevator",
-        "translation": "Elevator",
+        "english": "Elevator Direction",
+        "translation": "Elevator Direction",
         "needs_translation": false
       },
       "collective_direction": {
-        "english": "Collective",
-        "translation": "Collective",
+        "english": "Collective Direction",
+        "translation": "Collective Direction",
         "needs_translation": false
       },
       "yaw_direction": {
-        "english": "Yaw",
-        "translation": "Yaw",
+        "english": "Yaw Direction",
+        "translation": "Yaw Direction",
         "needs_translation": false
       },
       "settings": {

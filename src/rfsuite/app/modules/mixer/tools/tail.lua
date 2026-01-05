@@ -8,14 +8,16 @@ local rfsuite = require("rfsuite")
 local apidata = {
     api = {
         [1] = 'MIXER_CONFIG',
+        [2] = 'MIXER_INPUT_INDEXED_YAW',
     },
     formdata = {
         labels = {
         },
         fields = {
-            {t = "@i18n(app.modules.trim.tail_motor_idle)@",    mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
-            {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end},
-            {t = "@i18n(app.modules.mixer.swash_tta_precomp)@",                 api = "MIXER_CONFIG:swash_tta_precomp"},
+            {t = "@i18n(app.modules.mixer.tail_rotor_mode)@",         mspapi=1, apikey="tail_rotor_mode", type = 1},
+             {t = "@i18n(app.modules.mixer.yaw_direction)@",          mspapi = 2, apikey="rate_stabilized_yaw", type = 1},  
+            {t = "@i18n(app.modules.trim.tail_motor_idle)@",          mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
+           -- {t = "@i18n(app.modules.mixer.swash_tta_precomp)@",       api = "MIXER_CONFIG:swash_tta_precomp", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
 
         }
     }

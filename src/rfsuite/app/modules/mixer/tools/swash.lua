@@ -8,18 +8,19 @@ local rfsuite = require("rfsuite")
 local apidata = {
     api = {
         [1] = 'MIXER_CONFIG',
+        [2] = 'MIXER_INPUT_INDEXED_ROLL',
+        [3] = 'MIXER_INPUT_INDEXED_PITCH',
+        [4] = 'MIXER_INPUT_INDEXED_COLLECTIVE',
     },
     formdata = {
         labels = {
-            {t = "@i18n(app.modules.mixer.collective_tilt_correction)@", inline_size = 35, label = 1},
-            {t = "                           ", inline_size = 35, label = 2}
         },
         fields = {
-            {t = "@i18n(app.modules.mixer.geo_correction)@",                    api = "MIXER_CONFIG:swash_geo_correction"},
-            {t = "@i18n(app.modules.mixer.swash_pitch_limit)@",                 api = "MIXER_CONFIG:swash_pitch_limit"},
-            {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    api = "MIXER_CONFIG:collective_tilt_correction_pos", inline = 1, label = 1, apiversiongte = 12.08},
-            {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    api = "MIXER_CONFIG:collective_tilt_correction_neg", inline = 1, label = 2, apiversiongte = 12.08},
-            {t = "@i18n(app.modules.mixer.swash_phase)@",                       api = "MIXER_CONFIG:swash_phase"},
+            {t = "@i18n(app.modules.mixer.swash_type)@",                    mspapi=1, apikey="swash_type", type = 1},
+            {t = "@i18n(app.modules.mixer.main_rotor_dir)@",                mspapi=1, apikey="main_rotor_dir", type = 1},            
+            {t = "@i18n(app.modules.mixer.aileron_direction)@",             mspapi = 2, apikey="rate_stabilized_roll", type = 1},
+            {t = "@i18n(app.modules.mixer.elevator_direction)@",            mspapi = 3, apikey="rate_stabilized_pitch", type = 1},
+            {t = "@i18n(app.modules.mixer.collective_direction)@",          mspapi = 4, apikey="rate_stabilized_collective", type = 1},            
         }
     }
 }
@@ -31,3 +32,5 @@ local function onNavMenu(self)
 end
 
 return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, onNavMenu=onNavMenu}
+
+

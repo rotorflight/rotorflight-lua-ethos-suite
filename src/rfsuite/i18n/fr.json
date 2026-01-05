@@ -3836,14 +3836,14 @@
       },
       "mixer": {
         "aileron_direction": {
-          "english": "Aileron",
-          "needs_translation": true,
-          "translation": "Aileron"
+          "english": "Aileron Direction",
+          "needs_translation": false,
+          "translation": "Aileron Direction"
         },
         "collective_direction": {
-          "english": "Collective",
-          "needs_translation": true,
-          "translation": "Collective"
+          "english": "Collective Direction",
+          "needs_translation": false,
+          "translation": "Collective Direction"
         },
         "collective_tilt_correction": {
           "english": "Collective Tilt Correction",
@@ -3871,9 +3871,9 @@
           "translation": "Mix Directions"
         },
         "elevator_direction": {
-          "english": "Elevator",
-          "needs_translation": true,
-          "translation": "Elevator"
+          "english": "Elevator Direction",
+          "needs_translation": false,
+          "translation": "Elevator Direction"
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -3951,9 +3951,9 @@
           "translation": "Trims"
         },
         "yaw_direction": {
-          "english": "Yaw",
-          "needs_translation": true,
-          "translation": "Yaw"
+          "english": "Yaw Direction",
+          "needs_translation": false,
+          "translation": "Yaw Direction"
         }
       },
       "msp_exp": {
