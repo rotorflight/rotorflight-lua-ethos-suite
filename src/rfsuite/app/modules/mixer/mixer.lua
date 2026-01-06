@@ -111,7 +111,7 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["mixer"] = pidx
-                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.progressDisplay(nil,nil,false)
                 local name = "@i18n(app.modules.mixer.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "mixer/tools/" .. pvalue.script)
             end
