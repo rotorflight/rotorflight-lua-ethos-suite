@@ -111,6 +111,11 @@ local function loadAPI(apiName)
                 apiModule.readValue = function(...) return original(...) end
             end
 
+            if apiModule.setRebuildOnWrite then
+                local original = apiModule.setRebuildOnWrite
+                apiModule.setRebuildOnWrite = function(...) return original(...) end
+            end
+
             utils.log("Loaded API: " .. apiName, "debug")
             return apiModule
 

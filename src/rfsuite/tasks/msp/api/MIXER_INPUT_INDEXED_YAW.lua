@@ -14,8 +14,10 @@ local MSP_REBUILD_ON_WRITE = true
 local FIXED_INDEX = 3
 
 -- LuaFormatter off
+-- Note.  We do not do any parameters on these calls like min, max etc as the calls are very bespoke and 
+--        do not benifit from generic handling.
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rate_stabilized_yaw", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
+    { field = "rate_stabilized_yaw", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }},
     { field = "min_stabilized_yaw",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
     { field = "max_stabilized_yaw",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
 }
@@ -160,4 +162,6 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}
+local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
+
+return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}
