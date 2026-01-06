@@ -3390,15 +3390,15 @@
         "needs_translation": false
       },
       "collective_tilt_correction_pos": {
-        "english": "Pos",
-        "translation": "Pos",
+        "english": "Collective Tilt Correction +",
+        "translation": "Collective Tilt Correction +",
         "needs_translation": false
       },
       "collective_tilt_correction_neg": {
-        "english": "Neg",
-        "translation": "Neg",
+        "english": "Collective Tilt Correction -",
+        "translation": "Collective Tilt Correction -",
         "needs_translation": false
-      },   
+      },
       "geo_correction": {
         "english": "Geo Correction",
         "translation": "Geo Correction",

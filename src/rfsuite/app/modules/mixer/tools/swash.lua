@@ -16,11 +16,11 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = "@i18n(app.modules.mixer.swash_type)@",                    mspapi=1, apikey="swash_type", type = 1},
-            {t = "@i18n(app.modules.mixer.main_rotor_dir)@",                mspapi=1, apikey="main_rotor_dir", type = 1},            
-            {t = "@i18n(app.modules.mixer.aileron_direction)@",             mspapi = 2, apikey="rate_stabilized_roll", type = 1},
-            {t = "@i18n(app.modules.mixer.elevator_direction)@",            mspapi = 3, apikey="rate_stabilized_pitch", type = 1},
-            {t = "@i18n(app.modules.mixer.collective_direction)@",          mspapi = 4, apikey="rate_stabilized_collective", type = 1},            
+            {t = "@i18n(app.modules.mixer.swash_type)@",                    mspapi=1, apikey="swash_type", type = 1, },
+            {t = "@i18n(app.modules.mixer.main_rotor_dir)@",                mspapi=1, apikey="main_rotor_dir", type = 1, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},            
+            {t = "@i18n(app.modules.mixer.aileron_direction)@",             mspapi = 2, apikey="rate_stabilized_roll", type = 1, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
+            {t = "@i18n(app.modules.mixer.elevator_direction)@",            mspapi = 3, apikey="rate_stabilized_pitch", type = 1, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},
+            {t = "@i18n(app.modules.mixer.collective_direction)@",          mspapi = 4, apikey="rate_stabilized_collective", type = 1, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},            
         }
     }
 }

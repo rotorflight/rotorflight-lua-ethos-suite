@@ -15,7 +15,7 @@ local apidata = {
         },
         fields = {
             {t = "@i18n(app.modules.mixer.tail_rotor_mode)@",         mspapi=1, apikey="tail_rotor_mode", type = 1},
-             {t = "@i18n(app.modules.mixer.yaw_direction)@",          mspapi = 2, apikey="rate_stabilized_yaw", type = 1},  
+             {t = "@i18n(app.modules.mixer.yaw_direction)@",          mspapi = 2, apikey="rate_stabilized_yaw", type = 1, tableEthos = { [1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 }, [2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 },}},  
             {t = "@i18n(app.modules.trim.tail_motor_idle)@",          mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
            -- {t = "@i18n(app.modules.mixer.swash_tta_precomp)@",       api = "MIXER_CONFIG:swash_tta_precomp", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
 

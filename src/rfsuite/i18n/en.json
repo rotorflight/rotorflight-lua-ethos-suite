@@ -3861,14 +3861,14 @@
           "translation": "Collective Tilt Correction"
         },
         "collective_tilt_correction_neg": {
-          "english": "Negative",
+          "english": "Collective Tilt Correction -",
           "needs_translation": false,
-          "translation": "Negative"
+          "translation": "Collective Tilt Correction -"
         },
         "collective_tilt_correction_pos": {
-          "english": "Positive",
+          "english": "Collective Tilt Correction +",
           "needs_translation": false,
-          "translation": "Positive"
+          "translation": "Collective Tilt Correction +"
         },
         "configuration": {
           "english": "Configuration",
