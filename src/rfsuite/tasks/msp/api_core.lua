@@ -438,7 +438,9 @@ function core.buildFullPayload(apiname, payload, api_structure)
     local actual_fields = {}
     if rfsuite.app.Page and rfsuite.app.Page.apidata then
         for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
-            actual_fields[field.apikey] = field
+            if field.apikey then
+                actual_fields[field.apikey] = field
+            end
         end
     end
 
