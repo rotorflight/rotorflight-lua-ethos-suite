@@ -21,7 +21,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "swash_type", type = "U8", apiVersion = 12.06, simResponse = {0}, table = {"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1, help = "@i18n(api.MIXER_CONFIG.swash_type)@" },
     { field = "swash_ring", type = "U8", apiVersion = 12.06, simResponse = {2}, help = "@i18n(api.MIXER_CONFIG.swash_ring)@" },
     { field = "swash_phase", type = "S16", apiVersion = 12.06, simResponse = {100, 0}, unit = "°", default = 0, min = -1800, max = 1800, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_phase)@" },
-    { field = "swash_pitch_limit", type = "U16", apiVersion = 12.06, simResponse = {131, 6}, unit = "°", default = 0, min = 0, max = 360, decimals = 1, step = 1, xmult = 0.01200192, help = "@i18n(api.MIXER_CONFIG.swash_pitch_limit)@" },
+    { field = "swash_pitch_limit", type = "U16", apiVersion = 12.06, simResponse = {131, 6}, unit = "°", default = 0, min = 0, max = 360, decimals = 1, step = 1, mult = 0.01200192, help = "@i18n(api.MIXER_CONFIG.swash_pitch_limit)@" },
     { field = "swash_trim_0", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_trim_0)@" },
     { field = "swash_trim_1", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_trim_1)@" },
     { field = "swash_trim_2", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, min = -1000, max = 1000, decimals = 1, scale = 10, help = "@i18n(api.MIXER_CONFIG.swash_trim_2)@" },

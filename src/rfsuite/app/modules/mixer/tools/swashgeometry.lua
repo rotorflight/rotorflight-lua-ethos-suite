@@ -8,127 +8,52 @@ local rfsuite = require("rfsuite")
 local enableWakeup = false
 local triggerSave = false
 
--- sore loaded directions here to ensure writeback consistency
+-- containers for load/save steps
+local load = {}
+local save = {}
+
+-- var to contain all fields we retrieve/store
+local APIDATA = {}
+
+-- var to contain our working form data
+local FORMDATA = {}
+
+-- store loaded directions here to ensure writeback consistency
 local AIL_DIRECTION
 local ELE_DIRECTION
 local COL_DIRECTION
 
-local FIELDS = {
-    CYCLIC_CALIBRATION       = 1,   -- MIXER_INPUT_INDEXED_PITCH
-    COLLECTIVE_CALIBRATION   = 2,   -- MIXER_INPUT_INDEXED_COLLECTIVE
-    GEO_CORRECTION           = 3,   -- MIXER_CONFIG
-    CYCLIC_PITCH_LIMIT       = 4,   -- MIXER_INPUT_INDEXED_PITCH
-    COLLECTIVE_PITCH_LIMIT   = 5,   -- MIXER_CONFIG
-    SWASH_PITCH_LIMIT        = 6,   -- MIXER_INPUT_INDEXED_COLLECTIVE
-    SWASH_PHASE              = 7,   -- MIXER_CONFIG
-    COL_TILT_COR_POS         = 8,   -- MIXER_CONFIG
-    COL_TILT_COR_NEG         = 9,   -- MIXER_CONFIG
-}
-
-
-local apidata = {
-    api = {
-    },
-    formdata = {
-        labels = {             
-        },
-        fields = {
-            [FIELDS.CYCLIC_CALIBRATION] = {t = "@i18n(app.modules.mixer.cyclic_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- MIXER_INPUT_INDEXED_PITCH
-            [FIELDS.COLLECTIVE_CALIBRATION] = {t = "@i18n(app.modules.mixer.collective_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- MIXER_INPUT_INDEXED_COLLECTIVE
-            [FIELDS.GEO_CORRECTION] = {t = "@i18n(app.modules.mixer.geo_correction)@",                     },                                                                            -- MIXER_CONFIG
-            [FIELDS.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 20       },                    -- MIXER_INPUT_INDEXED_PITCH
-            [FIELDS.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 20     },               -- MIXER_INPUT_INDEXED_COLLECTIVE  
-            [FIELDS.SWASH_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.swash_pitch_limit)@", unit = "°" , default = 200,    decimals = 1 , min = 0, max = 360      },                    -- MIXER_CONFIG
-            [FIELDS.SWASH_PHASE] = {t = "@i18n(app.modules.mixer.swash_phase)@",                     },                                                                                  -- MIXER_CONFIG
-            [FIELDS.COL_TILT_COR_POS] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    unit = "%", apiversiongte = 12.08},                                          -- MIXER_CONFIG
-            [FIELDS.COL_TILT_COR_NEG] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    unit = "%", apiversiongte = 12.08},                                          -- MIXER_CONFIG
-        }
+-- -------------------------------------------------------
+-- -- Form layout
+-- -------------------------------------------------------
+local LAYOUTINDEX = {
+        CYCLIC_CALIBRATION       = 1,   -- MIXER_INPUT_INDEXED_PITCH
+        COLLECTIVE_CALIBRATION   = 2,   -- MIXER_INPUT_INDEXED_COLLECTIVE
+        GEO_CORRECTION           = 3,   -- MIXER_CONFIG
+        CYCLIC_PITCH_LIMIT       = 4,   -- MIXER_INPUT_INDEXED_PITCH
+        COLLECTIVE_PITCH_LIMIT   = 5,   -- MIXER_CONFIG
+        SWASH_PITCH_LIMIT        = 6,   -- MIXER_INPUT_INDEXED_COLLECTIVE
+        SWASH_PHASE              = 7,   -- MIXER_CONFIG
+        COL_TILT_COR_POS         = 8,   -- MIXER_CONFIG
+        COL_TILT_COR_NEG         = 9,   -- MIXER_CONFIG
     }
-}
+
+local LAYOUT = {
+        [LAYOUTINDEX.CYCLIC_CALIBRATION] = {t = "@i18n(app.modules.mixer.cyclic_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- MIXER_INPUT_INDEXED_PITCH
+        [LAYOUTINDEX.COLLECTIVE_CALIBRATION] = {t = "@i18n(app.modules.mixer.collective_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- MIXER_INPUT_INDEXED_COLLECTIVE
+        [LAYOUTINDEX.GEO_CORRECTION] = {t = "@i18n(app.modules.mixer.geo_correction)@",  unit = "%", step = 2, default = 0, min = -250, max = 250, decimals = 1    },                     -- MIXER_CONFIG
+        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 20       },                    -- MIXER_INPUT_INDEXED_PITCH
+        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 20     },               -- MIXER_INPUT_INDEXED_COLLECTIVE  
+        [LAYOUTINDEX.SWASH_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.swash_pitch_limit)@", unit = "°" , default = 200,    decimals = 1 , min = 0, max = 360      },                    -- MIXER_CONFIG
+        [LAYOUTINDEX.SWASH_PHASE] = {t = "@i18n(app.modules.mixer.swash_phase)@", unit = "°",  min = -1800, max = 1800 , decimals = 1,                   },                               -- MIXER_CONFIG
+        [LAYOUTINDEX.COL_TILT_COR_POS] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    unit = "%", apiversiongte = 12.08},                                          -- MIXER_CONFIG
+        [LAYOUTINDEX.COL_TILT_COR_NEG] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    unit = "%", apiversiongte = 12.08},                                          -- MIXER_CONFIG
+    }
 
 
-local function getFieldInfoFromApiStructure(fieldName, structure)
-    for i, v in ipairs(structure) do
-        if v.field == fieldName then
-            return v
-        end
-    end
-end
-
-local function mspToUi(v, fi)
-    if v == nil then return nil end
-
-    local value = v
-
-    -- scale (API scale is divisor)
-    if fi.scale and fi.scale ~= 0 then
-        value = value / fi.scale
-    end
-
-    -- mult (UI multiplier)
-    if fi.mult then
-        value = value * fi.mult
-    end
-
-    -- decimals handled by widget, do NOT multiply here
-    return value
-end
-
-local function injectField(fieldIdx, apikey, API, opts)
-    opts = opts or {}
-
-    local app        = rfsuite.app
-    local fields     = app.Page.apidata.formdata.fields
-    local formFields = app.formFields
-    local structure  = API.data().structure
-
-    local f  = fields[fieldIdx]
-    local ff = formFields[fieldIdx]
-    if not f or type(ff) ~= "userdata" then
-        return false
-    end
-
-    local fieldInfo = getFieldInfoFromApiStructure(apikey, structure)
-    if not fieldInfo then
-        return false
-    end
-
-    local raw = API.readValue(apikey)
-
-    -- Metadata used by save path / renderer
-    f.scale = fieldInfo.scale
-    f.mult  = fieldInfo.mult
-    f.step  = fieldInfo.step
-    f.unit  = fieldInfo.unit
-    f.help  = fieldInfo.help
-    f.decimals = fieldInfo.decimals
-
-    -- Value
-    if opts.valueOverride ~= nil then
-        f.value = mspToUi(opts.valueOverride, fieldInfo)
-    else
-        f.value = mspToUi(raw, fieldInfo)
-    end
-
-    print(apikey .." " .. f.value)
-
-
-    if raw == nil and opts.disableIfNil ~= false then
-        ff:enable(false)
-        return true
-    end
-
-    -- UI constraints
-    if fieldInfo.min ~= nil then ff:minimum(fieldInfo.min) end
-    if fieldInfo.max ~= nil then ff:maximum(fieldInfo.max) end
-    if fieldInfo.decimals ~= nil then ff:decimals(fieldInfo.decimals) end
-    if fieldInfo.default ~= nil then ff:default(fieldInfo.default) end
-    if fieldInfo.unit ~= nil then ff:suffix(fieldInfo.unit) end
-    if fieldInfo.help ~= nil then ff:help(fieldInfo.help) end
-    if fieldInfo.step ~= nil then ff:step(fieldInfo.step) end
-
-    return true
-end
+-- -------------------------------------------------------
+-- -- Helper functions
+-- -------------------------------------------------------
 
 local function u16_to_s16(u)
     if u >= 0x8000 then
@@ -138,181 +63,119 @@ local function u16_to_s16(u)
     end
 end
 
-local function loadDataComplete()
-   rfsuite.app.triggers.closeProgressLoader = true
-end
+-- we take the raw data from APIDATA and process it into FORMDATA for easier use in the form
+-- the reverse is done in the save step
+function apiDataToFormData() 
 
-local function loadDataStep4()
+    -- get raw data from api table
+    local CYCLIC_CALIBRATION = APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch
+    local COLLECTIVE_CALIBRATION = APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective
+    local GEO_CORRECTION = APIDATA["MIXER_CONFIG"]["values"].swash_geo_correction
+    local CYCLIC_PITCH_LIMIT = APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].max_stabilized_pitch
+    local SWASH_PITCH_LIMIT= APIDATA["MIXER_CONFIG"]["values"].swash_pitch_limit
+    local COLLECTIVE_PITCH_LIMIT = APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].max_stabilized_collective
+    local SWASH_PHASE = APIDATA["MIXER_CONFIG"]["values"].swash_phase
+    local COL_TILT_COR_POS = APIDATA["MIXER_CONFIG"]["values"].collective_tilt_correction_pos
+    local COL_TILT_COR_NEG = APIDATA["MIXER_CONFIG"]["values"].collective_tilt_correction_neg
 
-        -- fetch the mixer config data via MSP
-        local API = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_COLLECTIVE")
-        API.setCompleteHandler(function(self, buf)
+    -- determine directions
+    COL_DIRECTION = (APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective < 0) and 0 or 1
+    ELE_DIRECTION = (APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch < 0) and 0 or 1
+    AIL_DIRECTION = (APIDATA["MIXER_INPUT_INDEXED_ROLL"]["values"].rate_stabilized_roll < 0) and 0 or 1
 
-            local structure = API.data().structure
-            local fields = rfsuite.app.Page.apidata.formdata.fields
-            local formFields = rfsuite.app.formFields
-            local collective_calibration
-            local collective_pitch_limit
+    -- transform raw data into form data
 
-            -- get just one field
-            local rate_stabilized_collective = API.readValue("rate_stabilized_collective")
-            local min_stabilized_collective = API.readValue("min_stabilized_collective")
-            local max_stabilized_collective = API.readValue("max_stabilized_collective")
+    -- cyclic
+    CYCLIC_CALIBRATION = u16_to_s16(CYCLIC_CALIBRATION) 
+    CYCLIC_CALIBRATION = math.abs(CYCLIC_CALIBRATION)
 
-            -- store the direction for later use         
-            COL_DIRECTION = (rate_stabilized_collective < 0) and 0 or 1
+    -- collective
+    COLLECTIVE_CALIBRATION = u16_to_s16(COLLECTIVE_CALIBRATION)
+    COLLECTIVE_CALIBRATION = math.abs(COLLECTIVE_CALIBRATION)
 
-            -- convert the value to the expected signed value
-            collective_calibration = u16_to_s16(rate_stabilized_collective)
-            collective_calibration = math.abs(collective_calibration) 
-            if collective_calibration >= 2000 then collective_calibration = 2000  end
-            if collective_calibration <= 200 then collective_calibration = 200 end
+    -- geo correction
+    GEO_CORRECTION = (GEO_CORRECTION / 5) * 10
 
-            collective_pitch_limit = u16_to_s16(max_stabilized_collective)
+    -- cyclic pitch limit
+    CYCLIC_PITCH_LIMIT = u16_to_s16(CYCLIC_PITCH_LIMIT)
+    CYCLIC_PITCH_LIMIT = CYCLIC_PITCH_LIMIT * 12/100
+    CYCLIC_PITCH_LIMIT = math.abs(CYCLIC_PITCH_LIMIT)
+    CYCLIC_PITCH_LIMIT = math.floor(CYCLIC_PITCH_LIMIT + 0.5)
 
-            collective_pitch_limit = collective_pitch_limit * 12/100  
-            collective_pitch_limit = math.floor(collective_pitch_limit + 0.5)
-            collective_pitch_limit = math.abs(collective_pitch_limit)  -- force positive
+    -- collective pitch limit
+    COLLECTIVE_PITCH_LIMIT = u16_to_s16(COLLECTIVE_PITCH_LIMIT)
+    COLLECTIVE_PITCH_LIMIT = COLLECTIVE_PITCH_LIMIT * 12/100
+    COLLECTIVE_PITCH_LIMIT = math.abs(COLLECTIVE_PITCH_LIMIT)    
+    COLLECTIVE_PITCH_LIMIT = math.floor(COLLECTIVE_PITCH_LIMIT + 0.5)
 
-            -- transform into something we can use for cyclic calibration
-            injectField(FIELDS.COLLECTIVE_CALIBRATION, "rate_stabilized_collective", API, {valueOverride = collective_calibration})
-            injectField(FIELDS.COLLECTIVE_PITCH_LIMIT, "max_stabilized_collective", API, {valueOverride = collective_pitch_limit})
+    -- swash pitch limit
+    rfsuite.utils.log("SWASH_PITCH_LIMIT raw: "..tostring(SWASH_PITCH_LIMIT), "info")
+    SWASH_PITCH_LIMIT = SWASH_PITCH_LIMIT * 12/100
+    SWASH_PITCH_LIMIT = math.floor(SWASH_PITCH_LIMIT + 0.5)   
+    rfsuite.utils.log("SWASH_PITCH_LIMIT scaled: "..tostring(SWASH_PITCH_LIMIT), "info")
 
-            -- store the raw data for later use
-            rfsuite.tasks.msp.api.apidata.values["MIXER_INPUT_INDEXED_COLLECTIVE"] = API.data().parsed
-            rfsuite.tasks.msp.api.apidata.structure["MIXER_INPUT_INDEXED_COLLECTIVE"] = API.data().structure
-            rfsuite.tasks.msp.api.apidata.receivedBytes["MIXER_INPUT_INDEXED_COLLECTIVE"] = API.data().buffer
-            rfsuite.tasks.msp.api.apidata.receivedBytesCount["MIXER_INPUT_INDEXED_COLLECTIVE"] = API.data().receivedBytesCount
-            rfsuite.tasks.msp.api.apidata.positionmap["MIXER_INPUT_INDEXED_COLLECTIVE"] = API.data().positionmap
-            rfsuite.tasks.msp.api.apidata.other["MIXER_INPUT_INDEXED_COLLECTIVE"] = API.data().other or {}
-
-
-            loadDataComplete()
-
-        end)
-        API.setUUID("d8163617-1496-4886-8b81-61sd6d6ed92")
-        API.read()
-end
-
-
-local function loadDataStep3()
-        -- fetch the mixer config data via MSP
-        local API = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_ROLL")
-        API.setCompleteHandler(function(self, buf)
-
-            local structure = API.data().structure
-            local fields = rfsuite.app.Page.apidata.formdata.fields
-            local formFields = rfsuite.app.formFields
-            local cyclic_calibration 
-            local cyclic_pitch_limit
-
-            -- get just one field
-            local rate_stabilized_roll = API.readValue("rate_stabilized_roll")
-
-            -- store the direction for later use
-            AIL_DIRECTION = (rate_stabilized_roll < 0) and 0 or 1            
-
-            -- bump to next step
-            loadDataStep4()
-
-        end)
-        API.setUUID("e7163617-2496-4886-8b81-61sd6d7ed82")
-        API.read()
-
+    -- store processed data into form data table
+    FORMDATA[LAYOUTINDEX.CYCLIC_CALIBRATION] = CYCLIC_CALIBRATION
+    FORMDATA[LAYOUTINDEX.COLLECTIVE_CALIBRATION] = COLLECTIVE_CALIBRATION
+    FORMDATA[LAYOUTINDEX.GEO_CORRECTION] = GEO_CORRECTION
+    FORMDATA[LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = CYCLIC_PITCH_LIMIT
+    FORMDATA[LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = COLLECTIVE_PITCH_LIMIT
+    FORMDATA[LAYOUTINDEX.SWASH_PITCH_LIMIT] = SWASH_PITCH_LIMIT
+    FORMDATA[LAYOUTINDEX.SWASH_PHASE] = SWASH_PHASE
+    FORMDATA[LAYOUTINDEX.COL_TILT_COR_POS] = COL_TILT_COR_POS
+    FORMDATA[LAYOUTINDEX.COL_TILT_COR_NEG] = COL_TILT_COR_NEG
 end
 
 
-local function loadDataStep2()
-        -- fetch the mixer config data via MSP
-        local API = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_PITCH")
-        API.setCompleteHandler(function(self, buf)
+-- -------------------------------------------------------
+-- -- Load functions
+-- -------------------------------------------------------
 
-            local structure = API.data().structure
-            local fields = rfsuite.app.Page.apidata.formdata.fields
-            local formFields = rfsuite.app.formFields
-            local cyclic_calibration 
-            local cyclic_pitch_limit
+local LOAD_SEQUENCE = {
+  "MIXER_CONFIG",
+  "MIXER_INPUT_INDEXED_PITCH",
+  "MIXER_INPUT_INDEXED_ROLL",
+  "MIXER_INPUT_INDEXED_COLLECTIVE",
+}
 
-            -- get just one field
-            local rate_stabilized_pitch = API.readValue("rate_stabilized_pitch")
-            local min_stabilized_pitch = API.readValue("min_stabilized_pitch")
-            local max_stabilized_pitch = API.readValue("max_stabilized_pitch")
+local function loadNext(i)
+  local IDX = LOAD_SEQUENCE[i]
+  if not IDX then
+    load.complete()
+    return
+  end
 
-            -- store the direction for later use
-            ELE_DIRECTION = (rate_stabilized_pitch < 0) and 0 or 1
+  local API = rfsuite.tasks.msp.api.load(IDX)
+  API.setCompleteHandler(function(self, buf)
+    APIDATA[IDX] = {}
+    APIDATA[IDX]['values']   = API.data().parsed
+    APIDATA[IDX]['structure']   = API.data().structure
+    APIDATA[IDX]['buffer']   = API.data().buffer
+    APIDATA[IDX]['receivedBytesCount']   = API.data().receivedBytesCount
+    APIDATA[IDX]['positionmap']   = API.data().positionmap
+    APIDATA[IDX]['other']   = API.data().other
+    loadNext(i + 1)
+  end)
 
-            -- convert the value to the expected signed value
-            cyclic_calibration = u16_to_s16(rate_stabilized_pitch)
-            cyclic_calibration = math.abs(cyclic_calibration)
-            if cyclic_calibration >= 2000 then cyclic_calibration = 2000  end
-            if cyclic_calibration <= 200 then cyclic_calibration = 200 end
-
-            cyclic_pitch_limit = u16_to_s16(max_stabilized_pitch)
-            cyclic_pitch_limit = cyclic_pitch_limit * 12/100  
-            cyclic_pitch_limit = math.floor(cyclic_pitch_limit + 0.5)
-            cyclic_pitch_limit = math.abs(cyclic_pitch_limit)  -- force positive
-
-            -- transform into something we can use for cyclic calibration
-            injectField(FIELDS.CYCLIC_CALIBRATION, "rate_stabilized_pitch", API, {valueOverride = cyclic_calibration})
-            injectField(FIELDS.CYCLIC_PITCH_LIMIT, "max_stabilized_pitch", API, {valueOverride = cyclic_pitch_limit})
-
-            -- store the raw data for later use
-            rfsuite.tasks.msp.api.apidata.values["MIXER_INPUT_INDEXED_PITCH"] = API.data().parsed
-            rfsuite.tasks.msp.api.apidata.structure["MIXER_INPUT_INDEXED_PITCH"] = API.data().structure
-            rfsuite.tasks.msp.api.apidata.receivedBytes["MIXER_INPUT_INDEXED_PITCH"] = API.data().buffer
-            rfsuite.tasks.msp.api.apidata.receivedBytesCount["MIXER_INPUT_INDEXED_PITCH"] = API.data().receivedBytesCount
-            rfsuite.tasks.msp.api.apidata.positionmap["MIXER_INPUT_INDEXED_PITCH"] = API.data().positionmap
-            rfsuite.tasks.msp.api.apidata.other["MIXER_INPUT_INDEXED_PITCH"] = API.data().other or {}
-
-            -- bump to next step
-            loadDataStep3()
-
-        end)
-        API.setUUID("b91s3647-1496-4886-8b81-61sd6d7ed82")
-        API.read()
-
+  -- Keep your UUID scheme, but fix concat operator:
+  API.setUUID("d8163617-1496-4886-8b81-" .. IDX)
+  API.read()
 end
 
-local function loadDataStep1()
-        -- fetch the mixer config data via MSP
-        local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
-        API.setCompleteHandler(function(self, buf)
-
-            local structure = API.data().structure
-            local fields = rfsuite.app.Page.apidata.formdata.fields
-            local formFields = rfsuite.app.formFields
-
-            local swash_pitch_limit = API.readValue("swash_pitch_limit")
-            total_pitch_limit= swash_pitch_limit * 12/1000  
-            total_pitch_limit = math.floor(total_pitch_limit + 0.5)
-            total_pitch_limit = math.abs(total_pitch_limit)  -- force positive      
-            
-            rfsuite.utils.log("Converted swash pitch limit value: " .. tostring(total_pitch_limit),"info")
-
-            injectField(FIELDS.GEO_CORRECTION, "swash_geo_correction", API)
-            injectField(FIELDS.SWASH_PITCH_LIMIT, "swash_pitch_limit", API, {valueOverride = total_pitch_limit})
-            injectField(FIELDS.SWASH_PHASE, "swash_phase", API)
-            injectField(FIELDS.COL_TILT_COR_POS, "collective_tilt_correction_pos", API)
-            injectField(FIELDS.COL_TILT_COR_NEG, "collective_tilt_correction_neg", API)
-
-            -- store the raw data for later use
-            rfsuite.tasks.msp.api.apidata.values["MIXER_CONFIG"] = API.data().parsed
-            rfsuite.tasks.msp.api.apidata.structure["MIXER_CONFIG"] = API.data().structure
-            rfsuite.tasks.msp.api.apidata.receivedBytes["MIXER_CONFIG"] = API.data().buffer
-            rfsuite.tasks.msp.api.apidata.receivedBytesCount["MIXER_CONFIG"] = API.data().receivedBytesCount
-            rfsuite.tasks.msp.api.apidata.positionmap["MIXER_CONFIG"] = API.data().positionmap
-            rfsuite.tasks.msp.api.apidata.other["MIXER_CONFIG"] = API.data().other or {}
-
-            -- bump to next step
-            loadDataStep2()
-
-        end)
-        API.setUUID("d8163617-1496-4886-8b81-61sd6d7ed81")
-        API.read()
-
+function load.start()
+  loadNext(1)
 end
 
-local function saveDataStep1()
+function load.complete()
+  apiDataToFormData()
+  rfsuite.app.triggers.closeProgressLoader = true
+end
+
+-- -------------------------------------------------------
+-- -- Save function
+-- -------------------------------------------------------
+
+function save.step1()
   local app = rfsuite.app
   local formData = app.Page.apidata.formdata.fields
 
@@ -340,6 +203,68 @@ local function saveDataStep1()
 
   API.write()
 end
+
+-- -------------------------------------------------------
+-- -- Page interface functions
+-- -------------------------------------------------------
+local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+
+    local app = rfsuite.app
+    local formLines = app.formLines
+    local formFields = app.formFields
+
+    -- setup page
+    app.uiState = app.uiStatus.pages
+    app.triggers.isReady = false
+    app.lastLabel = nil
+    app.lastIdx = idx
+    app.lastTitle = title
+    app.lastScript = script
+
+    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
+    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+
+    -- build form
+    form.clear()
+    rfsuite.session.lastPage = script
+
+    local pageTitle = app.Page.pageTitle or title
+    app.ui.fieldHeader(pageTitle)
+
+
+    for i, f in pairs(LAYOUT) do
+
+        -- bump line count
+        app.formLineCnt = i
+
+        -- display field
+        formLines[app.formLineCnt] = form.addLine(f.t)
+        formFields[i] = form.addNumberField(formLines[app.formLineCnt], 
+                            nil,                    -- position on line
+                            f.min or 0,             -- min value
+                            f.max or 0,             -- max value
+                            function()              -- get value
+                                local value = FORMDATA[i]
+                                if value == nil then
+                                    return 0
+                                end
+                                return value
+                            end, 
+                            function(value)          -- set value
+                                FORMDATA[i] = value
+                            end
+                        )
+        if f.unit then formFields[i]:suffix(f.unit or "") end
+        if f.step then formFields[i]:step(f.step or 1) end
+        if f.decimals then formFields[i]:decimals(f.decimals or 0)   end
+        if f.help then formFields[i]:help(f.help or "") end       
+    end
+
+
+    -- start msp load sequence
+    load.start()
+end
+
 
 
 local function onNavMenu(self)
@@ -389,4 +314,18 @@ end
 local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
 
-return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, onNavMenu=onNavMenu, onSaveMenu = onSaveMenu, postLoad = postLoad, wakeup = wakeup, onReloadMenu = onReloadMenu}
+return {
+    openPage = openPage, 
+    onNavMenu=onNavMenu, 
+    onSaveMenu = onSaveMenu, 
+    postLoad = postLoad, 
+    wakeup = wakeup, 
+    onReloadMenu = onReloadMenu,
+    navButtons = {
+        menu = true, 
+        save = true, 
+        reload = true, 
+        tool = false, 
+        help = false
+    }
+}
