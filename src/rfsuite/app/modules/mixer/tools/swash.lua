@@ -65,6 +65,11 @@ local function round(x)
     return math.ceil(x - 0.5)
 end
 
+local function rateToDir(u16rate)
+    -- rate_stabilized_* comes from MSP as u16 encoding s16
+    return (u16_to_s16(u16rate) < 0) and 0 or 1
+end
+
 -- we take the raw data from APIDATA and process it into FORMDATA for easier use in the form
 -- the reverse is done in the save step
 function apiDataToFormData() 
@@ -74,9 +79,10 @@ function apiDataToFormData()
     local ROTOR_DIRECTION = APIDATA["MIXER_CONFIG"]["values"].main_rotor_dir
 
     -- determine directions
-    COL_DIRECTION = (APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective < 0) and 0 or 1
-    ELE_DIRECTION = (APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch < 0) and 0 or 1
-    AIL_DIRECTION = (APIDATA["MIXER_INPUT_INDEXED_ROLL"]["values"].rate_stabilized_roll < 0) and 0 or 1
+    COL_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective)
+    ELE_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch)
+    AIL_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_ROLL"]["values"].rate_stabilized_roll)
+ 
 
     -- store processed data into form data table
     FORMDATA[LAYOUTINDEX.SWASH_TYPE] = SWASH_TYPE
