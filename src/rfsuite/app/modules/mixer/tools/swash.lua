@@ -97,13 +97,13 @@ function copyFormToApiValues()
         return (d == 0) and -1 or 1
     end
 
-    -- form values (already "normalized"/absolute in the UI)
-    local cyclicRate_ui = round(FORMDATA[LAYOUTINDEX.CYCLIC_CALIBRATION] or 0)    
-    local collRate_ui   = round(FORMDATA[LAYOUTINDEX.COLLECTIVE_CALIBRATION] or 0)
-
-    -- limits in degrees -> raw (reverse of: raw * 12/100)
-    local cyclicMax_raw = round((FORMDATA[LAYOUTINDEX.CYCLIC_PITCH_LIMIT] or 0) * 100 / 12)
-    local collMax_raw   = round((FORMDATA[LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] or 0) * 100 / 12)
+    local function applyDirectionToRate(u16rate, dir01)
+        if u16rate == nil then return nil end
+        local s = u16_to_s16(u16rate)
+        local mag = math.abs(s)
+        local signed = mag * dirSign(dir01)
+        return s16_to_u16(signed)
+    end
 
     -- ----------------------------
     -- MIXER_CONFIG payload
@@ -114,8 +114,32 @@ function copyFormToApiValues()
     -- GEO_CORRECTION: forward was (raw/5)*10  => raw*2 ; reverse raw=form/2
     mixerCfg["swash_type"] = FORMDATA[LAYOUTINDEX.SWASH_TYPE]
     mixerCfg["main_rotor_dir"] = FORMDATA[LAYOUTINDEX.ROTOR_DIRECTION]
-    
 
+    -- ----------------------------
+    -- Directions: flip sign of the existing rates
+    -- (keep current magnitudes; only change direction)
+    -- ----------------------------
+    local pitch = apiValues["MIXER_INPUT_INDEXED_PITCH"] and apiValues["MIXER_INPUT_INDEXED_PITCH"].values
+    local roll  = apiValues["MIXER_INPUT_INDEXED_ROLL"] and apiValues["MIXER_INPUT_INDEXED_ROLL"].values
+    local coll  = apiValues["MIXER_INPUT_INDEXED_COLLECTIVE"] and apiValues["MIXER_INPUT_INDEXED_COLLECTIVE"].values
+
+    if pitch then
+        pitch["rate_stabilized_pitch"] =
+            applyDirectionToRate(pitch["rate_stabilized_pitch"], FORMDATA[LAYOUTINDEX.ELE_DIRECTION])
+    end
+    if roll then
+        roll["rate_stabilized_roll"] =
+            applyDirectionToRate(roll["rate_stabilized_roll"], FORMDATA[LAYOUTINDEX.AIL_DIRECTION])
+    end
+    if coll then
+        coll["rate_stabilized_collective"] =
+            applyDirectionToRate(coll["rate_stabilized_collective"], FORMDATA[LAYOUTINDEX.COL_DIRECTION])
+    end
+
+    -- keep globals aligned (optional, but helps consistency if reused)
+    AIL_DIRECTION = FORMDATA[LAYOUTINDEX.AIL_DIRECTION]
+    ELE_DIRECTION = FORMDATA[LAYOUTINDEX.ELE_DIRECTION]
+    COL_DIRECTION = FORMDATA[LAYOUTINDEX.COL_DIRECTION]
 
     return true
 end
