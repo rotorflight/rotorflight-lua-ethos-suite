@@ -273,6 +273,15 @@ local SAVE_SEQUENCE = {
 local function writeNext(i)
     local apikey = SAVE_SEQUENCE[i]
     if not apikey then
+
+        -- commit the change
+        local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+        EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
+        EAPI.setCompleteHandler(function(self)
+            rfsuite.utils.log("Writing to EEPROM", "info")
+        end)
+        EAPI.write()
+
         -- all done
         rfsuite.app.triggers.closeProgressLoader = true
         return
