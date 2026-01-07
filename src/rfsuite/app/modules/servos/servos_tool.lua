@@ -64,6 +64,21 @@ local function servoCenterFocusOn(self)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
+local function saveServoCenter(self)
+
+    local servoCenter = math.floor(configs[servoIndex]['mid'])
+
+    local message = {command = 213, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
+
+    rfsuite.tasks.msp.mspQueue:add(message)
+
+    --local mspEepromWrite = {command = 250, simulatorResponse = {}}
+    --rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+
+end
+
 local function saveServoSettings(self)
 
     local servoCenter = math.floor(configs[servoIndex]['mid'])
@@ -152,12 +167,21 @@ local function wakeup(self)
             currentServoCenter = configs[servoIndex]['mid']
 
             local now = os.clock()
-            local settleTime = 0.85
+            local settleTime
+            if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+                settleTime = 0.1
+            else
+                settleTime = 0.85
+            end
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
                     lastSetServoCenter = currentServoCenter
                     lastServoChangeTime = now
-                    self.saveServoSettings(self)
+                    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+                        self.saveServoCenter(self)
+                    else
+                        self.saveServoSettings(self)
+                    end    
                 end
             end
 
@@ -499,6 +523,7 @@ return {
     servoCenterFocusAllOn = servoCenterFocusAllOn,
     servoCenterFocusAllOff = servoCenterFocusAllOff,
     saveServoSettings = saveServoSettings,
+    saveServoCenter = saveServoCenter,
     onToolMenu = onToolMenu,
     wakeup = wakeup,
     openPage = openPage,
