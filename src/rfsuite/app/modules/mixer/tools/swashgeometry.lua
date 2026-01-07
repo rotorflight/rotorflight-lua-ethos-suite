@@ -42,25 +42,34 @@ local LAYOUT = {
         [LAYOUTINDEX.CYCLIC_CALIBRATION] = {t = "@i18n(app.modules.mixer.cyclic_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- MIXER_INPUT_INDEXED_PITCH
         [LAYOUTINDEX.COLLECTIVE_CALIBRATION] = {t = "@i18n(app.modules.mixer.collective_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- MIXER_INPUT_INDEXED_COLLECTIVE
         [LAYOUTINDEX.GEO_CORRECTION] = {t = "@i18n(app.modules.mixer.geo_correction)@",  unit = "%", step = 2, default = 0, min = -250, max = 250, decimals = 1    },                     -- MIXER_CONFIG
-        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 20       },                    -- MIXER_INPUT_INDEXED_PITCH
-        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 20     },               -- MIXER_INPUT_INDEXED_COLLECTIVE  
+        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 200       },                   -- MIXER_INPUT_INDEXED_PITCH
+        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 200     },              -- MIXER_INPUT_INDEXED_COLLECTIVE  
         [LAYOUTINDEX.SWASH_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.swash_pitch_limit)@", unit = "°" , default = 200,    decimals = 1 , min = 0, max = 360      },                    -- MIXER_CONFIG
         [LAYOUTINDEX.SWASH_PHASE] = {t = "@i18n(app.modules.mixer.swash_phase)@", unit = "°",  min = -1800, max = 1800 , decimals = 1,                   },                               -- MIXER_CONFIG
-        [LAYOUTINDEX.COL_TILT_COR_POS] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    unit = "%", apiversiongte = 12.08},                                          -- MIXER_CONFIG
-        [LAYOUTINDEX.COL_TILT_COR_NEG] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    unit = "%", apiversiongte = 12.08},                                          -- MIXER_CONFIG
+        [LAYOUTINDEX.COL_TILT_COR_POS] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
+        [LAYOUTINDEX.COL_TILT_COR_NEG] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
     }
 
 
 -- -------------------------------------------------------
 -- -- Helper functions
 -- -------------------------------------------------------
-
 local function u16_to_s16(u)
     if u >= 0x8000 then
         return u - 0x10000
     else
         return u
     end
+end
+
+local function s16_to_u16(s)
+    if s < 0 then return s + 0x10000 end
+    return s
+end
+
+local function round(x)
+    if x >= 0 then return math.floor(x + 0.5) end
+    return math.ceil(x - 0.5)
 end
 
 -- we take the raw data from APIDATA and process it into FORMDATA for easier use in the form
@@ -109,10 +118,8 @@ function apiDataToFormData()
     COLLECTIVE_PITCH_LIMIT = math.floor(COLLECTIVE_PITCH_LIMIT + 0.5)
 
     -- swash pitch limit
-    rfsuite.utils.log("SWASH_PITCH_LIMIT raw: "..tostring(SWASH_PITCH_LIMIT), "info")
     SWASH_PITCH_LIMIT = SWASH_PITCH_LIMIT * 12/100
     SWASH_PITCH_LIMIT = math.floor(SWASH_PITCH_LIMIT + 0.5)   
-    rfsuite.utils.log("SWASH_PITCH_LIMIT scaled: "..tostring(SWASH_PITCH_LIMIT), "info")
 
     -- store processed data into form data table
     FORMDATA[LAYOUTINDEX.CYCLIC_CALIBRATION] = CYCLIC_CALIBRATION
@@ -125,6 +132,74 @@ function apiDataToFormData()
     FORMDATA[LAYOUTINDEX.COL_TILT_COR_POS] = COL_TILT_COR_POS
     FORMDATA[LAYOUTINDEX.COL_TILT_COR_NEG] = COL_TILT_COR_NEG
 end
+
+-- the reverse of apiDataToFormData: take the values from FORMDATA and convert them back into raw API values
+function copyFormToApiValues()
+    local apiValues = APIDATA
+    if not apiValues then return false end
+
+    -- helper: your stored dirs are 0/1; convert to -1/+1
+    local function dirSign(d)
+        return (d == 0) and -1 or 1
+    end
+
+    -- form values (already "normalized"/absolute in the UI)
+    local cyclicRate_ui = round(FORMDATA[LAYOUTINDEX.CYCLIC_CALIBRATION] or 0)    
+    local collRate_ui   = round(FORMDATA[LAYOUTINDEX.COLLECTIVE_CALIBRATION] or 0)
+
+    -- limits in degrees -> raw (reverse of: raw * 12/100)
+    local cyclicMax_raw = round((FORMDATA[LAYOUTINDEX.CYCLIC_PITCH_LIMIT] or 0) * 100 / 12)
+    local collMax_raw   = round((FORMDATA[LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] or 0) * 100 / 12)
+
+    -- ----------------------------
+    -- MIXER_CONFIG payload
+    -- ----------------------------
+    local mixerCfg = apiValues["MIXER_CONFIG"].values
+    if not mixerCfg then return false end
+
+    -- GEO_CORRECTION: forward was (raw/5)*10  => raw*2 ; reverse raw=form/2
+    mixerCfg["swash_geo_correction"] = round((FORMDATA[LAYOUTINDEX.GEO_CORRECTION] or 0) / 2)
+
+    -- SWASH_PITCH_LIMIT: forward raw*12/100 ; reverse raw=deg*100/12
+    mixerCfg["swash_pitch_limit"] = round((FORMDATA[LAYOUTINDEX.SWASH_PITCH_LIMIT] or 0) * 100 / 12)
+
+    -- SWASH_PHASE: currently treated as raw in apiDataToFormData()
+    mixerCfg["swash_phase"] = (FORMDATA[LAYOUTINDEX.SWASH_PHASE] or 0)
+
+    mixerCfg["collective_tilt_correction_pos"] = (FORMDATA[LAYOUTINDEX.COL_TILT_COR_POS] or 0)
+    mixerCfg["collective_tilt_correction_neg"] = (FORMDATA[LAYOUTINDEX.COL_TILT_COR_NEG] or 0)
+
+    -- ----------------------------
+    -- MIXER_INPUT_INDEXED_PITCH (cyclic pitch)
+    -- ----------------------------
+    local pitch = apiValues["MIXER_INPUT_INDEXED_PITCH"].values
+    local v = cyclicRate_ui * dirSign(ELE_DIRECTION)
+    pitch["rate_stabilized_pitch"] = s16_to_u16(v)
+    pitch["max_stabilized_pitch"] = s16_to_u16( math.abs(cyclicMax_raw) )
+    pitch["min_stabilized_pitch"] = s16_to_u16( -math.abs(cyclicMax_raw) )
+
+    -- ----------------------------
+    -- MIXER_INPUT_INDEXED_ROLL (cyclic roll) 
+    -- ----------------------------
+    local roll = apiValues["MIXER_INPUT_INDEXED_ROLL"].values
+    local v = cyclicRate_ui * dirSign(AIL_DIRECTION)
+    roll["rate_stabilized_roll"] = s16_to_u16(v)
+    roll["max_stabilized_roll"] = s16_to_u16( math.abs(cyclicMax_raw) )
+    roll["min_stabilized_roll"] = s16_to_u16( -math.abs(cyclicMax_raw) )
+
+    -- ----------------------------
+    -- MIXER_INPUT_INDEXED_COLLECTIVE
+    -- ----------------------------
+    local coll = apiValues["MIXER_INPUT_INDEXED_COLLECTIVE"].values
+
+    local v = collRate_ui * dirSign(COL_DIRECTION)
+    coll["rate_stabilized_collective"] = s16_to_u16(v)
+    coll["max_stabilized_collective"] = s16_to_u16( math.abs(collMax_raw) )
+    coll["min_stabilized_collective"] = s16_to_u16( -math.abs(collMax_raw) )
+
+    return true
+end
+
 
 
 -- -------------------------------------------------------
@@ -147,14 +222,28 @@ local function loadNext(i)
 
   local API = rfsuite.tasks.msp.api.load(IDX)
   API.setCompleteHandler(function(self, buf)
-    APIDATA[IDX] = {}
-    APIDATA[IDX]['values']   = API.data().parsed
-    APIDATA[IDX]['structure']   = API.data().structure
-    APIDATA[IDX]['buffer']   = API.data().buffer
-    APIDATA[IDX]['receivedBytesCount']   = API.data().receivedBytesCount
-    APIDATA[IDX]['positionmap']   = API.data().positionmap
-    APIDATA[IDX]['other']   = API.data().other
-    loadNext(i + 1)
+        APIDATA[IDX] = {}
+
+        local d = API.data()
+
+        -- shallow-copy helper (snapshots tables so API internals can’t mutate our cache)
+        local function copyTable(src)
+            if type(src) ~= "table" then return src end
+            local dst = {}
+            for k, v in pairs(src) do
+            dst[k] = v
+            end
+            return dst
+        end
+
+        APIDATA[IDX]['values']             = copyTable(d.parsed)
+        APIDATA[IDX]['structure']          = copyTable(d.structure)
+        APIDATA[IDX]['buffer']             = copyTable(d.buffer)
+        APIDATA[IDX]['receivedBytesCount'] = d.receivedBytesCount
+        APIDATA[IDX]['positionmap']        = copyTable(d.positionmap)
+        APIDATA[IDX]['other']              = copyTable(d.other)
+
+        loadNext(i + 1)
   end)
 
   -- Keep your UUID scheme, but fix concat operator:
@@ -172,36 +261,46 @@ function load.complete()
 end
 
 -- -------------------------------------------------------
--- -- Save function
+-- -- Save functions
 -- -------------------------------------------------------
+local SAVE_SEQUENCE = {
+    "MIXER_CONFIG",
+    "MIXER_INPUT_INDEXED_PITCH",
+    "MIXER_INPUT_INDEXED_ROLL",
+    "MIXER_INPUT_INDEXED_COLLECTIVE",
+}
+
+local function writeNext(i)
+    local apikey = SAVE_SEQUENCE[i]
+    if not apikey then
+        -- all done
+        rfsuite.app.triggers.closeProgressLoader = true
+        return
+    end
+
+    local API = rfsuite.tasks.msp.api.load(apikey)
+    API.setRebuildOnWrite(true)
+
+    API.setCompleteHandler(function(self, buf)
+        -- continue to next write
+        writeNext(i + 1)
+    end)
+
+    -- Apply only the fields present in the payload table.
+    local payload = APIDATA[apikey].values
+    if payload then
+        for k, v in pairs(payload) do
+            API.setValue(k, v)
+        end
+    end
+
+    API.setUUID("d8163617-1496-4886-8b81-write-" .. apikey)
+    API.write()
+end
 
 function save.start()
-  local app = rfsuite.app
-  local formData = app.Page.apidata.formdata.fields
-
-  -- use the stored payload
-  local payload = rfsuite.tasks.msp.api.apidata.values["MIXER_CONFIG"]
-  if not payload then return end
-
-  -- gather values from the form
-  payload["swash_geo_correction"] = formData[FIELDS.GEO_CORRECTION].value
-  payload["swash_pitch_limit"]    = formData[FIELDS.SWASH_PITCH_LIMIT].value
-  payload["swash_phase"]          = formData[FIELDS.SWASH_PHASE].value
-  payload["collective_tilt_correction_pos"] = formData[FIELDS.COL_TILT_COR_POS].value
-  payload["collective_tilt_correction_neg"] = formData[FIELDS.COL_TILT_COR_NEG].value
-
-  -- write the data back via MSP
-  local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
-  API.setRebuildOnWrite(true)
-  API.setCompleteHandler(function(self, buf)
-      app.triggers.closeProgressLoader = true
-  end)
-
-  for k, v in pairs(payload) do
-    API.setValue(k, v)
-  end
-
-  API.write()
+    copyFormToApiValues()
+    writeNext(1)
 end
 
 -- -------------------------------------------------------
@@ -300,7 +399,7 @@ local function wakeup()
     end 
 
     if triggerSave then
-        rfsuite.app.ui.progressDisplay()
+        rfsuite.app.ui.progressDisplay("@i18n(app.msg_saving_settings)@","@i18n(app.msg_saving_to_fbl)@")
         save.start()
         triggerSave = false
     end   
