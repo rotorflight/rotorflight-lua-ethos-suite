@@ -27,21 +27,32 @@ local COL_DIRECTION
 -- -------------------------------------------------------
 -- -- Form layout
 -- -------------------------------------------------------
-local LAYOUTINDEX = {
+local LAYOUTINDEX 
+local LAYOUT 
+
+-- handler for tail mode change
+-- needs to be up here or we get a nil reference
+local function tailChanged()
+
+    rfsuite.session.tailMode = FORMDATA[LAYOUTINDEX.TAIL_ROTOR_MODE]
+
+    needsReboot = true
+end
+
+if rfsuite.session.tailMode >= 1 then
+
+    LAYOUTINDEX = {
         TAIL_ROTOR_MODE       = 1,   -- MIXER_CONFIG
-        TAIL_ROTOR_IDLE       = 2,   -- MIXER_CONFIG
-        TAIL_CENTER_TRIM      = 3,   -- MIXER_CONFIG
-        YAW_DIRECTION         = 4,   -- MIXER_INPUT_INDEXED_YAW
+        YAW_DIRECTION         = 2,   -- MIXER_INPUT_INDEXED_YAW        
+        TAIL_ROTOR_IDLE       = 3,   -- MIXER_CONFIG
+        TAIL_CENTER_TRIM      = 4,   -- MIXER_CONFIG
         YAW_CALIBRATION       = 5,   -- MIXER_INPUT_INDEXED_YAW
         YAW_CW_LIMIT          = 6,   -- MIXER_INPUT_INDEXED_YAW
         YAW_CCW_LIMIT         = 7,   -- MIXER_INPUT_INDEXED_YAW
     }
 
-local LAYOUT 
-
-if rfsuite.session.tailMode >= 1 then
     LAYOUT = {
-            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() needsReboot = true end}, 
+            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
             [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- MIXER_INPUT_INDEXED_YAW
             [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "@i18n(app.modules.mixer.tail_center_offset)@",  unit = "%", default = 0, min = -500, max = 500, decimals = 1},
 
@@ -52,8 +63,19 @@ if rfsuite.session.tailMode >= 1 then
             [LAYOUTINDEX.TAIL_ROTOR_IDLE] = {t = "@i18n(app.modules.mixer.tail_motor_idle)@", unit="%", min=0, max=250, step=1, decimals = 1},
         }
 else
+
+    LAYOUTINDEX = {
+        TAIL_ROTOR_MODE       = 1,   -- MIXER_CONFIG
+        TAIL_ROTOR_IDLE       = 2,   -- MIXER_CONFIG
+        YAW_DIRECTION         = 3,   -- MIXER_INPUT_INDEXED_YAW
+        TAIL_CENTER_TRIM      = 4,   -- MIXER_CONFIG        
+        YAW_CALIBRATION       = 5,   -- MIXER_INPUT_INDEXED_YAW
+        YAW_CW_LIMIT          = 6,   -- MIXER_INPUT_INDEXED_YAW
+        YAW_CCW_LIMIT         = 7,   -- MIXER_INPUT_INDEXED_YAW
+    }    
+
     LAYOUT = {
-            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1}, 
+            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
             [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- MIXER_INPUT_INDEXED_YAW
             [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "@i18n(app.modules.mixer.yaw_center_trim)@",  unit = "%", default = 0, min = -250, max = 250, decimals = 1},
 
@@ -69,6 +91,7 @@ end
 -- -------------------------------------------------------
 -- -- Helper functions
 -- -------------------------------------------------------
+
 local function u16_to_s16(u)
     if u >= 0x8000 then
         return u - 0x10000
@@ -160,48 +183,71 @@ function copyFormToApiValues()
     local apiValues = APIDATA
     if not apiValues then return false end
 
-    -- helper: your stored dirs are 0/1; convert to -1/+1
+    -- helpers
+    local function round(x)
+        if x >= 0 then return math.floor(x + 0.5) end
+        return math.ceil(x - 0.5)
+    end
+
     local function dirSign(d)
         return (d == 0) and -1 or 1
     end
 
-    local function applyDirectionToRate(u16rate, dir01)
-        if u16rate == nil then return nil end
-        local s = u16_to_s16(u16rate)
-        local mag = math.abs(s)
-        local signed = mag * dirSign(dir01)
-        return s16_to_u16(signed)
-    end
-
-    -- ----------------------------
-    -- MIXER_CONFIG payload
-    -- ----------------------------
-    local mixerCfg = apiValues["MIXER_CONFIG"].values
+    -- -------------------------------------------------
+    -- MIXER_CONFIG (tail-specific fields only)
+    -- -------------------------------------------------
+    local mixerCfg = apiValues["MIXER_CONFIG"] and apiValues["MIXER_CONFIG"].values
     if not mixerCfg then return false end
 
-    -- GEO_CORRECTION: forward was (raw/5)*10  => raw*2 ; reverse raw=form/2
-    mixerCfg["swash_type"] = FORMDATA[LAYOUTINDEX.SWASH_TYPE]
-    mixerCfg["main_rotor_dir"] = FORMDATA[LAYOUTINDEX.ROTOR_DIRECTION]
+    -- tail rotor mode always writable
+    mixerCfg["tail_rotor_mode"] = FORMDATA[LAYOUTINDEX.TAIL_ROTOR_MODE]
 
-    -- ----------------------------
-    -- Directions: flip sign of the existing rates
-    -- (keep current magnitudes; only change direction)
-    -- ----------------------------
-    local yaw = apiValues["MIXER_INPUT_INDEXED_YAW"] and apiValues["MIXER_INPUT_INDEXED_YAW"].values
-
-
-    if yaw then
-        yaw["rate_stabilized_yaw"] =
-            applyDirectionToRate(yaw["rate_stabilized_yaw"], FORMDATA[LAYOUTINDEX.YAW_DIRECTION])
+    -- tail motor idle only relevant for motor/variable tail
+    if rfsuite.session.tailMode >= 1 then
+        mixerCfg["tail_motor_idle"] = FORMDATA[LAYOUTINDEX.TAIL_ROTOR_IDLE]
+    else
+        -- fixed pitch tail: write center trim (UI scaled ±24deg)
+        local trim_ui = round(FORMDATA[LAYOUTINDEX.TAIL_CENTER_TRIM] or 0)
+        mixerCfg["tail_center_trim"] = s16_to_u16(
+            round(trim_ui * 100 / 24)
+        )
     end
 
+    -- -------------------------------------------------
+    -- MIXER_INPUT_INDEXED_YAW
+    -- -------------------------------------------------
+    local yaw = apiValues["MIXER_INPUT_INDEXED_YAW"]
+        and apiValues["MIXER_INPUT_INDEXED_YAW"].values
+    if not yaw then return false end
 
-    -- keep globals aligned (optional, but helps consistency if reused)
-    YAW_DIRECTION = FORMDATA[LAYOUTINDEX.YAW_DIRECTION]
+    -- Yaw rate: UI is magnitude, direction from selector
+    local yawRate_ui = round(FORMDATA[LAYOUTINDEX.YAW_CALIBRATION] or 0)
+    yaw["rate_stabilized_yaw"] = s16_to_u16(
+        yawRate_ui * dirSign(FORMDATA[LAYOUTINDEX.YAW_DIRECTION])
+    )
 
+    -- Yaw limits
+    local cw_ui  = round(FORMDATA[LAYOUTINDEX.YAW_CW_LIMIT]  or 0)
+    local ccw_ui = round(FORMDATA[LAYOUTINDEX.YAW_CCW_LIMIT] or 0)
+
+    local cw_raw, ccw_raw
+    if rfsuite.session.tailMode >= 1 then
+        -- variable / motor tail: UI already matches raw magnitude
+        cw_raw  = cw_ui
+        ccw_raw = ccw_ui
+    else
+        -- fixed pitch tail: UI scaled by 24/100
+        cw_raw  = round(cw_ui  * 100 / 24)
+        ccw_raw = round(ccw_ui * 100 / 24)
+    end
+
+    -- API convention: min is negative, max is positive
+    yaw["min_stabilized_yaw"] = s16_to_u16(-math.abs(cw_raw))
+    yaw["max_stabilized_yaw"] = s16_to_u16( math.abs(ccw_raw))
 
     return true
 end
+
 
 
 
@@ -265,10 +311,8 @@ end
 -- -- Save functions
 -- -------------------------------------------------------
 local SAVE_SEQUENCE = {
-    "MIXER_CONFIG",
-    "MIXER_INPUT_INDEXED_PITCH",
-    "MIXER_INPUT_INDEXED_ROLL",
-    "MIXER_INPUT_INDEXED_COLLECTIVE",
+  "MIXER_CONFIG",
+  "MIXER_INPUT_INDEXED_YAW",
 }
 
 local function writeNext(i)
