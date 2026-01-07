@@ -5,12 +5,22 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {
-    [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" },
-    [2] = { name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png" },    
-    [3] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png" },
-    [4] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },
-}
+local S_PAGES
+
+if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    S_PAGES = {
+        [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" },
+        [2] = { name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png" },    
+        [3] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png" },
+        [4] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },
+    }
+else
+    S_PAGES = {
+        [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash_legacy.lua", image = "swash.png" },
+        [2] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail_legacy.lua", image = "tail.png" },
+        [3] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },    
+    }   
+end
 
 
 local enableWakeup = false
