@@ -3955,6 +3955,11 @@
           "needs_translation": false,
           "translation": "Tail"
         },
+        "tail_center_offset": {
+          "english": "Tail Center Offset",
+          "needs_translation": false,
+          "translation": "Tail Center Offset"
+        },
         "tail_motor_idle": {
           "english": "Tail Idle Thr%",
           "needs_translation": false,
@@ -3969,6 +3974,26 @@
           "english": "Trims",
           "needs_translation": false,
           "translation": "Trims"
+        },
+        "yaw_calibration": {
+          "english": "Yaw Calibration",
+          "needs_translation": false,
+          "translation": "Yaw Calibration"
+        },
+        "yaw_ccw_limit": {
+          "english": "Yaw CCW Limit",
+          "needs_translation": false,
+          "translation": "Yaw CCW Limit"
+        },
+        "yaw_center_trim": {
+          "english": "Yaw Center Trim",
+          "needs_translation": false,
+          "translation": "Yaw Center Trim"
+        },
+        "yaw_cw_limit": {
+          "english": "Yaw CW Limit",
+          "needs_translation": false,
+          "translation": "Yaw CW Limit"
         },
         "yaw_direction": {
           "english": "Yaw Direction",

@@ -3294,6 +3294,11 @@
       }
     },
     "mixer": {
+      "tail_center_offset": {
+        "english": "Tail Center Offset",
+        "translation": "Tail Center Offset",
+        "needs_translation": true
+      },
       "cyclic_calibration": {
         "english": "Cyclic Calibration",
         "translation": "Cyclic Calibration",
@@ -3312,6 +3317,26 @@
       "collective_pitch_limit": {
         "english": "Collective Pitch Limit",
         "translation": "Collective Pitch Limit",
+        "needs_translation": true
+      },
+      "yaw_calibration": {
+        "english": "Yaw Calibration",
+        "translation": "Yaw Calibration",
+        "needs_translation": true
+      },
+      "yaw_cw_limit": {
+        "english": "Yaw CW Limit",
+        "translation": "Yaw CW Limit",
+        "needs_translation": true
+      },
+      "yaw_center_trim": {
+        "english": "Yaw Center Trim",
+        "translation": "Yaw Center Trim",
+        "needs_translation": true
+      },
+      "yaw_ccw_limit": {
+        "english": "Yaw CCW Limit",
+        "translation": "Yaw CCW Limit",
         "needs_translation": true
       },
       "swash": {
