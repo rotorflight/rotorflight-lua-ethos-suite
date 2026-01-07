@@ -175,7 +175,7 @@ end
 -- -- Save function
 -- -------------------------------------------------------
 
-function save.step1()
+function save.start()
   local app = rfsuite.app
   local formData = app.Page.apidata.formdata.fields
 
@@ -263,17 +263,13 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
 
     -- start msp load sequence
     load.start()
+    enableWakeup = true
 end
 
 
 
 local function onNavMenu(self)
     rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
-end
-
-local function postLoad(self)
-    enableWakeup = true
-    loadDataStep1()
 end
 
 local function onSaveMenu()
@@ -305,7 +301,7 @@ local function wakeup()
 
     if triggerSave then
         rfsuite.app.ui.progressDisplay()
-        saveDataStep1()
+        save.start()
         triggerSave = false
     end   
 
