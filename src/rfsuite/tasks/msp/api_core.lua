@@ -328,9 +328,9 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
         return nil
     end
 
-    local positionmap       = rfsuite.tasks.msp.api.apidata.positionmap[apiname]
-    local receivedBytes     = rfsuite.tasks.msp.api.apidata.receivedBytes[apiname]
-    local receivedBytesCount= rfsuite.tasks.msp.api.apidata.receivedBytesCount[apiname]
+    local positionmap       = rfsuite.tasks.msp.api.apidata.positionmap and rfsuite.tasks.msp.api.apidata.positionmap[apiname]
+    local receivedBytes     = rfsuite.tasks.msp.api.apidata.receivedBytes and rfsuite.tasks.msp.api.apidata.receivedBytes[apiname]
+    local receivedBytesCount= rfsuite.tasks.msp.api.apidata.receivedBytesCount and rfsuite.tasks.msp.api.apidata.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
     if noDelta == true then useDelta = false end
@@ -371,7 +371,7 @@ function core.buildDeltaPayload(apiname, payload, api_structure, positionmap, re
                     if api == mspapi then mspapi = i; break end
                 end
                 field.apikey = apikey
-                field.mspapi = msp.api
+                field.mspapi = mspapi
                 utils.log("[buildDeltaPayload] Converted API field", "info")
             end
 
@@ -438,7 +438,9 @@ function core.buildFullPayload(apiname, payload, api_structure)
     local actual_fields = {}
     if rfsuite.app.Page and rfsuite.app.Page.apidata then
         for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
-            actual_fields[field.apikey] = field
+            if field.apikey then
+                actual_fields[field.apikey] = field
+            end
         end
     end
 

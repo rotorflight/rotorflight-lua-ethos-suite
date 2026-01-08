@@ -3294,14 +3294,134 @@
       }
     },
     "mixer": {
+      "tail_center_offset": {
+        "english": "Tail Center Offset",
+        "translation": "Tail Center Offset",
+        "needs_translation": false
+      },
+      "cyclic_calibration": {
+        "english": "Cyclic Calibration",
+        "translation": "Cyclic Calibration",
+        "needs_translation": false
+      },
+      "collective_calibration": {
+        "english": "Collective Calibration",
+        "translation": "Collective Calibration",
+        "needs_translation": false
+      },
+      "cyclic_pitch_limit": {
+        "english": "Cyclic Pitch Limit",
+        "translation": "Cyclic Pitch Limit",
+        "needs_translation": false
+      },
+      "collective_pitch_limit": {
+        "english": "Collective Pitch Limit",
+        "translation": "Collective Pitch Limit",
+        "needs_translation": false
+      },
+      "yaw_calibration": {
+        "english": "Yaw Calibration",
+        "translation": "Yaw Calibration",
+        "needs_translation": false
+      },
+      "yaw_cw_limit": {
+        "english": "Yaw CW Limit",
+        "translation": "Yaw CW Limit",
+        "needs_translation": false
+      },
+      "yaw_center_trim": {
+        "english": "Yaw Center Trim",
+        "translation": "Yaw Center Trim",
+        "needs_translation": false
+      },
+      "yaw_ccw_limit": {
+        "english": "Yaw CCW Limit",
+        "translation": "Yaw CCW Limit",
+        "needs_translation": false
+      },
+      "swash": {
+        "english": "Swash",
+        "translation": "Swash",
+        "needs_translation": false
+      },
+      "configuration": {
+        "english": "Configuration",
+        "translation": "Configuration",
+        "needs_translation": false
+      },
+      "directions": {
+        "english": "Mix Directions",
+        "translation": "Mix Directions",
+        "needs_translation": false
+      },
+      "geometry": {
+        "english": "Geometry",
+        "translation": "Geometry",
+        "needs_translation": false
+      },
+      "aileron_direction": {
+        "english": "Aileron Direction",
+        "translation": "Aileron Direction",
+        "needs_translation": false
+      },
+      "elevator_direction": {
+        "english": "Elevator Direction",
+        "translation": "Elevator Direction",
+        "needs_translation": false
+      },
+      "collective_direction": {
+        "english": "Collective Direction",
+        "translation": "Collective Direction",
+        "needs_translation": false
+      },
+      "yaw_direction": {
+        "english": "Yaw Direction",
+        "translation": "Yaw Direction",
+        "needs_translation": false
+      },
+      "settings": {
+        "english": "Settings",
+        "translation": "Settings",
+        "needs_translation": false
+      },
+      "trims": {
+        "english": "Trims",
+        "translation": "Trims",
+        "needs_translation": false
+      },
+      "tail": {
+        "english": "Tail",
+        "translation": "Tail",
+        "needs_translation": false
+      },
       "help_p1": {
         "english": "Adust swash plate geometry, phase angles, and limits.",
         "translation": "Adust swash plate geometry, phase angles, and limits.",
         "needs_translation": false
       },
+      "swash_type": {
+        "english": "Swash Type",
+        "translation": "Swash Type",
+        "needs_translation": false
+      },
+      "main_rotor_dir": {
+        "english": "Rotor Direction",
+        "translation": "Rotor Direction",
+        "needs_translation": false
+      },
+      "tail_rotor_mode": {
+        "english": "Tail Mode",
+        "translation": "Tail Mode",
+        "needs_translation": false
+      },
       "collective_tilt_correction_pos": {
-        "english": "Positive",
-        "translation": "Positive",
+        "english": "Collective Tilt Correction +",
+        "translation": "Collective Tilt Correction +",
+        "needs_translation": false
+      },
+      "collective_tilt_correction_neg": {
+        "english": "Collective Tilt Correction -",
+        "translation": "Collective Tilt Correction -",
         "needs_translation": false
       },
       "geo_correction": {
@@ -3317,11 +3437,6 @@
       "name": {
         "english": "Mixer",
         "translation": "Mixer",
-        "needs_translation": false
-      },
-      "collective_tilt_correction_neg": {
-        "english": "Negative",
-        "translation": "Negative",
         "needs_translation": false
       },
       "tail_motor_idle": {

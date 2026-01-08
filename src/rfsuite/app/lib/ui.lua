@@ -605,6 +605,10 @@ function ui.fieldChoice(i,lf)
     end
 
     local tbldata = f.table and app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
+    if f.tableEthos then
+        tbldata = f.tableEthos
+    end
+
 
     formFields[i] = form.addChoiceField(formLines[app.formLineCnt], posField, tbldata, function()
         if not fields or not fields[i] then
@@ -1242,7 +1246,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     app.formLineCnt = 0
 
-    if app.Page.apidata.formdata.fields then
+    if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
             if rfsuite.session.apiVersion == nil then return end
@@ -1492,6 +1496,14 @@ function ui.injectApiAttributes(formField, f, v)
         f.table = v.table
         local idxInc = f.tableIdxInc or v.tableIdxInc
         local tbldata = app.utils.convertPageValueTable(v.table, idxInc)
+        if f.type == 1 then
+            log("Injecting table: {}", "debug")
+            if formField.values then formField:values(tbldata) end
+        end
+    end
+
+    if v.tableEthos and not f.tableEthos then
+        local tbldata = v.tableEthos
         if f.type == 1 then
             log("Injecting table: {}", "debug")
             if formField.values then formField:values(tbldata) end

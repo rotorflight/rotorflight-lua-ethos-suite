@@ -68,6 +68,7 @@ function MspQueueController.new(opts)
     self.timeout = opts.timeout or 2.0
 
     self.uuid = nil -- last processed UUID
+    self.apiname = nil -- last processed API name
 
     self.loopInterval = opts.loopInterval or 0 -- optional rate limit
     self._nextProcessAt = 0
@@ -139,11 +140,13 @@ function MspQueueController:processQueue()
     if not system:getVersion().simulation then
         -- Real MSP: send if interval allows
         if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os.clock()) then
-            if self.currentMessage then
-                rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
-                self.lastTimeCommandSent = os.clock()
-                self.currentMessageStartTime = self.lastTimeCommandSent
-                self.retryCount = self.retryCount + 1
+            if self.currentMessage then        
+                local sent = rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+                if sent then
+                    self.lastTimeCommandSent = os.clock()
+                    self.currentMessageStartTime = self.lastTimeCommandSent
+                    self.retryCount = self.retryCount + 1
+                end
                 if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
             end
         end
@@ -157,6 +160,7 @@ function MspQueueController:processQueue()
             if LOG_ENABLED_MSP() then rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
             self.uuid = nil
+            self.apiname = nil 
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
@@ -168,6 +172,7 @@ function MspQueueController:processQueue()
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
+        self.apiname = nil 
         return
     end
 
@@ -181,12 +186,44 @@ function MspQueueController:processQueue()
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
             if cmd and LOG_ENABLED_MSP() then
-                local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
-                rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)
+                local rwState
+                if self.currentMessage.isWrite ~= nil then
+                    rwState = self.currentMessage.isWrite and "WRITE" or "READ"
+                else
+                    -- legacy heuristic
+                    rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
+                end
+                local logPayload
+                if rwState == "READ" then
+                    logPayload = buf
+                else
+                    logPayload = self.currentMessage.payload
+                end
+
+                local logPayload
+                if rwState == "WRITE" then
+                    logPayload = self.currentMessage.payload
+                else
+                    local tx = self.currentMessage.payload
+                    if tx and #tx > 0 then
+                        logPayload = {}
+                        -- TX bytes first
+                        for i = 1, #tx do logPayload[#logPayload + 1] = tx[i] end
+                        -- separator (non-byte) for readability; logMsp should print it as-is
+                        logPayload[#logPayload + 1] = "|"
+                        -- RX bytes second
+                        for i = 1, #(buf or {}) do logPayload[#logPayload + 1] = buf[i] end
+                    else
+                        logPayload = buf
+                    end
+                end
+
+                rfsuite.utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
         self.currentMessage = nil
         self.uuid = nil
+        self.apiname = nil
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
 
     -- Too many retries → reset
@@ -204,6 +241,7 @@ function MspQueueController:clear()
     self.queue = newQueue()
     self.currentMessage = nil
     self.uuid = nil
+    self.apiname = nil
     rfsuite.tasks.msp.common.mspClearTxBuf()
 end
 
@@ -214,11 +252,17 @@ function MspQueueController:add(message)
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Unable to queue - nil message.", "debug") end
         return
     end
-    if message.uuid and self.uuid == message.uuid then
-        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid, "debug") end
+    -- allow apiname to distinguish otherwise identical MSP calls
+    local key = message.uuid
+    if message.apiname then
+        key = (key or "") .. ":" .. message.apiname
+    end
+
+    if key and self.uuid == key then
+        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with key " .. key, "info") end
         return
     end
-    if message.uuid then self.uuid = message.uuid end
+    if key then self.uuid = key end
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
     qpush(self.queue, toQueue)
     return self

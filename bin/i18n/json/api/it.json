@@ -798,6 +798,18 @@
       "needs_translation": false
     }
   },
+  "MIXER_INPUT": {
+    "tbl_normal": {
+      "english": "Normal",
+      "translation": "Normal",
+      "needs_translation": true
+    },
+    "tbl_reversed": {
+      "english": "Reversed",
+      "translation": "Reversed",
+      "needs_translation": true
+    }
+  },
   "MIXER_CONFIG": {
     "swash_trim_1": {
       "english": "Swash trim to level the swash plate when using fixed links.",
@@ -813,6 +825,21 @@
       "english": "Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized.",
       "translation": "Imposta il trim del rotore di coda per yaw 0 per passo variabile, o l'acceleratore del motore di coda per Yaw 0 per motorizzato.",
       "needs_translation": false
+    },
+    "tbl_tail_variable_pitch": {
+      "english": "Variable Pitch",
+      "translation": "Variable Pitch",
+      "needs_translation": true
+    },
+    "tbl_tail_motororized_tail": {
+      "english": "Motorized Tail",
+      "translation": "Motorized Tail",
+      "needs_translation": true
+    },
+    "tbl_tail_bidirectional": {
+      "english": "Bidirectional",
+      "translation": "Bidirectional",
+      "needs_translation": true
     },
     "tbl_cw": {
       "english": "CW",

@@ -61,6 +61,7 @@ local function write()
 
     local message = {
         command = MSP_API_CMD_WRITE,
+        apiname = API_NAME,
         payload = {},
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
@@ -122,4 +123,6 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 
-return {write = write, setValue = setValue, writeComplete = writeComplete, resetWriteStatus = resetWriteStatus, getDefaults = getDefaults, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}
+local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
+
+return {write = write, setRebuildOnWrite = setRebuildOnWrite, setValue = setValue, writeComplete = writeComplete, resetWriteStatus = resetWriteStatus, getDefaults = getDefaults, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}

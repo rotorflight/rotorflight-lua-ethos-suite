@@ -159,6 +159,13 @@ function frsky_legacy.wakeup()
 
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
+    -- if this function exists, we can use it to determine if we should quick exit and avoid all sensor popping
+    if system.isSensorDiscoverActive then 
+        if not system.isSensorDiscoverActive() then
+            return
+        end
+    end
+
     if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
          while telemetryPop() do end
     end

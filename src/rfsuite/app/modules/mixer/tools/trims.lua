@@ -28,11 +28,10 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.trim.roll_trim)@",         mspapi = 1, apikey = "swash_trim_0"},
+            {t = "@i18n(app.modules.trim.roll_trim)@",         mspapi = 1, apikey = "swash_trim_0", },
             {t = "@i18n(app.modules.trim.pitch_trim)@",        mspapi = 1, apikey = "swash_trim_1"},
             {t = "@i18n(app.modules.trim.collective_trim)@",    mspapi = 1, apikey = "swash_trim_2"},
-            {t = "@i18n(app.modules.trim.tail_motor_idle)@",    mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
-            {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end}
+            {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end},
         }
     }
 }
@@ -232,12 +231,9 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-    if rfsuite.app.lastMenu == nil then
-        rfsuite.app.ui.openMainMenu()
-    else
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
-    end
+    rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
 
 end
+
 
 return {apidata = apidata, eepromWrite = true, reboot = false, mixerOff = mixerOff, mixerOn = mixerOn, postLoad = postLoad, onToolMenu = onToolMenu, onNavMenu = onNavMenu, wakeup = wakeup, saveData = saveData, navButtons = {menu = true, save = true, reload = true, tool = true, help = true}, API = {}}

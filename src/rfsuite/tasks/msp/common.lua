@@ -129,8 +129,8 @@ end
 
 -- Format and queue an MSP request for transmission
 local function mspSendRequest(cmd, payload)
-    if type(payload) ~= "table" or (not cmd) then return nil end
-    if #mspTxBuf ~= 0 then return nil end -- TX already busy
+    if type(payload) ~= "table" or (not cmd) then return false end
+    if #mspTxBuf ~= 0 then return false end -- TX already busy
 
     if _mspVersion == 1 then
         -- V1: length + cmd + payload
@@ -151,6 +151,8 @@ local function mspSendRequest(cmd, payload)
     mspLastReq = cmd
     mspTxIdx = 1
     mspTxCRC = 0
+
+    return true
 end
 
 -- Internal: process one reply packet
