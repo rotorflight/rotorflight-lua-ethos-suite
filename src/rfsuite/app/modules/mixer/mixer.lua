@@ -7,12 +7,12 @@ local rfsuite = require("rfsuite")
 
 local S_PAGES
 
-if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+if rfsuite.utils.apiVersionCompare(">=", "12.09") then              -- we start this disabled and only enable if we mixers are compatible
     S_PAGES = {
-        [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" },
-        [2] = { name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png" },    
-        [3] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png" },
-        [4] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png" },
+        [1] = { name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png" , disabled = true },
+        [2] = { name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", disabled = true },    
+        [3] = { name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", disabled = true },
+        [4] = { name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png", disabled = true },
     }
 else
     S_PAGES = {
@@ -26,6 +26,65 @@ end
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
+local mixerCompatibilityStatus = false
+
+-- hold mixer input values
+local MIXER_PITCH_RATE
+local MIXER_PITCH_MIN
+local MIXER_PITCH_MAX
+
+local MIXER_ROLL_RATE
+local MIXER_ROLL_MIN
+local MIXER_ROLL_MAX
+
+local MIXER_COLLECTIVE_RATE
+local MIXER_COLLECTIVE_MIN
+local MIXER_COLLECTIVE_MAX
+
+-- MSP transports these fields as unsigned (u16) even though their meaning is signed (s16).
+-- swashgeometry.lua already treats them as u16-encoded s16, so mirror that here.
+local function u16_to_s16(u)
+    if u == nil then return nil end
+    if u >= 0x8000 then
+        return u - 0x10000
+    end
+    return u
+end
+
+local function getMixerCompatibilityStatus()
+
+        -- pitch
+        local PAPI = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_PITCH")
+        PAPI.setCompleteHandler(function(self, buf)
+                MIXER_PITCH_RATE = u16_to_s16(PAPI.readValue("rate_stabilized_pitch"))
+                MIXER_PITCH_MIN  = u16_to_s16(PAPI.readValue("min_stabilized_pitch"))
+                MIXER_PITCH_MAX  = u16_to_s16(PAPI.readValue("max_stabilized_pitch"))
+        end)
+        PAPI.setUUID("d8163617-1496-4886-8b81-" .. "MIXER_INPUT_INDEXED_PITCH")
+        PAPI.read()
+
+        -- roll
+        local RAPI = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_ROLL")
+        RAPI.setCompleteHandler(function(self, buf)
+                MIXER_ROLL_RATE = u16_to_s16(RAPI.readValue("rate_stabilized_roll"))
+                MIXER_ROLL_MIN  = u16_to_s16(RAPI.readValue("min_stabilized_roll"))
+                MIXER_ROLL_MAX  = u16_to_s16(RAPI.readValue("max_stabilized_roll"))
+        end)
+        RAPI.setUUID("d8163617-1496-4886-8b81-" .. "MIXER_INPUT_INDEXED_ROLL")
+        RAPI.read()
+
+        -- collective
+        local CAPI = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_COLLECTIVE")
+        CAPI.setCompleteHandler(function(self, buf)
+                MIXER_COLLECTIVE_RATE = u16_to_s16(CAPI.readValue("rate_stabilized_collective"))
+                MIXER_COLLECTIVE_MIN  = u16_to_s16(CAPI.readValue("min_stabilized_collective"))
+                MIXER_COLLECTIVE_MAX  = u16_to_s16(CAPI.readValue("max_stabilized_collective"))
+        end)        
+        CAPI.setUUID("d8163617-1496-4886-8b81-" .. "MIXER_INPUT_INDEXED_COLLECTIVE")
+        CAPI.read()
+
+
+end
 
 local function openPage(pidx, title, script)
 
@@ -149,6 +208,11 @@ local function openPage(pidx, title, script)
     rfsuite.app.triggers.closeProgressLoader = true
 
     enableWakeup = true
+
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then 
+        getMixerCompatibilityStatus()
+    end    
+
     return
 end
 
@@ -166,6 +230,36 @@ local function onNavMenu()
     return true
 end
 
+local function mixerInputsAreCompatible()
+
+    -- ensure all values are present
+    if  MIXER_ROLL_RATE       == nil or MIXER_ROLL_MIN       == nil or MIXER_ROLL_MAX       == nil or
+        MIXER_PITCH_RATE      == nil or MIXER_PITCH_MIN      == nil or MIXER_PITCH_MAX      == nil or
+        MIXER_COLLECTIVE_RATE == nil or MIXER_COLLECTIVE_MIN == nil or MIXER_COLLECTIVE_MAX == nil then
+        return false
+    end
+
+    local customConfig = false
+
+    -- rate compatibility: roll vs pitch must be equal OR exact opposite
+    if (MIXER_ROLL_RATE ~= MIXER_PITCH_RATE) and
+       (MIXER_ROLL_RATE ~= -MIXER_PITCH_RATE) then
+        customConfig = true
+    end
+
+    -- roll/pitch min/max must match each other
+    if MIXER_ROLL_MAX ~= MIXER_PITCH_MAX then customConfig = true end
+    if MIXER_ROLL_MIN ~= MIXER_PITCH_MIN then customConfig = true end
+
+    -- each axis must be symmetric: max == -min
+    if MIXER_ROLL_MAX       ~= -MIXER_ROLL_MIN       then customConfig = true end
+    if MIXER_PITCH_MAX      ~= -MIXER_PITCH_MIN      then customConfig = true end
+    if MIXER_COLLECTIVE_MAX ~= -MIXER_COLLECTIVE_MIN then customConfig = true end
+
+    return not customConfig
+end
+
+
 local function wakeup()
     if not enableWakeup then return end
 
@@ -175,12 +269,41 @@ local function wakeup()
 
     if currState ~= prevConnectedState then
 
-        rfsuite.app.formFields[2]:enable(currState)
+        --rfsuite.app.formFields[2]:enable(currState)
 
         if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
 
         prevConnectedState = currState
     end
+
+
+    -- Once we have all mixer inputs, decide if the "simple" mixer pages can be enabled.
+    if (MIXER_PITCH_RATE ~= nil and MIXER_PITCH_MIN ~= nil and MIXER_PITCH_MAX ~= nil) and
+       (MIXER_ROLL_RATE ~= nil and MIXER_ROLL_MIN ~= nil and MIXER_ROLL_MAX ~= nil) and
+       (MIXER_COLLECTIVE_RATE ~= nil and MIXER_COLLECTIVE_MIN ~= nil and MIXER_COLLECTIVE_MAX ~= nil) then
+
+        local ok = mixerInputsAreCompatible()
+
+        -- Only update UI state once (or if it changes due to reconnect / profile swap)
+        if ok ~= mixerCompatibilityStatus then
+            mixerCompatibilityStatus = ok
+
+            -- If we're on API >= 12.09 we start pages disabled; enable when compatible.
+            if rfsuite.utils.apiVersionCompare(">=", "12.09") and rfsuite.app.formFields then
+                local enable = ok and currState
+                for i = 1, #S_PAGES do
+                    local f = rfsuite.app.formFields[i]
+                    if f then f:enable(enable) end
+                end
+            end
+
+            if not ok then
+                print("Mixer inputs are NOT compatible")
+            end
+        end
+    end
+
+
 end
 
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
