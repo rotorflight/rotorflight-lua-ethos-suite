@@ -16,6 +16,7 @@ tables[2] = "app/modules/rates/ratetables/raceflight.lua"
 tables[3] = "app/modules/rates/ratetables/kiss.lua"
 tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
+tables[6] = "app/modules/rates/ratetables/rotorflight.lua"
 
 if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end
 

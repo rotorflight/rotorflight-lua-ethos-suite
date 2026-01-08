@@ -5121,6 +5121,16 @@
           "needs_translation": false,
           "translation": "Roll"
         },
+        "rotorflight": {
+          "english": "ROTORFLIGHT",
+          "needs_translation": false,
+          "translation": "ROTORFLIGHT"
+        },
+        "shape": {
+          "english": "Shape",
+          "needs_translation": false,
+          "translation": "Shape"
+        },
         "superrate": {
           "english": "SuperRate",
           "needs_translation": false,
