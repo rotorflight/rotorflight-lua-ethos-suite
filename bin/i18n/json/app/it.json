@@ -3112,6 +3112,11 @@
         "translation": "Velocita' massima: velocita' di rotazione massima alla massima escursione dello stick in gradi al secondo.",
         "needs_translation": false
       },
+      "rotorflight": {
+        "english": "ROTORFLIGHT",
+        "translation": "ROTORFLIGHT",
+        "needs_translation": true
+      },
       "actual": {
         "english": "ACTUAL",
         "translation": "ATTUALE",
@@ -3131,6 +3136,11 @@
         "english": "Rate",
         "translation": "Rate",
         "needs_translation": false
+      },
+      "shape": {
+        "english": "Shape",
+        "translation": "Shape",
+        "needs_translation": true
       },
       "help_table_5_p1": {
         "english": "RC Rate: Use to reduce sensitivity around center stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around center stick. Higher than one half of the Max Rate will also increase the Max Rate.",

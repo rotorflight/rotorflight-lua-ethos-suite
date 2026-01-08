@@ -3112,6 +3112,11 @@
         "translation": "Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
         "needs_translation": false
       },
+      "rotorflight": {
+        "english": "ROTORFLIGHT",
+        "translation": "ROTORFLIGHT",
+        "needs_translation": false
+      },
       "actual": {
         "english": "ACTUAL",
         "translation": "ACTUAL",
@@ -3130,6 +3135,11 @@
       "rate": {
         "english": "Rate",
         "translation": "Rate",
+        "needs_translation": false
+      },
+      "shape": {
+        "english": "Shape",
+        "translation": "Shape",
         "needs_translation": false
       },
       "help_table_5_p1": {
