@@ -1412,6 +1412,16 @@
         "english": "Autorotation Gear Tooth Count",
         "needs_translation": false,
         "translation": "Autorotatie tandwiel aantal tanden"
+      },
+      "tbl_off": {
+        "english": "OFF",
+        "needs_translation": true,
+        "translation": "Off"
+      },
+      "tbl_on": {
+        "english": "ON",
+        "needs_translation": true,
+        "translation": "On"
       }
     },
     "PID_PROFILE": {
@@ -2253,6 +2263,11 @@
           "needs_translation": false,
           "translation": "Motor Polen"
         },
+        "motor_pwm_rate": {
+          "english": "Update frequency",
+          "needs_translation": true,
+          "translation": "Update frequency"
+        },
         "name": {
           "english": "ESC/Motors",
           "needs_translation": false,
@@ -2268,10 +2283,35 @@
           "needs_translation": false,
           "translation": "Achter"
         },
+        "rpm": {
+          "english": "RPM",
+          "needs_translation": true,
+          "translation": "RPM"
+        },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
           "needs_translation": false,
           "translation": "Tail Ratio"
+        },
+        "telemetry": {
+          "english": "Telemetry",
+          "needs_translation": true,
+          "translation": "Telemetry"
+        },
+        "throttle": {
+          "english": "Throttle",
+          "needs_translation": true,
+          "translation": "Throttle"
+        },
+        "throttle_protocol": {
+          "english": "Throttle Protocol",
+          "needs_translation": true,
+          "translation": "Throttle Protocol"
+        },
+        "unsynced": {
+          "english": "Unsynced ESC Update",
+          "needs_translation": true,
+          "translation": "Unsynced ESC Update"
         },
         "voltage_correction": {
           "english": "Voltage Correction",

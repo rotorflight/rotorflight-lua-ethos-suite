@@ -942,6 +942,16 @@
       "english": "The number of magnets on the motor bell.",
       "translation": "Il numero di magneti nella campana motore.",
       "needs_translation": false
+    },
+    "tbl_on": {
+      "english": "ON",
+      "translation": "On",
+      "needs_translation": true
+    },
+    "tbl_off": {
+      "english": "OFF",
+      "translation": "Off",
+      "needs_translation": true
     }
   },
   "ESC_PARAMETERS_HW5": {

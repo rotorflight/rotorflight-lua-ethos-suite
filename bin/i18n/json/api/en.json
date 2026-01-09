@@ -942,6 +942,16 @@
       "english": "The number of magnets on the motor bell.",
       "translation": "The number of magnets on the motor bell.",
       "needs_translation": false
+    },
+    "tbl_on": {
+      "english": "ON",
+      "translation": "ON",
+      "needs_translation": false
+    },
+    "tbl_off": {
+      "english": "OFF",
+      "translation": "OFF",
+      "needs_translation": false
     }
   },
   "ESC_PARAMETERS_HW5": {
