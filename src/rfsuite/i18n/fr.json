@@ -2228,6 +2228,11 @@
           "needs_translation": false,
           "translation": "Avant"
         },
+        "half_duplex": {
+          "english": "Half Duplex",
+          "needs_translation": true,
+          "translation": "Half Duplex"
+        },
         "help_p1": {
           "english": "Configure the motor and speed controller features.",
           "needs_translation": false,
@@ -2273,6 +2278,11 @@
           "needs_translation": false,
           "translation": "ESC/Moteurs"
         },
+        "pin_swap": {
+          "english": "Pin Swap",
+          "needs_translation": true,
+          "translation": "Pin Swap"
+        },
         "pinion": {
           "english": "Pinion",
           "needs_translation": false,
@@ -2297,6 +2307,11 @@
           "english": "Telemetry",
           "needs_translation": true,
           "translation": "Telemetry"
+        },
+        "telemetry_protocol": {
+          "english": "Telemetry Protocol",
+          "needs_translation": true,
+          "translation": "Telemetry Protocol"
         },
         "throttle": {
           "english": "Throttle",

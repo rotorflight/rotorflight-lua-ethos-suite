@@ -1861,6 +1861,21 @@
         "english": "Update frequency",
         "translation": "Update frequency",
         "needs_translation": true
+      },
+      "telemetry_protocol": {
+        "english": "Telemetry Protocol",
+        "translation": "Telemetry Protocol",
+        "needs_translation": true
+      },
+      "half_duplex": {
+        "english": "Half Duplex",
+        "translation": "Half Duplex",
+        "needs_translation": true
+      },
+      "pin_swap": {
+        "english": "Pin Swap",
+        "translation": "Pin Swap",
+        "needs_translation": true
       }
     },
     "radio_config": {
