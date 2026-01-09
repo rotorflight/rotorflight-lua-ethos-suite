@@ -2298,6 +2298,11 @@
           "needs_translation": true,
           "translation": "RPM"
         },
+        "rpm_sensor_source": {
+          "english": "RPM Sensor",
+          "needs_translation": true,
+          "translation": "RPM Sensor"
+        },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
           "needs_translation": false,
@@ -2327,6 +2332,11 @@
           "english": "Unsynced ESC Update",
           "needs_translation": true,
           "translation": "Unsynced ESC Update"
+        },
+        "use_dshot_telemetry": {
+          "english": "DShot RPM Telemetry",
+          "needs_translation": true,
+          "translation": "DShot RPM Telemetry"
         },
         "voltage_correction": {
           "english": "Voltage Correction",

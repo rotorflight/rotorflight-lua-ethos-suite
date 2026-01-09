@@ -31,7 +31,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "motor_count_blheli",          type = "U8",  apiVersion = 12.06, simResponse = {1},                              help = "@i18n(api.MOTOR_CONFIG.motor_count_blheli)@" },
     { field = "motor_pole_count_blheli",     type = "U8",  apiVersion = 12.06, simResponse = {6},                              help = "@i18n(api.MOTOR_CONFIG.motor_pole_count_blheli)@" },
 
-    { field = "use_dshot_telemetry",         type = "U8",  apiVersion = 12.06, simResponse = {0},                              help = "@i18n(api.MOTOR_CONFIG.use_dshot_telemetry)@" },
+    { field = "use_dshot_telemetry",         type = "U8",  apiVersion = 12.06, simResponse = {0},  table = onoff, tableIdxInc = -1,  help = "@i18n(api.MOTOR_CONFIG.use_dshot_telemetry)@" },
     { field = "motor_pwm_protocol",          type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1, help = "@i18n(api.MOTOR_CONFIG.motor_pwm_protocol)@" },
     { field = "motor_pwm_rate",              type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min = 50,  max = 8000, default = 250, unit = "Hz", help = "@i18n(api.MOTOR_CONFIG.motor_pwm_rate)@" },
     { field = "use_unsynced_pwm",            type = "U8",  apiVersion = 12.06, simResponse = {1}, table = onoff, tableIdxInc = -1,                       help = "@i18n(api.MOTOR_CONFIG.use_unsynced_pwm)@" },

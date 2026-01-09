@@ -1757,6 +1757,16 @@
       }
     },
     "esc_motors": {
+      "use_dshot_telemetry": {
+        "english": "DShot RPM Telemetry",
+        "translation": "DShot RPM Telemetry",
+        "needs_translation": true
+      },
+      "rpm_sensor_source": {
+        "english": "RPM Sensor",
+        "translation": "RPM Sensor",
+        "needs_translation": true
+      },
       "throttle": {
         "english": "Throttle",
         "translation": "Throttle",
