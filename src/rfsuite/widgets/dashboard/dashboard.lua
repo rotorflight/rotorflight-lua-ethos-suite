@@ -194,7 +194,14 @@ local function _profReportIfDue()
 end
 
 function dashboard.loader(x, y, w, h)
-    dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+
+    -- old style - maybe a preference at some point?
+    --dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+
+    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(20, { noTimestamp = true })
+    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
+
+
     _queueInvalidateRect(x, y, w, h)
     _flushInvalidatesRespectingBudget()
 end
@@ -207,7 +214,14 @@ local function forceInvalidateAllObjects()
     _flushInvalidatesRespectingBudget()
 end
 
-function dashboard.overlaymessage(x, y, w, h, txt) dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt) end
+function dashboard.overlaymessage(x, y, w, h, txt) 
+
+    -- old style - maybe a preference at some point?
+    --dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt) 
+
+    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(5, { noTimestamp = true })   
+    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg)
+end
 
 local function computeObjectSchedulerPercentage(count)
     if count <= 10 then
@@ -293,7 +307,12 @@ function dashboard.computeOverlayMessage()
         end
     end
 
-    if not rfsuite.session.isConnectedHigh and state ~= "postflight" then return "@i18n(widgets.dashboard.waiting_for_connection)@" end
+    -- old path for later optional use
+    --if not rfsuite.session.isConnectedHigh and state ~= "postflight" then return "@i18n(widgets.dashboard.waiting_for_connection)@" end
+
+    if not rfsuite.session.isConnected and state ~= "postflight" then
+        return "@i18n(widgets.dashboard.waiting_for_connection)@"
+    end
 
     return nil
 end

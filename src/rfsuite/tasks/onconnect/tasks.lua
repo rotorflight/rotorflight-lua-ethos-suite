@@ -43,13 +43,14 @@ function tasks.findTasks()
                 local name = level .. "/" .. file:gsub("%.lua$", "")
                 local chunk, err = loadfile(fullPath)
                 if not chunk then
-                    rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. err, "error")
+                    rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. err, "info")
                 else
                     local module = assert(chunk())
                     if type(module) == "table" and type(module.wakeup) == "function" then
                         tasksList[name] = {module = module, priority = level, initialized = false, complete = false, failed = false, attempts = 0, nextEligibleAt = 0, startTime = nil}
                     else
                         rfsuite.utils.log("Invalid task file: " .. fullPath, "info")
+                        rfsuite.utils.log("Invalid task file: " .. fullPath, "connect")
                     end
                 end
             end
@@ -134,10 +135,12 @@ function tasks.wakeup()
                         task.initialized = false
                         task.startTime = nil
                         rfsuite.utils.log(string.format("Task '%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.", name, task.attempts, MAX_RETRIES, backoff), "info")
+                        rfsuite.utils.log(string.format("Task '%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.", name, task.attempts, MAX_RETRIES, backoff), "connect")
                     else
                         task.failed = true
                         task.startTime = nil
                         rfsuite.utils.log(string.format("Task '%s' failed after %d attempts. Skipping.", name, MAX_RETRIES), "info")
+                        rfsuite.utils.log(string.format("Task '%s' failed after %d attempts. Skipping.", name, MAX_RETRIES), "connect")
                     end
                 end
             end
@@ -156,7 +159,7 @@ function tasks.wakeup()
     if levelDone then
         rfsuite.session.onConnect[activeLevel] = true
         rfsuite.utils.log("All [" .. activeLevel .. "] tasks complete.", "info")
-
+    
         if activeLevel == "high" then
             rfsuite.utils.playFileCommon("beep.wav")
             rfsuite.flightmode.current = "preflight"
@@ -170,6 +173,7 @@ function tasks.wakeup()
             rfsuite.session.isConnectedLow = true
             rfsuite.session.isConnected = true
             rfsuite.utils.log("Connection [established].", "info")
+            rfsuite.utils.log("Connection [established].", "connect")
             return
         end
     end

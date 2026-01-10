@@ -51,6 +51,9 @@ local MINLVL = LEVEL[logs.config.min_print_level] or 1
 local qConsole = Ring(50)
 local qDisk = Ring(100)
 local qConnect = Ring(20)
+-- Separate rolling buffer for on-screen "connect" display.
+-- qConnect is drained by process_connect(), so it may be empty when the UI renders.
+local qConnectView = Ring(80)
 local lastPrint, lastDisk, lastConnect = os.clock(), os.clock(), os.clock()
 
 local function split(msg, maxlen, cont)
@@ -105,14 +108,18 @@ function logs.log(message, level)
 
 end
 
-function logs.add(message,level)
+function logs.add(message, level)
     if level == "connect" then
-        local e = { msg = message, lvl = LEVEL.info }
+        local rawp = logs.config.prefix
+        local pfx = type(rawp) == "function" and rawp() or (rawp or "")
+
+        local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
         qConnect:push(e)
+        if qConnectView then qConnectView:push(e) end
     else
         logs.log(message, level)
     end
-end    
+end  
 
 
 local function drain_console(now)
@@ -162,6 +169,52 @@ function logs.process()
     drain_console(now)
     drain_disk(now)
 end
+
+local function stripLeadingTimestamp(s)
+    if type(s) ~= "string" then return s end
+    return (s:gsub("^%b[]%s*", ""))
+end
+
+function logs.getConnectLines(maxLines, opts)
+    opts = opts or {}
+    maxLines = tonumber(maxLines) or 8
+    if maxLines < 1 then return {} end
+
+    local entries = qConnectView:items()
+    local lines = {}
+
+    for i = #entries, 1, -1 do
+        local e = entries[i]
+        if e and e.msg then
+            -- use stored prefix if present, otherwise fall back
+            local pfx = e.pfx
+            if pfx == nil then
+                local rawp = logs.config.prefix
+                pfx = type(rawp) == "function" and rawp() or (rawp or "")
+            end
+
+            if opts.noTimestamp then
+                pfx = stripLeadingTimestamp(pfx)
+            end
+
+            local pad = #pfx > 0 and string.rep(" ", #pfx) or ""
+
+            local msg = pfx .. e.msg
+            local parts = split(msg, logs.config.max_line_length, pad)
+
+            for j = #parts, 1, -1 do
+                lines[#lines + 1] = parts[j]
+                if #lines >= maxLines then break end
+            end
+            if #lines >= maxLines then break end
+        end
+    end
+
+    local out = {}
+    for i = #lines, 1, -1 do out[#out + 1] = lines[i] end
+    return out
+end
+
 
 function logs.process_connect()
     if not logs.config.enabled or MINLVL == LEVEL.off then return end
