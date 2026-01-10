@@ -314,8 +314,15 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local cornerR = opts.cornerR or math.floor(math.min(panelW, panelH) * 0.14)
 
     -- Frame like the circle: bright outer, dark inner.
-    local outer = lcd.darkMode() and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0)
-    local inner = lcd.RGB(0, 0, 0, 1.0)
+    local isDark = lcd.darkMode()
+
+    local outer = isDark
+        and lcd.RGB(255, 255, 255, 1.0)
+        or  lcd.RGB(0,   0,   0,   1.0)
+
+    local inner = isDark
+        and lcd.RGB(0,   0,   0,   1.0)
+        or  lcd.RGB(128, 128, 128, 1.0)
 
     -- Outer frame
     lcd.color(outer)
@@ -383,7 +390,10 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     -- Bottom side: log lines
     local fonts = dashboard.utils and dashboard.utils.getFontListsForResolution and dashboard.utils.getFontListsForResolution()
     fonts = (fonts and fonts.value_default) or {FONT_S, FONT_XS, FONT_XXS}
-    lcd.color(lcd.RGB(255, 255, 255, 1.0))
+    lcd.color(isDark
+        and lcd.RGB(255, 255, 255, 1.0)
+        or  lcd.RGB(0,   0,   0,   1.0)
+    )
 
     -- Prefer the smaller fonts so we get more lines in the console area.
     local chosenFont = fonts[#fonts] or FONT_XS
