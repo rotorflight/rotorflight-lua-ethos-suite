@@ -193,22 +193,7 @@ local function _profReportIfDue()
     P.lastReport = now
 end
 
-<<<<<<< Updated upstream
-function dashboard.loader(x, y, w, h)
-
-    -- old style - maybe a preference at some point?
-    --dashboard.loaders.staticLoader(dashboard, x, y, w, h)
-
-    local logmsg
-    if rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines then
-        logmsg = rfsuite.tasks.logger.getConnectLines(20, { noTimestamp = true })
-    else
-        logmsg = {"Initializing..."}
-    end    
-    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
-=======
 function dashboard.loader(x, y, w, h, txt)
->>>>>>> Stashed changes
 
     dashboard.overlaymessage(x, y, w, h, txt) 
 
@@ -251,15 +236,6 @@ function dashboard.overlaymessage(x, y, w, h, txt)
         end
     end
 
-<<<<<<< Updated upstream
-    local logmsg
-    if rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines then
-        logmsg = rfsuite.tasks.logger.getConnectLines(20, { noTimestamp = true })
-    else
-        logmsg = {"Initializing..."}
-    end  
-=======
->>>>>>> Stashed changes
     dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg)
 end
 
