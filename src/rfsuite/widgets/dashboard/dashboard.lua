@@ -198,7 +198,12 @@ function dashboard.loader(x, y, w, h)
     -- old style - maybe a preference at some point?
     --dashboard.loaders.staticLoader(dashboard, x, y, w, h)
 
-    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(20, { noTimestamp = true })
+    local logmsg
+    if rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines then
+        logmsg = rfsuite.tasks.logger.getConnectLines(20, { noTimestamp = true })
+    else
+        logmsg = {"Initializing..."}
+    end    
     dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
 
 
@@ -219,7 +224,12 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     -- old style - maybe a preference at some point?
     --dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt) 
 
-    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(5, { noTimestamp = true })   
+    local logmsg
+    if rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines then
+        logmsg = rfsuite.tasks.logger.getConnectLines(20, { noTimestamp = true })
+    else
+        logmsg = {"Initializing..."}
+    end  
     dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg)
 end
 
