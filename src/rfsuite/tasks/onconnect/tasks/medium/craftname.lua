@@ -27,6 +27,7 @@ function craftname.wakeup()
             end
             if rfsuite.session.craftName and rfsuite.session.craftName ~= "" then
                 rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName, "info")
+                rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName, "connect")
             else
                 rfsuite.session.craftName = model.name()
             end

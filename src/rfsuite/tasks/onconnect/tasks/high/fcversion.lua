@@ -22,7 +22,9 @@ function fcversion.wakeup()
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.fcVersion = API.readVersion()
             rfsuite.session.rfVersion = API.readRfVersion()
-            if rfsuite.session.fcVersion then rfsuite.utils.log("FC version: " .. rfsuite.session.fcVersion, "info") end
+            if rfsuite.session.fcVersion then 
+                rfsuite.utils.log("FC version: " .. rfsuite.session.fcVersion, "info") 
+                rfsuite.utils.log("FC version: " .. rfsuite.session.fcVersion, "connect")
         end)
         API.setUUID("22a683cb-dj0e-439f-8d04-04687c9360fu")
         API.read()

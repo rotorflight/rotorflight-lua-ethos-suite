@@ -79,7 +79,10 @@ function apiversion.wakeup()
 
             rfsuite.session.apiVersion = version
             rfsuite.session.apiVersionInvalid = false
-            if rfsuite.session.apiVersion then rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info") end
+            if rfsuite.session.apiVersion then 
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info") 
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect") 
+            end
         end)
         API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
         API.read()
