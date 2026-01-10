@@ -72,8 +72,12 @@ local function split(msg, maxlen, cont)
     return t
 end
 
-function logs.add(message, level, channel)
+function logs.log(message, level)
     if not logs.config.enabled or MINLVL == LEVEL.off then return end
+
+    if rfsuite.preferences.developer.loglevel == "off" then 
+        return 
+    end
 
     local lvl = LEVEL[level or "info"]
     if not lvl or lvl < MINLVL then return end
@@ -85,22 +89,30 @@ function logs.add(message, level, channel)
 
     local e = { msg = message, lvl = lvl }
 
-    -- RULE 3: connect-only
-    if channel == "connect" then
-        qConnect:push(e)
-        return
+    -- RULE 1: info 
+    if rfsuite.preferences.developer.loglevel == "info" then
+        if lvl == LEVEL.info then
+            qConsole:push(e)
+        end
     end
 
-    -- RULE 1: info always to LCD queue
-    if lvl == LEVEL.info then
-        qConsole:push(e)
-    end
+    -- RULE 2: debug 
+    if rfsuite.preferences.developer.loglevel == "debug" then
+        if lvl == LEVEL.debug or lvl == LEVEL.info then
+            qDisk:push(e)
+        end
+    end    
 
-    -- RULE 2: info + debug always to disk (never LCD for debug)
-    if logs.config.log_to_file and (lvl == LEVEL.info or lvl == LEVEL.debug) then
-        qDisk:push(e)
-    end
 end
+
+function logs.add(message,level)
+    if level == "connect" then
+        local e = { msg = message, lvl = LEVEL.info }
+        qConnect:push(e)
+    else
+        logs.log(message, level)
+    end
+end    
 
 
 local function drain_console(now)
@@ -117,7 +129,7 @@ local function drain_console(now)
 end
 
 local function drain_disk(now)
-    if not logs.config.log_to_file or now - lastDisk < logs.config.disk_write_interval or qDisk:empty() then return end
+    if now - lastDisk < logs.config.disk_write_interval or qDisk:empty() then return end
     lastDisk = now
     local f = io.open(logs.config.log_file, "a");
     if not f then return end
