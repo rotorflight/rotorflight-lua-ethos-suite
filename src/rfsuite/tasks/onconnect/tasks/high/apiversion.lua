@@ -45,6 +45,7 @@ function apiversion.wakeup()
 
                 if not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionString) then
                     rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "info")
+                    rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "connect")
                     rfsuite.session.apiVersionInvalid = true
                     rfsuite.session.apiVersion = version
 
@@ -68,6 +69,7 @@ function apiversion.wakeup()
                     end
 
                     rfsuite.utils.log(string.format("MSP protocol upgraded to v%d (api %s)", wantProto, apiVersionString), "info")
+                    rfsuite.utils.log(string.format("MSP protocol upgraded to v%d (api %s)", wantProto, apiVersionString), "connect")
                 else
 
                     rfsuite.config.mspProtocolVersion = wantProto
@@ -75,11 +77,14 @@ function apiversion.wakeup()
             else
 
                 rfsuite.config.mspProtocolVersion = restoreProto
+                rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "info")
+                rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "connect")
             end
 
             rfsuite.session.apiVersion = version
             rfsuite.session.apiVersionInvalid = false
             if rfsuite.session.apiVersion then 
+                rfsuite.utils.playFileCommon("beep.wav")
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info") 
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect") 
             end

@@ -7,6 +7,30 @@ local rfsuite = require("rfsuite")
 
 local loaders = {}
 
+local function fmtRadioLinkType()
+    local module = rfsuite.session.telemetryModuleNumber  -- 0 = internal, 1 = external
+    local moduleid = rfsuite.session.telemetryModule      -- module reference table
+    local telemetry = rfsuite.session.telemetryType       -- sport or crsf
+
+    --print(rfsuite.utils.print_r(module))
+
+    if system.getVersion().simulation then
+        return "S.PORT (Simulated)"
+    elseif telemetry == "crsf" and module == 1 then
+        return "CRSF (External)"
+    elseif telemetry == "crsf" and module == 0 then
+        return "CRSF (Internal)"
+    elseif telemetry == "sport" and module == 1 then
+        return "S.Port (External)"
+    elseif telemetry == "sport" and module == 0 then
+        return "S.Port (Internal)"
+    else
+        return "Unknown Link"    
+    end
+
+
+end
+
 local function fmtRfsuiteVersion()
     local v = rfsuite and rfsuite.config and rfsuite.config.version
     if type(v) ~= "table" then return "rfsuite ?" end
@@ -363,21 +387,20 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
         local t1 = fmtRfsuiteVersion()
         local t2 = fmtEthosVersion()
+        local t3 = fmtRadioLinkType() 
 
         lcd.color(txt)
         lcd.font(FONT_XXS)
 
         local _, th = lcd.getTextSize("Ay")
+
+        -- line 1: rfsuite version
         lcd.drawText(tx, iy,          ellipsizeRight(t1, tw))
+
+        -- line 2: ethos version
         lcd.drawText(tx, iy + th,     ellipsizeRight(t2, tw))
 
-        local t3
-        if not rfsuite.session or not rfsuite.session.telemetryType then
-            t3 = ""
-        else
-            t3 = string.upper(tostring(rfsuite.session.telemetryType))
-        end
-
+        -- line 3: radio/link type
         lcd.drawText(tx, iy + th * 2, ellipsizeRight(t3, tw))
 
     end
