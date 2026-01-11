@@ -7,6 +7,37 @@ local rfsuite = require("rfsuite")
 
 local loaders = {}
 
+local function fmtRfsuiteVersion()
+    local v = rfsuite and rfsuite.config and rfsuite.config.version
+    if type(v) ~= "table" then return "rfsuite ?" end
+    local major = tonumber(v.major) or 0
+    local minor = tonumber(v.minor) or 0
+    local rev   = tonumber(v.revision) or 0
+    local sfx   = v.suffix
+    local base = string.format("RFSUITE %d.%d.%d", major, minor, rev)
+    if sfx and sfx ~= "" then
+        base = base .. "-" .. tostring(sfx)
+    end
+    return base
+end
+
+local function fmtEthosVersion()
+    if not system or type(system.getVersion) ~= "function" then return "Ethos ?" end
+    local ok, info = pcall(system.getVersion)
+    if not ok or type(info) ~= "table" then return "Ethos ?" end
+    local board = info.board or "Ethos"
+    -- Prefer the full version string if present
+    local ver = info.version
+    if not ver or ver == "" then
+        local major = tonumber(info.major) or 0
+        local minor = tonumber(info.minor) or 0
+        local rev   = tonumber(info.revision) or 0
+        ver = string.format("%d.%d.%d", major, minor, rev)
+        if info.suffix and info.suffix ~= "" then ver = ver .. "-" .. tostring(info.suffix) end
+    end
+    return string.format("%s %s", tostring(board), tostring(ver))
+end
+
 -- Draw a filled rounded rectangle using primitives (no alpha blending).
 -- r is corner radius in pixels.
 local function drawFilledRoundRect(x, y, w, h, r)
@@ -249,37 +280,108 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local logoY = contentY
     local logoW = contentW
 
+    -- Right-side info column (versions + traffic light)
+    local infoWRatio = opts.infoWRatio or 0.36   -- 0.30..0.42 feels good
+    local infoW = math.max(1, math.floor(logoW * infoWRatio))
+
     local logX = contentX
     local logY = contentY + logoH + splitGap
     local logW = contentW
 
-    -- Draw logo centered in the top half.
-    -- For landscape logos, a top/bottom split gives better use of width.
-    local logoCx = logoX + logoW / 2
-    local logoCy = logoY + logoH / 2
+    -- Split top area into: [logo area | info area]
+    local infoX = logoX + (logoW - infoW)
+    local infoY = logoY
+    local infoH = logoH
 
-    -- Try to preserve aspect ratio if the bitmap exposes size; otherwise fall back.
+    local logoAreaX = logoX
+    local logoAreaY = logoY
+    local logoAreaW = logoW - infoW
+    local logoAreaH = logoH
+
+     -- Draw logo in the top half
     local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
     local bmp = rfsuite.utils.loadImage(imageName)
+
+    -- Alignment: "center" (default) or "left"
+    local align = "left" 
+
+    -- Where in the logo area to anchor the logo centre point
+    local anchorX
+    if align == "left" then
+        anchorX = logoAreaX + logoAreaW * (opts.logoAnchorX or 0.30)  -- tweak 0.20..0.40
+    else
+        anchorX = logoAreaX + logoAreaW * 0.50
+    end
+    local anchorY = logoAreaY + logoAreaH * 0.50
+
     if bmp then
         local okW, bw = pcall(function() return bmp:width() end)
         local okH, bh = pcall(function() return bmp:height() end)
+
         if okW and okH and type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
-            local padX = math.floor(logoW * (opts.logoPadXRatio or 0.06))
-            local padY = math.floor(logoH * (opts.logoPadYRatio or 0.18))
-            local boxW = math.max(1, logoW - 2 * padX)
-            local boxH = math.max(1, logoH - 2 * padY)
+            local padX = math.floor(logoAreaW * (opts.logoPadXRatio or 0.06))
+            local padY = math.floor(logoAreaH * (opts.logoPadYRatio or 0.18))
+            local boxW = math.max(1, logoAreaW - 2 * padX)
+            local boxH = math.max(1, logoAreaH - 2 * padY)
 
             local scale = math.min(boxW / bw, boxH / bh) * (opts.logoScale or 1.0)
             local drawW = math.max(1, math.floor(bw * scale))
             local drawH = math.max(1, math.floor(bh * scale))
 
-            lcd.drawBitmap(math.floor(logoCx - drawW / 2), math.floor(logoCy - drawH / 2), bmp, drawW, drawH)
+            lcd.drawBitmap(
+                math.floor(anchorX - drawW / 2),
+                math.floor(anchorY - drawH / 2),
+                bmp,
+                drawW,
+                drawH
+            )
         else
-            -- Fallback: square-fit method (still fine for most logos)
-            drawLogoImage(logoCx, logoCy, logoW, logoH, opts.logoScale or 0.95)
+            -- Fallback: square-fit method
+            drawLogoImage(anchorX, anchorY, logoAreaW * (opts.logoFallbackWScale or 0.4), logoAreaH, opts.logoScale or 0.95)
         end
     end
+
+    -- Right info column: separator + versions
+    do
+        local isDark = lcd.darkMode()
+        local txt = isDark and lcd.RGB(255,255,255,1.0) or lcd.RGB(0,0,0,1.0)
+
+        local padX = math.max(4, math.floor(infoW * 0.10))
+        local padY = math.max(4, math.floor(infoH * 0.14))
+        local iy = infoY + padY
+
+        -- Vertical separator line (kept)
+        local sepW = math.max(1, math.floor(infoW * 0.02))
+        local sepCol = isDark and lcd.RGB(90,90,90,1.0) or lcd.RGB(110,110,110,1.0)
+        lcd.color(sepCol)
+        lcd.drawFilledRectangle(infoX + math.floor(sepW / 2), infoY + padY, sepW, math.max(1, infoH - 2 * padY))
+
+        -- Text starts after the separator with a little gap
+        local gap = math.max(6, math.floor(infoW * 0.03))
+        local tx = infoX + padX + sepW + gap
+        local tw = (infoX + infoW) - tx - padX
+
+        local t1 = fmtRfsuiteVersion()
+        local t2 = fmtEthosVersion()
+
+        lcd.color(txt)
+        lcd.font(FONT_XXS)
+
+        local _, th = lcd.getTextSize("Ay")
+        lcd.drawText(tx, iy,          ellipsizeRight(t1, tw))
+        lcd.drawText(tx, iy + th,     ellipsizeRight(t2, tw))
+
+        local t3
+        if not rfsuite.session or not rfsuite.session.apiVersion then
+            t3 = "Waiting for connection"
+        else
+            t3 = "API v" .. tostring(rfsuite.session.apiVersion)
+        end
+
+        lcd.drawText(tx, iy + th * 2, ellipsizeRight(t3, tw))
+
+    end
+
 
     -- Bottom side: log lines
     local fonts = dashboard.utils and dashboard.utils.getFontListsForResolution and dashboard.utils.getFontListsForResolution()
