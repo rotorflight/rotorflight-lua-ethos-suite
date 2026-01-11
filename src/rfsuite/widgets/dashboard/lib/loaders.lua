@@ -373,7 +373,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
         local t3
         if not rfsuite.session or not rfsuite.session.telemetryType then
-            t3 = "N/A"
+            t3 = ""
         else
             t3 = string.upper(tostring(rfsuite.session.telemetryType))
         end
