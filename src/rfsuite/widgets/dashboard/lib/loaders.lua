@@ -372,10 +372,10 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
         lcd.drawText(tx, iy + th,     ellipsizeRight(t2, tw))
 
         local t3
-        if not rfsuite.session or not rfsuite.session.apiVersion then
-            t3 = "Waiting for connection"
+        if not rfsuite.session or not rfsuite.session.telemetryType then
+            t3 = "N/A"
         else
-            t3 = "API v" .. tostring(rfsuite.session.apiVersion)
+            t3 = string.upper(tostring(rfsuite.session.telemetryType))
         end
 
         lcd.drawText(tx, iy + th * 2, ellipsizeRight(t3, tw))
