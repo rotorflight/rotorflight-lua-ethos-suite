@@ -8,26 +8,56 @@ local rfsuite = require("rfsuite")
 local loaders = {}
 
 local function fmtRadioLinkType()
-    local module = rfsuite.session.telemetryModuleNumber  -- 0 = internal, 1 = external
-    local moduleid = rfsuite.session.telemetryModule      -- module reference table
-    local telemetry = rfsuite.session.telemetryType       -- sport or crsf
 
-    --print(rfsuite.utils.print_r(module))
 
-    if system.getVersion().simulation then
-        return "S.PORT (Simulated)"
-    elseif telemetry == "crsf" and module == 1 then
-        return "CRSF (External)"
-    elseif telemetry == "crsf" and module == 0 then
-        return "CRSF (Internal)"
-    elseif telemetry == "sport" and module == 1 then
-        return "S.Port (External)"
-    elseif telemetry == "sport" and module == 0 then
-        return "S.Port (Internal)"
-    else
-        return "Unknown Link"    
+    local currentSensor
+    local currentModuleId 
+    local currentModuleNumber 
+    local currentTelemetryType 
+    local rf
+
+    local internalModule = model.getModule(0)   
+    local externalModule = model.getModule(1)
+
+    if internalModule and internalModule:enable() then
+        currentSensor = system.getSource({appId = 0xF101})
+        currentModuleId = internalModule
+        currentModuleNumber = 0
+        currentTelemetryType = "sport"
+    elseif externalModule and externalModule:enable() then
+        currentSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+        currentModuleId = externalModule
+        currentTelemetryType = "crsf"
+        currentModuleNumber = 1
+        if not currentSensor then
+            currentSensor = system.getSource({appId = 0xF101})
+            currentTelemetryType = "sport"
+        end
+    else    
+        currentSensor = nil
+        currentModuleId = nil
+        currentModuleNumber = -1
+        currentTelemetryType = "none"
     end
 
+
+    if currentModuleNumber == -1 then
+        return "RF Module Disabled"
+    elseif currentModuleNumber == 0 and currentTelemetryType == "sport" then
+         rf = "Int. FBUS/F.PORT/S.PORT"
+    elseif currentModuleNumber == 1 and currentTelemetryType == "sport" then
+         rf = "Ext. FBUS/F.PORT/S.PORT"  
+    elseif currentModuleNumber == 1 and currentTelemetryType == "crsf" then 
+         rf = "Ext. CRSF"    
+    elseif currentModuleNumber == 0 and currentSensor == nil then 
+         rf = "Int. No Telemetry"  
+    elseif currentModuleNumber == 1 and currentSensor == nil then 
+         rf = "Ext. No Telemetry"        
+    else
+         rf = "Unknown RF Link"      
+    end
+
+    return rf
 
 end
 
@@ -304,8 +334,8 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local logoY = contentY
     local logoW = contentW
 
-    -- Right-side info column (versions + traffic light)
-    local infoWRatio = opts.infoWRatio or 0.36   -- 0.30..0.42 feels good
+    -- Right-side info column 
+    local infoWRatio = opts.infoWRatio or 0.45   -- 0.30..0.42 feels good
     local infoW = math.max(1, math.floor(logoW * infoWRatio))
 
     local logX = contentX
