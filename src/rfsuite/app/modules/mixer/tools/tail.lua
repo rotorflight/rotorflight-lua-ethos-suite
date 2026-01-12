@@ -43,22 +43,22 @@ if rfsuite.session.tailMode >= 1 then
 
     LAYOUTINDEX = {
         TAIL_ROTOR_MODE       = 1,   -- MIXER_CONFIG
-        YAW_DIRECTION         = 2,   -- MIXER_INPUT_INDEXED_YAW        
+        YAW_DIRECTION         = 2,   -- GET_MIXER_INPUT_YAW        
         TAIL_ROTOR_IDLE       = 3,   -- MIXER_CONFIG
         TAIL_CENTER_TRIM      = 4,   -- MIXER_CONFIG
-        YAW_CALIBRATION       = 5,   -- MIXER_INPUT_INDEXED_YAW
-        YAW_CW_LIMIT          = 6,   -- MIXER_INPUT_INDEXED_YAW
-        YAW_CCW_LIMIT         = 7,   -- MIXER_INPUT_INDEXED_YAW
+        YAW_CALIBRATION       = 5,   -- GET_MIXER_INPUT_YAW
+        YAW_CW_LIMIT          = 6,   -- GET_MIXER_INPUT_YAW
+        YAW_CCW_LIMIT         = 7,   -- GET_MIXER_INPUT_YAW
     }
 
     LAYOUT = {
             [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
-            [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- MIXER_INPUT_INDEXED_YAW
+            [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_YAW
             [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "@i18n(app.modules.mixer.tail_center_offset)@",  unit = "%", default = 0, min = -500, max = 500, decimals = 1},
 
-            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "@i18n(app.modules.mixer.yaw_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- MIXER_INPUT_INDEXED_YAW
-            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_cw_limit)@", unit = "%"  ,  default = 125, decimals = 1 , min = 0, max = 2000       },                         -- MIXER_INPUT_INDEXED_YAW
-            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_ccw_limit)@",  unit = "%" , default = 125, decimals = 1 , min = 0, max = 2000     },                          -- MIXER_INPUT_INDEXED_YAW 
+            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "@i18n(app.modules.mixer.yaw_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_cw_limit)@", unit = "%"  ,  default = 125, decimals = 1 , min = 0, max = 2000       },                         -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_ccw_limit)@",  unit = "%" , default = 125, decimals = 1 , min = 0, max = 2000     },                          -- GET_MIXER_INPUT_YAW 
             
             [LAYOUTINDEX.TAIL_ROTOR_IDLE] = {t = "@i18n(app.modules.mixer.tail_motor_idle)@", unit="%", min=0, max=250, step=1, decimals = 1},
         }
@@ -67,22 +67,22 @@ else
     LAYOUTINDEX = {
         TAIL_ROTOR_MODE       = 1,   -- MIXER_CONFIG
         TAIL_ROTOR_IDLE       = 2,   -- MIXER_CONFIG
-        YAW_DIRECTION         = 3,   -- MIXER_INPUT_INDEXED_YAW
+        YAW_DIRECTION         = 3,   -- GET_MIXER_INPUT_YAW
         TAIL_CENTER_TRIM      = 4,   -- MIXER_CONFIG        
-        YAW_CALIBRATION       = 5,   -- MIXER_INPUT_INDEXED_YAW
-        YAW_CW_LIMIT          = 6,   -- MIXER_INPUT_INDEXED_YAW
-        YAW_CCW_LIMIT         = 7,   -- MIXER_INPUT_INDEXED_YAW
+        YAW_CALIBRATION       = 5,   -- GET_MIXER_INPUT_YAW
+        YAW_CW_LIMIT          = 6,   -- GET_MIXER_INPUT_YAW
+        YAW_CCW_LIMIT         = 7,   -- GET_MIXER_INPUT_YAW
     }    
 
     LAYOUT = {
             [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
-            [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- MIXER_INPUT_INDEXED_YAW
+            [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_YAW
             [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "@i18n(app.modules.mixer.yaw_center_trim)@",  unit = "%", default = 0, min = -250, max = 250, decimals = 1},
 
             
-            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "@i18n(app.modules.mixer.yaw_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- MIXER_INPUT_INDEXED_YAW
-            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_cw_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 600       },                         -- MIXER_INPUT_INDEXED_YAW
-            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_ccw_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 600     },                          -- MIXER_INPUT_INDEXED_YAW 
+            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "@i18n(app.modules.mixer.yaw_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_cw_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 600       },                         -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_ccw_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 600     },                          -- GET_MIXER_INPUT_YAW 
                 
 
         }    
@@ -123,12 +123,12 @@ function apiDataToFormData()
     local TAIL_ROTOR_MODE = APIDATA["MIXER_CONFIG"]["values"].tail_rotor_mode
     local TAIL_ROTOR_IDLE = APIDATA["MIXER_CONFIG"]["values"].tail_motor_idle
     local TAIL_CENTER_TRIM = APIDATA["MIXER_CONFIG"]["values"].tail_center_trim
-    local YAW_CALIBRATION = APIDATA["MIXER_INPUT_INDEXED_YAW"]["values"].rate_stabilized_yaw
-    local YAW_CW_LIMIT = APIDATA["MIXER_INPUT_INDEXED_YAW"]["values"].min_stabilized_yaw
-    local YAW_CCW_LIMIT = APIDATA["MIXER_INPUT_INDEXED_YAW"]["values"].max_stabilized_yaw
+    local YAW_CALIBRATION = APIDATA["GET_MIXER_INPUT_YAW"]["values"].rate_stabilized_yaw
+    local YAW_CW_LIMIT = APIDATA["GET_MIXER_INPUT_YAW"]["values"].min_stabilized_yaw
+    local YAW_CCW_LIMIT = APIDATA["GET_MIXER_INPUT_YAW"]["values"].max_stabilized_yaw
 
     -- determine directions
-    YAW_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_YAW"]["values"].rate_stabilized_yaw)
+    YAW_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_YAW"]["values"].rate_stabilized_yaw)
 
     -- transforms
     YAW_CALIBRATION = u16_to_s16(YAW_CALIBRATION)
@@ -214,10 +214,10 @@ function copyFormToApiValues()
     end
 
     -- -------------------------------------------------
-    -- MIXER_INPUT_INDEXED_YAW
+    -- GET_MIXER_INPUT_YAW
     -- -------------------------------------------------
-    local yaw = apiValues["MIXER_INPUT_INDEXED_YAW"]
-        and apiValues["MIXER_INPUT_INDEXED_YAW"].values
+    local yaw = apiValues["GET_MIXER_INPUT_YAW"]
+        and apiValues["GET_MIXER_INPUT_YAW"].values
     if not yaw then return false end
 
     -- Yaw rate: UI is magnitude, direction from selector
@@ -257,7 +257,7 @@ end
 
 local LOAD_SEQUENCE = {
   "MIXER_CONFIG",
-  "MIXER_INPUT_INDEXED_YAW",
+  "GET_MIXER_INPUT_YAW",
 }
 
 local function loadNext(i)
@@ -312,7 +312,7 @@ end
 -- -------------------------------------------------------
 local SAVE_SEQUENCE = {
   "MIXER_CONFIG",
-  "MIXER_INPUT_INDEXED_YAW",
+  "GET_MIXER_INPUT_YAW",
 }
 
 local function writeNext(i)

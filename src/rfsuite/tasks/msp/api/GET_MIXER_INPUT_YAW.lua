@@ -6,20 +6,20 @@
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
-local API_NAME = "MIXER_INPUT_INDEXED_PITCH"
+local API_NAME = "GET_MIXER_INPUT_YAW"
 local MSP_API_CMD_READ = 174
 local MSP_API_CMD_WRITE = 171
 local MSP_REBUILD_ON_WRITE = true
 
-local FIXED_INDEX = 2
+local FIXED_INDEX = 3
 
 -- LuaFormatter off
 -- Note.  We do not do any parameters on these calls like min, max etc as the calls are very bespoke and 
 --        do not benifit from generic handling.
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rate_stabilized_pitch", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }},
-    { field = "min_stabilized_pitch",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
-    { field = "max_stabilized_pitch",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
+    { field = "rate_stabilized_yaw", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }},
+    { field = "min_stabilized_yaw",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
+    { field = "max_stabilized_yaw",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
 }
 
 -- LuaFormatter on
@@ -32,9 +32,9 @@ local MSP_API_STRUCTURE_WRITE = {
     { field = "index", type = "U8" },
 
     -- mixer input values
-    { field = "rate_stabilized_pitch",  type = "U16" },
-    { field = "min_stabilized_pitch",   type = "U16" },
-    { field = "max_stabilized_pitch",   type = "U16" },
+    { field = "rate_stabilized_yaw",  type = "U16" },
+    { field = "min_stabilized_yaw",   type = "U16" },
+    { field = "max_stabilized_yaw",   type = "U16" },
 }
 -- LuaFormatter on
 
@@ -117,9 +117,9 @@ local function write(suppliedPayload)
 
     local v = {
         index = FIXED_INDEX,
-        rate_stabilized_pitch  = (payloadData.rate_stabilized_pitch ~= nil) and payloadData.rate_stabilized_pitch or curRate,
-        min_stabilized_pitch   = (payloadData.min_stabilized_pitch  ~= nil) and payloadData.min_stabilized_pitch  or curMin,
-        max_stabilized_pitch   = (payloadData.max_stabilized_pitch  ~= nil) and payloadData.max_stabilized_pitch  or curMax,
+        rate_stabilized_yaw  = (payloadData.rate_stabilized_yaw ~= nil) and payloadData.rate_stabilized_yaw or curRate,
+        min_stabilized_yaw   = (payloadData.min_stabilized_yaw  ~= nil) and payloadData.min_stabilized_yaw  or curMin,
+        max_stabilized_yaw   = (payloadData.max_stabilized_yaw  ~= nil) and payloadData.max_stabilized_yaw  or curMax,
     }
 
     local payload = core.buildFullPayload(API_NAME, v, MSP_API_STRUCTURE_WRITE)

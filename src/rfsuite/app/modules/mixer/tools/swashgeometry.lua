@@ -27,23 +27,23 @@ local COL_DIRECTION
 -- -- Form layout
 -- -------------------------------------------------------
 local LAYOUTINDEX = {
-        CYCLIC_CALIBRATION       = 1,   -- MIXER_INPUT_INDEXED_PITCH
-        COLLECTIVE_CALIBRATION   = 2,   -- MIXER_INPUT_INDEXED_COLLECTIVE
+        CYCLIC_CALIBRATION       = 1,   -- GET_MIXER_INPUT_PITCH
+        COLLECTIVE_CALIBRATION   = 2,   -- GET_MIXER_INPUT_COLLECTIVE
         GEO_CORRECTION           = 3,   -- MIXER_CONFIG
-        CYCLIC_PITCH_LIMIT       = 4,   -- MIXER_INPUT_INDEXED_PITCH
+        CYCLIC_PITCH_LIMIT       = 4,   -- GET_MIXER_INPUT_PITCH
         COLLECTIVE_PITCH_LIMIT   = 5,   -- MIXER_CONFIG
-        SWASH_PITCH_LIMIT        = 6,   -- MIXER_INPUT_INDEXED_COLLECTIVE
+        SWASH_PITCH_LIMIT        = 6,   -- GET_MIXER_INPUT_COLLECTIVE
         SWASH_PHASE              = 7,   -- MIXER_CONFIG
         COL_TILT_COR_POS         = 8,   -- MIXER_CONFIG
         COL_TILT_COR_NEG         = 9,   -- MIXER_CONFIG
     }
 
 local LAYOUT = {
-        [LAYOUTINDEX.CYCLIC_CALIBRATION] = {t = "@i18n(app.modules.mixer.cyclic_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- MIXER_INPUT_INDEXED_PITCH
-        [LAYOUTINDEX.COLLECTIVE_CALIBRATION] = {t = "@i18n(app.modules.mixer.collective_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- MIXER_INPUT_INDEXED_COLLECTIVE
+        [LAYOUTINDEX.CYCLIC_CALIBRATION] = {t = "@i18n(app.modules.mixer.cyclic_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_PITCH
+        [LAYOUTINDEX.COLLECTIVE_CALIBRATION] = {t = "@i18n(app.modules.mixer.collective_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- GET_MIXER_INPUT_COLLECTIVE
         [LAYOUTINDEX.GEO_CORRECTION] = {t = "@i18n(app.modules.mixer.geo_correction)@",  unit = "%", step = 2, default = 0, min = -250, max = 250, decimals = 1    },                     -- MIXER_CONFIG
-        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 200       },                   -- MIXER_INPUT_INDEXED_PITCH
-        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 200     },              -- MIXER_INPUT_INDEXED_COLLECTIVE  
+        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 200       },                   -- GET_MIXER_INPUT_PITCH
+        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 200     },              -- GET_MIXER_INPUT_COLLECTIVE  
         [LAYOUTINDEX.SWASH_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.swash_pitch_limit)@", unit = "°" , default = 200,    decimals = 1 , min = 0, max = 360      },                    -- MIXER_CONFIG
         [LAYOUTINDEX.SWASH_PHASE] = {t = "@i18n(app.modules.mixer.swash_phase)@", unit = "°",  min = -1800, max = 1800 , decimals = 1,                   },                               -- MIXER_CONFIG
         [LAYOUTINDEX.COL_TILT_COR_POS] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
@@ -82,20 +82,20 @@ end
 function apiDataToFormData() 
 
     -- get raw data from api table
-    local CYCLIC_CALIBRATION = APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch
-    local COLLECTIVE_CALIBRATION = APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective
+    local CYCLIC_CALIBRATION = APIDATA["GET_MIXER_INPUT_PITCH"]["values"].rate_stabilized_pitch
+    local COLLECTIVE_CALIBRATION = APIDATA["GET_MIXER_INPUT_COLLECTIVE"]["values"].rate_stabilized_collective
     local GEO_CORRECTION = APIDATA["MIXER_CONFIG"]["values"].swash_geo_correction
-    local CYCLIC_PITCH_LIMIT = APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].max_stabilized_pitch
+    local CYCLIC_PITCH_LIMIT = APIDATA["GET_MIXER_INPUT_PITCH"]["values"].max_stabilized_pitch
     local SWASH_PITCH_LIMIT= APIDATA["MIXER_CONFIG"]["values"].swash_pitch_limit
-    local COLLECTIVE_PITCH_LIMIT = APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].max_stabilized_collective
+    local COLLECTIVE_PITCH_LIMIT = APIDATA["GET_MIXER_INPUT_COLLECTIVE"]["values"].max_stabilized_collective
     local SWASH_PHASE = APIDATA["MIXER_CONFIG"]["values"].swash_phase
     local COL_TILT_COR_POS = APIDATA["MIXER_CONFIG"]["values"].collective_tilt_correction_pos
     local COL_TILT_COR_NEG = APIDATA["MIXER_CONFIG"]["values"].collective_tilt_correction_neg
 
     -- determine directions
-    COL_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective)
-    ELE_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch)
-    AIL_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_ROLL"]["values"].rate_stabilized_roll)
+    COL_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_COLLECTIVE"]["values"].rate_stabilized_collective)
+    ELE_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_PITCH"]["values"].rate_stabilized_pitch)
+    AIL_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_ROLL"]["values"].rate_stabilized_roll)
 
     -- transform raw data into form data
 
@@ -176,27 +176,27 @@ function copyFormToApiValues()
     mixerCfg["collective_tilt_correction_neg"] = (FORMDATA[LAYOUTINDEX.COL_TILT_COR_NEG] or 0)
 
     -- ----------------------------
-    -- MIXER_INPUT_INDEXED_PITCH (cyclic pitch)
+    -- GET_MIXER_INPUT_PITCH (cyclic pitch)
     -- ----------------------------
-    local pitch = apiValues["MIXER_INPUT_INDEXED_PITCH"].values
+    local pitch = apiValues["GET_MIXER_INPUT_PITCH"].values
     local v = cyclicRate_ui * dirSign(ELE_DIRECTION)
     pitch["rate_stabilized_pitch"] = s16_to_u16(v)
     pitch["max_stabilized_pitch"] = s16_to_u16( math.abs(cyclicMax_raw) )
     pitch["min_stabilized_pitch"] = s16_to_u16( -math.abs(cyclicMax_raw) )
 
     -- ----------------------------
-    -- MIXER_INPUT_INDEXED_ROLL (cyclic roll) 
+    -- GET_MIXER_INPUT_ROLL (cyclic roll) 
     -- ----------------------------
-    local roll = apiValues["MIXER_INPUT_INDEXED_ROLL"].values
+    local roll = apiValues["GET_MIXER_INPUT_ROLL"].values
     local v = cyclicRate_ui * dirSign(AIL_DIRECTION)
     roll["rate_stabilized_roll"] = s16_to_u16(v)
     roll["max_stabilized_roll"] = s16_to_u16( math.abs(cyclicMax_raw) )
     roll["min_stabilized_roll"] = s16_to_u16( -math.abs(cyclicMax_raw) )
 
     -- ----------------------------
-    -- MIXER_INPUT_INDEXED_COLLECTIVE
+    -- GET_MIXER_INPUT_COLLECTIVE
     -- ----------------------------
-    local coll = apiValues["MIXER_INPUT_INDEXED_COLLECTIVE"].values
+    local coll = apiValues["GET_MIXER_INPUT_COLLECTIVE"].values
 
     local v = collRate_ui * dirSign(COL_DIRECTION)
     coll["rate_stabilized_collective"] = s16_to_u16(v)
@@ -214,9 +214,9 @@ end
 
 local LOAD_SEQUENCE = {
   "MIXER_CONFIG",
-  "MIXER_INPUT_INDEXED_PITCH",
-  "MIXER_INPUT_INDEXED_ROLL",
-  "MIXER_INPUT_INDEXED_COLLECTIVE",
+  "GET_MIXER_INPUT_PITCH",
+  "GET_MIXER_INPUT_ROLL",
+  "GET_MIXER_INPUT_COLLECTIVE",
 }
 
 local function loadNext(i)
@@ -271,9 +271,9 @@ end
 -- -------------------------------------------------------
 local SAVE_SEQUENCE = {
     "MIXER_CONFIG",
-    "MIXER_INPUT_INDEXED_PITCH",
-    "MIXER_INPUT_INDEXED_ROLL",
-    "MIXER_INPUT_INDEXED_COLLECTIVE",
+    "GET_MIXER_INPUT_PITCH",
+    "GET_MIXER_INPUT_ROLL",
+    "GET_MIXER_INPUT_COLLECTIVE",
 }
 
 local function writeNext(i)
