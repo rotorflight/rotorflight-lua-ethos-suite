@@ -242,15 +242,59 @@ def throttled_copyfile(src, dst):
     except Exception:
         pass
 
+def scan_usb_drives_for_radio():
+    """
+    Strong fallback: scan mounted drives for:
+      - radio.bin (file)
+      - scripts/  (directory)
+    Returns the scripts directory path or None.
+    """
+    import string
+    candidates = []
+
+    print("[ETHOS] Performing fallback USB drive scan for radio…")
+
+    if os.name == "nt":
+        for letter in string.ascii_uppercase:
+            root = f"{letter}:\\"
+            try:
+                if (
+                    os.path.isfile(os.path.join(root, "radio.bin")) and
+                    os.path.isdir(os.path.join(root, "scripts"))
+                ):
+                    candidates.append(os.path.normpath(os.path.join(root, "scripts")))
+            except Exception:
+                pass
+    else:
+        for base in ("/Volumes", "/media", "/mnt"):
+            if not os.path.isdir(base):
+                continue
+            for entry in os.listdir(base):
+                root = os.path.join(base, entry)
+                try:
+                    if (
+                        os.path.isfile(os.path.join(root, "radio.bin")) and
+                        os.path.isdir(os.path.join(root, "scripts"))
+                    ):
+                        candidates.append(os.path.normpath(os.path.join(root, "scripts")))
+                except Exception:
+                    pass
+
+    if candidates:
+        print(f"[ETHOS] Fallback USB scan found radio at: {candidates[0]}")
+        return candidates[0]
+    return None
+
+
 
 def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
     """
     Ask Ethos Suite for the SCRIPTS path. Robust against chatty output.
     """
-    import re, json, string
+    import re, json
 
     cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
-    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//)[^\r\n]+$')
+    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//|/)[^\r\n]+$')
 
     def _clean(line: str) -> str:
         line = (line or "").strip().strip('"').strip("'")
@@ -265,15 +309,6 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
             return line
         return line
 
-    def _scan_drives_for_scripts():
-        for letter in string.ascii_uppercase:
-            root = f"{letter}:\\scripts"
-            try:
-                if os.path.isdir(root):
-                    return os.path.normpath(root)
-            except Exception:
-                pass
-        return None
 
     last_err = None
     for attempt in range(retries + 1):
@@ -315,11 +350,12 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
                 except Exception:
                     pass
 
-            scanned = _scan_drives_for_scripts()
-            if scanned:
-                return scanned
+            # Final fallback: explicit USB scan
+            fallback = scan_usb_drives_for_radio()
+            if fallback:
+                return fallback
 
-            raise RuntimeError("No path-like output from Ethos Suite; mount not ready yet.")
+            raise RuntimeError("No path-like output from Ethos Suite and no valid radio drive found.")
         except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
             last_err = e
             if attempt < retries:
@@ -327,6 +363,12 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
                 time.sleep(delay)
             else:
                 raise last_err
+
+            # IMPORTANT: also attempt USB fallback when Ethos Suite fails (non-zero/timeout/etc)
+            fb = scan_usb_drives_for_radio()
+            if fb:
+                return fb
+
 
 
 def on_rm_error(func, path, exc_info):
@@ -526,20 +568,53 @@ def ethos_serial(ethossuite_bin, action, radio=None):
 
 
 def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
+    """
+    Poll Ethos Suite for the mounted SCRIPTS directory.
+
+    Behaviour:
+      - Try Ethos Suite up to `attempts` times.
+      - If still not mounted, perform a final USB drive scan fallback.
+    Debug:
+      - Set DEPLOY_DEBUG_MOUNT=1 to print the returned path / exception each attempt.
+    """
+    debug_mount = os.environ.get("DEPLOY_DEBUG_MOUNT", "").strip().lower() in ("1", "true", "yes", "on")
+
     last_err = None
+    last_path = None
+
     for i in range(attempts):
         try:
             path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
+            last_path = path
+            if debug_mount:
+                print(f"[ETHOS][DEBUG] get_ethos_scripts_dir -> {path!r}")
             if path and os.path.isdir(path):
-                return os.path.normpath(path)
+                mounted = os.path.normpath(path)
+                print(f"[ETHOS] Radio drive mounted: {mounted}")
+                return mounted
             raise RuntimeError(f"Ethos returned non-directory path: {path!r}")
         except Exception as e:
             last_err = e
+            if debug_mount:
+                print(f"[ETHOS][DEBUG] attempt {i+1}/{attempts} failed: {type(e).__name__}: {e}")
             print(f"[ETHOS] Waiting for radio drive ({i+1}/{attempts})…")
             time.sleep(delay)
-    raise RuntimeError(f"Radio drive did not mount: {last_err}")
 
+    # Final fallback: explicit USB scan (only after Ethos Suite polling is exhausted)
+    print("[ETHOS] Ethos Suite polling exhausted; attempting USB drive scan fallback…")
+    fb = None
+    try:
+        fb = scan_usb_drives_for_radio()
+    except Exception as e:
+        if debug_mount:
+            print(f"[ETHOS][DEBUG] scan_usb_drives_for_radio crashed: {type(e).__name__}: {e}")
 
+    if fb and os.path.isdir(fb):
+        fb = os.path.normpath(fb)
+        print(f"[ETHOS] USB scan fallback found radio: {fb}")
+        return fb
+
+    raise RuntimeError(f"Radio drive did not mount (last_path={last_path!r}): {last_err}")
 def _find_com_port_by_vid_pid(vid_hex, pid_hex):
     try:
         from serial.tools import list_ports

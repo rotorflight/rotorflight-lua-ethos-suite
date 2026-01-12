@@ -12,9 +12,6 @@ local apidata = {
         fields = {
             {t = "@i18n(app.modules.governor.idle_collective)@", mspapi = 1, apikey = "gov_idle_collective"}, 
             {t = "@i18n(app.modules.governor.wot_collective)@", mspapi = 1, apikey = "gov_wot_collective"},
-
-
-
         }
     }
 }

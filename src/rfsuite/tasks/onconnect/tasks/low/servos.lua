@@ -21,7 +21,9 @@ function servos.wakeup()
         local API = rfsuite.tasks.msp.api.load("STATUS")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.servoCount = API.readValue("servo_count")
-            if rfsuite.session.servoCount then rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info") end
+            if rfsuite.session.servoCount then 
+                rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info") 
+                rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "connect")
         end)
         API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
         API.read()
@@ -33,6 +35,7 @@ function servos.wakeup()
             for i, v in pairs(API.data().parsed) do
                 if v == 0 then
                     rfsuite.utils.log("Servo override: true (" .. i .. ")", "info")
+                    rfsuite.utils.log("Servo override: true (" .. i .. ")", "connect")
                     rfsuite.session.servoOverride = true
                 end
             end

@@ -40,29 +40,6 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = logpanel:addLine("@i18n(app.modules.settings.txt_loglocation)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.txt_console)@", 0}, {"@i18n(app.modules.settings.txt_consolefile)@", 1}}, function()
-        if rfsuite.preferences and rfsuite.preferences.developer then
-            if rfsuite.preferences.developer.logtofile == false then
-                return 0
-            else
-                return 1
-            end
-        end
-    end, function(newValue)
-        if rfsuite.preferences and rfsuite.preferences.developer then
-            local value
-            if newValue == 0 then
-                value = false
-            else
-                value = true
-            end
-            settings.logtofile = value
-        end
-    end)
-
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = logpanel:addLine("@i18n(app.modules.settings.txt_loglevel)@")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.txt_off)@", 0}, {"@i18n(app.modules.settings.txt_info)@", 1}, {"@i18n(app.modules.settings.txt_debug)@", 2}}, function()
         if rfsuite.preferences and rfsuite.preferences.developer then

@@ -16,8 +16,6 @@ local apidata = {
             {t = "@i18n(app.modules.profile_governor.auto_throttle)@", mspapi = 1, apikey = "governor_auto_throttle", enablefunction = function() return (rfsuite.session.governorMode >= 1) end},
             {t = "@i18n(app.modules.governor.handover_throttle)@", mspapi = 1, apikey = "gov_handover_throttle"}, 
             {t = "@i18n(app.modules.governor.throttle_hold_timeout)@", mspapi = 1, apikey = "gov_throttle_hold_timeout"},
-
-
         }
     }
 }

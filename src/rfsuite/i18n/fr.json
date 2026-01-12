@@ -1130,15 +1130,20 @@
         "needs_translation": false,
         "translation": "Ralenti Gaz"
       },
+      "tbl_govmode_direct": {
+        "english": "DIRECT",
+        "needs_translation": true,
+        "translation": "DIRECT"
+      },
       "tbl_govmode_electric": {
         "english": "ELECTRIC",
         "needs_translation": false,
         "translation": "ELECTRIQUE"
       },
-      "tbl_govmode_external": {
-        "english": "EXTERNAL",
-        "needs_translation": false,
-        "translation": "EXTERNE"
+      "tbl_govmode_limit": {
+        "english": "LIMIT",
+        "needs_translation": true,
+        "translation": "LIMIT"
       },
       "tbl_govmode_mode1": {
         "english": "MODE1",
@@ -1170,25 +1175,20 @@
         "needs_translation": false,
         "translation": "STANDARD"
       },
+      "tbl_throttle_type_function": {
+        "english": "FUNCTION",
+        "needs_translation": true,
+        "translation": "FUNCTION"
+      },
       "tbl_throttle_type_normal": {
         "english": "NORMAL",
         "needs_translation": false,
         "translation": "NORMAL"
       },
-      "tbl_throttle_type_off_idle_auto_on": {
-        "english": "OFF_IDLE_AUTO_ON",
-        "needs_translation": false,
-        "translation": "ARRET_RALENTI_AUTO_ALLUME"
-      },
-      "tbl_throttle_type_off_idle_on": {
-        "english": "OFF_IDLE_ON",
-        "needs_translation": false,
-        "translation": "ARRET_RALENTI_ALLUME"
-      },
-      "tbl_throttle_type_off_on": {
-        "english": "OFF_ON",
-        "needs_translation": false,
-        "translation": "ARRET_ALLUME"
+      "tbl_throttle_type_switch": {
+        "english": "SWITCH",
+        "needs_translation": true,
+        "translation": "SWITCH"
       }
     },
     "GOVERNOR_PROFILE": {
@@ -1412,6 +1412,16 @@
         "english": "Autorotation Gear Tooth Count",
         "needs_translation": false,
         "translation": "Nombre de dents de la roue d'autorotation"
+      },
+      "tbl_off": {
+        "english": "OFF",
+        "needs_translation": true,
+        "translation": "Off"
+      },
+      "tbl_on": {
+        "english": "ON",
+        "needs_translation": true,
+        "translation": "On"
       }
     },
     "PID_PROFILE": {
@@ -2218,6 +2228,11 @@
           "needs_translation": false,
           "translation": "Avant"
         },
+        "half_duplex": {
+          "english": "Half Duplex",
+          "needs_translation": true,
+          "translation": "Half Duplex"
+        },
         "help_p1": {
           "english": "Configure the motor and speed controller features.",
           "needs_translation": false,
@@ -2253,10 +2268,20 @@
           "needs_translation": false,
           "translation": "Nombre de poles moteur"
         },
+        "motor_pwm_rate": {
+          "english": "Update frequency",
+          "needs_translation": true,
+          "translation": "Update frequency"
+        },
         "name": {
           "english": "ESC/Motors",
           "needs_translation": false,
           "translation": "ESC/Moteurs"
+        },
+        "pin_swap": {
+          "english": "Pin Swap",
+          "needs_translation": true,
+          "translation": "Pin Swap"
         },
         "pinion": {
           "english": "Pinion",
@@ -2268,10 +2293,50 @@
           "needs_translation": false,
           "translation": "Arriere"
         },
+        "rpm": {
+          "english": "RPM",
+          "needs_translation": true,
+          "translation": "RPM"
+        },
+        "rpm_sensor_source": {
+          "english": "RPM Sensor",
+          "needs_translation": true,
+          "translation": "RPM Sensor"
+        },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
           "needs_translation": false,
           "translation": "Ratio mot. queue"
+        },
+        "telemetry": {
+          "english": "Telemetry",
+          "needs_translation": true,
+          "translation": "Telemetry"
+        },
+        "telemetry_protocol": {
+          "english": "Telemetry Protocol",
+          "needs_translation": true,
+          "translation": "Telemetry Protocol"
+        },
+        "throttle": {
+          "english": "Throttle",
+          "needs_translation": true,
+          "translation": "Throttle"
+        },
+        "throttle_protocol": {
+          "english": "Throttle Protocol",
+          "needs_translation": true,
+          "translation": "Throttle Protocol"
+        },
+        "unsynced": {
+          "english": "Unsynced ESC Update",
+          "needs_translation": true,
+          "translation": "Unsynced ESC Update"
+        },
+        "use_dshot_telemetry": {
+          "english": "DShot RPM Telemetry",
+          "needs_translation": true,
+          "translation": "DShot RPM Telemetry"
         },
         "voltage_correction": {
           "english": "Voltage Correction",

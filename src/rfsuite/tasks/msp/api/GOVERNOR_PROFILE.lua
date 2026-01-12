@@ -22,16 +22,10 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
     }
 
     local governor_flags_bitmap = {
-        { field = "fc_throttle_curve",       table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.fc_throttle_curve)@" },
-        { field = "tx_precomp_curve",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.tx_precomp_curve)@" },
         { field = "fallback_precomp",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.fallback_precomp)@" },
         { field = "voltage_comp",            table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.voltage_comp)@" },
         { field = "pid_spoolup",             table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.pid_spoolup)@" },
-        { field = "hs_adjustment",           table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.hs_adjustment)@" },
         { field = "dyn_min_throttle",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.dyn_min_throttle)@" },
-        { field = "autorotation",            table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.autorotation)@" },
-        { field = "suspend",                 table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.suspend)@" },
-        { field = "bypass",                  table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.bypass)@" }
     }
 
     MSP_API_STRUCTURE_READ_DATA = {

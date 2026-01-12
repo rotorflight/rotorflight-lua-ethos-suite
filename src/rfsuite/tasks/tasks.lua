@@ -219,12 +219,18 @@ function tasks.telemetryCheckScheduler()
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
-    if not telemetryState then return clearSessionAndQueue() end
+    if not telemetryState then
+        if not rfsuite.session.isConnected then
+            utils.log("Waiting for connection", "connect")
+        end
+        return clearSessionAndQueue()
+    end
 
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
         local newModelPath = model.path()
         if newModelPath ~= lastModelPath then
             utils.log("Model changed, resetting session", "info")
+            utils.log("Model changed, resetting session", "connect")
             lastModelPath = newModelPath
             clearSessionAndQueue()
         end
@@ -241,6 +247,7 @@ function tasks.telemetryCheckScheduler()
             lastNameCheckAt = now
             if currentSensor:name() ~= lastSensorName then
                 utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
+                utils.log("Telem. sensor changed to " .. tostring(currentSensor:name()), "connect")
                 lastSensorName = currentSensor:name()
                 currentSensor = nil
             end
@@ -280,6 +287,7 @@ function tasks.telemetryCheckScheduler()
 
     if currentTelemetryType ~= lastTelemetryType then
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
+        rfsuite.utils.log("Telem. type changed to " .. tostring(currentTelemetryType), "connect")
         tasks.setTelemetryTypeChanged()
         lastTelemetryType = currentTelemetryType
         clearSessionAndQueue()
@@ -350,6 +358,7 @@ function tasks.wakeup()
             tasks._initKeys = nil
             tasks._initIndex = 1
             utils.log("All tasks initialized.", "info")
+            utils.log("All tasks initialized.", "connect")
             return
         end
     end
@@ -629,6 +638,7 @@ function tasks.load(name, meta)
     table.insert(tasksList, {name = name, interval = interval, baseInterval = baseInterval, jitter = jitter, script = meta.script, linkrequired = meta.linkrequired or false, connected = meta.connected or false, simulatoronly = meta.simulatoronly or false, spreadschedule = meta.spreadschedule or false, last_run = os.clock() - offset, duration = 0, totalDuration = 0, runs = 0, maxDuration = 0})
 
     utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
+    utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "connect")
     return true
 end
 

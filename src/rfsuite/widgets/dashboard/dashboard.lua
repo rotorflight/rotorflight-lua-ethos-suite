@@ -193,8 +193,10 @@ local function _profReportIfDue()
     P.lastReport = now
 end
 
-function dashboard.loader(x, y, w, h)
-    dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+function dashboard.loader(x, y, w, h, txt)
+
+    dashboard.overlaymessage(x, y, w, h, txt) 
+
     _queueInvalidateRect(x, y, w, h)
     _flushInvalidatesRespectingBudget()
 end
@@ -207,7 +209,36 @@ local function forceInvalidateAllObjects()
     _flushInvalidatesRespectingBudget()
 end
 
-function dashboard.overlaymessage(x, y, w, h, txt) dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt) end
+function dashboard.overlaymessage(x, y, w, h, txt)
+    local MAX = 3
+
+    -- persistent queue stored on dashboard (keeps everything "contained")
+    dashboard._overlayQueue = dashboard._overlayQueue or {}
+    local q = dashboard._overlayQueue
+
+    local logmsg = rfsuite.tasks.logger
+        and rfsuite.tasks.logger.getConnectLines(MAX)
+
+    if not logmsg then
+        if txt then
+            local prefix = string.format("[%.2f] ", os.clock())
+            local line = prefix .. txt
+
+            q[#q + 1] = line
+            if #q > MAX then
+                table.remove(q, 1)
+            end
+
+            logmsg = q
+        else
+            -- no txt: show existing queue if we have it, else a default line
+            logmsg = (#q > 0) and q or {"No log messages available."}
+        end
+    end
+
+    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg)
+end
+
 
 local function computeObjectSchedulerPercentage(count)
     if count <= 10 then
@@ -278,22 +309,32 @@ function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
     local telemetry = tasks.telemetry
-    local pad = "      "
 
-    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then return "@i18n(widgets.dashboard.theme_load_error)@" end
-
-    local elapsed = os.clock() - initTime
-    if elapsed > 10 then if not tasks.active() then return "@i18n(widgets.dashboard.check_bg_task)@" end end
-
-    if rfsuite.session.apiVersion and rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
-        if system.getVersion().simulation == true then
-            return pad .. "SIM " .. rfsuite.session.apiVersion .. pad
-        else
-            return pad .. "RF" .. rfsuite.session.rfVersion .. pad
-        end
+    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
+        return "[ERROR] Failed to load theme, using fallback" 
     end
 
-    if not rfsuite.session.isConnectedHigh and state ~= "postflight" then return "@i18n(widgets.dashboard.waiting_for_connection)@" end
+    local elapsed = os.clock() - initTime
+    if elapsed > 10 then if not tasks.active() then return "[ERROR] Background task is not enabled" end end
+
+    if not rfsuite.session.isConnected and state ~= "postflight" then
+        local v = rfsuite.config.version
+        local verStr
+
+        if type(v) == "table" then
+            verStr = string.format(
+                "%d.%d.%d%s",
+                v.major or 0,
+                v.minor or 0,
+                v.revision or 0,
+                v.suffix and ("-" .. v.suffix) or ""
+            )
+        else
+            verStr = tostring(v or "unknown")
+        end
+
+        return "Initializing Rotorflight Suite [v" .. verStr .. "]"
+    end
 
     return nil
 end

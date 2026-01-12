@@ -30,17 +30,17 @@ local COL_DIRECTION
 local LAYOUTINDEX = {
         SWASH_TYPE       = 1,   -- MIXER_CONFIG
         ROTOR_DIRECTION  = 2,   -- MIXER_CONFIG
-        AIL_DIRECTION    = 3,   -- MIXER_INPUT_INDEXED_ROLL
-        ELE_DIRECTION    = 4,   -- MIXER_INPUT_INDEXED_PITCH
-        COL_DIRECTION    = 5,   -- MIXER_INPUT_INDEXED_COLLECTIVE
+        AIL_DIRECTION    = 3,   -- GET_MIXER_INPUT_ROLL
+        ELE_DIRECTION    = 4,   -- GET_MIXER_INPUT_PITCH
+        COL_DIRECTION    = 5,   -- GET_MIXER_INPUT_COLLECTIVE
     }
 
 local LAYOUT = {
         [LAYOUTINDEX.SWASH_TYPE] = {t = "@i18n(app.modules.mixer.swash_type)@",   table = {"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1, onChange = function() needsReboot = true end},   -- MIXER_CONFIG
         [LAYOUTINDEX.ROTOR_DIRECTION] = {t = "@i18n(app.modules.mixer.main_rotor_dir)@",   table = {[0] = "@i18n(api.MIXER_CONFIG.tbl_cw)@", [1] = "@i18n(api.MIXER_CONFIG.tbl_ccw)@"}},           -- MIXER_CONFIG
-        [LAYOUTINDEX.AIL_DIRECTION] = {t = "@i18n(app.modules.mixer.aileron_direction)@",   table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}},   -- MIXER_INPUT_INDEXED_ROLL
-        [LAYOUTINDEX.ELE_DIRECTION] = {t = "@i18n(app.modules.mixer.elevator_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- MIXER_INPUT_INDEXED_PITCH
-        [LAYOUTINDEX.COL_DIRECTION] = {t = "@i18n(app.modules.mixer.collective_direction)@",  table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- MIXER_INPUT_INDEXED_COLLECTIVE
+        [LAYOUTINDEX.AIL_DIRECTION] = {t = "@i18n(app.modules.mixer.aileron_direction)@",   table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}},   -- GET_MIXER_INPUT_ROLL
+        [LAYOUTINDEX.ELE_DIRECTION] = {t = "@i18n(app.modules.mixer.elevator_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_PITCH
+        [LAYOUTINDEX.COL_DIRECTION] = {t = "@i18n(app.modules.mixer.collective_direction)@",  table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_COLLECTIVE
     }
 
 
@@ -79,9 +79,9 @@ function apiDataToFormData()
     local ROTOR_DIRECTION = APIDATA["MIXER_CONFIG"]["values"].main_rotor_dir
 
     -- determine directions
-    COL_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_COLLECTIVE"]["values"].rate_stabilized_collective)
-    ELE_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_PITCH"]["values"].rate_stabilized_pitch)
-    AIL_DIRECTION = rateToDir(APIDATA["MIXER_INPUT_INDEXED_ROLL"]["values"].rate_stabilized_roll)
+    COL_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_COLLECTIVE"]["values"].rate_stabilized_collective)
+    ELE_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_PITCH"]["values"].rate_stabilized_pitch)
+    AIL_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_ROLL"]["values"].rate_stabilized_roll)
  
 
     -- store processed data into form data table
@@ -125,9 +125,9 @@ function copyFormToApiValues()
     -- Directions: flip sign of the existing rates
     -- (keep current magnitudes; only change direction)
     -- ----------------------------
-    local pitch = apiValues["MIXER_INPUT_INDEXED_PITCH"] and apiValues["MIXER_INPUT_INDEXED_PITCH"].values
-    local roll  = apiValues["MIXER_INPUT_INDEXED_ROLL"] and apiValues["MIXER_INPUT_INDEXED_ROLL"].values
-    local coll  = apiValues["MIXER_INPUT_INDEXED_COLLECTIVE"] and apiValues["MIXER_INPUT_INDEXED_COLLECTIVE"].values
+    local pitch = apiValues["GET_MIXER_INPUT_PITCH"] and apiValues["GET_MIXER_INPUT_PITCH"].values
+    local roll  = apiValues["GET_MIXER_INPUT_ROLL"] and apiValues["GET_MIXER_INPUT_ROLL"].values
+    local coll  = apiValues["GET_MIXER_INPUT_COLLECTIVE"] and apiValues["GET_MIXER_INPUT_COLLECTIVE"].values
 
     if pitch then
         pitch["rate_stabilized_pitch"] =
@@ -158,9 +158,9 @@ end
 
 local LOAD_SEQUENCE = {
   "MIXER_CONFIG",
-  "MIXER_INPUT_INDEXED_PITCH",
-  "MIXER_INPUT_INDEXED_ROLL",
-  "MIXER_INPUT_INDEXED_COLLECTIVE",
+  "GET_MIXER_INPUT_PITCH",
+  "GET_MIXER_INPUT_ROLL",
+  "GET_MIXER_INPUT_COLLECTIVE",
 }
 
 local function loadNext(i)
@@ -215,9 +215,9 @@ end
 -- -------------------------------------------------------
 local SAVE_SEQUENCE = {
     "MIXER_CONFIG",
-    "MIXER_INPUT_INDEXED_PITCH",
-    "MIXER_INPUT_INDEXED_ROLL",
-    "MIXER_INPUT_INDEXED_COLLECTIVE",
+    "GET_MIXER_INPUT_PITCH",
+    "GET_MIXER_INPUT_ROLL",
+    "GET_MIXER_INPUT_COLLECTIVE",
 }
 
 local function writeNext(i)

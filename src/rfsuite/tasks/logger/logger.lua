@@ -34,4 +34,8 @@ function logger.add(message, level)
     logger.queue.add(message, level)
 end
 
+function logger.getConnectLines(n)
+    return logger.queue.getConnectLines(n)
+end
+
 return logger

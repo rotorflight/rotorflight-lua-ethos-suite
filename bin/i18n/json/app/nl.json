@@ -1757,6 +1757,36 @@
       }
     },
     "esc_motors": {
+      "use_dshot_telemetry": {
+        "english": "DShot RPM Telemetry",
+        "translation": "DShot RPM Telemetry",
+        "needs_translation": true
+      },
+      "rpm_sensor_source": {
+        "english": "RPM Sensor",
+        "translation": "RPM Sensor",
+        "needs_translation": true
+      },
+      "throttle": {
+        "english": "Throttle",
+        "translation": "Throttle",
+        "needs_translation": true
+      },
+      "telemetry": {
+        "english": "Telemetry",
+        "translation": "Telemetry",
+        "needs_translation": true
+      },
+      "rpm": {
+        "english": "RPM",
+        "translation": "RPM",
+        "needs_translation": true
+      },
+      "unsynced": {
+        "english": "Unsynced ESC Update",
+        "translation": "Unsynced ESC Update",
+        "needs_translation": true
+      },
       "min_throttle": {
         "english": "0% Throttle PWM Value",
         "translation": "0% Throttle PWM waarde",
@@ -1831,6 +1861,31 @@
         "english": "Consumption Correction",
         "translation": "Verbruik correctie",
         "needs_translation": false
+      },
+      "throttle_protocol": {
+        "english": "Throttle Protocol",
+        "translation": "Throttle Protocol",
+        "needs_translation": true
+      },
+      "motor_pwm_rate": {
+        "english": "Update frequency",
+        "translation": "Update frequency",
+        "needs_translation": true
+      },
+      "telemetry_protocol": {
+        "english": "Telemetry Protocol",
+        "translation": "Telemetry Protocol",
+        "needs_translation": true
+      },
+      "half_duplex": {
+        "english": "Half Duplex",
+        "translation": "Half Duplex",
+        "needs_translation": true
+      },
+      "pin_swap": {
+        "english": "Pin Swap",
+        "translation": "Pin Swap",
+        "needs_translation": true
       }
     },
     "radio_config": {
