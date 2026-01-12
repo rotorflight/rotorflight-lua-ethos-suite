@@ -1257,10 +1257,15 @@
       "translation": "Uit",
       "needs_translation": false
     },
-    "tbl_govmode_external": {
-      "english": "EXTERNAL",
-      "translation": "EXTERN",
-      "needs_translation": false
+    "tbl_govmode_limit": {
+      "english": "LIMIT",
+      "translation": "LIMIT",
+      "needs_translation": true
+    },
+    "tbl_govmode_direct": {
+      "english": "DIRECT",
+      "translation": "DIRECT",
+      "needs_translation": true
     },
     "tbl_govmode_electric": {
       "english": "ELECTRIC",
@@ -1277,20 +1282,15 @@
       "translation": "NORMAAL",
       "needs_translation": false
     },
-    "tbl_throttle_type_off_on": {
-      "english": "OFF_ON",
-      "translation": "UIT_AAN",
-      "needs_translation": false
-    },
-    "tbl_throttle_type_off_idle_on": {
+    "tbl_throttle_type_switch": {
       "english": "SWITCH",
-      "translation": "UIT_STATIONAIR_AAN",
-      "needs_translation": false
+      "translation": "SWITCH",
+      "needs_translation": true
     },
-    "tbl_throttle_type_off_idle_auto_on": {
+    "tbl_throttle_type_function": {
       "english": "FUNCTION",
-      "translation": "UIT_STATIONAIR_AUTO_AAN",
-      "needs_translation": false
+      "translation": "FUNCTION",
+      "needs_translation": true
     },
     "governor_idle_throttle": {
       "english": "Idle throttle",
