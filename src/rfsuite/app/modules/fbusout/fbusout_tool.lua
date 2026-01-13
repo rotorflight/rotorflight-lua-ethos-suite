@@ -19,6 +19,7 @@ local servoCount = rfsuite.session.servoCount or 6
 local motorCount = 1
 if rfsuite.session.tailMode == 0 then motorCount = 2 end
 
+
 local minmax = {}
 minmax[0] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- none
 minmax[1] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- rx
@@ -29,13 +30,13 @@ minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaul
 local enableWakeup = false
 
 local apidata = {
-    api = {[1] = "FBUS_MASTER_CONFIG"},
+    api = {[1] = "FBUS_MASTER_CHANNEL"},
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.fbusout.type)@", min = 0, max = 16, mspapi = 1, apikey = "Type_" .. ch + 1, table = {[0] = "NONE", [1] = "@i18n(app.modules.fbusout.receiver)@", [2] = "@i18n(app.modules.fbusout.mixer)@", [3] = "@i18n(app.modules.fbusout.servo)@", [4] = "@i18n(app.modules.fbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}, 
-            {t = "@i18n(app.modules.fbusout.source)@", min = 0, max = 15, mspapi = 1, apikey = "Index_" .. ch + 1, help = "fbusOutSource"},
-            {t = "@i18n(app.modules.fbusout.min)@", min = -2000, max = 2000, mspapi = 1, apikey = "RangeLow_" .. ch + 1, help = "fbusOutMin"}, {t = "@i18n(app.modules.fbusout.max)@", min = -2000, max = 2000, mspapi = 1, apikey = "RangeHigh_" .. ch + 1, help = "fbusOutMax"}
+            {t = "@i18n(app.modules.fbusout.type)@", min = 0, max = 16, mspapi = 1, apikey = "source_type", table = {[0] = "NONE", [1] = "@i18n(app.modules.fbusout.receiver)@", [2] = "@i18n(app.modules.fbusout.mixer)@", [3] = "@i18n(app.modules.fbusout.servo)@", [4] = "@i18n(app.modules.fbusout.motor)@"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}, 
+            {t = "@i18n(app.modules.fbusout.source)@", min = 0, max = 15, mspapi = 1, apikey = "source_index", help = "fbusOutSource"},
+            {t = "@i18n(app.modules.fbusout.min)@", min = -2000, max = 2000, mspapi = 1, apikey = "source_range_low", help = "fbusOutMin"}, {t = "@i18n(app.modules.fbusout.max)@", min = -2000, max = 2000, mspapi = 1, apikey = "source_range_high", help = "fbusOutMax"}
         }
     }
 }
@@ -65,7 +66,7 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeS16(message.payload, mixMax)
 
     rfsuite.tasks.msp.mspQueue:add(message)
-    
+
 end
 
 local function onSaveMenuProgress()
