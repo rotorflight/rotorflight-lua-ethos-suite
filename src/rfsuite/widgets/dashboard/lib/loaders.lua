@@ -41,18 +41,20 @@ local function fmtRadioLinkType()
     end
 
 
+    -- Determine RF link type string
+    
     if currentModuleNumber == -1 then
         return "RF Module Disabled"
+    elseif currentModuleNumber == 0 and currentSensor == nil then 
+         rf = "Int. No Telemetry"  
+    elseif currentModuleNumber == 1 and currentSensor == nil then 
+         rf = "Ext. No Telemetry"     
     elseif currentModuleNumber == 0 and currentTelemetryType == "sport" then
          rf = "Int. FBUS/F.PORT/S.PORT"
     elseif currentModuleNumber == 1 and currentTelemetryType == "sport" then
          rf = "Ext. FBUS/F.PORT/S.PORT"  
     elseif currentModuleNumber == 1 and currentTelemetryType == "crsf" then 
          rf = "Ext. CRSF"    
-    elseif currentModuleNumber == 0 and currentSensor == nil then 
-         rf = "Int. No Telemetry"  
-    elseif currentModuleNumber == 1 and currentSensor == nil then 
-         rf = "Ext. No Telemetry"        
     else
          rf = "Unknown RF Link"      
     end
