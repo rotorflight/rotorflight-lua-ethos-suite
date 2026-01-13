@@ -25,6 +25,7 @@ function fcversion.wakeup()
             if rfsuite.session.fcVersion then 
                 rfsuite.utils.log("FC version: " .. rfsuite.session.fcVersion, "info") 
                 rfsuite.utils.log("FC version: " .. rfsuite.session.fcVersion, "connect")
+            end    
         end)
         API.setUUID("22a683cb-dj0e-439f-8d04-04687c9360fu")
         API.read()

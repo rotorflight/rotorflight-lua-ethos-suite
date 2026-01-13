@@ -24,6 +24,7 @@ function servos.wakeup()
             if rfsuite.session.servoCount then 
                 rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info") 
                 rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "connect")
+            end    
         end)
         API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
         API.read()

@@ -36,6 +36,7 @@ function telemetryconfig.wakeup()
             if rfsuite.utils and rfsuite.utils.log then 
                 rfsuite.utils.log("Updated telemetry sensors: " .. slotsStr, "info") 
                 rfsuite.utils.log("Updated telemetry sensors:" .. tostring(#slots), "connect")
+            end    
         end)
         API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")
         API.read()
