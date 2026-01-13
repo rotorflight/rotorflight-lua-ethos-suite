@@ -232,7 +232,8 @@ function dashboard.overlaymessage(x, y, w, h, txt)
             logmsg = q
         else
             -- no txt: show existing queue if we have it, else a default line
-            logmsg = (#q > 0) and q or {"No log messages available."}
+            local prefix = string.format("[%.2f] ", os.clock())
+            logmsg = (#q > 0) and q or {prefix .. "Initializing Rotorflight Suite..."}
         end
     end
 
