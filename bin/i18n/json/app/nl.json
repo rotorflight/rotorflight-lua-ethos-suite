@@ -3028,6 +3028,11 @@
         "translation": "Deze parameters zijn van toepassing op de governor, ongeacht het gebruikte profiel.",
         "needs_translation": false
       },
+      "auto_timeout": {
+        "english": "Autorotation Timeout",
+        "translation": "Autorotation Timeout",
+        "needs_translation": true
+      },
       "handover_throttle": {
         "english": "Handover throttle%",
         "translation": "Overdracht throttle%",

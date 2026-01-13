@@ -3028,6 +3028,11 @@
         "translation": "Ces parametres s'appliquent globalement au gouverneur, quel que soit le profil utilise.",
         "needs_translation": false
       },
+      "auto_timeout": {
+        "english": "Autorotation Timeout",
+        "translation": "Autorotation Timeout",
+        "needs_translation": true
+      },
       "handover_throttle": {
         "english": "Handover throttle%",
         "translation": "Transfert des gaz %",

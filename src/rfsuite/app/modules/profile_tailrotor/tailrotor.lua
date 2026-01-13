@@ -10,12 +10,12 @@ local currentProfileChecked = false
 
 local apidata = {
     api = {
-        [1] = "PID_PROFILE"
+        [1] = "PID_PROFILE",
     },
     formdata = {
         labels = {
             { t = "@i18n(app.modules.profile_tailrotor.inertia_precomp)@", label = 2, inline_size = 13.6, apiversiongte = 12.08 },
-            { t = "@i18n(app.modules.profile_tailrotor.collective_impulse_ff)@", label = 3, inline_size = 13.6, apiversionlte = 12.07 }
+            { t = "@i18n(app.modules.profile_tailrotor.collective_impulse_ff)@", label = 3, inline_size = 13.6, apiversionlte = 12.07 },
         },
         fields = {
             { t = "@i18n(app.modules.profile_tailrotor.precomp_cutoff)@",      mspapi = 1, apikey = "yaw_precomp_cutoff" },

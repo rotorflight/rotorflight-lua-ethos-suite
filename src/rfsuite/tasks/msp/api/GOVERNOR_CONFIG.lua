@@ -36,7 +36,7 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "gov_recovery_time", type = "U16", apiVersion = 12.09, simResponse = {20, 0}, min = 0, max = 100, unit = "%/s", default = 21, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_recovery_time)@"},
         {field = "gov_throttle_hold_timeout", type = "U16", apiVersion = 12.09, simResponse = {50, 0}, min = 0, max = 250, unit = "s", default = 5, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_throttle_hold_timeout)@"},
         {field = "spare_0", type = "U16", apiVersion = 12.09, simResponse = {0, 0}}, 
-        {field = "gov_autorotation_timeout", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_timeout)@"},  
+        {field = "gov_autorotation_timeout", type = "U16", apiVersion = 12.09, unit = "s", min = 0, max = 250, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_timeout)@"},  
         {field = "spare_1", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},
         {field = "spare_2", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},
         {field = "gov_handover_throttle", type = "U8", apiVersion = 12.09, simResponse = {20}, min = 0, max = 50, unit = "%", default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_handover_throttle)@"},

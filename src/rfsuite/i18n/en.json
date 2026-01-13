@@ -3684,6 +3684,11 @@
         }
       },
       "governor": {
+        "auto_timeout": {
+          "english": "Autorotation Timeout",
+          "needs_translation": false,
+          "translation": "Autorotation Timeout"
+        },
         "collective": {
           "english": "Collective",
           "needs_translation": false,

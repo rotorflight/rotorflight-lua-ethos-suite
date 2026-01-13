@@ -3028,6 +3028,11 @@
         "translation": "Diese Parameter gelten global fuer den Drehzahlreger (Governor), unabhaengig vom verwendeten Profil.",
         "needs_translation": false
       },
+      "auto_timeout": {
+        "english": "Autorotation Timeout",
+        "translation": "Autorotation Timeout",
+        "needs_translation": true
+      },
       "handover_throttle": {
         "english": "Handover throttle%",
         "translation": "Uebergabe-Gas%",
