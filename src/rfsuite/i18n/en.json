@@ -3740,9 +3740,14 @@
           "translation": "Col->Idle Throttle"
         },
         "menu_curves": {
-          "english": "Curves",
+          "english": "Bypass Curve",
           "needs_translation": false,
-          "translation": "Curves"
+          "translation": "Bypass Curve"
+        },
+        "menu_curves_long": {
+          "english": "Governor Bypass Curve",
+          "needs_translation": false,
+          "translation": "Governor Bypass Curve"
         },
         "menu_filters": {
           "english": "Filters",

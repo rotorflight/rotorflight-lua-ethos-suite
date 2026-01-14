@@ -3740,9 +3740,14 @@
           "translation": "Kollektiv-Leerlauf"
         },
         "menu_curves": {
-          "english": "Curves",
+          "english": "Bypass Curve",
           "needs_translation": true,
           "translation": "Curves"
+        },
+        "menu_curves_long": {
+          "english": "Governor Bypass Curve",
+          "needs_translation": true,
+          "translation": "Governor Bypass Curve"
         },
         "menu_filters": {
           "english": "Filters",

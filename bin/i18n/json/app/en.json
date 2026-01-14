@@ -3014,8 +3014,13 @@
         "needs_translation": false
       },
       "menu_curves": {
-        "english": "Curves",
-        "translation": "Curves",
+        "english": "Bypass Curve",
+        "translation": "Bypass Curve",
+        "needs_translation": false
+      },
+      "menu_curves_long": {
+        "english": "Governor Bypass Curve",
+        "translation": "Governor Bypass Curve",
         "needs_translation": false
       },
       "menu_time": {

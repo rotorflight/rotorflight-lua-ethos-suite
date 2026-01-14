@@ -13,10 +13,46 @@ local radio = rfsuite.app.radio
 local enableWakeup = false
 local haveData = false
 local isDirty = false
+local triggerSave = false
+local activeFieldIndex = nil
 
 local APIDATA = {}
 
 local FORMDATA = {}
+
+local function saveData()
+    local snap = APIDATA["GOVERNOR_CONFIG"]
+    local form = FORMDATA["GOVERNOR_CONFIG"]
+    if not snap or not snap.values or not form then
+        rfsuite.utils.log("Save failed: missing GOVERNOR_CONFIG snapshot", "error")
+        rfsuite.app.triggers.closeProgressLoader = true
+        return
+    end
+
+    local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+    API.setRebuildOnWrite(true)
+
+    -- copy UI → payload (scale back to MSP units)
+    for i = 1, 9 do
+        local k = "gov_bypass_throttle_curve_" .. i
+        local v = tonumber(form[k]) or 0
+        if v < 0 then v = 0 end
+        if v > 100 then v = 100 end
+        snap.values[k] = math.floor(v * 2 + 0.5)
+        API.setValue(k, snap.values[k])
+    end
+
+    API.setCompleteHandler(function()
+        -- EEPROM commit
+        local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+        EAPI.setCompleteHandler(function()
+            rfsuite.app.triggers.closeProgressLoader = true
+        end)
+        EAPI.write()
+    end)
+
+    API.write()
+end
 
 local function loadData()
 
@@ -82,7 +118,7 @@ local function openPage(idx, title, script)
 
     form.clear()
 
-    rfsuite.app.ui.fieldHeader(title)
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.governor.menu_curves_long)@")
 
 
     local res = system.getVersion()
@@ -126,6 +162,7 @@ local function openPage(idx, title, script)
             function(value)
                 if not haveData then return end
                 if not FORMDATA["GOVERNOR_CONFIG"] then return end
+                activeFieldIndex = i
                 FORMDATA["GOVERNOR_CONFIG"]["gov_bypass_throttle_curve_" .. i] = value
                 isDirty = true
             end
@@ -152,6 +189,15 @@ local function wakeup()
             isDirty = false
         end
     end
+
+    if triggerSave then
+        rfsuite.app.ui.progressDisplay(
+            "@i18n(app.msg_saving_settings)@",
+            "@i18n(app.msg_saving_to_fbl)@"
+        )
+        saveData()
+        triggerSave = false
+    end    
 
 end
 
@@ -245,9 +291,45 @@ local function paint()
     local r = 2
     for i = 1, FIELD_COUNT do
         local p = pts[i]
-        lcd.drawFilledCircle(p.x, p.y, r)
+
+        if activeFieldIndex == i then
+            -- highlighted (currently edited)
+            lcd.color(isDark and lcd.RGB(255, 200, 0) or lcd.RGB(0, 120, 255))
+            lcd.drawFilledCircle(p.x, p.y, r + 1)
+        else
+            -- normal
+            lcd.color(isDark and lcd.RGB(220, 220, 220) or lcd.RGB(0, 0, 0))
+            lcd.drawFilledCircle(p.x, p.y, r)
+        end
     end
 end
 
+local function onSaveMenu()
+    form.openDialog({
+        title   = "@i18n(app.modules.profile_select.save_settings)@",
+        message = "@i18n(app.modules.profile_select.save_prompt)@",
+        buttons = {
+            {
+                label = "@i18n(app.btn_ok_long)@",
+                action = function()
+                    triggerSave = true
+                    return true
+                end
+            },
+            {
+                label = "@i18n(app.btn_cancel)@",
+                action = function()
+                    triggerSave = false
+                    return true
+                end
+            }
+        },
+        options = TEXT_LEFT
+    })
+end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, paint = paint, openPage = openPage, postSave = postSave, onNavMenu = onNavMenu, event = event, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}}
+local function onReloadMenu()
+    rfsuite.app.triggers.triggerReloadFull = true
+end
+
+return {apidata = apidata, reboot = true, onSaveMenu = onSaveMenu, onReloadMenu = onReloadMenu, eepromWrite = true, paint = paint, openPage = openPage, postSave = postSave, onNavMenu = onNavMenu, event = event, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}}
