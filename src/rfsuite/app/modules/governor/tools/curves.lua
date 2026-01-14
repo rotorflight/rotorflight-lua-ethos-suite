@@ -32,6 +32,11 @@ local function saveData()
     local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
     API.setRebuildOnWrite(true)
 
+    -- restore snapshot values
+    for k, v in pairs(snap.values) do
+        API.setValue(k, v)
+    end
+
     -- copy UI → payload (scale back to MSP units)
     for i = 1, 9 do
         local k = "gov_bypass_throttle_curve_" .. i
