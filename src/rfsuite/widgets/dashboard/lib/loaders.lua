@@ -299,7 +299,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
     local outer = isDark
         and lcd.RGB(255, 255, 255, 1.0)
-        or  lcd.RGB(0,   0,   0,   1.0)
+        or  lcd.GREY(64, 1.0)
 
     local inner = isDark
         and lcd.RGB(0,   0,   0,   1.0)
