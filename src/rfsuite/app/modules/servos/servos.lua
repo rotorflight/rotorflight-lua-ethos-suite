@@ -13,6 +13,14 @@ local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 
+
+local function writeEeprom()
+
+    local mspEepromWrite = {command = 250, simulatorResponse = {}}
+    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+
+end
+
 local function buildServoTable()
 
     for i = 1, rfsuite.session.servoCount do
@@ -216,6 +224,12 @@ local function openPage(pidx, title, script)
         end
     end
 
+    -- for a write if we are in over-ride and returning to main page
+    if rfsuite.session.servoOverride == false then
+        writeEeprom()
+    end
+
+
     rfsuite.app.triggers.closeProgressLoader = true
 
     return
@@ -336,6 +350,7 @@ local function wakeup()
             rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.session.servoOverride = false
+            writeEeprom()
         end
     end
 

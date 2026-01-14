@@ -64,6 +64,13 @@ local function servoCenterFocusOn(self)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
+local function writeEeprom()
+
+    local mspEepromWrite = {command = 250, simulatorResponse = {}}
+    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+
+end
+
 local function saveServoCenter(self)
 
     local servoCenter = math.floor(configs[servoIndex]['mid'])
@@ -73,9 +80,6 @@ local function saveServoCenter(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
     rfsuite.tasks.msp.mspQueue:add(message)
-
-    --local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    --rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
 
 end
 
@@ -115,8 +119,9 @@ local function saveServoSettings(self)
 
     rfsuite.tasks.msp.mspQueue:add(message)
 
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    if rfsuite.session.servoOverride == true then
+        writeEeprom()
+    end
 
 end
 
