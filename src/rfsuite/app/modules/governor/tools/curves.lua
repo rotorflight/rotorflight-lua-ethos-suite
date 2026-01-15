@@ -172,6 +172,13 @@ local function openPage(idx, title, script)
                 isDirty = true
             end
         )
+        -- highlight curve point on focus change (not only on value edit)
+        formFields[i]:onFocus(function(state)
+            if state then
+                activeFieldIndex = i
+                isDirty = true
+            end
+        end)        
     end
       
 
