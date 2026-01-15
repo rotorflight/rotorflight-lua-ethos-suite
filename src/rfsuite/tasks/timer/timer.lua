@@ -11,6 +11,57 @@ local config = arg[1]
 local timer = {}
 local lastFlightMode = nil
 
+
+local READ_DATA = {}
+
+
+local function copyTable(src)
+    if type(src) ~= "table" then return src end
+    local dst = {}
+    for k, v in pairs(src) do dst[k] = v end
+    return dst
+end
+
+local function writeStats()
+    -- call is not present in older firmwares
+    if not rfsuite.utils.apiVersionCompare(">=", "12.09") then return end
+
+        local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+        API.setRebuildOnWrite(true)
+
+        -- restore snapshot values
+        for k, v in pairs(READ_DATA) do
+            API.setValue(k, v)
+        end
+
+        -- set updated values
+        local count = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
+        API.setValue("flightcount",count or 0)
+        API.setValue("totalflighttime", rfsuite.session.timer.lifetime or 0)
+
+        API.setCompleteHandler(function()
+            rfsuite.utils.log("Synchronized flight stats to FBL", "info")
+        end)
+        API.write()
+end
+
+local function syncStatsToFBL()
+    -- call is not present in older firmwares
+    if not rfsuite.utils.apiVersionCompare(">=", "12.09") then return end
+
+    local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+    API.setCompleteHandler(function()
+        -- snapshot remote
+        local d = API.data()
+        READ_DATA = copyTable(d.parsed)
+
+        -- update values
+        writeStats()
+    end)
+    API.read()
+
+end
+
 function timer.reset()
 
     lastFlightMode = nil
@@ -43,6 +94,10 @@ function timer.save()
         rfsuite.ini.setvalue(prefs, "general", "lastflighttime", rfsuite.session.timer.session or 0)
         rfsuite.ini.save_ini_file(prefsFile, prefs)
     end
+
+    -- sync to fbl
+    syncStatsToFBL()
+
 end
 
 local function finalizeFlightSegment(now)
