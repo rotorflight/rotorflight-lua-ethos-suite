@@ -30,12 +30,16 @@ function telemetryconfig.wakeup()
             rfsuite.session.telemetryConfig = slots
 
             local parts = {}
-            for i, v in ipairs(slots) do if v ~= 0 then parts[#parts + 1] = tostring(v) end end
+            for i, v in ipairs(slots) do 
+                if v ~= 0 then 
+                    parts[#parts + 1] = tostring(v) 
+                end 
+            end
             local slotsStr = table.concat(parts, ",")
 
             if rfsuite.utils and rfsuite.utils.log then 
                 rfsuite.utils.log("Updated telemetry sensors: " .. slotsStr, "info") 
-                rfsuite.utils.log("Updated telemetry sensors:" .. tostring(#slots), "connect")
+                rfsuite.utils.log("Updated telemetry sensors: " .. tostring(#parts) .. " of " .. tostring(#slots), "connect")
             end    
         end)
         API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")
