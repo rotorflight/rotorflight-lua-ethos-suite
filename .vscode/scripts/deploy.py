@@ -259,7 +259,6 @@ def scan_usb_drives_for_radio():
             root = f"{letter}:\\"
             try:
                 if (
-                    os.path.isfile(os.path.join(root, "radio.bin")) and
                     os.path.isdir(os.path.join(root, "scripts"))
                 ):
                     candidates.append(os.path.normpath(os.path.join(root, "scripts")))
