@@ -14,27 +14,160 @@ local firstWakeup = true
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
 
+--[[
+ * MSP Sensor Table Structure
+ *
+ * msp_sensors: A table defining APIs to be polled via MSP and how to map their values to telemetry sensors.
+ * Each top-level key is the MSP API name (e.g., "DATAFLASH_SUMMARY").
+ * Each entry must include polling intervals and a 'fields' table containing telemetry sensor configs.
+ *
+ * Structure:
+ * {
+ *   API_NAME = {
+ *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
+ *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
+ *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded (-1 for no polling)
+ *
+ *     fields = {
+ *       field_key = {
+ *         sensorname: <string>         -- Label shown in radio telemetry menu
+ *         sessionname: <string>        -- Optional session variable name to update
+ *         appId: <number>              -- Unique sensor ID (must be unique across all sensors)
+ *         unit: <constant>             -- Telemetry unit (e.g., UNIT_RAW, UNIT_VOLT, etc.)
+ *         minimum: <number>            -- Optional minimum value (default: -1e9)
+ *         maximum: <number>            -- Optional maximum value (default: 1e9)
+ *         transform: <function>          -- Optional value processing function before display
+ *       },
+ *       ...
+ *     }
+ *   },
+ *   ...
+ * }
+
+ * Possible sensor ids we can use are.
+ * 0x5FFF   - bbl flags
+ * 0x5FFE   - bbl size
+ * 0x5FFD   - bbl used
+ * 0x5FFC   - governor mode
+ * 0x5FFB
+ * 0x5FFA
+ * 0x5FF9
+ * 0x5FF8
+ * 0x5FF7
+ * 0x5FF6
+ * 0x5FF5
+ * 0x5FF4
+ * 0x5FF3
+ * 0x5FF2
+ * 0x5FF1
+ * 0x5FF0
+ * 0x5FEF
+ * 0x5FEE
+ * 0x5FED
+ * 0x5FEC
+ * 0x5FEB
+ * 0x5FEA
+ * 0x5FE9
+ * 0x5FE8
+ * 0x5FE7
+ * 0x5FE6
+ * 0x5FE5
+ * 0x5FE4
+ * 0x5FE3
+ * 0x5FE2
+
+]]--
+
+-- LuaFormatter off
 local msp_sensors = {
-    DATAFLASH_SUMMARY = {interval_armed = -1, interval_disarmed = 5, fields = {flags = {sensorname = "BBL Flags", sessionname = {"bblFlags"}, appId = 0x5FFF, unit = UNIT_RAW}, total = {sensorname = "BBL Size", sessionname = {"bblSize"}, appId = 0x5FFE, unit = UNIT_RAW}, used = {sensorname = "BBL Used", sessionname = {"bblUsed"}, appId = 0x5FFD, unit = UNIT_RAW}}},
+    DATAFLASH_SUMMARY = {
+        interval_armed = -1,
+        interval_disarmed = 5,
+        fields = {
+            flags = {
+                sensorname = "BBL Flags",
+                sessionname = {"bblFlags"},
+                appId = 0x5FFF,
+                unit = UNIT_RAW
+            },
+            total = {
+                sensorname = "BBL Size",
+                sessionname = {"bblSize"},
+                appId = 0x5FFE,
+                unit = UNIT_RAW
+            },
+            used = {
+                sensorname = "BBL Used",
+                sessionname = {"bblUsed"},
+                appId = 0x5FFD,
+                unit = UNIT_RAW
+            }
+        }
+    },
 
     BATTERY_CONFIG = {
         interval_armed = -1,
         interval_disarmed = 5,
         fields = {
-            voltageMeterSource = {sessionname = {"batteryConfig", "voltageMeterSource"}},
-            batteryCapacity = {sessionname = {"batteryConfig", "batteryCapacity"}},
-            batteryCellCount = {sessionname = {"batteryConfig", "batteryCellCount"}},
-            vbatwarningcellvoltage = {sessionname = {"batteryConfig", "vbatwarningcellvoltage"}, transform = function(v) return v / 100 end},
-            vbatmincellvoltage = {sessionname = {"batteryConfig", "vbatmincellvoltage"}, transform = function(v) return v / 100 end},
-            vbatmaxcellvoltage = {sessionname = {"batteryConfig", "vbatmaxcellvoltage"}, transform = function(v) return v / 100 end},
-            vbatfullcellvoltage = {sessionname = {"batteryConfig", "vbatfullcellvoltage"}, transform = function(v) return v / 100 end},
-            lvcPercentage = {sessionname = {"batteryConfig", "lvcPercentage"}},
-            consumptionWarningPercentage = {sessionname = {"batteryConfig", "consumptionWarningPercentage"}}
+            voltageMeterSource = {
+                sessionname = {"batteryConfig", "voltageMeterSource"}
+            },
+            batteryCapacity = {
+                sessionname = {"batteryConfig", "batteryCapacity"}
+            },
+            batteryCellCount = {
+                sessionname = {"batteryConfig", "batteryCellCount"}
+            },
+            vbatwarningcellvoltage = {
+                sessionname = {"batteryConfig", "vbatwarningcellvoltage"},
+                transform = function(v) return v / 100 end
+            },
+            vbatmincellvoltage = {
+                sessionname = {"batteryConfig", "vbatmincellvoltage"},
+                transform = function(v) return v / 100 end
+            },
+            vbatmaxcellvoltage = {
+                sessionname = {"batteryConfig", "vbatmaxcellvoltage"},
+                transform = function(v) return v / 100 end
+            },
+            vbatfullcellvoltage = {
+                sessionname = {"batteryConfig", "vbatfullcellvoltage"},
+                transform = function(v) return v / 100 end
+            },
+            lvcPercentage = {
+                sessionname = {"batteryConfig", "lvcPercentage"}
+            },
+            consumptionWarningPercentage = {
+                sessionname = {"batteryConfig", "consumptionWarningPercentage"}
+            }
         }
     },
 
-    NAME = {interval_armed = -1, interval_disarmed = 30, fields = {name = {sessionname = {"craftName"}}}}
+    NAME = {
+        interval_armed = -1,
+        interval_disarmed = 30,
+        fields = {
+            name = {
+                sessionname = {"craftName"}
+            }
+        }
+    },
+
+
+    GOVERNOR_CONFIG = {
+        interval_armed = -1,
+        interval_disarmed = 5,
+        fields = {
+            gov_mode ={
+                sessionname = {"governorMode"},
+                sensorname = "Governor Mode",
+                appId = 0x5FFC,
+                unit = UNIT_RAW
+            }
+        }
+    }
 }
+-- LuaFormatter on
 
 msp.sensors = msp_sensors
 
