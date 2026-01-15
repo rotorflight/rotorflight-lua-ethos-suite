@@ -11,12 +11,18 @@ local MSP_API_CMD_READ = 32
 local MSP_API_CMD_WRITE = 33
 local MSP_REBUILD_ON_WRITE = false
 
+local tblBatterySource = {
+    [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
+    [2] = "@i18n(api.BATTERY_CONFIG.source_adc)@",
+    [3] = "@i18n(api.BATTERY_CONFIG.source_esc)@",
+}
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "batteryCapacity", type = "U16", apiVersion = 12.06, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
     {field = "batteryCellCount", type = "U8", apiVersion = 12.06, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6, help = "@i18n(api.BATTERY_CONFIG.batteryCellCount)@"},
-    {field = "voltageMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}, help = "@i18n(api.BATTERY_CONFIG.voltageMeterSource)@"},
-    {field = "currentMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}, help = "@i18n(api.BATTERY_CONFIG.currentMeterSource)@"},
+    {field = "voltageMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.voltageMeterSource)@"},
+    {field = "currentMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.currentMeterSource)@"},
     {field = "vbatmincellvoltage", type = "U16", apiVersion = 12.06, simResponse = {74, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.3, help = "@i18n(api.BATTERY_CONFIG.vbatmincellvoltage)@"},
     {field = "vbatmaxcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {164, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.2, help = "@i18n(api.BATTERY_CONFIG.vbatmaxcellvoltage)@"},
     {field = "vbatfullcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1, help = "@i18n(api.BATTERY_CONFIG.vbatfullcellvoltage)@"},

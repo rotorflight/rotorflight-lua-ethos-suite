@@ -23,6 +23,21 @@
         "needs_translation": false,
         "translation": "The number of cells in your battery."
       },
+      "source_adc": {
+        "english": "Battery ADC",
+        "needs_translation": false,
+        "translation": "Battery ADC"
+      },
+      "source_esc": {
+        "english": "ESC Telemetry",
+        "needs_translation": false,
+        "translation": "ESC Telemetry"
+      },
+      "source_none": {
+        "english": "None",
+        "needs_translation": false,
+        "translation": "None"
+      },
       "vbatfullcellvoltage": {
         "english": "The nominal voltage of a fully charged cell.",
         "needs_translation": false,
@@ -2069,83 +2084,6 @@
           "english": "Roll",
           "needs_translation": false,
           "translation": "Roll"
-        }
-      },
-      "battery": {
-        "alert_type": {
-          "english": "Rx Voltage Alert",
-          "needs_translation": false,
-          "translation": "Rx Voltage Alert"
-        },
-        "battery_capacity": {
-          "english": "Battery Capacity",
-          "needs_translation": false,
-          "translation": "Battery Capacity"
-        },
-        "bec_voltage_alert": {
-          "english": "BEC Alert Value",
-          "needs_translation": false,
-          "translation": "BEC Alert Value"
-        },
-        "calcfuel_local": {
-          "english": "Calculate Fuel Using",
-          "needs_translation": false,
-          "translation": "Calculate Fuel Using"
-        },
-        "cell_count": {
-          "english": "Cell Count",
-          "needs_translation": false,
-          "translation": "Cell Count"
-        },
-        "consumption_warning_percentage": {
-          "english": "Consumption Warning %",
-          "needs_translation": false,
-          "translation": "Consumption Warning %"
-        },
-        "full_cell_voltage": {
-          "english": "Full Cell Voltage",
-          "needs_translation": false,
-          "translation": "Full Cell Voltage"
-        },
-        "help_p1": {
-          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-          "needs_translation": false,
-          "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level."
-        },
-        "max_cell_voltage": {
-          "english": "Max Cell Voltage",
-          "needs_translation": false,
-          "translation": "Max Cell Voltage"
-        },
-        "min_cell_voltage": {
-          "english": "Min Cell Voltage",
-          "needs_translation": false,
-          "translation": "Min Cell Voltage"
-        },
-        "name": {
-          "english": "Battery",
-          "needs_translation": false,
-          "translation": "Battery"
-        },
-        "rx_voltage_alert": {
-          "english": "RxBatt Alert Value",
-          "needs_translation": false,
-          "translation": "RxBatt Alert Value"
-        },
-        "timer": {
-          "english": "Flight Time Alarm",
-          "needs_translation": false,
-          "translation": "Flight Time Alarm"
-        },
-        "voltage_multiplier": {
-          "english": "Sag Compensation",
-          "needs_translation": false,
-          "translation": "Sag Compensation"
-        },
-        "warn_cell_voltage": {
-          "english": "Warn Cell Voltage",
-          "needs_translation": false,
-          "translation": "Warn Cell Voltage"
         }
       },
       "copyprofiles": {
@@ -4275,6 +4213,108 @@
           "english": "Yaw",
           "needs_translation": false,
           "translation": "Yaw"
+        }
+      },
+      "power": {
+        "alert_name": {
+          "english": "Alerts",
+          "needs_translation": false,
+          "translation": "Alerts"
+        },
+        "alert_type": {
+          "english": "Rx Voltage Alert",
+          "needs_translation": false,
+          "translation": "Rx Voltage Alert"
+        },
+        "battery_capacity": {
+          "english": "Battery Capacity",
+          "needs_translation": false,
+          "translation": "Battery Capacity"
+        },
+        "battery_name": {
+          "english": "Battery",
+          "needs_translation": false,
+          "translation": "Battery"
+        },
+        "bec_voltage_alert": {
+          "english": "BEC Alert Value",
+          "needs_translation": false,
+          "translation": "BEC Alert Value"
+        },
+        "calcfuel_local": {
+          "english": "Calculate Fuel Using",
+          "needs_translation": false,
+          "translation": "Calculate Fuel Using"
+        },
+        "cell_count": {
+          "english": "Cell Count",
+          "needs_translation": false,
+          "translation": "Cell Count"
+        },
+        "consumption_warning_percentage": {
+          "english": "Consumption Warning %",
+          "needs_translation": false,
+          "translation": "Consumption Warning %"
+        },
+        "current_meter_source": {
+          "english": "Current Source",
+          "needs_translation": false,
+          "translation": "Current Source"
+        },
+        "full_cell_voltage": {
+          "english": "Full Cell Voltage",
+          "needs_translation": false,
+          "translation": "Full Cell Voltage"
+        },
+        "help_p1": {
+          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "needs_translation": false,
+          "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level."
+        },
+        "max_cell_voltage": {
+          "english": "Max Cell Voltage",
+          "needs_translation": false,
+          "translation": "Max Cell Voltage"
+        },
+        "min_cell_voltage": {
+          "english": "Min Cell Voltage",
+          "needs_translation": false,
+          "translation": "Min Cell Voltage"
+        },
+        "name": {
+          "english": "Power",
+          "needs_translation": false,
+          "translation": "Power"
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "needs_translation": false,
+          "translation": "RxBatt Alert Value"
+        },
+        "source_name": {
+          "english": "Sources",
+          "needs_translation": false,
+          "translation": "Sources"
+        },
+        "timer": {
+          "english": "Flight Time Alarm",
+          "needs_translation": false,
+          "translation": "Flight Time Alarm"
+        },
+        "voltage_meter_source": {
+          "english": "Voltage Source",
+          "needs_translation": false,
+          "translation": "Voltage Source"
+        },
+        "voltage_multiplier": {
+          "english": "Sag Compensation",
+          "needs_translation": false,
+          "translation": "Sag Compensation"
+        },
+        "warn_cell_voltage": {
+          "english": "Warn Cell Voltage",
+          "needs_translation": false,
+          "translation": "Warn Cell Voltage"
         }
       },
       "profile_autolevel": {

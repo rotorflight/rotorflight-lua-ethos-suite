@@ -1071,6 +1071,21 @@
     }
   },
   "BATTERY_CONFIG": {
+    "source_none": {
+      "english": "None",
+      "translation": "None",
+      "needs_translation": true
+    },
+    "source_adc": {
+      "english": "Battery ADC",
+      "translation": "Battery ADC",
+      "needs_translation": true
+    },
+    "source_esc": {
+      "english": "ESC Telemetry",
+      "translation": "ESC Telemetry",
+      "needs_translation": true
+    },
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
       "translation": "Tension minimale par cellule avant le declenchement de l'alarme de basse tension.",

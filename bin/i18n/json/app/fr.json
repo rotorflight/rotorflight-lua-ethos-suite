@@ -2400,81 +2400,106 @@
         "needs_translation": false
       }
     },
-    "battery": {
+    "power": {
       "calcfuel_local": {
         "english": "Calculate Fuel Using",
-        "translation": "Calculer le carburant avec",
-        "needs_translation": false
+        "translation": "Calculate Fuel Using",
+        "needs_translation": true
+      },
+      "voltage_meter_source": {
+        "english": "Voltage Source",
+        "translation": "Voltage Source",
+        "needs_translation": true
+      },
+      "current_meter_source": {
+        "english": "Current Source",
+        "translation": "Current Source",
+        "needs_translation": true
       },
       "max_cell_voltage": {
         "english": "Max Cell Voltage",
-        "translation": "Tension max par cellule",
-        "needs_translation": false
+        "translation": "Max Cell Voltage",
+        "needs_translation": true
       },
       "full_cell_voltage": {
         "english": "Full Cell Voltage",
-        "translation": "Tension pleine de cellule",
-        "needs_translation": false
+        "translation": "Full Cell Voltage",
+        "needs_translation": true
       },
       "name": {
+        "english": "Power",
+        "translation": "Power",
+        "needs_translation": true
+      },
+      "battery_name": {
         "english": "Battery",
-        "translation": "Batterie",
-        "needs_translation": false
+        "translation": "Battery",
+        "needs_translation": true
+      },
+      "source_name": {
+        "english": "Sources",
+        "translation": "Sources",
+        "needs_translation": true
+      },
+      "alert_name": {
+        "english": "Alerts",
+        "translation": "Alerts",
+        "needs_translation": true
       },
       "min_cell_voltage": {
         "english": "Min Cell Voltage",
-        "translation": "Tension min cellule",
-        "needs_translation": false
+        "translation": "Min Cell Voltage",
+        "needs_translation": true
       },
       "help_p1": {
         "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-        "translation": "Les parametres de la batterie sont utilises pour configurer le controleur de vol afin de surveiller la tension de la batterie et fournir des avertissements lorsque la tension descend en dessous d'un certain niveau.",
-        "needs_translation": false
+        "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+        "needs_translation": true
       },
       "battery_capacity": {
         "english": "Battery Capacity",
-        "translation": "Capacite de la batterie",
-        "needs_translation": false
+        "translation": "Battery Capacity",
+        "needs_translation": true
       },
       "warn_cell_voltage": {
         "english": "Warn Cell Voltage",
-        "translation": "Tension d'alerte de cellule",
-        "needs_translation": false
+        "translation": "Warn Cell Voltage",
+        "needs_translation": true
       },
       "cell_count": {
         "english": "Cell Count",
-        "translation": "Nombre de cellules",
-        "needs_translation": false
+        "translation": "Cell Count",
+        "needs_translation": true
       },
       "consumption_warning_percentage": {
         "english": "Consumption Warning %",
-        "translation": "Avert. conso %",
-        "needs_translation": false
+        "translation": "Consumption Warning %",
+        "needs_translation": true
       },
       "timer": {
         "english": "Flight Time Alarm",
-        "translation": "Temps de vol",
-        "needs_translation": false
+        "translation": "Flight Time Alarm",
+        "needs_translation": true
       },
       "voltage_multiplier": {
         "english": "Sag Compensation",
-        "translation": "Compensation de chute",
-        "needs_translation": false
+        "translation": "Sag Compensation",
+        "needs_translation": true
       },
       "alert_type": {
         "english": "Rx Voltage Alert",
-        "translation": "Alerte tension Rx ou BEC",
-        "needs_translation": false
+        "translation": "Rx Voltage Alert",
+        "needs_translation": true
       },
       "bec_voltage_alert": {
         "english": "BEC Alert Value",
-        "translation": "Valeur alerte BEC",
-        "needs_translation": false
+        "translation": "BEC Alert Value",
+        "needs_translation": true
       },
       "rx_voltage_alert": {
         "english": "RxBatt Alert Value",
-        "translation": "Valeur alerte batt. Rx",
-        "needs_translation": false
+        "translation": "RxBatt Alert Value",
+        "needs_translation": true
       }
     },
     "profile_mainrotor": {

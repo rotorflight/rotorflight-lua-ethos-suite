@@ -2400,10 +2400,20 @@
         "needs_translation": false
       }
     },
-    "battery": {
+    "power": {
       "calcfuel_local": {
         "english": "Calculate Fuel Using",
         "translation": "Calculate Fuel Using",
+        "needs_translation": false
+      },
+      "voltage_meter_source": {
+        "english": "Voltage Source",
+        "translation": "Voltage Source",
+        "needs_translation": false
+      },
+      "current_meter_source": {
+        "english": "Current Source",
+        "translation": "Current Source",
         "needs_translation": false
       },
       "max_cell_voltage": {
@@ -2417,8 +2427,23 @@
         "needs_translation": false
       },
       "name": {
+        "english": "Power",
+        "translation": "Power",
+        "needs_translation": false
+      },
+      "battery_name": {
         "english": "Battery",
         "translation": "Battery",
+        "needs_translation": false
+      },
+      "source_name": {
+        "english": "Sources",
+        "translation": "Sources",
+        "needs_translation": false
+      },
+      "alert_name": {
+        "english": "Alerts",
+        "translation": "Alerts",
         "needs_translation": false
       },
       "min_cell_voltage": {
