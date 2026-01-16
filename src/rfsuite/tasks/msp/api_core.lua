@@ -325,7 +325,8 @@ end
 function core.buildWritePayload(apiname, payload, api_structure, noDelta)
     if not rfsuite.app.Page then
         utils.log("[buildWritePayload] No page context", "info")
-        return nil
+        -- tasks have no UI context; always build a full payload
+        return core.buildFullPayload(apiname, payload, api_structure)        
     end
 
     local positionmap       = rfsuite.tasks.msp.api.apidata.positionmap and rfsuite.tasks.msp.api.apidata.positionmap[apiname]
