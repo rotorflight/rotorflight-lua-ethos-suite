@@ -11,9 +11,19 @@ local MSP_API_CMD_READ = 111
 local MSP_API_CMD_WRITE = 204
 local MSP_REBUILD_ON_WRITE = true
 
+local rateTable
+local rateSimResponse
+if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    rateTable = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK", "ROTORFLIGHT"}
+    rateSimResponse = {6}
+else
+    rateTable = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}   
+    rateSimResponse = {6} 
+end
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rates_type", type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 6, default = 4, tableIdxInc = -1, table = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}, help = "@i18n(api.RC_TUNING.rates_type)@"},
+    {field = "rates_type", type = "U8", apiVersion = 12.06, simResponse = rateSimResponse, min = 0, max = 6, default = 4, tableIdxInc = -1, table = rateTable, help = "@i18n(api.RC_TUNING.rates_type)@"},
     {field = "rcRates_1", type = "U8", apiVersion = 12.06, simResponse = {18}, help = "@i18n(api.RC_TUNING.rcRates_1)@"},
     {field = "rcExpo_1", type = "U8", apiVersion = 12.06, simResponse = {25}, help = "@i18n(api.RC_TUNING.rcExpo_1)@"},
     {field = "rates_1", type = "U8", apiVersion = 12.06, simResponse = {32}, help = "@i18n(api.RC_TUNING.rates_1)@"},
@@ -49,6 +59,8 @@ local MSP_API_STRUCTURE_READ_DATA = {
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+
+MSP_API_SIMULATOR_RESPONSE = {6  , 49 , 2  , 24 , 0  , 0  , 0  , 49 , 0  , 24 , 0  , 0  , 0  , 100, 0  , 24 , 0  , 0  , 0  , 100, 0  , 0  , 0  , 0  , 0  , 0  , 15 , 0  , 15 , 0  , 90 , 0  , 15 , 30 , 30 , 60 }
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 

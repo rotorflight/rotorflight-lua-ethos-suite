@@ -5236,6 +5236,16 @@
           "needs_translation": false,
           "translation": "Alabeo"
         },
+        "rotorflight": {
+          "english": "ROTORFLIGHT",
+          "needs_translation": true,
+          "translation": "ROTORFLIGHT"
+        },
+        "shape": {
+          "english": "Shape",
+          "needs_translation": true,
+          "translation": "Shape"
+        },
         "superrate": {
           "english": "SuperRate",
           "needs_translation": false,
