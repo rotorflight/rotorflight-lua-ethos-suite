@@ -7,22 +7,28 @@ local rfsuite = require("rfsuite")
 
 local sync = {}
 
-local mspCallMade = false
-local complete = false
+local fetchData = false
+local saveData  = false
+local isComplete = false
 
--- Which API + fields are being synced
--- Each entry:
---   apiField: field name on FC side
---   iniSection/iniKey: where it lives locally
---   default: fallback if missing
-local CFG = {
-    apiName = "FLIGHT_STATS",
+local FBL_STATS = {} -- holder for fbl stats to sync
+local LOCAL_STATS = {} -- holder for local stats to sync
 
-    fields = {
-        { apiField = "flightcount",     iniSection = "general", iniKey = "flightcount",     default = 0 },
-        { apiField = "totalflighttime", iniSection = "general", iniKey = "totalflighttime", default = 0 },
+local function copyTable(src)
+    if type(src) ~= "table" then return src end
+    local dst = {}
+    for k, v in pairs(src) do dst[k] = v end
+    return dst
+end
+
+local function saveToEeprom()
+    local mspEepromWrite = {
+        command = 250, 
+        simulatorResponse = {}, 
+        processReply = function() rfsuite.utils.log("EEPROM write command sent","info") end
     }
-}
+    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+end
 
 local function toNumber(v, dflt)
     local n = tonumber(v)
@@ -30,114 +36,106 @@ local function toNumber(v, dflt)
     return n
 end
 
-local function readLocal(prefs, section, key, dflt)
-    if not prefs then return dflt end
-    return toNumber(rfsuite.ini.getvalue(prefs, section, key), dflt)
-end
-
-local function writeLocal(prefs, section, key, value)
-    if not prefs then return end
-    rfsuite.ini.setvalue(prefs, section, key, value)
-end
-
-local function saveLocalIfPossible()
-    local prefsFile = rfsuite.session.modelPreferencesFile
-    local prefs = rfsuite.session.modelPreferences
-    if prefsFile and prefs then
-        rfsuite.ini.save_ini_file(prefsFile, prefs)
-    end
-end
-
-local function logDecision(name, localV, remoteV, winV)
-    -- keep it similar to your other onconnect tasks: log to info + connect
-    local msg = string.format("%s sync: local=%s remote=%s -> %s",
-        name, tostring(localV), tostring(remoteV), tostring(winV))
-    rfsuite.utils.log(msg, "info")
-    rfsuite.utils.log(msg, "connect")
-end
-
-local function applyWinnerToBoth(API, prefs)
-    local wroteRemote = false
-    local wroteLocal = false
-
-    for _, f in ipairs(CFG.fields) do
-        local localV  = readLocal(prefs, f.iniSection, f.iniKey, f.default)
-        local remoteV = toNumber(API.readValue(f.apiField), f.default)
-
-        local winV = localV
-        if remoteV > winV then winV = remoteV end
-
-        logDecision(f.apiField, localV, remoteV, winV)
-
-        -- If local loses, update INI
-        if localV ~= winV then
-            writeLocal(prefs, f.iniSection, f.iniKey, winV)
-            wroteLocal = true
-        end
-
-        -- If remote loses, update FC side
-        if remoteV ~= winV then
-            API.setValue(f.apiField, winV)
-            wroteRemote = true
-        end
-    end
-
-    if wroteLocal then
-        saveLocalIfPossible()
-        rfsuite.utils.log("Local INI updated (winner values)", "info")
-        rfsuite.utils.log("Local INI updated (winner values)", "connect")
-    end
-
-    if wroteRemote then
-        -- mirror timer.lua style: rebuild on write helps avoid partial state issues
-        -- (you already use this pattern when syncing FLIGHT_STATS) :contentReference[oaicite:4]{index=4}
-        API.setRebuildOnWrite(true)
-        API.setCompleteHandler(function()
-            rfsuite.utils.log("Remote FC updated (winner values)", "info")
-            rfsuite.utils.log("Remote FC updated (winner values)", "connect")
-            complete = true
-        end)
-        API.write()
-    else
-        -- nothing to write remotely; we’re done
-        complete = true
-    end
-end
-
 function sync.wakeup()
-    if complete then return end
 
-    -- onconnect pattern: wait for API version, avoid MSP while busy :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6}
+    -- no api version info yet
     if rfsuite.session.apiVersion == nil then return end
-    if rfsuite.session.mspBusy then return end
 
-    -- Optional: gate by minimum firmware/API if this endpoint doesn’t exist on older FW
-    -- (timer.lua checks >= 12.09 before using FLIGHT_STATS) :contentReference[oaicite:7]{index=7}
-    if not rfsuite.utils.apiVersionCompare(">=", "12.09") then
-        complete = true
+    if rfsuite.session.mcu_id == nil then
+        -- we need MCU ID first
         return
     end
 
-    if mspCallMade then return end
-    mspCallMade = true
-
     local prefs = rfsuite.session.modelPreferences
+    if not prefs then return end
 
-    local API = rfsuite.tasks.msp.api.load(CFG.apiName)
-    API.setUUID("6a0a2f27-3ef6-4f2d-9dcf-8a1f4c4a6e88") -- change if you want a new UUID
-    API.setCompleteHandler(function(self, buf)
-        applyWinnerToBoth(API, prefs)
-    end)
-    API.read()
+    -- we dont support this feature on older firmwares
+    if rfsuite.utils.apiVersionCompare("<", "12.09") then
+        isComplete = true
+        return
+    end
+
+
+    -- fetch data from FC
+    if fetchData == false then
+
+        rfsuite.utils.log("Loading flight stats from RADIO before load", "info")
+        LOCAL_STATS['totalflighttime'] = toNumber(rfsuite.ini.getvalue(prefs, "general", "totalflighttime"), 0)
+        LOCAL_STATS['flightcount']     = toNumber(rfsuite.ini.getvalue(prefs, "general", "flightcount"), 0)
+
+        local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+        API.setUUID("7a5a2f27-2ef6-4f2d-9ecf-8a1f4c4a6e28") 
+        API.setCompleteHandler(function(self, buf)
+            FBL_STATS = copyTable(API.data().parsed) 
+
+            rfsuite.utils.log("Loaded flight stats from FBL", "info")
+
+            -- let's proceed to save
+            saveData = true
+        end)
+        API.read()
+    
+        fetchData = true
+    end
+
+    if saveData == true then
+    
+        -- compare and decide which way we should sync
+        local totalflighttimeRemote = toNumber(FBL_STATS['totalflighttime'], 0)
+        local flightcountRemote     = toNumber(FBL_STATS['flightcount'], 0)
+
+        local totalflighttimeLocal = LOCAL_STATS['totalflighttime']
+        local flightcountLocal     = LOCAL_STATS['flightcount']
+
+        rfsuite.utils.log("Total flight time - Remote: " .. tostring(totalflighttimeRemote) .. ", Local: " .. tostring(totalflighttimeLocal), "info")
+        rfsuite.utils.log("Flight count - Remote: " .. tostring(flightcountRemote) .. ", Local: " .. tostring(flightcountLocal), "info")
+
+        if totalflighttimeRemote > totalflighttimeLocal or flightcountRemote > flightcountLocal then
+            -- remote is higher, update local
+            rfsuite.ini.setvalue(prefs, "general", "totalflighttime", tostring(totalflighttimeRemote))
+            rfsuite.ini.setvalue(prefs, "general", "flightcount", tostring(flightcountRemote))
+            rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, prefs)
+
+            rfsuite.utils.log("Updated radio flight stats from FBL", "info")
+            rfsuite.utils.log("Updated radio flight stats from FBL", "console")
+
+            isComplete = true
+
+        elseif totalflighttimeRemote < totalflighttimeLocal or flightcountRemote < flightcountLocal then
+            -- local is higher, update remote
+            local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+            API.setRebuildOnWrite(true)
+
+            for i,v in pairs(FBL_STATS) do
+                API.setValue(i, v)
+            end
+
+            API.setValue("totalflighttime", totalflighttimeLocal)
+            API.setValue("flightcount", flightcountLocal)
+
+            API.setCompleteHandler(function()
+                rfsuite.utils.log("Updated FBL flight stats from radio", "info")
+                rfsuite.utils.log("Updated FBL flight stats from radio", "console")
+                saveToEeprom()
+                isComplete = true
+            end)
+            API.write()
+        else
+            rfsuite.utils.log("Flight stats are already synchronized", "info")
+            isComplete = true    
+        end    
+        
+        saveData = false
+    end
+
 end
 
 function sync.reset()
-    mspCallMade = false
-    complete = false
+    isComplete = false
 end
 
 function sync.isComplete()
-    return complete
+    return isComplete
 end
 
 return sync
