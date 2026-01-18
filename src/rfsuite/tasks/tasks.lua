@@ -54,11 +54,19 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm
 
+-- Reuse source descriptor tables to avoid allocations in hot paths
+local SRC_SPORT = {appId = 0xF101}
+local SRC_CRSF  = {crsfId = 0x14, subIdStart = 0, subIdEnd = 1}
+local SRC_TLM_ACTIVE = {category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE}
+
 tasks.profile = {enabled = false, dumpInterval = 5, minDuration = 0, include = nil, exclude = nil, onDump = nil}
 
 -- Reused tables to avoid per-cycle allocations (reduces GC churn)
 local normalEligibleTasks = {}
 local mustRunTasks = {}
+
+-- Hoist comparator (avoid allocating closure each cycle)
+local SORT_BY_LAST_RUN_ASC = function(a, b) return a.last_run < b.last_run end
 
 local function profWanted(name)
     if not tasks.profile.enabled then return end
@@ -128,10 +136,7 @@ end
 
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
-    local f = io.open(cachePath, "r")
-    if f then
-        f:close()
-
+    if io.open(cachePath, "r") then
         local ok, cached = pcall(dofile, cachePath)
         if ok and type(cached) == "table" then
             tasks._initMetadata = cached
@@ -238,12 +243,16 @@ function tasks.telemetryCheckScheduler()
 
     if not telemetryState then
         if not rfsuite.session.isConnected then
-            utils.log("Waiting for connection", "connect")
+            if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
+                lastCheckAt = now
+                utils.log("Waiting for connection", "connect")
+            end
         end
         return clearSessionAndQueue()
     end
 
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
+        lastModelPathCheckAt = now
         local newModelPath = model.path()
         if newModelPath ~= lastModelPath then
             utils.log("Model changed, resetting session", "info")
@@ -279,17 +288,17 @@ function tasks.telemetryCheckScheduler()
     end
 
     if internalModule and internalModule:enable() then
-        currentSensor = system.getSource({appId = 0xF101})
+        currentSensor = system.getSource(SRC_SPORT)
         currentModuleId = internalModule
         currentModuleNumber = 0
         currentTelemetryType = "sport"
     elseif externalModule and externalModule:enable() then
-        currentSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+        currentSensor = system.getSource(SRC_CRSF)
         currentModuleId = externalModule
         currentTelemetryType = "crsf"
         currentModuleNumber = 1
         if not currentSensor then
-            currentSensor = system.getSource({appId = 0xF101})
+            currentSensor = system.getSource(SRC_SPORT)
             currentTelemetryType = "sport"
         end
     end
@@ -407,8 +416,8 @@ local function runSpreadTasks(now)
         end
     end
 
-    table.sort(mustRunTasks, function(a, b) return a.last_run < b.last_run end)
-    table.sort(normalEligibleTasks, function(a, b) return a.last_run < b.last_run end)
+    if nM > 1 then table.sort(mustRunTasks, SORT_BY_LAST_RUN_ASC) end
+    if nN > 1 then table.sort(normalEligibleTasks, SORT_BY_LAST_RUN_ASC) end
 
     tasksPerCycle = math.ceil(nonSpreadCount * taskSchedulerPercentage)
 
@@ -595,7 +604,7 @@ function tasks.init()
 
     tasks.begin = true
 
-    tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
+    tlm = system.getSource(SRC_TLM_ACTIVE)
 
 end
 
