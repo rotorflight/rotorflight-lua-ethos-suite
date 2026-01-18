@@ -128,7 +128,10 @@ end
 
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
-    if io.open(cachePath, "r") then
+    local f = io.open(cachePath, "r")
+    if f then
+        f:close()
+
         local ok, cached = pcall(dofile, cachePath)
         if ok and type(cached) == "table" then
             tasks._initMetadata = cached
