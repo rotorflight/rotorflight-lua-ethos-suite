@@ -1,3 +1,15 @@
+# 2.3.0-20260118
+
+Snapshot release of Ethos Suite
+
+- Improve dashboard loader messages
+- Add mixer module for rf2.3
+- Add fbus module for rf2.3
+- Expand receiver module for rf2.3
+- Expand esc/motor module for rf2.3
+- Reduce cpu churn/improve speed
+- Various small bug fixes.
+
 # 2.3.0-20251221
 
 Snapshot release of Ethos Suite
