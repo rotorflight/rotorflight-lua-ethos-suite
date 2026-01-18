@@ -89,12 +89,28 @@ dashboard._hg_cycles = 0
 dashboard._loader_min_duration = 1.5
 dashboard._loader_start_time = nil
 
-dashboard._minPaintInterval = 0.1
+dashboard._minPaintInterval = 0.12
 dashboard._lastInvalidateTime = 0
 dashboard._pendingInvalidates = {}
+dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
+dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
+
+local function _clearPendingInvalidates()
+    for i = #dashboard._pendingInvalidates, 1, -1 do
+        dashboard._pendingInvalidates[i] = nil
+    end
+end
+
 
 local function _queueInvalidateRect(x, y, w, h)
-    local r = {x = x, y = y, w = w, h = h}
+    local n = dashboard._pendingInvalidatesPoolN + 1
+    dashboard._pendingInvalidatesPoolN = n
+    local r = dashboard._pendingInvalidatesPool[n]
+    if not r then
+        r = {}
+        dashboard._pendingInvalidatesPool[n] = r
+    end
+    r.x, r.y, r.w, r.h = x, y, w, h
     dashboard._pendingInvalidates[#dashboard._pendingInvalidates + 1] = r
 end
 
@@ -106,7 +122,8 @@ local function _flushInvalidatesRespectingBudget()
 
     if #dashboard._pendingInvalidates > 6 then
         lcd.invalidate()
-        dashboard._pendingInvalidates = {}
+        _clearPendingInvalidates()
+        dashboard._pendingInvalidatesPoolN = 0
         dashboard._lastInvalidateTime = now
         return true
     end
@@ -119,7 +136,7 @@ local function _flushInvalidatesRespectingBudget()
         if (r.y + r.h) > y2 then y2 = r.y + r.h end
     end
     lcd.invalidate(x1, y1, x2 - x1, y2 - y1)
-    dashboard._pendingInvalidates = {}
+    dashboard._pendingInvalidatesPoolN = 0
     dashboard._lastInvalidateTime = now
     return true
 end
@@ -1227,16 +1244,16 @@ function dashboard.wakeup(widget)
         end
 
         local needsFullInvalidate = dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1
-        local dirtyRects = {}
+        local trackDirty = (dashboard._useSpreadSchedulingPaint == true) and (not needsFullInvalidate)
 
         if dashboard._useSpreadScheduling == false then
 
             for i, rect in ipairs(dashboard.boxRects) do
                 local obj = dashboard.objectsByType[rect.box.type]
                 if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
-                if not needsFullInvalidate then
+                if trackDirty then
                     local dirtyFn = obj and obj.dirty
-                    if dirtyFn and dirtyFn(rect.box) then table.insert(dirtyRects, {x = rect.x - 1, y = rect.y - 1, w = rect.w + 2, h = rect.h + 2}) end
+                    if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
                 end
             end
 
@@ -1248,9 +1265,9 @@ function dashboard.wakeup(widget)
                 if rect then
                     local obj = dashboard.objectsByType[rect.box.type]
                     if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
-                    if not needsFullInvalidate then
+                    if trackDirty then
                         local dirtyFn = obj and obj.dirty
-                        if dirtyFn and dirtyFn(rect.box) then table.insert(dirtyRects, {x = rect.x - 1, y = rect.y - 1, w = rect.w + 2, h = rect.h + 2}) end
+                        if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
                     end
                 end
                 objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
@@ -1265,8 +1282,6 @@ function dashboard.wakeup(widget)
 
                 _queueInvalidateRect(0, 0, W, H)
                 dashboard._forceFullRepaint = false
-            else
-                for _, r in ipairs(dirtyRects) do _queueInvalidateRect(r.x, r.y, r.w, r.h) end
             end
         else
             _queueInvalidateRect(0, 0, W, H)
