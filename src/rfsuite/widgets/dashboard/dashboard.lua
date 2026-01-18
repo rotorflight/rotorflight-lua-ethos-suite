@@ -233,24 +233,27 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     dashboard._overlayQueue = dashboard._overlayQueue or {}
     local q = dashboard._overlayQueue
 
-    local logmsg = rfsuite.tasks.logger
-        and rfsuite.tasks.logger.getConnectLines(MAX)
+    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
 
     if not logmsg then
-        if txt then
-            local prefix = string.format("[%.2f] ", os.clock())
-            local line = prefix .. txt
-
-            q[#q + 1] = line
-            if #q > MAX then
-                table.remove(q, 1)
+        if txt and txt ~= "" then
+            -- Only enqueue when the message changes; otherwise we churn strings/tables
+            -- every paint/wakeup while idle.
+            if dashboard._overlayLastTxt ~= txt then
+                dashboard._overlayLastTxt = txt
+                local prefix = string.format("[%.2f] ", os.clock())
+                q[#q + 1] = prefix .. txt
+                if #q > MAX then
+                    -- MAX is tiny (3) but avoid shifting on every call by only
+                    -- removing when we actually appended.
+                    table.remove(q, 1)
+                end
             end
-
             logmsg = q
         else
-            -- no txt: show existing queue if we have it, else a default line
-            local prefix = string.format("[%.2f] ", os.clock())
-            logmsg = (#q > 0) and q or {prefix .. "Initializing Rotorflight Suite..."}
+            -- no txt: show existing queue if we have it, else a static default line
+            dashboard._overlayDefaultLine = dashboard._overlayDefaultLine or {"Initializing Rotorflight Suite..."}
+            logmsg = (#q > 0) and q or dashboard._overlayDefaultLine
         end
     end
 
