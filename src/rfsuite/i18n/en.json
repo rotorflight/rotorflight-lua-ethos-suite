@@ -7725,6 +7725,11 @@
         "needs_translation": false,
         "translation": "ACTIVE"
       },
+      "ARMED": {
+        "english": "ARMED",
+        "needs_translation": false,
+        "translation": "ARMED"
+      },
       "AUTOROT": {
         "english": "AUTOROT",
         "needs_translation": false,

@@ -4,6 +4,11 @@
     "translation": "UNKNOWN",
     "needs_translation": false
   },
+  "ARMED": {
+    "english": "ARMED",
+    "translation": "ARMED",
+    "needs_translation": false
+  },
   "IDLE": {
     "english": "IDLE",
     "translation": "IDLE",
