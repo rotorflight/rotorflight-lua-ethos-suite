@@ -177,6 +177,10 @@ local lastValue = {}
 local lastPush = {}
 local lastModule = nil
 
+-- Cache loaded MSP API modules so we don't touch disk (loadfile/compile) on periodic polls.
+-- Also lets us install handlers/UUID once, instead of reallocating closures every poll.
+local apiCache = {}
+
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.5
 
@@ -297,6 +301,41 @@ local function updateSessionField(meta, value)
     t[meta.sessionname[#meta.sessionname]] = value
 end
 
+local function getApi(api_name, fields)
+    local cached = apiCache[api_name]
+    if cached then return cached end
+
+    -- First load can be expensive (disk + compile). Keep it around.
+    local API = tasks.msp.api.load(api_name)
+    apiCache[api_name] = API
+
+    -- Stable UUID per API (set once)
+    API.setUUID("uuid-" .. api_name)
+
+    -- Install a stable completion handler (set once)
+    API.setCompleteHandler(function(self, buf)
+        local now = os.clock()
+        msp.clock = now
+
+        for field_key, meta in pairs(fields) do
+            local value = API.readValue(field_key)
+            if value ~= nil then
+                if meta.transform and type(meta.transform) == "function" then value = meta.transform(value) end
+                meta.last_sent_value = value
+                meta.last_update_time = now
+
+                if meta.sensorname and meta.appId then
+                    createOrUpdateSensor(meta.appId, meta, value)
+                    activeFields[meta.appId] = meta
+                end
+                if meta.sessionname then updateSessionField(meta, value) end
+            end
+        end
+    end)
+
+    return API
+end
+
 local lastWakeupTime = 0
 function msp.wakeup()
 
@@ -384,25 +423,14 @@ function msp.wakeup()
             end
 
             local fields = api_meta.fields
-            local API = tasks.msp.api.load(api_name)
-            API.setCompleteHandler(function(self, buf)
-                for field_key, meta in pairs(fields) do
-                    local value = API.readValue(field_key)
-                    if value ~= nil then
-                        if meta.transform and type(meta.transform) == "function" then value = meta.transform(value) end
-                        meta.last_sent_value = value
-                        meta.last_update_time = now
 
-                        if meta.sensorname and meta.appId then
-                            createOrUpdateSensor(meta.appId, meta, value)
-                            activeFields[meta.appId] = meta
-                        end
-                        if meta.sessionname then updateSessionField(meta, value) end
-                    end
-                end
-            end)
-            API.setUUID("uuid-" .. api_name)
+            -- IMPORTANT: don't (re)load modules or rebuild handlers on every poll.
+            local API = getApi(api_name, fields)
+
+            -- Dispatch at most one MSP read per scheduler wakeup to avoid a single frame
+            -- taking a large hit when multiple APIs become due at the same time.
             API.read()
+            break
         end
     end
 end
