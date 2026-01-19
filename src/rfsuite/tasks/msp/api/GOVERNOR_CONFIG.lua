@@ -17,15 +17,15 @@ local MSP_API_STRUCTURE_READ_DATA
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
     local gov_modeTable = {
         [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@",
-        "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_external)@",
-        "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@",
-        "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"
+        [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_limit)@",
+        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_direct)@",
+        [3] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@",
+        [4] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"
     }
     local throttleTypeTable = {
         [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@",
-        "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_on)@",
-        "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on)@",
-        "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_auto_on)@"
+        [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_switch)@",
+        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_function)@",
     }
 
     MSP_API_STRUCTURE_READ_DATA = {
@@ -36,7 +36,7 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "gov_recovery_time", type = "U16", apiVersion = 12.09, simResponse = {20, 0}, min = 0, max = 100, unit = "%/s", default = 21, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_recovery_time)@"},
         {field = "gov_throttle_hold_timeout", type = "U16", apiVersion = 12.09, simResponse = {50, 0}, min = 0, max = 250, unit = "s", default = 5, decimals = 1, scale = 10, help = "@i18n(api.GOVERNOR_CONFIG.gov_throttle_hold_timeout)@"},
         {field = "spare_0", type = "U16", apiVersion = 12.09, simResponse = {0, 0}}, 
-        {field = "gov_autorotation_timeout", type = "U16", apiVersion = 12.09, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_timeout)@"},  
+        {field = "gov_autorotation_timeout", type = "U16", apiVersion = 12.09, unit = "s", min = 0, max = 250, simResponse = {0, 0}, help = "@i18n(api.GOVERNOR_CONFIG.gov_autorotation_timeout)@"},  
         {field = "spare_1", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},
         {field = "spare_2", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},
         {field = "gov_handover_throttle", type = "U8", apiVersion = 12.09, simResponse = {20}, min = 0, max = 50, unit = "%", default = 20, help = "@i18n(api.GOVERNOR_CONFIG.gov_handover_throttle)@"},
@@ -52,15 +52,15 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "spare_5", type = "S8", apiVersion = 12.09, simResponse = {0}},
         {field = "governor_idle_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_idle_throttle)@"},
         {field = "governor_auto_throttle", type = "U8", apiVersion = 12.09, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%", help = "@i18n(api.GOVERNOR_CONFIG.governor_auto_throttle)@"},
-        {field = "governor_throttle_curve_1", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_2", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_3", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_4", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_5", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_6", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_7", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_8", type = "U8", apiVersion = 12.09, simResponse = {0}},
-        {field = "governor_throttle_curve_9", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "gov_bypass_throttle_curve_1", type = "U8", apiVersion = 12.09, simResponse = {0}},
+        {field = "gov_bypass_throttle_curve_2", type = "U8", apiVersion = 12.09, simResponse = {10}},
+        {field = "gov_bypass_throttle_curve_3", type = "U8", apiVersion = 12.09, simResponse = {20}},
+        {field = "gov_bypass_throttle_curve_4", type = "U8", apiVersion = 12.09, simResponse = {30}},
+        {field = "gov_bypass_throttle_curve_5", type = "U8", apiVersion = 12.09, simResponse = {50}},
+        {field = "gov_bypass_throttle_curve_6", type = "U8", apiVersion = 12.09, simResponse = {60}},
+        {field = "gov_bypass_throttle_curve_7", type = "U8", apiVersion = 12.09, simResponse = {70}},
+        {field = "gov_bypass_throttle_curve_8", type = "U8", apiVersion = 12.09, simResponse = {80}},
+        {field = "gov_bypass_throttle_curve_9", type = "U8", apiVersion = 12.09, simResponse = {100}},
         
     }
 

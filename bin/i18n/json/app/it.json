@@ -1757,6 +1757,36 @@
       }
     },
     "esc_motors": {
+      "use_dshot_telemetry": {
+        "english": "DShot RPM Telemetry",
+        "translation": "DShot RPM Telemetry",
+        "needs_translation": true
+      },
+      "rpm_sensor_source": {
+        "english": "RPM Sensor",
+        "translation": "RPM Sensor",
+        "needs_translation": true
+      },
+      "throttle": {
+        "english": "Throttle",
+        "translation": "Throttle",
+        "needs_translation": true
+      },
+      "telemetry": {
+        "english": "Telemetry",
+        "translation": "Telemetry",
+        "needs_translation": true
+      },
+      "rpm": {
+        "english": "RPM",
+        "translation": "RPM",
+        "needs_translation": true
+      },
+      "unsynced": {
+        "english": "Unsynced ESC Update",
+        "translation": "Unsynced ESC Update",
+        "needs_translation": true
+      },
       "min_throttle": {
         "english": "0% Throttle PWM Value",
         "translation": "Valore PWM 0% Throttle",
@@ -1831,6 +1861,31 @@
         "english": "Consumption Correction",
         "translation": "Correzione Consumo",
         "needs_translation": false
+      },
+      "throttle_protocol": {
+        "english": "Throttle Protocol",
+        "translation": "Throttle Protocol",
+        "needs_translation": true
+      },
+      "motor_pwm_rate": {
+        "english": "Update frequency",
+        "translation": "Update frequency",
+        "needs_translation": true
+      },
+      "telemetry_protocol": {
+        "english": "Telemetry Protocol",
+        "translation": "Telemetry Protocol",
+        "needs_translation": true
+      },
+      "half_duplex": {
+        "english": "Half Duplex",
+        "translation": "Half Duplex",
+        "needs_translation": true
+      },
+      "pin_swap": {
+        "english": "Pin Swap",
+        "translation": "Pin Swap",
+        "needs_translation": true
       }
     },
     "radio_config": {
@@ -2345,81 +2400,106 @@
         "needs_translation": false
       }
     },
-    "battery": {
+    "power": {
       "calcfuel_local": {
         "english": "Calculate Fuel Using",
-        "translation": "Calcola carburante con",
-        "needs_translation": false
+        "translation": "Calculate Fuel Using",
+        "needs_translation": true
+      },
+      "voltage_meter_source": {
+        "english": "Voltage Source",
+        "translation": "Voltage Source",
+        "needs_translation": true
+      },
+      "current_meter_source": {
+        "english": "Current Source",
+        "translation": "Current Source",
+        "needs_translation": true
       },
       "max_cell_voltage": {
         "english": "Max Cell Voltage",
-        "translation": "Voltaggio Max Cella",
-        "needs_translation": false
+        "translation": "Max Cell Voltage",
+        "needs_translation": true
       },
       "full_cell_voltage": {
         "english": "Full Cell Voltage",
-        "translation": "Voltaggio Cella pieno",
-        "needs_translation": false
+        "translation": "Full Cell Voltage",
+        "needs_translation": true
       },
       "name": {
+        "english": "Power",
+        "translation": "Power",
+        "needs_translation": true
+      },
+      "battery_name": {
         "english": "Battery",
-        "translation": "Batteria",
-        "needs_translation": false
+        "translation": "Battery",
+        "needs_translation": true
+      },
+      "source_name": {
+        "english": "Sources",
+        "translation": "Sources",
+        "needs_translation": true
+      },
+      "alert_name": {
+        "english": "Alerts",
+        "translation": "Alerts",
+        "needs_translation": true
       },
       "min_cell_voltage": {
         "english": "Min Cell Voltage",
-        "translation": "Voltaggio Min Cella",
-        "needs_translation": false
+        "translation": "Min Cell Voltage",
+        "needs_translation": true
       },
       "help_p1": {
         "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-        "translation": "Le impostazioni della batteria utilizzate per configurare il controller di volo in modo da monitorare la tensione e fornire avvisi quando la tensione scende al di sotto di un certo livello.",
-        "needs_translation": false
+        "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+        "needs_translation": true
       },
       "battery_capacity": {
         "english": "Battery Capacity",
-        "translation": "Capacita' Batteria",
-        "needs_translation": false
+        "translation": "Battery Capacity",
+        "needs_translation": true
       },
       "warn_cell_voltage": {
         "english": "Warn Cell Voltage",
-        "translation": "Avviso tensione cella",
-        "needs_translation": false
+        "translation": "Warn Cell Voltage",
+        "needs_translation": true
       },
       "cell_count": {
         "english": "Cell Count",
-        "translation": "Conto Celle",
-        "needs_translation": false
+        "translation": "Cell Count",
+        "needs_translation": true
       },
       "consumption_warning_percentage": {
         "english": "Consumption Warning %",
-        "translation": "Avviso Consumo %",
-        "needs_translation": false
+        "translation": "Consumption Warning %",
+        "needs_translation": true
       },
       "timer": {
         "english": "Flight Time Alarm",
-        "translation": "Tempo Volo",
-        "needs_translation": false
+        "translation": "Flight Time Alarm",
+        "needs_translation": true
       },
       "voltage_multiplier": {
         "english": "Sag Compensation",
-        "translation": "Compensazione di caduta",
-        "needs_translation": false
+        "translation": "Sag Compensation",
+        "needs_translation": true
       },
       "alert_type": {
         "english": "Rx Voltage Alert",
-        "translation": "Avviso Tensione Rx",
-        "needs_translation": false
+        "translation": "Rx Voltage Alert",
+        "needs_translation": true
       },
       "bec_voltage_alert": {
         "english": "BEC Alert Value",
-        "translation": "Valore Avviso BEC",
-        "needs_translation": false
+        "translation": "BEC Alert Value",
+        "needs_translation": true
       },
       "rx_voltage_alert": {
         "english": "RxBatt Alert Value",
-        "translation": "Valore Avviso Batt Rx",
-        "needs_translation": false
+        "translation": "RxBatt Alert Value",
+        "needs_translation": true
       }
     },
     "profile_mainrotor": {
@@ -2959,8 +3039,13 @@
         "needs_translation": false
       },
       "menu_curves": {
-        "english": "Curves",
+        "english": "Bypass Curve",
         "translation": "Curves",
+        "needs_translation": true
+      },
+      "menu_curves_long": {
+        "english": "Governor Bypass Curve",
+        "translation": "Governor Bypass Curve",
         "needs_translation": true
       },
       "menu_time": {
@@ -2972,6 +3057,11 @@
         "english": "These parameters apply globally to the governor regardless of the profile in use.",
         "translation": "Questi parametri si applicano globalmente al regolatore, indipendentemente dal profilo in uso.",
         "needs_translation": false
+      },
+      "auto_timeout": {
+        "english": "Autorotation Timeout",
+        "translation": "Autorotation Timeout",
+        "needs_translation": true
       },
       "handover_throttle": {
         "english": "Handover throttle%",

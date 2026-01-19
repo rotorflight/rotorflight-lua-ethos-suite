@@ -89,12 +89,28 @@ dashboard._hg_cycles = 0
 dashboard._loader_min_duration = 1.5
 dashboard._loader_start_time = nil
 
-dashboard._minPaintInterval = 0.1
+dashboard._minPaintInterval = 0.12
 dashboard._lastInvalidateTime = 0
 dashboard._pendingInvalidates = {}
+dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
+dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
+
+local function _clearPendingInvalidates()
+    for i = #dashboard._pendingInvalidates, 1, -1 do
+        dashboard._pendingInvalidates[i] = nil
+    end
+end
+
 
 local function _queueInvalidateRect(x, y, w, h)
-    local r = {x = x, y = y, w = w, h = h}
+    local n = dashboard._pendingInvalidatesPoolN + 1
+    dashboard._pendingInvalidatesPoolN = n
+    local r = dashboard._pendingInvalidatesPool[n]
+    if not r then
+        r = {}
+        dashboard._pendingInvalidatesPool[n] = r
+    end
+    r.x, r.y, r.w, r.h = x, y, w, h
     dashboard._pendingInvalidates[#dashboard._pendingInvalidates + 1] = r
 end
 
@@ -106,7 +122,8 @@ local function _flushInvalidatesRespectingBudget()
 
     if #dashboard._pendingInvalidates > 6 then
         lcd.invalidate()
-        dashboard._pendingInvalidates = {}
+        _clearPendingInvalidates()
+        dashboard._pendingInvalidatesPoolN = 0
         dashboard._lastInvalidateTime = now
         return true
     end
@@ -119,7 +136,7 @@ local function _flushInvalidatesRespectingBudget()
         if (r.y + r.h) > y2 then y2 = r.y + r.h end
     end
     lcd.invalidate(x1, y1, x2 - x1, y2 - y1)
-    dashboard._pendingInvalidates = {}
+    dashboard._pendingInvalidatesPoolN = 0
     dashboard._lastInvalidateTime = now
     return true
 end
@@ -193,8 +210,10 @@ local function _profReportIfDue()
     P.lastReport = now
 end
 
-function dashboard.loader(x, y, w, h)
-    dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+function dashboard.loader(x, y, w, h, txt)
+
+    dashboard.overlaymessage(x, y, w, h, txt) 
+
     _queueInvalidateRect(x, y, w, h)
     _flushInvalidatesRespectingBudget()
 end
@@ -207,7 +226,40 @@ local function forceInvalidateAllObjects()
     _flushInvalidatesRespectingBudget()
 end
 
-function dashboard.overlaymessage(x, y, w, h, txt) dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt) end
+function dashboard.overlaymessage(x, y, w, h, txt)
+    local MAX = 3
+
+    -- persistent queue stored on dashboard (keeps everything "contained")
+    dashboard._overlayQueue = dashboard._overlayQueue or {}
+    local q = dashboard._overlayQueue
+
+    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
+
+    if not logmsg then
+        if txt and txt ~= "" then
+            -- Only enqueue when the message changes; otherwise we churn strings/tables
+            -- every paint/wakeup while idle.
+            if dashboard._overlayLastTxt ~= txt then
+                dashboard._overlayLastTxt = txt
+                local prefix = string.format("[%.2f] ", os.clock())
+                q[#q + 1] = prefix .. txt
+                if #q > MAX then
+                    -- MAX is tiny (3) but avoid shifting on every call by only
+                    -- removing when we actually appended.
+                    table.remove(q, 1)
+                end
+            end
+            logmsg = q
+        else
+            -- no txt: show existing queue if we have it, else a static default line
+            dashboard._overlayDefaultLine = dashboard._overlayDefaultLine or {"Initializing Rotorflight Suite..."}
+            logmsg = (#q > 0) and q or dashboard._overlayDefaultLine
+        end
+    end
+
+    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg)
+end
+
 
 local function computeObjectSchedulerPercentage(count)
     if count <= 10 then
@@ -278,22 +330,32 @@ function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
     local telemetry = tasks.telemetry
-    local pad = "      "
 
-    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then return "@i18n(widgets.dashboard.theme_load_error)@" end
-
-    local elapsed = os.clock() - initTime
-    if elapsed > 10 then if not tasks.active() then return "@i18n(widgets.dashboard.check_bg_task)@" end end
-
-    if rfsuite.session.apiVersion and rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
-        if system.getVersion().simulation == true then
-            return pad .. "SIM " .. rfsuite.session.apiVersion .. pad
-        else
-            return pad .. "RF" .. rfsuite.session.rfVersion .. pad
-        end
+    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
+        return "[ERROR] Failed to load theme, using fallback" 
     end
 
-    if not rfsuite.session.isConnectedHigh and state ~= "postflight" then return "@i18n(widgets.dashboard.waiting_for_connection)@" end
+    local elapsed = os.clock() - initTime
+    if elapsed > 10 then if not tasks.active() then return "[ERROR] Background task is not enabled" end end
+
+    if not rfsuite.session.isConnected and state ~= "postflight" then
+        local v = rfsuite.config.version
+        local verStr
+
+        if type(v) == "table" then
+            verStr = string.format(
+                "%d.%d.%d%s",
+                v.major or 0,
+                v.minor or 0,
+                v.revision or 0,
+                v.suffix and ("-" .. v.suffix) or ""
+            )
+        else
+            verStr = tostring(v or "unknown")
+        end
+
+        return "Initializing Rotorflight Suite [v" .. verStr .. "]"
+    end
 
     return nil
 end
@@ -1185,16 +1247,16 @@ function dashboard.wakeup(widget)
         end
 
         local needsFullInvalidate = dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1
-        local dirtyRects = {}
+        local trackDirty = (dashboard._useSpreadSchedulingPaint == true) and (not needsFullInvalidate)
 
         if dashboard._useSpreadScheduling == false then
 
             for i, rect in ipairs(dashboard.boxRects) do
                 local obj = dashboard.objectsByType[rect.box.type]
                 if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
-                if not needsFullInvalidate then
+                if trackDirty then
                     local dirtyFn = obj and obj.dirty
-                    if dirtyFn and dirtyFn(rect.box) then table.insert(dirtyRects, {x = rect.x - 1, y = rect.y - 1, w = rect.w + 2, h = rect.h + 2}) end
+                    if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
                 end
             end
 
@@ -1206,9 +1268,9 @@ function dashboard.wakeup(widget)
                 if rect then
                     local obj = dashboard.objectsByType[rect.box.type]
                     if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
-                    if not needsFullInvalidate then
+                    if trackDirty then
                         local dirtyFn = obj and obj.dirty
-                        if dirtyFn and dirtyFn(rect.box) then table.insert(dirtyRects, {x = rect.x - 1, y = rect.y - 1, w = rect.w + 2, h = rect.h + 2}) end
+                        if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
                     end
                 end
                 objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
@@ -1223,8 +1285,6 @@ function dashboard.wakeup(widget)
 
                 _queueInvalidateRect(0, 0, W, H)
                 dashboard._forceFullRepaint = false
-            else
-                for _, r in ipairs(dirtyRects) do _queueInvalidateRect(r.x, r.y, r.w, r.h) end
             end
         else
             _queueInvalidateRect(0, 0, W, H)

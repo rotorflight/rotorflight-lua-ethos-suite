@@ -333,9 +333,6 @@ function utils.joinTableItems(tbl, delimiter)
 end
 
 function utils.log(msg, level) 
-    if rfsuite.preferences.developer.loglevel == "off" then 
-        return 
-    end
     if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end 
 end
 

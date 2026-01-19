@@ -11,20 +11,30 @@ local MSP_API_CMD_READ = 131
 local MSP_API_CMD_WRITE = 222
 local MSP_REBUILD_ON_WRITE = true
 
-local pwmProtocol = {"PWM", "ONESHOT125", "ONESHOT42", "MULTISHOT", "DSHOT150", "DSHOT300", "DSHOT600", "PROSHOT", "DISABLED"}
+
+local pwmProtocol
+
+if rfsuite.utils.apiVersionCompare(">=", "12.07") then
+    pwmProtocol = {"PWM", "ONESHOT125", "ONESHOT42", "MULTISHOT", "BRUSHED", "DSHOT150", "DSHOT300", "DSHOT600", "PROSHOT", "CASTLE", "DISABLED"}
+else
+    pwmProtocol = {"PWM", "ONESHOT125", "ONESHOT42", "MULTISHOT", "BRUSHED", "DSHOT150", "DSHOT300", "DSHOT600", "PROSHOT","DISABLED"}
+end
+
+
+local onoff = {"@i18n(api.MOTOR_CONFIG.tbl_off)@", "@i18n(api.MOTOR_CONFIG.tbl_on)@"}
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "minthrottle",                 type = "U16", apiVersion = 12.06, simResponse = {45, 4},  min = 50,   max = 2250, default = 1070, help = "@i18n(api.MOTOR_CONFIG.minthrottle)@" },
-    { field = "maxthrottle",                 type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50,   max = 2250, default = 2000, help = "@i18n(api.MOTOR_CONFIG.maxthrottle)@" },
-    { field = "mincommand",                  type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50,   max = 2250, default = 1000, help = "@i18n(api.MOTOR_CONFIG.mincommand)@" },
+    { field = "minthrottle",                 type = "U16", apiVersion = 12.06, simResponse = {45, 4},  unit="us", min = 50,   max = 2250, default = 1070, help = "@i18n(api.MOTOR_CONFIG.minthrottle)@" },
+    { field = "maxthrottle",                 type = "U16", apiVersion = 12.06, simResponse = {208, 7},  unit="us",  min = 50,   max = 2250, default = 2000, help = "@i18n(api.MOTOR_CONFIG.maxthrottle)@" },
+    { field = "mincommand",                  type = "U16", apiVersion = 12.06, simResponse = {232, 3},  unit="us",  min = 50,   max = 2250, default = 1000, help = "@i18n(api.MOTOR_CONFIG.mincommand)@" },
     { field = "motor_count_blheli",          type = "U8",  apiVersion = 12.06, simResponse = {1},                              help = "@i18n(api.MOTOR_CONFIG.motor_count_blheli)@" },
     { field = "motor_pole_count_blheli",     type = "U8",  apiVersion = 12.06, simResponse = {6},                              help = "@i18n(api.MOTOR_CONFIG.motor_pole_count_blheli)@" },
 
-    { field = "use_dshot_telemetry",         type = "U8",  apiVersion = 12.06, simResponse = {0},                              help = "@i18n(api.MOTOR_CONFIG.use_dshot_telemetry)@" },
+    { field = "use_dshot_telemetry",         type = "U8",  apiVersion = 12.06, simResponse = {0},  table = onoff, tableIdxInc = -1,  help = "@i18n(api.MOTOR_CONFIG.use_dshot_telemetry)@" },
     { field = "motor_pwm_protocol",          type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1, help = "@i18n(api.MOTOR_CONFIG.motor_pwm_protocol)@" },
     { field = "motor_pwm_rate",              type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min = 50,  max = 8000, default = 250, unit = "Hz", help = "@i18n(api.MOTOR_CONFIG.motor_pwm_rate)@" },
-    { field = "use_unsynced_pwm",            type = "U8",  apiVersion = 12.06, simResponse = {1},                              help = "@i18n(api.MOTOR_CONFIG.use_unsynced_pwm)@" },
+    { field = "use_unsynced_pwm",            type = "U8",  apiVersion = 12.06, simResponse = {1}, table = onoff, tableIdxInc = -1,                       help = "@i18n(api.MOTOR_CONFIG.use_unsynced_pwm)@" },
 
     { field = "motor_pole_count_0",          type = "U8",  apiVersion = 12.06, simResponse = {6},  min = 2,   max = 256,  step = 2, default = 10, help = "@i18n(api.MOTOR_CONFIG.motor_pole_count_0)@" },
     { field = "motor_pole_count_1",          type = "U8",  apiVersion = 12.06, simResponse = {4},                                                   help = "@i18n(api.MOTOR_CONFIG.motor_pole_count_1)@" },

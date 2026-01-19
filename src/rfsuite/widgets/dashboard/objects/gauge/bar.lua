@@ -318,6 +318,11 @@ function render.wakeup(box)
         cfg.transform = getParam(box, "transform")
         cfg.transformFn = compileTransform(cfg.transform, cfg.decimals)
 
+        -- Cache system sources so we don't allocate a new descriptor table every paint.
+        if cfg.source == "txbatt" then
+            cfg._txBattSrc = system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
+        end
+
         box._cfg = cfg
     end
 
@@ -325,7 +330,7 @@ function render.wakeup(box)
     local value, _, dynamicUnit
 
     if source == "txbatt" then
-        local src = system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
+        local src = cfg._txBattSrc or system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
         value = src and src.value and src:value() or nil
         dynamicUnit = "V"
     elseif telemetry and source then

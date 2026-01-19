@@ -942,6 +942,16 @@
       "english": "The number of magnets on the motor bell.",
       "translation": "The number of magnets on the motor bell.",
       "needs_translation": false
+    },
+    "tbl_on": {
+      "english": "ON",
+      "translation": "ON",
+      "needs_translation": false
+    },
+    "tbl_off": {
+      "english": "OFF",
+      "translation": "OFF",
+      "needs_translation": false
     }
   },
   "ESC_PARAMETERS_HW5": {
@@ -1061,6 +1071,21 @@
     }
   },
   "BATTERY_CONFIG": {
+    "source_none": {
+      "english": "None",
+      "translation": "None",
+      "needs_translation": false
+    },
+    "source_adc": {
+      "english": "Battery ADC",
+      "translation": "Battery ADC",
+      "needs_translation": false
+    },
+    "source_esc": {
+      "english": "ESC Telemetry",
+      "translation": "ESC Telemetry",
+      "needs_translation": false
+    },
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
       "translation": "The minimum voltage per cell before the low voltage alarm is triggered.",
@@ -1247,9 +1272,14 @@
       "translation": "OFF",
       "needs_translation": false
     },
-    "tbl_govmode_external": {
-      "english": "EXTERNAL",
-      "translation": "EXTERNAL",
+    "tbl_govmode_limit": {
+      "english": "LIMIT",
+      "translation": "LIMIT",
+      "needs_translation": false
+    },
+    "tbl_govmode_direct": {
+      "english": "DIRECT",
+      "translation": "DIRECT",
       "needs_translation": false
     },
     "tbl_govmode_electric": {
@@ -1267,17 +1297,12 @@
       "translation": "NORMAL",
       "needs_translation": false
     },
-    "tbl_throttle_type_off_on": {
-      "english": "OFF_ON",
-      "translation": "OFF_ON",
-      "needs_translation": false
-    },
-    "tbl_throttle_type_off_idle_on": {
+    "tbl_throttle_type_switch": {
       "english": "SWITCH",
       "translation": "SWITCH",
       "needs_translation": false
     },
-    "tbl_throttle_type_off_idle_auto_on": {
+    "tbl_throttle_type_function": {
       "english": "FUNCTION",
       "translation": "FUNCTION",
       "needs_translation": false

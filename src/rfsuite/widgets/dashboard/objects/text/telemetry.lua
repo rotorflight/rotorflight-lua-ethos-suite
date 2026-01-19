@@ -112,6 +112,11 @@ local function ensureCfg(box)
         cfg.transformFn = compileTransform(cfg.transform, cfg.decimals)
         cfg.novalue = getParam(box, "novalue") or "-"
 
+        -- Cache system sources so we don't allocate a new descriptor table every wakeup.
+        if cfg.source == "txbatt" then
+            cfg._txBattSrc = system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
+        end
+
         box._cfg = cfg
     end
     return box._cfg
@@ -127,7 +132,7 @@ function render.wakeup(box)
     local value, _, dynamicUnit, _, _, localizedThresholds
 
     if source == "txbatt" then
-        local src = system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
+        local src = cfg._txBattSrc or system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
         value = src and src.value and src:value() or nil
         dynamicUnit = "V"
         localizedThresholds = thresholdsCfg

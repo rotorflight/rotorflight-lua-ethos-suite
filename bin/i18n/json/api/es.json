@@ -942,6 +942,16 @@
       "english": "The number of magnets on the motor bell.",
       "translation": "El numero de imanes en la campana del motor.",
       "needs_translation": false
+    },
+    "tbl_on": {
+      "english": "ON",
+      "translation": "On",
+      "needs_translation": true
+    },
+    "tbl_off": {
+      "english": "OFF",
+      "translation": "Off",
+      "needs_translation": true
     }
   },
   "ESC_PARAMETERS_HW5": {
@@ -1061,6 +1071,21 @@
     }
   },
   "BATTERY_CONFIG": {
+    "source_none": {
+      "english": "None",
+      "translation": "None",
+      "needs_translation": true
+    },
+    "source_adc": {
+      "english": "Battery ADC",
+      "translation": "Battery ADC",
+      "needs_translation": true
+    },
+    "source_esc": {
+      "english": "ESC Telemetry",
+      "translation": "ESC Telemetry",
+      "needs_translation": true
+    },
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
       "translation": "El voltaje minimo por celda al cual se dispara la alarma de bajo voltaje.",
@@ -1247,10 +1272,15 @@
       "translation": "APAGADO",
       "needs_translation": false
     },
-    "tbl_govmode_external": {
-      "english": "EXTERNAL",
-      "translation": "EXTERNO",
-      "needs_translation": false
+    "tbl_govmode_limit": {
+      "english": "LIMIT",
+      "translation": "LIMIT",
+      "needs_translation": true
+    },
+    "tbl_govmode_direct": {
+      "english": "DIRECT",
+      "translation": "DIRECT",
+      "needs_translation": true
     },
     "tbl_govmode_electric": {
       "english": "ELECTRIC",
@@ -1267,20 +1297,15 @@
       "translation": "NORMAL",
       "needs_translation": false
     },
-    "tbl_throttle_type_off_on": {
-      "english": "OFF_ON",
-      "translation": "APAGADO_ENCENDIDO",
-      "needs_translation": false
-    },
-    "tbl_throttle_type_off_idle_on": {
+    "tbl_throttle_type_switch": {
       "english": "SWITCH",
-      "translation": "APAGADO_MARCHA_ENCENDIDO",
-      "needs_translation": false
+      "translation": "SWITCH",
+      "needs_translation": true
     },
-    "tbl_throttle_type_off_idle_auto_on": {
+    "tbl_throttle_type_function": {
       "english": "FUNCTION",
-      "translation": "APAGADO_MARCHA_AUTO_ENCENDIDO",
-      "needs_translation": false
+      "translation": "FUNCTION",
+      "needs_translation": true
     },
     "governor_idle_throttle": {
       "english": "Idle throttle",

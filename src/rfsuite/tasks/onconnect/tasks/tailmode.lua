@@ -24,6 +24,10 @@ function tailmode.wakeup()
             if rfsuite.session.tailMode and rfsuite.session.swashMode then
                 rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode, "info")
                 rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode, "info")
+
+                rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode, "connect")
+                rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode, "connect")
+
             end
         end)
         API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")

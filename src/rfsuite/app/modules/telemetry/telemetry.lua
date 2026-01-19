@@ -14,6 +14,7 @@ local configLoaded = false
 local configApplied = false
 local setDefaultSensors = false
 local PREV_STATE = {}
+local FEATURE_CONFIG
 
 local sensorList = {
     [1] = { name = "Heartbeat", group = "system" },
@@ -288,10 +289,40 @@ local function getDefaultSensors(sensorListFromApi)
     return defaultSensors
 end
 
+-- shallow-copy helper (snapshots tables so API internals can’t mutate our cache)
+local function copyTable(src)
+    if type(src) ~= "table" then return src end
+    local dst = {}
+    for k, v in pairs(src) do
+    dst[k] = v
+    end
+    return dst
+end
+
 local function wakeup()
     if enableWakeup == false then return end
 
     if not rfsuite.app.Page.configLoaded then
+
+        -- first load the feature config 
+        local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+        FAPI.setCompleteHandler(function(self, buf)
+                -- store the snapshot of the feature config
+                local d = FAPI.data()
+                FEATURE_CONFIG = {}
+                FEATURE_CONFIG['values']             = copyTable(d.parsed)
+                FEATURE_CONFIG['structure']          = copyTable(d.structure)
+                FEATURE_CONFIG['buffer']             = copyTable(d.buffer)
+                FEATURE_CONFIG['receivedBytesCount'] = d.receivedBytesCount
+                FEATURE_CONFIG['positionmap']        = copyTable(d.positionmap)
+                FEATURE_CONFIG['other']              = copyTable(d.other)
+
+                rfsuite.utils.log("Feature config loaded", "info")
+        end)
+        FAPI.setUUID("d2a1c5b3-8f4a-3c8e-9d2a-3b6f8e2d9a1c")
+        FAPI.read()
+
+        -- now load the telemetry config
         local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local hasData = API.readValue("telem_sensor_slot_40")
@@ -307,17 +338,48 @@ local function wakeup()
 
                     for _, value in pairs(data.parsed) do if value ~= 0 then rfsuite.app.Page.config[value] = true end end
                 end
+
+                rfsuite.utils.log("Telemetry config loaded", "info")
                 rfsuite.app.triggers.closeProgressLoader = true
             end
         end)
         API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
         API.read()
+
         rfsuite.app.Page.configLoaded = true
     end
 
     if triggerSave == true then
         rfsuite.app.ui.progressDisplaySave("@i18n(app.modules.profile_select.save_settings)@")
 
+
+        -- ensure telemetry feature is enabled (FEATURE_CONFIG bit 10)
+        if FEATURE_CONFIG and FEATURE_CONFIG.values and FEATURE_CONFIG.values.enabledFeatures then
+
+            local FEATURE_TELEMETRY_BIT  = 10
+            local FEATURE_TELEMETRY_MASK = 2 ^ FEATURE_TELEMETRY_BIT
+
+            local bitmap = FEATURE_CONFIG.values.enabledFeatures
+            local telemetryEnabled =
+                (math.floor(bitmap / FEATURE_TELEMETRY_MASK) % 2) == 1
+
+            if not telemetryEnabled then
+                rfsuite.utils.log("Telemetry feature disabled – enabling", "info")
+
+                local newBitmap = bitmap | FEATURE_TELEMETRY_MASK
+
+                local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+                FAPI.setUUID("enable-telemetry-feature")
+                FAPI.setValue("enabledFeatures", newBitmap)
+                FAPI.write()
+
+                -- update local snapshot so subsequent logic sees it enabled
+                FEATURE_CONFIG.values.enabledFeatures = newBitmap
+            end
+        end
+
+
+        -- write the sensors
         local selectedSensors = {}
 
         for k, v in pairs(config) do if v == true then table.insert(selectedSensors, k) end end
@@ -357,7 +419,7 @@ local function wakeup()
 
         rfsuite.utils.log("Applied telemetry sensors: " .. table.concat(appliedSensors, ", "), "info")
 
-        WRITEAPI.write(buffer)
+        WRITEAPI.write(buffer)        
 
         triggerSave = false
     end

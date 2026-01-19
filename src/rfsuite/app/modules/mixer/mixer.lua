@@ -54,33 +54,33 @@ end
 local function getMixerCompatibilityStatus()
 
         -- pitch
-        local PAPI = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_PITCH")
+        local PAPI = rfsuite.tasks.msp.api.load("GET_MIXER_INPUT_PITCH")
         PAPI.setCompleteHandler(function(self, buf)
                 MIXER_PITCH_RATE = u16_to_s16(PAPI.readValue("rate_stabilized_pitch"))
                 MIXER_PITCH_MIN  = u16_to_s16(PAPI.readValue("min_stabilized_pitch"))
                 MIXER_PITCH_MAX  = u16_to_s16(PAPI.readValue("max_stabilized_pitch"))
         end)
-        PAPI.setUUID("d8163617-1496-4886-8b81-" .. "MIXER_INPUT_INDEXED_PITCH")
+        PAPI.setUUID("d8163617-1496-4886-8b81-" .. "GET_MIXER_INPUT_PITCH")
         PAPI.read()
 
         -- roll
-        local RAPI = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_ROLL")
+        local RAPI = rfsuite.tasks.msp.api.load("GET_MIXER_INPUT_ROLL")
         RAPI.setCompleteHandler(function(self, buf)
                 MIXER_ROLL_RATE = u16_to_s16(RAPI.readValue("rate_stabilized_roll"))
                 MIXER_ROLL_MIN  = u16_to_s16(RAPI.readValue("min_stabilized_roll"))
                 MIXER_ROLL_MAX  = u16_to_s16(RAPI.readValue("max_stabilized_roll"))
         end)
-        RAPI.setUUID("d8163617-1496-4886-8b81-" .. "MIXER_INPUT_INDEXED_ROLL")
+        RAPI.setUUID("d8163617-1496-4886-8b81-" .. "GET_MIXER_INPUT_ROLL")
         RAPI.read()
 
         -- collective
-        local CAPI = rfsuite.tasks.msp.api.load("MIXER_INPUT_INDEXED_COLLECTIVE")
+        local CAPI = rfsuite.tasks.msp.api.load("GET_MIXER_INPUT_COLLECTIVE")
         CAPI.setCompleteHandler(function(self, buf)
                 MIXER_COLLECTIVE_RATE = u16_to_s16(CAPI.readValue("rate_stabilized_collective"))
                 MIXER_COLLECTIVE_MIN  = u16_to_s16(CAPI.readValue("min_stabilized_collective"))
                 MIXER_COLLECTIVE_MAX  = u16_to_s16(CAPI.readValue("max_stabilized_collective"))
         end)        
-        CAPI.setUUID("d8163617-1496-4886-8b81-" .. "MIXER_INPUT_INDEXED_COLLECTIVE")
+        CAPI.setUUID("d8163617-1496-4886-8b81-" .. "GET_MIXER_INPUT_COLLECTIVE")
         CAPI.read()
 
 

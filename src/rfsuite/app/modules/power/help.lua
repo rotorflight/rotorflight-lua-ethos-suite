@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.battery.help_p1)@"}
+data['help']['default'] = {"@i18n(app.modules.power.help_p1)@"}
 
 data['fields'] = {}
 

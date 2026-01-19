@@ -106,7 +106,11 @@ local function openPage(pidx, title, script)
                 rfsuite.preferences.menulastselected["sbuschannel"] = pidx
                 rfsuite.currentSbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
+                if rfsuite.utils.apiVersionCompare("<", "12.09") then
+                    rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool_legacy.lua")
+                else
+                    rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
+                end
             end
         })
 

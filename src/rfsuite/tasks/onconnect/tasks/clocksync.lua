@@ -19,6 +19,7 @@ function clocksync.wakeup()
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.clockSet = true
             rfsuite.utils.log("Sync clock: " .. os.date("%c"), "info")
+            rfsuite.utils.log("Sync clock: " .. os.date("%c"), "connect")
         end)
         API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
         API.setValue("seconds", os.time())

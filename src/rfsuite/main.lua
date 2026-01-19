@@ -79,7 +79,6 @@ local userpref_defaults = {
     developer = {
         compile = true,
         devtools = false,
-        logtofile = false,
         loglevel = "off",
         logmsp = false,
         logobjprof = false,

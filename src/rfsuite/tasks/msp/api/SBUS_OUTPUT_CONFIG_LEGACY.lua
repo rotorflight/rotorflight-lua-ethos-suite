@@ -6,37 +6,33 @@
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/msp/api_core.lua"))()
 
-local API_NAME = "MIXER_INPUT_INDEXED_PITCH"
-local MSP_API_CMD_READ = 174
-local MSP_API_CMD_WRITE = 171
+local API_NAME = "SBUS_OUTPUT_CONFIG_LEGACY"
+local MSP_API_CMD_READ = 152
+local MSP_API_CMD_WRITE = 153
 local MSP_REBUILD_ON_WRITE = true
 
-local FIXED_INDEX = 2
+local function generateSbusApiStructure(numChannels)
+    local structure = {}
 
--- LuaFormatter off
--- Note.  We do not do any parameters on these calls like min, max etc as the calls are very bespoke and 
---        do not benifit from generic handling.
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rate_stabilized_pitch", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }},
-    { field = "min_stabilized_pitch",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
-    { field = "max_stabilized_pitch",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
-}
+    for i = 1, numChannels do
+        table.insert(structure, {field = "Type_" .. i, type = "U8", min = 0, max = 16, apiVersion = 12.06, simResponse = {1}, help = "@i18n(api.msp.sbus_output_config.type)@"})
+        table.insert(structure, {field = "Index_" .. i, type = "U8", min = 0, max = 15, apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.msp.sbus_output_config.index)@"})
+        table.insert(structure, {field = "RangeLow_" .. i, type = "S16", min = -2000, max = 2000, apiVersion = 12.06, simResponse = {24, 252}, help = "@i18n(api.msp.sbus_output_config.range_low)@"})
+        table.insert(structure, {field = "RangeHigh_" .. i, type = "S16", min = -2000, max = 2000, apiVersion = 12.06, simResponse = {232, 3}, help = "@i18n(api.msp.sbus_output_config.range_high)@"})
+    end
 
--- LuaFormatter on
+    return structure
+end
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local MSP_API_STRUCTURE_READ_DATA = generateSbusApiStructure(16)
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_WRITE = {
-    -- mixer input index
-    { field = "index", type = "U8" },
+local MSP_API_STRUCTURE_WRITE = {{field = "target_channel", type = "U8", apiVersion = 12.06}, {field = "source_type", type = "U8", apiVersion = 12.06}, {field = "source_index", type = "U8", apiVersion = 12.06}, {field = "source_range_low", type = "S16", apiVersion = 12.06}, {field = "source_range_high", type = "S16", apiVersion = 12.06}}
 
-    -- mixer input values
-    { field = "rate_stabilized_pitch",  type = "U16" },
-    { field = "min_stabilized_pitch",   type = "U16" },
-    { field = "max_stabilized_pitch",   type = "U16" },
-}
--- LuaFormatter on
+local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+local MSP_MIN_BYTES = core.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+local MSP_API_SIMULATOR_RESPONSE = core.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 local mspData = nil
 local mspWriteComplete = false
@@ -91,21 +87,7 @@ local function read()
         return
     end
 
-    local message = {
-        command = MSP_API_CMD_READ,
-        apiname = API_NAME,
-        payload = { FIXED_INDEX }, 
-        structure = MSP_API_STRUCTURE_READ,
-        minBytes = MSP_MIN_BYTES,
-        processReply = processReplyStaticRead,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler,
-        mspData = nil
-    }
+    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
@@ -115,30 +97,12 @@ local function write(suppliedPayload)
         return
     end
 
-    local v = {
-        index = FIXED_INDEX,
-        rate_stabilized_pitch  = (payloadData.rate_stabilized_pitch ~= nil) and payloadData.rate_stabilized_pitch or curRate,
-        min_stabilized_pitch   = (payloadData.min_stabilized_pitch  ~= nil) and payloadData.min_stabilized_pitch  or curMin,
-        max_stabilized_pitch   = (payloadData.max_stabilized_pitch  ~= nil) and payloadData.max_stabilized_pitch  or curMax,
-    }
-
-    local payload = core.buildFullPayload(API_NAME, v, MSP_API_STRUCTURE_WRITE)
+    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
 
-    local message = {
-        command = MSP_API_CMD_WRITE,
-        apiname = API_NAME,
-        payload = payload,
-        processReply = processReplyStaticWrite,
-        errorHandler = errorHandlerStatic,
-        simulatorResponse = {},
-        uuid = uuid,
-        timeout = MSP_API_MSG_TIMEOUT,
-        getCompleteHandler = handlers.getCompleteHandler,
-        getErrorHandler = handlers.getErrorHandler
-    }
+    local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
     rfsuite.tasks.msp.mspQueue:add(message)
 end

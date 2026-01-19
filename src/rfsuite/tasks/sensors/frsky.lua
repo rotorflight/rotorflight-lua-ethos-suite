@@ -87,6 +87,10 @@ local sidLookup = {
     [99] = {'0x5110', '0x5111'}
 }
 
+-- MSP Sensors start at 0x5FFF.  We use lower values for FrSky S.Port sensors to avoid conflicts.
+-- Custom Frsky sensors can use 0x5100 to 0x5FFE range.
+-- Check msp.lua for MSP sensor definitions.
+
 local createSensorList = {}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
@@ -125,6 +129,7 @@ createSensorList[0x52F4] = {name = "Debug 4", unit = UNIT_RAW}
 createSensorList[0x52F5] = {name = "Debug 5", unit = UNIT_RAW}
 createSensorList[0x52F6] = {name = "Debug 6", unit = UNIT_RAW}
 createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
+-- no higher than 0x5FFE
 
 local log = rfsuite.utils.log
 
