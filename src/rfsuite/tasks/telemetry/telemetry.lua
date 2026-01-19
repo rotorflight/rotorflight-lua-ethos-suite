@@ -169,7 +169,7 @@ local sensorTable = {
 
     current = {
         name = "@i18n(sensors.current)@",
-        mandatory = false,
+        mandatory = true,
         stats = true,
         set_telemetry_sensors = 4,
         switch_alerts = true,
