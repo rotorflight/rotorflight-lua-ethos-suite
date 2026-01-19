@@ -19,8 +19,46 @@ local RETRY_BACKOFF_SECONDS = 1
 local TYPE_CHANGE_DEBOUNCE = 1.0
 local lastTypeChangeAt = 0
 
+-- All onconnect task modules live in a single folder.
+-- A hard-coded manifest avoids runtime directory scans (system.listFiles).
 local BASE_PATH = "tasks/onconnect/tasks/"
+local MANIFEST_PATH = "tasks/onconnect/manifest.lua"
 local PRIORITY_LEVELS = {"high", "medium", "low"}
+
+-- Track link transitions so we reset exactly once per connect/disconnect.
+local lastTelemetryActive = false
+
+local function loadTaskModuleFromPath(fullPath)
+
+    local chunk, err = loadfile(fullPath)
+    if not chunk then
+        return nil, err
+    end
+
+    local ok, module = pcall(chunk)
+    if not ok then
+        return nil, module
+    end
+
+    if type(module) ~= "table" or type(module.wakeup) ~= "function" then
+        return nil, "Invalid task module"
+    end
+
+    return module, nil
+end
+
+local function hardReloadTask(task)
+    if not task or not task.path then return end
+
+    local module, err = loadTaskModuleFromPath(task.path)
+    if not module then
+        rfsuite.utils.log("Error reloading task " .. task.path .. ": " .. (err or "?"), "info")
+        return
+    end
+
+    task.module = module
+end
+
 
 local function resetSessionFlags()
     rfsuite.session.onConnect = rfsuite.session.onConnect or {}
@@ -29,39 +67,11 @@ local function resetSessionFlags()
     rfsuite.session.isConnected = false
 end
 
-function tasks.findTasks()
-    if tasksLoaded then return end
-
-    resetSessionFlags()
-
-    for _, level in ipairs(PRIORITY_LEVELS) do
-        local dirPath = BASE_PATH .. level .. "/"
-        local files = system.listFiles(dirPath) or {}
-        for _, file in ipairs(files) do
-            if file:match("%.lua$") then
-                local fullPath = dirPath .. file
-                local name = level .. "/" .. file:gsub("%.lua$", "")
-                local chunk, err = loadfile(fullPath)
-                if not chunk then
-                    rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. err, "info")
-                else
-                    local module = assert(chunk())
-                    if type(module) == "table" and type(module.wakeup) == "function" then
-                        tasksList[name] = {module = module, priority = level, initialized = false, complete = false, failed = false, attempts = 0, nextEligibleAt = 0, startTime = nil}
-                    else
-                        rfsuite.utils.log("Invalid task file: " .. fullPath, "info")
-                        rfsuite.utils.log("Invalid task file: " .. fullPath, "connect")
-                    end
-                end
-            end
-        end
-    end
-
-    tasksLoaded = true
-end
-
-function tasks.resetAllTasks()
+local function resetTasksOnly()
+    -- Ensure task-local state truly resets by hard-reloading each task module from disk.
     for _, task in pairs(tasksList) do
+        hardReloadTask(task)
+
         if type(task.module.reset) == "function" then task.module.reset() end
         task.initialized = false
         task.complete = false
@@ -72,25 +82,110 @@ function tasks.resetAllTasks()
     end
 
     resetSessionFlags()
-    rfsuite.tasks.reset()
-    rfsuite.session.resetMSPSensors = true
+end
+
+
+local function loadManifest()
+    local chunk, err = loadfile(MANIFEST_PATH)
+
+    if not chunk then
+        rfsuite.utils.log("Error loading tasks manifest " .. MANIFEST_PATH .. ": " .. (err or "?"), "info")
+        return nil
+    end
+
+    local ok, manifest = pcall(chunk)
+    if not ok or type(manifest) ~= "table" then
+        rfsuite.utils.log("Invalid tasks manifest: " .. MANIFEST_PATH, "info")
+        return nil
+    end
+
+    return manifest
+end
+
+
+function tasks.findTasks()
+    if tasksLoaded then return end
+
+    resetSessionFlags()
+
+    local manifest = loadManifest()
+    if not manifest then
+        tasksLoaded = true
+        return
+    end
+
+    for _, entry in ipairs(manifest) do
+        local level = entry.level
+        local file = entry.name
+
+        if level and file then
+
+            local fullPath = BASE_PATH .. file .. ".lua"
+            local name = level .. "/" .. file
+
+            local module, err = loadTaskModuleFromPath(fullPath)
+            if not module then
+                rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. (err or "?"), "info")
+            else
+                tasksList[name] = {
+                    module = module,
+                    path = fullPath,
+                    priority = level,
+                    initialized = false,
+                    complete = false,
+                    failed = false,
+                    attempts = 0,
+                    nextEligibleAt = 0,
+                    startTime = nil,
+                }
+            end
+        end
+    end
+
+    tasksLoaded = true
+end
+
+function tasks.resetAllTasks()
+    -- Kept for compatibility: do a "task-only" reset.
+    -- IMPORTANT: do NOT reset MSP/task system here; doing so can bounce telemetryActive and prevent tasks running.
+    resetTasksOnly()
 end
 
 function tasks.wakeup()
     local telemetryActive = rfsuite.tasks.msp.onConnectChecksInit and rfsuite.session.telemetryState
 
+    local now = os.clock()
+
     if telemetryTypeChanged then
-        telemetryTypeChanged = false
-        tasks.resetAllTasks()
-        tasksLoaded = false
-        return
+        -- optional debounce (prevents thrash if link rapidly flips types)
+        if (now - (lastTypeChangeAt or 0)) >= TYPE_CHANGE_DEBOUNCE then
+            telemetryTypeChanged = false
+            tasks.resetAllTasks()
+        end
     end
 
     if not telemetryActive then
-        tasks.resetAllTasks()
-        tasksLoaded = false
+        -- Only reset once on transition from active -> inactive.
+        if lastTelemetryActive then
+            -- On disconnect, do a HARD reset (ok to nuke MSP/sensors here).
+            resetTasksOnly()
+            rfsuite.tasks.reset()
+            rfsuite.session.resetMSPSensors = true
+        else
+            resetSessionFlags()
+        end
+        lastTelemetryActive = false
         return
     end
+
+    -- First connect after being inactive: start clean once.
+    if not lastTelemetryActive then
+        if not tasksLoaded then tasks.findTasks() end
+        -- On connect, only reset task state (do NOT reset MSP/sensors).
+        resetTasksOnly()
+    end
+
+    lastTelemetryActive = true
 
     if not tasksLoaded then tasks.findTasks() end
 
@@ -103,8 +198,6 @@ function tasks.wakeup()
     end
 
     if not activeLevel then return end
-
-    local now = os.clock()
 
     for name, task in pairs(tasksList) do
         if task.priority == activeLevel then
@@ -159,7 +252,7 @@ function tasks.wakeup()
     if levelDone then
         rfsuite.session.onConnect[activeLevel] = true
         rfsuite.utils.log("All [" .. activeLevel .. "] tasks complete.", "info")
-    
+
         if activeLevel == "high" then
             rfsuite.flightmode.current = "preflight"
             rfsuite.tasks.events.flightmode.reset()
