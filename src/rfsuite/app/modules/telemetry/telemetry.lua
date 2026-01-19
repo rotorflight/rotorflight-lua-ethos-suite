@@ -103,7 +103,11 @@ local sensorList = {
     [104] = { name = "DBG4", group = "debug" },
     [105] = { name = "DBG5", group = "debug" },
     [106] = { name = "DBG6", group = "debug" },
-    [107] = { name = "DBG7", group = "debug" }
+    [107] = { name = "DBG7", group = "debug" },
+    [110] = { name = "Vibration", group = "vibration" },
+    [111] = { name = "Vibration Roll", group = "vibration" },
+    [112] = { name = "Vibration Pitch", group = "vibration" },
+    [113] = { name = "Vibration Yaw", group = "vibration" }
 }
 
 local TELEMETRY_SENSORS = {}
@@ -130,7 +134,8 @@ local GROUP_TITLE_TAG = {
     profiles = "@i18n(telemetry.group_profiles)@",
     control = "@i18n(telemetry.group_control)@",
     system = "@i18n(telemetry.group_system)@",
-    debug = "@i18n(telemetry.group_debug)@"
+    debug = "@i18n(telemetry.group_debug)@",
+    vibration = "@i18n(telemetry.group_vibration)@"
 }
 
 local function buildGroups(list)

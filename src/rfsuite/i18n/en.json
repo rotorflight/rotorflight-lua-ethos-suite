@@ -6810,6 +6810,11 @@
       "needs_translation": false,
       "translation": "Tuning"
     },
+    "group_vibration": {
+      "english": "Vibration",
+      "needs_translation": false,
+      "translation": "Vibration"
+    },
     "group_voltage": {
       "english": "Voltage",
       "needs_translation": false,

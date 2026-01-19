@@ -19,6 +19,11 @@
     "translation": "Steuerung",
     "needs_translation": false
   },
+  "group_vibration": {
+    "english": "Vibration",
+    "translation": "Vibration",
+    "needs_translation": true
+  },
   "group_esc1": {
     "english": "ESC 1",
     "translation": "Regler 1",

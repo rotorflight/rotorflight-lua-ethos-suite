@@ -84,7 +84,11 @@ local sidLookup = {
     [93] = {'0x5125'},
     [95] = {'0x5130'},
     [96] = {'0x5131'},
-    [99] = {'0x5110', '0x5111'}
+    [99] = {'0x5110', '0x5111'},
+    [110] = {'0x5142'},
+    [111] = {'0x5143'},
+    [112] = {'0x5144'},
+    [113] = {'0x5145'},
 }
 
 -- MSP Sensors start at 0x5FFF.  We use lower values for FrSky S.Port sensors to avoid conflicts.
@@ -121,6 +125,10 @@ createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
 createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
 createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals = 1}
+createSensorList[0x5142] = {name = "Vibration", unit = UNIT_RAW}
+createSensorList[0x5143] = {name = "Vibration Roll", unit = UNIT_RAW}
+createSensorList[0x5144] = {name = "Vibration Pitch", unit = UNIT_RAW}
+createSensorList[0x5145] = {name = "Vibration Yaw", unit = UNIT_RAW}
 createSensorList[0x52F0] = {name = "Debug 0", unit = UNIT_RAW}
 createSensorList[0x52F1] = {name = "Debug 1", unit = UNIT_RAW}
 createSensorList[0x52F2] = {name = "Debug 2", unit = UNIT_RAW}
