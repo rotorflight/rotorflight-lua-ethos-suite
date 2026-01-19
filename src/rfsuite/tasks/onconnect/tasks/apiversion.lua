@@ -84,7 +84,6 @@ function apiversion.wakeup()
             rfsuite.session.apiVersion = version
             rfsuite.session.apiVersionInvalid = false
             if rfsuite.session.apiVersion then 
-                rfsuite.utils.playFileCommon("beep.wav")
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info") 
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect") 
             end
@@ -99,7 +98,12 @@ function apiversion.reset()
     rfsuite.session.apiVersionInvalid = nil
     mspCallMade = false
 end
-
-function apiversion.isComplete() if rfsuite.session.apiVersion ~= nil then return true end end
+-- 
+function apiversion.isComplete() 
+    if rfsuite.session.apiVersion ~= nil then 
+        rfsuite.utils.playFileCommon("beep.wav")
+        return true 
+    end 
+end
 
 return apiversion

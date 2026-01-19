@@ -39,7 +39,7 @@ function rxmap.wakeup()
             rfsuite.session.rx.map.aux3 = aux3
 
             rfsuite.utils.log("RX Map: Aileron: " .. aileron .. ", Elevator: " .. elevator .. ", Rudder: " .. rudder .. ", Collective: " .. collective .. ", Throttle: " .. throttle .. ", Aux1: " .. aux1 .. ", Aux2: " .. aux2 .. ", Aux3: " .. aux3, "info")
-            rfsuite.utils.log("RX Map retrieved", "connect")
+            rfsuite.utils.log("RX Map: Ail: " .. aileron .. ", Elev: " .. elevator .. ", Rud: " .. rudder .. ", Col: " .. collective .. ", Thr: " .. throttle , "connect")
 
         end)
         API.setUUID("b3e5c8a4-5f3e-4e2c-9f7d-2e7a1c4b8f21")
