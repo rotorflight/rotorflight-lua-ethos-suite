@@ -3608,6 +3608,16 @@
       }
     },
     "rates_advanced": {
+      "advanced": {
+        "english": "Advanced",
+        "translation": "Advanced",
+        "needs_translation": true
+      },
+      "table": {
+        "english": "Rate Table",
+        "translation": "Rate Table",
+        "needs_translation": true
+      },
       "dyn_ceiling_gain": {
         "english": "Dynamic ceiling gain",
         "translation": "Gain plafond dynamique",

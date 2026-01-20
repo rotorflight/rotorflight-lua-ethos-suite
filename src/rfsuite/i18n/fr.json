@@ -5268,6 +5268,11 @@
           "needs_translation": false,
           "translation": "Accel"
         },
+        "advanced": {
+          "english": "Advanced",
+          "needs_translation": true,
+          "translation": "Advanced"
+        },
         "col": {
           "english": "Col",
           "needs_translation": false,
@@ -5392,6 +5397,11 @@
           "english": "Setpoint boost gain",
           "needs_translation": false,
           "translation": "Gain consigne"
+        },
+        "table": {
+          "english": "Rate Table",
+          "needs_translation": true,
+          "translation": "Rate Table"
         },
         "yaw": {
           "english": "Yaw",

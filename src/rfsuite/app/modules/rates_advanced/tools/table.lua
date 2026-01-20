@@ -113,6 +113,11 @@ local function flagRateChange(self)
     end
 end
 
+
+local function onNavMenu(self)
+    rfsuite.app.ui.openPage(pidx, title, "rates_advanced/rates_advanced.lua")
+end
+
 local function postEepromWrite(self) if resetRates == true then doFullReload = true end end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.rates_type)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.rates_type)@", onNavMenu = onNavMenu, reboot = false, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}

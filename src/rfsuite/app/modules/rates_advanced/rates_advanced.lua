@@ -5,209 +5,173 @@
 
 local rfsuite = require("rfsuite")
 
-local activateWakeup = false
-local extraMsgOnSave = nil
-local resetRates = false
-local doFullReload = false
+local S_PAGES = {
+        [1] = { name = "@i18n(app.modules.rates_advanced.advanced)@", script = "advanced.lua", image = "advanced.png" },
+        [2] = { name = "@i18n(app.modules.rates_advanced.table)@", script = "table.lua", image = "table.png" },
+    }   
 
-if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end
 
-local rows
-if rfsuite.utils.apiVersionCompare(">=", "12.08") then
-    rows = {
-        "@i18n(app.modules.rates_advanced.response_time)@",
-        "@i18n(app.modules.rates_advanced.acc_limit)@",
-        "@i18n(app.modules.rates_advanced.setpoint_boost_gain)@",
-        "@i18n(app.modules.rates_advanced.setpoint_boost_cutoff)@",
-        "@i18n(app.modules.rates_advanced.dyn_ceiling_gain)@",
-        "@i18n(app.modules.rates_advanced.dyn_deadband_gain)@",
-        "@i18n(app.modules.rates_advanced.dyn_deadband_filter)@"
-    }
-else
-    rows = {
-        "@i18n(app.modules.rates_advanced.response_time)@",
-        "@i18n(app.modules.rates_advanced.acc_limit)@"
-    }
-end
+local enableWakeup = false
+local prevConnectedState = nil
+local initTime = os.clock()
 
-local apidata = {
-    api = {[1] = 'RC_TUNING'},
-    formdata = {
-        name = "@i18n(app.modules.rates_advanced.dynamics)@",
-        labels = {},
-        rows = rows,
-        cols = {
-            "@i18n(app.modules.rates_advanced.roll)@",
-            "@i18n(app.modules.rates_advanced.pitch)@",
-            "@i18n(app.modules.rates_advanced.yaw)@",
-            "@i18n(app.modules.rates_advanced.col)@"
-        },
-        fields = {
-            {row = 1, col = 1, mspapi = 1, apikey = "response_time_1"},
-            {row = 1, col = 2, mspapi = 1, apikey = "response_time_2"},
-            {row = 1, col = 3, mspapi = 1, apikey = "response_time_3"},
-            {row = 1, col = 4, mspapi = 1, apikey = "response_time_4"},
-            {row = 2, col = 1, mspapi = 1, apikey = "accel_limit_1"},
-            {row = 2, col = 2, mspapi = 1, apikey = "accel_limit_2"},
-            {row = 2, col = 3, mspapi = 1, apikey = "accel_limit_3"},
-            {row = 2, col = 4, mspapi = 1, apikey = "accel_limit_4"},
-            {row = 3, col = 1, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08},
-            {row = 3, col = 2, mspapi = 1, apikey = "setpoint_boost_gain_2", apiversiongte = 12.08},
-            {row = 3, col = 3, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = 12.08},
-            {row = 3, col = 4, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = 12.08},
-            {row = 4, col = 1, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = 12.08},
-            {row = 4, col = 2, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = 12.08},
-            {row = 4, col = 3, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = 12.08},
-            {row = 4, col = 4, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = 12.08},
-            {row = 5, col = 3, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
-            {row = 6, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
-            {row = 7, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08}
-        }
-    }
-}
+local function openPage(pidx, title, script)
 
-local function rightAlignText(width, text)
-    local textWidth, _ = lcd.getTextSize(text)
-    local padding = width - textWidth
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
-    if padding > 0 then
-        return string.rep(" ", math.floor(padding / lcd.getTextSize(" "))) .. text
-    else
-        return text
-    end
-end
-
-local function openPage(idx, title, script)
-
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
+    rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    form.clear()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
 
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "rates_advanced" then rfsuite.app.gfx_buttons[i] = nil end end
 
-    local longPage = false
-
-    form.clear()
-
-    rfsuite.app.ui.fieldHeader(title)
-    local numCols
-    if rfsuite.app.Page.apidata.formdata.cols ~= nil then
-        numCols = #rfsuite.app.Page.apidata.formdata.cols
+    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
+        rfsuite.preferences.general.iconsize = 1
     else
-        numCols = 4
-    end
-    local screenWidth = rfsuite.app.lcdWidth - 10
-    local padding = 10
-    local paddingTop = rfsuite.app.radio.linePaddingTop
-    local h = rfsuite.app.radio.navbuttonHeight
-    local w = ((screenWidth * 60 / 100) / numCols)
-    local paddingRight = 20
-    local positions = {}
-    local positions_r = {}
-    local pos
-
-    local line = form.addLine("")
-
-    local loc = numCols
-    local posX = screenWidth - paddingRight
-    local posY = paddingTop
-
-    rfsuite.session.colWidth = w - paddingRight
-
-    local c = 1
-    while loc > 0 do
-        local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
-
-        positions[loc] = posX - w
-        positions_r[c] = posX - w
-
-        lcd.font(FONT_STD)
-
-        colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
-
-        local posTxt = positions_r[c] + paddingRight
-
-        pos = {x = posTxt, y = posY, w = w, h = h}
-        rfsuite.app.formFields['col_' .. tostring(c)] = form.addStaticText(line, pos, colLabel)
-
-        posX = math.floor(posX - w)
-
-        loc = loc - 1
-        c = c + 1
+        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
-    local fieldRows = {}
-    for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do fieldRows[ri] = form.addLine(rv) end
+    local w, h = lcd.getWindowSize()
+    local windowWidth = w
+    local windowHeight = h
+    local padding = rfsuite.app.radio.buttonPadding
 
-    for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
-        local f = rfsuite.app.Page.apidata.formdata.fields[i]
+    local sc
+    local panel
 
-        local valid = (f.apiversion == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversion)) and (f.apiversionlt == nil or rfsuite.utils.apiVersionCompare("<", f.apiversionlt)) and (f.apiversiongt == nil or rfsuite.utils.apiVersionCompare(">", f.apiversiongt)) and (f.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", f.apiversionlte)) and (f.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversiongte)) and (f.enablefunction == nil or f.enablefunction())
+    local buttonW = 100
+    local x = windowWidth - buttonW - 10
 
-        if f.row and f.col and valid then
-            local l = rfsuite.app.Page.apidata.formdata.labels
-            local pageIdx = i
-            local currentField = i
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.rates_advanced.name)@")
 
-            posX = positions[f.col]
+    local buttonW
+    local buttonH
+    local padding
+    local numPerRow
 
-            pos = {x = posX + padding, y = posY, w = w - padding, h = h}
+    if rfsuite.preferences.general.iconsize == 0 then
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonH = rfsuite.app.radio.navbuttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
 
-            rfsuite.app.formFields[i] = form.addNumberField(fieldRows[f.row], pos, 0, 0, function()
-                if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
-                    ui.disableAllFields()
-                    ui.disableAllNavigationFields()
-                    ui.enableNavigationField('menu')
-                    return nil
-                end
-                return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
-            end, function(value)
-                if f.postEdit then f.postEdit(rfsuite.app.Page) end
-                if f.onChange then f.onChange(rfsuite.app.Page) end
+    if rfsuite.preferences.general.iconsize == 1 then
 
-                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
-            end)
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = rfsuite.app.radio.buttonWidthSmall
+        buttonH = rfsuite.app.radio.buttonHeightSmall
+        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+    end
+
+    if rfsuite.preferences.general.iconsize == 2 then
+
+        padding = rfsuite.app.radio.buttonPadding
+        buttonW = rfsuite.app.radio.buttonWidth
+        buttonH = rfsuite.app.radio.buttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+
+    if rfsuite.app.gfx_buttons["rates_advanced"] == nil then rfsuite.app.gfx_buttons["rates_advanced"] = {} end
+    if rfsuite.preferences.menulastselected["rates_advanced"] == nil then rfsuite.preferences.menulastselected["rates_advanced"] = 1 end
+
+    local Menu = assert(loadfile("app/modules/" .. script))()
+    local pages = S_PAGES
+    local lc = 0
+    local bx = 0
+    local y = 0
+
+    for pidx, pvalue in ipairs(S_PAGES) do
+
+        if lc == 0 then
+            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
         end
-    end
 
-end
+        if lc >= 0 then bx = (buttonW + padding) * lc end
 
-local function postLoad(self)
+        if rfsuite.preferences.general.iconsize ~= 0 then
+            if rfsuite.app.gfx_buttons["rates_advanced"][pidx] == nil then rfsuite.app.gfx_buttons["rates_advanced"][pidx] = lcd.loadMask("app/modules/rates_advanced/gfx/" .. pvalue.image) end
+        else
+            rfsuite.app.gfx_buttons["rates_advanced"][pidx] = nil
+        end
 
-    local v = rfsuite.tasks.msp.api.apidata.values[apidata.api[1]].rates_type
+        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = pvalue.name,
+            icon = rfsuite.app.gfx_buttons["rates_advanced"][pidx],
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                rfsuite.preferences.menulastselected["rates_advanced"] = pidx
+                rfsuite.app.ui.progressDisplay(nil,nil,false)
+                local name = "@i18n(app.modules.rates_advanced.name)@" .. " / " .. pvalue.name
+                rfsuite.app.ui.openPage(pidx, name, "rates_advanced/tools/" .. pvalue.script)
+            end
+        })
 
-    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable, "debug")
+        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-    if v ~= rfsuite.session.activeRateTable then
-        rfsuite.utils.log("Switching Rate Table: " .. v, "info")
-        rfsuite.app.triggers.reloadFull = true
-        rfsuite.session.activeRateTable = v
-        return
+        if pvalue.apiversion ~= nil then
+            local apiVersionSupported = rfsuite.utils.apiVersionCompare(">=", pvalue.apiversion)
+            if not apiVersionSupported then
+                rfsuite.app.formFields[pidx]:enable(false)
+            end
+        end
+
+        local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+        if rfsuite.preferences.menulastselected["rates_advanced"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+
+        lc = lc + 1
+
+        if lc == numPerRow then lc = 0 end
+
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-    activateWakeup = true
+
+    enableWakeup = true
+
+
+    return
 end
 
-local function wakeup()
-    if activateWakeup and rfsuite.tasks.msp.mspQueue:isProcessed() then
+local function event(widget, category, value, x, y)
 
-        if rfsuite.session.activeRateProfile then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end
-
-        if doFullReload == true then
-            rfsuite.utils.log("Reloading full after rate type change", "info")
-            rfsuite.app.triggers.reload = true
-            doFullReload = false
-        end
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openMainMenuSub('advanced')
+        return true
     end
 end
 
-local function onToolMenu() end
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay()
+    rfsuite.app.ui.openMainMenuSub('advanced')
+    return true
+end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.name)@", reboot = false, openPage = openPage, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, postLoad = postLoad, wakeup = wakeup, API = {}, onToolMenu = onToolMenu, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}
+local function wakeup()
+    if not enableWakeup then return end
+
+    if os.clock() - initTime < 0.25 then return end
+
+    local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+    if currState ~= prevConnectedState then
+
+        if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
+
+        prevConnectedState = currState
+    end
+
+end
+
+rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+
+return {pages = pages, openPage = openPage, onNavMenu = onNavMenu, event = event, wakeup = wakeup, API = {}, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}}
