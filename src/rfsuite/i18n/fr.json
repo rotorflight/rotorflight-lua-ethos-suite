@@ -5674,6 +5674,11 @@
           "needs_translation": false,
           "translation": "Activation du remplacement servo..."
         },
+        "fbus": {
+          "english": "FBUS Output",
+          "needs_translation": true,
+          "translation": "FBUS Output"
+        },
         "geometry": {
           "english": "Geometry",
           "needs_translation": false,
@@ -5779,6 +5784,11 @@
           "needs_translation": false,
           "translation": "Servos"
         },
+        "pwm": {
+          "english": "PWM Output",
+          "needs_translation": true,
+          "translation": "PWM Output"
+        },
         "rate": {
           "english": "Rate",
           "needs_translation": false,
@@ -5798,6 +5808,11 @@
           "english": "Saving data...",
           "needs_translation": false,
           "translation": "Enregistrement des donnees..."
+        },
+        "sbus": {
+          "english": "SBUS Output",
+          "needs_translation": true,
+          "translation": "SBUS Output"
         },
         "scale_negative": {
           "english": "Scale Negative",

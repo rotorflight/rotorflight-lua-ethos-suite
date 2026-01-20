@@ -92,7 +92,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["fbuschannel"][pidx] == nil then rfsuite.app.gfx_buttons["fbuschannel"][pidx] = lcd.loadMask("app/modules/fbusout/gfx/ch" .. tostring(pidx + 1) .. ".png") end
+            if rfsuite.app.gfx_buttons["fbuschannel"][pidx] == nil then rfsuite.app.gfx_buttons["fbuschannel"][pidx] = lcd.loadMask("app/modules/servos/gfx/ch" .. tostring(pidx + 1) .. ".png") end
         else
             rfsuite.app.gfx_buttons["fbuschannel"][pidx] = nil
         end
@@ -106,7 +106,7 @@ local function openPage(pidx, title, script)
                 rfsuite.preferences.menulastselected["fbuschannel"] = pidx
                 rfsuite.currentFbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.fbusout.channel_page)@" .. "" .. tostring(rfsuite.currentFbusServoIndex + 1), "fbusout/fbusout_tool.lua")
+                rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.fbusout.channel_page)@" .. "" .. tostring(rfsuite.currentFbusServoIndex + 1), "servos/tools/fbus_tool.lua")
             end
         })
 
@@ -172,4 +172,10 @@ local function wakeup()
 
 end
 
-return {title = "Fbus Out", openPage = openPage, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}
+local function onNavMenu(self)
+
+     rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.servos.name)@", "servos/servos.lua")
+
+end
+
+return {title = "Fbus Out", openPage = openPage, onNavMenu = onNavMenu, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

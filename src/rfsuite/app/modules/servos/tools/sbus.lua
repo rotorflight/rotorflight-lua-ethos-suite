@@ -92,7 +92,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["sbuschannel"][pidx] == nil then rfsuite.app.gfx_buttons["sbuschannel"][pidx] = lcd.loadMask("app/modules/sbusout/gfx/ch" .. tostring(pidx + 1) .. ".png") end
+            if rfsuite.app.gfx_buttons["sbuschannel"][pidx] == nil then rfsuite.app.gfx_buttons["sbuschannel"][pidx] = lcd.loadMask("app/modules/servos/gfx/ch" .. tostring(pidx + 1) .. ".png") end
         else
             rfsuite.app.gfx_buttons["sbuschannel"][pidx] = nil
         end
@@ -107,9 +107,9 @@ local function openPage(pidx, title, script)
                 rfsuite.currentSbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
                 if rfsuite.utils.apiVersionCompare("<", "12.09") then
-                    rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool_legacy.lua")
+                    rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "servos/tools/sbus_tool_legacy.lua")
                 else
-                    rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
+                    rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.sbusout.channel_page)@" .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "servos/tools/sbus_tool.lua")
                 end
             end
         })
@@ -176,4 +176,10 @@ local function wakeup()
 
 end
 
-return {title = "Sbus Out", openPage = openPage, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}
+local function onNavMenu(self)
+
+     rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.servos.name)@", "servos/servos.lua")
+
+end
+
+return {title = "Sbus Out", onNavMenu = onNavMenu, openPage = openPage, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

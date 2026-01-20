@@ -3785,6 +3785,21 @@
       }
     },
     "servos": {
+      "pwm": {
+        "english": "PWM Output",
+        "translation": "PWM Output",
+        "needs_translation": true
+      },
+      "fbus": {
+        "english": "FBUS Output",
+        "translation": "FBUS Output",
+        "needs_translation": true
+      },
+      "sbus": {
+        "english": "SBUS Output",
+        "translation": "SBUS Output",
+        "needs_translation": true
+      },
       "tbl_yes": {
         "english": "YES",
         "translation": "JA",

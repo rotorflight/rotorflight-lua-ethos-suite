@@ -162,11 +162,11 @@ local function openPage(pidx, title, script)
     local bx = 0
     local y = 0
 
-    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
+    if rfsuite.app.gfx_buttons["pwm"] == nil then rfsuite.app.gfx_buttons["pwm"] = {} end
+    if rfsuite.preferences.menulastselected["pwm"] == nil then rfsuite.preferences.menulastselected["pwm"] = 1 end
 
-    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
+    if rfsuite.app.gfx_buttons["pwm"] == nil then rfsuite.app.gfx_buttons["pwm"] = {} end
+    if rfsuite.preferences.menulastselected["pwm"] == nil then rfsuite.preferences.menulastselected["pwm"] = 1 end
 
     for pidx, pvalue in ipairs(servoTable) do
 
@@ -196,27 +196,27 @@ local function openPage(pidx, title, script)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["servos"][pidx] == nil then rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask("app/modules/servos/gfx/" .. pvalue.image) end
+                if rfsuite.app.gfx_buttons["pwm"][pidx] == nil then rfsuite.app.gfx_buttons["pwm"][pidx] = lcd.loadMask("app/modules/servos/gfx/" .. pvalue.image) end
             else
-                rfsuite.app.gfx_buttons["servos"][pidx] = nil
+                rfsuite.app.gfx_buttons["pwm"][pidx] = nil
             end
 
             rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                 text = pvalue.title,
-                icon = rfsuite.app.gfx_buttons["servos"][pidx],
+                icon = rfsuite.app.gfx_buttons["pwm"][pidx],
                 options = FONT_S,
                 paint = function() end,
                 press = function()
-                    rfsuite.preferences.menulastselected["servos"] = pidx
+                    rfsuite.preferences.menulastselected["pwm"] = pidx
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/servos_tool.lua", servoTable)
+                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/pwm_tool.lua", servoTable)
                 end
             })
 
             if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-            if rfsuite.preferences.menulastselected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.preferences.menulastselected["pwm"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
             lc = lc + 1
 
@@ -401,14 +401,9 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-    if rfsuite.app.lastMenu == nil then
-        rfsuite.app.ui.openMainMenu()
-    else
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
-    end
+     rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.servos.name)@", "servos/servos.lua")
 
 end
 
-local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
 return {event = event, openPage = openPageInit, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}, onReloadMenu = onReloadMenu, API = {}}

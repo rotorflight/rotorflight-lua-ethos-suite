@@ -14,7 +14,7 @@ local  S_PAGES ={
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
-local esc_motorsCompatibilityStatus = false
+local servosCompatibilityStatus = false
 
 
 
@@ -31,7 +31,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "esc_motors" then rfsuite.app.gfx_buttons[i] = nil end end
+    for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "servos" then rfsuite.app.gfx_buttons[i] = nil end end
 
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
@@ -50,7 +50,7 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.esc_motors.name)@")
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@")
 
     local buttonW
     local buttonH
@@ -80,8 +80,8 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
 
-    if rfsuite.app.gfx_buttons["esc_motors"] == nil then rfsuite.app.gfx_buttons["esc_motors"] = {} end
-    if rfsuite.preferences.menulastselected["esc_motors"] == nil then rfsuite.preferences.menulastselected["esc_motors"] = 1 end
+    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
+    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -100,21 +100,21 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["esc_motors"][pidx] == nil then rfsuite.app.gfx_buttons["esc_motors"][pidx] = lcd.loadMask("app/modules/esc_motors/gfx/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["servos"][pidx] == nil then rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask("app/modules/servos/gfx/" .. pvalue.image) end
         else
-            rfsuite.app.gfx_buttons["esc_motors"][pidx] = nil
+            rfsuite.app.gfx_buttons["servos"][pidx] = nil
         end
 
         rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.name,
-            icon = rfsuite.app.gfx_buttons["esc_motors"][pidx],
+            icon = rfsuite.app.gfx_buttons["servos"][pidx],
             options = FONT_S,
             paint = function() end,
             press = function()
-                rfsuite.preferences.menulastselected["esc_motors"] = pidx
+                rfsuite.preferences.menulastselected["servos"] = pidx
                 rfsuite.app.ui.progressDisplay(nil,nil,false)
-                local name = "@i18n(app.modules.esc_motors.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "esc_motors/tools/" .. pvalue.script)
+                local name = "@i18n(app.modules.servos.name)@" .. " / " .. pvalue.name
+                rfsuite.app.ui.openPage(pidx, name, "servos/tools/" .. pvalue.script)
             end
         })
 
@@ -129,7 +129,7 @@ local function openPage(pidx, title, script)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
-        if rfsuite.preferences.menulastselected["esc_motors"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 

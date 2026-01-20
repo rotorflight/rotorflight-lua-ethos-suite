@@ -154,7 +154,7 @@ end
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/servos.lua", rfsuite.session.servoOverride)
+    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/tools/pwm.lua", rfsuite.session.servoOverride)
 
 end
 
