@@ -5,111 +5,33 @@
 
 local rfsuite = require("rfsuite")
 
-local servoTable = {}
-servoTable = {}
-servoTable['sections'] = {}
+local  S_PAGES ={
+        [1] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" },
+        [2] = { name = "@i18n(app.modules.servos.sbus)@", script = "sbus.lua", image = "sbus.png"},    
+        [3] = { name = "@i18n(app.modules.servos.fbus)@", script = "fbus.lua", image = "fbus.png"},
+    }
 
-local triggerOverRide = false
-local triggerOverRideAll = false
-local lastServoCountTime = os.clock()
+local enableWakeup = false
+local prevConnectedState = nil
+local initTime = os.clock()
+local esc_motorsCompatibilityStatus = false
 
 
-local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
-
-end
-
-local function buildServoTable()
-
-    for i = 1, rfsuite.session.servoCount do
-        servoTable[i] = {}
-        servoTable[i] = {}
-        servoTable[i]['title'] = "@i18n(app.modules.servos.servo_prefix)@" .. i
-        servoTable[i]['image'] = "servo" .. i .. ".png"
-        servoTable[i]['disabled'] = true
-    end
-
-    for i = 1, rfsuite.session.servoCount do
-
-        servoTable[i]['disabled'] = false
-
-        if rfsuite.session.swashMode == 0 then
-
-        elseif rfsuite.session.swashMode == 1 then
-
-            if rfsuite.session.tailMode == 0 then
-                servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
-                servoTable[4]['image'] = "tail.png"
-                servoTable[4]['section'] = 1
-            end
-        elseif rfsuite.session.swashMode == 2 or rfsuite.session.swashMode == 3 or rfsuite.session.swashMode == 4 then
-
-            servoTable[1]['title'] = "@i18n(app.modules.servos.cyc_pitch)@"
-            servoTable[1]['image'] = "cpitch.png"
-
-            servoTable[2]['title'] = "@i18n(app.modules.servos.cyc_left)@"
-            servoTable[2]['image'] = "cleft.png"
-
-            servoTable[3]['title'] = "@i18n(app.modules.servos.cyc_right)@"
-            servoTable[3]['image'] = "cright.png"
-
-            if rfsuite.session.tailMode == 0 then
-
-                if servoTable[4] == nil then servoTable[4] = {} end
-                servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
-                servoTable[4]['image'] = "tail.png"
-            else
-
-            end
-        elseif rfsuite.session.swashMode == 5 or rfsuite.session.swashMode == 6 then
-
-            if rfsuite.session.tailMode == 0 then
-                servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
-                servoTable[4]['image'] = "tail.png"
-            else
-
-            end
-        end
-    end
-end
-
-local function swashMixerType()
-    local txt
-    if rfsuite.session.swashMode == 0 then
-        txt = "NONE"
-    elseif rfsuite.session.swashMode == 1 then
-        txt = "DIRECT"
-    elseif rfsuite.session.swashMode == 2 then
-        txt = "CPPM 120°"
-    elseif rfsuite.session.swashMode == 3 then
-        txt = "CPPM 135°"
-    elseif rfsuite.session.swashMode == 4 then
-        txt = "CPPM 140°"
-    elseif rfsuite.session.swashMode == 5 then
-        txt = "FPPM 90° L"
-    elseif rfsuite.session.swashMode == 6 then
-        txt = "FPPM 90° R"
-    else
-        txt = "UNKNOWN"
-    end
-
-    return txt
-end
 
 local function openPage(pidx, title, script)
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
 
     form.clear()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
+
+    for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "esc_motors" then rfsuite.app.gfx_buttons[i] = nil end end
 
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
@@ -128,7 +50,7 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@")
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.esc_motors.name)@")
 
     local buttonW
     local buttonH
@@ -158,257 +80,105 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
 
+    if rfsuite.app.gfx_buttons["esc_motors"] == nil then rfsuite.app.gfx_buttons["esc_motors"] = {} end
+    if rfsuite.preferences.menulastselected["esc_motors"] == nil then rfsuite.preferences.menulastselected["esc_motors"] = 1 end
+
+    local Menu = assert(loadfile("app/modules/" .. script))()
+    local pages = S_PAGES
     local lc = 0
     local bx = 0
     local y = 0
 
-    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
+    for pidx, pvalue in ipairs(S_PAGES) do
 
-    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
-
-    for pidx, pvalue in ipairs(servoTable) do
-
-        if pvalue.disabled ~= true then
-
-            if pvalue.section == "swash" and lc == 0 then
-                local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, headerLineText())
-            end
-
-            if pvalue.section == "tail" then
-                local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "@i18n(app.modules.servos.tail)@")
-            end
-
-            if pvalue.section == "other" then
-                local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "@i18n(app.modules.servos.tail)@")
-            end
-
-            if lc == 0 then
-                if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
-            end
-
-            if lc >= 0 then bx = (buttonW + padding) * lc end
-
-            if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["servos"][pidx] == nil then rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask("app/modules/servos/gfx/" .. pvalue.image) end
-            else
-                rfsuite.app.gfx_buttons["servos"][pidx] = nil
-            end
-
-            rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = pvalue.title,
-                icon = rfsuite.app.gfx_buttons["servos"][pidx],
-                options = FONT_S,
-                paint = function() end,
-                press = function()
-                    rfsuite.preferences.menulastselected["servos"] = pidx
-                    rfsuite.currentServoIndex = pidx
-                    rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/servos_tool.lua", servoTable)
-                end
-            })
-
-            if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
-
-            if rfsuite.preferences.menulastselected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
-
-            lc = lc + 1
-
-            if lc == numPerRow then lc = 0 end
+        if lc == 0 then
+            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
         end
-    end
 
-    -- for a write if we are in over-ride and returning to main page
-    if rfsuite.session.servoOverride == false then
-        writeEeprom()
-    end
+        if lc >= 0 then bx = (buttonW + padding) * lc end
 
+        if rfsuite.preferences.general.iconsize ~= 0 then
+            if rfsuite.app.gfx_buttons["esc_motors"][pidx] == nil then rfsuite.app.gfx_buttons["esc_motors"][pidx] = lcd.loadMask("app/modules/esc_motors/gfx/" .. pvalue.image) end
+        else
+            rfsuite.app.gfx_buttons["esc_motors"][pidx] = nil
+        end
+
+        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = pvalue.name,
+            icon = rfsuite.app.gfx_buttons["esc_motors"][pidx],
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                rfsuite.preferences.menulastselected["esc_motors"] = pidx
+                rfsuite.app.ui.progressDisplay(nil,nil,false)
+                local name = "@i18n(app.modules.esc_motors.name)@" .. " / " .. pvalue.name
+                rfsuite.app.ui.openPage(pidx, name, "esc_motors/tools/" .. pvalue.script)
+            end
+        })
+
+        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+
+        if pvalue.apiversion ~= nil then
+            local apiVersionSupported = rfsuite.utils.apiVersionCompare(">=", pvalue.apiversion)
+            if not apiVersionSupported then
+                rfsuite.app.formFields[pidx]:enable(false)
+            end
+        end
+
+        local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+        if rfsuite.preferences.menulastselected["esc_motors"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+
+        lc = lc + 1
+
+        if lc == numPerRow then lc = 0 end
+
+    end
 
     rfsuite.app.triggers.closeProgressLoader = true
+
+    enableWakeup = true
 
     return
 end
 
-local function getServoCount(callback, callbackParam)
-    local message = {
-        command = 120,
-        processReply = function(self, buf)
-            local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
+local function event(widget, category, value, x, y)
 
-            rfsuite.session.servoCountNew = servoCount
-
-            if callback then callback(callbackParam) end
-        end,
-
-        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function openPageInit(pidx, title, script)
-
-    if rfsuite.session.servoCount ~= nil then
-        buildServoTable()
-        openPage(pidx, title, script)
-    else
-        local message = {
-            command = 120,
-            processReply = function(self, buf)
-                if #buf >= 10 then
-                    local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-                    rfsuite.session.servoCount = servoCount
-                end
-            end,
-            simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-        }
-        rfsuite.tasks.msp.mspQueue:add(message)
-
-        local message = {
-            command = 192,
-            processReply = function(self, buf)
-                if #buf >= 10 then
-
-                    for i = 0, rfsuite.session.servoCount do
-                        buf.offset = i
-                        local servoOverride = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                        if servoOverride == 0 then
-                            rfsuite.utils.log("Servo override: true", "debug")
-                            rfsuite.session.servoOverride = true
-                        end
-                    end
-                end
-                if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
-            end,
-            simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
-        }
-        rfsuite.tasks.msp.mspQueue:add(message)
-
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+        return true
     end
 end
 
-local function event(widget, category, value, x, y) end
-
-local function onToolMenu(self)
-
-    local buttons
-    if rfsuite.session.servoOverride == false then
-        buttons = {
-            {
-                label = "@i18n(app.btn_ok_long)@",
-                action = function()
-
-                    triggerOverRide = true
-                    triggerOverRideAll = true
-                    return true
-                end
-            }, {label = "CANCEL", action = function() return true end}
-        }
-    else
-        buttons = {
-            {
-                label = "@i18n(app.btn_ok_long)@",
-                action = function()
-
-                    triggerOverRide = true
-                    return true
-                end
-            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-        }
-    end
-    local message
-    local title
-    if rfsuite.session.servoOverride == false then
-        title = "@i18n(app.modules.servos.enable_servo_override)@"
-        message = "@i18n(app.modules.servos.enable_servo_override_msg)@"
-    else
-        title = "@i18n(app.modules.servos.disable_servo_override)@"
-        message = "@i18n(app.modules.servos.disable_servo_override_msg)@"
-    end
-
-    form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
-
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay()
+    rfsuite.app.ui.openMainMenuSub('hardware')
+    return true
 end
+
 
 local function wakeup()
-    if triggerOverRide == true then
-        triggerOverRide = false
+    if not enableWakeup then return end
 
-        if rfsuite.session.servoOverride == false then
-            rfsuite.app.audio.playServoOverideEnable = true
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.enabling_servo_override)@")
-            rfsuite.app.Page.servoCenterFocusAllOn(self)
-            rfsuite.session.servoOverride = true
-        else
-            rfsuite.app.audio.playServoOverideDisable = true
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
-            rfsuite.app.Page.servoCenterFocusAllOff(self)
-            rfsuite.session.servoOverride = false
-            writeEeprom()
-        end
+    if os.clock() - initTime < 0.25 then return end
+
+    local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+    if currState ~= prevConnectedState then
+
+        --rfsuite.app.formFields[2]:enable(currState)
+
+        if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
+
+        prevConnectedState = currState
     end
 
-    local now = os.clock()
-    if ((now - lastServoCountTime) >= 2) and rfsuite.tasks.msp.mspQueue:isProcessed() then
-        lastServoCountTime = now
 
-        getServoCount()
-
-        if rfsuite.session.servoCountNew ~= nil then if rfsuite.session.servoCountNew ~= rfsuite.session.servoCount then rfsuite.app.triggers.triggerReloadNoPrompt = true end end
-
-    end
 
 end
 
-local function servoCenterFocusAllOn(self)
+rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-    rfsuite.app.audio.playServoOverideEnable = true
-
-    for i = 0, #servoTable do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
-    rfsuite.app.triggers.isReady = true
-    rfsuite.app.triggers.closeProgressLoader = true
-end
-
-local function servoCenterFocusAllOff(self)
-
-    for i = 0, #servoTable do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
-    rfsuite.app.triggers.isReady = true
-    rfsuite.app.triggers.closeProgressLoader = true
-end
-
-local function onNavMenu(self)
-
-    if rfsuite.session.servoOverride == true or inFocus == true then
-        rfsuite.app.audio.playServoOverideDisable = true
-        rfsuite.session.servoOverride = false
-        inFocus = false
-        rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
-        rfsuite.app.Page.servoCenterFocusAllOff(self)
-        rfsuite.app.triggers.closeProgressLoader = true
-    end
-
-    if rfsuite.app.lastMenu == nil then
-        rfsuite.app.ui.openMainMenu()
-    else
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
-    end
-
-end
-
-local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
-
-return {event = event, openPage = openPageInit, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}, onReloadMenu = onReloadMenu, API = {}}
+return {pages = pages, openPage = openPage, onNavMenu = onNavMenu, event = event, wakeup = wakeup, API = {}, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}}
