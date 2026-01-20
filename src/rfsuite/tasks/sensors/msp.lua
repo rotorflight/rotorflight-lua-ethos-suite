@@ -13,6 +13,8 @@ local tasks
 local firstWakeup = true
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local lastInFlight = nil
+ 
 
 --[[
  * MSP Sensor Table Structure
@@ -26,7 +28,10 @@ local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
  *   API_NAME = {
  *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
  *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
- *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded (-1 for no polling)
+ *     on_arm: <boolean>                -- Optional: trigger once when armed edge happens
+ *     on_disarm: <boolean>             -- Optional: trigger once when disarm edge happens
+ *     on_inflight: <boolean>           -- Optional: trigger once when inflight edge happens
+ *     on_notinflight: <boolean>        -- Optional: trigger once when leaving inflight
  *
  *     fields = {
  *       field_key = {
@@ -81,8 +86,9 @@ local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
 -- LuaFormatter off
 local msp_sensors = {
     DATAFLASH_SUMMARY = {
-        interval_armed = -1,
-        interval_disarmed = 5,
+        interval_armed = -1,      -- disable periodic polling
+        interval_disarmed = -1,   -- disable periodic polling
+        on_disarm = true,         -- fire once when disarming     
         fields = {
             flags = {
                 sensorname = "BBL Flags",
@@ -107,7 +113,7 @@ local msp_sensors = {
 
     BATTERY_CONFIG = {
         interval_armed = -1,
-        interval_disarmed = 5,
+        interval_disarmed = 10,
         fields = {
             voltageMeterSource = {
                 sessionname = {"batteryConfig", "voltageMeterSource"}
@@ -156,7 +162,7 @@ local msp_sensors = {
 
     GOVERNOR_CONFIG = {
         interval_armed = -1,
-        interval_disarmed = 5,
+        interval_disarmed = 10,
         fields = {
             gov_mode ={
                 sessionname = {"governorMode"},
@@ -187,6 +193,10 @@ local FORCE_REFRESH_INTERVAL = 2.5
 local next_due = {}
 local activeFields = {}
 local lastState = {isArmed = false, isAdmin = false}
+
+local function isInFlightNow()
+    return (rfsuite.flightmode and rfsuite.flightmode.current == "inflight") and true or false
+end
 
 local function computeInterval(api_meta, isArmed, isAdmin)
     if isAdmin then return -1 end
@@ -386,11 +396,37 @@ function msp.wakeup()
     local isAdmin = rfsuite.app.guiIsRunning
 
     local armedBool = (isArmed == 1 or isArmed == 3)
+    local inFlight = isInFlightNow()
+
+    -- Edge detection (armed + inflight)
+    local prevArmed = lastState.isArmed
+    local prevInFlight = lastInFlight
+    if prevInFlight == nil then prevInFlight = inFlight end
+
+    local armEdge = (prevArmed == false and armedBool == true)
+    local disarmEdge = (prevArmed == true and armedBool == false)
+    local inflightEdge = (prevInFlight == false and inFlight == true)
+    local notInFlightEdge = (prevInFlight == true and inFlight == false)
+
+    lastInFlight = inFlight
+
     local stateChanged = (lastState.isArmed ~= armedBool) or (lastState.isAdmin ~= isAdmin)
     if stateChanged then
         rescheduleAll(isArmed, isAdmin, now)
         lastState.isArmed = armedBool
         lastState.isAdmin = isAdmin
+    end
+
+    -- Hook-trigger scheduling (optional per API)
+    if armEdge or disarmEdge or inflightEdge or notInFlightEdge then
+        for api_name, api_meta in pairs(msp_sensors) do
+            if (armEdge and api_meta.on_arm)
+                or (disarmEdge and api_meta.on_disarm)
+                or (inflightEdge and api_meta.on_inflight)
+                or (notInFlightEdge and api_meta.on_notinflight) then
+                next_due[api_name] = now
+            end
+        end
     end
 
     do
@@ -443,6 +479,8 @@ function msp.reset()
     lastModule = nil
     next_due = {}
     activeFields = {}
+    lastInFlight = nil
+    lastState = {isArmed = false, isAdmin = false}
 
     local now = msp.clock
     for api_name, _ in pairs(msp_sensors) do next_due[api_name] = now end
