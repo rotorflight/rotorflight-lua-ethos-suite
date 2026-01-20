@@ -24,4 +24,5 @@ return {
     { name = "sensorstats",       level = "low" },
     { name = "syncstats",         level = "low" },
     { name = "timer",             level = "low" },
+    { name = "rateprofile",       level = "low" },
 }
