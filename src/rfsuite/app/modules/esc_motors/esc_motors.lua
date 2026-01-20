@@ -9,6 +9,7 @@ local  S_PAGES ={
         [1] = { name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png" },
         [2] = { name = "@i18n(app.modules.esc_motors.telemetry)@", script = "telemetry.lua", image = "telemetry.png"},    
         [3] = { name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"},
+        [4] = { name = "@i18n(app.modules.esc_tools.name)@", script = "esc.lua", image = "esc.png" },
     }
 
 local enableWakeup = false
