@@ -422,7 +422,8 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
         local t3 = fmtRadioLinkType() 
 
         lcd.color(txt)
-        lcd.font(FONT_XXS)
+        local fontSize = opts.fontSize or FONT_XXS
+        lcd.font(fontSize)
 
         local _, th = lcd.getTextSize("Ay")
 
@@ -439,16 +440,14 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
 
     -- Bottom side: log lines
-    local fonts = dashboard.utils and dashboard.utils.getFontListsForResolution and dashboard.utils.getFontListsForResolution()
-    fonts = (fonts and fonts.value_default) or {FONT_S, FONT_XS, FONT_XXS}
     lcd.color(isDark
         and lcd.RGB(255, 255, 255, 1.0)
         or  lcd.RGB(0,   0,   0,   1.0)
     )
 
     -- Prefer the smaller fonts so we get more lines in the console area.
-    local chosenFont = fonts[#fonts] or FONT_XS
-    lcd.font(FONT_XS)
+    local fontSize = opts.fontSize or FONT_XXS
+    lcd.font(fontSize)
     local _, lineH = lcd.getTextSize("Ay")
     lineH = math.max(1, lineH)
 

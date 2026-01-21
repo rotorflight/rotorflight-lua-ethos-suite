@@ -76,9 +76,6 @@ dashboard.overlayMessage = nil
 
 dashboard.objectsByType = {}
 
-dashboard.loaderScale = 0.38
-dashboard.overlayScale = 0.38
-
 local darkModeState = lcd.darkMode()
 
 dashboard._moduleCache = dashboard._moduleCache or {}
@@ -86,7 +83,7 @@ dashboard._moduleCache = dashboard._moduleCache or {}
 dashboard._hg_cycles_required = 2
 dashboard._hg_cycles = 0
 
-dashboard._loader_min_duration = 1.5
+dashboard._loader_min_duration = 0
 dashboard._loader_start_time = nil
 
 dashboard._minPaintInterval = 0.12
@@ -257,7 +254,23 @@ function dashboard.overlaymessage(x, y, w, h, txt)
         end
     end
 
-    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg)
+    local opts = {}
+    if rfsuite.preferences.dashboard.theme_loader == 0 then
+        opts.panelWidthRatio = 0.5
+        opts.panelHeightRatio = 0.5   
+        opts.fontSize = FONT_XXS
+    elseif rfsuite.preferences.dashboard.theme_loader == 1 then
+        opts.panelWidthRatio = 0.7
+        opts.panelHeightRatio = 0.5
+        opts.fontSize = FONT_XS
+    elseif rfsuite.preferences.dashboard.theme_loader == 2 then
+        opts.panelWidthRatio = 0.9
+        opts.panelHeightRatio = 0.8       
+        opts.fontSize = FONT_S
+    end
+
+
+    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
 end
 
 
