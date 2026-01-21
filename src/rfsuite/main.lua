@@ -56,6 +56,7 @@ local userpref_defaults = {
         altitude_unit = 0
     },
     dashboard = {
+        theme_loader = 1,
         theme_preflight = "system/default",
         theme_inflight = "system/default",
         theme_postflight = "system/default"

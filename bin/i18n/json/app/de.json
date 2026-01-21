@@ -345,6 +345,26 @@
         "translation": "Einstellungen",
         "needs_translation": false
       },
+      "dashboard_loader": {
+        "english": "Loader",
+        "translation": "Loader",
+        "needs_translation": true
+      },
+      "loader_style_large_log": {
+        "english": "Large with Log",
+        "translation": "Large with Log",
+        "needs_translation": true
+      },
+      "loader_style_small_log": {
+        "english": "Small with Log",
+        "translation": "Small with Log",
+        "needs_translation": true
+      },
+      "dashboard_loader_loader_style_select": {
+        "english": "Loader Style",
+        "translation": "Loader Style",
+        "needs_translation": true
+      },
       "dashboard_theme_preflight": {
         "english": "Preflight Theme",
         "translation": "Vorflug-Design",

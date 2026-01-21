@@ -5,7 +5,11 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {[1] = {name = "@i18n(app.modules.settings.dashboard_theme)@", script = "dashboard_theme.lua", image = "dashboard_theme.png"}, [2] = {name = "@i18n(app.modules.settings.dashboard_settings)@", script = "dashboard_settings.lua", image = "dashboard_settings.png"}}
+local S_PAGES = {
+    [1] = {name = "@i18n(app.modules.settings.dashboard_theme)@", script = "dashboard_theme.lua", image = "dashboard_theme.png"}, 
+    [2] = {name = "@i18n(app.modules.settings.dashboard_loader)@", script = "dashboard_loader.lua", image = "dashboard_loader.png"}
+    [3] = {name = "@i18n(app.modules.settings.dashboard_settings)@", script = "dashboard_settings.lua", image = "dashboard_settings.png"},
+}
 
 local enableWakeup = false
 local prevConnectedState = nil

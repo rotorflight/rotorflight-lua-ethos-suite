@@ -5906,6 +5906,16 @@
           "needs_translation": false,
           "translation": "Panel"
         },
+        "dashboard_loader": {
+          "english": "Loader",
+          "needs_translation": true,
+          "translation": "Loader"
+        },
+        "dashboard_loader_loader_style_select": {
+          "english": "Loader Style",
+          "needs_translation": true,
+          "translation": "Loader Style"
+        },
         "dashboard_settings": {
           "english": "Settings",
           "needs_translation": false,
@@ -6020,6 +6030,16 @@
           "english": "Governor State",
           "needs_translation": false,
           "translation": "Estado del Governor"
+        },
+        "loader_style_large_log": {
+          "english": "Large with Log",
+          "needs_translation": true,
+          "translation": "Large with Log"
+        },
+        "loader_style_small_log": {
+          "english": "Small with Log",
+          "needs_translation": true,
+          "translation": "Small with Log"
         },
         "localizations": {
           "english": "Localization",
