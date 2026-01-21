@@ -12,6 +12,7 @@ local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local validSerialConfig = false
+local completedEnable = false
 
 local function openPage(pidx, title, script)
 
@@ -167,9 +168,12 @@ local function wakeup()
 
         end
     elseif enableWakeup == true and validSerialConfig == true then
-        for pidx = 0, 15 do
-            rfsuite.app.formFields[pidx]:enable(true)
-            if rfsuite.preferences.menulastselected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
+        if completedEnable == false then
+            for pidx = 0, 15 do
+                rfsuite.app.formFields[pidx]:enable(true)
+                if rfsuite.preferences.menulastselected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
+            end
+            completedEnable = true
         end
 
     end
