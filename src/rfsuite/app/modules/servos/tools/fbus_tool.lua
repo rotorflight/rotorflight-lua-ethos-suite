@@ -24,7 +24,7 @@ local minmax = {}
 minmax[0] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- none
 minmax[1] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- rx
 minmax[2] = {min = -1000, max = 1000, sourceMax = 24, defaultMin = -1000, defaultMax = 1000}        -- mixer
-minmax[3] = {min = 1000, max = 2000, sourceMax = servoCount, defaultMin = 1000, defaultMax = 2000}  -- servo
+minmax[3] = {min = 500, max = 2000, sourceMax = servoCount, defaultMin = 1000, defaultMax = 2000}   -- servo
 minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaultMax = 1000}        -- motor
 
 local enableWakeup = false
