@@ -5912,9 +5912,9 @@
           "translation": "Loader"
         },
         "dashboard_loader_loader_style_select": {
-          "english": "Loader Style",
+          "english": "Loader size",
           "needs_translation": true,
-          "translation": "Loader Style"
+          "translation": "Loader size"
         },
         "dashboard_settings": {
           "english": "Settings",
@@ -6031,15 +6031,20 @@
           "needs_translation": false,
           "translation": "Governor Status"
         },
-        "loader_style_large_log": {
-          "english": "Large with Log",
+        "loader_style_large": {
+          "english": "LARGE",
           "needs_translation": true,
-          "translation": "Large with Log"
+          "translation": "LARGE"
         },
-        "loader_style_small_log": {
-          "english": "Small with Log",
+        "loader_style_medium": {
+          "english": "MEDIUM",
           "needs_translation": true,
-          "translation": "Small with Log"
+          "translation": "MEDIUM"
+        },
+        "loader_style_small": {
+          "english": "SMALL",
+          "needs_translation": true,
+          "translation": "SMALL"
         },
         "localizations": {
           "english": "Localization",

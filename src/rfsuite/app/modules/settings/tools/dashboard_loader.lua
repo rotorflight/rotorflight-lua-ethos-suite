@@ -38,7 +38,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
             rfsuite.app.formLines[rfsuite.app.formLineCnt], 
             nil, 
-            {{"@i18n(app.modules.settings.loader_style_small_log)@", 1}, {"@i18n(app.modules.settings.loader_style_large_log)@", 2}}, 
+            {{"@i18n(app.modules.settings.loader_style_small)@", 0}, {"@i18n(app.modules.settings.loader_style_medium)@", 1}, {"@i18n(app.modules.settings.loader_style_large)@", 2}}, 
             function() 
                 return config.dashboard.theme_loader ~= nil and config.dashboard.theme_loader or 1 
             end, 
