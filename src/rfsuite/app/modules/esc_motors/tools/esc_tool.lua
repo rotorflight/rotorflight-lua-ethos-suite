@@ -54,7 +54,8 @@ local function getESCDetails()
     API.setCompleteHandler(function(self, buf)
 
         local signature = API.readValue("esc_signature")
-        if signature == mspSignature and #buf == mspBytes then
+
+        if signature == mspSignature and #buf >= mspBytes then
             escDetails.model = ESC.getEscModel(buf)
             escDetails.version = ESC.getEscVersion(buf)
             escDetails.firmware = ESC.getEscFirmware(buf)
@@ -63,7 +64,9 @@ local function getESCDetails()
 
             if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
 
-            if escDetails.model ~= nil then foundESC = true end
+            if escDetails.model ~= nil then 
+                foundESC = true 
+            end
         end
 
     end)
