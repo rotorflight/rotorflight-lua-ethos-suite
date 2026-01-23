@@ -7,10 +7,10 @@ local rfsuite = require("rfsuite")
 
 local tasks = {}
 
--- Queues preserve manifest order, per priority
-local tasksQueue = { high = {}, medium = {}, low = {} }
+-- Single ordered queue (manifest order)
+local tasksQueue = {}
 local tasksLoaded = false
-local activeLevel = nil
+local active = false
 
 local telemetryTypeChanged = false
 
@@ -28,7 +28,6 @@ local DISCONNECT_STABLE_SECONDS = 0.8
 
 local BASE_PATH = "tasks/scheduled/onconnect/tasks/"
 local MANIFEST_PATH = "tasks/scheduled/onconnect/manifest.lua"
-local PRIORITY_LEVELS = { "high", "medium", "low" }
 
 -- Track link transitions so we reset exactly once per connect/disconnect.
 local lastTelemetryActive = false
@@ -38,12 +37,12 @@ local linkUpSince = nil
 local linkDownSince = nil
 local linkStableUp = false
 
--- Level completion guard (per link session)
+-- Completion guard (per link session)
 local linkSessionToken = 0
-local lastCompletedLevelToken = nil
+local establishedToken = nil
 
--- Sequential indices per level
-local levelIndex = { high = 1, medium = 1, low = 1 }
+-- Sequential index
+local queueIndex = 1
 
 local function loadTaskModuleFromPath(fullPath)
     local chunk, err = loadfile(fullPath)
@@ -77,41 +76,29 @@ end
 
 local function resetSessionFlags()
     rfsuite.session = rfsuite.session or {}
-    rfsuite.session.onConnect = rfsuite.session.onConnect or {}
-
-    for _, level in ipairs(PRIORITY_LEVELS) do
-        rfsuite.session.onConnect[level] = false
-    end
-
-    rfsuite.session.isConnectedHigh = false
-    rfsuite.session.isConnectedMedium = false
-    rfsuite.session.isConnectedLow = false
     rfsuite.session.isConnected = false
 end
 
 local function resetQueuesAndState()
-    for _, level in ipairs(PRIORITY_LEVELS) do
-        local q = tasksQueue[level]
-        for i = 1, #q do
-            local task = q[i]
+    for i = 1, #tasksQueue do
+        local task = tasksQueue[i]
 
-            hardReloadTask(task)
+        hardReloadTask(task)
 
-            if task.module and type(task.module.reset) == "function" then
-                pcall(task.module.reset)
-            end
-
-            task.initialized = false
-            task.complete = false
-            task.failed = false
-            task.attempts = 0
-            task.nextEligibleAt = 0
-            task.startTime = nil
+        if task.module and type(task.module.reset) == "function" then
+            pcall(task.module.reset)
         end
 
-        levelIndex[level] = 1
+        task.initialized = false
+        task.complete = false
+        task.failed = false
+        task.attempts = 0
+        task.nextEligibleAt = 0
+        task.startTime = nil
     end
 
+    queueIndex = 1
+    establishedToken = nil
     resetSessionFlags()
 end
 
@@ -163,13 +150,9 @@ function tasks.findTasks()
 
     resetSessionFlags()
 
-    -- reset queues (in case of reload)
-    tasksQueue.high = {}
-    tasksQueue.medium = {}
-    tasksQueue.low = {}
-    levelIndex.high = 1
-    levelIndex.medium = 1
-    levelIndex.low = 1
+    -- reset queue (in case of reload)
+    tasksQueue = {}
+    queueIndex = 1
 
     local manifest = loadManifest()
     if not manifest then
@@ -177,20 +160,17 @@ function tasks.findTasks()
         return
     end
 
-    -- Load tasks in manifest order, into per-level queues.
+    -- Load tasks in manifest order into a single queue
     for _, entry in ipairs(manifest) do
-        local level = entry.level
-        local file = entry.name
-
-        if level and file and tasksQueue[level] then
+        local file = entry and entry.name
+        if file then
             local fullPath = BASE_PATH .. file .. ".lua"
             local module, err = loadTaskModuleFromPath(fullPath)
             if not module then
                 rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. (err or "?"), "info")
             else
-                tasksQueue[level][#tasksQueue[level] + 1] = {
+                tasksQueue[#tasksQueue + 1] = {
                     name = file,
-                    level = level,
                     module = module,
                     path = fullPath,
 
@@ -213,34 +193,25 @@ function tasks.resetAllTasks()
     resetQueuesAndState()
 end
 
-local function currentTaskForLevel(level)
-    local q = tasksQueue[level]
-    local idx = levelIndex[level] or 1
-    local task = q and q[idx]
-    return task, idx, q
+local function currentTask()
+    return tasksQueue[queueIndex], queueIndex
 end
 
-local function advancePastCompletedOrFailed(level)
-    local q = tasksQueue[level]
-    if not q then return end
-
-    local idx = levelIndex[level] or 1
-    while idx <= #q do
-        local t = q[idx]
+local function advancePastCompletedOrFailed()
+    local idx = queueIndex or 1
+    while idx <= #tasksQueue do
+        local t = tasksQueue[idx]
         if t and not t.complete and not t.failed then
             break
         end
         idx = idx + 1
     end
-    levelIndex[level] = idx
+    queueIndex = idx
 end
 
-local function isLevelDone(level)
-    advancePastCompletedOrFailed(level)
-    local q = tasksQueue[level]
-    local idx = levelIndex[level] or 1
-    if not q or idx > #q then return true end
-    return false
+local function isQueueDone()
+    advancePastCompletedOrFailed()
+    return (queueIndex or 1) > #tasksQueue
 end
 
 function tasks.wakeup()
@@ -262,7 +233,7 @@ function tasks.wakeup()
         if not linkStableUp and (now - linkUpSince) >= CONNECT_STABLE_SECONDS then
             linkStableUp = true
             linkSessionToken = linkSessionToken + 1
-            lastCompletedLevelToken = nil
+            establishedToken = nil
         end
     else
         linkUpSince = nil
@@ -274,6 +245,7 @@ function tasks.wakeup()
     end
 
     if not linkStableUp then
+        active = false
         if lastTelemetryActive then
             -- Hard reset on disconnect (ok to nuke MSP/sensors)
             resetQueuesAndState()
@@ -298,143 +270,126 @@ function tasks.wakeup()
         resetQueuesAndState()
     end
     lastTelemetryActive = true
+    active = true
 
     if not tasksLoaded then tasks.findTasks() end
 
-    -- Determine activeLevel based on session completion flags
-    activeLevel = nil
-    for _, level in ipairs(PRIORITY_LEVELS) do
-        if not rfsuite.session.onConnect[level] then
-            activeLevel = level
-            break
-        end
-    end
-    if not activeLevel then return end
+    -- If everything is complete, mark connected once per link session
+    if isQueueDone() then
+        local token = tostring(linkSessionToken)
+        if establishedToken ~= token then
+            establishedToken = token
 
-    -- If level already done, mark complete and return via normal completion path below
-    if isLevelDone(activeLevel) then
-        -- fall through to completion handling
-    else
-        -- Sequential execution: run ONLY the current task for this priority
-        local task = currentTaskForLevel(activeLevel)
-        if not task then
-            -- nothing to run
-        else
-            -- Skip if it’s waiting for retry backoff
-            if task.nextEligibleAt and task.nextEligibleAt > now then
-                return
-            end
-
-            if not task.initialized then
-                task.initialized = true
-                task.startTime = now
-            end
-
-            -- Call wakeup for this single task
-            rfsuite.utils.log("Waking up " .. task.level .. "/" .. task.name, "debug")
-
-            local ok, err = pcall(task.module.wakeup)
-            if not ok then
-                task.attempts = (task.attempts or 0) + 1
-                local backoff = RETRY_BACKOFF_SECONDS
-                task.nextEligibleAt = now + backoff
-                task.initialized = false
-                task.startTime = nil
-                rfsuite.utils.log("Task '" .. task.level .. "/" .. task.name .. "' errored: " .. tostring(err), "info")
-                rfsuite.utils.log("Task '" .. task.level .. "/" .. task.name .. "' errored: " .. tostring(err), "connect")
-                return
-            end
-
-            -- Completion check
-            if task.module.isComplete and task.module.isComplete() then
-                task.complete = true
-                task.startTime = nil
-                task.nextEligibleAt = 0
-                rfsuite.utils.log("Completed " .. task.level .. "/" .. task.name, "debug")
-
-                -- Advance to next task in this level (sequential)
-                levelIndex[activeLevel] = (levelIndex[activeLevel] or 1) + 1
-                advancePastCompletedOrFailed(activeLevel)
-            else
-                -- Timeout / retry logic for the currently active task ONLY
-                local timeout = DEFAULT_TASK_TIMEOUT_SECONDS
-                if type(task.module.timeoutSeconds) == "number" and task.module.timeoutSeconds > 0 then
-                    timeout = task.module.timeoutSeconds
-                end
-
-                if task.startTime and (now - task.startTime) > timeout then
-                    task.attempts = (task.attempts or 0) + 1
-
-                    if task.attempts <= MAX_RETRIES then
-                        local backoff = RETRY_BACKOFF_SECONDS * (2 ^ (task.attempts - 1))
-                        task.nextEligibleAt = now + backoff
-                        task.initialized = false
-                        task.startTime = nil
-                        rfsuite.utils.log(
-                            string.format("Task '%s/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
-                                task.level, task.name, task.attempts, MAX_RETRIES, backoff),
-                            "info"
-                        )
-                        rfsuite.utils.log(
-                            string.format("Task '%s/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
-                                task.level, task.name, task.attempts, MAX_RETRIES, backoff),
-                            "connect"
-                        )
-                    else
-                        task.failed = true
-                        task.startTime = nil
-                        rfsuite.utils.log(
-                            string.format("Task '%s/%s' failed after %d attempts. Skipping.",
-                                task.level, task.name, MAX_RETRIES),
-                            "info"
-                        )
-                        rfsuite.utils.log(
-                            string.format("Task '%s/%s' failed after %d attempts. Skipping.",
-                                task.level, task.name, MAX_RETRIES),
-                            "connect"
-                        )
-
-                        -- Skip to next task when a task fully fails
-                        levelIndex[activeLevel] = (levelIndex[activeLevel] or 1) + 1
-                        advancePastCompletedOrFailed(activeLevel)
-                    end
-                end
-
-                -- Not complete yet: we wait here (sequential model)
-                return
-            end
-        end
-    end
-
-    -- Level completion handling
-    if isLevelDone(activeLevel) then
-        local token = tostring(linkSessionToken) .. ":" .. tostring(activeLevel)
-        if lastCompletedLevelToken == token then
-            return
-        end
-        lastCompletedLevelToken = token
-
-        rfsuite.session.onConnect[activeLevel] = true
-        rfsuite.utils.log("All [" .. activeLevel .. "] tasks complete.", "info")
-
-        if activeLevel == "high" then
+            -- Keep behavior: move to preflight once we have core link + api sanity.
             rfsuite.flightmode.current = "preflight"
             if rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.flightmode
                 and type(rfsuite.tasks.events.flightmode.reset) == "function"
             then
                 rfsuite.tasks.events.flightmode.reset()
             end
-            rfsuite.session.isConnectedHigh = true
-            return
-        elseif activeLevel == "medium" then
-            rfsuite.session.isConnectedMedium = true
-            return
-        elseif activeLevel == "low" then
-            rfsuite.session.isConnectedLow = true
+
             rfsuite.session.isConnected = true
             rfsuite.utils.log("Connection [established].", "info")
             rfsuite.utils.log("Connection [established].", "connect")
-            return
+        end
+        return
+    end
+
+    -- Sequential execution: run ONLY the current task in the queue
+    local task = currentTask()
+    if not task then
+        return
+    end
+
+    -- Skip if it’s waiting for retry backoff
+    if task.nextEligibleAt and task.nextEligibleAt > now then
+        return
+    end
+
+    if not task.initialized then
+        task.initialized = true
+        task.startTime = now
+    end
+
+    -- Call wakeup for this single task
+    rfsuite.utils.log("Waking up onconnect/" .. task.name, "debug")
+
+    local ok, err = pcall(task.module.wakeup)
+    if not ok then
+        task.attempts = (task.attempts or 0) + 1
+        local backoff = RETRY_BACKOFF_SECONDS
+        task.nextEligibleAt = now + backoff
+        task.initialized = false
+        task.startTime = nil
+        rfsuite.utils.log("Task 'onconnect/" .. task.name .. "' errored: " .. tostring(err), "info")
+        rfsuite.utils.log("Task 'onconnect/" .. task.name .. "' errored: " .. tostring(err), "connect")
+        return
+    end
+
+    -- Completion check
+    if task.module.isComplete and task.module.isComplete() then
+        task.complete = true
+        task.startTime = nil
+        task.nextEligibleAt = 0
+        rfsuite.utils.log("Completed onconnect/" .. task.name, "debug")
+
+        -- Special-case: as soon as API version is known, it's safe to switch preflight logic.
+        if task.name == "apiversion" then
+            rfsuite.flightmode.current = "preflight"
+            if rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.flightmode
+                and type(rfsuite.tasks.events.flightmode.reset) == "function"
+            then
+                rfsuite.tasks.events.flightmode.reset()
+            end
+        end
+
+        -- Advance to next task (sequential)
+        queueIndex = (queueIndex or 1) + 1
+        advancePastCompletedOrFailed()
+        return
+    end
+
+    -- Timeout / retry logic for the currently active task ONLY
+    local timeout = DEFAULT_TASK_TIMEOUT_SECONDS
+    if type(task.module.timeoutSeconds) == "number" and task.module.timeoutSeconds > 0 then
+        timeout = task.module.timeoutSeconds
+    end
+
+    if task.startTime and (now - task.startTime) > timeout then
+        task.attempts = (task.attempts or 0) + 1
+
+        if task.attempts <= MAX_RETRIES then
+            local backoff = RETRY_BACKOFF_SECONDS * (2 ^ (task.attempts - 1))
+            task.nextEligibleAt = now + backoff
+            task.initialized = false
+            task.startTime = nil
+            rfsuite.utils.log(
+                string.format("Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
+                    task.name, task.attempts, MAX_RETRIES, backoff),
+                "info"
+            )
+            rfsuite.utils.log(
+                string.format("Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
+                    task.name, task.attempts, MAX_RETRIES, backoff),
+                "connect"
+            )
+        else
+            task.failed = true
+            task.startTime = nil
+            rfsuite.utils.log(
+                string.format("Task 'onconnect/%s' failed after %d attempts. Skipping.",
+                    task.name, MAX_RETRIES),
+                "info"
+            )
+            rfsuite.utils.log(
+                string.format("Task 'onconnect/%s' failed after %d attempts. Skipping.",
+                    task.name, MAX_RETRIES),
+                "connect"
+            )
+
+            -- Skip to next task when a task fully fails
+            queueIndex = (queueIndex or 1) + 1
+            advancePastCompletedOrFailed()
         end
     end
 end
@@ -445,7 +400,7 @@ function tasks.setTelemetryTypeChanged()
 end
 
 function tasks.active()
-    return activeLevel ~= nil
+    return active
 end
 
 return tasks
