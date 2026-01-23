@@ -81,16 +81,16 @@ Modules leverage the `app.Page.apidata` object to generate forms and interact wi
 
 ### Integration with MSP Tasks
 
-* Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/msp/api` loader to fetch parsed data structures and buffer states.
+* Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/scheduled/msp/api` loader to fetch parsed data structures and buffer states.
 * For custom behavior, modules can invoke `rfsuite.tasks.msp.api.scheduleWakeup()` to schedule periodic reads or writes.
 
-## 3. MSP API Documentation (`rfsuite/tasks/msp/api`)
+## 3. MSP API Documentation (`rfsuite/tasks/scheduled/msp/api`)
 
 This section describes the MSP API loader and its capabilities for parsing and interacting with MultiWii Serial Protocol data.
 
 ### API Loader (`api.lua`)
 
-* **Base Directory**: API definitions reside in `tasks/msp/api/` and are versioned based on the Ethos firmware version.
+* **Base Directory**: API definitions reside in `tasks/scheduled/msp/api/` and are versioned based on the Ethos firmware version.
 * **File Caching**: `_fileExistsCache` optimizes repeated file-existence checks.
 
 #### Key Functions
