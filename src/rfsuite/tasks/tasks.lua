@@ -7,6 +7,28 @@ local rfsuite = require("rfsuite")
 
 local utils = rfsuite.utils
 
+
+-- Event-driven onconnect handler (moved out of scheduled tasks)
+local onconnect
+local function getOnconnect()
+    if onconnect then return onconnect end
+
+    local fn, err = loadfile("tasks/events/onconnect/tasks.lua")
+    if not fn then
+        utils.log("[tasks] onconnect tasks.lua missing: " .. tostring(err), "error")
+        return nil
+    end
+
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then
+        onconnect = mod
+        return onconnect
+    end
+
+    utils.log("[tasks] onconnect tasks.lua did not return a table", "error")
+    return nil
+end
+
 local currentTelemetrySensor
 local tasksPerCycle
 local taskSchedulerPercentage
@@ -189,6 +211,12 @@ end
 
 local function clearSessionAndQueue()
     tasks.setTelemetryTypeChanged()
+    local oc = getOnconnect()
+    if oc then
+        if type(oc.setTelemetryTypeChanged) == "function" then pcall(oc.setTelemetryTypeChanged) end
+        if type(oc.resetAllTasks) == "function" then pcall(oc.resetAllTasks) end
+    end
+
     utils.session()
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
@@ -238,6 +266,8 @@ function tasks.telemetryCheckScheduler()
         end
     end
 
+    local haveSensor = false
+
     if currentSensor then
         rfsuite.session.telemetryState = true
         rfsuite.session.telemetrySensor = currentSensor
@@ -255,8 +285,10 @@ function tasks.telemetryCheckScheduler()
             end
         end
 
-        return
+        haveSensor = (currentSensor ~= nil)
     end
+
+    if not haveSensor then
 
     if not internalModule or not externalModule then
         internalModule = model.getModule(0)
@@ -287,12 +319,25 @@ function tasks.telemetryCheckScheduler()
     rfsuite.session.telemetryType = currentTelemetryType
     rfsuite.session.telemetryModuleNumber = currentModuleNumber
 
+    end
+
     if currentTelemetryType ~= lastTelemetryType then
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
         rfsuite.utils.log("Telem. type changed to " .. tostring(currentTelemetryType), "connect")
         tasks.setTelemetryTypeChanged()
         lastTelemetryType = currentTelemetryType
         clearSessionAndQueue()
+    end
+
+    -- Run onconnect event handler only when needed (link-up and not yet established)
+    local oc = getOnconnect()
+    if oc and type(oc.wakeup) == "function" then
+        local needsRun = (not rfsuite.session.isConnected)
+        if not needsRun and type(oc.active) == "function" then needsRun = oc.active() end
+        if needsRun then
+            local ok, err = pcall(oc.wakeup)
+            if not ok then print("[ERROR][onconnect.wakeup]", err) end
+        end
     end
 
 end

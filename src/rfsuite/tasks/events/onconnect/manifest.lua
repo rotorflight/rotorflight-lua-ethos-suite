@@ -11,12 +11,14 @@ return {
     { name = "clocksync" },
     { name = "fcversion" },
     { name = "uid" },
+
     { name = "modelpreferences" },
     { name = "servos" },
     { name = "tailmode" },
     { name = "rxmap" },
     { name = "governor" },
     { name = "telemetryconfig" },
+
     { name = "battery" },
     { name = "craftname" },
     { name = "sensorstats" },
