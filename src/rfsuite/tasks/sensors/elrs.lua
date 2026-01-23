@@ -133,7 +133,11 @@ local sidLookup = {
     [104] = {'0xDB04'},
     [105] = {'0xDB05'},
     [106] = {'0xDB06'},
-    [107] = {'0xDB07'}
+    [107] = {'0xDB07'},
+    [110] = {'0x1160'},
+    [111] = {'0x1161'},
+    [112] = {'0x1162'},
+    [113] = {'0x1163'},
 }
 
 elrs._relevantSig = nil
@@ -538,6 +542,11 @@ local sensorsList = {
     [0x1213] = {name = "LED Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
 
     [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decAdjFunc},
+
+    [0x1160] = {name = "Vibration", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU16},
+    [0x1161] = {name = "Vibration Roll", unit = UNIT_RAW, prec = 0, min = 0, max = 4000, dec = decU16},
+    [0x1162] = {name = "Vibration Pitch", unit = UNIT_RAW, prec = 0, min = 0, max = 4000, dec = decU16},
+    [0x1163] = {name = "Vibration Yaw", unit = UNIT_RAW, prec = 0, min = 0, max = 4000, dec = decU16},
 
     [0xDB00] = {name = "Debug 0", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
     [0xDB01] = {name = "Debug 1", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
