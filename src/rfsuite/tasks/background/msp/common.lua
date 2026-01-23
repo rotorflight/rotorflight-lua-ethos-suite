@@ -21,8 +21,6 @@ local mspRxBuf      = {}             -- Incoming payload buffer
 local mspRxError    = false          -- Error flag from remote
 local mspRxSize     = 0              -- Expected RX payload size
 local mspRxCRC      = 0              -- Accumulated CRC for V1
-local mspRxNeedCRC = false           -- Waiting for trailing V1 CRC byte (may arrive in next frame)
-local mspRxCRCByte  = nil            -- Captured trailing V1 CRC byte
 local mspRxReq      = 0              -- Command ID of reply
 local mspStarted    = false          -- True when in middle of multi‑frame RX
 local mspLastReq    = 0              -- Command ID we last sent
@@ -170,8 +168,6 @@ local function _receivedReply(payload)
         -- Start of new frame
         mspRxBuf = {}
         mspRxError = (status & 0x80) ~= 0
-        mspRxNeedCRC = false
-        mspRxCRCByte = nil
 
         if _mspVersion == 2 then
             -- Parse V2 header
@@ -216,25 +212,6 @@ local function _receivedReply(payload)
         idx = idx + 1
     end
 
-    -- If we already have the full V1 payload, we may still be waiting for the trailing CRC byte.
-    -- That CRC can arrive as the first data byte in the next continuation frame.
-    if _mspVersion == 1 and mspRxNeedCRC then
-        local rxCRC = payload[idx]
-        if rxCRC == nil then
-            mspRemoteSeq = seq
-            return false
-        end
-        mspRxCRCByte = rxCRC
-        if mspRxCRC ~= mspRxCRCByte and versionBits == 0 then
-            mspStarted = false
-            mspRxNeedCRC = false
-            return nil
-        end
-        mspStarted = false
-        mspRxNeedCRC = false
-        return true
-    end
-
     -- Not complete yet
     local needMore = (#mspRxBuf < mspRxSize)
     if needMore then
@@ -242,22 +219,13 @@ local function _receivedReply(payload)
         return false
     end
 
-    -- V1 CRC check: the trailing CRC byte may not be present in this same transport frame
-    if _mspVersion == 1 then
-        local rxCRC = payload[idx]
-        if rxCRC == nil then
-            -- Payload complete, but CRC byte is in the next continuation frame
-            mspRxNeedCRC = true
-            mspRemoteSeq = seq
-            return false
-        end
-        mspRxCRCByte = rxCRC
-        if mspRxCRC ~= mspRxCRCByte and versionBits == 0 then return nil end
-    end
-
     mspStarted = false
 
-    mspRxNeedCRC = false
+    -- V1 CRC check
+    if _mspVersion == 1 then
+        local rxCRC = payload[idx] or 0
+        if mspRxCRC ~= rxCRC and versionBits == 0 then return nil end
+    end
 
     return true
 end
