@@ -29,6 +29,7 @@ local lastInFlight = nil
  *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
  *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
  *     on_arm: <boolean>                -- Optional: trigger once when armed edge happens
+ *     on_connect: <boolean>            -- Optional: trigger once when link is established
  *     on_disarm: <boolean>             -- Optional: trigger once when disarm edge happens
  *     on_inflight: <boolean>           -- Optional: trigger once when inflight edge happens
  *     on_notinflight: <boolean>        -- Optional: trigger once when leaving inflight
@@ -88,7 +89,8 @@ local msp_sensors = {
     DATAFLASH_SUMMARY = {
         interval_armed = -1,      -- disable periodic polling
         interval_disarmed = -1,   -- disable periodic polling
-        on_disarm = true,         -- fire once when disarming     
+        on_disarm = true,         -- fire once when disarming  
+        on_connect = true,        -- fire once when link is established   
         fields = {
             flags = {
                 sensorname = "BBL Flags",
@@ -192,7 +194,11 @@ local FORCE_REFRESH_INTERVAL = 2.5
 
 local next_due = {}
 local activeFields = {}
-local lastState = {isArmed = false, isAdmin = false}
+local lastState = {
+    isArmed = false,
+    isAdmin = false,
+    isConnected = false
+}
 
 local function isInFlightNow()
     return (rfsuite.flightmode and rfsuite.flightmode.current == "inflight") and true or false
@@ -395,6 +401,9 @@ function msp.wakeup()
     local isArmed = armSource:value()
     local isAdmin = rfsuite.app.guiIsRunning
 
+    local isConnected = rfsuite.session.isConnected == true
+
+
     local armedBool = (isArmed == 1 or isArmed == 3)
     local inFlight = isInFlightNow()
 
@@ -407,6 +416,9 @@ function msp.wakeup()
     local disarmEdge = (prevArmed == true and armedBool == false)
     local inflightEdge = (prevInFlight == false and inFlight == true)
     local notInFlightEdge = (prevInFlight == true and inFlight == false)
+    local connectEdge = (lastState.isConnected == false and isConnected == true)
+
+    lastState.isConnected = isConnected
 
     lastInFlight = inFlight
 
@@ -418,9 +430,10 @@ function msp.wakeup()
     end
 
     -- Hook-trigger scheduling (optional per API)
-    if armEdge or disarmEdge or inflightEdge or notInFlightEdge then
+    if armEdge or disarmEdge or inflightEdge or notInFlightEdge or connectEdge then
         for api_name, api_meta in pairs(msp_sensors) do
-            if (armEdge and api_meta.on_arm)
+            if (connectEdge and api_meta.on_connect)
+                or (armEdge and api_meta.on_arm)
                 or (disarmEdge and api_meta.on_disarm)
                 or (inflightEdge and api_meta.on_inflight)
                 or (notInFlightEdge and api_meta.on_notinflight) then
@@ -480,7 +493,11 @@ function msp.reset()
     next_due = {}
     activeFields = {}
     lastInFlight = nil
-    lastState = {isArmed = false, isAdmin = false}
+    lastState = {
+        isArmed = false,
+        isAdmin = false,
+        isConnected = false
+    }
 
     local now = msp.clock
     for api_name, _ in pairs(msp_sensors) do next_due[api_name] = now end
