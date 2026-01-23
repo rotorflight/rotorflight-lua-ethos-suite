@@ -26,8 +26,8 @@ local lastTypeChangeAt = 0
 local CONNECT_STABLE_SECONDS = 0.6
 local DISCONNECT_STABLE_SECONDS = 0.8
 
-local BASE_PATH = "tasks/events/onconnect/tasks/"
-local MANIFEST_PATH = "tasks/events/onconnect/manifest.lua"
+local BASE_PATH = "tasks/onconnect/tasks/"
+local MANIFEST_PATH = "tasks/onconnect/manifest.lua"
 
 -- Track link transitions so we reset exactly once per connect/disconnect.
 local lastTelemetryActive = false

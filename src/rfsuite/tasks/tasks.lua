@@ -12,7 +12,7 @@ local onconnect
 local function getOnconnect()
     if onconnect then return onconnect end
 
-    local fn, err = loadfile("tasks/events/onconnect/tasks.lua")
+    local fn, err = loadfile("tasks/onconnect/tasks.lua")
     if not fn then
         utils.log("[tasks] onconnect tasks.lua missing: " .. tostring(err), "error")
         return nil
