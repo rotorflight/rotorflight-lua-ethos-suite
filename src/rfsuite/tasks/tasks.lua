@@ -136,7 +136,7 @@ function tasks.dumpSchedule()
 end
 
 function tasks.initialize()
-    local manifestPath = "tasks/manifest.lua"
+    local manifestPath = "tasks/scheduled/manifest.lua"
     local fn, err = loadfile(manifestPath)
     if not fn then
         utils.log("[tasks] manifest.lua missing: " .. tostring(err), "error")
@@ -170,7 +170,7 @@ function tasks.initialize()
 end
 
 function tasks.findTasks()
-    local manifestPath = "tasks/manifest.lua"
+    local manifestPath = "tasks/scheduled/manifest.lua"
 
     local fn, err = loadfile(manifestPath)
     if not fn then
