@@ -275,17 +275,12 @@ end
 
 
 local function computeObjectSchedulerPercentage(count)
-    if count <= 10 then
-        return 0.8
-    elseif count <= 15 then
-        return 0.7
-    elseif count <= 25 then
-        return 0.6
-    elseif count <= 40 then
+    if count >= 15 then
         return 0.5
-    else
-        return 0.4
-    end
+    end        
+
+    return 1.0
+    
 end
 
 function dashboard.loadObjectType(box)
