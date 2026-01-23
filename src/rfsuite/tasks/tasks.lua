@@ -7,7 +7,6 @@ local rfsuite = require("rfsuite")
 
 local utils = rfsuite.utils
 
-
 -- Event-driven onconnect handler (moved out of scheduled tasks)
 local onconnect
 local function getOnconnect()
@@ -221,6 +220,18 @@ local function clearSessionAndQueue()
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
 
+    -- IMPORTANT: when switching telemetry transport (S.Port <-> CRSF/ELRS),
+    -- onconnect can start immediately (event-driven), so we must force MSP
+    -- to re-bind its transport right now (not later when the scheduled MSP
+    -- task next runs).
+    local msp = rfsuite.tasks and rfsuite.tasks.msp
+    if msp then
+        if type(msp.setTelemetryTypeChanged) == "function" then pcall(msp.setTelemetryTypeChanged) end
+        if type(msp.reset) == "function" then pcall(msp.reset) end
+        -- If we already have a sensor/type, wakeup will re-bind transports immediately.
+        if type(msp.wakeup) == "function" then pcall(msp.wakeup) end
+    end
+
     internalModule = nil
     externalModule = nil
     currentSensor = nil
@@ -282,6 +293,7 @@ function tasks.telemetryCheckScheduler()
                 utils.log("Telem. sensor changed to " .. tostring(currentSensor:name()), "connect")
                 lastSensorName = currentSensor:name()
                 currentSensor = nil
+                clearSessionAndQueue()  
             end
         end
 
@@ -290,34 +302,34 @@ function tasks.telemetryCheckScheduler()
 
     if not haveSensor then
 
-    if not internalModule or not externalModule then
-        internalModule = model.getModule(0)
-        externalModule = model.getModule(1)
-    end
-
-    if internalModule and internalModule:enable() then
-        currentSensor = system.getSource(SRC_SPORT)
-        currentModuleId = internalModule
-        currentModuleNumber = 0
-        currentTelemetryType = "sport"
-    elseif externalModule and externalModule:enable() then
-        currentSensor = system.getSource(SRC_CRSF)
-        currentModuleId = externalModule
-        currentTelemetryType = "crsf"
-        currentModuleNumber = 1
-        if not currentSensor then
-            currentSensor = system.getSource(SRC_SPORT)
-            currentTelemetryType = "sport"
+        if not internalModule or not externalModule then
+            internalModule = model.getModule(0)
+            externalModule = model.getModule(1)
         end
-    end
 
-    if not currentSensor then return clearSessionAndQueue() end
+        if internalModule and internalModule:enable() then
+            currentSensor = system.getSource(SRC_SPORT)
+            currentModuleId = internalModule
+            currentModuleNumber = 0
+            currentTelemetryType = "sport"
+        elseif externalModule and externalModule:enable() then
+            currentSensor = system.getSource(SRC_CRSF)
+            currentModuleId = externalModule
+            currentTelemetryType = "crsf"
+            currentModuleNumber = 1
+            if not currentSensor then
+                currentSensor = system.getSource(SRC_SPORT)
+                currentTelemetryType = "sport"
+            end
+        end
 
-    rfsuite.session.telemetryState = true
-    rfsuite.session.telemetrySensor = currentSensor
-    rfsuite.session.telemetryModule = currentModuleId
-    rfsuite.session.telemetryType = currentTelemetryType
-    rfsuite.session.telemetryModuleNumber = currentModuleNumber
+        if not currentSensor then return clearSessionAndQueue() end
+
+        rfsuite.session.telemetryState = true
+        rfsuite.session.telemetrySensor = currentSensor
+        rfsuite.session.telemetryModule = currentModuleId
+        rfsuite.session.telemetryType = currentTelemetryType
+        rfsuite.session.telemetryModuleNumber = currentModuleNumber
 
     end
 
@@ -723,7 +735,7 @@ function tasks.load(name, meta)
     end
 
     utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
-    utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "connect")
+    utils.log(string.format("[scheduler] Loaded task [%s]", name), "connect")
     return true
 end
 
