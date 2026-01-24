@@ -61,7 +61,7 @@ local function mainMenuIconEnableDisable()
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
-        elseif not rfsuite.session.isConnected then
+        elseif not rfsuite.session.postConnectComplete then
             for i, v in pairs(app.formFieldsOffline) do
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
@@ -80,7 +80,7 @@ local function mainMenuIconEnableDisable()
             end
         end
     elseif not app.isOfflinePage and not app.triggers.escPowerCycleLoader then
-        if not rfsuite.session.isConnected then
+        if not rfsuite.session.postConnectComplete then
             log("Entering Offline Mode", "info")
             app.ui.openMainMenu()
         end

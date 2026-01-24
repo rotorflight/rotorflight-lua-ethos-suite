@@ -5,24 +5,18 @@
 
 -- On-connect tasks now run strictly in the order listed below.
 -- Keep critical/fast tasks at the top (e.g. API version, clock sync).
+--
+-- NOTE: heavier, non-critical reads have been moved to tasks/postconnect so we can
+--       set rfsuite.session.isConnected sooner and close the loader earlier.
 
 return {
     { name = "apiversion" },
-    { name = "clocksync" },
     { name = "fcversion" },
     { name = "uid" },
-
     { name = "modelpreferences" },
-    { name = "servos" },
-    { name = "tailmode" },
-    { name = "rxmap" },
-    { name = "governor" },
-    { name = "telemetryconfig" },
-
-    { name = "battery" },
-    { name = "craftname" },
     { name = "sensorstats" },
-    { name = "syncstats" },
     { name = "timer" },
-    { name = "rateprofile" },
+    { name = "rateprofile" },     
+    { name = "telemetryconfig" }, 
+    { name = "battery" },        
 }

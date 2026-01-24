@@ -53,6 +53,10 @@ function telemetryconfig.reset()
     mspCallMade = false
 end
 
-function telemetryconfig.isComplete() if rfsuite.session.telemetryConfig ~= nil then return true end end
+function telemetryconfig.isComplete() 
+    if rfsuite.session.telemetryConfig ~= nil then 
+        return true 
+    end 
+end
 
 return telemetryconfig

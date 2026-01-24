@@ -28,6 +28,27 @@ local function getOnconnect()
     return nil
 end
 
+-- Event-driven postconnect handler (runs once AFTER rfsuite.session.isConnected becomes true)
+local postconnect
+local function getPostconnect()
+    if postconnect then return postconnect end
+
+    local fn, err = loadfile("tasks/postconnect/tasks.lua")
+    if not fn then
+        utils.log("[tasks] postconnect tasks.lua missing: " .. tostring(err), "error")
+        return nil
+    end
+
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then
+        postconnect = mod
+        return postconnect
+    end
+
+    utils.log("[tasks] postconnect tasks.lua did not return a table", "error")
+    return nil
+end
+
 local currentTelemetrySensor
 local tasksPerCycle
 local taskSchedulerPercentage
@@ -220,6 +241,15 @@ local function clearSessionAndQueue()
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
 
+    -- Reset postconnect so it can run again on next successful connection.
+    local pc = getPostconnect()
+    if pc then
+        if type(pc.reset) == "function" then pcall(pc.reset) end
+    end
+    if rfsuite.session then
+        rfsuite.session.postConnectComplete = false
+    end
+
     -- IMPORTANT: when switching telemetry transport (S.Port <-> CRSF/ELRS),
     -- onconnect can start immediately (event-driven), so we must force MSP
     -- to re-bind its transport right now (not later when the scheduled MSP
@@ -349,6 +379,18 @@ function tasks.telemetryCheckScheduler()
         if needsRun then
             local ok, err = pcall(oc.wakeup)
             if not ok then print("[ERROR][onconnect.wakeup]", err) end
+        end
+    end
+
+    -- Run postconnect handler once AFTER we have declared the connection established.
+    -- This lets us close the loader early and fetch non-critical data in the background.
+    local pc = getPostconnect()
+    if pc and type(pc.wakeup) == "function" then
+        local needsRun = (rfsuite.session.isConnected == true)
+        if not needsRun and type(pc.active) == "function" then needsRun = pc.active() end
+        if needsRun then
+            local ok, err = pcall(pc.wakeup)
+            if not ok then print("[ERROR][postconnect.wakeup]", err) end
         end
     end
 

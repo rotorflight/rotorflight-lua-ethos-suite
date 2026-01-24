@@ -36,6 +36,7 @@ function utils.session()
         mcu_id = nil,
 
         isConnected = false,
+        postConnectComplete = false,
         isArmed = false,
 
         telemetryState = nil,
