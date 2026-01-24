@@ -474,4 +474,141 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     end
 end
 
+-- A lightweight, mostly-static loader for screen transitions.
+-- Keeps the same panel sizing + styling as logsLoader, but avoids rendering
+-- the right-side version column and the console/log area.
+function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
+    opts = opts or {}
+
+    -- Panel size (mirrors logsLoader defaults)
+    local panelW = math.floor(w * (opts.panelWidthRatio or 0.7))
+    local panelH = math.floor(h * (opts.panelHeightRatio or 0.6))
+    local panelX = math.floor(x + (w - panelW) / 2 + 0.5)
+    local panelY = math.floor(y + (h - panelH) / 2 + 0.5)
+
+    -- Prevent 1px clipping at the edges due to rounding
+    panelX = math.max(x + 1, math.min(panelX, x + w - panelW - 1))
+    panelY = math.max(y + 1, math.min(panelY, y + h - panelH - 1))
+
+    local borderW = opts.borderW or math.max(4, math.floor(math.min(panelW, panelH) * 0.06))
+    local cornerR = opts.cornerR or math.floor(math.min(panelW, panelH) * 0.14)
+
+    local isDark = lcd.darkMode()
+    local outer = isDark
+        and lcd.RGB(255, 255, 255, 1.0)
+        or  lcd.GREY(64, 1.0)
+    local inner = isDark
+        and lcd.RGB(0,   0,   0,   1.0)
+        or  lcd.RGB(128, 128, 128, 1.0)
+
+    -- Outer frame
+    lcd.color(outer)
+    drawFilledRoundRect(panelX, panelY, panelW, panelH, cornerR)
+
+    -- Inner fill
+    local innerX = panelX + borderW
+    local innerY = panelY + borderW
+    local innerW = panelW - 2 * borderW
+    local innerH = panelH - 2 * borderW
+    if innerW > 0 and innerH > 0 then
+        lcd.color(inner)
+        drawFilledRoundRect(innerX, innerY, innerW, innerH, math.max(0, cornerR - borderW))
+    end
+
+    local pad = math.max(6, math.floor(panelH * 0.10))
+    local contentX = innerX + pad
+    local contentY = innerY + pad
+    local contentW = innerW - 2 * pad
+    local contentH = innerH - 2 * pad
+    if contentW <= 1 or contentH <= 1 then return end
+
+    -- Split: logo (top), message (bottom)
+    local splitGap = math.max(6, math.floor(contentH * (opts.splitGapRatio or 0.06)))
+    local logoH = math.floor(contentH * (opts.logoHeightRatio or 0.60))
+    logoH = math.max(1, math.min(logoH, contentH - splitGap - 1))
+    local msgH = contentH - logoH - splitGap
+
+    local logoX = contentX
+    local logoY = contentY
+    local logoW = contentW
+
+    local msgX = contentX
+    local msgY = contentY + logoH + splitGap
+    local msgW = contentW
+
+    -- Draw logo (same asset as logsLoader)
+    do
+        local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
+        local bmp = rfsuite.utils.loadImage(imageName)
+
+        local cx = logoX + logoW * 0.5
+        local cy = logoY + logoH * 0.5
+
+        if bmp then
+            local okW, bw = pcall(function() return bmp:width() end)
+            local okH, bh = pcall(function() return bmp:height() end)
+            if okW and okH and type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
+                local padX = math.floor(logoW * (opts.logoPadXRatio or 0.10))
+                local padY = math.floor(logoH * (opts.logoPadYRatio or 0.20))
+                local boxW = math.max(1, logoW - 2 * padX)
+                local boxH = math.max(1, logoH - 2 * padY)
+
+                local scale = math.min(boxW / bw, boxH / bh) * (opts.logoScale or 1.0)
+                local drawW = math.max(1, math.floor(bw * scale))
+                local drawH = math.max(1, math.floor(bh * scale))
+
+                lcd.drawBitmap(
+                    math.floor(cx - drawW / 2),
+                    math.floor(cy - drawH / 2),
+                    bmp,
+                    drawW,
+                    drawH
+                )
+            else
+                drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40)
+            end
+        else
+            drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40)
+        end
+    end
+
+    -- Message area
+    do
+        local fg = isDark and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0)
+        lcd.color(fg)
+
+        -- Provide a tiny bit of life without needing real log lines.
+        -- (4-state dot animation, but still "static" enough.)
+        local msg = message
+        if (not msg or msg == "") and dashboard then
+            msg = dashboard._overlay_text or dashboard.overlayMessage or "@i18n(app.msg_loading)@"
+        end
+        msg = tostring(msg or "@i18n(app.msg_loading)@")
+
+        if opts.animateDots ~= false then
+            local phase = math.floor((os.clock() * (opts.dotRate or 1.4)) % 4)
+            msg = msg .. string.rep(".", phase)
+        end
+
+        local fonts = opts.fonts
+        if not fonts and dashboard and dashboard.utils and type(dashboard.utils.getFontListsForResolution) == "function" then
+            fonts = dashboard.utils.getFontListsForResolution().value_default
+        end
+        fonts = fonts or {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
+
+        local padY = math.max(2, math.floor(msgH * 0.10))
+        local textH = math.max(1, msgH - 2 * padY)
+
+        local lines, chosenFont, lineH = getWrappedTextLines(msg, fonts, msgW, textH)
+        lcd.font(chosenFont)
+
+        local totalH = #lines * lineH
+        local baseY = msgY + math.floor((msgH - totalH) / 2)
+        for i, line in ipairs(lines) do
+            local tw = lcd.getTextSize(line)
+            lcd.drawText(msgX + math.floor((msgW - tw) / 2), baseY + (i - 1) * lineH, line)
+        end
+    end
+end
+
 return loaders

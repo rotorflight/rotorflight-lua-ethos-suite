@@ -209,7 +209,7 @@ end
 
 function dashboard.loader(x, y, w, h, txt)
 
-    dashboard.overlaymessage(x, y, w, h, txt) 
+    dashboard.overlaystatic(x, y, w, h, txt)
 
     _queueInvalidateRect(x, y, w, h)
     _flushInvalidatesRespectingBudget()
@@ -221,6 +221,34 @@ local function forceInvalidateAllObjects()
         if obj and obj.dirty and obj.dirty(rect.box) then _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h) end
     end
     _flushInvalidatesRespectingBudget()
+end
+
+function dashboard.overlaystatic(x, y, w, h, txt)
+    local msg = txt
+    if not msg or msg == "" then
+        msg = dashboard.computeOverlayMessage() or "@i18n(app.msg_loading)@"
+    end
+
+    local opts = {}
+    if rfsuite.preferences.dashboard.theme_loader == 0 then
+        opts.panelWidthRatio = 0.5
+        opts.panelHeightRatio = 0.5
+        opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+    elseif rfsuite.preferences.dashboard.theme_loader == 1 then
+        opts.panelWidthRatio = 0.7
+        opts.panelHeightRatio = 0.5
+        opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+    elseif rfsuite.preferences.dashboard.theme_loader == 2 then
+        opts.panelWidthRatio = 0.9
+        opts.panelHeightRatio = 0.8
+        opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+    end
+
+    -- This loader is intended to be "static". Keep the subtle dots by default
+    -- (it costs almost nothing), but allow callers to disable.
+    opts.animateDots = true
+
+    dashboard.loaders.staticLoader(dashboard, x, y, w, h, msg, opts)
 end
 
 function dashboard.overlaymessage(x, y, w, h, txt)
