@@ -194,31 +194,20 @@ local function register_bg_task()
     })
 end
 
-local function load_widget_cache(cachePath)
-    local loadf, loadErr = loadfile(cachePath)
-    if not loadf then
-        rfsuite.utils.log("[cache] loadfile failed: " .. tostring(loadErr), "info")
-        return nil
-    end
-    local ok, cached = pcall(loadf)
-    if not ok then
-        rfsuite.utils.log("[cache] execution failed: " .. tostring(cached), "info")
-        return nil
-    end
-    if type(cached) ~= "table" then
-        rfsuite.utils.log("[cache] unexpected content; rebuilding", "info")
-        return nil
-    end
-    rfsuite.utils.log("[cache] Loaded widget list from cache", "info")
-    return cached
-end
+local function register_widgets()
 
-local function build_widget_cache(widgetList, cacheFile)
-    rfsuite.utils.createCacheFile(widgetList, cacheFile, true)
-    rfsuite.utils.log("[cache] Created new widgets cache file", "info")
-end
+    local manifestPath = "widgets/manifest.lua"
+    local chunk, err = loadfile(manifestPath)
+    local widgetList = {}
+    if chunk then
+        local ok, res = pcall(chunk)
+        if ok and type(res) == "table" then
+            widgetList = res
+        else
+            rfsuite.utils.log("[widgets] manifest execution failed;", "info")
+        end
+    end
 
-local function register_widgets(widgetList)
     rfsuite.widgets = {}
     local dupCount = {}
 
@@ -254,18 +243,11 @@ local function init()
         register_main_tool()
     end
 
+    -- register background task
     register_bg_task()
 
-    local cacheFile = "widgets.lua"
-    local cachePath = "cache/" .. cacheFile
-    local widgetList = load_widget_cache(cachePath)
-
-    if not widgetList then
-        widgetList = rfsuite.utils.findWidgets()
-        build_widget_cache(widgetList, cacheFile)
-    end
-
-    register_widgets(widgetList)
+    -- register widgets
+    register_widgets()
 end
 
 return {init = init}

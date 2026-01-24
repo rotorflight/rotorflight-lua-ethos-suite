@@ -177,47 +177,6 @@ function utils.getGovernorState(value)
     return returnvalue
 end
 
-function utils.createCacheFile(tbl, path, options)
-    os.mkdir("cache")
-
-    path = "cache/" .. path
-
-    local f, err = io.open(path, "w")
-    if not f then
-        rfsuite.utils.log("Error creating cache file: " .. err, "info")
-        return
-    end
-
-    local function serialize(value, indent)
-        indent = indent or ""
-        local t = type(value)
-
-        if t == "string" then
-            return string.format("%q", value)
-        elseif t == "number" or t == "boolean" then
-            return tostring(value)
-        elseif t == "table" then
-            local result = "{\n"
-            for k, v in pairs(value) do
-                local keyStr
-                if type(k) == "string" and k:match("^%a[%w_]*$") then
-                    keyStr = k .. " = "
-                else
-                    keyStr = "[" .. serialize(k) .. "] = "
-                end
-                result = result .. indent .. "  " .. keyStr .. serialize(v, indent .. "  ") .. ",\n"
-            end
-            result = result .. indent .. "}"
-            return result
-        else
-            error("Cannot serialize type: " .. t)
-        end
-    end
-
-    f:write("return ", serialize(tbl), "\n")
-    f:close()
-end
-
 local directoryExistenceCache = {}
 local fileExistenceCache = {}
 
@@ -390,35 +349,6 @@ function utils.findModules()
     end
 
     return modulesList
-end
-
-function utils.findWidgets()
-    local widgetsList = {}
-    local widgetdir = "widgets/"
-    local widgets_path = widgetdir
-
-    for _, v in pairs(system.listFiles(widgets_path)) do
-        if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
-            local init_path = widgets_path .. v .. '/init.lua'
-
-            local func, err = loadfile(init_path)
-            if not func then
-                rfsuite.utils.log("Failed to load widget init " .. init_path .. ": " .. err, "debug")
-            else
-                local ok, wconfig = pcall(func)
-                if not ok then
-                    rfsuite.utils.log("Error executing widget init " .. init_path .. ": " .. wconfig, "debug")
-                elseif type(wconfig) ~= "table" or not wconfig.key then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
-                else
-                    wconfig.folder = v
-                    table.insert(widgetsList, wconfig)
-                end
-            end
-        end
-    end
-
-    return widgetsList
 end
 
 utils._imagePathCache = {}
