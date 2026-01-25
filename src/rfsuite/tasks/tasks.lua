@@ -90,6 +90,14 @@ local lastModelPath = model.path()
 local lastModelPathCheckAt = 0
 local PATH_CHECK_INTERVAL = 2.0
 
+-- Connection watchdog:
+-- If we have telemetry/link but cannot reach rfsuite.session.isConnected within a deadline,
+-- force a teardown + retry to avoid MSP/queue deadlock.
+local connectAttemptStartedAt = nil
+local connectAttemptResetCooldownUntil = 0
+local CONNECT_WATCHDOG_TIMEOUT_S = 20.0
+local CONNECT_WATCHDOG_COOLDOWN_S = 3.0
+
 local lastNameCheckAt = 0
 local NAME_CHECK_INTERVAL = 2.0
 
@@ -237,6 +245,9 @@ local function clearSessionAndQueue()
         if type(oc.resetAllTasks) == "function" then pcall(oc.resetAllTasks) end
     end
 
+    -- Reset watchdog state as we are tearing down the connection attempt.
+    connectAttemptStartedAt = nil    
+
     utils.session()
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
@@ -287,6 +298,8 @@ function tasks.telemetryCheckScheduler()
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
     if not telemetryState then
+        -- Link is down; clear attempt timer and teardown state.
+        connectAttemptStartedAt = nil        
         if not rfsuite.session.isConnected then
             if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
                 lastCheckAt = now
@@ -295,6 +308,34 @@ function tasks.telemetryCheckScheduler()
         end
         return clearSessionAndQueue()
     end
+
+    -- Link is up. Start (or continue) a connect attempt timer until isConnected becomes true.
+    -- If we exceed the deadline, teardown and retry.
+    if not rfsuite.session.isConnected then
+        if not connectAttemptStartedAt then
+            connectAttemptStartedAt = now
+        else
+            if now >= (connectAttemptResetCooldownUntil or 0) then
+                local elapsed = now - connectAttemptStartedAt
+                if elapsed >= CONNECT_WATCHDOG_TIMEOUT_S then
+                    utils.log(string.format(
+                        "[watchdog] Connect attempt exceeded %.0fs (%.1fs) without isConnected; tearing down and retrying",
+                        CONNECT_WATCHDOG_TIMEOUT_S, elapsed
+                    ), "error")
+                    utils.log("[watchdog] Resetting session/queues due to stalled connect", "connect")
+
+                    -- Prevent rapid-fire resets if we remain in a bad state.
+                    connectAttemptResetCooldownUntil = now + CONNECT_WATCHDOG_COOLDOWN_S
+
+                    return clearSessionAndQueue()
+                end
+            end
+        end
+    else
+        -- Connected OK: clear connect watchdog state.
+        connectAttemptStartedAt = nil
+    end
+ 
 
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
         lastModelPathCheckAt = now
@@ -672,6 +713,9 @@ function tasks.init()
 
     tasks.heartbeat = nil
     tasks._justInitialized = false
+
+    connectAttemptStartedAt = nil
+    connectAttemptResetCooldownUntil = 0
 
     tasksList = {}
     tasksListNonSpread = {}
