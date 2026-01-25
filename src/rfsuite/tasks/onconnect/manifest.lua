@@ -17,6 +17,5 @@ return {
     { name = "sensorstats" },
     { name = "timer" },
     { name = "rateprofile" },     
-    { name = "telemetryconfig" }, 
     { name = "battery" },        
 }

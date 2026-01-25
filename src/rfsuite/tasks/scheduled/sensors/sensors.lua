@@ -18,6 +18,9 @@ local schedulerTick = 0
 
 local msp = assert(loadfile("tasks/scheduled/sensors/msp.lua"))(config)
 local smart = assert(loadfile("tasks/scheduled/sensors/smart.lua"))(config)
+local telemetryconfig = assert(loadfile("tasks/scheduled/sensors/lib/telemetryconfig.lua"))(config)
+
+
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
 
@@ -45,6 +48,13 @@ end
 function sensors.wakeup()
 
     if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
+
+    -- Ensure telemetry config is complete before proceeding
+    -- This is a one time msp call on startup to get telemetry config data
+    if not telemetryconfig.isComplete() then
+        telemetryconfig.wakeup()
+        return
+    end
 
     schedulerTick = schedulerTick + 1
 
@@ -91,6 +101,7 @@ function sensors.reset()
     if loadedSensorModule and loadedSensorModule.module and loadedSensorModule.module.reset then loadedSensorModule.module.reset() end
     if smart and smart.reset then smart.reset() end
     if msp and msp.reset then msp.reset() end
+    if telemetryconfig and telemetryconfig.reset then telemetryconfig.reset() end
     loadedSensorModule = nil
 
 end
