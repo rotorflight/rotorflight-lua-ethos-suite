@@ -16,6 +16,5 @@ return {
     { name = "modelpreferences" },
     { name = "sensorstats" },
     { name = "timer" },
-    { name = "rateprofile" },     
-    { name = "battery" },        
+    { name = "rateprofile" },         
 }
