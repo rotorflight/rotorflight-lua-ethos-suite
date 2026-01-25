@@ -10,6 +10,7 @@
 --       set rfsuite.session.isConnected sooner and close the loader earlier.
 
 return {
+    { name = "flightmode" },  
     { name = "apiversion" },
     { name = "fcversion" },
     { name = "uid" },
