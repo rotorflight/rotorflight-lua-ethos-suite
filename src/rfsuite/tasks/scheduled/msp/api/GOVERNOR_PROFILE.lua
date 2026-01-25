@@ -22,10 +22,13 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
     }
 
     local governor_flags_bitmap = {
-        { field = "fallback_precomp",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.fallback_precomp)@" },
-        { field = "voltage_comp",            table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.voltage_comp)@" },
-        { field = "pid_spoolup",             table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.pid_spoolup)@" },
-        { field = "dyn_min_throttle",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.dyn_min_throttle)@" },
+        { field = "bit0_spare" }, -- bit 0
+        { field = "bit1_spare" }, -- bit 1
+        { field = "fallback_precomp",   table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.fallback_precomp)@" }, -- bit 2
+        { field = "voltage_comp",       table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.voltage_comp)@" },     -- bit 3
+        { field = "pid_spoolup",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.pid_spoolup)@" },      -- bit 4
+        { field = "bit5_spare" }, -- bit 5
+        { field = "dyn_min_throttle",   table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.dyn_min_throttle)@" }, -- bit 6
     }
 
     MSP_API_STRUCTURE_READ_DATA = {
