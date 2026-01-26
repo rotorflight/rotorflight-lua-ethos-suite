@@ -193,7 +193,7 @@ local sensorTable = {
 
     temp_esc = {
         name = "@i18n(sensors.esc_temp)@",
-        mandatory = false,
+        mandatory = true,
         stats = true,
         set_telemetry_sensors = 23,
         switch_alerts = true,
