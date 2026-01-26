@@ -12,7 +12,7 @@ local onconnect
 local function getOnconnect()
     if onconnect then return onconnect end
 
-    local fn, err = loadfile("tasks/onconnect/tasks.lua")
+    local fn, err = loadfile("tasks/events/onconnect/tasks.lua")
     if not fn then
         utils.log("[tasks] onconnect tasks.lua missing: " .. tostring(err), "error")
         return nil
@@ -33,7 +33,7 @@ local postconnect
 local function getPostconnect()
     if postconnect then return postconnect end
 
-    local fn, err = loadfile("tasks/postconnect/tasks.lua")
+    local fn, err = loadfile("tasks/events/postconnect/tasks.lua")
     if not fn then
         utils.log("[tasks] postconnect tasks.lua missing: " .. tostring(err), "error")
         return nil
@@ -55,7 +55,7 @@ local ondisconnect
 local function getOndisconnect()
     if ondisconnect then return ondisconnect end
 
-    local fn, err = loadfile("tasks/ondisconnect/tasks.lua")
+    local fn, err = loadfile("tasks/events/ondisconnect/tasks.lua")
     if not fn then
         -- Optional module (framework). Missing is non-fatal.
         return nil
@@ -75,7 +75,7 @@ end
 local onflightmode
 local function getOnflightmode()
     if onflightmode then return onflightmode end
-    local fn = loadfile("tasks/onflightmode/tasks.lua")
+    local fn = loadfile("tasks/events/onflightmode/tasks.lua")
     if not fn then return nil end
     local ok, mod = pcall(fn)
     if ok and type(mod) == "table" then onflightmode = mod; return onflightmode end
@@ -85,7 +85,7 @@ end
 local onmodelchange
 local function getOnmodelchange()
     if onmodelchange then return onmodelchange end
-    local fn = loadfile("tasks/onmodelchange/tasks.lua")
+    local fn = loadfile("tasks/events/onmodelchange/tasks.lua")
     if not fn then return nil end
     local ok, mod = pcall(fn)
     if ok and type(mod) == "table" then onmodelchange = mod; return onmodelchange end
@@ -95,7 +95,7 @@ end
 local onarm
 local function getOnarm()
     if onarm then return onarm end
-    local fn = loadfile("tasks/onarm/tasks.lua")
+    local fn = loadfile("tasks/events/onarm/tasks.lua")
     if not fn then return nil end
     local ok, mod = pcall(fn)
     if ok and type(mod) == "table" then onarm = mod; return onarm end
@@ -105,7 +105,7 @@ end
 local ondisarm
 local function getOndisarm()
     if ondisarm then return ondisarm end
-    local fn = loadfile("tasks/ondisarm/tasks.lua")
+    local fn = loadfile("tasks/events/ondisarm/tasks.lua")
     if not fn then return nil end
     local ok, mod = pcall(fn)
     if ok and type(mod) == "table" then ondisarm = mod; return ondisarm end
@@ -115,7 +115,7 @@ end
 local ontransportchange
 local function getOntransportchange()
     if ontransportchange then return ontransportchange end
-    local fn = loadfile("tasks/ontransportchange/tasks.lua")
+    local fn = loadfile("tasks/events/ontransportchange/tasks.lua")
     if not fn then return nil end
     local ok, mod = pcall(fn)
     if ok and type(mod) == "table" then ontransportchange = mod; return ontransportchange end
@@ -263,7 +263,7 @@ function tasks.dumpSchedule()
 end
 
 function tasks.initialize()
-    local manifestPath = "tasks/scheduled/manifest.lua"
+    local manifestPath = "tasks/scheduler/manifest.lua"
     local fn, err = loadfile(manifestPath)
     if not fn then
         utils.log("[tasks] manifest.lua missing: " .. tostring(err), "error")
@@ -297,7 +297,7 @@ function tasks.initialize()
 end
 
 function tasks.findTasks()
-    local manifestPath = "tasks/scheduled/manifest.lua"
+    local manifestPath = "tasks/scheduler/manifest.lua"
 
     local fn, err = loadfile(manifestPath)
     if not fn then
