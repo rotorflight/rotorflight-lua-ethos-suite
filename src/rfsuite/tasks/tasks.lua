@@ -49,6 +49,29 @@ local function getPostconnect()
     return nil
 end
 
+
+
+-- Event-driven ondisconnect handler (edge-triggered; framework only for now)
+local ondisconnect
+local function getOndisconnect()
+    if ondisconnect then return ondisconnect end
+
+    local fn, err = loadfile("tasks/ondisconnect/tasks.lua")
+    if not fn then
+        -- Optional module; keep quiet unless present.
+        return nil
+    end
+
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then
+        ondisconnect = mod
+        return ondisconnect
+    end
+
+    utils.log("[tasks] ondisconnect tasks.lua did not return a table", "error")
+    return nil
+end
+
 local currentTelemetrySensor
 local tasksPerCycle
 local taskSchedulerPercentage
@@ -245,6 +268,11 @@ local function clearSessionAndQueue()
         if type(oc.resetAllTasks) == "function" then pcall(oc.resetAllTasks) end
     end
 
+    local od = getOndisconnect()
+    if od then
+        if type(od.resetAllTasks) == "function" then pcall(od.resetAllTasks) end
+    end
+
     -- Reset watchdog state as we are tearing down the connection attempt.
     connectAttemptStartedAt = nil    
 
@@ -297,6 +325,13 @@ function tasks.telemetryCheckScheduler()
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
+    -- Allow optional ondisconnect hook to observe link state (edge-driven).
+    local od = getOndisconnect()
+    if od and type(od.updateLinkState) == "function" then
+        pcall(od.updateLinkState, telemetryState, now)
+    end
+
+
     if not telemetryState then
         -- Link is down; clear attempt timer and teardown state.
         connectAttemptStartedAt = nil        
@@ -305,6 +340,10 @@ function tasks.telemetryCheckScheduler()
                 lastCheckAt = now
                 utils.log("Waiting for connection", "connect")
             end
+        end
+        if od and type(od.wakeup) == "function" then
+            -- Fire once on a stable disconnect edge (module handles latching).
+            pcall(od.wakeup)
         end
         return clearSessionAndQueue()
     end
