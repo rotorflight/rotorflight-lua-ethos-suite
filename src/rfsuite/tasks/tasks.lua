@@ -50,15 +50,14 @@ local function getPostconnect()
 end
 
 
-
--- Event-driven ondisconnect handler (edge-triggered; framework only for now)
+-- Event-driven ondisconnect handler (edge-triggered when the telemetry/link drops)
 local ondisconnect
 local function getOndisconnect()
     if ondisconnect then return ondisconnect end
 
     local fn, err = loadfile("tasks/ondisconnect/tasks.lua")
     if not fn then
-        -- Optional module; keep quiet unless present.
+        -- Optional module (framework). Missing is non-fatal.
         return nil
     end
 
@@ -69,6 +68,57 @@ local function getOndisconnect()
     end
 
     utils.log("[tasks] ondisconnect tasks.lua did not return a table", "error")
+    return nil
+end
+
+-- Additional event hooks (framework-only until manifests are populated)
+local onflightmode
+local function getOnflightmode()
+    if onflightmode then return onflightmode end
+    local fn = loadfile("tasks/onflightmode/tasks.lua")
+    if not fn then return nil end
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then onflightmode = mod; return onflightmode end
+    return nil
+end
+
+local onmodelchange
+local function getOnmodelchange()
+    if onmodelchange then return onmodelchange end
+    local fn = loadfile("tasks/onmodelchange/tasks.lua")
+    if not fn then return nil end
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then onmodelchange = mod; return onmodelchange end
+    return nil
+end
+
+local onarm
+local function getOnarm()
+    if onarm then return onarm end
+    local fn = loadfile("tasks/onarm/tasks.lua")
+    if not fn then return nil end
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then onarm = mod; return onarm end
+    return nil
+end
+
+local ondisarm
+local function getOndisarm()
+    if ondisarm then return ondisarm end
+    local fn = loadfile("tasks/ondisarm/tasks.lua")
+    if not fn then return nil end
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then ondisarm = mod; return ondisarm end
+    return nil
+end
+
+local ontransportchange
+local function getOntransportchange()
+    if ontransportchange then return ontransportchange end
+    local fn = loadfile("tasks/ontransportchange/tasks.lua")
+    if not fn then return nil end
+    local ok, mod = pcall(fn)
+    if ok and type(mod) == "table" then ontransportchange = mod; return ontransportchange end
     return nil
 end
 
@@ -108,6 +158,10 @@ local telemetryCheckScheduler = os.clock
 
 local lastCheckAt
 local lastTelemetryType
+
+-- Hook edge caches
+local lastArmedState = false
+local lastFlightModeValue = nil
 
 local lastModelPath = model.path()
 local lastModelPathCheckAt = 0
@@ -268,10 +322,39 @@ local function clearSessionAndQueue()
         if type(oc.resetAllTasks) == "function" then pcall(oc.resetAllTasks) end
     end
 
-    local od = getOndisconnect()
-    if od then
-        if type(od.resetAllTasks) == "function" then pcall(od.resetAllTasks) end
-    end
+local od = getOndisconnect()
+if od then
+    if type(od.resetAllTasks) == "function" then pcall(od.resetAllTasks) end
+end
+
+local ofm = getOnflightmode()
+if ofm then
+    if type(ofm.resetAllTasks) == "function" then pcall(ofm.resetAllTasks) end
+end
+
+local omc = getOnmodelchange()
+if omc then
+    if type(omc.resetAllTasks) == "function" then pcall(omc.resetAllTasks) end
+end
+
+local oa = getOnarm()
+if oa then
+    if type(oa.resetAllTasks) == "function" then pcall(oa.resetAllTasks) end
+end
+
+local oda = getOndisarm()
+if oda then
+    if type(oda.resetAllTasks) == "function" then pcall(oda.resetAllTasks) end
+end
+
+local otc = getOntransportchange()
+if otc then
+    if type(otc.resetAllTasks) == "function" then pcall(otc.resetAllTasks) end
+end
+
+-- Reset edge caches
+lastArmedState = false
+lastFlightModeValue = nil
 
     -- Reset watchdog state as we are tearing down the connection attempt.
     connectAttemptStartedAt = nil    
@@ -325,13 +408,6 @@ function tasks.telemetryCheckScheduler()
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
-    -- Allow optional ondisconnect hook to observe link state (edge-driven).
-    local od = getOndisconnect()
-    if od and type(od.updateLinkState) == "function" then
-        pcall(od.updateLinkState, telemetryState, now)
-    end
-
-
     if not telemetryState then
         -- Link is down; clear attempt timer and teardown state.
         connectAttemptStartedAt = nil        
@@ -341,12 +417,13 @@ function tasks.telemetryCheckScheduler()
                 utils.log("Waiting for connection", "connect")
             end
         end
-        if od and type(od.wakeup) == "function" then
-            -- Fire once on a stable disconnect edge (module handles latching).
-            pcall(od.wakeup)
-        end
-        return clearSessionAndQueue()
+    local od = getOndisconnect()
+    if od and type(od.fire) == "function" then
+        utils.log("[event] ondisconnect", "info")
+        pcall(function() od.fire({ reason = "telemetry_down", at = now }) end)
     end
+    return clearSessionAndQueue()
+end
 
     -- Link is up. Start (or continue) a connect attempt timer until isConnected becomes true.
     -- If we exceed the deadline, teardown and retry.
@@ -380,8 +457,16 @@ function tasks.telemetryCheckScheduler()
         lastModelPathCheckAt = now
         local newModelPath = model.path()
         if newModelPath ~= lastModelPath then
+            local oldModelPath = lastModelPath
             utils.log("Model changed, resetting session", "info")
             utils.log("Model changed, resetting session", "connect")
+            utils.log("[event] onmodelchange", "info")
+
+            local omc = getOnmodelchange()
+            if omc and type(omc.fire) == "function" then
+                pcall(function() omc.fire({ old = oldModelPath, new = newModelPath, at = now }) end)
+            end
+
             lastModelPath = newModelPath
             clearSessionAndQueue()
         end
@@ -444,8 +529,16 @@ function tasks.telemetryCheckScheduler()
     end
 
     if currentTelemetryType ~= lastTelemetryType then
+        local oldTelemetryType = lastTelemetryType
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
         rfsuite.utils.log("Telem. type changed to " .. tostring(currentTelemetryType), "connect")
+        utils.log("[event] ontransportchange", "info")
+
+        local otc = getOntransportchange()
+        if otc and type(otc.fire) == "function" then
+            pcall(function() otc.fire({ old = oldTelemetryType, new = currentTelemetryType, at = now }) end)
+        end
+
         tasks.setTelemetryTypeChanged()
         lastTelemetryType = currentTelemetryType
         clearSessionAndQueue()
@@ -682,6 +775,62 @@ function tasks.wakeup()
             if ok then loopCpu = loopCpu + (cpuOrErr or 0) else print("[ERROR][runSpreadTasks]", cpuOrErr) end
         end
     end
+
+-- ------------------------------------------------------------
+-- Event hooks (edge-driven)
+-- ------------------------------------------------------------
+do
+    -- Arm/disarm edges
+    local armedNow = (rfsuite.session and rfsuite.session.isArmed) and true or false
+    if armedNow ~= lastArmedState then
+        if armedNow then
+            utils.log("[event] onarm", "info")
+            local oa = getOnarm()
+            if oa and type(oa.fire) == "function" then
+                pcall(function() oa.fire({ at = now }) end)
+            end
+        else
+            utils.log("[event] ondisarm", "info")
+            local oda = getOndisarm()
+            if oda and type(oda.fire) == "function" then
+                pcall(function() oda.fire({ at = now }) end)
+            end
+        end
+        lastArmedState = armedNow
+    end
+
+    -- Flightmode change edges
+    local fmNow = rfsuite.flightmode and rfsuite.flightmode.current or nil
+    if fmNow ~= lastFlightModeValue and rfsuite.session.isConnected then
+        utils.log("[event] onflightmode", "info")
+        if lastFlightModeValue ~= nil then
+            local ofm = getOnflightmode()
+            if ofm and type(ofm.fire) == "function" then
+                pcall(function() ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now }) end)
+            end
+        end
+        lastFlightModeValue = fmNow
+    end
+
+    -- Allow hook modules (if present) to run their own task queues (currently empty)
+    local ofm = getOnflightmode()
+    if ofm and type(ofm.wakeup) == "function" then pcall(ofm.wakeup) end
+
+    local oa = getOnarm()
+    if oa and type(oa.wakeup) == "function" then pcall(oa.wakeup) end
+
+    local oda = getOndisarm()
+    if oda and type(oda.wakeup) == "function" then pcall(oda.wakeup) end
+
+    local omc = getOnmodelchange()
+    if omc and type(omc.wakeup) == "function" then pcall(omc.wakeup) end
+
+    local otc = getOntransportchange()
+    if otc and type(otc.wakeup) == "function" then pcall(otc.wakeup) end
+
+    local od = getOndisconnect()
+    if od and type(od.wakeup) == "function" then pcall(od.wakeup) end
+end
 
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
