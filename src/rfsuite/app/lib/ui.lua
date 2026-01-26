@@ -378,7 +378,7 @@ function ui.openMainMenu()
                 end
             })
 
-            if pvalue.disabled then app.formFields[pidx]:enable(false) end
+            app.formFields[pidx]:enable(false)
 
             if preferences.menulastselected["mainmenu"] == pidx then app.formFields[pidx]:focus() end
 

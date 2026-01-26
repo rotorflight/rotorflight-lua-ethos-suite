@@ -8,9 +8,6 @@
 
 return {
     { name = "clocksync" },  
-    { name = "servos" },
-    { name = "tailmode" },
-    { name = "governor" },
     { name = "craftname" },
     { name = "rxmap" },    
     { name = "syncstats" },    
