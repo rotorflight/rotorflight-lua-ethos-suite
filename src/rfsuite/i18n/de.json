@@ -6196,11 +6196,6 @@
           "needs_translation": false,
           "translation": "Entwicklung"
         },
-        "txt_devtools": {
-          "english": "Developer Tools",
-          "needs_translation": false,
-          "translation": "Entwickler-Werkzeuge"
-        },
         "txt_general": {
           "english": "General",
           "needs_translation": false,

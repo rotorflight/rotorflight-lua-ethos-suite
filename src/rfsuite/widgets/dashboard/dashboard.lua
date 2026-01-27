@@ -1354,10 +1354,8 @@ function dashboard.listThemes()
                     if chunk then
                         local ok, initTable = pcall(chunk)
                         if ok and initTable and type(initTable.name) == "string" then
-                            if not initTable.developer or rfsuite.preferences.developer.devtools == true then
-                                num = num + 1
-                                themes[num] = {name = initTable.name, configure = initTable.configure, folder = folder, idx = num, source = sourceType}
-                            end
+                            num = num + 1
+                            themes[num] = {name = initTable.name, configure = initTable.configure, folder = folder, idx = num, source = sourceType}
                         end
                     end
                 end

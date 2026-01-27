@@ -220,11 +220,6 @@
         "translation": "CLOSE AT 100%",
         "needs_translation": true
       },
-      "txt_devtools": {
-        "english": "Developer Tools",
-        "translation": "Entwickler-Werkzeuge",
-        "needs_translation": false
-      },
       "txt_apiversion": {
         "english": "SIM API Version",
         "translation": "SIM API Version",

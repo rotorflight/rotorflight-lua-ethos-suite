@@ -78,8 +78,6 @@ local userpref_defaults = {
     },
     switches = {},
     developer = {
-        compile = true,
-        devtools = false,
         loglevel = "off",
         logmsp = false,
         logobjprof = false,
