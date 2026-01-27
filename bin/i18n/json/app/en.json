@@ -361,8 +361,8 @@
         "needs_translation": false
       },
       "dashboard_loader_loader_style_select": {
-        "english": "Loader size",
-        "translation": "Loader size",
+        "english": "Theme loader style",
+        "translation": "Theme loader style",
         "needs_translation": false
       },
       "dashboard_theme_preflight": {

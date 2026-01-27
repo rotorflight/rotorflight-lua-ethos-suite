@@ -44,6 +44,23 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.dashboard_loader_loader_style_select)@")
+    local themeLoaderStyleChoices = {
+        {"@i18n(app.modules.settings.loader_style_small)@", 0},
+        {"@i18n(app.modules.settings.loader_style_medium)@", 1},
+        {"@i18n(app.modules.settings.loader_style_large)@", 2}
+    }
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
+        rfsuite.app.formLines[rfsuite.app.formLineCnt],
+        nil,
+        themeLoaderStyleChoices,
+        function() return config.theme_loader ~= nil and config.theme_loader or 1 end,
+        function(newValue) config.theme_loader = newValue end
+    )
+
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_syncname)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
 

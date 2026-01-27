@@ -5912,9 +5912,9 @@
           "translation": "Loader"
         },
         "dashboard_loader_loader_style_select": {
-          "english": "Loader size",
+          "english": "Theme loader style",
           "needs_translation": false,
-          "translation": "Loader size"
+          "translation": "Theme loader style"
         },
         "dashboard_settings": {
           "english": "Settings",
