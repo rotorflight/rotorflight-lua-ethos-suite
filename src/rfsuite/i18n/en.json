@@ -2284,6 +2284,98 @@
       },
       "esc_tools": {
         "mfg": {
+          "am32": {
+            "advanced": {
+              "english": "Advanced",
+              "needs_translation": false,
+              "translation": "Advanced"
+            },
+            "basic": {
+              "english": "Basic",
+              "needs_translation": false,
+              "translation": "Basic"
+            },
+            "bidirectionalmode": {
+              "english": "Bidirectional Mode",
+              "needs_translation": false,
+              "translation": "Bidirectional Mode"
+            },
+            "brakeonstop": {
+              "english": "Brake on Stop",
+              "needs_translation": false,
+              "translation": "Brake on Stop"
+            },
+            "brakestrength": {
+              "english": "Brake Strength",
+              "needs_translation": false,
+              "translation": "Brake Strength"
+            },
+            "complementary_pwm": {
+              "english": "Complementary PWM",
+              "needs_translation": false,
+              "translation": "Complementary PWM"
+            },
+            "direction": {
+              "english": "Direction",
+              "needs_translation": false,
+              "translation": "Direction"
+            },
+            "motorkv": {
+              "english": "Motor KV",
+              "needs_translation": false,
+              "translation": "Motor KV"
+            },
+            "motorpoles": {
+              "english": "Motor Poles",
+              "needs_translation": false,
+              "translation": "Motor Poles"
+            },
+            "name": {
+              "english": "AM32",
+              "needs_translation": false,
+              "translation": "AM32"
+            },
+            "protocol": {
+              "english": "Protocol",
+              "needs_translation": false,
+              "translation": "Protocol"
+            },
+            "runningbrake": {
+              "english": "Running Brake",
+              "needs_translation": false,
+              "translation": "Running Brake"
+            },
+            "sinemoderange": {
+              "english": "Sine Mode Range",
+              "needs_translation": false,
+              "translation": "Sine Mode Range"
+            },
+            "sinepowermode": {
+              "english": "Sine Power Mode",
+              "needs_translation": false,
+              "translation": "Sine Power Mode"
+            },
+            "sinusoidalstartup": {
+              "english": "Sinusoidal Startup",
+              "needs_translation": false,
+              "translation": "Sinusoidal Startup"
+            },
+            "startuppower": {
+              "english": "Startup Power",
+              "needs_translation": false,
+              "translation": "Startup Power"
+            },
+            "stuckrotorprotection": {
+              "english": "Stuck Rotor Protection",
+              "needs_translation": false,
+              "translation": "Stuck Rotor Protection"
+            },
+            "timing": {
+              "english": "Timing",
+              "needs_translation": false,
+              "translation": "Timing"
+            }
+          },
           "flrtr": {
             "active_freewheel": {
               "english": "Active Freewheeling",
