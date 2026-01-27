@@ -179,24 +179,36 @@ local function onNavMenu()
 end
 
 local function onSaveMenu()
+
+    local function doSave()
+        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+
+        for key, value in pairs(settings) do rfsuite.preferences.dashboard[key] = value end
+        rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
+
+        if rfsuite.session.isConnected and rfsuite.session.mcu_id and rfsuite.session.modelPreferencesFile then
+            for key, value in pairs(settings_model) do rfsuite.session.modelPreferences.dashboard[key] = value end
+            rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+        end
+
+        rfsuite.widgets.dashboard.reload_themes(true)
+
+        rfsuite.app.triggers.closeSave = true
+        return true
+    end
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        doSave()
+        return
+    end
+
+
     local buttons = {
         {
             label = "@i18n(app.btn_ok_long)@",
             action = function()
-                local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
-                rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-
-                for key, value in pairs(settings) do rfsuite.preferences.dashboard[key] = value end
-                rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-
-                if rfsuite.session.isConnected and rfsuite.session.mcu_id and rfsuite.session.modelPreferencesFile then
-                    for key, value in pairs(settings_model) do rfsuite.session.modelPreferences.dashboard[key] = value end
-                    rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
-                end
-
-                rfsuite.widgets.dashboard.reload_themes(true)
-
-                rfsuite.app.triggers.closeSave = true
+                doSave()
                 return true
             end
         }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}

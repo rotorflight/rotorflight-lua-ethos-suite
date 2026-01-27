@@ -161,25 +161,31 @@ local function triggerSaveDialogs()
     local app = rfsuite.app
     if app.triggers.triggerSave then
         app.triggers.triggerSave = false
-        form.openDialog({
-            width = nil,
-            title = "@i18n(app.msg_save_settings)@",
-            message = (app.Page.extraMsgOnSave and "@i18n(app.msg_save_current_page)@" .. "\n\n" .. app.Page.extraMsgOnSave or "@i18n(app.msg_save_current_page)@"),
-            buttons = {
-                {
-                    label = "@i18n(app.btn_ok)@",
-                    action = function()
-                        app.PageTmp = app.Page
-                        app.triggers.isSaving = true
-                        app.ui.saveSettings()
-                        return true
-                    end
-                }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-            },
-            wakeup = function() end,
-            paint = function() end,
-            options = TEXT_LEFT
-        })
+        if rfsuite.preferences.general.save_confirm == true or rfsuite.preferences.general.save_confirm == "true" then
+            form.openDialog({
+                width = nil,
+                title = "@i18n(app.msg_save_settings)@",
+                message = (app.Page.extraMsgOnSave and "@i18n(app.msg_save_current_page)@" .. "\n\n" .. app.Page.extraMsgOnSave or "@i18n(app.msg_save_current_page)@"),
+                buttons = {
+                    {
+                        label = "@i18n(app.btn_ok)@",
+                        action = function()
+                            app.PageTmp = app.Page
+                            app.triggers.isSaving = true
+                            app.ui.saveSettings()
+                            return true
+                        end
+                    }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                },
+                wakeup = function() end,
+                paint = function() end,
+                options = TEXT_LEFT
+            })
+        else    
+                app.PageTmp = app.Page
+                app.triggers.isSaving = true
+                app.ui.saveSettings()            
+        end    
     elseif app.triggers.triggerSaveNoProgress then
         app.triggers.triggerSaveNoProgress = false
         app.PageTmp = app.Page
