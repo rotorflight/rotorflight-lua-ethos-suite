@@ -24,7 +24,6 @@ local init = {
     inflight    = "inflight.lua",     -- Script to run during flight
     postflight  = "postflight.lua",     -- Script to run after landing
     standalone  = false,               -- If true, theme handles all rendering itself
-    developer   = true,                -- If true, theme is only visible in developer mode
 }
 
 return init

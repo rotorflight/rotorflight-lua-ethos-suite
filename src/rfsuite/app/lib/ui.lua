@@ -340,51 +340,49 @@ function ui.openMainMenu()
     local header = form.addLine("Configuration")
 
     for pidx, pvalue in ipairs(Menu) do
-        if not pvalue.developer then
-            app.formFieldsOffline[pidx] = pvalue.offline or false
-            app.formFieldsBGTask[pidx] = pvalue.bgtask or false
+        app.formFieldsOffline[pidx] = pvalue.offline or false
+        app.formFieldsBGTask[pidx] = pvalue.bgtask or false
 
-            if pvalue.newline then
-                lc = 0
-                form.addLine("System")
-            end
-
-            if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
-
-            bx = (buttonW + padding) * lc
-
-            if preferences.general.iconsize ~= 0 then
-                app.gfx_buttons["mainmenu"][pidx] = app.gfx_buttons["mainmenu"][pidx] or lcd.loadMask(pvalue.image)
-            else
-                app.gfx_buttons["mainmenu"][pidx] = nil
-            end
-
-            app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = pvalue.title,
-                icon = app.gfx_buttons["mainmenu"][pidx],
-                options = FONT_S,
-                paint = function() end,
-                press = function()
-                    preferences.menulastselected["mainmenu"] = pidx
-                    local speed = false
-                    if pvalue.loaderspeed then speed = true end
-                    app.ui.progressDisplay(nil, nil, speed)
-                    if pvalue.module then
-                        app.isOfflinePage = true
-                        app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
-                    else
-                        app.ui.openMainMenuSub(pvalue.id)
-                    end
-                end
-            })
-
-            app.formFields[pidx]:enable(false)
-
-            if preferences.menulastselected["mainmenu"] == pidx then app.formFields[pidx]:focus() end
-
-            lc = lc + 1
-            if lc == numPerRow then lc = 0 end
+        if pvalue.newline then
+            lc = 0
+            form.addLine("System")
         end
+
+        if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
+
+        bx = (buttonW + padding) * lc
+
+        if preferences.general.iconsize ~= 0 then
+            app.gfx_buttons["mainmenu"][pidx] = app.gfx_buttons["mainmenu"][pidx] or lcd.loadMask(pvalue.image)
+        else
+            app.gfx_buttons["mainmenu"][pidx] = nil
+        end
+
+        app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = pvalue.title,
+            icon = app.gfx_buttons["mainmenu"][pidx],
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                preferences.menulastselected["mainmenu"] = pidx
+                local speed = false
+                if pvalue.loaderspeed then speed = true end
+                app.ui.progressDisplay(nil, nil, speed)
+                if pvalue.module then
+                    app.isOfflinePage = true
+                    app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
+                else
+                    app.ui.openMainMenuSub(pvalue.id)
+                end
+            end
+        })
+
+        app.formFields[pidx]:enable(false)
+
+        if preferences.menulastselected["mainmenu"] == pidx then app.formFields[pidx]:focus() end
+
+        lc = lc + 1
+        if lc == numPerRow then lc = 0 end
     end
 
     app.triggers.closeProgressLoader = true
@@ -461,7 +459,7 @@ function ui.openMainMenuSub(activesection)
 
             for pidx, page in ipairs(MainMenu.pages) do
                 if page.section == idx then
-                    local hideEntry = (page.ethosversion and not utils.ethosVersionAtLeast(page.ethosversion)) or (page.mspversion and utils.apiVersionCompare("<", page.mspversion)) or (page.developer and not preferences.developer.devtools)
+                    local hideEntry = (page.ethosversion and not utils.ethosVersionAtLeast(page.ethosversion)) or (page.mspversion and utils.apiVersionCompare("<", page.mspversion)) 
 
                     local offline = page.offline
                     app.formFieldsOffline[pidx] = offline or false

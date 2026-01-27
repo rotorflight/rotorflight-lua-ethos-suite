@@ -23,7 +23,6 @@ local init = {
     postflight  = "postflight.lua",   -- Script to run after landing
     configure   = "configure.lua",   -- Script to run for settings
     standalone  = false,             -- If true, theme handles all rendering itself
-    developer   = true,              -- If true, theme is only visible in developer mode
 }
 
 return init
