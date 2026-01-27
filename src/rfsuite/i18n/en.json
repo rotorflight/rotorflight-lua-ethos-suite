@@ -6286,6 +6286,11 @@
           "needs_translation": false,
           "translation": "Log MSP queue size"
         },
+        "txt_reload_confirm": {
+          "english": "Confirm on reload",
+          "needs_translation": false,
+          "translation": "Confirm on reload"
+        },
         "txt_save_confirm": {
           "english": "Confirm on save",
           "needs_translation": false,

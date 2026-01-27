@@ -51,7 +51,8 @@ local userpref_defaults = {
         txbatt_type = 0,
         hs_loader = 0,
         theme_loader = 1,  
-        save_confirm = true     
+        save_confirm = true,   
+        reload_confirm = true  
     },
     localizations = {
         temperature_unit = 0,

@@ -395,6 +395,11 @@
         "translation": "Confirm on save",
         "needs_translation": true
       },
+      "txt_reload_confirm": {
+        "english": "Confirm on reload",
+        "translation": "Confirm on reload",
+        "needs_translation": true
+      },
       "txt_development": {
         "english": "Development",
         "translation": "Sviluppo",
