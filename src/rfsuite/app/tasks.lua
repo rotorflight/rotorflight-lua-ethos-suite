@@ -221,43 +221,53 @@ end
 
 local function triggerReloadDialogs()
     local app = rfsuite.app
-    if app.triggers.triggerReloadNoPrompt then
+    if app.triggers.triggerReloadNoPrompt  then
         app.triggers.triggerReloadNoPrompt = false
         app.triggers.reload = true
         return
     end
     if app.triggers.triggerReload then
         app.triggers.triggerReload = false
-        form.openDialog({
-            title = "@i18n(reload)@",
-            message = "@i18n(app.msg_reload_settings)@",
-            buttons = {
-                {
-                    label = "@i18n(app.btn_ok)@",
-                    action = function()
-                        app.triggers.reload = true;
-                        return true
-                    end
-                }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-            },
-            options = TEXT_LEFT
-        })
+        if rfsuite.preferences.general.reload_confirm == false or rfsuite.preferences.general.reload_confirm == "false" then
+            app.triggers.reload = true;
+            return
+        else 
+            form.openDialog({
+                title = "@i18n(reload)@",
+                message = "@i18n(app.msg_reload_settings)@",
+                buttons = {
+                    {
+                        label = "@i18n(app.btn_ok)@",
+                        action = function()
+                            app.triggers.reload = true;
+                            return true
+                        end
+                    }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                },
+                options = TEXT_LEFT
+            })
+        end    
     elseif app.triggers.triggerReloadFull then
-        app.triggers.triggerReloadFull = false
-        form.openDialog({
-            title = "@i18n(reload)@",
-            message = "@i18n(app.msg_reload_settings)@",
-            buttons = {
-                {
-                    label = "@i18n(app.btn_ok)@",
-                    action = function()
-                        app.triggers.reloadFull = true;
-                        return true
-                    end
-                }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-            },
-            options = TEXT_LEFT
-        })
+        app.triggers.triggerReloadFull = false        
+        if rfsuite.preferences.general.reload_confirm == false or rfsuite.preferences.general.reload_confirm == "false" then
+            app.triggers.reloadFull = true;
+            return
+        else         
+            form.openDialog({
+                title = "@i18n(reload)@",
+                message = "@i18n(app.msg_reload_settings)@",
+                buttons = {
+                    {
+                        label = "@i18n(app.btn_ok)@",
+                        action = function()
+                            app.triggers.reloadFull = true;
+                            return true
+                        end
+                    }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                },
+                options = TEXT_LEFT
+            })
+        end    
     end
 end
 
