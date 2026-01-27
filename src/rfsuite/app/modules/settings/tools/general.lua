@@ -97,7 +97,7 @@ local function onSaveMenu()
         {
             label = "@i18n(app.btn_ok_long)@",
             action = function()
-                saveLoop()
+                doSave()
                 return true
             end
         }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
