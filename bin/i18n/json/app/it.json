@@ -694,6 +694,98 @@
         "needs_translation": false
       },
       "mfg": {
+        "am32": {
+          "name": {
+            "english": "AM32",
+            "translation": "AM32",
+            "needs_translation": true
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Basic",
+            "needs_translation": true
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Advanced",
+            "needs_translation": true
+          },
+          "direction": {
+            "english": "Direction",
+            "translation": "Direction",
+            "needs_translation": true
+          },
+          "motorkv": {
+            "english": "Motor KV",
+            "translation": "Motor KV",
+            "needs_translation": true
+          },
+          "motorpoles": {
+            "english": "Motor Poles",
+            "translation": "Motor Poles",
+            "needs_translation": true
+          },
+          "startuppower": {
+            "english": "Startup Power",
+            "translation": "Startup Power",
+            "needs_translation": true
+          },
+          "complementary_pwm": {
+            "english": "Complementary PWM",
+            "translation": "Complementary PWM",
+            "needs_translation": true
+          },
+          "brakeonstop": {
+            "english": "Brake on Stop",
+            "translation": "Brake on Stop",
+            "needs_translation": true
+          },
+          "brakestrength": {
+            "english": "Brake Strength",
+            "translation": "Brake Strength",
+            "needs_translation": true
+          },
+          "runningbrake": {
+            "english": "Running Brake",
+            "translation": "Running Brake",
+            "needs_translation": true
+          },
+          "timing": {
+            "english": "Timing",
+            "translation": "Timing",
+            "needs_translation": true
+          },
+          "stuckrotorprotection": {
+            "english": "Stuck Rotor Protection",
+            "translation": "Stuck Rotor Protection",
+            "needs_translation": true
+          },
+          "sinusoidalstartup": {
+            "english": "Sinusoidal Startup",
+            "translation": "Sinusoidal Startup",
+            "needs_translation": true
+          },
+          "sinepowermode": {
+            "english": "Sine Power Mode",
+            "translation": "Sine Power Mode",
+            "needs_translation": true
+          },
+          "sinemoderange": {
+            "english": "Sine Mode Range",
+            "translation": "Sine Mode Range",
+            "needs_translation": true
+          },
+          "bidirectionalmode": {
+            "english": "Bidirectional Mode",
+            "translation": "Bidirectional Mode",
+            "needs_translation": true
+          },
+          "protocol": {
+            "english": "Protocol",
+            "translation": "Protocol",
+            "needs_translation": true
+          }
+        },
         "hw5": {
           "esc": {
             "english": "ESC",
