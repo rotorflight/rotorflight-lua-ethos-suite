@@ -50,7 +50,8 @@ local userpref_defaults = {
         gimbalsupression = 0.85,
         txbatt_type = 0,
         hs_loader = 0,
-        theme_loader = 1,       
+        theme_loader = 1,  
+        save_confirm = true     
     },
     localizations = {
         temperature_unit = 0,

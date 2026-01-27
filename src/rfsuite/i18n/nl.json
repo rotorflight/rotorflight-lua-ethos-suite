@@ -6286,6 +6286,11 @@
           "needs_translation": false,
           "translation": "Log MSP wachtlijst grootte"
         },
+        "txt_save_confirm": {
+          "english": "Confirm on save",
+          "needs_translation": true,
+          "translation": "Confirm on save"
+        },
         "txt_small": {
           "english": "SMALL",
           "needs_translation": false,
