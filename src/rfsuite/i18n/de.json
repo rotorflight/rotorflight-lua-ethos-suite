@@ -2219,7 +2219,7 @@
         "pin_swap": {
           "english": "Pin Swap",
           "needs_translation": false,
-          "translation": "Rx/Tx Swap"
+          "translation": "Rx/Tx Tausch"
         },
         "pinion": {
           "english": "Pinion",
@@ -2264,7 +2264,7 @@
         "throttle_protocol": {
           "english": "Throttle Protocol",
           "needs_translation": false,
-          "translation": "Gas Protocol"
+          "translation": "Gas Protokoll"
         },
         "unsynced": {
           "english": "Unsynced ESC Update",
@@ -3891,7 +3891,7 @@
         "cyclic_calibration": {
           "english": "Cyclic Calibration",
           "needs_translation": false,
-          "translation": "Zyklichse Kalibrierung"
+          "translation": "Zyklische Kalibrierung"
         },
         "cyclic_pitch_limit": {
           "english": "Cyclic Pitch Limit",
@@ -3991,7 +3991,7 @@
         "yaw_calibration": {
           "english": "Yaw Calibration",
           "needs_translation": false,
-          "translation": "Heck Kalibrierung"
+          "translation": "Gier Kalibrierung"
         },
         "yaw_ccw_limit": {
           "english": "Yaw CCW Limit",
@@ -4289,7 +4289,7 @@
         "rx_voltage_alert": {
           "english": "RxBatt Alert Value",
           "needs_translation": false,
-          "translation": "RxBatt Alarm Wert"
+          "translation": "RxAkku Alarm Wert"
         },
         "source_name": {
           "english": "Sources",
@@ -5914,7 +5914,7 @@
         "dashboard_loader_loader_style_select": {
           "english": "Theme loader style",
           "needs_translation": false,
-          "translation": "Stil des Design loaders"
+          "translation": "Stil des Loader Designs"
         },
         "dashboard_settings": {
           "english": "Settings",
