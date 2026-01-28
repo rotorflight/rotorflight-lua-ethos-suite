@@ -26,12 +26,12 @@
       "source_adc": {
         "english": "Battery ADC",
         "needs_translation": false,
-        "translation": "Batterie ADC"
+        "translation": "Akku ADC"
       },
       "source_esc": {
         "english": "ESC Telemetry",
-        "needs_translation": false,
-        "translation": "ESC Telemetrie"
+        "needs_translation": true,
+        "translation": "ESC Telemetry"
       },
       "source_none": {
         "english": "None",
@@ -720,7 +720,7 @@
       "tbl_modeair": {
         "english": "Aero Motor",
         "needs_translation": false,
-        "translation": "Flugmotor"
+        "translation": "Flugzeug"
       },
       "tbl_modeext": {
         "english": "Heli Ext Governor",
@@ -1431,7 +1431,7 @@
       "tbl_off": {
         "english": "OFF",
         "needs_translation": false,
-        "translation": "AUS"
+        "translation": "Aus"
       },
       "tbl_on": {
         "english": "ON",
@@ -2179,7 +2179,7 @@
         "half_duplex": {
           "english": "Half Duplex",
           "needs_translation": false,
-          "translation": "Halbduplex-Modus für ESC-Telemetrie"
+          "translation": "Halbduplex-Modus"
         },
         "help_p1": {
           "english": "Configure the motor and speed controller features.",
@@ -2229,7 +2229,7 @@
         "pin_swap": {
           "english": "Pin Swap",
           "needs_translation": false,
-          "translation": "Pin-Tausch"
+          "translation": "Rx/Tx-Tauschen"
         },
         "pinion": {
           "english": "Pinion",
@@ -2244,12 +2244,12 @@
         "rpm": {
           "english": "RPM",
           "needs_translation": false,
-          "translation": "RPM"
+          "translation": "Drehzahl"
         },
         "rpm_sensor_source": {
           "english": "RPM Sensor",
           "needs_translation": false,
-          "translation": "RPM-Sensor"
+          "translation": "Drehzahl Sensor"
         },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
@@ -2279,12 +2279,12 @@
         "unsynced": {
           "english": "Unsynced ESC Update",
           "needs_translation": false,
-          "translation": "Asynchrone ESC-Aktualisierung"
+          "translation": "Nicht synchr. ESC-Update"
         },
         "use_dshot_telemetry": {
           "english": "DShot RPM Telemetry",
           "needs_translation": false,
-          "translation": "DShot RPM-Telemetrie"
+          "translation": "DShot Drehzahl-Telemetrie"
         },
         "voltage_correction": {
           "english": "Voltage Correction",
@@ -2298,7 +2298,7 @@
             "active_freewheel": {
               "english": "Active Freewheeling",
               "needs_translation": false,
-              "translation": "Active Freewheeling"
+              "translation": "Aktiver Freilauf"
             },
             "advanced": {
               "english": "Advanced",
@@ -2308,7 +2308,7 @@
             "auto_restart_time": {
               "english": "Auto Bailout Time",
               "needs_translation": false,
-              "translation": "Auto restart time"
+              "translation": "Auto restart Zeit"
             },
             "basic": {
               "english": "General",
@@ -2343,7 +2343,7 @@
             "drive_freq": {
               "english": "Drive Frequency",
               "needs_translation": false,
-              "translation": "PWM drive frequency"
+              "translation": "Ansteuerfrequenz"
             },
             "electrical_angle": {
               "english": "Electrical Angle",
@@ -4403,7 +4403,7 @@
         "disabled_message": {
           "english": "Rotorflight governor is not enabled",
           "needs_translation": false,
-          "translation": "Rotorflight-Governor ist nicht aktiviert"
+          "translation": "Rotorflight-Gov. ist nicht aktiviert"
         },
         "dyn_min_throttle": {
           "english": "Dyn. Min Throttle",
