@@ -644,6 +644,13 @@ function elrs.wakeup()
 end
 
 function elrs.reset()
+
+    for i, v in pairs(sensors['uid']) do
+        if v then
+            v:reset()
+        end
+    end
+
     resetSensors()
     elrs._relevantSidSet = nil
     elrs._relevantSig = nil
