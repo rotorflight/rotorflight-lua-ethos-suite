@@ -315,6 +315,12 @@ function tasks.findTasks()
 end
 
 local function clearSessionAndQueue()
+
+    -- Only teardown an active session
+    if not rfsuite.session.isConnected then
+        return
+    end
+
     tasks.setTelemetryTypeChanged()
     local oc = getOnconnect()
     if oc then
@@ -322,39 +328,39 @@ local function clearSessionAndQueue()
         if type(oc.resetAllTasks) == "function" then pcall(oc.resetAllTasks) end
     end
 
-local od = getOndisconnect()
-if od then
-    if type(od.resetAllTasks) == "function" then pcall(od.resetAllTasks) end
-end
+    local od = getOndisconnect()
+    if od then
+        if type(od.resetAllTasks) == "function" then pcall(od.resetAllTasks) end
+    end
 
-local ofm = getOnflightmode()
-if ofm then
-    if type(ofm.resetAllTasks) == "function" then pcall(ofm.resetAllTasks) end
-end
+    local ofm = getOnflightmode()
+    if ofm then
+        if type(ofm.resetAllTasks) == "function" then pcall(ofm.resetAllTasks) end
+    end
 
-local omc = getOnmodelchange()
-if omc then
-    if type(omc.resetAllTasks) == "function" then pcall(omc.resetAllTasks) end
-end
+    local omc = getOnmodelchange()
+    if omc then
+        if type(omc.resetAllTasks) == "function" then pcall(omc.resetAllTasks) end
+    end
 
-local oa = getOnarm()
-if oa then
-    if type(oa.resetAllTasks) == "function" then pcall(oa.resetAllTasks) end
-end
+    local oa = getOnarm()
+    if oa then
+        if type(oa.resetAllTasks) == "function" then pcall(oa.resetAllTasks) end
+    end
 
-local oda = getOndisarm()
-if oda then
-    if type(oda.resetAllTasks) == "function" then pcall(oda.resetAllTasks) end
-end
+    local oda = getOndisarm()
+    if oda then
+        if type(oda.resetAllTasks) == "function" then pcall(oda.resetAllTasks) end
+    end
 
-local otc = getOntransportchange()
-if otc then
-    if type(otc.resetAllTasks) == "function" then pcall(otc.resetAllTasks) end
-end
+    local otc = getOntransportchange()
+    if otc then
+        if type(otc.resetAllTasks) == "function" then pcall(otc.resetAllTasks) end
+    end
 
--- Reset edge caches
-lastArmedState = false
-lastFlightModeValue = nil
+    -- Reset edge caches
+    lastArmedState = false
+    lastFlightModeValue = nil
 
     -- Reset watchdog state as we are tearing down the connection attempt.
     connectAttemptStartedAt = nil    
