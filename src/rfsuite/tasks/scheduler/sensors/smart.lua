@@ -181,6 +181,13 @@ function smart.wakeup()
 end
 
 function smart.reset()
+
+    -- Reset the sensors before clearing caches
+    for i,v in pairs(sensorCache) do
+        v:reset()
+    end
+
+    -- clear caches
     sensorCache = {}
     negativeCache = {}
     lastValue = {}
