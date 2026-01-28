@@ -227,30 +227,6 @@ local function clearSessionAndQueue()
 
     local now = os.clock()
 
-    -- Gate: only teardown if we were connected, or we are in an in-flight connect attempt,
-    -- or MSP is busy (partial session). This prevents idle/disconnected thrash.
-    --if (not rfsuite.session.isConnected) and (connectAttemptStartedAt == nil) and (not rfsuite.session.mspBusy) then
-    --    return
-    --end
-
-    if reason then
-        utils.log("[teardown] " .. tostring(reason), "info")
-    end
-
-    tasks.setTelemetryTypeChanged()
-    if events.onconnect and type(events.onconnect.setTelemetryTypeChanged)=="function" then pcall(events.onconnect.setTelemetryTypeChanged) end
-
-    -- resetAllTasks on every event module that implements it
-    for name, ev in pairs(events) do
-        if ev and type(ev.resetAllTasks) == "function" then
-            local ok, err = pcall(ev.resetAllTasks)
-            if not ok then
-                utils.log(string.format("[events] %s.resetAllTasks failed: %s", tostring(name), tostring(err)), "error")
-            end
-        end
-    end
-
-
     -- Reset edge caches
     lastArmedState = false
     lastFlightModeValue = nil
@@ -259,6 +235,32 @@ local function clearSessionAndQueue()
     connectAttemptStartedAt = nil    
 
     utils.session()
+
+    tasks.setTelemetryTypeChanged()
+    if events.onconnect and type(events.onconnect.setTelemetryTypeChanged)=="function" then pcall(events.onconnect.setTelemetryTypeChanged) end
+
+    -- reset all scheduled tasks
+    for _, task in ipairs(tasksList) do
+        local name = task and task.name
+        local mod = tasks[name]
+        if mod and type(mod.reset) == "function" then
+            local ok, err = pcall(mod.reset)
+            if not ok then
+                utils.log(string.format("[tasks] %s.reset failed: %s", tostring(name), tostring(err)), "info")
+            end
+        end
+    end
+
+    -- reset every event module that implements it
+    for name, ev in pairs(events) do
+        if ev and type(ev.resetAllTasks) == "function" then
+            local ok, err = pcall(ev.resetAllTasks)
+            if not ok then
+                utils.log(string.format("[events] %s.resetAllTasks failed: %s", tostring(name), tostring(err)), "info")
+            end
+        end
+    end
+    
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
 
@@ -332,7 +334,7 @@ function tasks.telemetryCheckScheduler()
             if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
                 lastCheckAt = now
                 utils.log("Waiting for connection", "connect")
-            end
+            end      
         end
 
         connectAttemptStartedAt = nil
@@ -342,6 +344,9 @@ function tasks.telemetryCheckScheduler()
     -- Link is up (rising edge handling)
     if lastTelemetryUp ~= true then
         lastTelemetryUp = true
+        -- force a reset before we start connect attempt
+        clearSessionAndQueue()   
+
         -- Start a new connect attempt window on telemetry-up.
         if not rfsuite.session.isConnected then
             connectAttemptStartedAt = now
