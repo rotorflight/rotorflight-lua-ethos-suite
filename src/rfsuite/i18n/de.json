@@ -25,18 +25,18 @@
       },
       "source_adc": {
         "english": "Battery ADC",
-        "needs_translation": true,
-        "translation": "Battery ADC"
+        "needs_translation": false,
+        "translation": "Akku ADC"
       },
       "source_esc": {
         "english": "ESC Telemetry",
-        "needs_translation": true,
-        "translation": "ESC Telemetry"
+        "needs_translation": false,
+        "translation": "ESC Telemetrie"
       },
       "source_none": {
         "english": "None",
-        "needs_translation": true,
-        "translation": "None"
+        "needs_translation": false,
+        "translation": "keine"
       },
       "vbatfullcellvoltage": {
         "english": "The nominal voltage of a fully charged cell.",
@@ -159,8 +159,8 @@
       },
       "tbl_alwaysoff": {
         "english": "Always Off",
-        "needs_translation": true,
-        "translation": "Always Off"
+        "needs_translation": false,
+        "translation": "Immer aus"
       },
       "tbl_alwayson": {
         "english": "Always On",
@@ -720,7 +720,7 @@
       "tbl_modeair": {
         "english": "Aero Motor",
         "needs_translation": false,
-        "translation": "Luftfahrtmotor"
+        "translation": "Flugzeug"
       },
       "tbl_modeext": {
         "english": "Heli Ext Governor",
@@ -730,7 +730,7 @@
       "tbl_modef3a": {
         "english": "Aero F3A",
         "needs_translation": false,
-        "translation": "Luftfahrt F3A"
+        "translation": "Flugzeug F3A"
       },
       "tbl_modefree": {
         "english": "Free (Attention!)",
@@ -796,143 +796,143 @@
     "ESC_PARAMETERS_ZTW": {
       "tbl_auto": {
         "english": "Auto",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Auto"
       },
       "tbl_blue": {
         "english": "BLUE",
-        "needs_translation": true,
-        "translation": "BLUE"
+        "needs_translation": false,
+        "translation": "Blau"
       },
       "tbl_ccw": {
         "english": "CCW",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "CW"
       },
       "tbl_cyan": {
         "english": "CYAN",
-        "needs_translation": true,
-        "translation": "CYAN"
+        "needs_translation": false,
+        "translation": "Cyan"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "ESC Governor"
       },
       "tbl_extgov": {
         "english": "External Governor",
-        "needs_translation": true,
-        "translation": "External Governor"
+        "needs_translation": false,
+        "translation": "Externer Governor"
       },
       "tbl_fast": {
         "english": "Fast",
-        "needs_translation": true,
-        "translation": "Fast"
+        "needs_translation": false,
+        "translation": "Schnell"
       },
       "tbl_fmfw": {
         "english": "Fixed Wing",
-        "needs_translation": true,
-        "translation": "Fixed Wing"
+        "needs_translation": false,
+        "translation": "Flaechenflugzeug"
       },
       "tbl_fmheli": {
         "english": "Helicopter",
-        "needs_translation": true,
-        "translation": "Helicopter"
+        "needs_translation": false,
+        "translation": "Helikopter"
       },
       "tbl_fwgov": {
         "english": "Fixed Wing",
-        "needs_translation": true,
-        "translation": "Fixed Wing"
+        "needs_translation": false,
+        "translation": "Flaechenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
-        "needs_translation": true,
-        "translation": "GREEN"
+        "needs_translation": false,
+        "translation": "Gruen"
       },
       "tbl_high": {
         "english": "High",
-        "needs_translation": true,
-        "translation": "High"
+        "needs_translation": false,
+        "translation": "Hoch"
       },
       "tbl_jadegreen": {
         "english": "JADE GREEN",
-        "needs_translation": true,
-        "translation": "JADE GREEN"
+        "needs_translation": false,
+        "translation": "Jade Gruen"
       },
       "tbl_low": {
         "english": "Low",
-        "needs_translation": true,
-        "translation": "Low"
+        "needs_translation": false,
+        "translation": "Niedrig"
       },
       "tbl_medium": {
         "english": "Medium",
-        "needs_translation": true,
-        "translation": "Medium"
+        "needs_translation": false,
+        "translation": "Mittel"
       },
       "tbl_normal": {
         "english": "Normal",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Normal"
       },
       "tbl_off": {
         "english": "Off",
-        "needs_translation": true,
-        "translation": "Off"
+        "needs_translation": false,
+        "translation": "Aus"
       },
       "tbl_on": {
         "english": "On",
-        "needs_translation": true,
-        "translation": "On"
+        "needs_translation": false,
+        "translation": "Ein"
       },
       "tbl_orange": {
         "english": "ORANGE",
-        "needs_translation": true,
-        "translation": "ORANGE"
+        "needs_translation": false,
+        "translation": "Orange"
       },
       "tbl_pink": {
         "english": "PINK",
-        "needs_translation": true,
-        "translation": "PINK"
+        "needs_translation": false,
+        "translation": "Pink"
       },
       "tbl_purple": {
         "english": "PURPLE",
-        "needs_translation": true,
-        "translation": "PURPLE"
+        "needs_translation": false,
+        "translation": "Lila"
       },
       "tbl_red": {
         "english": "Red",
-        "needs_translation": true,
-        "translation": "Red"
+        "needs_translation": false,
+        "translation": "Rot"
       },
       "tbl_reverse": {
         "english": "Reverse",
-        "needs_translation": true,
-        "translation": "Reverse"
+        "needs_translation": false,
+        "translation": "Rueckwaerts"
       },
       "tbl_slow": {
         "english": "Slow",
-        "needs_translation": true,
-        "translation": "Slow"
+        "needs_translation": false,
+        "translation": "Langsam"
       },
       "tbl_vslow": {
         "english": "Very Slow",
-        "needs_translation": true,
-        "translation": "Very Slow"
+        "needs_translation": false,
+        "translation": "Sehr Langsam"
       },
       "tbl_white": {
         "english": "WHITE",
-        "needs_translation": true,
-        "translation": "WHITE"
+        "needs_translation": false,
+        "translation": "Weiss"
       },
       "tbl_yellow": {
         "english": "YELLOW",
-        "needs_translation": true,
-        "translation": "YELLOW"
+        "needs_translation": false,
+        "translation": "Gelb"
       }
     },
     "ESC_SENSOR_CONFIG": {
@@ -1147,8 +1147,8 @@
       },
       "tbl_govmode_direct": {
         "english": "DIRECT",
-        "needs_translation": true,
-        "translation": "DIRECT"
+        "needs_translation": false,
+        "translation": "DIREKT"
       },
       "tbl_govmode_electric": {
         "english": "ELECTRIC",
@@ -1157,7 +1157,7 @@
       },
       "tbl_govmode_limit": {
         "english": "LIMIT",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "LIMIT"
       },
       "tbl_govmode_mode1": {
@@ -1192,8 +1192,8 @@
       },
       "tbl_throttle_type_function": {
         "english": "FUNCTION",
-        "needs_translation": true,
-        "translation": "FUNCTION"
+        "needs_translation": false,
+        "translation": "FUNKTION"
       },
       "tbl_throttle_type_normal": {
         "english": "NORMAL",
@@ -1351,30 +1351,30 @@
       },
       "tbl_tail_bidirectional": {
         "english": "Bidirectional",
-        "needs_translation": true,
-        "translation": "Bidirectional"
+        "needs_translation": false,
+        "translation": "Bidirektional"
       },
       "tbl_tail_motororized_tail": {
         "english": "Motorized Tail",
-        "needs_translation": true,
-        "translation": "Motorized Tail"
+        "needs_translation": false,
+        "translation": "Motorisiertes Heck"
       },
       "tbl_tail_variable_pitch": {
         "english": "Variable Pitch",
-        "needs_translation": true,
-        "translation": "Variable Pitch"
+        "needs_translation": false,
+        "translation": "Variabler Pitch"
       }
     },
     "MIXER_INPUT": {
       "tbl_normal": {
         "english": "Normal",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Normal"
       },
       "tbl_reversed": {
         "english": "Reversed",
-        "needs_translation": true,
-        "translation": "Reversed"
+        "needs_translation": false,
+        "translation": "Umgekehrt"
       }
     },
     "MOTOR_CONFIG": {
@@ -1430,13 +1430,13 @@
       },
       "tbl_off": {
         "english": "OFF",
-        "needs_translation": true,
-        "translation": "Off"
+        "needs_translation": false,
+        "translation": "Aus"
       },
       "tbl_on": {
         "english": "ON",
-        "needs_translation": true,
-        "translation": "On"
+        "needs_translation": false,
+        "translation": "Ein"
       }
     },
     "PID_PROFILE": {
@@ -1876,17 +1876,17 @@
       "yaw_dynamic_ceiling_gain": {
         "english": "The maximum gain applied to the yaw dynamic ceiling.",
         "needs_translation": false,
-        "translation": "Der maximale Gewinn, der auf die dynamische Yaw-Obergrenze angewendet wird."
+        "translation": "Der maximale Verstärkungsfaktor, der auf die dynamische Gier-Obergrenze angewendet wird."
       },
       "yaw_dynamic_deadband_filter": {
         "english": "The maximum filter applied to the yaw dynamic deadband.",
         "needs_translation": false,
-        "translation": "Der maximale Filter, der auf die dynamische Yaw-Totzone angewendet wird."
+        "translation": "Der maximale Filter, der auf die dynamische Gier-Totzone angewendet wird."
       },
       "yaw_dynamic_deadband_gain": {
         "english": "The maximum gain applied to the yaw dynamic deadband.",
         "needs_translation": false,
-        "translation": "Der maximale Gewinn, der auf die dynamische Yaw-Totzone angewendet wird."
+        "translation": "Der maximale Verstärkungsfaktor, der auf die dynamische Gier-Totzone angewendet wird."
       }
     },
     "RESCUE_PROFILE": {
@@ -1996,7 +1996,7 @@
     "check_bg_task": {
       "english": "Please enable the background task.",
       "needs_translation": false,
-      "translation": "Bitte aktivieren Sie die Background-Task."
+      "translation": "Bitte aktivieren Sie den Background-Task."
     },
     "check_discovered_sensors": {
       "english": "Please check you have discovered all sensors.",
@@ -2168,8 +2168,8 @@
         },
         "half_duplex": {
           "english": "Half Duplex",
-          "needs_translation": true,
-          "translation": "Half Duplex"
+          "needs_translation": false,
+          "translation": "Halbduplex"
         },
         "help_p1": {
           "english": "Configure the motor and speed controller features.",
@@ -2208,8 +2208,8 @@
         },
         "motor_pwm_rate": {
           "english": "Update frequency",
-          "needs_translation": true,
-          "translation": "Update frequency"
+          "needs_translation": false,
+          "translation": "Update Frequenz"
         },
         "name": {
           "english": "ESC/Motors",
@@ -2218,8 +2218,8 @@
         },
         "pin_swap": {
           "english": "Pin Swap",
-          "needs_translation": true,
-          "translation": "Pin Swap"
+          "needs_translation": false,
+          "translation": "Rx/Tx Swap"
         },
         "pinion": {
           "english": "Pinion",
@@ -2233,13 +2233,13 @@
         },
         "rpm": {
           "english": "RPM",
-          "needs_translation": true,
-          "translation": "RPM"
+          "needs_translation": false,
+          "translation": "Drehzahl"
         },
         "rpm_sensor_source": {
           "english": "RPM Sensor",
-          "needs_translation": true,
-          "translation": "RPM Sensor"
+          "needs_translation": false,
+          "translation": "Drehzahl Sensor"
         },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
@@ -2248,33 +2248,33 @@
         },
         "telemetry": {
           "english": "Telemetry",
-          "needs_translation": true,
-          "translation": "Telemetry"
+          "needs_translation": false,
+          "translation": "Telemetrie"
         },
         "telemetry_protocol": {
           "english": "Telemetry Protocol",
-          "needs_translation": true,
-          "translation": "Telemetry Protocol"
+          "needs_translation": false,
+          "translation": "Telemetrie Protokoll"
         },
         "throttle": {
           "english": "Throttle",
-          "needs_translation": true,
-          "translation": "Throttle"
+          "needs_translation": false,
+          "translation": "Gas"
         },
         "throttle_protocol": {
           "english": "Throttle Protocol",
-          "needs_translation": true,
-          "translation": "Throttle Protocol"
+          "needs_translation": false,
+          "translation": "Gas Protocol"
         },
         "unsynced": {
           "english": "Unsynced ESC Update",
-          "needs_translation": true,
-          "translation": "Unsynced ESC Update"
+          "needs_translation": false,
+          "translation": "Unsynch. ESC Update"
         },
         "use_dshot_telemetry": {
           "english": "DShot RPM Telemetry",
-          "needs_translation": true,
-          "translation": "DShot RPM Telemetry"
+          "needs_translation": false,
+          "translation": "DShot Drehzahl Telemetrie"
         },
         "voltage_correction": {
           "english": "Voltage Correction",
@@ -2287,8 +2287,8 @@
           "flrtr": {
             "active_freewheel": {
               "english": "Active Freewheeling",
-              "needs_translation": true,
-              "translation": "Active Freewheeling"
+              "needs_translation": false,
+              "translation": "Aktiver Freilauf"
             },
             "advanced": {
               "english": "Advanced",
@@ -2297,8 +2297,8 @@
             },
             "auto_restart_time": {
               "english": "Auto Bailout Time",
-              "needs_translation": true,
-              "translation": "Auto restart time"
+              "needs_translation": false,
+              "translation": "Auto restart Zeit"
             },
             "basic": {
               "english": "General",
@@ -2333,7 +2333,7 @@
             "drive_freq": {
               "english": "Drive Frequency",
               "needs_translation": false,
-              "translation": "Drive frequency"
+              "translation": "Ansteuerfrequenz"
             },
             "electrical_angle": {
               "english": "Electrical Angle",
@@ -2417,8 +2417,8 @@
             },
             "restart_acc": {
               "english": "Auto Bailout Accel",
-              "needs_translation": true,
-              "translation": "Restart acceleration"
+              "needs_translation": false,
+              "translation": "Auto Restart Beschleunigung"
             },
             "soft_start": {
               "english": "Soft Start Time",
@@ -2450,7 +2450,7 @@
             "active_freewheel": {
               "english": "Active Freewheel",
               "needs_translation": false,
-              "translation": "Aktive Freilaufsteuerung"
+              "translation": "Aktiver Freilauf"
             },
             "advanced": {
               "english": "Advanced",
@@ -2903,7 +2903,7 @@
             "active_freewheel": {
               "english": "Active Freewheel",
               "needs_translation": false,
-              "translation": "Aktive Freilaufsteuerung"
+              "translation": "Aktiver Freilauf"
             },
             "advanced": {
               "english": "Advanced",
@@ -3029,83 +3029,83 @@
           "ztw": {
             "acceleration": {
               "english": "Acceleration",
-              "needs_translation": true,
-              "translation": "Acceleration"
+              "needs_translation": false,
+              "translation": "Beschleunigung"
             },
             "advanced": {
               "english": "Advanced",
-              "needs_translation": true,
-              "translation": "Advanced"
+              "needs_translation": false,
+              "translation": "Erweitert"
             },
             "auto_restart_time": {
               "english": "Auto Restart Time",
-              "needs_translation": true,
-              "translation": "Auto Restart Time"
+              "needs_translation": false,
+              "translation": "Auto Restart Zeit"
             },
             "basic": {
               "english": "Basic",
-              "needs_translation": true,
-              "translation": "Basic"
+              "needs_translation": false,
+              "translation": "Grundlegend"
             },
             "brake_force": {
               "english": "Brake Force",
-              "needs_translation": true,
-              "translation": "Brake Force"
+              "needs_translation": false,
+              "translation": "Bremskraft"
             },
             "capacity_correction": {
               "english": "Capacity Correction",
-              "needs_translation": true,
-              "translation": "Capacity Correction"
+              "needs_translation": false,
+              "translation": "Kapazitätskorrektur"
             },
             "cell_cutoff": {
               "english": "Cell Cutoff",
-              "needs_translation": true,
-              "translation": "Cell Cutoff"
+              "needs_translation": false,
+              "translation": "Zellabschaltung"
             },
             "gov": {
               "english": "Governor",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Governor"
             },
             "gov_i": {
               "english": "Gov-I",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Gov-I"
             },
             "gov_p": {
               "english": "Gov-P",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Gov-P"
             },
             "governor": {
               "english": "Governor",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Governor"
             },
             "hv_bec_voltage": {
               "english": "HV BEC Voltage",
-              "needs_translation": true,
-              "translation": "HV BEC Voltage"
+              "needs_translation": false,
+              "translation": "HV BEC Spannung"
             },
             "led_color": {
               "english": "LED Color",
-              "needs_translation": true,
-              "translation": "LED Color"
+              "needs_translation": false,
+              "translation": "LED Farbe"
             },
             "lv_bec_voltage": {
               "english": "LV BEC Voltage",
-              "needs_translation": true,
-              "translation": "LV BEC Voltage"
+              "needs_translation": false,
+              "translation": "LV BEC Spannung"
             },
             "motor_direction": {
               "english": "Motor Direction",
-              "needs_translation": true,
-              "translation": "Motor Direction"
+              "needs_translation": false,
+              "translation": "Motordrehrichtung"
             },
             "motor_poles": {
               "english": "Motor Poles",
-              "needs_translation": true,
-              "translation": "Motor Poles"
+              "needs_translation": false,
+              "translation": "Motor-Pole"
             },
             "name": {
               "english": "ZTW",
@@ -3323,13 +3323,13 @@
         },
         "fbl_date": {
           "english": "Date",
-          "needs_translation": true,
-          "translation": "Date"
+          "needs_translation": false,
+          "translation": "Datum"
         },
         "fbl_time": {
           "english": "Time",
-          "needs_translation": true,
-          "translation": "Time"
+          "needs_translation": false,
+          "translation": "Zeit"
         },
         "help_p1": {
           "english": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
