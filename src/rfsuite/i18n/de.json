@@ -750,7 +750,7 @@
       "tbl_modestore": {
         "english": "Heli Governor Store",
         "needs_translation": false,
-        "translation": "Heli Governor Speicher"
+        "translation": "Heli Governor (gespeichert)"
       },
       "tbl_normal": {
         "english": "Normal",
@@ -846,8 +846,8 @@
       },
       "tbl_fwgov": {
         "english": "Fixed Wing",
-        "needs_translation": true,
-        "translation": "Fixed Wing"
+        "needs_translation": false,
+        "translation": "Flächenflugzeug-Governor"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -1203,7 +1203,7 @@
       "tbl_throttle_type_switch": {
         "english": "SWITCH",
         "needs_translation": false,
-        "translation": "SCHALTER"
+        "translation": "Schalter"
       }
     },
     "GOVERNOR_PROFILE": {
@@ -3381,7 +3381,7 @@
         "cancel": {
           "english": "CANCEL",
           "needs_translation": false,
-          "translation": "ABBRECHEN"
+          "translation": "Abbruch"
         },
         "ch_prefix": {
           "english": "CH",
@@ -3401,7 +3401,7 @@
         "help_default_p1": {
           "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
           "needs_translation": false,
-          "translation": "Erweiterte Misch- und Kanalzuordnung konfigurieren, wenn FBUS-Ausgang auf einem seriellen Port aktiviert ist."
+          "translation": "Erweiterte Misch- und Kanalzuordnung konfigurieren, wenn SBUS-Ausgang auf einem seriellen Port aktiviert ist."
         },
         "help_default_p2": {
           "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
@@ -3476,7 +3476,7 @@
         "save_prompt": {
           "english": "Save current page to flight controller?",
           "needs_translation": false,
-          "translation": "Aktuelle Seite zum Flugcontroller speichern?"
+          "translation": "Aktuelle Seite im Flugcontroller speichern?"
         },
         "save_settings": {
           "english": "Save settings",
@@ -3506,7 +3506,7 @@
         "title": {
           "english": "FBUS Output",
           "needs_translation": false,
-          "translation": "FBUS Output"
+          "translation": "FBUS Ausgang"
         },
         "type": {
           "english": "Type",
@@ -3916,7 +3916,7 @@
         "elevator_direction": {
           "english": "Elevator Direction",
           "needs_translation": false,
-          "translation": "Höhenruder-Richtung"
+          "translation": "Nick-Richtung"
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -4001,27 +4001,27 @@
         "yaw_calibration": {
           "english": "Yaw Calibration",
           "needs_translation": false,
-          "translation": "Gier-Kalibrierung"
+          "translation": "Heck-Kalibrierung"
         },
         "yaw_ccw_limit": {
           "english": "Yaw CCW Limit",
           "needs_translation": false,
-          "translation": "Gier CCW-Limit"
+          "translation": "Heck CCW-Limit"
         },
         "yaw_center_trim": {
           "english": "Yaw Center Trim",
           "needs_translation": false,
-          "translation": "Gier-Mitten-Trimmung"
+          "translation": "Heck-Mitten-Trimmung"
         },
         "yaw_cw_limit": {
           "english": "Yaw CW Limit",
-          "needs_translation": false,
-          "translation": "Gier CW-Limit"
+          "needs_translation": true,
+          "translation": "Heck CW Limit"
         },
         "yaw_direction": {
           "english": "Yaw Direction",
           "needs_translation": false,
-          "translation": "Gier-Richtung"
+          "translation": "Heck-Richtung"
         }
       },
       "msp_exp": {
@@ -4234,12 +4234,12 @@
         "battery_capacity": {
           "english": "Battery Capacity",
           "needs_translation": false,
-          "translation": "Batteriekapazität"
+          "translation": "Akkukapazität"
         },
         "battery_name": {
           "english": "Battery",
           "needs_translation": false,
-          "translation": "Batterie"
+          "translation": "Akku"
         },
         "bec_voltage_alert": {
           "english": "BEC Alert Value",
@@ -4249,7 +4249,7 @@
         "calcfuel_local": {
           "english": "Calculate Fuel Using",
           "needs_translation": false,
-          "translation": "Kraftstoff berechnen mit"
+          "translation": "Berechneter Kraftstoffverbrauch"
         },
         "cell_count": {
           "english": "Cell Count",
@@ -4274,7 +4274,7 @@
         "help_p1": {
           "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
           "needs_translation": false,
-          "translation": "Die Batterieeinstellungen werden verwendet, um den Flugcontroller so zu konfigurieren, dass er die Batteriespannung überwacht und Warnungen ausgibt, wenn die Spannung unter einen bestimmten Wert fällt."
+          "translation": "Die Akkueinstellungen werden verwendet, um den Flugcontroller so zu konfigurieren, dass er die Akkuspannung überwacht und Warnungen ausgibt, wenn die Spannung unter einen bestimmten Wert fällt."
         },
         "max_cell_voltage": {
           "english": "Max Cell Voltage",
@@ -4300,6 +4300,8 @@
           "english": "Sources",
           "needs_translation": false,
           "translation": "Quellen"
+          "needs_translation": false,
+          "translation": "Quellen"
         },
         "timer": {
           "english": "Flight Time Alarm",
@@ -4314,7 +4316,7 @@
         "voltage_multiplier": {
           "english": "Sag Compensation",
           "needs_translation": false,
-          "translation": "Einbruchskompensation"
+          "translation": "Spannungseinbruch-Kompensation"
         },
         "warn_cell_voltage": {
           "english": "Warn Cell Voltage",
@@ -5249,7 +5251,7 @@
         "shape": {
           "english": "Shape",
           "needs_translation": false,
-          "translation": "Form"
+          "translation": "Kennlinie"
         },
         "superrate": {
           "english": "SuperRate",
@@ -5266,7 +5268,7 @@
         "acc_limit": {
           "english": "Accelerometer Limit",
           "needs_translation": false,
-          "translation": "BeschlGrenze"
+          "translation": "Beschleunigungs Grenze"
         },
         "accel_limit": {
           "english": "Accel",
@@ -6625,7 +6627,7 @@
   "iscompiledcheck": {
     "english": "true",
     "needs_translation": false,
-    "translation": "true"
+    "translation": "wahr"
   },
   "no_link": {
     "english": "no link",
@@ -6635,7 +6637,7 @@
   "no_sensor": {
     "english": "no sensor",
     "needs_translation": false,
-    "translation": "kein sensor"
+    "translation": "kein Sensor"
   },
   "reload": {
     "english": "reload",
@@ -7798,7 +7800,7 @@
       "ARMED": {
         "english": "ARMED",
         "needs_translation": false,
-        "translation": "GESCHÄRFT"
+        "translation": "SCHARFGESCHALTET"
       },
       "AUTOROT": {
         "english": "AUTOROT",
