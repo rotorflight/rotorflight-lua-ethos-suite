@@ -15,6 +15,12 @@ fields[#fields + 1] = {t = "@i18n(app.modules.copyprofiles.dest_profile)@", valu
 local doSave = false
 
 local function onSaveMenu()
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        doSave = true
+        return
+    end    
+
     local buttons = {
         {
             label = "@i18n(app.btn_ok)@",

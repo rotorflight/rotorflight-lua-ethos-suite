@@ -49,14 +49,16 @@ local userpref_defaults = {
         syncname = false,
         gimbalsupression = 0.85,
         txbatt_type = 0,
-        hs_loader = 0
+        hs_loader = 0,
+        theme_loader = 1,  
+        save_confirm = true,   
+        reload_confirm = true  
     },
     localizations = {
         temperature_unit = 0,
         altitude_unit = 0
     },
     dashboard = {
-        theme_loader = 1,
         theme_preflight = "system/default",
         theme_inflight = "system/default",
         theme_postflight = "system/default"
@@ -78,8 +80,6 @@ local userpref_defaults = {
     },
     switches = {},
     developer = {
-        compile = true,
-        devtools = false,
         loglevel = "off",
         logmsp = false,
         logobjprof = false,

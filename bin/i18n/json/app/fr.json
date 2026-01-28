@@ -220,11 +220,6 @@
         "translation": "CLOSE AT 100%",
         "needs_translation": true
       },
-      "txt_devtools": {
-        "english": "Developer Tools",
-        "translation": "Outils developpeur",
-        "needs_translation": false
-      },
       "txt_apiversion": {
         "english": "SIM API Version",
         "translation": "Version API SIM",
@@ -366,8 +361,8 @@
         "needs_translation": true
       },
       "dashboard_loader_loader_style_select": {
-        "english": "Loader size",
-        "translation": "Loader size",
+        "english": "Theme loader style",
+        "translation": "Theme loader style",
         "needs_translation": true
       },
       "dashboard_theme_preflight": {
@@ -394,6 +389,16 @@
         "english": "Localization",
         "translation": "Localisation",
         "needs_translation": false
+      },
+      "txt_save_confirm": {
+        "english": "Confirm on save",
+        "translation": "Confirm on save",
+        "needs_translation": true
+      },
+      "txt_reload_confirm": {
+        "english": "Confirm on reload",
+        "translation": "Confirm on reload",
+        "needs_translation": true
       },
       "txt_development": {
         "english": "Development",

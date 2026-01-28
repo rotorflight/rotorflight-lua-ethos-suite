@@ -317,6 +317,12 @@ local function paint()
 end
 
 local function onSaveMenu()
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        triggerSave = true
+        return
+    end   
+
     form.openDialog({
         title   = "@i18n(app.modules.profile_select.save_settings)@",
         message = "@i18n(app.modules.profile_select.save_prompt)@",

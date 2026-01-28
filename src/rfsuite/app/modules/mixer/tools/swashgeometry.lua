@@ -387,6 +387,12 @@ local function onNavMenu(self)
 end
 
 local function onSaveMenu()
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        triggerSave = true
+        return
+    end  
+
     local buttons = {
         {
             label = "@i18n(app.btn_ok_long)@",

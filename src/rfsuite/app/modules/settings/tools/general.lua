@@ -44,8 +44,8 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_syncname)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.dashboard_loader_loader_style_select)@")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.loader_style_small)@", 0}, {"@i18n(app.modules.settings.loader_style_medium)@", 1}, {"@i18n(app.modules.settings.loader_style_large)@", 2}}, function() return config.theme_loader ~= nil and config.theme_loader or 1 end, function(newValue) config.theme_loader = newValue end)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
@@ -55,6 +55,24 @@ local function openPage(pageIdx, title, script)
         config.txbatt_type = newValue
         if rfsuite.preferences and rfsuite.preferences.general then rfsuite.preferences.general.txbatt_type = newValue end
     end)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_save_confirm)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.save_confirm or false end, function(newValue) config.save_confirm = newValue end)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_reload_confirm)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.reload_confirm or false end, function(newValue) config.reload_confirm = newValue end)
+
+
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_syncname)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
+
 
     for i, field in ipairs(rfsuite.app.formFields) do if field and field.enable then field:enable(true) end end
     rfsuite.app.navButtons.save = true
@@ -66,15 +84,26 @@ local function onNavMenu()
 end
 
 local function onSaveMenu()
+
+    local function doSave()
+        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
+        rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
+        rfsuite.app.triggers.closeSave = true
+        return true
+    end
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        doSave()
+        return
+    end    
+
     local buttons = {
         {
             label = "@i18n(app.btn_ok_long)@",
             action = function()
-                local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
-                rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
-                rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-                rfsuite.app.triggers.closeSave = true
+                doSave()
                 return true
             end
         }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
