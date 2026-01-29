@@ -259,6 +259,11 @@ local function clearSessionAndQueue()
             end
         end
     end
+
+    -- reset admin tasks
+    if rfsuite.app and rfsuite.app.tasks and rfsuite.app.tasks.reset then
+        rfsuite.app.tasks.reset()
+    end
     
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end

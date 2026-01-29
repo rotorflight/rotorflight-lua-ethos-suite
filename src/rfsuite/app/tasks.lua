@@ -17,6 +17,9 @@ local mspCallsComplete = false
 
 local function mspCalls()
 
+    if mspCallsComplete then return end
+
+
     if (rfsuite.session.governorMode == nil ) then
         local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
@@ -374,6 +377,12 @@ function tasks.wakeup()
         taskAccumulator = taskAccumulator - 1
     end
 
+end
+
+function tasks.reset()
+    nextUiTask = 1
+    taskAccumulator = 0
+    mspCallsComplete = false
 end
 
 return tasks
