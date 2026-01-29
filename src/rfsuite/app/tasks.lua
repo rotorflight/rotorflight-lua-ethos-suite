@@ -17,6 +17,9 @@ local mspCallsComplete = false
 
 local function mspCalls()
 
+    if mspCallsComplete then return end
+
+
     if (rfsuite.session.governorMode == nil ) then
         local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
@@ -53,7 +56,6 @@ local function mspCalls()
         API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
         API.read()
     elseif (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil)  then
-        mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
@@ -375,6 +377,12 @@ function tasks.wakeup()
         taskAccumulator = taskAccumulator - 1
     end
 
+end
+
+function tasks.reset()
+    nextUiTask = 1
+    taskAccumulator = 0
+    mspCallsComplete = false
 end
 
 return tasks

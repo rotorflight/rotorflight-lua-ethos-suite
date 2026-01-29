@@ -19,6 +19,8 @@ local servoCount = rfsuite.session.servoCount or 6
 local motorCount = 1
 if rfsuite.session.tailMode == 0 then motorCount = 2 end
 
+local isSaving = false
+
 
 local minmax = {}
 minmax[0] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000}           -- none
