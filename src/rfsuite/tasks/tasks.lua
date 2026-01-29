@@ -101,12 +101,23 @@ local mustRunTasks = {}
 local SORT_BY_LAST_RUN_ASC = function(a, b) return a.last_run < b.last_run end
 
 local function profWanted(name)
-    if not tasks.profile.enabled then return end
     if not tasks.profile.enabled then return false end
     local inc, exc = tasks.profile.include, tasks.profile.exclude
     if inc and not inc[name] then return false end
     if exc and exc[name] then return false end
     return true
+end
+
+function tasks.setRateMultiplier(mult)
+    mult = tonumber(mult) or 1.0
+    if mult <= 0 then mult = 0.0001 end
+    tasks.rateMultiplier = mult
+    for _, task in ipairs(tasksList) do
+        local base = task.baseInterval or task.interval or 1
+        local j = task.jitter or 0
+        task.interval = (base * mult) + j
+    end
+    utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
 end
 
 local function profRecord(task, dur)
@@ -154,18 +165,6 @@ function tasks.dumpSchedule()
         local next_run = t.last_run + t.interval
         local in_secs = next_run - now
         utils.log(string.format("%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs", t.name, t.interval, t.last_run, in_secs), "info")
-    end
-
-    function tasks.setRateMultiplier(mult)
-        mult = tonumber(mult) or 1.0
-        if mult <= 0 then mult = 0.0001 end
-        tasks.rateMultiplier = mult
-        for _, task in ipairs(tasksList) do
-            local base = task.baseInterval or task.interval or 1
-            local j = task.jitter or 0
-            task.interval = (base * mult) + j
-        end
-        utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
     end
 
     utils.log("================================", "info")
@@ -875,7 +874,12 @@ function tasks.init()
 end
 
 function tasks.setTelemetryTypeChanged()
-    for _, task in ipairs(tasksList) do if tasks[task.name].setTelemetryTypeChanged then tasks[task.name].setTelemetryTypeChanged() end end
+    for _, task in ipairs(tasksList) do
+        local mod = tasks[task.name]
+        if mod and type(mod.setTelemetryTypeChanged) == "function" then
+            pcall(mod.setTelemetryTypeChanged)
+        end
+    end
     rfsuite.utils.session()
 end
 
