@@ -53,7 +53,6 @@ local function mspCalls()
         API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
         API.read()
     elseif (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil)  then
-        mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
