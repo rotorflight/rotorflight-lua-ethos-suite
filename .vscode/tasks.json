@@ -7,13 +7,24 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--lang", "en",
+        "--lang", "${config:rfsuite.deploy.language}",
         "--step", "i18n",
         "--step", "soundpack",
-        "--step", "sensors"           
+        "--step", "sensors",,
+    {
+      "label": "RFSuite: Set Deployment Language",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".vscode/set-language.js",
+        "${input:deployLanguage}"
       ],
+      "problemMatcher": []
+    }
+  ],
       "options": {
         "env": {
+        "RFSUITE_LANG": "${config:rfsuite.deploy.language}",
           "ETHOS_FIRMWARE": "${config:ethos.firmware}"
         }
       },
@@ -27,7 +38,7 @@
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
-        "--lang", "en",
+        "--lang", "${config:rfsuite.deploy.language}",
         "--step", "i18n",
         "--step", "soundpack",
         "--step", "sensors"     
@@ -43,7 +54,7 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--fileext", "fast",
         "--radio",
-        "--lang", "en",
+        "--lang", "${config:rfsuite.deploy.language}",
         "--step", "i18n",
         "--step", "soundpack"   
       ],
@@ -58,7 +69,7 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
         "--radio-debug",
-        "--lang", "en",
+        "--lang", "${config:rfsuite.deploy.language}",
         "--step", "i18n",
         "--step", "soundpack"   
       ],
@@ -74,7 +85,7 @@
         "--fileext", "fast",
         "--radio",
         "--radio-debug",
-        "--lang", "en",
+        "--lang", "${config:rfsuite.deploy.language}",
         "--step", "i18n",
         "--step", "soundpack"   
       ],
@@ -89,7 +100,7 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
         "--connect-only",
-        "--lang", "en",
+        "--lang", "${config:rfsuite.deploy.language}",
         "--step", "i18n",
         "--step", "soundpack"   
       ],
@@ -149,9 +160,23 @@
       "type": "process",
       "command": "${workspaceFolder}/bin/sensors/sensors.exe",
       "options": {
+      "env": {
+        "RFSUITE_LANG": "${config:rfsuite.deploy.language}"
+      },
         "cwd": "${workspaceFolder}/bin/sensors"
       },
       "problemMatcher": []
     }      
+  ]
+,
+
+  "inputs": [
+    {
+      "id": "deployLanguage",
+      "type": "pickString",
+      "description": "Select deployment language",
+      "options": ["en", "de", "fr", "es", "it"],
+      "default": "en"
+    }
   ]
 }
