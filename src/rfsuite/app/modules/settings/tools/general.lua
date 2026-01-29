@@ -96,7 +96,7 @@ local function onSaveMenu()
 
     if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
         doSave()
-        return
+        return true
     end    
 
     local buttons = {
