@@ -174,10 +174,17 @@ local function wakeup()
             end)
         end
 
+        if rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil then
+            rfsuite.tasks.msp.helpers.mixerConfig(function(tailMode, swashMode)
+                rfsuite.utils.log("Received tail mode: " .. tostring(tailMode), "info")
+                rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
+            end)
+        end    
+
     end
 
     -- enable the buttons once we have servo info
-    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil then
+    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil then
         for i, v in pairs(rfsuite.app.formFields) do
             if v.enable then
                 v:enable(true)

@@ -18,7 +18,7 @@ rfsuite exposes several subsystems under the global `rfsuite` table.
 
 * **Access**: `rfsuite.session` contains read-only session info.
 
-  * `craftName`, `modelID`, `apiVersion`, `tailMode`, `swashMode`, `servoCount`, `governorMode`, etc.
+  * `craftName`, `modelID`, `apiVersion`, etc.
 
 ```lua
 local name = rfsuite.session.craftName or "-"
