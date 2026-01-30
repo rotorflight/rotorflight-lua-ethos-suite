@@ -57,6 +57,18 @@ local function mainMenuIconEnableDisable()
             for i, v in pairs(app.formFieldsBGTask) do
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
+                elseif v == true and app.formFields[i] then
+                    app.formFields[i]:enable(true)                        
+                elseif v == false then
+                    log("Main Menu Icon " .. i .. " not found in formFields", "debug")
+                end
+            end
+        elseif not rfsuite.session.isConnected then
+            for i, v in pairs(app.formFieldsOffline) do
+                if v == false and app.formFields[i] then
+                    app.formFields[i]:enable(false)
+                elseif v == true and app.formFields[i] then
+                    app.formFields[i]:enable(true)    
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -65,10 +77,12 @@ local function mainMenuIconEnableDisable()
             for i, v in pairs(app.formFieldsOffline) do
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
+                elseif v == true and app.formFields[i] then
+                    app.formFields[i]:enable(true)                        
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
-            end
+            end            
         elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
             app.offlineMode = false
             for i in pairs(app.formFieldsOffline) do
