@@ -131,8 +131,6 @@ local function openPage(pidx, title, script)
 
     end
 
-    rfsuite.app.triggers.closeProgressLoader = true
-
     enableWakeup = true
 
     return
@@ -192,6 +190,8 @@ local function wakeup()
                 v:enable(true)
             end    
         end
+        -- close progress loader
+        rfsuite.app.triggers.closeProgressLoader = true
     end
 
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
