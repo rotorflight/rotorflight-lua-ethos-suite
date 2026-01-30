@@ -200,12 +200,12 @@
       "tbl_escgov": {
         "english": "ESC Governor",
         "needs_translation": false,
-        "translation": "ESC-Governor"
+        "translation": "ESC Governor"
       },
       "tbl_linear_thr": {
         "english": "Linear Throttle",
         "needs_translation": false,
-        "translation": "Linear Throttle"
+        "translation": "Linear Gas"
       },
       "tbl_rf_gov": {
         "english": "RF Gyro Governor",
@@ -354,7 +354,7 @@
       "tbl_fwgov": {
         "english": "Fixed Wing",
         "needs_translation": false,
-        "translation": "Flächenflugzeug-Governor"
+        "translation": "Flächenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -578,7 +578,7 @@
       "tbl_fwgov": {
         "english": "Fixed Wing",
         "needs_translation": false,
-        "translation": "Flöchenflugzeug-Governor"
+        "translation": "Flöchenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -847,7 +847,7 @@
       "tbl_fwgov": {
         "english": "Fixed Wing",
         "needs_translation": false,
-        "translation": "Flächenflugzeug-Governor"
+        "translation": "Flächenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -2083,7 +2083,7 @@
         "name": {
           "english": "Accelerometer",
           "needs_translation": false,
-          "translation": "Beschleunigungssensor"
+          "translation": "Beschl.-Sensor"
         },
         "pitch": {
           "english": "Pitch",
@@ -2308,7 +2308,7 @@
             "auto_restart_time": {
               "english": "Auto Bailout Time",
               "needs_translation": false,
-              "translation": "Auto restart Zeit"
+              "translation": "Auto Restart Zeit"
             },
             "basic": {
               "english": "General",
@@ -3391,7 +3391,7 @@
         "channel_page": {
           "english": "Fbus out / CH",
           "needs_translation": false,
-          "translation": "Fbus Ausgang / CH"
+          "translation": "FBUS Ausgang / CH"
         },
         "channel_prefix": {
           "english": "CHANNEL ",
@@ -4038,7 +4038,7 @@
         "name": {
           "english": "MSP Expermental",
           "needs_translation": false,
-          "translation": "MSP Experimentell"
+          "translation": "MSP Exp."
         }
       },
       "msp_speed": {
@@ -4075,7 +4075,7 @@
         "name": {
           "english": "MSP Speed",
           "needs_translation": false,
-          "translation": "MSP-Geschwindigkeit"
+          "translation": "MSP Speed"
         },
         "retries": {
           "english": "Retries",
@@ -6056,7 +6056,7 @@
         "localizations": {
           "english": "Localization",
           "needs_translation": false,
-          "translation": "Lokalisierung"
+          "translation": "Masseinheiten"
         },
         "meters": {
           "english": "Meters",
