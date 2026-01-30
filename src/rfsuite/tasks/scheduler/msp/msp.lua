@@ -44,8 +44,9 @@ msp.protocol.mspPoll  = transport.mspPoll
 -- Load MSP queue with protocol settings
 msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries   = msp.protocol.maxRetries
-msp.mspQueue.loopInterval = 0.031            -- Queue processing rate
+msp.mspQueue.loopInterval = 0                -- Queue processing rate
 msp.mspQueue.copyOnAdd    = true             -- Clone messages on enqueue
+msp.mspQueue.interMessageDelay = 0.1         -- Delay between messages
 msp.mspQueue.timeout      = msp.protocol.mspQueueTimeout or 2.0
 
 -- Load helpers and API handlers

@@ -28,6 +28,7 @@ local tasks = rfsuite.tasks
 local function loadSensorModule()
     if not tasks.active() then return nil end
     if not rfsuite.session.apiVersion then return nil end
+    
 
     local protocol = tasks.msp.protocol.mspProtocol
 
