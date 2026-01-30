@@ -158,30 +158,23 @@ local function wakeup()
 
     -- Do MSP calls to get servo info
     -- We keep sub menu buttons disabled until this is delivered
-    if (rfsuite.session.servoCount == nil) then
-        local API = rfsuite.tasks.msp.api.load("STATUS")
-        API.setCompleteHandler(function(self, buf)
-            rfsuite.session.servoCount = API.readValue("servo_count")
-            if rfsuite.session.servoCount then 
-                rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info") 
-            end    
-        end)
-        API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
-        API.read()    
-    elseif (rfsuite.session.servoOverride == nil) then
-        local API = rfsuite.tasks.msp.api.load("SERVO_OVERRIDE")
-        API.setCompleteHandler(function(self, buf)
-            for i, v in pairs(API.data().parsed) do
-                if v == 0 then
-                    rfsuite.utils.log("Servo override: true (" .. i .. ")", "info")
-                    rfsuite.session.servoOverride = true
-                end
-            end
-            if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
-        end)
-        API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
-        API.read()
-    end    
+    if rfsuite.tasks  and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
+
+        local msp = rfsuite.tasks.msp
+
+        if rfsuite.session.servoCount == nil then
+            msp.helpers.servoCount(function(servoCount)
+                rfsuite.utils.log("Received servo count: " .. tostring(servoCount), "info")
+            end)
+        end
+
+        if rfsuite.session.servoOverride == nil then
+            msp.helpers.servoOverride(function(servoOverride)
+                rfsuite.utils.log("Received servo override: " .. tostring(servoOverride), "info")
+            end)
+        end
+
+    end
 
     -- enable the buttons once we have servo info
     if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil then
