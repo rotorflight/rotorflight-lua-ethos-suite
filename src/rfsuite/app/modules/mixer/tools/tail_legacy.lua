@@ -29,7 +29,7 @@ end
 
 local function wakeup()
 
-    -- we are compromosed without this - go back to main
+    -- we are compromised without this - go back to main
     if rfsuite.session.tailMode == nil then
         rfsuite.app.ui.openMainMenu()
     end

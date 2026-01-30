@@ -33,6 +33,13 @@ local function postLoad(self)
 end
 
 local function wakeup()
+
+    -- we are compromised if we don't have governor mode known
+    if rfsuite.session.governorMode == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end
+
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " / " .. "@i18n(app.modules.governor.menu_flags)@" .. " #" .. rfsuite.session.activeProfile) end
