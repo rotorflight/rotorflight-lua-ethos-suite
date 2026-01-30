@@ -118,14 +118,8 @@ local function openPage(pidx, title, script)
             end
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
-
-        if pvalue.apiversion ~= nil then
-            local apiVersionSupported = rfsuite.utils.apiVersionCompare(">=", pvalue.apiversion)
-            if not apiVersionSupported then
-                rfsuite.app.formFields[pidx]:enable(false)
-            end
-        end
+        -- Disable all buttons until msp calls are complete
+        rfsuite.app.formFields[pidx]:enable(false)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
@@ -164,14 +158,45 @@ local function wakeup()
 
     if os.clock() - initTime < 0.25 then return end
 
+    -- Do MSP calls to get servo info
+    -- We keep sub menu buttons disabled until this is delivered
+    if (rfsuite.session.servoCount == nil) then
+        local API = rfsuite.tasks.msp.api.load("STATUS")
+        API.setCompleteHandler(function(self, buf)
+            rfsuite.session.servoCount = API.readValue("servo_count")
+            if rfsuite.session.servoCount then 
+                rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info") 
+            end    
+        end)
+        API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
+        API.read()    
+    elseif (rfsuite.session.servoOverride == nil) then
+        local API = rfsuite.tasks.msp.api.load("SERVO_OVERRIDE")
+        API.setCompleteHandler(function(self, buf)
+            for i, v in pairs(API.data().parsed) do
+                if v == 0 then
+                    rfsuite.utils.log("Servo override: true (" .. i .. ")", "info")
+                    rfsuite.session.servoOverride = true
+                end
+            end
+            if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
+        end)
+        API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
+        API.read()
+    end    
+
+    -- enable the buttons once we have servo info
+    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil then
+        for i, v in pairs(rfsuite.app.formFields) do
+            if v.enable then
+                v:enable(true)
+            end    
+        end
+    end
+
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
-
     if currState ~= prevConnectedState then
-
-        --rfsuite.app.formFields[2]:enable(currState)
-
         if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
-
         prevConnectedState = currState
     end
 

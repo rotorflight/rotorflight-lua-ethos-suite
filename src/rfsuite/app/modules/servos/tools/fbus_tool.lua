@@ -169,6 +169,12 @@ local function wakeup()
         if rfsuite.app.Page.apidata.formdata.fields[4].value and rfsuite.app.Page.apidata.formdata.fields[4].value >= currentMax then rfsuite.app.Page.apidata.formdata.fields[4].value = currentMax end
         if rfsuite.app.Page.apidata.formdata.fields[4].value and rfsuite.app.Page.apidata.formdata.fields[4].value <= currentMin then rfsuite.app.Page.apidata.formdata.fields[4].value = currentMin end
 
+        -- go back to main as this tool is compromised 
+        if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
+            rfsuite.app.ui.openMainMenu()
+            return
+        end
+
     end
 end
 
