@@ -121,10 +121,6 @@ local function wakeup(widget)
             -- Log Rotorflight session information
             rfsuite.utils.log("Craft Name: " .. (rfsuite.session.craftName or "-"), "info")
             rfsuite.utils.log("API Version: " .. (rfsuite.session.apiVersion or "-"), "info")
-            rfsuite.utils.log("Tail Mode: " .. (rfsuite.session.tailMode or "-"), "info")
-            rfsuite.utils.log("Swash Mode: " .. (rfsuite.session.swashMode or "-"), "info")
-            rfsuite.utils.log("Servo Count: " .. (rfsuite.session.servoCount or "-"), "info")
-            rfsuite.utils.log("Governor Mode: " .. (rfsuite.session.governorMode or "-"), "info")
 
             -- Read telemetry sensors
             local armflags = rfsuite.tasks.telemetry.getSensorSource("armflags")
