@@ -6,9 +6,8 @@
 local rfsuite = require("rfsuite")
 
 local  S_PAGES ={
-        [1] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" },
-        [2] = { name = "@i18n(app.modules.servos.sbus)@", script = "sbus.lua", image = "sbus.png"},    
-        [3] = { name = "@i18n(app.modules.servos.fbus)@", script = "fbus.lua", image = "fbus.png"},
+        [1] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" }, 
+        [2] = { name = "@i18n(app.modules.servos.bus)@", script = "bus.lua", image = "bus.png"},
     }
 
 local enableWakeup = false
