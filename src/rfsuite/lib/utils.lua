@@ -26,6 +26,7 @@ function utils.session()
 
         servoCount = nil,
         servoOverride = nil,
+        servoBusEnabled = nil,
 
         apiVersion = nil,
         apiVersionInvalid = nil,

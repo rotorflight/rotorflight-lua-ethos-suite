@@ -5,9 +5,14 @@
 
 local rfsuite = require("rfsuite")
 
+local MENU_ID = {
+    PWM = 1,
+    BUS = 2,
+}
+
 local  S_PAGES ={
-        [1] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" }, 
-        [2] = { name = "@i18n(app.modules.servos.bus)@", script = "bus.lua", image = "bus.png"},
+        [MENU_ID.PWM] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" }, 
+        [MENU_ID.BUS] = { name = "@i18n(app.modules.servos.bus)@", script = "bus.lua", image = "bus.png"},
     }
 
 local enableWakeup = false
@@ -153,8 +158,6 @@ end
 local function wakeup()
     if not enableWakeup then return end
 
-    if os.clock() - initTime < 0.25 then return end
-
     -- Do MSP calls to get servo info
     -- We keep sub menu buttons disabled until this is delivered
     if rfsuite.tasks  and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
@@ -180,15 +183,27 @@ local function wakeup()
             end)
         end    
 
+        if rfsuite.session.servoBusEnabled == nil then
+            rfsuite.tasks.msp.helpers.servoBusEnabled(function(servoBusEnabled)
+                rfsuite.utils.log("Received servo bus enabled: " .. tostring(servoBusEnabled), "info")
+            end)
+        end
+
     end
 
     -- enable the buttons once we have servo info
-    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil then
-        for i, v in pairs(rfsuite.app.formFields) do
-            if v.enable then
-                v:enable(true)
-            end    
+    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil and rfsuite.session.servoBusEnabled  ~= nil then
+
+        -- pwm servos
+        if rfsuite.app.formFields[MENU_ID.PWM] then
+            rfsuite.app.formFields[MENU_ID.PWM]:enable(true)
         end
+
+        -- bus servos
+        if rfsuite.utils.apiVersionCompare(">", "12.08") and rfsuite.app.formFields[MENU_ID.BUS] and rfsuite.session.servoBusEnabled == true then
+            rfsuite.app.formFields[MENU_ID.BUS]:enable(true)
+        end
+
         -- close progress loader
         rfsuite.app.triggers.closeProgressLoader = true
     end
