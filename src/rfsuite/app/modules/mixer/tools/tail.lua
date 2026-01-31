@@ -502,6 +502,12 @@ local function wakeup()
         return
     end 
 
+    -- we are compromised without this - go back to main
+    if rfsuite.session.tailMode == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end    
+
     if triggerSave then
         rfsuite.app.ui.progressDisplay("@i18n(app.msg_saving_settings)@","@i18n(app.msg_saving_to_fbl)@")
         save.start()

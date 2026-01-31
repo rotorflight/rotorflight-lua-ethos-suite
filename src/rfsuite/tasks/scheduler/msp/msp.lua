@@ -16,6 +16,7 @@ msp.activeProtocol = nil      -- Current telemetry protocol type in use
 msp.onConnectChecksInit = true -- Flag to run initial checks on telemetry connect
 
 local protocol = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/protocols.lua"))()
+local helpers = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/helpers.lua"))()
 
 local telemetryTypeChanged = false -- Set when switching CRSF/S.Port/etc.
 
@@ -23,6 +24,9 @@ msp.mspQueue = nil
 
 -- Protocol parameters for current telemetry type
 msp.protocol = protocol.getProtocol()
+
+-- Expose helper functions
+msp.helpers = helpers
 
 -- Load all transport modules
 msp.protocolTransports = {}
@@ -40,8 +44,9 @@ msp.protocol.mspPoll  = transport.mspPoll
 -- Load MSP queue with protocol settings
 msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries   = msp.protocol.maxRetries
-msp.mspQueue.loopInterval = 0.031            -- Queue processing rate
+msp.mspQueue.loopInterval = 0                -- Queue processing rate
 msp.mspQueue.copyOnAdd    = true             -- Clone messages on enqueue
+msp.mspQueue.interMessageDelay = 0.1         -- Delay between messages
 msp.mspQueue.timeout      = msp.protocol.mspQueueTimeout or 2.0
 
 -- Load helpers and API handlers

@@ -41,6 +41,8 @@ function sync.wakeup()
     -- no api version info yet
     if rfsuite.session.apiVersion == nil then return end
 
+    if rfsuite.session.mspBusy then return end
+
     if rfsuite.session.mcu_id == nil then
         -- we need MCU ID first
         return
@@ -105,6 +107,7 @@ function sync.wakeup()
             -- local is higher, update remote
             local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
             API.setRebuildOnWrite(true)
+            API.setUUID("7a5a2f27-2ef6-4f2d-7egf-8a1f4c4a6e28") 
 
             for i,v in pairs(FBL_STATS) do
                 API.setValue(i, v)

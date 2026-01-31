@@ -51,6 +51,13 @@ local function openPage(pageIdx, title, script)
         end
     end)
 
+    if system.getVersion().simulation then
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_apiversion)@")
+        rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, rfsuite.utils.msp_version_array_to_indexed(), function() return settings.apiversion end, function(newValue) settings.apiversion = newValue end)
+    end    
+
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_mspdata)@")

@@ -23,7 +23,7 @@ end
 function events.wakeup()
     local currentTime = os.clock()
 
-    if rfsuite.session.isConnected and rfsuite.session.telemetryState then
+    if rfsuite.session.postConnectComplete and rfsuite.session.telemetryState then
         if telemetryStartTime == nil then telemetryStartTime = currentTime end
 
         if (currentTime - telemetryStartTime) < 2.5 then return end

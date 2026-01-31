@@ -70,7 +70,12 @@ function MspQueueController.new(opts)
     self.uuid = nil -- last processed UUID
     self.apiname = nil -- last processed API name
 
-    self.loopInterval = opts.loopInterval or 0 -- optional rate limit
+    -- Inter-message delay (gap between *completed* messages)
+    self.interMessageDelay = opts.interMessageDelay or 0
+    self._nextMessageAt = 0
+
+    -- Optional loop throttle (kept for backwards-compat, but only gates starting the next message)
+    self.loopInterval = opts.loopInterval or 0
     self._nextProcessAt = 0
 
     self.copyOnAdd = opts.copyOnAdd == true -- optionally copy on enqueue
@@ -87,15 +92,10 @@ function MspQueueController:isProcessed() return (self.currentMessage == nil) an
 -- Main queue processor (send, retry, handle replies)
 function MspQueueController:processQueue()
 
-    -- Optional loop throttle
-    if self.loopInterval and self.loopInterval > 0 then
-        local now = os.clock()
-        if now < self._nextProcessAt then return end
-        self._nextProcessAt = now + self.loopInterval
-    end
+    local now = os.clock()
 
     -- MSP busy watchdog
-    local mspBusyTimeout = 5.0
+    local mspBusyTimeout = 2.5
     self.mspBusyStart = self.mspBusyStart or os.clock()
 
     if LOG_ENABLED_MSP_QUEUE() then
@@ -115,8 +115,8 @@ function MspQueueController:processQueue()
 
     -- Watchdog: MSP stuck too long
     if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
-        rfsuite.utils.log("MSP blocked for more than " .. mspBusyTimeout .. " seconds", "info")
-        rfsuite.utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
+        --rfsuite.utils.log("MSP busy for more than " .. mspBusyTimeout .. " seconds", "info")
+        --rfsuite.utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
         rfsuite.session.mspBusy = false
         self.mspBusyStart = nil
         return
@@ -126,9 +126,20 @@ function MspQueueController:processQueue()
 
     rfsuite.utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP
 
-    -- Get next message if idle
+    -- Get next message if idle (optionally wait before advancing)
     if not self.currentMessage then
-        self.currentMessageStartTime = os.clock()
+        -- Inter-message gap (after a message completes/fails)
+        if self.interMessageDelay and self.interMessageDelay > 0 then
+            if now < (self._nextMessageAt or 0) then return end
+        end
+
+        -- Legacy loop throttle, but only gates starting the next message
+        if self.loopInterval and self.loopInterval > 0 then
+            if now < (self._nextProcessAt or 0) then return end
+            self._nextProcessAt = now + self.loopInterval
+        end
+
+        self.currentMessageStartTime = now
         self.currentMessage = qpop(self.queue)
         self.retryCount = 0
     end
@@ -172,7 +183,10 @@ function MspQueueController:processQueue()
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
-        self.apiname = nil 
+        self.apiname = nil
+        if self.interMessageDelay and self.interMessageDelay > 0 then
+            self._nextMessageAt = os.clock() + self.interMessageDelay
+        end
         return
     end
 
@@ -224,6 +238,9 @@ function MspQueueController:processQueue()
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
+        if self.interMessageDelay and self.interMessageDelay > 0 then
+            self._nextMessageAt = os.clock() + self.interMessageDelay
+        end        
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
 
     -- Too many retries → reset
@@ -240,6 +257,7 @@ function MspQueueController:clear()
     self.mspBusyStart = nil
     self.queue = newQueue()
     self.currentMessage = nil
+    self._nextMessageAt = 0
     self.uuid = nil
     self.apiname = nil
     rfsuite.tasks.msp.common.mspClearTxBuf()

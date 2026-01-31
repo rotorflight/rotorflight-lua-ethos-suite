@@ -103,6 +103,13 @@ end
 
 local function wakeup(self)
 
+    -- we are compromised without this - go back to main
+    if rfsuite.session.tailMode == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end    
+
+
     if inOverRide == true then
 
         currentRollTrim = rfsuite.app.Page.apidata.formdata.fields[1].value

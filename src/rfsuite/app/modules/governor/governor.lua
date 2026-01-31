@@ -116,7 +116,8 @@ local function openPage(pidx, title, script)
             end
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+        -- keep disabled until we know governor session vars exist
+        rfsuite.app.formFields[pidx]:enable(false)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
@@ -127,8 +128,6 @@ local function openPage(pidx, title, script)
         if lc == numPerRow then lc = 0 end
 
     end
-
-    rfsuite.app.triggers.closeProgressLoader = true
 
     enableWakeup = true
     return
@@ -152,6 +151,26 @@ local function wakeup()
     if not enableWakeup then return end
 
     if os.clock() - initTime < 0.25 then return end
+
+    if rfsuite.session.governorMode == nil then
+        if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
+            rfsuite.tasks.msp.helpers.governorMode(function(governorMode)
+                rfsuite.utils.log("Received governor mode: " .. tostring(governorMode), "info")
+            end)
+        end
+    end
+
+
+    -- enable the buttons once we have servo info
+    if rfsuite.session.governorMode ~= nil then
+        for i, v in pairs(rfsuite.app.formFields) do
+            if v.enable then
+                v:enable(true)
+            end    
+        end
+        -- close progress loader
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
 
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 

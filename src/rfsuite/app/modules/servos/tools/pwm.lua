@@ -337,6 +337,13 @@ local function onToolMenu(self)
 end
 
 local function wakeup()
+
+    -- go back to main as this tool is compromised 
+    if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end
+
     if triggerOverRide == true then
         triggerOverRide = false
 
