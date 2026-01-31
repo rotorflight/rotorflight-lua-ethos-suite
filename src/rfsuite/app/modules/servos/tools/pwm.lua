@@ -13,6 +13,8 @@ local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 
+local pwmServoCount 
+local busServoOffset = 18
 
 local function writeEeprom()
 
@@ -23,7 +25,18 @@ end
 
 local function buildServoTable()
 
-    for i = 1, rfsuite.session.servoCount do
+    -- calculate servo count based on bus enabled or not
+    if rfsuite.session.servoBusEnabled == nil or rfsuite.session.servoBusEnabled == false then
+        pwmServoCount = rfsuite.session.servoCount
+    else    
+        if rfsuite.utils.apiVersionCompare(">", "12.08") then
+            pwmServoCount = rfsuite.session.servoCount - busServoOffset
+        else
+            pwmServoCount = rfsuite.session.servoCount
+        end
+    end
+
+    for i = 1, pwmServoCount do
         servoTable[i] = {}
         servoTable[i] = {}
         servoTable[i]['title'] = "@i18n(app.modules.servos.servo_prefix)@" .. i
@@ -31,7 +44,7 @@ local function buildServoTable()
         servoTable[i]['disabled'] = true
     end
 
-    for i = 1, rfsuite.session.servoCount do
+    for i = 1, pwmServoCount do
 
         servoTable[i]['disabled'] = false
 
@@ -210,6 +223,7 @@ local function openPage(pidx, title, script)
                     rfsuite.preferences.menulastselected["pwm"] = pidx
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
+
                     rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/pwm_tool.lua", servoTable)
                 end
             })

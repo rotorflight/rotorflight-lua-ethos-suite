@@ -85,7 +85,7 @@ local function openPage(pidx, title, script)
     end
 
     if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
+    if rfsuite.preferences.menulastselected["servos_type"] == nil then rfsuite.preferences.menulastselected["servos_type"] = 1 end
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -115,7 +115,7 @@ local function openPage(pidx, title, script)
             options = FONT_S,
             paint = function() end,
             press = function()
-                rfsuite.preferences.menulastselected["servos"] = pidx
+                rfsuite.preferences.menulastselected["servos_type"] = pidx
                 rfsuite.app.ui.progressDisplay(nil,nil,false)
                 local name = "@i18n(app.modules.servos.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "servos/tools/" .. pvalue.script)
@@ -127,7 +127,7 @@ local function openPage(pidx, title, script)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
-        if rfsuite.preferences.menulastselected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["servos_type"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 

@@ -473,7 +473,11 @@ local function openPage(idx, title, script, extra1)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    getServoConfigurations(getServoConfigurationsEnd)
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+        getServoConfigurationsIndexed(getServoConfigurationsEnd)
+    else
+        getServoConfigurations(getServoConfigurationsEnd)
+    end    
 
 end
 
