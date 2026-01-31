@@ -51,6 +51,8 @@ local function mainMenuIconEnableDisable()
 
     if rfsuite.session.mspBusy then return end
 
+    --if app.lastMenu == nil then app.lastMenu = "mainmenu" end
+
     if app.uiState == app.uiStatus.mainMenu then
         local apiV = tostring(rfsuite.session.apiVersion)
         if not rfsuite.tasks.active() then
@@ -58,7 +60,14 @@ local function mainMenuIconEnableDisable()
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
                 elseif v == true and app.formFields[i] then
-                    app.formFields[i]:enable(true)                        
+                    app.formFields[i]:enable(true)   
+                    
+                    if app.lastMenu and rfsuite.preferences.menulastselected[app.lastMenu] == i then 
+                        app.formFields[i]:focus() 
+                    elseif not app.lastMenu and rfsuite.preferences.menulastselected["mainmenu"] == i then
+                        app.formFields[i]:focus()    
+                    end
+
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -69,6 +78,13 @@ local function mainMenuIconEnableDisable()
                     app.formFields[i]:enable(false)
                 elseif v == true and app.formFields[i] then
                     app.formFields[i]:enable(true)    
+
+                    if app.lastMenu and rfsuite.preferences.menulastselected[app.lastMenu] == i then 
+                        app.formFields[i]:focus() 
+                    elseif not app.lastMenu and rfsuite.preferences.menulastselected["mainmenu"] == i then
+                        app.formFields[i]:focus()    
+                    end                  
+
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -78,7 +94,14 @@ local function mainMenuIconEnableDisable()
                 if v == false and app.formFields[i] then
                     app.formFields[i]:enable(false)
                 elseif v == true and app.formFields[i] then
-                    app.formFields[i]:enable(true)                        
+                    app.formFields[i]:enable(true)  
+
+                    if app.lastMenu and rfsuite.preferences.menulastselected[app.lastMenu] == i then 
+                        app.formFields[i]:focus() 
+                    elseif not app.lastMenu and rfsuite.preferences.menulastselected["mainmenu"] == i then
+                        app.formFields[i]:focus()    
+                    end
+
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -88,6 +111,13 @@ local function mainMenuIconEnableDisable()
             for i in pairs(app.formFieldsOffline) do
                 if app.formFields[i] then
                     app.formFields[i]:enable(true)
+
+                    if app.lastMenu and rfsuite.preferences.menulastselected[app.lastMenu] == i then 
+                        app.formFields[i]:focus() 
+                    elseif not app.lastMenu and rfsuite.preferences.menulastselected["mainmenu"] == i then
+                        app.formFields[i]:focus()    
+                    end
+
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end

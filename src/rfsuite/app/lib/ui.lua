@@ -340,6 +340,7 @@ function ui.openMainMenu()
     local header = form.addLine("@i18n(app.header_configuration)@")
 
     for pidx, pvalue in ipairs(Menu) do
+
         app.formFieldsOffline[pidx] = pvalue.offline or false
         app.formFieldsBGTask[pidx] = pvalue.bgtask or false
 
@@ -378,8 +379,6 @@ function ui.openMainMenu()
         })
 
         app.formFields[pidx]:enable(false)
-
-        if preferences.menulastselected["mainmenu"] == pidx then app.formFields[pidx]:focus() end
 
         lc = lc + 1
         if lc == numPerRow then lc = 0 end
@@ -490,7 +489,6 @@ function ui.openMainMenuSub(activesection)
                             end
                         })
 
-                        if preferences.menulastselected[activesection] == pidx then app.formFields[pidx]:focus() end
 
                         lc = (lc + 1) % numPerRow
                     end
