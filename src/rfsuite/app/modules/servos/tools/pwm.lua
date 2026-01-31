@@ -29,8 +29,12 @@ local function buildServoTable()
     if rfsuite.session.servoBusEnabled == nil or rfsuite.session.servoBusEnabled == false then
         pwmServoCount = rfsuite.session.servoCount
     else    
-        if rfsuite.utils.apiVersionCompare(">", "12.08") then
-            pwmServoCount = rfsuite.session.servoCount - busServoOffset
+        if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            if system.getVersion().simulation == true then
+                pwmServoCount = rfsuite.session.servoCount
+            else
+                pwmServoCount = rfsuite.session.servoCount - busServoOffset
+            end
         else
             pwmServoCount = rfsuite.session.servoCount
         end
@@ -391,22 +395,36 @@ local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
 
-    for i = 0, #servoTable do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            local message = {command = 196, payload = {}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+            rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        for i = 0, #servoTable do
+            local message = {command = 193, payload = {i}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+            rfsuite.tasks.msp.mspQueue:add(message)
+        end
+    end    
+
+
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    for i = 0, #servoTable do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            local message = {command = 196, payload = {}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+            rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        for i = 0, #servoTable do
+            local message = {command = 193, payload = {i}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+            rfsuite.tasks.msp.mspQueue:add(message)
+        end
+    end    
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end

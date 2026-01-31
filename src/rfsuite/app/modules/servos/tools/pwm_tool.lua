@@ -23,26 +23,41 @@ local servoTable
 local servoCount
 local configs = {}
 
+
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
 
-    for i = 0, #configs do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            local message = {command = 196, payload = {}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+            rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        for i = 0, #servoTable do
+            local message = {command = 193, payload = {i}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+            rfsuite.tasks.msp.mspQueue:add(message)
+        end
+    end    
+
+
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    for i = 0, #configs do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            local message = {command = 196, payload = {}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+            rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        for i = 0, #servoTable do
+            local message = {command = 193, payload = {i}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+            rfsuite.tasks.msp.mspQueue:add(message)
+        end
+    end    
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -248,6 +263,7 @@ end
 local function getServoConfigurations(callback, callbackParam)
     local message = {
         command = 120,
+        uuid = "ajfsks-js8932js-242542-2525254",
         processReply = function(self, buf)
             servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
@@ -289,6 +305,54 @@ local function getServoConfigurations(callback, callbackParam)
     }
     rfsuite.tasks.msp.mspQueue:add(message)
 end
+
+
+local function getServoConfigurationsIndexed(callback, callbackParam)
+
+    rfsuite.utils.log("Fetching servo configurations indexed for " .. tostring(servoIndex), "info")
+
+    -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
+    -- Payload must contain exactly 1 byte: the servo index (0-based).
+    local message = {
+        command = 125,
+        payload = {servoIndex},
+        uuid = "asfss-sd235sd2323-fsdfsrw-525",
+        processReply = function(self, buf)
+
+            local config = configs[servoIndex] or {}
+            config.name = servoTable[servoIndex + 1]['title']
+            config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
+            config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
+            config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
+
+            if config.flags == 1 or config.flags == 3 then
+                config.reverse = 1
+            else
+                config.reverse = 0
+            end
+
+            if config.flags == 2 or config.flags == 3 then
+                config.geometry = 1
+            else
+                config.geometry = 0
+            end
+
+            configs[servoIndex] = config
+
+            if callback then callback(callbackParam) end
+        end,
+
+        simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
+    }
+
+    rfsuite.tasks.msp.mspQueue:add(message)
+end
+
 
 local function getServoConfigurationsEnd(callbackParam)
     rfsuite.app.triggers.isReady = true
@@ -474,8 +538,10 @@ local function openPage(idx, title, script, extra1)
     end
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+        rfsuite.utils.log("Using indexed servo config fetch", "info")
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
     else
+        rfsuite.utils.log("Using bulk servo config fetch", "info")
         getServoConfigurations(getServoConfigurationsEnd)
     end    
 
