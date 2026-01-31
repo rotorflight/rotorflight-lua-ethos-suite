@@ -23,41 +23,29 @@ local servoTable
 local servoCount
 local configs = {}
 
-
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
+    local count = servoCount or (servoTable and #servoTable) or 0
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-            local message = {command = 196, payload = {}}
-            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-            rfsuite.tasks.msp.mspQueue:add(message)
-    else
-        for i = 0, #servoTable do
-            local message = {command = 193, payload = {i}}
-            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-            rfsuite.tasks.msp.mspQueue:add(message)
-        end
-    end    
-
-
+    for i = 0, count - 1 do
+        local message = {command = 193, payload = {i}}
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+        rfsuite.tasks.msp.mspQueue:add(message)
+    end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-            local message = {command = 196, payload = {}}
-            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-            rfsuite.tasks.msp.mspQueue:add(message)
-    else
-        for i = 0, #servoTable do
-            local message = {command = 193, payload = {i}}
-            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-            rfsuite.tasks.msp.mspQueue:add(message)
-        end
-    end    
+    local count = servoCount or (servoTable and #servoTable) or 0
+
+    for i = 0, count - 1 do
+        local message = {command = 193, payload = {i}}
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+        rfsuite.tasks.msp.mspQueue:add(message)
+    end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -263,7 +251,6 @@ end
 local function getServoConfigurations(callback, callbackParam)
     local message = {
         command = 120,
-        uuid = "ajfsks-js8932js-242542-2525254",
         processReply = function(self, buf)
             servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
@@ -309,15 +296,19 @@ end
 
 local function getServoConfigurationsIndexed(callback, callbackParam)
 
-    rfsuite.utils.log("Fetching servo configurations indexed for " .. tostring(servoIndex), "info")
-
     -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
     -- Payload must contain exactly 1 byte: the servo index (0-based).
     local message = {
         command = 125,
         payload = {servoIndex},
-        uuid = "asfss-sd235sd2323-fsdfsrw-525",
+        uuid = string.format("servo.cfg.%d", servoIndex),
         processReply = function(self, buf)
+
+            -- Ensure we have a servoCount for any "all servos" operations (override on/off).
+            if not servoCount then
+                servoCount = rfsuite.session.servoCount or (servoTable and #servoTable) or 0
+                rfsuite.session.servoCount = servoCount
+            end
 
             local config = configs[servoIndex] or {}
             config.name = servoTable[servoIndex + 1]['title']
@@ -347,6 +338,7 @@ local function getServoConfigurationsIndexed(callback, callbackParam)
             if callback then callback(callbackParam) end
         end,
 
+        -- 8x U16 fields (16 bytes). Values: mid=1500, min=1000, max=2000, rneg=1000, rpos=1000, rate=100, speed=0, flags=0
         simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
     }
 
@@ -538,10 +530,8 @@ local function openPage(idx, title, script, extra1)
     end
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-        rfsuite.utils.log("Using indexed servo config fetch", "info")
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
     else
-        rfsuite.utils.log("Using bulk servo config fetch", "info")
         getServoConfigurations(getServoConfigurationsEnd)
     end    
 
