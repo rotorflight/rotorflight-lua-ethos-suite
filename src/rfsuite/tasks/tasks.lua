@@ -743,52 +743,52 @@ function tasks.wakeup()
         end
     end
 
--- ------------------------------------------------------------
--- Event hooks (edge-driven)
--- ------------------------------------------------------------
-do
-    -- Arm/disarm edges
-    local armedNow = (rfsuite.session and rfsuite.session.isArmed) and true or false
-    if armedNow ~= lastArmedState then
-        if armedNow then
-            utils.log("[event] onarm", "info")
-            local oa = events.onarm
-            if oa and type(oa.fire) == "function" then
-                pcall(function() oa.fire({ at = now }) end)
+    -- ------------------------------------------------------------
+    -- Event hooks (edge-driven)
+    -- ------------------------------------------------------------
+    if cycleFlip == 0 then
+        -- Arm/disarm edges
+        local armedNow = (rfsuite.session and rfsuite.session.isArmed) and true or false
+        if armedNow ~= lastArmedState then
+            if armedNow then
+                utils.log("[event] onarm", "info")
+                local oa = events.onarm
+                if oa and type(oa.fire) == "function" then
+                    pcall(function() oa.fire({ at = now }) end)
+                end
+            else
+                utils.log("[event] ondisarm", "info")
+                local oda = events.ondisarm
+                if oda and type(oda.fire) == "function" then
+                    pcall(function() oda.fire({ at = now }) end)
+                end
             end
-        else
-            utils.log("[event] ondisarm", "info")
-            local oda = events.ondisarm
-            if oda and type(oda.fire) == "function" then
-                pcall(function() oda.fire({ at = now }) end)
-            end
+            lastArmedState = armedNow
         end
-        lastArmedState = armedNow
-    end
 
-    -- Flightmode change edges
-    local fmNow = rfsuite.flightmode and rfsuite.flightmode.current or nil
-    if fmNow ~= lastFlightModeValue and rfsuite.session.isConnected then
-        utils.log("[event] onflightmode", "info")
-        if lastFlightModeValue ~= nil then
-            local ofm = events.onflightmode
-            if ofm and type(ofm.fire) == "function" then
-                pcall(function() ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now }) end)
+        -- Flightmode change edges
+        local fmNow = rfsuite.flightmode and rfsuite.flightmode.current or nil
+        if fmNow ~= lastFlightModeValue and rfsuite.session.isConnected then
+            utils.log("[event] onflightmode", "info")
+            if lastFlightModeValue ~= nil then
+                local ofm = events.onflightmode
+                if ofm and type(ofm.fire) == "function" then
+                    pcall(function() ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now }) end)
+                end
             end
+            lastFlightModeValue = fmNow
         end
-        lastFlightModeValue = fmNow
-    end
 
-    -- Allow hook modules (if present) to run their own task queues (currently empty)
-    -- Allow hook modules (if present) to run their own task queues.
-    -- Use active() when available; otherwise throttle to avoid constant wakeup overhead.
-    eventMaybeWake("onflightmode", events.onflightmode, now)
-    eventMaybeWake("onarm", events.onarm, now)
-    eventMaybeWake("ondisarm", events.ondisarm, now)
-    eventMaybeWake("onmodelchange", events.onmodelchange, now)
-    eventMaybeWake("ontransportchange", events.ontransportchange, now)
-    eventMaybeWake("ondisconnect", events.ondisconnect, now)
-end
+        -- Allow hook modules (if present) to run their own task queues (currently empty)
+        -- Allow hook modules (if present) to run their own task queues.
+        -- Use active() when available; otherwise throttle to avoid constant wakeup overhead.
+        eventMaybeWake("onflightmode", events.onflightmode, now)
+        eventMaybeWake("onarm", events.onarm, now)
+        eventMaybeWake("ondisarm", events.ondisarm, now)
+        eventMaybeWake("onmodelchange", events.onmodelchange, now)
+        eventMaybeWake("ontransportchange", events.ontransportchange, now)
+        eventMaybeWake("ondisconnect", events.ondisconnect, now)
+    end
 
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
