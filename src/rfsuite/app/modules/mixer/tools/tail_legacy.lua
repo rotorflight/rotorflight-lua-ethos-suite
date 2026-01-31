@@ -27,4 +27,13 @@ local function onNavMenu(self)
 
 end
 
-return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, onNavMenu=onNavMenu}
+local function wakeup()
+
+    -- we are compromised without this - go back to main
+    if rfsuite.session.tailMode == nil then
+        rfsuite.app.ui.openMainMenu()
+    end
+
+end
+
+return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, onNavMenu=onNavMenu}

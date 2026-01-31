@@ -158,7 +158,9 @@ end
 
 local function wakeup()
 
-    if enableWakeup == true and validSerialConfig == false then
+    if not enableWakeup then return end
+
+    if validSerialConfig == false then
 
         local now = os.clock()
         if (now - wakeupScheduler) >= 0.5 then
@@ -167,7 +169,7 @@ local function wakeup()
             getSerialConfig()
 
         end
-    elseif enableWakeup == true and validSerialConfig == true then
+    elseif validSerialConfig == true then
         if completedEnable == false then
             for pidx = 0, 15 do
                 rfsuite.app.formFields[pidx]:enable(true)
@@ -177,6 +179,12 @@ local function wakeup()
         end
 
     end
+ 
+    -- go back to main as this tool is compromised 
+    if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end    
 
 end
 

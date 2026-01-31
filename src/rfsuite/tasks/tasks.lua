@@ -7,120 +7,17 @@ local rfsuite = require("rfsuite")
 
 local utils = rfsuite.utils
 
--- Event-driven onconnect handler (moved out of scheduled tasks)
-local onconnect
-local function getOnconnect()
-    if onconnect then return onconnect end
+-- Load up event tables (no lazy loading)
+local events = {}
 
-    local fn, err = loadfile("tasks/events/onconnect/tasks.lua")
-    if not fn then
-        utils.log("[tasks] onconnect tasks.lua missing: " .. tostring(err), "error")
-        return nil
-    end
-
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then
-        onconnect = mod
-        return onconnect
-    end
-
-    utils.log("[tasks] onconnect tasks.lua did not return a table", "error")
-    return nil
-end
-
--- Event-driven postconnect handler (runs once AFTER rfsuite.session.isConnected becomes true)
-local postconnect
-local function getPostconnect()
-    if postconnect then return postconnect end
-
-    local fn, err = loadfile("tasks/events/postconnect/tasks.lua")
-    if not fn then
-        utils.log("[tasks] postconnect tasks.lua missing: " .. tostring(err), "error")
-        return nil
-    end
-
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then
-        postconnect = mod
-        return postconnect
-    end
-
-    utils.log("[tasks] postconnect tasks.lua did not return a table", "error")
-    return nil
-end
-
-
--- Event-driven ondisconnect handler (edge-triggered when the telemetry/link drops)
-local ondisconnect
-local function getOndisconnect()
-    if ondisconnect then return ondisconnect end
-
-    local fn, err = loadfile("tasks/events/ondisconnect/tasks.lua")
-    if not fn then
-        -- Optional module (framework). Missing is non-fatal.
-        return nil
-    end
-
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then
-        ondisconnect = mod
-        return ondisconnect
-    end
-
-    utils.log("[tasks] ondisconnect tasks.lua did not return a table", "error")
-    return nil
-end
-
--- Additional event hooks (framework-only until manifests are populated)
-local onflightmode
-local function getOnflightmode()
-    if onflightmode then return onflightmode end
-    local fn = loadfile("tasks/events/onflightmode/tasks.lua")
-    if not fn then return nil end
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then onflightmode = mod; return onflightmode end
-    return nil
-end
-
-local onmodelchange
-local function getOnmodelchange()
-    if onmodelchange then return onmodelchange end
-    local fn = loadfile("tasks/events/onmodelchange/tasks.lua")
-    if not fn then return nil end
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then onmodelchange = mod; return onmodelchange end
-    return nil
-end
-
-local onarm
-local function getOnarm()
-    if onarm then return onarm end
-    local fn = loadfile("tasks/events/onarm/tasks.lua")
-    if not fn then return nil end
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then onarm = mod; return onarm end
-    return nil
-end
-
-local ondisarm
-local function getOndisarm()
-    if ondisarm then return ondisarm end
-    local fn = loadfile("tasks/events/ondisarm/tasks.lua")
-    if not fn then return nil end
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then ondisarm = mod; return ondisarm end
-    return nil
-end
-
-local ontransportchange
-local function getOntransportchange()
-    if ontransportchange then return ontransportchange end
-    local fn = loadfile("tasks/events/ontransportchange/tasks.lua")
-    if not fn then return nil end
-    local ok, mod = pcall(fn)
-    if ok and type(mod) == "table" then ontransportchange = mod; return ontransportchange end
-    return nil
-end
+events.onconnect = loadfile("tasks/events/onconnect/tasks.lua")()
+events.postconnect = loadfile("tasks/events/postconnect/tasks.lua")()
+events.ondisconnect = loadfile("tasks/events/ondisconnect/tasks.lua")()
+events.onflightmode = loadfile("tasks/events/onflightmode/tasks.lua")()
+events.onmodelchange = loadfile("tasks/events/onmodelchange/tasks.lua")()
+events.onarm = loadfile("tasks/events/onarm/tasks.lua")()
+events.ondisarm = loadfile("tasks/events/ondisarm/tasks.lua")()
+events.ontransportchange = loadfile("tasks/events/ontransportchange/tasks.lua")()
 
 local currentTelemetrySensor
 local tasksPerCycle
@@ -171,9 +68,16 @@ local PATH_CHECK_INTERVAL = 2.0
 -- If we have telemetry/link but cannot reach rfsuite.session.isConnected within a deadline,
 -- force a teardown + retry to avoid MSP/queue deadlock.
 local connectAttemptStartedAt = nil
+local hadSession = false  -- latched once we have started (or had) a session attempt
 local connectAttemptResetCooldownUntil = 0
-local CONNECT_WATCHDOG_TIMEOUT_S = 20.0
+local CONNECT_WATCHDOG_TIMEOUT_S = 10.0
 local CONNECT_WATCHDOG_COOLDOWN_S = 3.0
+
+-- Telemetry edge tracking:
+-- We only want to do heavy teardown ONCE when link drops, not every scheduler tick.
+-- nil = unknown (startup), true = up, false = down
+local lastTelemetryUp = nil
+
 
 local lastNameCheckAt = 0
 local NAME_CHECK_INTERVAL = 2.0
@@ -197,12 +101,23 @@ local mustRunTasks = {}
 local SORT_BY_LAST_RUN_ASC = function(a, b) return a.last_run < b.last_run end
 
 local function profWanted(name)
-    if not tasks.profile.enabled then return end
     if not tasks.profile.enabled then return false end
     local inc, exc = tasks.profile.include, tasks.profile.exclude
     if inc and not inc[name] then return false end
     if exc and exc[name] then return false end
     return true
+end
+
+function tasks.setRateMultiplier(mult)
+    mult = tonumber(mult) or 1.0
+    if mult <= 0 then mult = 0.0001 end
+    tasks.rateMultiplier = mult
+    for _, task in ipairs(tasksList) do
+        local base = task.baseInterval or task.interval or 1
+        local j = task.jitter or 0
+        task.interval = (base * mult) + j
+    end
+    utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
 end
 
 local function profRecord(task, dur)
@@ -240,23 +155,16 @@ end
 
 function tasks.dumpSchedule()
     local now = os.clock()
+
+    -- Latch that we have/had a session attempt; used to allow a single teardown on telemetry-down
+    if rfsuite.session.isConnected or connectAttemptStartedAt ~= nil or rfsuite.session.mspBusy then
+        hadSession = true
+    end
     utils.log("====== Task Schedule Dump ======", "info")
     for _, t in ipairs(tasksList) do
         local next_run = t.last_run + t.interval
         local in_secs = next_run - now
         utils.log(string.format("%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs", t.name, t.interval, t.last_run, in_secs), "info")
-    end
-
-    function tasks.setRateMultiplier(mult)
-        mult = tonumber(mult) or 1.0
-        if mult <= 0 then mult = 0.0001 end
-        tasks.rateMultiplier = mult
-        for _, task in ipairs(tasksList) do
-            local base = task.baseInterval or task.interval or 1
-            local j = task.jitter or 0
-            task.interval = (base * mult) + j
-        end
-        utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
     end
 
     utils.log("================================", "info")
@@ -315,56 +223,53 @@ function tasks.findTasks()
 end
 
 local function clearSessionAndQueue()
-    tasks.setTelemetryTypeChanged()
-    local oc = getOnconnect()
-    if oc then
-        if type(oc.setTelemetryTypeChanged) == "function" then pcall(oc.setTelemetryTypeChanged) end
-        if type(oc.resetAllTasks) == "function" then pcall(oc.resetAllTasks) end
-    end
 
-local od = getOndisconnect()
-if od then
-    if type(od.resetAllTasks) == "function" then pcall(od.resetAllTasks) end
-end
+    local now = os.clock()
 
-local ofm = getOnflightmode()
-if ofm then
-    if type(ofm.resetAllTasks) == "function" then pcall(ofm.resetAllTasks) end
-end
-
-local omc = getOnmodelchange()
-if omc then
-    if type(omc.resetAllTasks) == "function" then pcall(omc.resetAllTasks) end
-end
-
-local oa = getOnarm()
-if oa then
-    if type(oa.resetAllTasks) == "function" then pcall(oa.resetAllTasks) end
-end
-
-local oda = getOndisarm()
-if oda then
-    if type(oda.resetAllTasks) == "function" then pcall(oda.resetAllTasks) end
-end
-
-local otc = getOntransportchange()
-if otc then
-    if type(otc.resetAllTasks) == "function" then pcall(otc.resetAllTasks) end
-end
-
--- Reset edge caches
-lastArmedState = false
-lastFlightModeValue = nil
+    -- Reset edge caches
+    lastArmedState = false
+    lastFlightModeValue = nil
 
     -- Reset watchdog state as we are tearing down the connection attempt.
     connectAttemptStartedAt = nil    
 
     utils.session()
+
+    tasks.setTelemetryTypeChanged()
+    if events.onconnect and type(events.onconnect.setTelemetryTypeChanged)=="function" then pcall(events.onconnect.setTelemetryTypeChanged) end
+
+    -- reset all scheduled tasks
+    for _, task in ipairs(tasksList) do
+        local name = task and task.name
+        local mod = tasks[name]
+        if mod and type(mod.reset) == "function" then
+            local ok, err = pcall(mod.reset)
+            if not ok then
+                utils.log(string.format("[tasks] %s.reset failed: %s", tostring(name), tostring(err)), "info")
+            end
+        end
+    end
+
+    -- reset every event module that implements it
+    for name, ev in pairs(events) do
+        if ev and type(ev.resetAllTasks) == "function" then
+            local ok, err = pcall(ev.resetAllTasks)
+            if not ok then
+                utils.log(string.format("[events] %s.resetAllTasks failed: %s", tostring(name), tostring(err)), "info")
+            end
+        end
+    end
+
+    -- reset admin tasks
+    if rfsuite.app and rfsuite.app.tasks and rfsuite.app.tasks.reset then
+        rfsuite.app.tasks.reset()
+    end
+    
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
 
     -- Reset postconnect so it can run again on next successful connection.
-    local pc = getPostconnect()
+    local pc = events.postconnect
     if pc then
         if type(pc.reset) == "function" then pcall(pc.reset) end
     end
@@ -409,21 +314,49 @@ function tasks.telemetryCheckScheduler()
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
 
     if not telemetryState then
-        -- Link is down; clear attempt timer and teardown state.
-        connectAttemptStartedAt = nil        
+        -- Link is down.
+        -- Only do heavy teardown ONCE on the falling edge (up -> down) to avoid lag.
+        if lastTelemetryUp ~= false then
+            lastTelemetryUp = false
+
+            -- Fire ondisconnect edge.
+            local od = events.ondisconnect
+            if od and type(od.fire) == "function" then
+                utils.log("[event] ondisconnect", "info")
+                pcall(function() od.fire({ reason = "telemetry_down", at = now }) end)
+            end
+
+            -- Force teardown 
+            local r = clearSessionAndQueue()
+            connectAttemptStartedAt = nil
+            hadSession = false
+            return r
+        end
+
+        -- While link remains down, just log occasionally.
         if not rfsuite.session.isConnected then
             if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
                 lastCheckAt = now
                 utils.log("Waiting for connection", "connect")
-            end
+            end      
         end
-    local od = getOndisconnect()
-    if od and type(od.fire) == "function" then
-        utils.log("[event] ondisconnect", "info")
-        pcall(function() od.fire({ reason = "telemetry_down", at = now }) end)
+
+        connectAttemptStartedAt = nil
+        return
     end
-    return clearSessionAndQueue()
-end
+
+    -- Link is up (rising edge handling)
+    if lastTelemetryUp ~= true then
+        lastTelemetryUp = true
+        -- force a reset before we start connect attempt
+        clearSessionAndQueue()   
+
+        -- Start a new connect attempt window on telemetry-up.
+        if not rfsuite.session.isConnected then
+            connectAttemptStartedAt = now
+            hadSession = true
+        end
+    end
 
     -- Link is up. Start (or continue) a connect attempt timer until isConnected becomes true.
     -- If we exceed the deadline, teardown and retry.
@@ -462,7 +395,7 @@ end
             utils.log("Model changed, resetting session", "connect")
             utils.log("[event] onmodelchange", "info")
 
-            local omc = getOnmodelchange()
+            local omc = events.onmodelchange
             if omc and type(omc.fire) == "function" then
                 pcall(function() omc.fire({ old = oldModelPath, new = newModelPath, at = now }) end)
             end
@@ -534,7 +467,7 @@ end
         rfsuite.utils.log("Telem. type changed to " .. tostring(currentTelemetryType), "connect")
         utils.log("[event] ontransportchange", "info")
 
-        local otc = getOntransportchange()
+        local otc = events.ontransportchange
         if otc and type(otc.fire) == "function" then
             pcall(function() otc.fire({ old = oldTelemetryType, new = currentTelemetryType, at = now }) end)
         end
@@ -545,7 +478,7 @@ end
     end
 
     -- Run onconnect event handler only when needed (link-up and not yet established)
-    local oc = getOnconnect()
+    local oc = events.onconnect
     if oc and type(oc.wakeup) == "function" then
         local needsRun = (not rfsuite.session.isConnected)
         if not needsRun and type(oc.active) == "function" then needsRun = oc.active() end
@@ -557,7 +490,7 @@ end
 
     -- Run postconnect handler once AFTER we have declared the connection established.
     -- This lets us close the loader early and fetch non-critical data in the background.
-    local pc = getPostconnect()
+    local pc = events.postconnect
     if pc and type(pc.wakeup) == "function" then
         local needsRun = (rfsuite.session.isConnected == true)
         if not needsRun and type(pc.active) == "function" then needsRun = pc.active() end
@@ -702,6 +635,40 @@ local function runSpreadTasks(now)
 
     return loopCpu
 end
+
+-- ------------------------------------------------------------
+-- Event wakeup gating
+-- ------------------------------------------------------------
+-- Some event hook modules are framework-only and may have no tasks.
+-- Avoid calling their wakeup() every scheduler tick unless they report work.
+local eventWakeLast = {}
+local DEFAULT_EVENT_WAKE_INTERVAL_S = 0.25
+
+local function eventMaybeWake(name, mod, now)
+    if not mod or type(mod.wakeup) ~= "function" then return end
+
+    -- Preferred: modules implement active() to indicate pending work.
+    if type(mod.active) == "function" then
+        local ok, act = pcall(mod.active)
+        if ok then
+            if not act then return end
+            local ok2, err = pcall(mod.wakeup)
+            if not ok2 then print("[ERROR][" .. tostring(name) .. ".wakeup]", err) end
+            return
+        end
+        -- If active() errors, fall through to interval gating.
+    end
+
+    -- Fallback: throttle wakeup() calls for modules without active()
+    local interval = tonumber(mod.wakeupInterval) or DEFAULT_EVENT_WAKE_INTERVAL_S
+    local last = eventWakeLast[name] or 0
+    if (now - last) < interval then return end
+    eventWakeLast[name] = now
+
+    local ok3, err3 = pcall(mod.wakeup)
+    if not ok3 then print("[ERROR][" .. tostring(name) .. ".wakeup]", err3) end
+end
+
 function tasks.wakeup()
 
     schedulerTick = schedulerTick + 1
@@ -785,13 +752,13 @@ do
     if armedNow ~= lastArmedState then
         if armedNow then
             utils.log("[event] onarm", "info")
-            local oa = getOnarm()
+            local oa = events.onarm
             if oa and type(oa.fire) == "function" then
                 pcall(function() oa.fire({ at = now }) end)
             end
         else
             utils.log("[event] ondisarm", "info")
-            local oda = getOndisarm()
+            local oda = events.ondisarm
             if oda and type(oda.fire) == "function" then
                 pcall(function() oda.fire({ at = now }) end)
             end
@@ -804,7 +771,7 @@ do
     if fmNow ~= lastFlightModeValue and rfsuite.session.isConnected then
         utils.log("[event] onflightmode", "info")
         if lastFlightModeValue ~= nil then
-            local ofm = getOnflightmode()
+            local ofm = events.onflightmode
             if ofm and type(ofm.fire) == "function" then
                 pcall(function() ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now }) end)
             end
@@ -813,23 +780,14 @@ do
     end
 
     -- Allow hook modules (if present) to run their own task queues (currently empty)
-    local ofm = getOnflightmode()
-    if ofm and type(ofm.wakeup) == "function" then pcall(ofm.wakeup) end
-
-    local oa = getOnarm()
-    if oa and type(oa.wakeup) == "function" then pcall(oa.wakeup) end
-
-    local oda = getOndisarm()
-    if oda and type(oda.wakeup) == "function" then pcall(oda.wakeup) end
-
-    local omc = getOnmodelchange()
-    if omc and type(omc.wakeup) == "function" then pcall(omc.wakeup) end
-
-    local otc = getOntransportchange()
-    if otc and type(otc.wakeup) == "function" then pcall(otc.wakeup) end
-
-    local od = getOndisconnect()
-    if od and type(od.wakeup) == "function" then pcall(od.wakeup) end
+    -- Allow hook modules (if present) to run their own task queues.
+    -- Use active() when available; otherwise throttle to avoid constant wakeup overhead.
+    eventMaybeWake("onflightmode", events.onflightmode, now)
+    eventMaybeWake("onarm", events.onarm, now)
+    eventMaybeWake("ondisarm", events.ondisarm, now)
+    eventMaybeWake("onmodelchange", events.onmodelchange, now)
+    eventMaybeWake("ontransportchange", events.ontransportchange, now)
+    eventMaybeWake("ondisconnect", events.ondisconnect, now)
 end
 
     if tasks.profile.enabled then
@@ -921,7 +879,12 @@ function tasks.init()
 end
 
 function tasks.setTelemetryTypeChanged()
-    for _, task in ipairs(tasksList) do if tasks[task.name].setTelemetryTypeChanged then tasks[task.name].setTelemetryTypeChanged() end end
+    for _, task in ipairs(tasksList) do
+        local mod = tasks[task.name]
+        if mod and type(mod.setTelemetryTypeChanged) == "function" then
+            pcall(mod.setTelemetryTypeChanged)
+        end
+    end
     rfsuite.utils.session()
 end
 

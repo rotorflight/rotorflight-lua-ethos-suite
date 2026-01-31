@@ -26,4 +26,12 @@ local function onNavMenu()
     return true
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, postLoad = postLoad, onNavMenu = onNavMenu, event = event}
+local function wakeup()
+    -- we are compromised if we don't have governor mode known
+    if rfsuite.session.governorMode == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end
+end
+
+return {apidata = apidata, reboot = true, eepromWrite = true, postLoad = postLoad, onNavMenu = onNavMenu, event = event, wakeup = wakeup}

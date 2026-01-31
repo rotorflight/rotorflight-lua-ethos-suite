@@ -54,6 +54,13 @@ end
 local function wakeup()
     if not enableWakeup then return false end
 
+    -- we are compromised if we don't have governor mode known
+    if rfsuite.session.governorMode == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end
+
+
     local governorMode = math.floor(rfsuite.app.Page.apidata.formdata.fields[FIELDS["GOVERNOR_MODE"]].value)
 
     if governorMode == 0 then   -- OFF

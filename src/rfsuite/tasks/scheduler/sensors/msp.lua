@@ -485,6 +485,14 @@ function msp.wakeup()
 end
 
 function msp.reset()
+
+    -- Reset the sensors before clearing caches
+    for i,v in pairs(sensorCache) do
+        if v then
+            v:reset()
+        end
+    end
+
     sensorCache = {}
     negativeCache = {}
     lastValue = {}

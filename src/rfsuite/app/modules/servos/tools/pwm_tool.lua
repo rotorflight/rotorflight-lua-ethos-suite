@@ -168,6 +168,12 @@ local function wakeup(self)
 
     if enableWakeup == true then
 
+        -- go back to main as this tool is compromised 
+        if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
+            rfsuite.app.ui.openMainMenu()
+            return
+        end
+
         if isSaving == true then
             onSaveMenuProgress()
             isSaving = false

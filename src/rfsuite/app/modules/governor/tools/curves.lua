@@ -194,6 +194,12 @@ end
 local function wakeup()
     if enableWakeup == false then return end
 
+    -- we are compromised if we don't have governor mode known
+    if rfsuite.session.governorMode == nil then
+        rfsuite.app.ui.openMainMenu()
+        return
+    end
+
     -- we can now do anything we need to as data has been loaded
     if haveData then
         if isDirty then

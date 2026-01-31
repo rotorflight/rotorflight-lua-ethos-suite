@@ -118,14 +118,8 @@ local function openPage(pidx, title, script)
             end
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
-
-        if pvalue.apiversion ~= nil then
-            local apiVersionSupported = rfsuite.utils.apiVersionCompare(">=", pvalue.apiversion)
-            if not apiVersionSupported then
-                rfsuite.app.formFields[pidx]:enable(false)
-            end
-        end
+        -- Disable all buttons until msp calls are complete
+        rfsuite.app.formFields[pidx]:enable(false)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
@@ -136,8 +130,6 @@ local function openPage(pidx, title, script)
         if lc == numPerRow then lc = 0 end
 
     end
-
-    rfsuite.app.triggers.closeProgressLoader = true
 
     enableWakeup = true
 
@@ -164,14 +156,47 @@ local function wakeup()
 
     if os.clock() - initTime < 0.25 then return end
 
+    -- Do MSP calls to get servo info
+    -- We keep sub menu buttons disabled until this is delivered
+    if rfsuite.tasks  and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
+
+        local msp = rfsuite.tasks.msp
+
+        if rfsuite.session.servoCount == nil then
+            msp.helpers.servoCount(function(servoCount)
+                rfsuite.utils.log("Received servo count: " .. tostring(servoCount), "info")
+            end)
+        end
+
+        if rfsuite.session.servoOverride == nil then
+            msp.helpers.servoOverride(function(servoOverride)
+                rfsuite.utils.log("Received servo override: " .. tostring(servoOverride), "info")
+            end)
+        end
+
+        if rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil then
+            rfsuite.tasks.msp.helpers.mixerConfig(function(tailMode, swashMode)
+                rfsuite.utils.log("Received tail mode: " .. tostring(tailMode), "info")
+                rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
+            end)
+        end    
+
+    end
+
+    -- enable the buttons once we have servo info
+    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil then
+        for i, v in pairs(rfsuite.app.formFields) do
+            if v.enable then
+                v:enable(true)
+            end    
+        end
+        -- close progress loader
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
+
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
-
     if currState ~= prevConnectedState then
-
-        --rfsuite.app.formFields[2]:enable(currState)
-
         if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
-
         prevConnectedState = currState
     end
 

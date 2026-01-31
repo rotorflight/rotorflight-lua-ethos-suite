@@ -5,116 +5,135 @@
       "name": "Deploy & Launch [SIM]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "Deploy & Launch [SIM]",
       "postDebugTask": "ethos.Start"
-    },   
+    },
     {
       "name": "Deploy Radio",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-
       "preLaunchTask": "Deploy Radio"
     },
     {
       "name": "Deploy Radio [Fast]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-
       "preLaunchTask": "Deploy Radio [Fast]"
     },
     {
       "name": "Deploy Radio + Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-
       "preLaunchTask": "Deploy Radio + Serial Debug"
     },
     {
       "name": "Deploy Radio + Serial Debug [Fast]",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-
       "preLaunchTask": "Deploy Radio + Serial Debug [Fast]"
     },
     {
       "name": "Radio: Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-
       "preLaunchTask": "Radio: Serial Debug"
     },
     {
       "name": "Switch Ethos Firmware",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "postDebugTask": "ethos.SetFirmware"
-    },      
+    },
     {
       "name": "Run RFSuite Sensor Tool",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "postDebugTask": "Run RFSuite Sensor Tool"
-    },  
+    },
     {
       "name": "Ethos Telemetry Settings",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "postDebugTask": "ethos.OpenTelemetry"
-    },     
+    },
+    {
+      "name": "Set Deployment Language",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/set-language.js",
+      "args": [
+        "${input:deployLanguage}"
+      ],
+      "console": "integratedTerminal"
+    },    
     {
       "name": "Clear locks",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py", 
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
       "console": "integratedTerminal",
       "justMyCode": true,
-
       "preLaunchTask": "Clear locks"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "deployLanguage",
+      "type": "pickString",
+      "description": "Select deployment language",
+      "options": [
+        "en",
+        "de",
+        "fr",
+        "es",
+        "it"
+      ],
+      "default": "en"
     }
   ]
 }

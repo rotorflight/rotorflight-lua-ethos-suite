@@ -248,6 +248,16 @@ local eventTable = {
 }
 
 function telemetry.wakeup()
+
+    -- we need governor mode for some events
+    if rfsuite.session.governorMode == nil then
+        if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
+            rfsuite.tasks.msp.helpers.governorMode(function(governorMode)
+                rfsuite.utils.log("Telemetry event Received governor mode: " .. tostring(governorMode), "info")
+            end)
+        end
+    end
+
     local now = os.clock()
     for _, item in ipairs(eventTable) do
         local key = item.sensor
