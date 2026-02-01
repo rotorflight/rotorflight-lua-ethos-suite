@@ -161,7 +161,7 @@ function frsky_legacy.wakeup()
 
     -- if this function exists, we can use it to determine if we should quick exit and avoid all sensor popping
     if system.isSensorDiscoverActive then 
-        if not system.isSensorDiscoverActive() then
+        if system.isSensorDiscoverActive() then
             return
         end
     end

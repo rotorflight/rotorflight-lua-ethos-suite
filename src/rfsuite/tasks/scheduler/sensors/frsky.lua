@@ -348,22 +348,21 @@ local function ensureSensorsFromConfig()
     frsky._provisioned = true
 end
 
+local function clearCaches()
+    frsky.createSensorCache = {}
+    frsky.renameSensorCache = {}
+    frsky.dropSensorCache = {}
+end
+
 function frsky.wakeup()
 
     if not rfsuite.session.isConnected then return end
-    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
 
     if not sensorTlm then
         sensorTlm = sport.getSensor()
         sensorTlm:module(rfsuite.session.telemetrySensor:module())
 
         if not sensorTlm then return false end
-    end
-
-    local function clearCaches()
-        frsky.createSensorCache = {}
-        frsky.renameSensorCache = {}
-        frsky.dropSensorCache = {}
     end
 
     if os.clock() - lastCacheFlushTime >= cacheExpireTime then
@@ -375,7 +374,7 @@ function frsky.wakeup()
 
     -- if this function exists, we can use it to determine if we should quick exit and avoid all sensor popping
     if system.isSensorDiscoverActive then 
-        if not system.isSensorDiscoverActive() then
+        if system.isSensorDiscoverActive() then
             return
         end
     end
