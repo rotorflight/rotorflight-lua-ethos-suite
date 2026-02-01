@@ -258,6 +258,9 @@ local function telemetryAndPageStateUpdates()
 end
 
 local function performReloadActions()
+
+    if rfsuite.session.mspBusy then return end
+
     local app = rfsuite.app
     if app.triggers.reload then
         app.triggers.reload = false
