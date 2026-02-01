@@ -66,9 +66,13 @@ function logging.writeLogs(forcewrite)
     if #log_queue > 0 and logFileName then
         local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
 
-        rfsuite.utils.log(string.format("Write %d (of %d) lines to %s", math.min(#log_queue, max_lines), #log_queue, logFileName), "info")
+        rfsuite.utils.log(string.format("Write %d (of %d) lines to %s", math.min(#log_queue, max_lines), #log_queue, logFileName), "debug")
 
         local f = io.open(filePath, 'a')
+
+        if not f then 
+            return 
+        end
 
         local n = math.min(#log_queue, max_lines)
 

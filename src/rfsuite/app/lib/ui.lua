@@ -337,15 +337,16 @@ function ui.openMainMenu()
 
     local lc, bx, y = 0, 0, 0
 
-    local header = form.addLine("Configuration")
+    local header = form.addLine("@i18n(app.header_configuration)@")
 
     for pidx, pvalue in ipairs(Menu) do
+
         app.formFieldsOffline[pidx] = pvalue.offline or false
         app.formFieldsBGTask[pidx] = pvalue.bgtask or false
 
         if pvalue.newline then
             lc = 0
-            form.addLine("System")
+            form.addLine("@i18n(app.header_system)@")
         end
 
         if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
@@ -378,8 +379,6 @@ function ui.openMainMenu()
         })
 
         app.formFields[pidx]:enable(false)
-
-        if preferences.menulastselected["mainmenu"] == pidx then app.formFields[pidx]:focus() end
 
         lc = lc + 1
         if lc == numPerRow then lc = 0 end
@@ -442,7 +441,7 @@ function ui.openMainMenuSub(activesection)
 
             local x = windowWidth - 110
             app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
-                text = "MENU",
+                text = "@i18n(app.navigation_menu)@",
                 icon = nil,
                 options = FONT_S,
                 paint = function() end,
@@ -490,7 +489,6 @@ function ui.openMainMenuSub(activesection)
                             end
                         })
 
-                        if preferences.menulastselected[activesection] == pidx then app.formFields[pidx]:focus() end
 
                         lc = (lc + 1) % numPerRow
                     end

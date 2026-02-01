@@ -45,7 +45,7 @@ local function openPage(pidx, title, script)
     local x = windowWidth - buttonW - 10
 
     app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {
-        text = "MENU",
+        text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
         paint = function() end,

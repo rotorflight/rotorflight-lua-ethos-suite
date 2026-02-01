@@ -51,38 +51,68 @@ local function mainMenuIconEnableDisable()
 
     if rfsuite.session.mspBusy then return end
 
+    -- Focus handling:
+    -- Calling :focus() repeatedly breaks keyboard navigation (it keeps snapping back).
+    -- So we compute the desired focus target, and only apply focus once per "menu state key".
+    local function desiredFocusIndex()
+        local lm = app.lastMenu or "mainmenu"
+        local idx = rfsuite.preferences.menulastselected[lm] or rfsuite.preferences.menulastselected["mainmenu"]
+        return idx
+    end
+
+    local function focusOnce(modeTag)
+        local idx = desiredFocusIndex()
+        if not idx or not app.formFields or not app.formFields[idx] then return end
+
+        local lm = app.lastMenu or "mainmenu"
+        local formKey = tostring(app.formFields) -- changes when the form is rebuilt
+        local key = tostring(modeTag) .. "|" .. tostring(lm) .. "|" .. tostring(idx) .. "|" .. formKey
+
+        -- Reset focus latch if we have entered a new menu/mode/form combination
+        if app._mainMenuFocusKey ~= key then
+            app._mainMenuFocusKey = key
+            app._mainMenuFocusApplied = false
+        end
+
+        if not app._mainMenuFocusApplied then
+            app._mainMenuFocusApplied = true
+            app.formFields[idx]:focus()
+        end
+    end
+
     if app.uiState == app.uiStatus.mainMenu then
         local apiV = tostring(rfsuite.session.apiVersion)
+
         if not rfsuite.tasks.active() then
             for i, v in pairs(app.formFieldsBGTask) do
-                if v == false and app.formFields[i] then
-                    app.formFields[i]:enable(false)
-                elseif v == true and app.formFields[i] then
-                    app.formFields[i]:enable(true)                        
+                if app.formFields[i] then
+                    app.formFields[i]:enable(v == true)
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
+            focusOnce("bgtask")
+
         elseif not rfsuite.session.isConnected then
             for i, v in pairs(app.formFieldsOffline) do
-                if v == false and app.formFields[i] then
-                    app.formFields[i]:enable(false)
-                elseif v == true and app.formFields[i] then
-                    app.formFields[i]:enable(true)    
+                if app.formFields[i] then
+                    app.formFields[i]:enable(v == true)
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
+            focusOnce("offline")
+
         elseif not rfsuite.session.postConnectComplete then
             for i, v in pairs(app.formFieldsOffline) do
-                if v == false and app.formFields[i] then
-                    app.formFields[i]:enable(false)
-                elseif v == true and app.formFields[i] then
-                    app.formFields[i]:enable(true)                        
+                if app.formFields[i] then
+                    app.formFields[i]:enable(v == true)
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
-            end            
+            end
+            focusOnce("postconnect")
+
         elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
             app.offlineMode = false
             for i in pairs(app.formFieldsOffline) do
@@ -92,7 +122,9 @@ local function mainMenuIconEnableDisable()
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
+            focusOnce("online")
         end
+
     elseif not app.isOfflinePage and not app.triggers.escPowerCycleLoader then
         if not rfsuite.session.postConnectComplete then
             log("Entering Offline Mode", "info")
