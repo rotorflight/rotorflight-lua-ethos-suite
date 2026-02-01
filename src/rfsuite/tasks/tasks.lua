@@ -181,8 +181,8 @@ function tasks.initialize()
         return
     end
 
-    local ok, manifest = pcall(fn)
-    if not ok or type(manifest) ~= "table" then
+    local manifest = fn()
+    if type(manifest) ~= "table" then
         utils.log("[tasks] manifest.lua did not return a table", "error")
         tasks._initMetadata = {}
         tasks._initKeys = {}
@@ -201,7 +201,7 @@ function tasks.initialize()
     end
     tasks._initState = "loadNextTask"
     utils.log("[tasks] Loaded task manifest (" .. tostring(#tasks._initKeys) .. " tasks)", "info")
- 
+
 end
 
 function tasks.findTasks()
@@ -213,8 +213,8 @@ function tasks.findTasks()
         return {}
     end
 
-    local ok, manifest = pcall(fn)
-    if not ok or type(manifest) ~= "table" then
+    local manifest = fn()
+    if type(manifest) ~= "table" then
         utils.log("[tasks] manifest.lua did not return a table", "error")
         return {}
     end
@@ -231,32 +231,28 @@ local function clearSessionAndQueue()
     lastFlightModeValue = nil
 
     -- Reset watchdog state as we are tearing down the connection attempt.
-    connectAttemptStartedAt = nil    
+    connectAttemptStartedAt = nil
 
     utils.session()
 
     tasks.setTelemetryTypeChanged()
-    if events.onconnect and type(events.onconnect.setTelemetryTypeChanged)=="function" then pcall(events.onconnect.setTelemetryTypeChanged) end
+    if events.onconnect and type(events.onconnect.setTelemetryTypeChanged)=="function" then
+        events.onconnect.setTelemetryTypeChanged()
+    end
 
     -- reset all scheduled tasks
     for _, task in ipairs(tasksList) do
         local name = task and task.name
         local mod = tasks[name]
         if mod and type(mod.reset) == "function" then
-            local ok, err = pcall(mod.reset)
-            if not ok then
-                utils.log(string.format("[tasks] %s.reset failed: %s", tostring(name), tostring(err)), "info")
-            end
+            mod.reset()
         end
     end
 
     -- reset every event module that implements it
     for name, ev in pairs(events) do
         if ev and type(ev.resetAllTasks) == "function" then
-            local ok, err = pcall(ev.resetAllTasks)
-            if not ok then
-                utils.log(string.format("[events] %s.resetAllTasks failed: %s", tostring(name), tostring(err)), "info")
-            end
+            ev.resetAllTasks()
         end
     end
 
@@ -264,14 +260,14 @@ local function clearSessionAndQueue()
     if rfsuite.app and rfsuite.app.tasks and rfsuite.app.tasks.reset then
         rfsuite.app.tasks.reset()
     end
-    
+
     local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if q then q:clear() end
 
     -- Reset postconnect so it can run again on next successful connection.
     local pc = events.postconnect
     if pc then
-        if type(pc.reset) == "function" then pcall(pc.reset) end
+        if type(pc.reset) == "function" then pc.reset() end
     end
     if rfsuite.session then
         rfsuite.session.postConnectComplete = false
@@ -283,10 +279,10 @@ local function clearSessionAndQueue()
     -- task next runs).
     local msp = rfsuite.tasks and rfsuite.tasks.msp
     if msp then
-        if type(msp.setTelemetryTypeChanged) == "function" then pcall(msp.setTelemetryTypeChanged) end
-        if type(msp.reset) == "function" then pcall(msp.reset) end
+        if type(msp.setTelemetryTypeChanged) == "function" then msp.setTelemetryTypeChanged() end
+        if type(msp.reset) == "function" then msp.reset() end
         -- If we already have a sensor/type, wakeup will re-bind transports immediately.
-        if type(msp.wakeup) == "function" then pcall(msp.wakeup) end
+        if type(msp.wakeup) == "function" then msp.wakeup() end
     end
 
     internalModule = nil
@@ -296,7 +292,9 @@ local function clearSessionAndQueue()
     currentTelemetryType = nil
     currentModuleNumber = nil
 
-    if rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.setProtocolVersion then pcall(rfsuite.tasks.msp.common.setProtocolVersion, 1) end
+    if rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.setProtocolVersion then
+        rfsuite.tasks.msp.common.setProtocolVersion(1)
+    end
     if rfsuite.config and rfsuite.session then
         rfsuite.config.mspProtocolVersion = 1
         rfsuite.session.mspProtocolVersion = 1
@@ -323,10 +321,10 @@ function tasks.telemetryCheckScheduler()
             local od = events.ondisconnect
             if od and type(od.fire) == "function" then
                 utils.log("[event] ondisconnect", "info")
-                pcall(function() od.fire({ reason = "telemetry_down", at = now }) end)
+                od.fire({ reason = "telemetry_down", at = now })
             end
 
-            -- Force teardown 
+            -- Force teardown
             local r = clearSessionAndQueue()
             connectAttemptStartedAt = nil
             hadSession = false
@@ -338,7 +336,7 @@ function tasks.telemetryCheckScheduler()
             if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
                 lastCheckAt = now
                 utils.log("Waiting for connection", "connect")
-            end      
+            end
         end
 
         connectAttemptStartedAt = nil
@@ -349,7 +347,7 @@ function tasks.telemetryCheckScheduler()
     if lastTelemetryUp ~= true then
         lastTelemetryUp = true
         -- force a reset before we start connect attempt
-        clearSessionAndQueue()   
+        clearSessionAndQueue()
 
         -- Start a new connect attempt window on telemetry-up.
         if not rfsuite.session.isConnected then
@@ -384,7 +382,7 @@ function tasks.telemetryCheckScheduler()
         -- Connected OK: clear connect watchdog state.
         connectAttemptStartedAt = nil
     end
- 
+
 
     if now - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
         lastModelPathCheckAt = now
@@ -397,7 +395,7 @@ function tasks.telemetryCheckScheduler()
 
             local omc = events.onmodelchange
             if omc and type(omc.fire) == "function" then
-                pcall(function() omc.fire({ old = oldModelPath, new = newModelPath, at = now }) end)
+                omc.fire({ old = oldModelPath, new = newModelPath, at = now })
             end
 
             lastModelPath = newModelPath
@@ -421,7 +419,7 @@ function tasks.telemetryCheckScheduler()
                 utils.log("Telem. sensor changed to " .. tostring(currentSensor:name()), "connect")
                 lastSensorName = currentSensor:name()
                 currentSensor = nil
-                clearSessionAndQueue()  
+                clearSessionAndQueue()
             end
         end
 
@@ -469,7 +467,7 @@ function tasks.telemetryCheckScheduler()
 
         local otc = events.ontransportchange
         if otc and type(otc.fire) == "function" then
-            pcall(function() otc.fire({ old = oldTelemetryType, new = currentTelemetryType, at = now }) end)
+            otc.fire({ old = oldTelemetryType, new = currentTelemetryType, at = now })
         end
 
         tasks.setTelemetryTypeChanged()
@@ -483,8 +481,7 @@ function tasks.telemetryCheckScheduler()
         local needsRun = (not rfsuite.session.isConnected)
         if not needsRun and type(oc.active) == "function" then needsRun = oc.active() end
         if needsRun then
-            local ok, err = pcall(oc.wakeup)
-            if not ok then print("[ERROR][onconnect.wakeup]", err) end
+            oc.wakeup()
         end
     end
 
@@ -495,8 +492,7 @@ function tasks.telemetryCheckScheduler()
         local needsRun = (rfsuite.session.isConnected == true)
         if not needsRun and type(pc.active) == "function" then needsRun = pc.active() end
         if needsRun then
-            local ok, err = pcall(pc.wakeup)
-            if not ok then print("[ERROR][postconnect.wakeup]", err) end
+            pc.wakeup()
         end
     end
 
@@ -547,16 +543,13 @@ local function runNonSpreadTasks(now)
                     local fn = tasks[task.name].wakeup
                     if fn then
                         local c0 = os.clock()
-                        local ok, err = pcall(fn, tasks[task.name])
+                        fn(tasks[task.name])
                         local c1 = os.clock()
                         local dur = c1 - c0
                         loopCpu = loopCpu + dur
 
                         if profWanted(task.name) then
                             profRecord(task, dur)
-                            if not ok then print(("Error in task %q wakeup: %s"):format(task.name, err)) end
-                        elseif not ok then
-                            print(("Error in task %q wakeup: %s"):format(task.name, err))
                         end
                     end
 
@@ -607,12 +600,11 @@ local function runSpreadTasks(now)
         local fn = tasks[task.name].wakeup
         if fn then
             local c0 = os.clock()
-            local ok, err = pcall(fn, tasks[task.name])
+            fn(tasks[task.name])
             local c1 = os.clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
             if profWanted(task.name) then profRecord(task, dur) end
-            if not ok then print(("Error in task %q wakeup (must-run): %s"):format(task.name, err)) end
         end
         task.last_run = now
     end
@@ -623,12 +615,11 @@ local function runSpreadTasks(now)
         local fn = tasks[task.name].wakeup
         if fn then
             local c0 = os.clock()
-            local ok, err = pcall(fn, tasks[task.name])
+            fn(tasks[task.name])
             local c1 = os.clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
             if profWanted(task.name) then profRecord(task, dur) end
-            if not ok then print(("Error in task %q wakeup: %s"):format(task.name, err)) end
         end
         task.last_run = now
     end
@@ -649,14 +640,9 @@ local function eventMaybeWake(name, mod, now)
 
     -- Preferred: modules implement active() to indicate pending work.
     if type(mod.active) == "function" then
-        local ok, act = pcall(mod.active)
-        if ok then
-            if not act then return end
-            local ok2, err = pcall(mod.wakeup)
-            if not ok2 then print("[ERROR][" .. tostring(name) .. ".wakeup]", err) end
-            return
-        end
-        -- If active() errors, fall through to interval gating.
+        if not mod.active() then return end
+        mod.wakeup()
+        return
     end
 
     -- Fallback: throttle wakeup() calls for modules without active()
@@ -665,11 +651,10 @@ local function eventMaybeWake(name, mod, now)
     if (now - last) < interval then return end
     eventWakeLast[name] = now
 
-    local ok3, err3 = pcall(mod.wakeup)
-    if not ok3 then print("[ERROR][" .. tostring(name) .. ".wakeup]", err3) end
+    mod.wakeup()
 end
 
-function tasks.wakeup()
+function tasks.wakeup_protected()
 
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
@@ -718,28 +703,23 @@ function tasks.wakeup()
 
     local now = os.clock()
 
-
     local cycleFlip = schedulerTick % 2
 
     if ((rfsuite.app and rfsuite.app.guiIsRunning and not rfsuite.app.escPowerCycleLoader) or not rfsuite.session.isConnected) and rfsuite.session.mspBusy then
         if cycleFlip == 0 then
             if tasks.msp then
-                local ok, err = pcall(function() tasks.msp.wakeup() end)
-                if not ok then print("[ERROR][tasks.msp.wakeup]", err) end
+                tasks.msp.wakeup()
             end
         else
             if tasks.callback then
-                local ok, err = pcall(function() tasks.callback.wakeup() end)
-                if not ok then print("[ERROR][tasks.callback.wakeup]", err) end
+                tasks.callback.wakeup()
             end
         end
     else
         if cycleFlip == 0 then
-            local ok, cpuOrErr = pcall(runNonSpreadTasks, now)
-            if ok then loopCpu = loopCpu + (cpuOrErr or 0) else print("[ERROR][runNonSpreadTasks]", cpuOrErr) end
+            loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
         else
-            local ok, cpuOrErr = pcall(runSpreadTasks, now)
-            if ok then loopCpu = loopCpu + (cpuOrErr or 0) else print("[ERROR][runSpreadTasks]", cpuOrErr) end
+            loopCpu = loopCpu + (runSpreadTasks(now) or 0)
         end
     end
 
@@ -754,13 +734,13 @@ function tasks.wakeup()
                 utils.log("[event] onarm", "info")
                 local oa = events.onarm
                 if oa and type(oa.fire) == "function" then
-                    pcall(function() oa.fire({ at = now }) end)
+                    oa.fire({ at = now })
                 end
             else
                 utils.log("[event] ondisarm", "info")
                 local oda = events.ondisarm
                 if oda and type(oda.fire) == "function" then
-                    pcall(function() oda.fire({ at = now }) end)
+                    oda.fire({ at = now })
                 end
             end
             lastArmedState = armedNow
@@ -773,13 +753,12 @@ function tasks.wakeup()
             if lastFlightModeValue ~= nil then
                 local ofm = events.onflightmode
                 if ofm and type(ofm.fire) == "function" then
-                    pcall(function() ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now }) end)
+                    ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now })
                 end
             end
             lastFlightModeValue = fmNow
         end
 
-        -- Allow hook modules (if present) to run their own task queues (currently empty)
         -- Allow hook modules (if present) to run their own task queues.
         -- Use active() when available; otherwise throttle to avoid constant wakeup overhead.
         eventMaybeWake("onflightmode", events.onflightmode, now)
@@ -805,12 +784,19 @@ function tasks.wakeup()
     rfsuite.performance.taskLoopTime = (t1 - t0) * 1000.0
 end
 
+function tasks.wakeup()
+    local ok, err = pcall(tasks.wakeup_protected)
+    if not ok then
+        utils.log("[scheduler] Task scheduler error: " .. tostring(err), "error")
+    end
+end
+
 function tasks.reset()
-    for _, task in ipairs(tasksList) do 
-        if tasks[task.name].reset then 
-            tasks[task.name].reset() 
+    for _, task in ipairs(tasksList) do
+        if tasks[task.name].reset then
+            tasks[task.name].reset()
         end
-    end    
+    end
     rfsuite.utils.session()
 end
 
@@ -823,13 +809,22 @@ function tasks.dumpProfile(opts)
         local avg = runs > 0 and ((t.totalDuration or 0) / runs) or 0
         snapshot[#snapshot + 1] = {name = t.name, last = t.duration or 0, max = t.maxDuration or 0, total = t.totalDuration or 0, runs = runs, avg = avg, interval = t.interval or 0}
     end
-    local order = {avg = function(a, b) return a.avg > b.avg end, last = function(a, b) return a.last > b.last end, max = function(a, b) return a.max > b.max end, total = function(a, b) return a.total > b.total end, runs = function(a, b) return a.runs > b.runs end}
+    local order = {
+        avg = function(a, b) return a.avg > b.avg end,
+        last = function(a, b) return a.last > b.last end,
+        max = function(a, b) return a.max > b.max end,
+        total = function(a, b) return a.total > b.total end,
+        runs = function(a, b) return a.runs > b.runs end
+    }
     table.sort(snapshot, order[sortKey] or order.avg)
 
     if tasks.profile.onDump and tasks.profile.onDump(snapshot) then return end
 
     utils.log("====== Task Profile ======", "info")
-    for _, p in ipairs(snapshot) do utils.log(string.format("%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs", p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval), "info") end
+    for _, p in ipairs(snapshot) do
+        utils.log(string.format("%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs",
+            p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval), "info")
+    end
     utils.log("================================", "info")
 end
 
@@ -882,24 +877,23 @@ function tasks.setTelemetryTypeChanged()
     for _, task in ipairs(tasksList) do
         local mod = tasks[task.name]
         if mod and type(mod.setTelemetryTypeChanged) == "function" then
-            pcall(mod.setTelemetryTypeChanged)
+            mod.setTelemetryTypeChanged()
         end
     end
     rfsuite.utils.session()
 end
 
 function tasks.read() end
-
 function tasks.write() end
 
 function tasks.unload(name)
 
     local mod = tasks[name]
-    if mod and mod.reset then pcall(mod.reset) end
+    if mod and mod.reset then mod.reset() end
 
     if name == "msp" then
         local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
-        if q and q.clear then pcall(function() q:clear() end) end
+        if q and q.clear then q:clear() end
     end
 
     local removed = nil
@@ -940,7 +934,7 @@ function tasks.load(name, meta)
     if not meta.script or meta.script == "" then
         utils.log("[scheduler] Manifest entry '" .. tostring(name) .. "' missing 'script'", "error")
         return false
-    end    
+    end
 
     local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. meta.script
     local fn, loadErr = loadfile(scriptPath)
@@ -961,7 +955,22 @@ function tasks.load(name, meta)
     local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
     local offset = math.random() * interval
 
-    local task = {name = name, interval = interval, baseInterval = baseInterval, jitter = jitter, script = meta.script, linkrequired = meta.linkrequired or false, connected = meta.connected or false, simulatoronly = meta.simulatoronly or false, spreadschedule = meta.spreadschedule or false, last_run = os.clock() - offset, duration = 0, totalDuration = 0, runs = 0, maxDuration = 0}
+    local task = {
+        name = name,
+        interval = interval,
+        baseInterval = baseInterval,
+        jitter = jitter,
+        script = meta.script,
+        linkrequired = meta.linkrequired or false,
+        connected = meta.connected or false,
+        simulatoronly = meta.simulatoronly or false,
+        spreadschedule = meta.spreadschedule or false,
+        last_run = os.clock() - offset,
+        duration = 0,
+        totalDuration = 0,
+        runs = 0,
+        maxDuration = 0
+    }
 
     table.insert(tasksList, task)
     if task.spreadschedule then
@@ -992,7 +1001,9 @@ function tasks.reload(name)
                 break
             end
         end
-        if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then utils.log(string.format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn") end
+        if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then
+            utils.log(string.format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn")
+        end
     else
         utils.log(string.format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
     end
