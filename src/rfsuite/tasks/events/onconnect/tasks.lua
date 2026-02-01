@@ -50,10 +50,7 @@ local function loadTaskModuleFromPath(fullPath)
         return nil, err
     end
 
-    local ok, module = pcall(chunk)
-    if not ok then
-        return nil, module
-    end
+    local module = chunk()
 
     if type(module) ~= "table" or type(module.wakeup) ~= "function" then
         return nil, "Invalid task module"
@@ -86,7 +83,7 @@ local function resetQueuesAndState()
         hardReloadTask(task)
 
         if task.module and type(task.module.reset) == "function" then
-            pcall(task.module.reset)
+            task.module.reset()
         end
 
         task.initialized = false
@@ -109,8 +106,8 @@ local function loadManifest()
         return nil
     end
 
-    local ok, manifest = pcall(chunk)
-    if not ok or type(manifest) ~= "table" then
+    local manifest = chunk()
+    if type(manifest) ~= "table" then
         rfsuite.utils.log("Invalid tasks manifest: " .. MANIFEST_PATH, "info")
         return nil
     end
@@ -125,8 +122,7 @@ local function isTelemetryActive()
 
     local init = msp and msp.onConnectChecksInit
     if type(init) == "function" then
-        local ok, v = pcall(init)
-        if not ok or not v then return false end
+        if not init() then return false end
     else
         if not init then return false end
     end
@@ -150,7 +146,6 @@ function tasks.findTasks()
 
     resetSessionFlags()
 
-    -- reset queue (in case of reload)
     tasksQueue = {}
     queueIndex = 1
 
@@ -160,7 +155,6 @@ function tasks.findTasks()
         return
     end
 
-    -- Load tasks in manifest order into a single queue
     for _, entry in ipairs(manifest) do
         local file = entry and entry.name
         if file then
@@ -189,7 +183,6 @@ function tasks.findTasks()
 end
 
 function tasks.resetAllTasks()
-    -- Task-only reset (doesn't nuke MSP/sensors)
     resetQueuesAndState()
 end
 
@@ -225,7 +218,6 @@ function tasks.wakeup()
         end
     end
 
-    -- Link hysteresis: require stable up/down to avoid flaps restarting tasks (and beeps)
     if telemetryActive then
         linkDownSince = nil
         if not linkUpSince then linkUpSince = now end
@@ -247,11 +239,10 @@ function tasks.wakeup()
     if not linkStableUp then
         active = false
         if lastTelemetryActive then
-            -- Hard reset on disconnect (ok to nuke MSP/sensors)
             resetQueuesAndState()
 
             if rfsuite.tasks and type(rfsuite.tasks.reset) == "function" then
-                pcall(rfsuite.tasks.reset)
+                rfsuite.tasks.reset()
             end
 
             rfsuite.session = rfsuite.session or {}
@@ -264,23 +255,21 @@ function tasks.wakeup()
         return
     end
 
-    -- First stable connect: reset task state once (do NOT reset MSP/sensors here)
     if not lastTelemetryActive then
         if not tasksLoaded then tasks.findTasks() end
         resetQueuesAndState()
     end
+
     lastTelemetryActive = true
     active = true
 
     if not tasksLoaded then tasks.findTasks() end
 
-    -- If everything is complete, mark connected once per link session
     if isQueueDone() then
         local token = tostring(linkSessionToken)
         if establishedToken ~= token then
             establishedToken = token
 
-            -- Keep behavior: move to preflight once we have core link + api sanity.
             rfsuite.flightmode.current = "preflight"
             if rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.flightmode
                 and type(rfsuite.tasks.events.flightmode.reset) == "function"
@@ -295,13 +284,9 @@ function tasks.wakeup()
         return
     end
 
-    -- Sequential execution: run ONLY the current task in the queue
     local task = currentTask()
-    if not task then
-        return
-    end
+    if not task then return end
 
-    -- Skip if it’s waiting for retry backoff
     if task.nextEligibleAt and task.nextEligibleAt > now then
         return
     end
@@ -311,29 +296,16 @@ function tasks.wakeup()
         task.startTime = now
     end
 
-    -- Call wakeup for this single task
     rfsuite.utils.log("Waking up onconnect/" .. task.name, "debug")
 
-    local ok, err = pcall(task.module.wakeup)
-    if not ok then
-        task.attempts = (task.attempts or 0) + 1
-        local backoff = RETRY_BACKOFF_SECONDS
-        task.nextEligibleAt = now + backoff
-        task.initialized = false
-        task.startTime = nil
-        rfsuite.utils.log("Task 'onconnect/" .. task.name .. "' errored: " .. tostring(err), "info")
-        rfsuite.utils.log("Task 'onconnect/" .. task.name .. "' errored: " .. tostring(err), "connect")
-        return
-    end
+    task.module.wakeup()
 
-    -- Completion check
     if task.module.isComplete and task.module.isComplete() then
         task.complete = true
         task.startTime = nil
         task.nextEligibleAt = 0
         rfsuite.utils.log("Completed onconnect/" .. task.name, "debug")
 
-        -- Special-case: as soon as API version is known, it's safe to switch preflight logic.
         if task.name == "apiversion" then
             rfsuite.flightmode.current = "preflight"
             if rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.flightmode
@@ -343,13 +315,11 @@ function tasks.wakeup()
             end
         end
 
-        -- Advance to next task (sequential)
         queueIndex = (queueIndex or 1) + 1
         advancePastCompletedOrFailed()
         return
     end
 
-    -- Timeout / retry logic for the currently active task ONLY
     local timeout = DEFAULT_TASK_TIMEOUT_SECONDS
     if type(task.module.timeoutSeconds) == "number" and task.module.timeoutSeconds > 0 then
         timeout = task.module.timeoutSeconds
@@ -364,30 +334,37 @@ function tasks.wakeup()
             task.initialized = false
             task.startTime = nil
             rfsuite.utils.log(
-                string.format("Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
-                    task.name, task.attempts, MAX_RETRIES, backoff),
+                string.format(
+                    "Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
+                    task.name, task.attempts, MAX_RETRIES, backoff
+                ),
                 "info"
             )
             rfsuite.utils.log(
-                string.format("Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
-                    task.name, task.attempts, MAX_RETRIES, backoff),
+                string.format(
+                    "Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
+                    task.name, task.attempts, MAX_RETRIES, backoff
+                ),
                 "connect"
             )
         else
             task.failed = true
             task.startTime = nil
             rfsuite.utils.log(
-                string.format("Task 'onconnect/%s' failed after %d attempts. Skipping.",
-                    task.name, MAX_RETRIES),
+                string.format(
+                    "Task 'onconnect/%s' failed after %d attempts. Skipping.",
+                    task.name, MAX_RETRIES
+                ),
                 "info"
             )
             rfsuite.utils.log(
-                string.format("Task 'onconnect/%s' failed after %d attempts. Skipping.",
-                    task.name, MAX_RETRIES),
+                string.format(
+                    "Task 'onconnect/%s' failed after %d attempts. Skipping.",
+                    task.name, MAX_RETRIES
+                ),
                 "connect"
             )
 
-            -- Skip to next task when a task fully fails
             queueIndex = (queueIndex or 1) + 1
             advancePastCompletedOrFailed()
         end

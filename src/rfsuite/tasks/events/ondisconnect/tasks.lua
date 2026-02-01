@@ -7,7 +7,6 @@ local rfsuite = require("rfsuite")
 
 local tasks = {}
 
-
 local tasksQueue = {}
 local tasksLoaded = false
 local active = false
@@ -37,10 +36,7 @@ local function loadTaskModuleFromPath(fullPath)
         return nil, err
     end
 
-    local ok, module = pcall(chunk)
-    if not ok then
-        return nil, module
-    end
+    local module = chunk()
 
     if type(module) ~= "table" or type(module.wakeup) ~= "function" then
         return nil, "Invalid task module"
@@ -68,8 +64,8 @@ local function loadManifest()
         return nil
     end
 
-    local ok, manifest = pcall(chunk)
-    if not ok or type(manifest) ~= "table" then
+    local manifest = chunk()
+    if type(manifest) ~= "table" then
         rfsuite.utils.log("Invalid tasks manifest: " .. MANIFEST_PATH, "info")
         return nil
     end
@@ -119,7 +115,7 @@ local function resetQueueState()
         hardReloadTask(task)
 
         if task.module and type(task.module.reset) == "function" then
-            pcall(task.module.reset)
+            task.module.reset()
         end
 
         task.initialized = false
@@ -186,7 +182,6 @@ function tasks.wakeup()
 
     rfsuite.utils.log("Connection [lost]. (ondisconnect hook)", "info")
 
-    -- If tasks exist later, run them sequentially (one per wakeup) similar to onconnect.
     if #tasksQueue == 0 then
         active = false
         return
@@ -198,14 +193,12 @@ function tasks.wakeup()
             queueIndex = (queueIndex or 1) + 1
         else
             if not task.initialized then task.initialized = true end
-            local ok, err = pcall(task.module.wakeup)
-            if not ok then
-                task.failed = true
-                rfsuite.utils.log("Task 'ondisconnect/" .. task.name .. "' errored: " .. tostring(err), "info")
-            elseif task.module.isComplete and task.module.isComplete() then
+
+            task.module.wakeup()
+
+            if task.module.isComplete and task.module.isComplete() then
                 task.complete = true
             else
-                -- Task needs more time; yield until next wakeup
                 return
             end
             queueIndex = (queueIndex or 1) + 1

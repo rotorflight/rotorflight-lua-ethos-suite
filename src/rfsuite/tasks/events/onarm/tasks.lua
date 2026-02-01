@@ -21,14 +21,11 @@ hook.lastContext = nil
 local function loadManifest()
     local fn, err = loadfile(MANIFEST_PATH)
     if not fn then
-        -- Missing manifest is non-fatal; treat as no tasks
         return {}
     end
-    local ok, manifestOrErr = pcall(fn)
-    if not ok then
-        utils.log(string.format("[hook:onarm] manifest error: %s", tostring(manifestOrErr)), "error")
-        return {}
-    end
+
+    local manifestOrErr = fn()
+
     if type(manifestOrErr) ~= "table" then
         return {}
     end

@@ -55,27 +55,28 @@ function apiversion.wakeup()
 
                 local wantProto = probeProto
                 local policy = rfsuite.config.msp or {}
-                if policy.allowAutoUpgrade and policy.maxProtocol and policy.maxProtocol >= 2 then if policy.v2MinApiVersion and version_ge(apiVersionString, policy.v2MinApiVersion) then wantProto = 2 end end
+                if policy.allowAutoUpgrade and policy.maxProtocol and policy.maxProtocol >= 2 then
+                    if policy.v2MinApiVersion and version_ge(apiVersionString, policy.v2MinApiVersion) then
+                        wantProto = 2
+                    end
+                end
 
                 if wantProto ~= rfsuite.config.mspProtocolVersion then
                     rfsuite.config.mspProtocolVersion = wantProto
                     rfsuite.session.mspProtocolVersion = wantProto
 
                     if rfsuite.tasks.msp.common.setProtocolVersion then
-                        pcall(rfsuite.tasks.msp.common.setProtocolVersion, wantProto)
+                        rfsuite.tasks.msp.common.setProtocolVersion(wantProto)
                     elseif rfsuite.tasks.msp.reset then
-
-                        pcall(rfsuite.tasks.msp.reset)
+                        rfsuite.tasks.msp.reset()
                     end
 
                     rfsuite.utils.log(string.format("MSP protocol upgraded to v%d (api %s)", wantProto, apiVersionString), "info")
                     rfsuite.utils.log(string.format("MSP protocol upgraded to v%d (api %s)", wantProto, apiVersionString), "connect")
                 else
-
                     rfsuite.config.mspProtocolVersion = wantProto
                 end
             else
-
                 rfsuite.config.mspProtocolVersion = restoreProto
                 rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "info")
                 rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "connect")
@@ -83,9 +84,9 @@ function apiversion.wakeup()
 
             rfsuite.session.apiVersion = version
             rfsuite.session.apiVersionInvalid = false
-            if rfsuite.session.apiVersion then 
-                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info") 
-                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect") 
+            if rfsuite.session.apiVersion then
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect")
             end
         end)
         API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
@@ -98,12 +99,12 @@ function apiversion.reset()
     rfsuite.session.apiVersionInvalid = nil
     mspCallMade = false
 end
--- 
-function apiversion.isComplete() 
-    if rfsuite.session.apiVersion ~= nil then 
+
+function apiversion.isComplete()
+    if rfsuite.session.apiVersion ~= nil then
         rfsuite.utils.playFileCommon("beep.wav")
-        return true 
-    end 
+        return true
+    end
 end
 
 return apiversion
