@@ -169,12 +169,16 @@ function utils.standardHeaderLayout(headeropts) return {height = headeropts.heig
 
 function utils.getTxBatteryVoltageRange()
     if system and system.voltageRange then
-        local ok, vmin, vmax = pcall(system.voltageRange)
-        if ok and vmin and vmax and vmin < vmax then return vmin, vmax end
+        local vmin, vmax = system.voltageRange()
+        if vmin and vmax and vmin < vmax then
+            return vmin, vmax
+        end
     end
 
+    -- Safe default for 2-cell Li-ion / LiPo TX packs
     return 7.2, 8.4
 end
+
 
 function utils.getTxBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
     return {

@@ -43,11 +43,14 @@ end
 
 local function getMemoryUsageTable()
     if system.getMemoryUsage then
-        local ok, m = pcall(system.getMemoryUsage)
-        if ok and type(m) == "table" then return m end
+        local m = system.getMemoryUsage()
+        if type(m) == "table" then
+            return m
+        end
     end
     return {}
 end
+
 
 function performance.wakeup()
     local t_now = os.clock()
