@@ -19,7 +19,7 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 local servosCompatibilityStatus = false
-
+local fieldFocusSet = false
 
 
 local function openPage(pidx, title, script)
@@ -127,8 +127,6 @@ local function openPage(pidx, title, script)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
-        if rfsuite.preferences.menulastselected["servos_type"] == pidx then rfsuite.app.formFields[pidx]:focus() end
-
         lc = lc + 1
 
         if lc == numPerRow then lc = 0 end
@@ -192,20 +190,27 @@ local function wakeup()
     end
 
     -- enable the buttons once we have servo info
-    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil and rfsuite.session.servoBusEnabled  ~= nil then
+    if fieldFocusSet == false and rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil and rfsuite.session.servoBusEnabled  ~= nil then
 
         -- pwm servos
         if rfsuite.app.formFields[MENU_ID.PWM] then
             rfsuite.app.formFields[MENU_ID.PWM]:enable(true)
+            if rfsuite.preferences.menulastselected["servos_type"] == MENU_ID.PWM then
+                rfsuite.app.formFields[MENU_ID.PWM]:focus()
+            end
         end
 
         -- bus servos
         if rfsuite.utils.apiVersionCompare(">", "12.08") and rfsuite.app.formFields[MENU_ID.BUS] and rfsuite.session.servoBusEnabled == true then
             rfsuite.app.formFields[MENU_ID.BUS]:enable(true)
+            if rfsuite.preferences.menulastselected["servos_type"] == MENU_ID.BUS then
+                rfsuite.app.formFields[MENU_ID.BUS]:focus()
+            end
         end
 
         -- close progress loader
         rfsuite.app.triggers.closeProgressLoader = true
+        fieldFocusSet = true
     end
 
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
@@ -213,7 +218,6 @@ local function wakeup()
         if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
         prevConnectedState = currState
     end
-
 
 
 end
