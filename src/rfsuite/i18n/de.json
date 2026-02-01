@@ -26,12 +26,12 @@
       "source_adc": {
         "english": "Battery ADC",
         "needs_translation": false,
-        "translation": "Batterie ADC"
+        "translation": "Akku ADC"
       },
       "source_esc": {
         "english": "ESC Telemetry",
-        "needs_translation": false,
-        "translation": "ESC Telemetrie"
+        "needs_translation": true,
+        "translation": "ESC Telemetry"
       },
       "source_none": {
         "english": "None",
@@ -200,12 +200,12 @@
       "tbl_escgov": {
         "english": "ESC Governor",
         "needs_translation": false,
-        "translation": "ESC-Governor"
+        "translation": "ESC Governor"
       },
       "tbl_linear_thr": {
         "english": "Linear Throttle",
         "needs_translation": false,
-        "translation": "Linear Throttle"
+        "translation": "Linear Gas"
       },
       "tbl_rf_gov": {
         "english": "RF Gyro Governor",
@@ -354,7 +354,7 @@
       "tbl_fwgov": {
         "english": "Fixed Wing",
         "needs_translation": false,
-        "translation": "Flächenflugzeug-Governor"
+        "translation": "Flächenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -578,7 +578,7 @@
       "tbl_fwgov": {
         "english": "Fixed Wing",
         "needs_translation": false,
-        "translation": "Flöchenflugzeug-Governor"
+        "translation": "Flöchenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -720,7 +720,7 @@
       "tbl_modeair": {
         "english": "Aero Motor",
         "needs_translation": false,
-        "translation": "Flugmotor"
+        "translation": "Flugzeug"
       },
       "tbl_modeext": {
         "english": "Heli Ext Governor",
@@ -750,7 +750,7 @@
       "tbl_modestore": {
         "english": "Heli Governor Store",
         "needs_translation": false,
-        "translation": "Heli Governor Speicher"
+        "translation": "Heli Governor (gespeichert)"
       },
       "tbl_normal": {
         "english": "Normal",
@@ -846,8 +846,8 @@
       },
       "tbl_fwgov": {
         "english": "Fixed Wing",
-        "needs_translation": true,
-        "translation": "Fixed Wing"
+        "needs_translation": false,
+        "translation": "Flächenflugzeug"
       },
       "tbl_green": {
         "english": "GREEN",
@@ -1203,7 +1203,7 @@
       "tbl_throttle_type_switch": {
         "english": "SWITCH",
         "needs_translation": false,
-        "translation": "SCHALTER"
+        "translation": "Schalter"
       }
     },
     "GOVERNOR_PROFILE": {
@@ -1431,7 +1431,7 @@
       "tbl_off": {
         "english": "OFF",
         "needs_translation": false,
-        "translation": "AUS"
+        "translation": "Aus"
       },
       "tbl_on": {
         "english": "ON",
@@ -2083,7 +2083,7 @@
         "name": {
           "english": "Accelerometer",
           "needs_translation": false,
-          "translation": "Beschleunigungssensor"
+          "translation": "Beschl.-Sensor"
         },
         "pitch": {
           "english": "Pitch",
@@ -2179,7 +2179,7 @@
         "half_duplex": {
           "english": "Half Duplex",
           "needs_translation": false,
-          "translation": "Halbduplex-Modus für ESC-Telemetrie"
+          "translation": "Halbduplex-Modus"
         },
         "help_p1": {
           "english": "Configure the motor and speed controller features.",
@@ -2229,7 +2229,7 @@
         "pin_swap": {
           "english": "Pin Swap",
           "needs_translation": false,
-          "translation": "Pin-Tausch"
+          "translation": "Rx/Tx-Tauschen"
         },
         "pinion": {
           "english": "Pinion",
@@ -2244,12 +2244,12 @@
         "rpm": {
           "english": "RPM",
           "needs_translation": false,
-          "translation": "RPM"
+          "translation": "Drehzahl"
         },
         "rpm_sensor_source": {
           "english": "RPM Sensor",
           "needs_translation": false,
-          "translation": "RPM-Sensor"
+          "translation": "Drehzahl Sensor"
         },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
@@ -2279,12 +2279,12 @@
         "unsynced": {
           "english": "Unsynced ESC Update",
           "needs_translation": false,
-          "translation": "Asynchrone ESC-Aktualisierung"
+          "translation": "Nicht synchr. ESC-Update"
         },
         "use_dshot_telemetry": {
           "english": "DShot RPM Telemetry",
           "needs_translation": false,
-          "translation": "DShot RPM-Telemetrie"
+          "translation": "DShot Drehzahl-Telemetrie"
         },
         "voltage_correction": {
           "english": "Voltage Correction",
@@ -2298,7 +2298,7 @@
             "active_freewheel": {
               "english": "Active Freewheeling",
               "needs_translation": false,
-              "translation": "Active Freewheeling"
+              "translation": "Aktiver Freilauf"
             },
             "advanced": {
               "english": "Advanced",
@@ -2308,7 +2308,7 @@
             "auto_restart_time": {
               "english": "Auto Bailout Time",
               "needs_translation": false,
-              "translation": "Auto restart time"
+              "translation": "Auto Restart Zeit"
             },
             "basic": {
               "english": "General",
@@ -2343,7 +2343,7 @@
             "drive_freq": {
               "english": "Drive Frequency",
               "needs_translation": false,
-              "translation": "PWM drive frequency"
+              "translation": "Ansteuerfrequenz"
             },
             "electrical_angle": {
               "english": "Electrical Angle",
@@ -3381,7 +3381,7 @@
         "cancel": {
           "english": "CANCEL",
           "needs_translation": false,
-          "translation": "ABBRECHEN"
+          "translation": "Abbruch"
         },
         "ch_prefix": {
           "english": "CH",
@@ -3391,7 +3391,7 @@
         "channel_page": {
           "english": "Fbus out / CH",
           "needs_translation": false,
-          "translation": "Fbus Ausgang / CH"
+          "translation": "FBUS Ausgang / CH"
         },
         "channel_prefix": {
           "english": "CHANNEL ",
@@ -3401,7 +3401,7 @@
         "help_default_p1": {
           "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
           "needs_translation": false,
-          "translation": "Erweiterte Misch- und Kanalzuordnung konfigurieren, wenn FBUS-Ausgang auf einem seriellen Port aktiviert ist."
+          "translation": "Erweiterte Misch- und Kanalzuordnung konfigurieren, wenn SBUS-Ausgang auf einem seriellen Port aktiviert ist."
         },
         "help_default_p2": {
           "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
@@ -3476,7 +3476,7 @@
         "save_prompt": {
           "english": "Save current page to flight controller?",
           "needs_translation": false,
-          "translation": "Aktuelle Seite zum Flugcontroller speichern?"
+          "translation": "Aktuelle Seite im Flugcontroller speichern?"
         },
         "save_settings": {
           "english": "Save settings",
@@ -3506,7 +3506,7 @@
         "title": {
           "english": "FBUS Output",
           "needs_translation": false,
-          "translation": "FBUS Output"
+          "translation": "FBUS Ausgang"
         },
         "type": {
           "english": "Type",
@@ -3916,7 +3916,7 @@
         "elevator_direction": {
           "english": "Elevator Direction",
           "needs_translation": false,
-          "translation": "Höhenruder-Richtung"
+          "translation": "Nick-Richtung"
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -4001,27 +4001,27 @@
         "yaw_calibration": {
           "english": "Yaw Calibration",
           "needs_translation": false,
-          "translation": "Gier-Kalibrierung"
+          "translation": "Heck-Kalibrierung"
         },
         "yaw_ccw_limit": {
           "english": "Yaw CCW Limit",
           "needs_translation": false,
-          "translation": "Gier CCW-Limit"
+          "translation": "Heck CCW-Limit"
         },
         "yaw_center_trim": {
           "english": "Yaw Center Trim",
           "needs_translation": false,
-          "translation": "Gier-Mitten-Trimmung"
+          "translation": "Heck-Mitten-Trimmung"
         },
         "yaw_cw_limit": {
           "english": "Yaw CW Limit",
-          "needs_translation": false,
-          "translation": "Gier CW-Limit"
+          "needs_translation": true,
+          "translation": "Heck CW Limit"
         },
         "yaw_direction": {
           "english": "Yaw Direction",
           "needs_translation": false,
-          "translation": "Gier-Richtung"
+          "translation": "Heck-Richtung"
         }
       },
       "msp_exp": {
@@ -4038,7 +4038,7 @@
         "name": {
           "english": "MSP Expermental",
           "needs_translation": false,
-          "translation": "MSP Experimentell"
+          "translation": "MSP Exp."
         }
       },
       "msp_speed": {
@@ -4075,7 +4075,7 @@
         "name": {
           "english": "MSP Speed",
           "needs_translation": false,
-          "translation": "MSP-Geschwindigkeit"
+          "translation": "MSP Speed"
         },
         "retries": {
           "english": "Retries",
@@ -4234,12 +4234,12 @@
         "battery_capacity": {
           "english": "Battery Capacity",
           "needs_translation": false,
-          "translation": "Batteriekapazität"
+          "translation": "Akkukapazität"
         },
         "battery_name": {
           "english": "Battery",
           "needs_translation": false,
-          "translation": "Batterie"
+          "translation": "Akku"
         },
         "bec_voltage_alert": {
           "english": "BEC Alert Value",
@@ -4249,7 +4249,7 @@
         "calcfuel_local": {
           "english": "Calculate Fuel Using",
           "needs_translation": false,
-          "translation": "Kraftstoff berechnen mit"
+          "translation": "Berechneter Kraftstoffverbrauch"
         },
         "cell_count": {
           "english": "Cell Count",
@@ -4274,7 +4274,7 @@
         "help_p1": {
           "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
           "needs_translation": false,
-          "translation": "Die Batterieeinstellungen werden verwendet, um den Flugcontroller so zu konfigurieren, dass er die Batteriespannung überwacht und Warnungen ausgibt, wenn die Spannung unter einen bestimmten Wert fällt."
+          "translation": "Die Akkueinstellungen werden verwendet, um den Flugcontroller so zu konfigurieren, dass er die Akkuspannung überwacht und Warnungen ausgibt, wenn die Spannung unter einen bestimmten Wert fällt."
         },
         "max_cell_voltage": {
           "english": "Max Cell Voltage",
@@ -4314,7 +4314,7 @@
         "voltage_multiplier": {
           "english": "Sag Compensation",
           "needs_translation": false,
-          "translation": "Einbruchskompensation"
+          "translation": "Spannungseinbruch-Kompensation"
         },
         "warn_cell_voltage": {
           "english": "Warn Cell Voltage",
@@ -4403,7 +4403,7 @@
         "disabled_message": {
           "english": "Rotorflight governor is not enabled",
           "needs_translation": false,
-          "translation": "Rotorflight-Governor ist nicht aktiviert"
+          "translation": "Rotorflight-Gov. ist nicht aktiviert"
         },
         "dyn_min_throttle": {
           "english": "Dyn. Min Throttle",
@@ -4411,9 +4411,9 @@
           "translation": "Dyn.Min.Gas"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "fallback_drop": {
           "english": "Thr. Fallback drop",
@@ -5249,7 +5249,7 @@
         "shape": {
           "english": "Shape",
           "needs_translation": false,
-          "translation": "Form"
+          "translation": "Kennlinie"
         },
         "superrate": {
           "english": "SuperRate",
@@ -5266,7 +5266,7 @@
         "acc_limit": {
           "english": "Accelerometer Limit",
           "needs_translation": false,
-          "translation": "BeschlGrenze"
+          "translation": "Beschleunigungs Grenze"
         },
         "accel_limit": {
           "english": "Accel",
@@ -6054,7 +6054,7 @@
         "localizations": {
           "english": "Localization",
           "needs_translation": false,
-          "translation": "Lokalisierung"
+          "translation": "Masseinheiten"
         },
         "meters": {
           "english": "Meters",
@@ -6624,8 +6624,8 @@
   },
   "iscompiledcheck": {
     "english": "true",
-    "needs_translation": false,
-    "translation": "true"
+    "translation": "true",
+    "needs_translation": false
   },
   "no_link": {
     "english": "no link",
@@ -6635,7 +6635,7 @@
   "no_sensor": {
     "english": "no sensor",
     "needs_translation": false,
-    "translation": "kein sensor"
+    "translation": "kein Sensor"
   },
   "reload": {
     "english": "reload",
@@ -7798,7 +7798,7 @@
       "ARMED": {
         "english": "ARMED",
         "needs_translation": false,
-        "translation": "GESCHÄRFT"
+        "translation": "SCHARFGESCHALTET"
       },
       "AUTOROT": {
         "english": "AUTOROT",
