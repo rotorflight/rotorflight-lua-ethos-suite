@@ -20,12 +20,19 @@ function app.paint()
 
 end
 
-function app.wakeup()
+function app.wakeup_protected()
     app.guiIsRunning = true
 
     if app.tasks then app.tasks.wakeup() end
 
     if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then if not rfsuite.session.mspBusy then lcd.invalidate() end end
+end
+
+function app.wakeup()
+    local success, err = pcall(app.wakeup_protected)
+    if not success then
+        log("Error in wakeup_protected: " .. tostring(err), "error")
+    end
 end
 
 function app.create()

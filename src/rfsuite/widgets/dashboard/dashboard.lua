@@ -315,46 +315,63 @@ function dashboard.loadObjectType(box)
     local typ = box and box.type
     if not typ then return end
 
-    if not dashboard._moduleCache[typ] then
-
+    if dashboard._moduleCache[typ] == nil then
         local bdir = baseDir or "default"
         local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
 
-        local ok, obj = pcall(function() return assert(compile(objPath))() end)
-        if ok and type(obj) == "table" then
-            dashboard._moduleCache[typ] = obj
-        else
-            log("Failed to load object: " .. tostring(typ), "info")
+        local chunk = compile(objPath)
+        if not chunk then
+            log("Failed to compile object: " .. tostring(typ), "info")
             dashboard._moduleCache[typ] = false
+        else
+            local obj = chunk()
+            if type(obj) == "table" then
+                dashboard._moduleCache[typ] = obj
+            else
+                log("Failed to load object: " .. tostring(typ), "info")
+                dashboard._moduleCache[typ] = false
+            end
         end
     end
 
-    if dashboard._moduleCache[typ] then dashboard.objectsByType[typ] = dashboard._moduleCache[typ] end
+    if dashboard._moduleCache[typ] then
+        dashboard.objectsByType[typ] = dashboard._moduleCache[typ]
+    end
 end
+
 
 function dashboard.loadAllObjects(boxConfigs)
     dashboard.objectsByType = {}
+
     for _, box in ipairs(boxConfigs or {}) do
         local typ = box.type
         if typ then
-
-            if not dashboard._moduleCache[typ] then
+            if dashboard._moduleCache[typ] == nil then
                 local bdir = baseDir or "default"
                 local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
-                local ok, obj = pcall(function() return assert(compile(objPath))() end)
-                if ok and type(obj) == "table" then
-                    dashboard._moduleCache[typ] = obj
-                else
-                    log("Failed to load object: " .. tostring(typ), "info")
 
+                local chunk = compile(objPath)
+                if not chunk then
+                    log("Failed to compile object: " .. tostring(typ), "info")
                     dashboard._moduleCache[typ] = false
+                else
+                    local obj = chunk()
+                    if type(obj) == "table" then
+                        dashboard._moduleCache[typ] = obj
+                    else
+                        log("Failed to load object: " .. tostring(typ), "info")
+                        dashboard._moduleCache[typ] = false
+                    end
                 end
             end
 
-            if dashboard._moduleCache[typ] then dashboard.objectsByType[typ] = dashboard._moduleCache[typ] end
+            if dashboard._moduleCache[typ] then
+                dashboard.objectsByType[typ] = dashboard._moduleCache[typ]
+            end
         end
     end
 end
+
 
 local function getOnpressBoxIndices()
     local indices = {}
@@ -1163,7 +1180,7 @@ function dashboard.event(widget, category, value, x, y)
 
 end
 
-function dashboard.wakeup(widget)
+function dashboard.wakeup_protected(widget)
 
     local now = os.clock()
     local visible = lcd.isVisible()
@@ -1338,6 +1355,13 @@ function dashboard.wakeup(widget)
     if not dashboard._useSpreadSchedulingPaint then lcd.invalidate() end
 end
 
+function dashboard.wakeup()
+    local success, err = pcall(dashboard.wakeup_protected)
+    if not success then
+        log("Error in wakeup_protected: " .. tostring(err), "error")
+    end
+end
+
 function dashboard.listThemes()
     local themes = {}
     local num = 0
@@ -1345,17 +1369,25 @@ function dashboard.listThemes()
     local function scanThemes(basePath, sourceType)
         local folders = system.listFiles(basePath)
         if not folders then return end
+
         for _, folder in ipairs(folders) do
             if folder ~= ".." and folder ~= "." and not folder:match("%.%a+$") then
-                local themeDir = basePath .. folder .. "/"
-                local initPath = themeDir .. "init.lua"
                 if utils.dir_exists(basePath, folder) then
-                    local chunk, err = compile(initPath)
+                    local themeDir = basePath .. folder .. "/"
+                    local initPath = themeDir .. "init.lua"
+
+                    local chunk = compile(initPath)
                     if chunk then
-                        local ok, initTable = pcall(chunk)
-                        if ok and initTable and type(initTable.name) == "string" then
+                        local initTable = chunk()
+                        if initTable and type(initTable.name) == "string" then
                             num = num + 1
-                            themes[num] = {name = initTable.name, configure = initTable.configure, folder = folder, idx = num, source = sourceType}
+                            themes[num] = {
+                                name = initTable.name,
+                                configure = initTable.configure,
+                                folder = folder,
+                                idx = num,
+                                source = sourceType
+                            }
                         end
                     end
                 end
@@ -1365,10 +1397,13 @@ function dashboard.listThemes()
 
     scanThemes(themesBasePath, "system")
     local basePath = "SCRIPTS:/" .. preferences .. "/"
-    if utils.dir_exists(basePath, 'dashboard') then scanThemes(themesUserPath, "user") end
+    if utils.dir_exists(basePath, "dashboard") then
+        scanThemes(themesUserPath, "user")
+    end
 
     return themes
 end
+
 
 function dashboard.getPreference(key)
     if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end

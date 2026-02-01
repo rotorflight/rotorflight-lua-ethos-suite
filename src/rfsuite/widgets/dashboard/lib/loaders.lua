@@ -78,21 +78,34 @@ local function fmtRfsuiteVersion()
 end
 
 local function fmtEthosVersion()
-    if not system or type(system.getVersion) ~= "function" then return "Ethos ?" end
-    local ok, info = pcall(system.getVersion)
-    if not ok or type(info) ~= "table" then return "Ethos ?" end
+    if not system or type(system.getVersion) ~= "function" then
+        return "Ethos ?"
+    end
+
+    local info = system.getVersion()
+    if type(info) ~= "table" then
+        return "Ethos ?"
+    end
+
     local board = info.board or "Ethos"
+
     -- Prefer the full version string if present
     local ver = info.version
     if not ver or ver == "" then
         local major = tonumber(info.major) or 0
         local minor = tonumber(info.minor) or 0
         local rev   = tonumber(info.revision) or 0
+
         ver = string.format("%d.%d.%d", major, minor, rev)
-        if info.suffix and info.suffix ~= "" then ver = ver .. "-" .. tostring(info.suffix) end
+
+        if info.suffix and info.suffix ~= "" then
+            ver = ver .. "-" .. tostring(info.suffix)
+        end
     end
+
     return string.format("%s %s", tostring(board), tostring(ver))
 end
+
 
 -- Draw a filled rounded rectangle using primitives (no alpha blending).
 -- r is corner radius in pixels.
@@ -189,18 +202,18 @@ local function resolveLogLines(linesSrc, maxLines)
 
     -- Function source
     if type(linesSrc) == "function" then
-        local ok, res = pcall(linesSrc, maxLines)
-        if ok and type(res) == "table" then return res end
-        return {}
+        local res = linesSrc(maxLines)
+        return (type(res) == "table") and res or {}
     end
 
     -- Table source
     if type(linesSrc) == "table" then
         -- Object style: getLines(max)
         if type(linesSrc.getLines) == "function" then
-            local ok, res = pcall(linesSrc.getLines, linesSrc, maxLines)
-            if ok and type(res) == "table" then return res end
+            local res = linesSrc:getLines(maxLines)
+            if type(res) == "table" then return res end
         end
+
         -- Plain array of lines
         if #linesSrc > 0 then
             local out = {}
@@ -209,8 +222,10 @@ local function resolveLogLines(linesSrc, maxLines)
             return out
         end
     end
+
     return {}
 end
+
 
 local function getWrappedTextLines(message, fonts, maxWidth, maxHeight)
     local lines = {}
@@ -371,10 +386,10 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local anchorY = logoAreaY + logoAreaH * 0.50
 
     if bmp then
-        local okW, bw = pcall(function() return bmp:width() end)
-        local okH, bh = pcall(function() return bmp:height() end)
+        local bw = bmp:width()
+        local bh = bmp:height()
 
-        if okW and okH and type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
+        if type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
             local padX = math.floor(logoAreaW * (opts.logoPadXRatio or 0.06))
             local padY = math.floor(logoAreaH * (opts.logoPadYRatio or 0.18))
             local boxW = math.max(1, logoAreaW - 2 * padX)
@@ -393,9 +408,16 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
             )
         else
             -- Fallback: square-fit method
-            drawLogoImage(anchorX, anchorY, logoAreaW * (opts.logoFallbackWScale or 0.4), logoAreaH, opts.logoScale or 0.95)
+            drawLogoImage(
+                anchorX,
+                anchorY,
+                logoAreaW * (opts.logoFallbackWScale or 0.4),
+                logoAreaH,
+                opts.logoScale or 0.95
+            )
         end
     end
+
 
     -- Right info column: separator + versions
     do
@@ -545,9 +567,10 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
         local cy = logoY + logoH * 0.5
 
         if bmp then
-            local okW, bw = pcall(function() return bmp:width() end)
-            local okH, bh = pcall(function() return bmp:height() end)
-            if okW and okH and type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
+            local bw = bmp:width()
+            local bh = bmp:height()
+
+            if type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
                 local padX = math.floor(logoW * (opts.logoPadXRatio or 0.10))
                 local padY = math.floor(logoH * (opts.logoPadYRatio or 0.20))
                 local boxW = math.max(1, logoW - 2 * padX)
@@ -571,6 +594,7 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
             drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40)
         end
     end
+
 
     -- Message area
     do

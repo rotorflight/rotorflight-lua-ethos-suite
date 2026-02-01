@@ -324,21 +324,19 @@ end
 
 function utils.findModules()
     local modulesList = {}
-    local moduledir = "app/modules/"
-    local modules_path = moduledir
+    local modules_path = "app/modules/"
 
     for _, v in pairs(system.listFiles(modules_path)) do
         if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
-            local init_path = modules_path .. v .. '/init.lua'
+            local init_path = modules_path .. v .. "/init.lua"
 
             local func, err = loadfile(init_path)
             if not func then
                 rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
             else
-                local ok, mconfig = pcall(func)
-                if not ok then
-                    rfsuite.utils.log("Error executing " .. init_path .. ": " .. mconfig, "info")
-                elseif type(mconfig) ~= "table" or not mconfig.script then
+                local mconfig = func()
+
+                if type(mconfig) ~= "table" or not mconfig.script then
                     rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
                 else
                     rfsuite.utils.log("Loading module " .. v, "debug")
@@ -351,6 +349,7 @@ function utils.findModules()
 
     return modulesList
 end
+
 
 utils._imagePathCache = {}
 utils._imageBitmapCache = {}
@@ -397,7 +396,9 @@ function utils.simSensors(id)
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/sensors")
 
-    if id == nil then return 0 end
+    if id == nil then
+        return 0
+    end
 
     local filepath = "sim/sensors/" .. id .. ".lua"
 
@@ -407,14 +408,11 @@ function utils.simSensors(id)
         return 0
     end
 
-    local success, result = pcall(chunk)
-    if not success then
-        print("Error executing telemetry file: " .. result)
-        return 0
-    end
+    local result = chunk()
 
-    return result
+    return result or 0
 end
+
 
 function utils.logMsp(cmd, rwState, buf, err)
     if rfsuite.preferences.developer.logmsp then

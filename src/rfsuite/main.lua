@@ -195,17 +195,19 @@ local function register_bg_task()
 end
 
 local function register_widgets()
-
     local manifestPath = "widgets/manifest.lua"
-    local chunk, err = loadfile(manifestPath)
     local widgetList = {}
+
+    local chunk = loadfile(manifestPath)
     if chunk then
-        local ok, res = pcall(chunk)
-        if ok and type(res) == "table" then
+        local res = chunk()
+        if type(res) == "table" then
             widgetList = res
         else
-            rfsuite.utils.log("[widgets] manifest execution failed;", "info")
+            rfsuite.utils.log("[widgets] manifest did not return a table", "info")
         end
+    else
+        rfsuite.utils.log("[widgets] manifest not found or load failed", "info")
     end
 
     rfsuite.widgets = {}
@@ -214,16 +216,37 @@ local function register_widgets()
     for _, v in ipairs(widgetList) do
         if v.script then
             local path = "widgets/" .. v.folder .. "/" .. v.script
-            local scriptModule = assert(loadfile(path))(config)
 
-            local base = v.varname or v.script:gsub("%.lua$", "")
-            if rfsuite.widgets[base] then
-                dupCount[base] = (dupCount[base] or 0) + 1
-                base = string.format("%s_dup%02d", base, dupCount[base])
+            local wchunk = loadfile(path)
+            local scriptModule = wchunk and wchunk(config) or nil
+
+            if type(scriptModule) == "table" then
+                local base = v.varname or v.script:gsub("%.lua$", "")
+                if rfsuite.widgets[base] then
+                    dupCount[base] = (dupCount[base] or 0) + 1
+                    base = string.format("%s_dup%02d", base, dupCount[base])
+                end
+                rfsuite.widgets[base] = scriptModule
+
+                system.registerWidget({
+                    name = v.name,
+                    key = v.key,
+                    event = scriptModule.event,
+                    create = scriptModule.create,
+                    paint = scriptModule.paint,
+                    wakeup = scriptModule.wakeup,
+                    build = scriptModule.build,
+                    close = scriptModule.close,
+                    configure = scriptModule.configure,
+                    read = scriptModule.read,
+                    write = scriptModule.write,
+                    persistent = scriptModule.persistent or false,
+                    menu = scriptModule.menu,
+                    title = scriptModule.title
+                })
+            else
+                rfsuite.utils.log("[widgets] widget did not return a module table: " .. path, "info")
             end
-            rfsuite.widgets[base] = scriptModule
-
-            system.registerWidget({name = v.name, key = v.key, event = scriptModule.event, create = scriptModule.create, paint = scriptModule.paint, wakeup = scriptModule.wakeup, build = scriptModule.build, close = scriptModule.close, configure = scriptModule.configure, read = scriptModule.read, write = scriptModule.write, persistent = scriptModule.persistent or false, menu = scriptModule.menu, title = scriptModule.title})
         end
     end
 end
