@@ -5,6 +5,18 @@
 
 local rfsuite = require("rfsuite")
 
+-- Localise globals (cuts down on global env lookups)
+local os_clock = os.clock
+local io_open = io.open
+local type = type
+local tonumber = tonumber
+local ipairs = ipairs
+local print = print
+
+local string_rep = string.rep
+local string_sub = string.sub
+local string_gsub = string.gsub
+
 local function Ring(cap)
     return {
         d = {},
@@ -13,7 +25,7 @@ local function Ring(cap)
         n = 0,
         c = cap or 64,
         push = function(self, x)
-            self.d[self.t] = x;
+            self.d[self.t] = x
             self.t = (self.t % self.c) + 1
             if self.n < self.c then
                 self.n = self.n + 1
@@ -23,10 +35,10 @@ local function Ring(cap)
         end,
         pop = function(self)
             if self.n == 0 then return nil end
-            local x = self.d[self.h];
-            self.d[self.h] = nil;
-            self.h = (self.h % self.c) + 1;
-            self.n = self.n - 1;
+            local x = self.d[self.h]
+            self.d[self.h] = nil
+            self.h = (self.h % self.c) + 1
+            self.n = self.n - 1
             return x
         end,
         empty = function(self) return self.n == 0 end,
@@ -39,140 +51,277 @@ local function Ring(cap)
                 idx = (idx % self.c) + 1
             end
             return out
-        end,        
+        end,
     }
 end
 
-local logs = {config = {enabled = true, log_to_file = true, print_interval = system:getVersion().simulation and 0.025 or 0.5, disk_write_interval = 5.0, max_line_length = 200, min_print_level = "info", log_file = "log.txt", prefix = ""}}
+local logs = {
+    config = {
+        enabled = true,
+        log_to_file = true,
+        print_interval = system:getVersion().simulation and 0.025 or 0.5,
+        disk_write_interval = 5.0,
+        max_line_length = 200,
+        min_print_level = "info",
+        log_file = "log.txt",
+        prefix = "",
+        -- New knobs (safe defaults):
+        disk_keep_open = true,       -- keep handle open between flushes (reduces open/close spikes)
+        disk_buffer_max = 4096,      -- flush if buffered bytes exceed this
+        disk_flush_batch = 50,       -- max lines per flush
+    }
+}
 
-local LEVEL = {debug = 0, info = 1, off = 2}
-local MINLVL = LEVEL[logs.config.min_print_level] or 1
+local LEVEL = { debug = 0, info = 1, off = 2 }
+
+-- We keep this as a function so changing config.min_print_level at runtime works.
+local function getMinLevel(cfg)
+    return LEVEL[cfg.min_print_level] or LEVEL.info
+end
 
 local qConsole = Ring(50)
-local qDisk = Ring(100)
+local qDisk = Ring(200) -- a little bigger so we can batch more effectively
 local qConnect = Ring(20)
+
 -- Separate rolling buffer for on-screen "connect" display.
--- qConnect is drained by process_connect(), so it may be empty when the UI renders.
 local qConnectView = Ring(80)
-local lastPrint, lastDisk, lastConnect = os.clock(), os.clock(), os.clock()
+
+local lastPrint, lastDisk, lastConnect = os_clock(), os_clock(), os_clock()
+
+-- Disk buffering / handle caching
+local diskBuf = {}       -- array of lines (strings, WITHOUT \n)
+local diskBufBytes = 0
+local diskFH = nil
+local diskFHPath = nil
+
+local function diskClose()
+    if diskFH then
+        pcall(function() diskFH:close() end)
+        diskFH = nil
+        diskFHPath = nil
+    end
+end
+
+local function diskEnsureOpen(cfg)
+    if not cfg.log_to_file then return nil end
+    local path = cfg.log_file
+    if not path or path == "" then return nil end
+
+    if diskFH and diskFHPath == path then
+        return diskFH
+    end
+
+    diskClose()
+    local f = io_open(path, "a")
+    if not f then return nil end
+    diskFH = f
+    diskFHPath = path
+    return f
+end
+
+local function diskBufPush(line)
+    diskBuf[#diskBuf + 1] = line
+    diskBufBytes = diskBufBytes + #line + 1 -- + "\n"
+end
 
 local function split(msg, maxlen, cont)
-    if #msg <= maxlen then return {msg} end
+    if #msg <= maxlen then return { msg } end
     local t, i = {}, 1
     while i <= #msg do
         local j = i + maxlen - 1
-        t[#t + 1] = msg:sub(i, j)
+        t[#t + 1] = string_sub(msg, i, j)
         i = j + 1
         if i <= #msg then
-            msg = cont .. msg:sub(i);
+            msg = cont .. string_sub(msg, i)
             i = 1
         end
         if #msg <= maxlen then
-            t[#t + 1] = msg;
+            t[#t + 1] = msg
             break
         end
     end
     return t
 end
 
-function logs.log(message, level)
-    if not logs.config.enabled or MINLVL == LEVEL.off then return end
-
-    if rfsuite.preferences.developer.loglevel == "off" then 
-        return 
+local function getPrefix(cfg)
+    local rawp = cfg.prefix
+    if type(rawp) == "function" then
+        return rawp() or ""
     end
+    return rawp or ""
+end
+
+local function getDevLogLevel()
+    -- Avoid repeated deep table walks everywhere
+    local pref = rfsuite.preferences
+    if not pref then return "info" end
+    local dev = pref.developer
+    if not dev then return "info" end
+    return dev.loglevel or "info"
+end
+
+function logs.log(message, level)
+    local cfg = logs.config
+    if not cfg.enabled then return end
+
+    local minlvl = getMinLevel(cfg)
+    if minlvl == LEVEL.off then return end
+
+    local devLevel = getDevLogLevel()
+    if devLevel == "off" then return end
 
     local lvl = LEVEL[level or "info"]
-    if not lvl or lvl < MINLVL then return end
+    if not lvl or lvl < minlvl then return end
 
-    local maxlen = logs.config.max_line_length * 10
+    -- Hard cap (prevents pathological memory churn)
+    local maxlen = cfg.max_line_length * 10
     if #message > maxlen then
-        message = message:sub(1, maxlen) .. " [truncated]"
+        message = string_sub(message, 1, maxlen) .. " [truncated]"
     end
 
     local e = { msg = message, lvl = lvl }
 
-    -- RULE 1: info 
-    if rfsuite.preferences.developer.loglevel == "info" then
+    -- RULE 1: info -> console
+    if devLevel == "info" then
         if lvl == LEVEL.info then
             qConsole:push(e)
         end
+        return
     end
 
-    -- RULE 2: debug 
-    if rfsuite.preferences.developer.loglevel == "debug" then
-        if lvl == LEVEL.debug or lvl == LEVEL.info then
+    -- RULE 2: debug -> disk (and optionally console if you ever want it later)
+    if devLevel == "debug" then
+        if (lvl == LEVEL.debug or lvl == LEVEL.info) then
             qDisk:push(e)
         end
-    end    
-
+    end
 end
 
 function logs.add(message, level)
     if level == "connect" then
-        local rawp = logs.config.prefix
-        local pfx = type(rawp) == "function" and rawp() or (rawp or "")
-
+        local cfg = logs.config
+        local pfx = getPrefix(cfg)
         local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
         qConnect:push(e)
-        if qConnectView then qConnectView:push(e) end
+        qConnectView:push(e)
     else
         logs.log(message, level)
     end
-end  
+end
 
-
-local function drain_console(now)
-    if now - lastPrint < logs.config.print_interval or qConsole:empty() then return end
+local function drain_console(now, cfg)
+    if (now - lastPrint) < cfg.print_interval or qConsole:empty() then return end
     lastPrint = now
-    local rawp = logs.config.prefix
-    local pfx = type(rawp) == "function" and rawp() or (rawp or "")
-    local pad = #pfx > 0 and string.rep(" ", #pfx) or ""
+
+    local pfx = getPrefix(cfg)
+    local pad = (#pfx > 0) and string_rep(" ", #pfx) or ""
+
     for _ = 1, 5 do
-        local e = qConsole:pop();
+        local e = qConsole:pop()
         if not e then break end
-        for _, line in ipairs(split(pfx .. e.msg, logs.config.max_line_length, pad)) do print(line) end
+        local parts = split(pfx .. e.msg, cfg.max_line_length, pad)
+        for i = 1, #parts do
+            print(parts[i])
+        end
     end
 end
 
-local function drain_disk(now)
-    if now - lastDisk < logs.config.disk_write_interval or qDisk:empty() then return end
-    lastDisk = now
-    local f = io.open(logs.config.log_file, "a");
-    if not f then return end
-    local rawp = logs.config.prefix
-    local pfx = type(rawp) == "function" and rawp() or (rawp or "")
-    for _ = 1, 20 do
-        local e = qDisk:pop();
-        if not e then break end
-        f:write(pfx .. e.msg .. "\n")
+local function flush_disk(cfg)
+    if #diskBuf == 0 then return end
+
+    local f = diskEnsureOpen(cfg)
+    if not f then
+        -- If we can't open, drop buffered lines to avoid runaway memory growth.
+        diskBuf = {}
+        diskBufBytes = 0
+        return
     end
-    f:close()
+
+    -- Write buffered lines in one go (less overhead than per-line write)
+    -- Ethos Lua usually supports table.concat efficiently.
+    local ok = pcall(function()
+        f:write(table.concat(diskBuf, "\n"))
+        f:write("\n")
+        if f.flush then f:flush() end
+    end)
+
+    diskBuf = {}
+    diskBufBytes = 0
+
+    if not ok then
+        diskClose()
+    end
+
+    if not cfg.disk_keep_open then
+        diskClose()
+    end
 end
 
-local function drain_connect(now)
-    if now - lastConnect < logs.config.print_interval or qConnect:empty() then return end
+local function drain_disk(now, cfg)
+    if not cfg.log_to_file then
+        -- Still drain queue to prevent growth, but do not touch disk.
+        while not qDisk:empty() do qDisk:pop() end
+        diskBuf = {}
+        diskBufBytes = 0
+        diskClose()
+        return
+    end
+
+    if qDisk:empty() and #diskBuf == 0 then return end
+
+    -- Time-based flush gate
+    local doTimeFlush = (now - lastDisk) >= cfg.disk_write_interval
+
+    local pfx = getPrefix(cfg)
+
+    -- Pull a batch from qDisk into buffer (cheap, no disk I/O yet)
+    local batchMax = cfg.disk_flush_batch or 50
+    for _ = 1, batchMax do
+        local e = qDisk:pop()
+        if not e then break end
+        diskBufPush(pfx .. e.msg)
+        if diskBufBytes >= (cfg.disk_buffer_max or 4096) then
+            doTimeFlush = true
+            break
+        end
+    end
+
+    if doTimeFlush then
+        lastDisk = now
+        flush_disk(cfg)
+    end
+end
+
+local function drain_connect(now, cfg)
+    if (now - lastConnect) < cfg.print_interval or qConnect:empty() then return end
     lastConnect = now
-    local rawp = logs.config.prefix
-    local pfx = type(rawp) == "function" and rawp() or (rawp or "")
-    local pad = #pfx > 0 and string.rep(" ", #pfx) or ""
+
+    local pfx = getPrefix(cfg)
+    local pad = (#pfx > 0) and string_rep(" ", #pfx) or ""
+
     for _ = 1, 5 do
         local e = qConnect:pop()
         if not e then break end
-        for _, line in ipairs(split(pfx .. e.msg, logs.config.max_line_length, pad)) do print(line) end
+        local parts = split(pfx .. e.msg, cfg.max_line_length, pad)
+        for i = 1, #parts do
+            print(parts[i])
+        end
     end
 end
 
 function logs.process()
-    if not logs.config.enabled or MINLVL == LEVEL.off then return end
-    local now = os.clock()
-    drain_console(now)
-    drain_disk(now)
+    local cfg = logs.config
+    if not cfg.enabled then return end
+    if getMinLevel(cfg) == LEVEL.off then return end
+
+    local now = os_clock()
+    drain_console(now, cfg)
+    drain_disk(now, cfg)
 end
 
 local function stripLeadingTimestamp(s)
     if type(s) ~= "string" then return s end
-    return (s:gsub("^%b[]%s*", ""))
+    return (string_gsub(s, "^%b[]%s*", ""))
 end
 
 function logs.getConnectLines(maxLines, opts)
@@ -180,27 +329,24 @@ function logs.getConnectLines(maxLines, opts)
     maxLines = tonumber(maxLines) or 8
     if maxLines < 1 then return {} end
 
+    local cfg = logs.config
     local entries = qConnectView:items()
     local lines = {}
 
     for i = #entries, 1, -1 do
         local e = entries[i]
         if e and e.msg then
-            -- use stored prefix if present, otherwise fall back
             local pfx = e.pfx
             if pfx == nil then
-                local rawp = logs.config.prefix
-                pfx = type(rawp) == "function" and rawp() or (rawp or "")
+                pfx = getPrefix(cfg)
             end
 
             if opts.noTimestamp then
                 pfx = stripLeadingTimestamp(pfx)
             end
 
-            local pad = #pfx > 0 and string.rep(" ", #pfx) or ""
-
-            local msg = pfx .. e.msg
-            local parts = split(msg, logs.config.max_line_length, pad)
+            local pad = (#pfx > 0) and string_rep(" ", #pfx) or ""
+            local parts = split(pfx .. e.msg, cfg.max_line_length, pad)
 
             for j = #parts, 1, -1 do
                 lines[#lines + 1] = parts[j]
@@ -215,11 +361,28 @@ function logs.getConnectLines(maxLines, opts)
     return out
 end
 
-
 function logs.process_connect()
-    if not logs.config.enabled or MINLVL == LEVEL.off then return end
-    local now = os.clock()
-    drain_connect(now)
+    local cfg = logs.config
+    if not cfg.enabled then return end
+    if getMinLevel(cfg) == LEVEL.off then return end
+
+    local now = os_clock()
+    drain_connect(now, cfg)
+end
+
+-- allow callers to force a flush/close on teardown
+function logs.flush()
+    flush_disk(logs.config)
+end
+
+-- allow callers to force a reset on teardown
+function logs.reset()
+    flush_disk(logs.config)
+end
+
+function logs.close()
+    flush_disk(logs.config)
+    diskClose()
 end
 
 return logs
