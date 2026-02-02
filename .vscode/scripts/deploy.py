@@ -16,6 +16,68 @@ from hashlib import md5
 from glob import glob
 from pathlib import Path
 
+
+# === Optional direct radio control (no Ethos Suite needed) =====================
+# We can switch the radio USB mode and discover mount points by talking directly
+# to the device (same USB HID interface Ethos Suite uses) and scanning for *.cpuid
+# markers. If dependencies are missing, we gracefully fall back to a pure drive scan.
+CONNECT_MODULE_PATH = os.path.join(os.path.dirname(__file__), "connect.py")
+_connect_mod = None
+
+def _load_connect_module():
+    global _connect_mod
+    if _connect_mod is not None:
+        return _connect_mod
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("rfsuite_connect", CONNECT_MODULE_PATH)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)  # type: ignore
+            _connect_mod = mod
+            return _connect_mod
+    except Exception as e:
+        print(f"[CONNECT] connect.py unavailable ({type(e).__name__}: {e}); using drive-scan fallback.")
+    _connect_mod = False
+    return _connect_mod
+
+def _connect_usb_debug(action: str):
+    """Start/stop USB debug (serial) using connect.py if available."""
+    mod = _load_connect_module()
+    if not mod:
+        return False
+    try:
+        ri = mod.RadioInterface()
+        if action == 'start':
+            print("[CONNECT] Starting USB debug (serial)…")
+            ri.start_usb_debug()
+        elif action == 'stop':
+            print("[CONNECT] Stopping USB debug (serial)…")
+            ri.stop_usb_debug()
+        else:
+            raise ValueError(f"Unknown action: {action}")
+        return True
+    except Exception as e:
+        print(f"[CONNECT] USB debug {action} failed ({type(e).__name__}: {e})")
+        return False
+
+def _connect_find_scripts_dir():
+    """Return mounted scripts dir using connect.py drive markers, or None."""
+    mod = _load_connect_module()
+    if not mod:
+        return None
+    try:
+        ri = mod.RadioInterface()
+        ri.scan_for_drives()
+        # Prefer sdcard/radio volumes if present; Ethos maps SCRIPTS to the mounted media root + /scripts
+        for key in ('sdcard', 'radio', 'flash'):
+            root = ri.drives.get(key)
+            if root and os.path.isdir(os.path.join(root, 'scripts')):
+                return os.path.normpath(os.path.join(root, 'scripts'))
+    except Exception as e:
+        print(f"[CONNECT] Drive scan failed ({type(e).__name__}: {e})")
+    return None
+
 MIN_ETHOSSUITE_VERSION = "1.7.0"
 
 SERIAL_PIDFILE = os.path.join(tempfile.gettempdir(), "deploy-serial.pid")
@@ -138,6 +200,10 @@ def parse_version(v: str):
     return tuple(map(int, v.split(".")))
 
 def check_ethossuite_version(ethossuite_bin, min_version=MIN_ETHOSSUITE_VERSION):
+    if not ethossuite_bin:
+        # Ethos Suite is optional; we can operate without it using connect.py + drive scans.
+        print("[ETHOS] Ethos Suite not configured; continuing without it.")
+        return True
     try:
         res = subprocess.run(
             [ethossuite_bin, "--version"],
@@ -291,6 +357,11 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
     Ask Ethos Suite for the SCRIPTS path. Robust against chatty output.
     """
     import re, json
+
+    # Prefer direct connect.py discovery (no Ethos Suite required).
+    cp = _connect_find_scripts_dir()
+    if cp:
+        return cp
 
     cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
     path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//|/)[^\r\n]+$')
@@ -549,6 +620,11 @@ DEFAULT_SERIAL_RETRIES = 10
 DEFAULT_SERIAL_DELAY = 1.0
 
 def ethos_serial(ethossuite_bin, action, radio=None):
+    # Ethos Suite is optional. Prefer connect.py HID mode switching when available.
+    if not ethossuite_bin:
+        ok = _connect_usb_debug(action)
+        return (0 if ok else 1), '', ''
+
     cmd = [ethossuite_bin, "--serial", action, "--radio", "auto"]
     if radio:
         cmd += ["--radio", radio]
@@ -563,10 +639,14 @@ def ethos_serial(ethossuite_bin, action, radio=None):
         return res.returncode, out, err
     except Exception as e:
         print(f"[ETHOS] --serial {action} failed: {e}")
+        # Fallback: direct HID mode switching
+        ok = _connect_usb_debug(action)
+        if ok:
+            return 0, "", ""
         return 1, "", str(e)
 
 
-def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
+def wait_for_scripts_mount(ethossuite_bin=None, attempts=10, delay=2):
     """
     Poll Ethos Suite for the mounted SCRIPTS directory.
 
@@ -582,8 +662,27 @@ def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
     last_path = None
 
     for i in range(attempts):
+        # First: direct connect.py drive discovery
+        path = _connect_find_scripts_dir()
+        if path and os.path.isdir(path):
+            mounted = os.path.normpath(path)
+            print(f"[CONNECT] Radio drive mounted: {mounted}")
+            return mounted
+        # Second: simple drive scan fallback
+        fb = scan_usb_drives_for_radio()
+        if fb and os.path.isdir(fb):
+            return os.path.normpath(fb)
+        # Third: if Ethos Suite is configured, ask it too (legacy)
+        if ethossuite_bin:
+            try:
+                path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
+                if path and os.path.isdir(path):
+                    mounted = os.path.normpath(path)
+                    print(f"[ETHOS] Radio drive mounted: {mounted}")
+                    return mounted
+            except Exception as e:
+                pass
         try:
-            path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
             last_path = path
             if debug_mount:
                 print(f"[ETHOS][DEBUG] get_ethos_scripts_dir -> {path!r}")
@@ -1128,7 +1227,7 @@ def main():
 
     if args.radio and args.connect_only:
         # Just enable serial & tail logs; no copying
-        ethos_serial(config['ethossuite_bin'], 'start')
+        ethos_serial(config.get('ethossuite_bin'), 'start')
 
         v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
         p = str(config.get('serial_pid', DEFAULT_SERIAL_PID))
@@ -1142,9 +1241,9 @@ def main():
     if args.radio and not args.connect_only:
         # RADIO DEPLOY: use Ethos Suite to locate the radio SCRIPTS path
         print("[ETHOS] Disabling serial debug before copy to protect filesystem…")
-        ethos_serial(config['ethossuite_bin'], 'stop')
+        ethos_serial(config.get('ethossuite_bin'), 'stop')
         try:
-            rd = wait_for_scripts_mount(config['ethossuite_bin'], attempts=10, delay=2)
+            rd = wait_for_scripts_mount(config.get('ethossuite_bin'), attempts=10, delay=2)
         except Exception as e:
             print("[ERROR] Failed to obtain Ethos SCRIPTS path after disabling serial.")
             print(f"        Reason: {e}")
@@ -1175,14 +1274,14 @@ def main():
         launch_sims(targets)
 
     if args.radio and not args.radio_debug:
-        ethos_serial(config['ethossuite_bin'], 'start')
+        ethos_serial(config.get('ethossuite_bin'), 'start')
 
     if args.radio and args.radio_debug:
         _kill_previous_tail_if_any()
-        rc, _, _ = ethos_serial(config['ethossuite_bin'], 'start')
+        rc, _, _ = ethos_serial(config.get('ethossuite_bin'), 'start')
         if rc != 0:
             print("[ETHOS] First --serial start failed; retrying once…")
-            ethos_serial(config['ethossuite_bin'], 'start')
+            ethos_serial(config.get('ethossuite_bin'), 'start')
 
         v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
         p = str(config.get('serial_pid', DEFAULT_SERIAL_PID))
