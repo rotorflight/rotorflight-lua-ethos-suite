@@ -10,8 +10,7 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "Deploy & Launch [SIM]",
-      "postDebugTask": "ethos.Start"
+      "preLaunchTask": "Deploy & Launch [SIM]"
     },
     {
       "name": "Deploy Radio",
@@ -69,17 +68,6 @@
       "preLaunchTask": "Radio: Serial Debug"
     },
     {
-      "name": "Switch Ethos Firmware",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-      "postDebugTask": "ethos.SetFirmware"
-    },
-    {
       "name": "Run RFSuite Sensor Tool",
       "type": "debugpy",
       "request": "launch",
@@ -91,17 +79,6 @@
       "postDebugTask": "Run RFSuite Sensor Tool"
     },
     {
-      "name": "Ethos Telemetry Settings",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
-      "console": "integratedTerminal",
-      "subProcess": false,
-      "justMyCode": true,
-      "stopOnEntry": false,
-      "postDebugTask": "ethos.OpenTelemetry"
-    },
-    {
       "name": "Set Deployment Language",
       "type": "node",
       "request": "launch",
@@ -110,7 +87,7 @@
         "${input:deployLanguage}"
       ],
       "console": "integratedTerminal"
-    },    
+    },
     {
       "name": "Clear locks",
       "type": "debugpy",
