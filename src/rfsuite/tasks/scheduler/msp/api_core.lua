@@ -5,6 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
+
+-- Optimized locals to reduce global/table lookups
+local utils = rfsuite.utils
+local math_min = math.min
 local core = {}
 
 local mspHelper = rfsuite.tasks.msp.mspHelper
@@ -107,7 +111,7 @@ local function parseMSPChunk(buf, structure, state)
         state.index = state.index + 1
 
         -- Skip if API version too old
-        if field.apiVersion and rfsuite.utils.apiVersionCompare("<", field.apiVersion) then goto continue end
+        if field.apiVersion and utils.apiVersionCompare("<", field.apiVersion) then goto continue end
 
         local readFunction = mspHelper["read" .. field.type]
         if not readFunction then
@@ -165,7 +169,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
                 local field = structure[state.index]
                 state.index = state.index + 1
 
-                if field.apiVersion and rfsuite.utils.apiVersionCompare("<", field.apiVersion) then goto continue end
+                if field.apiVersion and utils.apiVersionCompare("<", field.apiVersion) then goto continue end
 
                 local readFunction = mspHelper["read" .. field.type]
                 if not readFunction then
@@ -222,7 +226,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
     local current_byte = 1
 
     for _, field in ipairs(structure) do
-        if field.apiVersion and rfsuite.utils.apiVersionCompare("<", field.apiVersion) then goto continue end
+        if field.apiVersion and utils.apiVersionCompare("<", field.apiVersion) then goto continue end
 
         local readFunction = mspHelper["read" .. field.type]
         if not readFunction then
@@ -260,7 +264,7 @@ end
 function core.calculateMinBytes(structure)
     local total = 0
     for _, param in ipairs(structure) do
-        if (not param.apiVersion or rfsuite.utils.apiVersionCompare(">=", param.apiVersion))
+        if (not param.apiVersion or utils.apiVersionCompare(">=", param.apiVersion))
            and param.mandatory ~= false then
             total = total + get_type_size(param.type)
         end
@@ -271,7 +275,7 @@ end
 function core.filterByApiVersion(structure)
     local filtered = {}
     for _, param in ipairs(structure) do
-        if not param.apiVersion or rfsuite.utils.apiVersionCompare(">=", param.apiVersion) then
+        if not param.apiVersion or utils.apiVersionCompare(">=", param.apiVersion) then
             table.insert(filtered, param)
         end
     end
@@ -413,7 +417,7 @@ function core.buildDeltaPayload(apiname, payload, api_structure, positionmap, re
         -- Patch into correct positions
         local pm = positionmap[name]
         if type(pm) == "table" and pm.start and pm.size then
-            local maxBytes = math.min(pm.size, #tmp)
+            local maxBytes = math_min(pm.size, #tmp)
             for i = 1, maxBytes do
                 local pos = pm.start + i - 1
                 if pos <= receivedBytesCount then byte_stream[pos] = tmp[i] end
@@ -495,7 +499,7 @@ function core.prepareStructureData(structure)
 
     for _, param in ipairs(structure) do
         -- Skip if API version doesn't match
-        if param.apiVersion and rfsuite.utils.apiVersionCompare("<", param.apiVersion) then goto continue end
+        if param.apiVersion and utils.apiVersionCompare("<", param.apiVersion) then goto continue end
 
         table.insert(filtered, param)
 
