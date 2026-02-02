@@ -5,6 +5,11 @@
 
 local rfsuite = require("rfsuite")
 
+
+-- Optimized locals to reduce global/table lookups
+local os_clock = os.clock
+local utils = rfsuite.utils
+local math_max = math.max
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
@@ -92,16 +97,16 @@ function MspQueueController:isProcessed() return (self.currentMessage == nil) an
 -- Main queue processor (send, retry, handle replies)
 function MspQueueController:processQueue()
 
-    local now = os.clock()
+    local now = os_clock()
 
     -- MSP busy watchdog
     local mspBusyTimeout = 2.5
-    self.mspBusyStart = self.mspBusyStart or os.clock()
+    self.mspBusyStart = self.mspBusyStart or os_clock()
 
     if LOG_ENABLED_MSP_QUEUE() then
         local count = self:queueCount()
         if count ~= lastQueueCount then
-            rfsuite.utils.log("MSP Queue: " .. count .. " messages in queue", "info")
+            utils.log("MSP Queue: " .. count .. " messages in queue", "info")
             lastQueueCount = count
         end
     end
@@ -114,9 +119,9 @@ function MspQueueController:processQueue()
     end
 
     -- Watchdog: MSP stuck too long
-    if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
-        --rfsuite.utils.log("MSP busy for more than " .. mspBusyTimeout .. " seconds", "info")
-        --rfsuite.utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
+    if self.mspBusyStart and (os_clock() - self.mspBusyStart) > mspBusyTimeout then
+        --utils.log("MSP busy for more than " .. mspBusyTimeout .. " seconds", "info")
+        --utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
         rfsuite.session.mspBusy = false
         self.mspBusyStart = nil
         return
@@ -124,7 +129,7 @@ function MspQueueController:processQueue()
 
     rfsuite.session.mspBusy = true
 
-    rfsuite.utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP
+    utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP
 
     -- Get next message if idle (optionally wait before advancing)
     if not self.currentMessage then
@@ -150,11 +155,11 @@ function MspQueueController:processQueue()
 
     if not system:getVersion().simulation then
         -- Real MSP: send if interval allows
-        if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os.clock()) then
+        if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os_clock()) then
             if self.currentMessage then        
                 local sent = rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
                 if sent then
-                    self.lastTimeCommandSent = os.clock()
+                    self.lastTimeCommandSent = os_clock()
                     self.currentMessageStartTime = self.lastTimeCommandSent
                     self.retryCount = self.retryCount + 1
                 end
@@ -162,13 +167,25 @@ function MspQueueController:processQueue()
             end
         end
 
-        -- Pump TX and poll reply
+        -- Pump TX 
         rfsuite.tasks.msp.common.mspProcessTxQ()
-        cmd, buf, err = rfsuite.tasks.msp.common.mspPollReply()
+
+        -- Poll for reply
+        local ok, a, b, c = pcall(rfsuite.tasks.msp.common.mspPollReply)
+        if ok then
+            cmd, buf, err = a, b, c
+        else
+            if LOG_ENABLED_MSP() then
+                utils.log("mspPollReply error: " .. tostring(a), "info")
+            end
+            -- back off a little so we don't hammer the same fault every frame
+            self._nextMessageAt = os_clock() + 0.05
+            return
+        end
     else
         -- Simulator mode: use provided simulatorResponse
         if not self.currentMessage.simulatorResponse then
-            if LOG_ENABLED_MSP() then rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
+            if LOG_ENABLED_MSP() then utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
             self.uuid = nil
             self.apiname = nil 
@@ -178,14 +195,14 @@ function MspQueueController:processQueue()
     end
 
     -- Per-message timeout
-    if self.currentMessage and (os.clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
+    if self.currentMessage and (os_clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
-        if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
+        if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
         if self.interMessageDelay and self.interMessageDelay > 0 then
-            self._nextMessageAt = os.clock() + self.interMessageDelay
+            self._nextMessageAt = os_clock() + self.interMessageDelay
         end
         return
     end
@@ -232,14 +249,14 @@ function MspQueueController:processQueue()
                     end
                 end
 
-                rfsuite.utils.logMsp(cmd, rwState, logPayload, err)
+                utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
         if self.interMessageDelay and self.interMessageDelay > 0 then
-            self._nextMessageAt = os.clock() + self.interMessageDelay
+            self._nextMessageAt = os_clock() + self.interMessageDelay
         end        
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
 
@@ -267,7 +284,7 @@ end
 function MspQueueController:add(message)
     if not rfsuite.session.telemetryState then return end
     if not message then
-        if LOG_ENABLED_MSP() then rfsuite.utils.log("Unable to queue - nil message.", "debug") end
+        if LOG_ENABLED_MSP() then utils.log("Unable to queue - nil message.", "debug") end
         return
     end
     -- allow apiname to distinguish otherwise identical MSP calls
@@ -277,7 +294,7 @@ function MspQueueController:add(message)
     end
 
     if key and self.uuid == key then
-        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with key " .. key, "info") end
+        if LOG_ENABLED_MSP() then utils.log("Skipping duplicate message with key " .. key, "info") end
         return
     end
     if key then self.uuid = key end
@@ -293,7 +310,7 @@ function MspQueueController:pendingByteCost()
         if not msg then return end
         local rx = msg.minBytes or 0
         local tx = (msg.payload and #msg.payload) or 0
-        total = total + math.max(rx, tx)
+        total = total + math_max(rx, tx)
     end
     add(self.currentMessage)
     for i = self.queue.first, self.queue.last do add(self.queue.data[i]) end
