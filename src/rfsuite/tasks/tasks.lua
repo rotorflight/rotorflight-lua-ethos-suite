@@ -712,7 +712,6 @@ function tasks.wakeup_protected()
             end
         else
             if tasks.callback then
-                tasks.msp.wakeup()
                 tasks.callback.wakeup()
             end
         end
