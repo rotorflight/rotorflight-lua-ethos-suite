@@ -5,11 +5,6 @@
 
 local rfsuite = require("rfsuite")
 
-
--- Optimized locals to reduce global/table lookups
-local os_clock = os.clock
-local utils = rfsuite.utils
-local math_max = math.max
 -- Convenience wrappers for protocol buffer sizes
 local function proto() return rfsuite.tasks.msp.protocol end
 local function maxTx() return proto().maxTxBufferSize end
@@ -58,7 +53,7 @@ local function pollBudget()
     local msg = q and q.currentMessage
     local rx  = (msg and msg.minBytes) or 0
     local tx  = (msg and msg.payload and #msg.payload) or 0
-    local pending = math_max(rx, tx)
+    local pending = math.max(rx, tx)
 
     -- Compute boost when message size is large
     local threshold = (TUNE.threshold_windows * perPoll)
@@ -238,51 +233,27 @@ end
 -- Poll until a complete MSP reply or timeout
 local function mspPollReply()
     local budget = pollBudget() or 0.1
-    local now = os_clock
-    local deadline = now() + budget
+    local startTime = os.clock()
 
-    -- Hoist lookups (avoid repeated globals + proto() table walks)
-    local p = proto()
-    local mspPoll = p and p.mspPoll
-    if not mspPoll then
-        return nil, nil, nil
-    end
-
-    local receivedReply = _receivedReply
-
-    -- Fast path: when idle, bail quickly on nil (avoid instruction burn).
-    -- Slow path: when a reply is in progress / outstanding request, allow more gaps.
-    local MAX_NIL_IDLE    = 8
-    local MAX_NIL_INFLIGHT = 120
-
+    local MAX_NIL_POLLS = 100
     local nilPolls = 0
 
-    while now() < deadline do
-        local pkt = mspPoll()
+    while os.clock() - startTime < budget do
+        local pkt = proto().mspPoll()
 
         if pkt == nil then
             nilPolls = nilPolls + 1
-
-            -- “In-flight” if we’re mid frame OR we have an outstanding request we’re waiting on.
-            -- (mspStarted is set by _receivedReply() once it sees a valid start for our last request.)
-            local inflight = mspStarted or (mspLastReq ~= 0)
-
-            local maxNil = inflight and MAX_NIL_INFLIGHT or MAX_NIL_IDLE
-            if nilPolls >= maxNil then
+            if nilPolls >= MAX_NIL_POLLS then
+                -- early exit due to too many nil polls
                 return nil, nil, nil
             end
         else
+            -- reset counter once we get something
             nilPolls = 0
 
-            -- Defensive: if transport ever returns non-table, treat as junk/no-data.
-            if type(pkt) == "table" then
-                -- Catch rare decode hard-fails without killing the script.
-                -- IMPORTANT: On decode error we *do not* reset mspLastReq or state; next wakeup can continue.
-                local ok, done = pcall(receivedReply, pkt)
-                if ok and done then
-                    mspLastReq = 0
-                    return mspRxReq, mspRxBuf, mspRxError
-                end
+            if _receivedReply(pkt) then
+                mspLastReq = 0
+                return mspRxReq, mspRxBuf, mspRxError
             end
         end
     end
