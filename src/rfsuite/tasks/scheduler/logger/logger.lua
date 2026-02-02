@@ -24,7 +24,9 @@ function logger.wakeup()
     logger.queue.process()
 end
 
-function logger.reset() end
+function logger.reset() 
+    logger.queue.reset()
+end
 
 function logger.add(message, level)
     logger.queue.config.min_print_level = rfsuite.preferences.developer.loglevel
@@ -36,6 +38,10 @@ end
 
 function logger.getConnectLines(n)
     return logger.queue.getConnectLines(n)
+end
+
+function logger.flush()
+    logger.queue.flush()
 end
 
 return logger
