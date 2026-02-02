@@ -10,7 +10,8 @@
       "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
-      "preLaunchTask": "Deploy & Launch [SIM]"
+      "preLaunchTask": "Deploy & Launch [SIM]",
+      "postDebugTask": "ethos.Start"      
     },
     {
       "name": "Deploy Radio",
