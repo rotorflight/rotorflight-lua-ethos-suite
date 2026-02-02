@@ -787,7 +787,7 @@ end
 function tasks.wakeup()
     local ok, err = pcall(tasks.wakeup_protected)
     if not ok then
-        utils.log("[scheduler] Task scheduler error: " .. tostring(err), "error")
+        print("[scheduler] Task scheduler error: " .. tostring(err))
     end
 end
 
