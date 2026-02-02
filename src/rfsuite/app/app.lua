@@ -31,7 +31,7 @@ end
 function app.wakeup()
     local success, err = pcall(app.wakeup_protected)
     if not success then
-        log("Error in wakeup_protected: " .. tostring(err), "error")
+        print("Error in wakeup_protected: " .. tostring(err))
     end
 end
 

@@ -1358,7 +1358,7 @@ end
 function dashboard.wakeup()
     local success, err = pcall(dashboard.wakeup_protected)
     if not success then
-        log("Error in wakeup_protected: " .. tostring(err), "error")
+        print("Error in wakeup_protected: " .. tostring(err))
     end
 end
 
