@@ -399,7 +399,7 @@ function msp.wakeup()
     local armSource = tasks.telemetry.getSensorSource("armflags")
     if not armSource then return end
     local isArmed = armSource:value()
-    local isAdmin = rfsuite.app.guiIsRunning
+    local isAdmin = (rfsuite.app and rfsuite.app.guiIsRunning) or false
 
     local isConnected = rfsuite.session.isConnected == true
 
