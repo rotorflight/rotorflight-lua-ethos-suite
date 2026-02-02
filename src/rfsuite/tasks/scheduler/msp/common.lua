@@ -233,27 +233,51 @@ end
 -- Poll until a complete MSP reply or timeout
 local function mspPollReply()
     local budget = pollBudget() or 0.1
-    local startTime = os.clock()
+    local now = os.clock
+    local deadline = now() + budget
 
-    local MAX_NIL_POLLS = 100
+    -- Hoist lookups (avoid repeated globals + proto() table walks)
+    local p = proto()
+    local mspPoll = p and p.mspPoll
+    if not mspPoll then
+        return nil, nil, nil
+    end
+
+    local receivedReply = _receivedReply
+
+    -- Fast path: when idle, bail quickly on nil (avoid instruction burn).
+    -- Slow path: when a reply is in progress / outstanding request, allow more gaps.
+    local MAX_NIL_IDLE    = 8
+    local MAX_NIL_INFLIGHT = 50
+
     local nilPolls = 0
 
-    while os.clock() - startTime < budget do
-        local pkt = proto().mspPoll()
+    while now() < deadline do
+        local pkt = mspPoll()
 
         if pkt == nil then
             nilPolls = nilPolls + 1
-            if nilPolls >= MAX_NIL_POLLS then
-                -- early exit due to too many nil polls
+
+            -- “In-flight” if we’re mid frame OR we have an outstanding request we’re waiting on.
+            -- (mspStarted is set by _receivedReply() once it sees a valid start for our last request.)
+            local inflight = mspStarted or (mspLastReq ~= 0)
+
+            local maxNil = inflight and MAX_NIL_INFLIGHT or MAX_NIL_IDLE
+            if nilPolls >= maxNil then
                 return nil, nil, nil
             end
         else
-            -- reset counter once we get something
             nilPolls = 0
 
-            if _receivedReply(pkt) then
-                mspLastReq = 0
-                return mspRxReq, mspRxBuf, mspRxError
+            -- Defensive: if transport ever returns non-table, treat as junk/no-data.
+            if type(pkt) == "table" then
+                -- Catch rare decode hard-fails without killing the script.
+                -- IMPORTANT: On decode error we *do not* reset mspLastReq or state; next wakeup can continue.
+                local ok, done = pcall(receivedReply, pkt)
+                if ok and done then
+                    mspLastReq = 0
+                    return mspRxReq, mspRxBuf, mspRxError
+                end
             end
         end
     end
