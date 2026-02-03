@@ -57,7 +57,9 @@ local function pollBudget()
 
     -- Protocol‑specific throughput
     local proto   = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
-    local base    = proto.mspPollBudget or 0.10
+    -- Default poll budget: keep this modest to reduce instruction burn on the radio.
+    -- Large/slow payloads still get additional budget via the boost logic below.
+    local base    = proto.mspPollBudget or 0.07
     local perPoll = proto.maxRxBufferSize or 6
 
     -- Determine cost of currently pending message
@@ -249,7 +251,11 @@ end
 local function mspPollReply()
     local budget = pollBudget() or 0.1
     local now = os.clock
-    local deadline = now() + budget
+    -- When idle (no in-flight RX + no outstanding request), cap the poll window so
+    -- we don't spin burning max instructions waiting for nothing.
+    local idleCap = 0.02
+    local inflight0 = mspStarted or (mspLastReq ~= 0)
+    local deadline = now() + (inflight0 and budget or math.min(budget, idleCap))
 
     -- Hoist lookups (avoid repeated globals + proto() table walks)
     local p = proto()
@@ -262,12 +268,20 @@ local function mspPollReply()
 
     -- Fast path: when idle, bail quickly on nil (avoid instruction burn).
     -- Slow path: when a reply is in progress / outstanding request, allow more gaps.
-    local MAX_NIL_IDLE    = 8
-    local MAX_NIL_INFLIGHT = 50
+    local MAX_NIL_IDLE     = 4
+    local MAX_NIL_INFLIGHT = 16
+
+    -- Hard cap on total poll iterations per wakeup to prevent instruction spikes.
+    local MAX_POLLS = 24
 
     local nilPolls = 0
 
+    local polls = 0
     while now() < deadline do
+        polls = polls + 1
+        if polls > MAX_POLLS then
+            return nil, nil, nil
+        end
         local pkt = mspPoll()
 
         if pkt == nil then
