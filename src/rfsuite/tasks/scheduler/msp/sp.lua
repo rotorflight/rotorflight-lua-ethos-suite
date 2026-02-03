@@ -59,7 +59,7 @@ function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
     if not sensor then
         -- Acquire sensor object lazily using the configured module
         local activeModule = rfsuite.session.telemetryModuleNumber or 0
-        sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID})
+        sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID, physId = SPORT_REMOTE_SENSOR_ID})
     end
     return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
 end
@@ -68,7 +68,7 @@ end
 function transport.sportTelemetryPop()
     if not sensor then
         local activeModule = rfsuite.session.telemetryModuleNumber or 0
-        sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID})
+        sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID, physId = SPORT_REMOTE_SENSOR_ID})
         return nil, nil, nil, nil
     end
     local frame = sensor:popFrame()

@@ -56,6 +56,35 @@ end
 
 -- Logging toggles
 local function LOG_ENABLED_MSP() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp end
+
+
+-- Drain duplicate/late replies for the same command for a brief window after success.
+-- This reduces "spillover" where a late duplicate reply (from an earlier resend) is consumed by the next message.
+local function drainAfterSuccess(self, cmd)
+    if not cmd then return end
+    local drainMs = self.drainAfterReplyMs or 0
+    if drainMs <= 0 then return end
+
+    local start = os_clock()
+    local pollsLeft = self.drainMaxPolls or 0
+    if pollsLeft <= 0 then return end
+
+    local mspCommon = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common
+    local poll = mspCommon and mspCommon.mspPollReply
+    if not poll then return end
+
+    while pollsLeft > 0 and (os_clock() - start) < drainMs do
+        local c, _, e = poll()
+        if not c then break end
+        -- Only expect duplicates of the just-completed command. If something else appears, stop draining.
+        if c ~= cmd or e then
+            if LOG_ENABLED_MSP() then utils.log("Drain saw unexpected cmd " .. tostring(c) .. " (expected " .. tostring(cmd) .. ")", "debug") end
+            break
+        end
+        pollsLeft = pollsLeft - 1
+    end
+end
+
 local function LOG_ENABLED_MSP_QUEUE() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmspQueue end
 
 -- Create a controller instance
@@ -72,12 +101,21 @@ function MspQueueController.new(opts)
     self.maxRetries = opts.maxRetries or 3
     self.timeout = opts.timeout or 2.0
 
+    -- Minimum seconds between re-sends of the same message (prevents pipelined retries)
+    self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS
+
+    -- After a successful reply, briefly poll to drain any duplicate/late replies for the same cmd
+    -- (common with slow/bursty links when retries were attempted).
+    self.drainAfterReplyMs = opts.drainAfterReplyMs or 0.03
+    self.drainMaxPolls = opts.drainMaxPolls or 6
+
     self.uuid = nil -- last processed UUID
     self.apiname = nil -- last processed API name
 
     -- Inter-message delay (gap between *completed* messages)
     self.interMessageDelay = opts.interMessageDelay or 0
     self._nextMessageAt = 0
+    self._qidSeq = 0
 
     -- Optional loop throttle (kept for backwards-compat, but only gates starting the next message)
     self.loopInterval = opts.loopInterval or 0
@@ -147,7 +185,8 @@ function MspQueueController:processQueue()
             self._nextProcessAt = now + self.loopInterval
         end
 
-        self.currentMessageStartTime = now
+        self.currentMessageStartTime = nil  -- set on first successful send
+        self.lastTimeCommandSent = nil    -- per-message send timestamp
         self.currentMessage = qpop(self.queue)
         self.retryCount = 0
     end
@@ -163,16 +202,28 @@ function MspQueueController:processQueue()
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
-        -- Real MSP: send if interval allows
-        if (not self.lastTimeCommandSent) or (self.lastTimeCommandSent + lastTimeInterval < os_clock()) then
-            if self.currentMessage then        
+        -- Real MSP: send once, then wait; only resend after backoff/timeout
+        if self.currentMessage then
+            local now2 = os_clock()
+
+            -- Minimum spacing between any sends (existing throttle)
+            local canSendByInterval = (not self.lastTimeCommandSent) or ((self.lastTimeCommandSent + lastTimeInterval) < now2)
+
+            -- Retry/backoff gate: we only resend if we've either never sent, or we've waited long enough.
+            local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or 1)
+            local canSendByBackoff = (self.retryCount == 0) or ((self.lastTimeCommandSent and (now2 - self.lastTimeCommandSent) >= backoff) or false)
+
+            if canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
                 local sent = rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
                 if sent then
-                    self.lastTimeCommandSent = os_clock()
-                    self.currentMessageStartTime = self.lastTimeCommandSent
+                    self.lastTimeCommandSent = now2
+                    -- Start overall timeout window on the first successful send only
+                    if not self.currentMessageStartTime then
+                        self.currentMessageStartTime = now2
+                    end
                     self.retryCount = self.retryCount + 1
+                    if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
                 end
-                if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
             end
         end
 
@@ -197,19 +248,23 @@ function MspQueueController:processQueue()
             if LOG_ENABLED_MSP() then utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
             self.uuid = nil
-            self.apiname = nil 
+            self.apiname = nil
+            self.lastTimeCommandSent = nil
+            self.currentMessageStartTime = nil
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
     end
 
     -- Per-message timeout
-    if self.currentMessage and (os_clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
+    if self.currentMessage and self.currentMessageStartTime and (os_clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
+        self.lastTimeCommandSent = nil
+        self.currentMessageStartTime = nil
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = os_clock() + self.interMessageDelay
         end
@@ -261,9 +316,17 @@ function MspQueueController:processQueue()
                 utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
+
+        -- After a successful completion, briefly drain duplicate/late replies for this cmd
+        if not system:getVersion().simulation then
+            drainAfterSuccess(self, self.currentMessage.command)
+        end
+
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
+        self.lastTimeCommandSent = nil
+        self.currentMessageStartTime = nil
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = os_clock() + self.interMessageDelay
         end        
@@ -283,6 +346,8 @@ function MspQueueController:clear()
     self.mspBusyStart = nil
     self.queue = newQueue()
     self.currentMessage = nil
+    self.currentMessageStartTime = nil
+    self.lastTimeCommandSent = nil
     self._nextMessageAt = 0
     self.uuid = nil
     self.apiname = nil
@@ -308,6 +373,8 @@ function MspQueueController:add(message)
     end
     if key then self.uuid = key end
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
+    self._qidSeq = (self._qidSeq or 0) + 1
+    toQueue._qid = self._qidSeq
     qpush(self.queue, toQueue)
     return self
 end
