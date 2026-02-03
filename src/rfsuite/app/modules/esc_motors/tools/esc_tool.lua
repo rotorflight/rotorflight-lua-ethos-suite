@@ -58,7 +58,7 @@ local function getESCDetails()
 
         local signature = API.readValue("esc_signature")
 
-        if signature == mspSignature then --and #buf >= mspBytes then
+        if signature == mspSignature then and #buf >= mspBytes then
             escDetails.model = ESC.getEscModel(buf)
             escDetails.version = ESC.getEscVersion(buf)
             escDetails.firmware = ESC.getEscFirmware(buf)
