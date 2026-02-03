@@ -2028,6 +2028,16 @@
       "needs_translation": false,
       "translation": "Error: timed out"
     },
+    "header_configuration": {
+      "english": "Configuration",
+      "needs_translation": true,
+      "translation": "Configuratie"
+    },
+    "header_system": {
+      "english": "System",
+      "needs_translation": true,
+      "translation": "Systeem"
+    },
     "menu_section_about": {
       "english": "About",
       "needs_translation": false,

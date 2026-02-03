@@ -2028,6 +2028,16 @@
       "needs_translation": false,
       "translation": "Errore: fuori tempo max"
     },
+    "header_configuration": {
+      "english": "Configuration",
+      "needs_translation": true,
+      "translation": "Configurazione"
+    },
+    "header_system": {
+      "english": "System",
+      "needs_translation": true,
+      "translation": "Sistema"
+    },
     "menu_section_about": {
       "english": "About",
       "needs_translation": false,

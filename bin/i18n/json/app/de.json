@@ -1,4 +1,14 @@
 {
+  "header_configuration": {
+    "english": "Configuration",
+    "translation": "Konfiguration",
+    "needs_translation": false
+  },
+  "header_system": {
+    "english": "System",
+    "translation": "System",
+    "needs_translation": false
+  },
   "btn_ok": {
     "english": "          OK           ",
     "translation": "          OK           ",
