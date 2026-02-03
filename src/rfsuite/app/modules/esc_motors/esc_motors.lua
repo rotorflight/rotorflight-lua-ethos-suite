@@ -130,7 +130,11 @@ local function openPage(pidx, title, script)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
-        if rfsuite.preferences.menulastselected["esc_motors"] == pidx then rfsuite.app.formFields[pidx - 1]:focus() end
+        if rfsuite.preferences.menulastselected["esc_motors"] == pidx then 
+            if rfsuite.app.formFields[pidx - 1] then
+                rfsuite.app.formFields[pidx - 1]:focus() 
+            end
+        end
 
         lc = lc + 1
 

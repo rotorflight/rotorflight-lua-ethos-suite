@@ -75,57 +75,58 @@ local function loadAPI(apiName)
     end
 
     -- Check file before loading
-    if cached_file_exists(apiFilePath) then
-        local chunk = getChunk(apiName, apiFilePath)
-        if not chunk then return nil end
-
-        local ok, apiModule = pcall(chunk)
-        if not ok then
-            utils.log("Error running API '" .. apiName .. "': " .. tostring(apiModule), "debug")
-            return nil
-        end
-
-        -- Valid API modules must expose read or write
-        if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
-
-            apiModule.__apiName = apiName
-
-            -- Wrap read/write/setValue/readValue if present
-            if apiModule.read then
-                local original = apiModule.read
-                apiModule.read = function(...) return original(...) end
-            end
-
-            if apiModule.write then
-                local original = apiModule.write
-                apiModule.write = function(...) return original(...) end
-            end
-
-            if apiModule.setValue then
-                local original = apiModule.setValue
-                apiModule.setValue = function(...) return original(...) end
-            end
-
-            if apiModule.readValue then
-                local original = apiModule.readValue
-                apiModule.readValue = function(...) return original(...) end
-            end
-
-            if apiModule.setRebuildOnWrite then
-                local original = apiModule.setRebuildOnWrite
-                apiModule.setRebuildOnWrite = function(...) return original(...) end
-            end
-
-            utils.log("Loaded API: " .. apiName, "debug")
-            return apiModule
-
-        else
-            utils.log("Error: API file '" .. apiName .. "' missing read/write.", "debug")
-        end
-    else
+    if not cached_file_exists(apiFilePath) then
         utils.log("Error: API file '" .. apiFilePath .. "' not found.", "debug")
+        return nil
     end
+
+    local chunk = getChunk(apiName, apiFilePath)
+    if not chunk then
+        return nil
+    end
+
+    -- Let any errors in the API module bubble to the global handler (better traceback)
+    local apiModule = chunk()
+
+    -- Valid API modules must expose read or write
+    if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
+
+        apiModule.__apiName = apiName
+
+        -- Wrap read/write/setValue/readValue if present (currently no-op wrappers, but kept as-is)
+        if apiModule.read then
+            local original = apiModule.read
+            apiModule.read = function(...) return original(...) end
+        end
+
+        if apiModule.write then
+            local original = apiModule.write
+            apiModule.write = function(...) return original(...) end
+        end
+
+        if apiModule.setValue then
+            local original = apiModule.setValue
+            apiModule.setValue = function(...) return original(...) end
+        end
+
+        if apiModule.readValue then
+            local original = apiModule.readValue
+            apiModule.readValue = function(...) return original(...) end
+        end
+
+        if apiModule.setRebuildOnWrite then
+            local original = apiModule.setRebuildOnWrite
+            apiModule.setRebuildOnWrite = function(...) return original(...) end
+        end
+
+        utils.log("Loaded API: " .. apiName, "debug")
+        return apiModule
+    end
+
+    utils.log("Error: API file '" .. apiName .. "' missing read/write.", "debug")
+    return nil
 end
+
 
 -- Clear cached file-exists checks
 function apiLoader.clearFileExistsCache()

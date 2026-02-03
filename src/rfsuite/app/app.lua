@@ -13,6 +13,9 @@ local compile = loadfile
 local arg = {...}
 local config = arg[1]
 
+-- Make sure this is set - even if not initialised
+app.guiIsRunning = false
+
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
@@ -20,12 +23,19 @@ function app.paint()
 
 end
 
-function app.wakeup()
+function app.wakeup_protected()
     app.guiIsRunning = true
 
     if app.tasks then app.tasks.wakeup() end
 
     if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then if not rfsuite.session.mspBusy then lcd.invalidate() end end
+end
+
+function app.wakeup()
+    local success, err = pcall(app.wakeup_protected)
+    if not success then
+        print("Error in wakeup_protected: " .. tostring(err))
+    end
 end
 
 function app.create()

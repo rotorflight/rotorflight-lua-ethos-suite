@@ -21,14 +21,11 @@ hook.lastContext = nil
 local function loadManifest()
     local fn, err = loadfile(MANIFEST_PATH)
     if not fn then
-        -- Missing manifest is non-fatal; treat as no tasks
         return {}
     end
-    local ok, manifestOrErr = pcall(fn)
-    if not ok then
-        utils.log(string.format("[hook:ontransportchange] manifest error: %s", tostring(manifestOrErr)), "error")
-        return {}
-    end
+
+    local manifestOrErr = fn()
+
     if type(manifestOrErr) ~= "table" then
         return {}
     end
@@ -67,6 +64,11 @@ function hook.resetAllTasks()
     hook.reset()
 end
 
+-- Tell the scheduler whether this hook currently has work pending.
+function hook.active()
+    return active
+end
+
 -- Runs hook tasks (if/when they exist). Safe no-op when the manifest is empty.
 function hook.wakeup()
     if not active then return end
@@ -75,9 +77,6 @@ function hook.wakeup()
         return
     end
 
-    -- NOTE: Framework only. When you add tasks, you can implement execution here
-    -- similarly to onconnect/postconnect (timeouts, retries, etc).
-    -- For now we just clear the latch so the hook only fires once per edge.
     active = false
 end
 

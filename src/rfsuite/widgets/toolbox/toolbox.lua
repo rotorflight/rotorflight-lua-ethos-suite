@@ -227,9 +227,10 @@ function toolbox.configure(widget)
 end
 
 function toolbox.read(widget)
-    widget.title = (function(ok, result) return ok and result end)(pcall(storage.read, "title"))
-    widget.object = (function(ok, result) return ok and result end)(pcall(storage.read, "object"))
+    widget.title  = storage.read("title")
+    widget.object = storage.read("object")
 end
+
 
 function toolbox.write(widget)
     storage.write("title", widget.title)

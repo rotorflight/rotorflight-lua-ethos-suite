@@ -1185,15 +1185,21 @@ ui._helpCache = ui._helpCache or {}
 local function getHelpData(section)
     if ui._helpCache[section] == nil then
         local helpPath = "app/modules/" .. section .. "/help.lua"
+
         if utils.file_exists(helpPath) then
-            local ok, helpData = pcall(function() return assert(loadfile(helpPath))() end)
-            ui._helpCache[section] = (ok and type(helpData) == "table") and helpData or false
+            local chunk = loadfile(helpPath)
+            local helpData = chunk and chunk() or nil
+
+            ui._helpCache[section] =
+                (type(helpData) == "table") and helpData or false
         else
             ui._helpCache[section] = false
         end
     end
+
     return ui._helpCache[section] or nil
 end
+
 
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 

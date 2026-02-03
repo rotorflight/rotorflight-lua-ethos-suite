@@ -32,10 +32,7 @@ local function loadTaskModuleFromPath(fullPath)
         return nil, err
     end
 
-    local ok, module = pcall(chunk)
-    if not ok then
-        return nil, module
-    end
+    local module = chunk()
 
     if type(module) ~= "table" or type(module.wakeup) ~= "function" then
         return nil, "Invalid task module"
@@ -63,7 +60,7 @@ local function resetQueuesAndState()
         hardReloadTask(task)
 
         if task.module and type(task.module.reset) == "function" then
-            pcall(task.module.reset)
+            task.module.reset()
         end
 
         task.initialized = false
@@ -84,8 +81,8 @@ local function loadManifest()
         return nil
     end
 
-    local ok, manifest = pcall(chunk)
-    if not ok or type(manifest) ~= "table" then
+    local manifest = chunk()
+    if type(manifest) ~= "table" then
         rfsuite.utils.log("Invalid tasks manifest: " .. MANIFEST_PATH, "info")
         return nil
     end
@@ -171,11 +168,10 @@ end
 function tasks.reset()
     resetQueuesAndState()
     active = false
-    -- Critical: clear edge latch so the next connect triggers a fresh run.
     lastConnected = false
     if rfsuite.session then
         rfsuite.session.postConnectComplete = false
-    end    
+    end
 end
 
 function tasks.wakeup()
@@ -184,7 +180,6 @@ function tasks.wakeup()
     -- If we are not connected, reset the edge latch and state
     if not (rfsuite.session and rfsuite.session.isConnected) then
         if lastConnected then
-            -- falling edge: ensure next connect starts fresh
             tasks.reset()
         end
         lastConnected = false
@@ -254,20 +249,9 @@ function tasks.wakeup()
     end
 
     -- Call wakeup
-    local ok, err = pcall(task.module.wakeup)
-    if not ok then
-        task.attempts = (task.attempts or 0) + 1
-        if task.attempts <= MAX_RETRIES then
-            task.nextEligibleAt = now + RETRY_BACKOFF_SECONDS
-            rfsuite.utils.log("postconnect/" .. task.name .. " error, retry " .. task.attempts .. "/" .. MAX_RETRIES .. ": " .. tostring(err), "info")
-            return
-        end
-        failTask(task, err)
-        advanceQueue()
-        return
-    end
+    task.module.wakeup()
 
-    -- Completion check 
+    -- Completion check
     if task.module.isComplete and task.module.isComplete() then
         task.complete = true
         task.startTime = nil

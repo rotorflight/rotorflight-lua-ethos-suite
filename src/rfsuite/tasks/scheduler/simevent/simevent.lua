@@ -24,17 +24,15 @@ function simevent.wakeup()
         if not chunk then
             print(("sim: could not load %s.lua: %s"):format(name, loadErr))
         else
+            local result = chunk()
 
-            local ok, result = pcall(chunk)
-            if not ok then
-                print(("sim: error running %s.lua: %s"):format(name, result))
-            elseif result ~= lastValues[name] then
-
+            if result ~= lastValues[name] then
                 lastValues[name] = result
                 handler(result)
             end
         end
     end
 end
+
 
 return simevent

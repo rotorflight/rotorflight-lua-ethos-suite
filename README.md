@@ -165,20 +165,28 @@ To build and deploy RFSuite locally:
 
 ### Requirements
 
--   FrSky Simulator (Ethos)
-    
 -   Visual Studio Code (VS Code)
     
 -   Python 3
     
--   Install tqdm and serial:
+-   Install libraries
     
     ```bash
     pip install tqdm
     pip install serial
+    pip install pywin32 
+    pip install hid
     ```
 
-If you do not have npm command, you will need to install NodeJS   
+-    Install this package 
+
+     https://github.com/libusb/hidapi/releases/tag/hidapi-0.15.0
+
+     Simply copy the dll's for your architecture into c:\windows\system32
+
+- Install vscode extention 'ethos'
+
+
 
 ### Config file
 

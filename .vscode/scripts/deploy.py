@@ -16,15 +16,111 @@ from hashlib import md5
 from glob import glob
 from pathlib import Path
 
+
+# === Optional direct radio control (no Ethos Suite needed) =====================
+# We can switch the radio USB mode and discover mount points by talking directly
+# to the device (same USB HID interface Ethos Suite uses) and scanning for *.cpuid
+# markers. If dependencies are missing, we gracefully fall back to a pure drive scan.
+CONNECT_MODULE_PATH = os.path.join(os.path.dirname(__file__), "connect.py")
+_connect_mod = None
+
+def _load_connect_module():
+    global _connect_mod
+    if _connect_mod is not None:
+        return _connect_mod
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("rfsuite_connect", CONNECT_MODULE_PATH)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)  # type: ignore
+            _connect_mod = mod
+            return _connect_mod
+    except Exception as e:
+        print(f"[CONNECT] connect.py unavailable ({type(e).__name__}: {e}); using drive-scan fallback.")
+    _connect_mod = False
+    return _connect_mod
+
+def _connect_usb_debug(action: str):
+    """Start/stop USB debug (serial) using connect.py if available."""
+    mod = _load_connect_module()
+    if not mod:
+        return False
+    try:
+        ri = mod.RadioInterface()
+        if action == 'start':
+            print("[CONNECT] Starting USB debug (serial)…")
+            ri.start_usb_debug()
+        elif action == 'stop':
+            print("[CONNECT] Stopping USB debug (serial)…")
+            ri.stop_usb_debug()
+        else:
+            raise ValueError(f"Unknown action: {action}")
+        return True
+    except Exception as e:
+        print(f"[CONNECT] USB debug {action} failed ({type(e).__name__}: {e})")
+        return False
+
+def _connect_find_scripts_dir():
+    """Return mounted scripts dir using connect.py drive markers, or None."""
+    mod = _load_connect_module()
+    if not mod:
+        return None
+    try:
+        ri = mod.RadioInterface()
+        ri.scan_for_drives()
+        # Prefer sdcard/radio volumes if present; Ethos maps SCRIPTS to the mounted media root + /scripts
+        for key in ('sdcard', 'radio', 'flash'):
+            root = ri.drives.get(key)
+            if root and os.path.isdir(os.path.join(root, 'scripts')):
+                return os.path.normpath(os.path.join(root, 'scripts'))
+    except Exception as e:
+        print(f"[CONNECT] Drive scan failed ({type(e).__name__}: {e})")
+    return None
+
 MIN_ETHOSSUITE_VERSION = "1.7.0"
 
 SERIAL_PIDFILE = os.path.join(tempfile.gettempdir(), "deploy-serial.pid")
 DEPLOY_TO_RADIO = False  # flag to control radio-only behavior
+DEPLOY_STAGE = True     # whether to stage locally before copying to radio
 THROTTLE_EXTS = None  # unused when throttling all copies
 THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
 THROTTLE_CHUNK = 32 * 1024          # 32 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024    # pause+fsync every 64 KiB written
 THROTTLE_PAUSE_S = 0.1              # 100 ms
+
+# --- staging (run steps locally then copy to radio) --------------------------
+STAGING_ENABLED = True  # can be disabled via --no-stage or env DEPLOY_STAGE=0
+STAGING_KEEP = False    # set env DEPLOY_STAGE_KEEP=1 to keep staging folder for debugging
+_STAGE_ROOTS = []
+
+def _staging_is_enabled(args=None):
+    # CLI arg wins, then env var, then default
+    if args is not None and getattr(args, 'no_stage', False):
+        return False
+    env = os.environ.get('DEPLOY_STAGE', '').strip().lower()
+    if env in ('0', 'false', 'no', 'off'):
+        return False
+    return STAGING_ENABLED
+
+def _stage_mkdir(prefix='rfsuite-stage-'):
+    root = tempfile.mkdtemp(prefix=prefix)
+    _STAGE_ROOTS.append(root)
+    return root
+
+def _cleanup_stage_roots():
+    keep = os.environ.get('DEPLOY_STAGE_KEEP', '').strip().lower() in ('1','true','yes','on')
+    if keep or STAGING_KEEP:
+        for r in _STAGE_ROOTS:
+            print(f"[STAGE] Keeping staging folder: {r}")
+        return
+    for r in _STAGE_ROOTS:
+        try:
+            shutil.rmtree(r, onerror=on_rm_error)
+        except Exception:
+            pass
+
+atexit.register(_cleanup_stage_roots)
 
 # --- single-instance lock helpers --------------------------------------------
 LOCK_DEFAULT_NAME = "deploy.single.lock"
@@ -138,6 +234,10 @@ def parse_version(v: str):
     return tuple(map(int, v.split(".")))
 
 def check_ethossuite_version(ethossuite_bin, min_version=MIN_ETHOSSUITE_VERSION):
+    if not ethossuite_bin:
+        # Ethos Suite is optional; we can operate without it using connect.py + drive scans.
+        print("[ETHOS] Ethos Suite not configured; continuing without it.")
+        return True
     try:
         res = subprocess.run(
             [ethossuite_bin, "--version"],
@@ -291,6 +391,11 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
     Ask Ethos Suite for the SCRIPTS path. Robust against chatty output.
     """
     import re, json
+
+    # Prefer direct connect.py discovery (no Ethos Suite required).
+    cp = _connect_find_scripts_dir()
+    if cp:
+        return cp
 
     cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
     path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//|/)[^\r\n]+$')
@@ -549,6 +654,11 @@ DEFAULT_SERIAL_RETRIES = 10
 DEFAULT_SERIAL_DELAY = 1.0
 
 def ethos_serial(ethossuite_bin, action, radio=None):
+    # Ethos Suite is optional. Prefer connect.py HID mode switching when available.
+    if not ethossuite_bin:
+        ok = _connect_usb_debug(action)
+        return (0 if ok else 1), '', ''
+
     cmd = [ethossuite_bin, "--serial", action, "--radio", "auto"]
     if radio:
         cmd += ["--radio", radio]
@@ -563,10 +673,14 @@ def ethos_serial(ethossuite_bin, action, radio=None):
         return res.returncode, out, err
     except Exception as e:
         print(f"[ETHOS] --serial {action} failed: {e}")
+        # Fallback: direct HID mode switching
+        ok = _connect_usb_debug(action)
+        if ok:
+            return 0, "", ""
         return 1, "", str(e)
 
 
-def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
+def wait_for_scripts_mount(ethossuite_bin=None, attempts=10, delay=2):
     """
     Poll Ethos Suite for the mounted SCRIPTS directory.
 
@@ -582,8 +696,27 @@ def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
     last_path = None
 
     for i in range(attempts):
+        # First: direct connect.py drive discovery
+        path = _connect_find_scripts_dir()
+        if path and os.path.isdir(path):
+            mounted = os.path.normpath(path)
+            print(f"[CONNECT] Radio drive mounted: {mounted}")
+            return mounted
+        # Second: simple drive scan fallback
+        fb = scan_usb_drives_for_radio()
+        if fb and os.path.isdir(fb):
+            return os.path.normpath(fb)
+        # Third: if Ethos Suite is configured, ask it too (legacy)
+        if ethossuite_bin:
+            try:
+                path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
+                if path and os.path.isdir(path):
+                    mounted = os.path.normpath(path)
+                    print(f"[ETHOS] Radio drive mounted: {mounted}")
+                    return mounted
+            except Exception as e:
+                pass
         try:
-            path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
             last_path = path
             if debug_mount:
                 print(f"[ETHOS][DEBUG] get_ethos_scripts_dir -> {path!r}")
@@ -849,10 +982,93 @@ def run_steps(steps, out_dir, lang="en"):
 
 
 def copy_files(src_override, fileext, targets, lang="en", steps=None):
+    """
+    Copy files to targets.
+
+    For radio deploys, the most reliable approach is:
+      1) stage into a local temp folder
+      2) run step scripts (e.g. i18n) against the staged tree
+      3) copy staged results to the mounted radio
+
+    This avoids lots of tiny edits + verify cycles directly on removable storage.
+    """
     global pbar
     git_src = src_override or config['git_src']
     tgt = config['tgt_name']
     print(f"Copy mode: {fileext or 'all'}")
+
+    def _local_recreate_tree(src_dir: str, dst_dir: str):
+        if os.path.isdir(dst_dir):
+            shutil.rmtree(dst_dir, onerror=on_rm_error)
+        os.makedirs(os.path.dirname(dst_dir), exist_ok=True)
+        shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
+
+    def _stage_tree(src_dir: str):
+        stage_root = _stage_mkdir(prefix="rfsuite-stage-")
+        staged_out_dir = os.path.join(stage_root, tgt)
+        _local_recreate_tree(src_dir, staged_out_dir)
+        return stage_root, staged_out_dir
+
+    def _fast_copy_from_stage(stage_dir: str, dest_dir: str):
+        # Compare stage_dir -> dest_dir and copy only changed files.
+        TS_SLACK = 2.0
+        files_all = []
+        for r, _, files in os.walk(stage_dir):
+            for f in files:
+                srcf = os.path.join(r, f)
+                rel = os.path.relpath(srcf, stage_dir)
+                dstf = os.path.join(dest_dir, rel)
+                files_all.append((srcf, dstf, rel))
+
+        def needs_copy_with_md5(srcf, dstf):
+            try:
+                ss = os.stat(srcf)
+            except FileNotFoundError:
+                return False
+            if not os.path.exists(dstf):
+                return True
+            try:
+                ds = os.stat(dstf)
+            except FileNotFoundError:
+                return True
+
+            if ss.st_size != ds.st_size:
+                return True
+            if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
+                return True
+            try:
+                return file_md5(srcf) != file_md5(dstf)
+            except Exception:
+                return True
+
+        to_copy = []
+        if files_all:
+            bar_verify = tqdm(total=len(files_all), desc="Verifying (MD5)")
+            for srcf, dstf, rel in files_all:
+                os.makedirs(os.path.dirname(dstf), exist_ok=True)
+                if needs_copy_with_md5(srcf, dstf):
+                    to_copy.append((srcf, dstf, rel))
+                bar_verify.update(1)
+            bar_verify.close()
+
+        copied = 0
+        if to_copy:
+            bar_update = tqdm(total=len(to_copy), desc="Updating files")
+            for srcf, dstf, rel in to_copy:
+                if DEPLOY_TO_RADIO:
+                    throttled_copyfile(srcf, dstf)
+                    flush_fs()
+                    time.sleep(0.05)
+                else:
+                    shutil.copy(srcf, dstf)
+                if not rel.replace(os.sep, "/").endswith("tasks/logger/init.lua"):
+                    print(f"Copy {rel}")
+                copied += 1
+                bar_update.update(1)
+            bar_update.close()
+
+        if not copied:
+            print("Fast deploy: nothing to update.")
 
     for i, t in enumerate(targets, 1):
         dest = t['dest']; sim = t.get('simulator')
@@ -868,15 +1084,72 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
             except Exception as e:
                 print(f"[DEST ERROR] Could not create fallback folder at {fallback}: {e}")
                 raise
+
         out_dir = os.path.join(dest, tgt)
 
+        # Decide whether to stage locally (recommended for radio when running steps)
+        do_stage = bool(DEPLOY_TO_RADIO and DEPLOY_STAGE and steps)
+
+        # Always source from repo src/<tgt>
+        repo_src = os.path.join(git_src, 'src', tgt)
+
+        if do_stage:
+            print("[STAGE] Staging to local temp, running steps, then copying to radio…")
+            stage_root, staged_out_dir = _stage_tree(repo_src)
+
+            # Run steps locally on staged tree
+            run_steps(steps, staged_out_dir, lang)
+
+            # Small settle time before hammering removable media
+            print("[IO] Letting radio storage settle…")
+            time.sleep(1.5)
+
+            if fileext == 'fast':
+                # Copy only changed files from stage -> radio
+                _fast_copy_from_stage(staged_out_dir, out_dir)
+
+            elif fileext == '.lua':
+                # Keep old behavior: remove lua/luac on radio, then copy lua from stage
+                if os.path.isdir(out_dir):
+                    for r, _, files in os.walk(out_dir):
+                        for f in files:
+                            if f.endswith(('.lua', '.luac')):
+                                try:
+                                    os.remove(os.path.join(r, f))
+                                except Exception:
+                                    pass
+                os.makedirs(out_dir, exist_ok=True)
+                for r, _, files in os.walk(staged_out_dir):
+                    for f in files:
+                        if f.endswith('.lua'):
+                            srcf = os.path.join(r, f)
+                            rel = os.path.relpath(srcf, staged_out_dir)
+                            dstf = os.path.join(out_dir, rel)
+                            if DEPLOY_TO_RADIO:
+                                throttled_copyfile(srcf, dstf)
+                                flush_fs()
+                                time.sleep(0.02)
+                            else:
+                                os.makedirs(os.path.dirname(dstf), exist_ok=True)
+                                shutil.copy(srcf, dstf)
+
+            else:
+                # Full safe copy from stage -> radio
+                safe_full_copy(staged_out_dir, out_dir)
+
+            flush_fs()
+            time.sleep(1.0)
+            print(f"Done: {t['name']}")
+            continue
+
+        # --- legacy (non-staged) path ---------------------------------------
         if fileext == '.lua':
             if os.path.isdir(out_dir):
                 for r, _, files in os.walk(out_dir):
                     for f in files:
                         if f.endswith(('.lua','.luac')):
                             os.remove(os.path.join(r,f))
-            scr = os.path.join(git_src, 'src', tgt)
+            scr = repo_src
             os.makedirs(out_dir, exist_ok=True)
             for r,_,files in os.walk(scr):
                 for f in files:
@@ -886,7 +1159,7 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
             run_steps(steps, out_dir, lang)
 
         elif fileext == 'fast':
-            scr = os.path.join(git_src, 'src', tgt)
+            scr = repo_src
 
             if os.path.isdir(out_dir):
                 removed = 0
@@ -952,7 +1225,7 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
                         time.sleep(0.05)
                     else:
                         shutil.copy(srcf, dstf)
-                    if not rel.replace("\\","/").endswith("tasks/logger/init.lua"):
+                    if not rel.replace(os.sep, "/").endswith("tasks/logger/init.lua"):
                         print(f"Copy {rel}")
                     copied += 1
                     bar_update.update(1)
@@ -964,14 +1237,13 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
                 print("Fast deploy: nothing to update.")
 
         else:
-            srcall = os.path.join(git_src, 'src', tgt)
+            srcall = repo_src
             safe_full_copy(srcall, out_dir)
             run_steps(steps, out_dir, lang)
             flush_fs()
             time.sleep(2)
 
-            print(f"Done: {t['name']}\n")
-
+            print(f"Done: {t['name']}")
 
 def patch_logger_init(out_root):
     import os, re
@@ -1038,6 +1310,8 @@ def main():
     p.add_argument('--launch', action='store_true')
     p.add_argument('--radio', action='store_true')
     p.add_argument('--radio-debug', action='store_true')
+    p.add_argument('--no-stage', action='store_true',
+                   help='Disable local staging; run steps directly on destination (not recommended for radio).')
     p.add_argument('--connect-only', action='store_true')
     p.add_argument('--lang', default=os.environ.get("RFSUITE_LANG", "en"),
                    help='Locale to resolve (e.g. en, de, fr). Defaults to env RFSUITE_LANG or "en".')
@@ -1057,6 +1331,8 @@ def main():
     args = p.parse_args()
     DEPLOY_TO_RADIO = args.radio
 
+    global DEPLOY_STAGE
+    DEPLOY_STAGE = _staging_is_enabled(args)
     DEPLOY_PIDFILE = os.path.join(tempfile.gettempdir(), "deploy-copy.pid")
     try:
         with open(DEPLOY_PIDFILE, "w") as f:
@@ -1128,7 +1404,7 @@ def main():
 
     if args.radio and args.connect_only:
         # Just enable serial & tail logs; no copying
-        ethos_serial(config['ethossuite_bin'], 'start')
+        ethos_serial(config.get('ethossuite_bin'), 'start')
 
         v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
         p = str(config.get('serial_pid', DEFAULT_SERIAL_PID))
@@ -1142,9 +1418,9 @@ def main():
     if args.radio and not args.connect_only:
         # RADIO DEPLOY: use Ethos Suite to locate the radio SCRIPTS path
         print("[ETHOS] Disabling serial debug before copy to protect filesystem…")
-        ethos_serial(config['ethossuite_bin'], 'stop')
+        ethos_serial(config.get('ethossuite_bin'), 'stop')
         try:
-            rd = wait_for_scripts_mount(config['ethossuite_bin'], attempts=10, delay=2)
+            rd = wait_for_scripts_mount(config.get('ethossuite_bin'), attempts=10, delay=2)
         except Exception as e:
             print("[ERROR] Failed to obtain Ethos SCRIPTS path after disabling serial.")
             print(f"        Reason: {e}")
@@ -1175,14 +1451,14 @@ def main():
         launch_sims(targets)
 
     if args.radio and not args.radio_debug:
-        ethos_serial(config['ethossuite_bin'], 'start')
+        ethos_serial(config.get('ethossuite_bin'), 'start')
 
     if args.radio and args.radio_debug:
         _kill_previous_tail_if_any()
-        rc, _, _ = ethos_serial(config['ethossuite_bin'], 'start')
+        rc, _, _ = ethos_serial(config.get('ethossuite_bin'), 'start')
         if rc != 0:
             print("[ETHOS] First --serial start failed; retrying once…")
-            ethos_serial(config['ethossuite_bin'], 'start')
+            ethos_serial(config.get('ethossuite_bin'), 'start')
 
         v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
         p = str(config.get('serial_pid', DEFAULT_SERIAL_PID))

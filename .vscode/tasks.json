@@ -7,10 +7,28 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--lang", "${config:rfsuite.deploy.language}",
-        "--step", "i18n",
-        "--step", "soundpack",
-        "--step", "sensors",,
+        "--lang",
+        "${config:rfsuite.deploy.language}",
+        "--step",
+        "i18n",
+        "--step",
+        "soundpack",
+        "--step",
+        "sensors"
+      ],
+      "options": {
+        "env": {
+          "RFSUITE_LANG": "${config:rfsuite.deploy.language}",
+          "ETHOS_FIRMWARE": "${config:ethos.firmware}"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
     {
       "label": "RFSuite: Set Deployment Language",
       "type": "shell",
@@ -20,17 +38,7 @@
         "${input:deployLanguage}"
       ],
       "problemMatcher": []
-    }
-  ],
-      "options": {
-        "env": {
-        "RFSUITE_LANG": "${config:rfsuite.deploy.language}",
-          "ETHOS_FIRMWARE": "${config:ethos.firmware}"
-        }
-      },
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
-    },  
+    },
     {
       "label": "Deploy Radio",
       "type": "process",
@@ -38,13 +46,21 @@
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
-        "--lang", "${config:rfsuite.deploy.language}",
-        "--step", "i18n",
-        "--step", "soundpack",
-        "--step", "sensors"     
+        "--lang",
+        "${config:rfsuite.deploy.language}",
+        "--step",
+        "i18n",
+        "--step",
+        "soundpack",
+        "--step",
+        "sensors"
       ],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     },
     {
       "label": "Deploy Radio [Fast]",
@@ -52,14 +68,22 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--fileext", "fast",
+        "--fileext",
+        "fast",
         "--radio",
-        "--lang", "${config:rfsuite.deploy.language}",
-        "--step", "i18n",
-        "--step", "soundpack"   
+        "--lang",
+        "${config:rfsuite.deploy.language}",
+        "--step",
+        "i18n",
+        "--step",
+        "soundpack"
       ],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     },
     {
       "label": "Deploy Radio + Serial Debug",
@@ -69,12 +93,19 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
         "--radio-debug",
-        "--lang", "${config:rfsuite.deploy.language}",
-        "--step", "i18n",
-        "--step", "soundpack"   
+        "--lang",
+        "${config:rfsuite.deploy.language}",
+        "--step",
+        "i18n",
+        "--step",
+        "soundpack"
       ],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     },
     {
       "label": "Deploy Radio + Serial Debug [Fast]",
@@ -82,15 +113,23 @@
       "command": "python",
       "args": [
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
-        "--fileext", "fast",
+        "--fileext",
+        "fast",
         "--radio",
         "--radio-debug",
-        "--lang", "${config:rfsuite.deploy.language}",
-        "--step", "i18n",
-        "--step", "soundpack"   
+        "--lang",
+        "${config:rfsuite.deploy.language}",
+        "--step",
+        "i18n",
+        "--step",
+        "soundpack"
       ],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     },
     {
       "label": "Radio: Serial Debug",
@@ -100,12 +139,19 @@
         "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
         "--radio",
         "--connect-only",
-        "--lang", "${config:rfsuite.deploy.language}",
-        "--step", "i18n",
-        "--step", "soundpack"   
+        "--lang",
+        "${config:rfsuite.deploy.language}",
+        "--step",
+        "i18n",
+        "--step",
+        "soundpack"
       ],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     },
     {
       "label": "Clear locks",
@@ -116,9 +162,13 @@
         "--clear-lock"
       ],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
     },
-    {
+ {
       "label": "ethos.Start",
       "type": "process",
       "command": "${command:ethos.start}",
@@ -154,29 +204,18 @@
       "command": "${command:ethos.openTelemetry}",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
-    },
+    },    
     {
       "label": "Run RFSuite Sensor Tool",
       "type": "process",
       "command": "${workspaceFolder}/bin/sensors/sensors.exe",
       "options": {
-      "env": {
-        "RFSUITE_LANG": "${config:rfsuite.deploy.language}"
-      },
+        "env": {
+          "RFSUITE_LANG": "${config:rfsuite.deploy.language}"
+        },
         "cwd": "${workspaceFolder}/bin/sensors"
       },
       "problemMatcher": []
-    }      
-  ]
-,
-
-  "inputs": [
-    {
-      "id": "deployLanguage",
-      "type": "pickString",
-      "description": "Select deployment language",
-      "options": ["en", "de", "fr", "es", "it"],
-      "default": "en"
     }
   ]
 }

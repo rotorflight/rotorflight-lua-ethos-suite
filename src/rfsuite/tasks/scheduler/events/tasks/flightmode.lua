@@ -13,7 +13,7 @@ local lastFlightMode = nil
 local hasBeenInFlight = false
 local lastArmed = false
 
-local throttleThreshold = 50
+local throttleThreshold = 35
 
 local function isGovernorActive(value) return type(value) == "number" and value >= 4 and value <= 8 end
 

@@ -5,6 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
+
+-- Optimized locals to reduce global/table lookups
+local os_clock = os.clock
+local utils = rfsuite.utils
 local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
 
 local arg = {...}
@@ -68,17 +72,17 @@ function msp.wakeup()
 
     -- Apply delay after reset request
     if rfsuite.session.resetMSP and not delayPending then
-        delayStartTime = os.clock()
+        delayStartTime = os_clock()
         delayPending = true
         rfsuite.session.resetMSP = false
-        rfsuite.utils.log("Delaying msp wakeup for " .. delayDuration .. " seconds", "info")
+        utils.log("Delaying msp wakeup for " .. delayDuration .. " seconds", "info")
         return
     end
 
     -- Hold off processing while in delay period
     if delayPending then
-        if os.clock() - delayStartTime >= delayDuration then
-            rfsuite.utils.log("Delay complete; resuming msp wakeup", "info")
+        if os_clock() - delayStartTime >= delayDuration then
+            utils.log("Delay complete; resuming msp wakeup", "info")
             delayPending = false
         else
             rfsuite.tasks.msp.mspQueue:clear()
@@ -99,14 +103,14 @@ function msp.wakeup()
         msp.protocol.mspWrite = transport.mspWrite
         msp.protocol.mspPoll  = transport.mspPoll
 
-        rfsuite.utils.session()
+        utils.session()
         msp.onConnectChecksInit = true
         telemetryTypeChanged = false
     end
 
     -- If telemetry was disconnected, re-run init handlers
     if rfsuite.session.telemetrySensor ~= nil and rfsuite.session.telemetryState == false then
-        rfsuite.utils.session()
+        utils.session()
         msp.onConnectChecksInit = true
     end
 

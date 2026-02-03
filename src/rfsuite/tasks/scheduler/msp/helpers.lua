@@ -5,6 +5,9 @@
 
 local rfsuite = require("rfsuite")
 
+
+-- Optimized locals to reduce global/table lookups
+local utils = rfsuite.utils
 local helpers = {}
 
 function helpers.governorMode(callback)
@@ -13,7 +16,7 @@ function helpers.governorMode(callback)
         API.setCompleteHandler(function(self, buf)
             local governorMode = API.readValue("gov_mode")
             if governorMode then 
-                rfsuite.utils.log("Governor mode: " .. governorMode, "debug") 
+                utils.log("Governor mode: " .. governorMode, "debug") 
             end
             rfsuite.session.governorMode = governorMode
             if callback then callback(governorMode) end
@@ -31,7 +34,7 @@ function helpers.servoCount(callback)
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.servoCount = API.readValue("servo_count")
             if rfsuite.session.servoCount then 
-                rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "debug") 
+                utils.log("Servo count: " .. rfsuite.session.servoCount, "debug") 
             end    
             if callback then callback(rfsuite.session.servoCount) end
         end)
@@ -48,7 +51,7 @@ function helpers.servoOverride(callback)
         API.setCompleteHandler(function(self, buf)
             for i, v in pairs(API.data().parsed) do
                 if v == 0 then
-                    rfsuite.utils.log("Servo override: true (" .. i .. ")", "debug")
+                    utils.log("Servo override: true (" .. i .. ")", "debug")
                     rfsuite.session.servoOverride = true
                 end
             end
@@ -69,8 +72,8 @@ function helpers.mixerConfig(callback)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
             rfsuite.session.swashMode = API.readValue("swash_type")
             if rfsuite.session.tailMode and rfsuite.session.swashMode then
-                rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode, "debug")
-                rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode, "debug")
+                utils.log("Tail mode: " .. rfsuite.session.tailMode, "debug")
+                utils.log("Swash mode: " .. rfsuite.session.swashMode, "debug")
             end
             if callback then callback(rfsuite.session.tailMode,rfsuite.session.swashMode) end
         end)

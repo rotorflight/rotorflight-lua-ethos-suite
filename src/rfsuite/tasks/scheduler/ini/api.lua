@@ -15,8 +15,8 @@ function M.load(apiName)
 
     local apiFile = apidir .. apiName .. ".lua"
 
-    local ok, apiDef = pcall(function() return dofile(apiFile) end)
-    assert(ok and type(apiDef) == "table", "Failed to load API module: " .. apiFile)
+    local apiDef = dofile(apiFile)
+    assert(type(apiDef) == "table", "API module must return a table: " .. apiFile)
 
     local instance = {}
     local iniPath = nil
@@ -54,16 +54,22 @@ function M.load(apiName)
         for _, def in ipairs(apiDef.API_STRUCTURE or {}) do
             local key = type(def) == "table" and def.field or def
             out[key] = sec[key]
-            if out[key] == nil and type(def) == "table" and def.default ~= nil then out[key] = def.default end
+            if out[key] == nil and type(def) == "table" and def.default ~= nil then
+                out[key] = def.default
+            end
         end
         return out
     end
 
-    function instance.setValue(field, value) staged[field] = value end
+    function instance.setValue(field, value)
+        staged[field] = value
+    end
 
     function instance.write()
         ensureLoaded()
-        for k, v in pairs(staged) do ini.setvalue(data, apiName, k, v) end
+        for k, v in pairs(staged) do
+            ini.setvalue(data, apiName, k, v)
+        end
         local ok, err = ini.save_ini_file(iniPath, data)
         if not ok then return false, err end
         staged = {}

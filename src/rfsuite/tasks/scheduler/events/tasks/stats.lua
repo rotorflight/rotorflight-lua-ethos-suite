@@ -30,11 +30,13 @@ local function buildFilteredList()
             filteredSensors[sensorKey] = sensorDef
 
         elseif type(mt) == "function" then
-            local ok, result = pcall(mt)
-            if ok and result then filteredSensors[sensorKey] = sensorDef end
+            if mt() then
+                filteredSensors[sensorKey] = sensorDef
+            end
         end
     end
 end
+
 
 function stats.wakeup()
 
