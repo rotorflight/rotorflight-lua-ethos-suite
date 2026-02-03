@@ -2,22 +2,22 @@
   "RC_TUNING": {
     "setpoint_boost_cutoff_2": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Boost-Grenzwert fuer den Sollwert.",
+      "translation": "Boost-Grenzwert für den Sollwert.",
       "needs_translation": false
     },
     "response_time_3": {
       "english": "Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation": "Erhoeht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glaetten.",
+      "translation": "Erhöht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glätten.",
       "needs_translation": false
     },
     "accel_limit_4": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "setpoint_boost_gain_4": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Boost-Verstaerkung fuer den Sollwert.",
+      "translation": "Boost-Verstärkung für den Sollwert.",
       "needs_translation": false
     },
     "yaw_dynamic_deadband_filter": {
@@ -27,37 +27,37 @@
     },
     "setpoint_boost_gain_3": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Boost-Verstaerkung fuer den Sollwert.",
+      "translation": "Boost-Verstärkung für den Sollwert.",
       "needs_translation": false
     },
     "response_time_2": {
       "english": "Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation": "Erhoeht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glaetten.",
+      "translation": "Erhöht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glätten.",
       "needs_translation": false
     },
     "accel_limit_1": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "setpoint_boost_cutoff_1": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Boost-Grenzwert fuer den Sollwert.",
+      "translation": "Boost-Grenzwert für den Sollwert.",
       "needs_translation": false
     },
     "setpoint_boost_cutoff_4": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Boost-Grenzwert fuer den Sollwert.",
+      "translation": "Boost-Grenzwert für den Sollwert.",
       "needs_translation": false
     },
     "setpoint_boost_gain_2": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Boost-Verstaerkung fuer den Sollwert.",
+      "translation": "Boost-Verstärkung für den Sollwert.",
       "needs_translation": false
     },
     "accel_limit_2": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "yaw_dynamic_deadband_gain": {
@@ -67,22 +67,22 @@
     },
     "accel_limit_3": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "response_time_4": {
       "english": "Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation": "Erhoeht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glaetten.",
+      "translation": "Erhöht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glätten.",
       "needs_translation": false
     },
     "setpoint_boost_cutoff_3": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Boost-Grenzwert fuer den Sollwert.",
+      "translation": "Boost-Grenzwert für den Sollwert.",
       "needs_translation": false
     },
     "setpoint_boost_gain_1": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Boost-Verstaerkung fuer den Sollwert.",
+      "translation": "Boost-Verstärkung für den Sollwert.",
       "needs_translation": false
     },
     "yaw_dynamic_ceiling_gain": {
@@ -92,19 +92,19 @@
     },
     "response_time_1": {
       "english": "Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation": "Erhoeht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glaetten.",
+      "translation": "Erhöht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glätten.",
       "needs_translation": false
     }
   },
   "RESCUE_PROFILE": {
     "rescue_flip_gain": {
       "english": "Determine how aggressively the heli flips during inverted rescue.",
-      "translation": "Bestimmt, wie aggressiv der Heli waehrend der invertierten Rettung flippt.",
+      "translation": "Bestimmt, wie aggressiv der Heli während der invertierten Rettung flippt.",
       "needs_translation": false
     },
     "rescue_level_gain": {
       "english": "Determine how aggressively the heli levels during rescue.",
-      "translation": "Bestimmt, wie aggressiv der Heli sich waehrend der Rettung ausrichtet.",
+      "translation": "Bestimmt, wie aggressiv der Heli sich während der Rettung ausrichtet.",
       "needs_translation": false
     },
     "tbl_off": {
@@ -114,12 +114,12 @@
     },
     "rescue_hover_collective": {
       "english": "Collective value for hover.",
-      "translation": "Kollektivwert fuer das Schweben.",
+      "translation": "Kollektivwert für das Schweben.",
       "needs_translation": false
     },
     "rescue_max_setpoint_rate": {
       "english": "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
-      "translation": "Begrenzt die Roll-/Nick-Rate waehrend der Rettung. Groessere Helis benoetigen moeglicherweise langsamere Drehgeschwindigkeiten.",
+      "translation": "Begrenzt die Roll-/Nick-Rate während der Rettung. Größere Helis benötigen möglicherweise langsamere Drehgeschwindigkeiten.",
       "needs_translation": false
     },
     "tbl_flip": {
@@ -134,7 +134,7 @@
     },
     "rescue_pull_up_time": {
       "english": "When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage.",
-      "translation": "Wenn die Rettung aktiviert wird, wird fuer diese Dauer kollektives Steigen angewendet, bevor zum Flip- oder Steigstadium uebergegangen wird.",
+      "translation": "Wenn die Rettung aktiviert wird, wird für diese Dauer kollektives Steigen angewendet, bevor zum Flip- oder Steigstadium übergegangen wird.",
       "needs_translation": false
     },
     "tbl_noflip": {
@@ -144,17 +144,17 @@
     },
     "rescue_exit_time": {
       "english": "This limits rapid application of negative collective if the helicopter has rolled during rescue.",
-      "translation": "Begrenzt die schnelle Anwendung von negativem Kollektiv, falls der Heli sich waehrend der Rettung gedreht hat.",
+      "translation": "Begrenzt die schnelle Anwendung von negativem Kollektiv, falls der Heli sich während der Rettung gedreht hat.",
       "needs_translation": false
     },
     "rescue_pull_up_collective": {
       "english": "Collective value for pull-up climb.",
-      "translation": "Kollektivwert fuer das Hochziehen.",
+      "translation": "Kollektivwert für das Hochziehen.",
       "needs_translation": false
     },
     "rescue_max_setpoint_accel": {
       "english": "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
-      "translation": "Begrenzt, wie schnell der Heli in eine Roll-/Nick-Bewegung beschleunigt. Groessere Helis benoetigen moeglicherweise langsamere Beschleunigungswerte.",
+      "translation": "Begrenzt, wie schnell der Heli in eine Roll-/Nick-Bewegung beschleunigt. Größere Helis benötigen möglicherweise langsamere Beschleunigungswerte.",
       "needs_translation": false
     },
     "tbl_on": {
@@ -164,7 +164,7 @@
     },
     "rescue_climb_collective": {
       "english": "Collective value for rescue climb.",
-      "translation": "Kollektivwert fuer den Steigflug waehrend der Rettung.",
+      "translation": "Kollektivwert für den Steigflug während der Rettung.",
       "needs_translation": false
     },
     "rescue_flip_time": {
@@ -196,7 +196,7 @@
     },
     "half_duplex": {
       "english": "Half duplex mode for ESC telemetry",
-      "translation": "Halbduplex-Modus fuer ESC-Telemetrie",
+      "translation": "Halbduplex-Modus für ESC-Telemetrie",
       "needs_translation": false
     },
     "consumption_correction": {
@@ -216,7 +216,7 @@
     },
     "hw4_voltage_gain": {
       "english": "Hobbywing v4 voltage gain adjustment",
-      "translation": "Hobbywing v4 Spannungsverstaerkung-Anpassung",
+      "translation": "Hobbywing v4 Spannungsverstärkung-Anpassung",
       "needs_translation": false
     },
     "tbl_on": {
@@ -226,7 +226,7 @@
     },
     "hw4_current_gain": {
       "english": "Hobbywing v4 current gain adjustment",
-      "translation": "Hobbywing v4 Stromverstaerkung-Anpassung",
+      "translation": "Hobbywing v4 Stromverstärkung-Anpassung",
       "needs_translation": false
     },
     "current_correction": {
@@ -236,7 +236,7 @@
     },
     "pin_swap": {
       "english": "Swap the TX and RX pins for the ESC telemetry",
-      "translation": "Tauschen der TX- und RX-Pins fuer die ESC-Telemetrie",
+      "translation": "Tauschen der TX- und RX-Pins für die ESC-Telemetrie",
       "needs_translation": false
     }
   },
@@ -268,7 +268,7 @@
     },
     "starting_torque": {
       "english": "Starting power for the motor",
-      "translation": "Anlaufmoment fuer den Motor",
+      "translation": "Anlaufmoment für den Motor",
       "needs_translation": false
     },
     "cell_count": {
@@ -318,17 +318,17 @@
     },
     "soft_start": {
       "english": "Soft start time",
-      "translation": "Wert fuer sanftes Anlaufen",
+      "translation": "Wert für sanftes Anlaufen",
       "needs_translation": false
     },
     "gov_i": {
       "english": "Integral value for the governor",
-      "translation": "Integralwert fuer den Governor",
+      "translation": "Integralwert für den Governor",
       "needs_translation": false
     },
     "electrical_angle": {
       "english": "Electrical angle for the motor",
-      "translation": "Timing-Winkel fuer den Motor",
+      "translation": "Timing-Winkel für den Motor",
       "needs_translation": false
     },
     "response_speed": {
@@ -338,7 +338,7 @@
     },
     "current_gain": {
       "english": "Gain value for the current sensor",
-      "translation": "Verstaerkungswert fuer den Stromsensor",
+      "translation": "Verstärkungswert für den Stromsensor",
       "needs_translation": false
     },
     "tbl_linear_thr": {
@@ -353,7 +353,7 @@
     },
     "buzzer_volume": {
       "english": "Beeper volume",
-      "translation": "Summerlautstaerke",
+      "translation": "Summerlautstärke",
       "needs_translation": false
     },
     "drive_freq": {
@@ -368,7 +368,7 @@
     },
     "gov_p": {
       "english": "Proportional value for the governor",
-      "translation": "Proportionalwert fuer den Governor",
+      "translation": "Proportionalwert für den Governor",
       "needs_translation": false
     }
   },
@@ -502,7 +502,7 @@
   "GOVERNOR_PROFILE": {
     "governor_tta_gain": {
       "english": "TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed).",
-      "translation": "TTA-Verstaerkung zur Erhoehung der Drehzahl zur Steuerung des Hecks in die negative Richtung (z. B. motorisiertes Heck unter Leerlaufdrehzahl).",
+      "translation": "TTA-Verstärkung zur Erhöhung der Drehzahl zur Steuerung des Hecks in die negative Richtung (z. B. motorisiertes Heck unter Leerlaufdrehzahl).",
       "needs_translation": false
     },
     "governor_collective_ff_weight": {
@@ -512,7 +512,7 @@
     },
     "governor_i_gain": {
       "english": "PID loop I-term gain.",
-      "translation": "I-Term-Verstaerkung der PID-Regler.",
+      "translation": "I-Term-Verstärkung der PID-Regler.",
       "needs_translation": false
     },
     "governor_cyclic_ff_weight": {
@@ -522,17 +522,17 @@
     },
     "governor_f_gain": {
       "english": "Feedforward gain.",
-      "translation": "Feedforward-Verstaerkung.",
+      "translation": "Feedforward-Verstärkung.",
       "needs_translation": false
     },
     "governor_gain": {
       "english": "Master PID loop gain.",
-      "translation": "Master-Verstaerkung der PID-Regler.",
+      "translation": "Master-Verstärkung der PID-Regler.",
       "needs_translation": false
     },
     "governor_headspeed": {
       "english": "Target headspeed for the current profile.",
-      "translation": "Ziel-Drehzahl fuer das aktuelle Profil.",
+      "translation": "Ziel-Drehzahl für das aktuelle Profil.",
       "needs_translation": false
     },
     "governor_min_throttle": {
@@ -542,12 +542,12 @@
     },
     "governor_d_gain": {
       "english": "PID loop D-term gain.",
-      "translation": "D-Term-Verstaerkung der PID-Regler.",
+      "translation": "D-Term-Verstärkung der PID-Regler.",
       "needs_translation": false
     },
     "governor_p_gain": {
       "english": "PID loop P-term gain.",
-      "translation": "P-Term-Verstaerkung der PID-Regler.",
+      "translation": "P-Term-Verstärkung der PID-Regler.",
       "needs_translation": false
     },
     "governor_yaw_ff_weight": {
@@ -562,7 +562,7 @@
     },
     "governor_tta_limit": {
       "english": "TTA max headspeed increase over full headspeed.",
-      "translation": "Maximale TTA-Drehzahlerhoehung ueber die volle Drehzahl hinaus.",
+      "translation": "Maximale TTA-Drehzahlerhöhung über die volle Drehzahl hinaus.",
       "needs_translation": false
     },
     "tbl_off": {
@@ -609,12 +609,12 @@
     },
     "yaw_inertia_precomp_cutoff": {
       "english": "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper.",
-      "translation": "Grenzfrequenz der Ableitung in 1/10Hz-Schritten. Hoeher bedeutet schaerfere Vorkompensation.",
+      "translation": "Grenzfrequenz der Ableitung in 1/10Hz-Schritten. Höher bedeutet schärfere Vorkompensation.",
       "needs_translation": false
     },
     "offset_limit_0": {
       "english": "Hard limit for the High Speed Integral offset angle in the PID loop. The O-term will never go over these limits.",
-      "translation": "Harte Begrenzung fuer den High Speed Integral Offset-Winkel in der PID-Schleife. Der O-Term wird nie ueber diese Grenzen hinausgehen.",
+      "translation": "Harte Begrenzung für den High Speed Integral Offset-Winkel in der PID-Schleife. Der O-Term wird nie über diese Grenzen hinausgehen.",
       "needs_translation": false
     },
     "cyclic_cross_coupling_ratio": {
@@ -624,12 +624,12 @@
     },
     "yaw_precomp_cutoff": {
       "english": "Frequency limit for all yaw precompensation actions.",
-      "translation": "Frequenzgrenze fuer alle Gier-Vorkompensationen.",
+      "translation": "Frequenzgrenze für alle Gier-Vorkompensationen.",
       "needs_translation": false
     },
     "error_limit_0": {
       "english": "Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
-      "translation": "Harte Begrenzung fuer den Winkel-Fehler im PID-Regler. Der absolute Fehler und damit der I-Term werden nie ueber diese Grenzen hinausgehen.",
+      "translation": "Harte Begrenzung für den Winkel-Fehler im PID-Regler. Der absolute Fehler und damit der I-Term werden nie über diese Grenzen hinausgehen.",
       "needs_translation": false
     },
     "trainer_gain": {
@@ -1073,47 +1073,47 @@
   "BATTERY_CONFIG": {
     "source_none": {
       "english": "None",
-      "translation": "None",
-      "needs_translation": true
+      "translation": "Keine",
+      "needs_translation": false
     },
     "source_adc": {
       "english": "Battery ADC",
-      "translation": "Battery ADC",
-      "needs_translation": true
+      "translation": "Akku ADC",
+      "needs_translation": false
     },
     "source_esc": {
       "english": "ESC Telemetry",
-      "translation": "ESC Telemetry",
-      "needs_translation": true
+      "translation": "ESC Telemetrie",
+      "needs_translation": false
     },
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
-      "translation": "Die minimale Spannung pro Zelle, bevor der Niederspannungsalarm ausgeloest wird.",
+      "translation": "Die minimale Spannung pro Zelle, bevor der Niederspannungsalarm ausgelöst wird.",
       "needs_translation": false
     },
     "vbatmaxcellvoltage": {
       "english": "The maximum voltage per cell before the high voltage alarm is triggered.",
-      "translation": "Die maximale Spannung pro Zelle, bevor der Hochspannungsalarm ausgeloest wird.",
+      "translation": "Die maximale Spannung pro Zelle, bevor der Hochspannungsalarm ausgelöst wird.",
       "needs_translation": false
     },
     "vbatwarningcellvoltage": {
       "english": "The voltage per cell at which the low voltage alarm will start to sound.",
-      "translation": "Die Spannung pro Zelle, bei der der Niederspannungsalarm ausgeloest wird.",
+      "translation": "Die Spannung pro Zelle, bei der der Niederspannungsalarm ausgelöst wird.",
       "needs_translation": false
     },
     "batteryCellCount": {
       "english": "The number of cells in your battery.",
-      "translation": "Die Anzahl der Zellen in Ihrer Batterie.",
+      "translation": "Zellenanzahl des Akkus.",
       "needs_translation": false
     },
     "vbatfullcellvoltage": {
       "english": "The nominal voltage of a fully charged cell.",
-      "translation": "Die Nennspannung einer vollstaendig geladenen Zelle.",
+      "translation": "Die Nennspannung einer vollständig geladenen Zelle.",
       "needs_translation": false
     },
     "batteryCapacity": {
       "english": "The milliamp hour capacity of your battery.",
-      "translation": "Die Kapazitaet Ihrer Batterie in Milliamperestunden.",
+      "translation": "Die Kapazität Ihrer Batterie in Milliamperestunden.",
       "needs_translation": false
     }
   },

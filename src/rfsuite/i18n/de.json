@@ -16,47 +16,47 @@
       "batteryCapacity": {
         "english": "The milliamp hour capacity of your battery.",
         "needs_translation": false,
-        "translation": "Die Kapazitaet Ihrer Batterie in Milliamperestunden."
+        "translation": "Die Kapazität Ihrer Batterie in Milliamperestunden."
       },
       "batteryCellCount": {
         "english": "The number of cells in your battery.",
         "needs_translation": false,
-        "translation": "Die Anzahl der Zellen in Ihrer Batterie."
+        "translation": "Zellenanzahl des Akkus."
       },
       "source_adc": {
         "english": "Battery ADC",
-        "needs_translation": true,
-        "translation": "Battery ADC"
+        "needs_translation": false,
+        "translation": "Akku ADC"
       },
       "source_esc": {
         "english": "ESC Telemetry",
-        "needs_translation": true,
-        "translation": "ESC Telemetry"
+        "needs_translation": false,
+        "translation": "ESC Telemetrie"
       },
       "source_none": {
         "english": "None",
-        "needs_translation": true,
-        "translation": "None"
+        "needs_translation": false,
+        "translation": "Keine"
       },
       "vbatfullcellvoltage": {
         "english": "The nominal voltage of a fully charged cell.",
         "needs_translation": false,
-        "translation": "Die Nennspannung einer vollstaendig geladenen Zelle."
+        "translation": "Die Nennspannung einer vollständig geladenen Zelle."
       },
       "vbatmaxcellvoltage": {
         "english": "The maximum voltage per cell before the high voltage alarm is triggered.",
         "needs_translation": false,
-        "translation": "Die maximale Spannung pro Zelle, bevor der Hochspannungsalarm ausgeloest wird."
+        "translation": "Die maximale Spannung pro Zelle, bevor der Hochspannungsalarm ausgelöst wird."
       },
       "vbatmincellvoltage": {
         "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
         "needs_translation": false,
-        "translation": "Die minimale Spannung pro Zelle, bevor der Niederspannungsalarm ausgeloest wird."
+        "translation": "Die minimale Spannung pro Zelle, bevor der Niederspannungsalarm ausgelöst wird."
       },
       "vbatwarningcellvoltage": {
         "english": "The voltage per cell at which the low voltage alarm will start to sound.",
         "needs_translation": false,
-        "translation": "Die Spannung pro Zelle, bei der der Niederspannungsalarm ausgeloest wird."
+        "translation": "Die Spannung pro Zelle, bei der der Niederspannungsalarm ausgelöst wird."
       }
     },
     "BATTERY_INI": {
