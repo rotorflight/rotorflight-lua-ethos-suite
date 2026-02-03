@@ -21,6 +21,7 @@ msp.onConnectChecksInit = true -- Flag to run initial checks on telemetry connec
 
 local protocol = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/protocols.lua"))()
 local helpers = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/helpers.lua"))()
+local proto_logger = protocol.getProtoLogger and protocol.getProtoLogger() or nil
 
 local telemetryTypeChanged = false -- Set when switching CRSF/S.Port/etc.
 
@@ -59,6 +60,18 @@ msp.api       = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks
 msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
 
+-- Expose protocol logger
+msp.proto_logger = proto_logger
+
+function msp.enableProtoLog(on)
+    if proto_logger and proto_logger.enable then
+        proto_logger.enable(on)
+        return proto_logger.enabled
+    end
+    return false
+end
+
+
 -- Delay handling for clean protocol reset
 local delayDuration  = 2
 local delayStartTime = nil
@@ -66,6 +79,9 @@ local delayPending   = false
 
 -- Main MSP poll loop (called by script wakeups)
 function msp.wakeup()
+
+    -- enable loging
+    rfsuite.tasks.msp.enableProtoLog(true)
 
     -- Nothing to do if no telemetry sensor
     if rfsuite.session.telemetrySensor == nil then return end

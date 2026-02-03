@@ -78,6 +78,7 @@ function MspQueueController.new(opts)
     -- Inter-message delay (gap between *completed* messages)
     self.interMessageDelay = opts.interMessageDelay or 0
     self._nextMessageAt = 0
+    self._qidSeq = 0
 
     -- Optional loop throttle (kept for backwards-compat, but only gates starting the next message)
     self.loopInterval = opts.loopInterval or 0
@@ -308,6 +309,8 @@ function MspQueueController:add(message)
     end
     if key then self.uuid = key end
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
+    self._qidSeq = (self._qidSeq or 0) + 1
+    toQueue._qid = self._qidSeq
     qpush(self.queue, toQueue)
     return self
 end

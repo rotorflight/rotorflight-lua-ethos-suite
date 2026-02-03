@@ -5,6 +5,18 @@
 
 local rfsuite = require("rfsuite")
 
+
+-- Optional protocol trace logger (raw frames). Inert unless enabled.
+local function plog(dir, cmd, payload, extra)
+    local m = rfsuite.tasks and rfsuite.tasks.msp
+    local logger = m and m.proto_logger
+    if not (logger and logger.enabled and logger.log) then return end
+    local protoName = (m.protocol and m.protocol.mspProtocol) or "?"
+    local qid = (m.mspQueue and m.mspQueue.currentMessage and m.mspQueue.currentMessage._qid) or nil
+    local qidTxt = qid and (" QID=" .. tostring(qid)) or ""
+    logger.log(dir, protoName, cmd, payload, (extra or "") .. qidTxt)
+end
+
 -- Convenience wrappers for protocol buffer sizes
 local function proto() return rfsuite.tasks.msp.protocol end
 local function maxTx() return proto().maxTxBufferSize end
@@ -109,16 +121,19 @@ local function mspProcessTxQ()
             payload[i] = mspTxCRC
             for j = i + 1, maxTx() do payload[j] = 0 end
             mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
+            plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
             proto().mspSend(payload)
             return false
         else
+            plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
             proto().mspSend(payload)
             return true
         end
     else
         -- V2 pads unused bytes but CRC is handled differently
         for j = i, maxTx() do payload[j] = payload[j] or 0 end
-        proto().mspSend(payload)
+            plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
+            proto().mspSend(payload)
         if mspTxIdx > #mspTxBuf then
             mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
             return false
@@ -271,10 +286,12 @@ local function mspPollReply()
 
             -- Defensive: if transport ever returns non-table, treat as junk/no-data.
             if type(pkt) == "table" then
+                plog("RX", mspLastReq, pkt, "ST=" .. tostring(pkt[1] or 0))
                 -- Catch rare decode hard-fails without killing the script.
                 -- IMPORTANT: On decode error we *do not* reset mspLastReq or state; next wakeup can continue.
                 local ok, done = pcall(receivedReply, pkt)
                 if ok and done then
+                    plog("RXDONE", mspRxReq, mspRxBuf, "ERR=" .. tostring(mspRxError) .. " SIZE=" .. tostring(#mspRxBuf))
                     mspLastReq = 0
                     return mspRxReq, mspRxBuf, mspRxError
                 end

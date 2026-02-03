@@ -33,11 +33,14 @@ local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
+local mspBusy = false
+
 local function getESCDetails()
     if not ESC then return end
     if not ESC.mspapi then return end
     if not mspSignature then return end
     if not mspBytes then return end
+    if mspBusy == true then return end
     if not rfsuite.tasks.msp.mspQueue:isProcessed() then return end
 
     if rfsuite.session.escDetails ~= nil then
@@ -48,14 +51,14 @@ local function getESCDetails()
 
     if foundESC == true then return end
 
+    mspBusy = true
 
     local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
-
     API.setCompleteHandler(function(self, buf)
 
         local signature = API.readValue("esc_signature")
 
-        if signature == mspSignature and #buf >= mspBytes then
+        if signature == mspSignature then --and #buf >= mspBytes then
             escDetails.model = ESC.getEscModel(buf)
             escDetails.version = ESC.getEscVersion(buf)
             escDetails.firmware = ESC.getEscFirmware(buf)
@@ -68,8 +71,14 @@ local function getESCDetails()
                 foundESC = true 
             end
         end
+        mspBusy = false
 
     end)
+
+    API.setErrorHandler(function(self, err)
+        mspBusy = false
+    end)
+
     API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
     API.read()
 
