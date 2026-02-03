@@ -13,6 +13,9 @@ local compile = loadfile
 local arg = {...}
 local config = arg[1]
 
+-- Make sure this is set - even if not initialised
+app.guiIsRunning = false
+
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
