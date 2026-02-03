@@ -327,7 +327,7 @@ end
 
 -- Choose full vs delta payload based on available previous data
 function core.buildWritePayload(apiname, payload, api_structure, noDelta)
-    if not rfsuite.app.Page then
+    if not rfsuite.app and not rfsuite.app.Page then
         utils.log("[buildWritePayload] No page context", "info")
         -- tasks have no UI context; always build a full payload
         return core.buildFullPayload(apiname, payload, api_structure)        
@@ -368,7 +368,7 @@ function core.buildDeltaPayload(apiname, payload, api_structure, positionmap, re
 
     -- Build lookup of actual UI fields
     local actual_fields = {}
-    if rfsuite.app.Page and rfsuite.app.Page.apidata then
+    if rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.apidata then
         for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
             if field.api and not field.apikey then
                 local mspapi, apikey = string.match(field.api, "([^:]+):(.+)")
@@ -441,7 +441,7 @@ function core.buildFullPayload(apiname, payload, api_structure)
 
     -- Lookup UI field definitions if available
     local actual_fields = {}
-    if rfsuite.app.Page and rfsuite.app.Page.apidata then
+    if rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.apidata then
         for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
             if field.apikey then
                 actual_fields[field.apikey] = field
