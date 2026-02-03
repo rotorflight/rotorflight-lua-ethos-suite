@@ -98,13 +98,24 @@ class RadioInformation:
 
 
 class RadioInterface(hid.Device):
-    def __init__(self):
-        try:
-            hid.Device.__init__(self, vid=0x0483, pid=0x5750)
-        except hid.HIDException:
-            print("Error: No Ethos compatible device found!")
-            exit(-1)
+    def __init__(self, retries=10, retry_delay=0.5):
+        last_error = None
+
+        for attempt in range(1, retries + 1):
+            try:
+                hid.Device.__init__(self, vid=0x0483, pid=0x5750)
+                break
+            except hid.HIDException as e:
+                last_error = e
+                if attempt < retries:
+                    time.sleep(retry_delay)
+                else:
+                    print("Error: No Ethos compatible device found!")
+                    exit(-1)
+
+        # Give Windows a moment to finish mounting volumes
         time.sleep(1)
+
         self.drives = {}
         self._scan_drives_internal()
 
