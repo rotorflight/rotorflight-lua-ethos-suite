@@ -21,7 +21,10 @@ local supportedProtocols = {
     pageReqTimeout     = 20,          -- Timeout when requesting UI/CMS pages from the FC
     mspIntervalOveride = 0.25,        -- Minimum delay between MSP writes (rate limiting)
     mspQueueTimeout    = 4.0,         -- Time allowed for the MSP queue to remain busy before forcing a reset
-    mspPollBudget      = 0.15         -- Max time per cycle to poll MSP replies before yielding
+    mspPollBudget      = 0.15,        -- Legacy max time per cycle to poll MSP replies before yielding
+    mspNonBlocking     = true,        -- Poll in small slices each wakeup (lower CPU / smoother UI)
+    mspPollSliceSeconds= 0.006,       -- Time slice per wakeup (seconds)
+    mspPollSlicePolls  = 4            -- Max poll iterations per wakeup
   },
 
   crsf = {
@@ -34,7 +37,10 @@ local supportedProtocols = {
     pageReqTimeout     = 20,          -- Timeout when requesting CMS pages via CRSF
     mspIntervalOveride = 0.25,        -- Minimum delay between MSP sends
     mspQueueTimeout    = 2.0,         -- Shorter queue timeout (CRSF is low-latency)
-    mspPollBudget      = 0.1          -- Time slice for polling MSP replies
+    mspPollBudget      = 0.1,         -- Legacy max time per cycle to poll MSP replies
+    mspNonBlocking     = true,        -- Non‑blocking slice polling is also beneficial on CRSF
+    mspPollSliceSeconds= 0.004,       -- Smaller slice is fine (CRSF has more throughput)
+    mspPollSlicePolls  = 6            -- A few more polls per wakeup is still cheap
   },
 }
 
