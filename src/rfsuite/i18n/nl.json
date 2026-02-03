@@ -1973,16 +1973,6 @@
     }
   },
   "app": {
-    "header_configuration": {
-      "english": "Configuration",
-      "needs_translation": true,
-      "translation": "Configuratie"
-    },
-    "header_system": {
-      "english": "System",
-      "needs_translation": true,
-      "translation": "Systeem"
-    },
     "btn_cancel": {
       "english": "CANCEL",
       "needs_translation": false,
@@ -4160,9 +4150,9 @@
           "translation": "D"
         },
         "f": {
-          "english": "FF",
+          "english": "F",
           "needs_translation": false,
-          "translation": "FF"
+          "translation": "F"
         },
         "help_p1": {
           "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
@@ -4180,6 +4170,11 @@
           "translation": "Tail P/I/D Gains: Verhoog P tot een lichte wag in hurricanes, en ga dan iets terug. Verhoog I tot de staart locked-in is in harde bewegingen (te hoog veroorzaakt langzame wag). Pas D aan voor soepele stops: hoger voor langzame servo's, lager voor snelle."
         },
         "help_p4": {
+          "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
+          "needs_translation": false,
+          "translation": "Tail Stop Gain (CW/CCW): Afzonderlijk instelbaar voor een zuivere stop in beide richtingen."
+        },
+        "help_p5": {
           "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
           "needs_translation": false,
           "translation": "Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n"
@@ -4411,9 +4406,9 @@
           "translation": "Dyn. Min Gas"
         },
         "f": {
-          "english": "FF",
+          "english": "F",
           "needs_translation": false,
-          "translation": "FF"
+          "translation": "F"
         },
         "fallback_drop": {
           "english": "Thr. Fallback drop",
@@ -6574,7 +6569,7 @@
     "navigation_menu": {
       "english": "MENU",
       "needs_translation": false,
-      "translation": "Terug"
+      "translation": "MENU"
     },
     "navigation_reload": {
       "english": "RELOAD",
