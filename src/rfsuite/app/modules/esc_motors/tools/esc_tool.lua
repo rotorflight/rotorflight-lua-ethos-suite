@@ -40,7 +40,12 @@ local function getESCDetails()
     if not ESC.mspapi then return end
     if not mspSignature then return end
     if not mspBytes then return end
-    if mspBusy == true then return end
+    if mspBusy == true then 
+       if rfsuite.tasks.msp.mspQueue:isProcessed() then
+           mspBusy = false
+       end
+       return 
+    end
     if not rfsuite.tasks.msp.mspQueue:isProcessed() then return end
 
     if rfsuite.session.escDetails ~= nil then
