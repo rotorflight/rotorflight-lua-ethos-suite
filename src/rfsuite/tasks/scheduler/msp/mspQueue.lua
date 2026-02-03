@@ -172,7 +172,7 @@ function MspQueueController:processQueue()
                     self.currentMessageStartTime = self.lastTimeCommandSent
                     self.retryCount = self.retryCount + 1
                 end
-                if rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
+                if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
             end
         end
 
@@ -267,13 +267,13 @@ function MspQueueController:processQueue()
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = os_clock() + self.interMessageDelay
         end        
-        if rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
+        if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
 
     -- Too many retries → reset
     elseif self.retryCount > self.maxRetries then
         self:clear()
         if self.currentMessage and self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
-        if rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end
+        if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end
     end
 end
 
