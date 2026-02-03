@@ -81,7 +81,7 @@ local delayPending   = false
 function msp.wakeup()
 
     -- enable loging
-    rfsuite.tasks.msp.enableProtoLog(true)
+    -- rfsuite.tasks.msp.enableProtoLog(true)
 
     -- Nothing to do if no telemetry sensor
     if rfsuite.session.telemetrySensor == nil then return end
