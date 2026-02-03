@@ -1973,16 +1973,6 @@
     }
   },
   "app": {
-    "header_configuration": {
-      "english": "Configuration",
-      "needs_translation": false,
-      "translation": "Configuration"
-    },
-    "header_system": {
-      "english": "System",
-      "needs_translation": false,
-      "translation": "System"
-    },
     "btn_cancel": {
       "english": "CANCEL",
       "needs_translation": false,
@@ -2037,6 +2027,16 @@
       "english": "Error: timed out",
       "needs_translation": false,
       "translation": "Error: timed out"
+    },
+    "header_configuration": {
+      "english": "Configuration",
+      "needs_translation": false,
+      "translation": "Configuration"
+    },
+    "header_system": {
+      "english": "System",
+      "needs_translation": false,
+      "translation": "System"
     },
     "menu_section_about": {
       "english": "About",
@@ -4160,9 +4160,9 @@
           "translation": "D"
         },
         "f": {
-          "english": "FF",
+          "english": "F",
           "needs_translation": false,
-          "translation": "FF"
+          "translation": "F"
         },
         "help_p1": {
           "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
@@ -4180,6 +4180,11 @@
           "translation": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones."
         },
         "help_p4": {
+          "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
+          "needs_translation": false,
+          "translation": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions."
+        },
+        "help_p5": {
           "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
           "needs_translation": false,
           "translation": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions."
@@ -4411,9 +4416,9 @@
           "translation": "Dyn. Min Throttle"
         },
         "f": {
-          "english": "FF",
+          "english": "F",
           "needs_translation": false,
-          "translation": "FF"
+          "translation": "F"
         },
         "fallback_drop": {
           "english": "Thr. Fallback drop",
@@ -6572,9 +6577,9 @@
       "translation": "?"
     },
     "navigation_menu": {
-      "english": "BACK",
+      "english": "MENU",
       "needs_translation": false,
-      "translation": "BACK"
+      "translation": "MENU"
     },
     "navigation_reload": {
       "english": "RELOAD",
