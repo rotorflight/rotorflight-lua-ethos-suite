@@ -55,4 +55,18 @@ function protocol.getTransports()
     return transport
 end
 
+
+-- Optional protocol logger (writes raw TX/RX frames to /LOGS/msp_proto.log)
+-- Enabled at runtime via: rfsuite.tasks.msp.enableProtoLog(true)
+local proto_logger = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/proto_logger.lua"))()
+
+function protocol.enableProtoLog(on)
+    proto_logger.enable(on)
+    return proto_logger.enabled
+end
+
+function protocol.getProtoLogger()
+    return proto_logger
+end
+
 return protocol
