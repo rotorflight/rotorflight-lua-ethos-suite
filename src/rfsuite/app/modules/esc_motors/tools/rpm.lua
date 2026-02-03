@@ -77,4 +77,8 @@ local function wakeup()
     end 
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, title = title, event = event, wakeup = wakeup, postLoad = postLoad}
+local function onNavMenu(self)
+    rfsuite.app.ui.openPage(pidx, title, "esc_motors/esc_motors.lua")
+end
+
+return {apidata = apidata, reboot = true, eepromWrite = true, title = title, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}
