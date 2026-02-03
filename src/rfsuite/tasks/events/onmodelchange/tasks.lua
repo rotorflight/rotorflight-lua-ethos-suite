@@ -58,6 +58,11 @@ function hook.reset()
     hook.lastContext = nil
 end
 
+-- Tell the scheduler whether this hook currently has work pending.
+function hook.active()
+    return active
+end
+
 -- Compatibility with other task modules
 function hook.resetAllTasks()
     taskQueue = nil

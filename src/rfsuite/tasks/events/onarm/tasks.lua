@@ -64,6 +64,11 @@ function hook.resetAllTasks()
     hook.reset()
 end
 
+-- Tell the scheduler whether this hook currently has work pending.
+function hook.active()
+    return active
+end
+
 -- Runs hook tasks (if/when they exist). Safe no-op when the manifest is empty.
 function hook.wakeup()
     if not active then return end
