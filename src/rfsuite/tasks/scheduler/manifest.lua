@@ -17,7 +17,7 @@ local manifest = {
   [11]  = { name = "logger",       connected = false, interval = 0.28, script = "scheduler/logger/logger.lua",              linkrequired = false, simulatoronly = false, spreadschedule = true  },
   [12]  = { name = "sensors",      connected = true,  interval = 0.23, script = "scheduler/sensors/sensors.lua",            linkrequired = true,  simulatoronly = false, spreadschedule = false },
   [13]  = { name = "timer",        connected = true,  interval = 0.25, script = "scheduler/timer/timer.lua",                linkrequired = true,  simulatoronly = false, spreadschedule = false },
-  [14]  = { name = "msp",          connected = false, interval = 0.1,  script = "scheduler/msp/msp.lua",                    linkrequired = false, simulatoronly = false, spreadschedule = false },
+  [14]  = { name = "msp",          connected = false, interval = 0.05,  script = "scheduler/msp/msp.lua",                    linkrequired = false, simulatoronly = false, spreadschedule = false },
 }
 
 return manifest

@@ -249,13 +249,35 @@ end
 
 -- Poll until a complete MSP reply or timeout
 local function mspPollReply()
+    -- NOTE: This function is called from the MSP queue wakeup. Historically it could "block"
+    -- (spin in a loop) for up to mspPollBudget seconds, which is expensive on Ethos.
+    -- We now support a non‑blocking "slice" mode: poll a small amount each wakeup and
+    -- complete multi‑packet replies over multiple frames.
+    local protoCfg = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
+
     local budget = pollBudget() or 0.1
     local now = os.clock
+
+    -- Non‑blocking slice mode (recommended for S.Port).
+    -- Keeps CPU load smooth by limiting per‑wakeup work.
+    local nonBlocking = (protoCfg.mspNonBlocking == true)
+    local sliceSeconds = protoCfg.mspPollSliceSeconds or 0.006
+    local slicePolls   = protoCfg.mspPollSlicePolls or 4
+
     -- When idle (no in-flight RX + no outstanding request), cap the poll window so
     -- we don't spin burning max instructions waiting for nothing.
     local idleCap = 0.02
     local inflight0 = mspStarted or (mspLastReq ~= 0)
-    local deadline = now() + (inflight0 and budget or math.min(budget, idleCap))
+
+    -- In slice mode, always clamp the poll window. Give a slightly larger slice while inflight.
+    local window
+    if nonBlocking then
+        window = inflight0 and (sliceSeconds * 2) or sliceSeconds
+    else
+        window = inflight0 and budget or math.min(budget, idleCap)
+    end
+
+    local deadline = now() + window
 
     -- Hoist lookups (avoid repeated globals + proto() table walks)
     local p = proto()
@@ -269,10 +291,10 @@ local function mspPollReply()
     -- Fast path: when idle, bail quickly on nil (avoid instruction burn).
     -- Slow path: when a reply is in progress / outstanding request, allow more gaps.
     local MAX_NIL_IDLE     = 4
-    local MAX_NIL_INFLIGHT = 16
+    local MAX_NIL_INFLIGHT = nonBlocking and math.max(2, slicePolls) or 16
 
     -- Hard cap on total poll iterations per wakeup to prevent instruction spikes.
-    local MAX_POLLS = 24
+    local MAX_POLLS = nonBlocking and slicePolls or 24
 
     local nilPolls = 0
 
