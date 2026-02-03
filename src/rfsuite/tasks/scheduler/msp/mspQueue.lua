@@ -101,7 +101,6 @@ function MspQueueController:processQueue()
 
     -- MSP busy watchdog
     local mspBusyTimeout = 2.5
-    self.mspBusyStart = self.mspBusyStart or os_clock()
 
     if LOG_ENABLED_MSP_QUEUE() then
         local count = self:queueCount()
@@ -127,20 +126,24 @@ function MspQueueController:processQueue()
         return
     end
 
-    rfsuite.session.mspBusy = true
-
-    utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP
-
     -- Get next message if idle (optionally wait before advancing)
     if not self.currentMessage then
         -- Inter-message gap (after a message completes/fails)
         if self.interMessageDelay and self.interMessageDelay > 0 then
-            if now < (self._nextMessageAt or 0) then return end
+            if now < (self._nextMessageAt or 0) then
+                rfsuite.session.mspBusy = false
+                self.mspBusyStart = nil
+                return
+            end
         end
 
         -- Legacy loop throttle, but only gates starting the next message
         if self.loopInterval and self.loopInterval > 0 then
-            if now < (self._nextProcessAt or 0) then return end
+            if now < (self._nextProcessAt or 0) then
+                rfsuite.session.mspBusy = false
+                self.mspBusyStart = nil
+                return
+            end
             self._nextProcessAt = now + self.loopInterval
         end
 
@@ -148,6 +151,12 @@ function MspQueueController:processQueue()
         self.currentMessage = qpop(self.queue)
         self.retryCount = 0
     end
+
+    -- We are now genuinely active (either working a current message or about to send one)
+    rfsuite.session.mspBusy = true
+    self.mspBusyStart = self.mspBusyStart or now
+
+    utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP    
 
     local cmd, buf, err
     local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.25
