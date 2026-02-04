@@ -17,7 +17,7 @@ local tasks = rfsuite.tasks
 local objectProfiler = false
 local mod
 
-local WAKEUP_MIN_INTERVAL = 0.25    -- we do not wakeup more often than this
+local WAKEUP_MIN_INTERVAL = 0.1    -- we do not wakeup more often than this
 
 local supportedResolutions = {{784, 294}, {784, 316}, {800, 458}, {800, 480}, {472, 191}, {472, 210}, {480, 301}, {480, 320}, {630, 236}, {630, 258}, {640, 338}, {640, 360}}
 
