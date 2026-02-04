@@ -216,12 +216,12 @@
   },
   "sensor_esc1_bec_voltage": {
     "english": "ESC1 BEC Voltage",
-    "translation": "Regler 1 BEC Spannung",
+    "translation": "Regler 1 BEC-Spannung",
     "needs_translation": false
   },
   "sensor_esc1_bec_current": {
     "english": "ESC1 BEC Current",
-    "translation": "Regler 1 BEC Strom",
+    "translation": "Regler 1 BEC-Strom",
     "needs_translation": false
   },
   "sensor_esc1_status": {
@@ -281,12 +281,12 @@
   },
   "sensor_esc2_bec_voltage": {
     "english": "ESC2 BEC Voltage",
-    "translation": "Regler 2 BEC Spannung",
+    "translation": "Regler 2 BEC-Spannung",
     "needs_translation": false
   },
   "sensor_esc2_bec_current": {
     "english": "ESC2 BEC Current",
-    "translation": "Regler 2 BEC Strom",
+    "translation": "Regler 2 BEC-Strom",
     "needs_translation": false
   },
   "sensor_esc2_status": {
@@ -306,7 +306,7 @@
   },
   "sensor_bec_voltage": {
     "english": "BEC Voltage",
-    "translation": "BEC Spannung",
+    "translation": "BEC-Spannung",
     "needs_translation": false
   },
   "sensor_bus_voltage": {
@@ -316,7 +316,7 @@
   },
   "sensor_mcu_voltage": {
     "english": "MCU Voltage",
-    "translation": "MCU Spannung",
+    "translation": "MCU-Spannung",
     "needs_translation": false
   },
   "sensor_esc_current": {
@@ -326,17 +326,17 @@
   },
   "sensor_bec_current": {
     "english": "BEC Current",
-    "translation": "BEC Strom",
+    "translation": "BEC-Strom",
     "needs_translation": false
   },
   "sensor_bus_current": {
     "english": "Bus Current",
-    "translation": "Busstrom",
+    "translation": "Bus-Strom",
     "needs_translation": false
   },
   "sensor_mcu_current": {
     "english": "MCU Current",
-    "translation": "MCU Strom",
+    "translation": "MCU-Strom",
     "needs_translation": false
   },
   "sensor_esc_temp": {
@@ -346,12 +346,12 @@
   },
   "sensor_bec_temp": {
     "english": "BEC Temperature",
-    "translation": "BEC Temperatur",
+    "translation": "BEC-Temperatur",
     "needs_translation": false
   },
   "sensor_mcu_temp": {
     "english": "MCU Temperature",
-    "translation": "MCU Temperatur",
+    "translation": "MCU-Temperatur",
     "needs_translation": false
   },
   "sensor_air_temp": {
@@ -431,7 +431,7 @@
   },
   "sensor_accel": {
     "english": "Accel (Hi-Res)",
-    "translation": "Accel (Hi-Res)",
+    "translation": "Beschleunigung (Hi-Res)",
     "needs_translation": false
   },
   "sensor_accel_x": {
@@ -456,57 +456,57 @@
   },
   "sensor_gps_sats": {
     "english": "GPS Satellites",
-    "translation": "GPS Satelliten",
+    "translation": "GPS-Satelliten",
     "needs_translation": false
   },
   "sensor_gps_pdop": {
     "english": "GPS PDOP",
-    "translation": "GPS PDOP",
+    "translation": "GPS-PDOP",
     "needs_translation": false
   },
   "sensor_gps_hdop": {
     "english": "GPS HDOP",
-    "translation": "GPS HDOP",
+    "translation": "GPS-HDOP",
     "needs_translation": false
   },
   "sensor_gps_vdop": {
     "english": "GPS VDOP",
-    "translation": "GPS VDOP",
+    "translation": "GPS-VDOP",
     "needs_translation": false
   },
   "sensor_gps_coord": {
     "english": "GPS Coordinates",
-    "translation": "GPS Koordinaten",
+    "translation": "GPS-Koordinaten",
     "needs_translation": false
   },
   "sensor_gps_altitude": {
     "english": "GPS Altitude",
-    "translation": "GPS Höhe",
+    "translation": "GPS-Höhe",
     "needs_translation": false
   },
   "sensor_gps_heading": {
     "english": "GPS Heading",
-    "translation": "GPS Kurs",
+    "translation": "GPS-Kurs",
     "needs_translation": false
   },
   "sensor_gps_groundspeed": {
     "english": "GPS Ground Speed",
-    "translation": "GPS Geschwindigkeit",
+    "translation": "GPS-Geschwindigkeit",
     "needs_translation": false
   },
   "sensor_gps_home_distance": {
     "english": "GPS Home Distance",
-    "translation": "GPS Entfernung zum Start",
+    "translation": "GPS-Entfernung zum Start",
     "needs_translation": false
   },
   "sensor_gps_home_direction": {
     "english": "GPS Home Direction",
-    "translation": "GPS Richtung zum Start",
+    "translation": "GPS-Richtung zum Start",
     "needs_translation": false
   },
   "sensor_gps_date_time": {
     "english": "GPS Date/Time",
-    "translation": "GPS Datum/Zeit",
+    "translation": "GPS-Datum/Zeit",
     "needs_translation": false
   },
   "sensor_load": {
@@ -541,12 +541,12 @@
   },
   "sensor_arming_flags": {
     "english": "Arming Flags",
-    "translation": "Schaltflags",
+    "translation": "Arming-Flags",
     "needs_translation": false
   },
   "sensor_arming_disable_flags": {
     "english": "Arming Disable Flags",
-    "translation": "Schaltflags deaktiviert",
+    "translation": "Arming-Disable-Flags",
     "needs_translation": false
   },
   "sensor_rescue_state": {
@@ -556,12 +556,12 @@
   },
   "sensor_governor_state": {
     "english": "Governor State",
-    "translation": "Governer-Status",
+    "translation": "Governor-Status",
     "needs_translation": false
   },
   "sensor_governor_flags": {
     "english": "Governor Flags",
-    "translation": "Governer-Flags",
+    "translation": "Governor-Flags",
     "needs_translation": false
   },
   "sensor_pid_profile": {
@@ -571,7 +571,7 @@
   },
   "sensor_rates_profile": {
     "english": "Rates Profile",
-    "translation": "Rates-Profil",
+    "translation": "Raten-Profil",
     "needs_translation": false
   },
   "sensor_battery_profile": {
@@ -586,7 +586,7 @@
   },
   "sensor_adjfunc": {
     "english": "Adjustment Function",
-    "translation": "Einstellbare Funktion",
+    "translation": "Einstellungsfunktion",
     "needs_translation": false
   },
   "sensor_debug_0": {
