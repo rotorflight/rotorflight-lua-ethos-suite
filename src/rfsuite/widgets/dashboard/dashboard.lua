@@ -1167,7 +1167,7 @@ function dashboard.event(widget, category, value, x, y)
 
     if category == 1 and value == 16641 and lcd.hasFocus() then
         if x and y then
-            for i, rect in ipairs(dashboard.boxRects) do
+            for i, rect in ipairs(dashboard.boxRects or {}) do
                 if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
                     if rect.box and rect.box.onpress then
                         dashboard.selectedBoxIndex = i
