@@ -1071,7 +1071,6 @@ function dashboard.paint(widget)
             local W, H = lcd.getWindowSize()
             local loaderY = (isFullScreen and headerLayout.height) or 0
             dashboard.loader(0, loaderY, W, H - loaderY)
-            lcd.invalidate()
             return
         end
     end
