@@ -173,7 +173,7 @@ local function _profStop(kind, id, typ, t0)
 end
 
 local function _profIdFromRect(rect)
-    local b = rect.box
+    local b = rect.box or {}
 
     local H = rect.isHeader and "H" or "B"
     return string.format("%s@%s:%d,%d,%dx%d", b.type or "?", H, rect.x, rect.y, rect.w, rect.h)
