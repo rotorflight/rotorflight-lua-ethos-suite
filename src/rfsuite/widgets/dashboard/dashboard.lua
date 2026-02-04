@@ -666,16 +666,18 @@ function dashboard.renderLayout(widget, config)
         for idx, geom in ipairs(headerGeoms) do
             local w = geom.w
             if idx == rightmost_idx then w = W_raw - geom.x end
-            local obj = dashboard.objectsByType[geom.box.type]
-            if obj and obj.paint then
-                if objectProfiler then
-                    local fakeRect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
-                    local id = _profIdFromRect(fakeRect)
-                    local t0 = _profStart()
-                    obj.paint(geom.x, geom.y, w, geom.h, geom.box)
-                    _profStop("paint", id, geom.box.type, t0)
-                else
-                    obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+            if geom.box then
+                local obj = dashboard.objectsByType[geom.box.type]
+                if obj and obj.paint then
+                    if objectProfiler then
+                        local fakeRect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
+                        local id = _profIdFromRect(fakeRect)
+                        local t0 = _profStart()
+                        obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                        _profStop("paint", id, geom.box.type, t0)
+                    else
+                        obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                    end
                 end
             end
         end
