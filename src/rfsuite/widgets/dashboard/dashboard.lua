@@ -608,7 +608,7 @@ function dashboard.renderLayout(widget, config)
     local selColor = layout.selectcolor or utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
     local selBorder = layout.selectborder or 2
 
-    for i, rect in ipairs(dashboard.boxRects) do
+    for i, rect in ipairs(dashboard.boxRects or {}) do
         if not rect.isHeader then
             local box = rect.box
             local obj = dashboard.objectsByType[box.type]
