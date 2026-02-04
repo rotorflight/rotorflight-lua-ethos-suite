@@ -219,6 +219,7 @@ end
 
 function dashboard.loader(x, y, w, h, txt)
 
+    if not dashboard.loaders then return end
     dashboard.overlaystatic(x, y, w, h, txt)
 
     _queueInvalidateRect(x, y, w, h)
