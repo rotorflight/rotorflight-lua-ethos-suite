@@ -552,8 +552,10 @@ function dashboard.renderLayout(widget, config)
             local rectIndex = #dashboard.boxRects
             dashboard._objectDirty[rectIndex] = nil
 
-            local obj = dashboard.objectsByType[box.type]
-            if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+            if box.type then
+                local obj = dashboard.objectsByType[box.type]
+                if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+            end
         end
     end
 
@@ -581,8 +583,10 @@ function dashboard.renderLayout(widget, config)
             local idx_rect = #dashboard.boxRects
             dashboard._objectDirty[idx_rect] = nil
 
-            local obj = dashboard.objectsByType[geom.box.type]
-            if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, idx_rect) end
+            if geom.box.type then
+                local obj = dashboard.objectsByType[geom.box.type]
+                if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, idx_rect) end
+            end
         end
     end
 
