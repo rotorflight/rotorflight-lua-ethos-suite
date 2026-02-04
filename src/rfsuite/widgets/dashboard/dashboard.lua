@@ -100,6 +100,7 @@ end
 local function _queueInvalidateRect(x, y, w, h)
     if x == nil or y == nil or w == nil or h == nil then return end
     if w <= 0 or h <= 0 then return end
+    dashboard._pendingInvalidates = dashboard._pendingInvalidates or {}
     local n = dashboard._pendingInvalidatesPoolN + 1
     dashboard._pendingInvalidatesPoolN = n
     local r = dashboard._pendingInvalidatesPool[n]
