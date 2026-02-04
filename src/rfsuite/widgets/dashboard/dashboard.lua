@@ -823,13 +823,6 @@ function dashboard.renderLayout(widget, config)
     dashboard._forceFullRepaint = true
 end
 
-local function getThemeForState(state)
-    local prefs = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard
-    local fallback = rfsuite.preferences.dashboard
-    local val = prefs and prefs["theme_" .. state]
-    return (val and val ~= "nil" and val) or fallback["theme_" .. state] or dashboard.DEFAULT_THEME
-end
-
 local function load_state_script(theme_folder, state, isFallback)
     isFallback = isFallback or false
 
