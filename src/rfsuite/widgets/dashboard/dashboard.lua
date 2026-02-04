@@ -388,7 +388,7 @@ end
 
 local function getOnpressBoxIndices()
     local indices = {}
-    for i, rect in ipairs(dashboard.boxRects) do if rect.box.onpress then indices[#indices + 1] = i end end
+    for i, rect in ipairs(dashboard.boxRects or {}) do if rect.box.onpress then indices[#indices + 1] = i end end
     return indices
 end
 
