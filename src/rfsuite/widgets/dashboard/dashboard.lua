@@ -136,6 +136,11 @@ local function _flushInvalidatesRespectingBudget()
         if (r.x + r.w) > x2 then x2 = r.x + r.w end
         if (r.y + r.h) > y2 then y2 = r.y + r.h end
     end
+    if x2 <= x1 or y2 <= y1 then
+        _clearPendingInvalidates()
+        dashboard._pendingInvalidatesPoolN = 0
+        return false
+    end
     lcd.invalidate(x1, y1, x2 - x1, y2 - y1)
     _clearPendingInvalidates()
     dashboard._pendingInvalidatesPoolN = 0
