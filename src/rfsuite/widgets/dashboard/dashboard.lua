@@ -1284,15 +1284,17 @@ function dashboard.wakeup_protected(widget)
 
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
-            local obj = dashboard.objectsByType[rect.box.type]
-            if obj and obj.wakeup then
-                if objectProfiler then
-                    local id = _profIdFromRect(rect)
-                    local t0 = _profStart()
-                    obj.wakeup(rect.box)
-                    _profStop("wakeup", id, rect.box.type, t0)
-                else
-                    obj.wakeup(rect.box)
+            if rect and rect.box then
+                local obj = dashboard.objectsByType[rect.box.type]
+                if obj and obj.wakeup then
+                    if objectProfiler then
+                        local id = _profIdFromRect(rect)
+                        local t0 = _profStart()
+                        obj.wakeup(rect.box)
+                        _profStop("wakeup", id, rect.box.type, t0)
+                    else
+                        obj.wakeup(rect.box)
+                    end
                 end
             end
         end
