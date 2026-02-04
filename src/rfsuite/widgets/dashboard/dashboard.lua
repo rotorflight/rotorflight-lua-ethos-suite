@@ -50,8 +50,6 @@ local lastLoadedBoxCount = 0
 local lastBoxRectsCount = 0
 local lastLoadedBoxSig = nil
 
-local moduleState
-
 local statePreloadQueue = {"inflight", "postflight"}
 local statePreloadIndex = 1
 
