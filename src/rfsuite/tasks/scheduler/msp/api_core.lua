@@ -12,7 +12,6 @@ local math_min = math.min
 local core = {}
 
 local mspHelper = rfsuite.tasks.msp.mspHelper
-local utils     = rfsuite.utils
 local callback  = rfsuite.tasks.callback
 
 -- Schedule a callback to run next wakeup
@@ -284,7 +283,7 @@ end
 
 -- Build simulation response from structure definition
 function core.buildSimResponse(dataStructure, apiName)
-    if system:getVersion().simulation == false then return nil end
+    if system.getVersion().simulation == false then return nil end
 
     local response = {}
     for _, field in ipairs(dataStructure) do
