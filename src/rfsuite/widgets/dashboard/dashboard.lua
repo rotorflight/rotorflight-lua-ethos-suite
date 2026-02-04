@@ -61,7 +61,7 @@ local firstWakeup = true
 local firstWakeupCustomTheme = true
 
 dashboard.boxRects = {}
-dashboard.selectedBoxIndex = 1
+dashboard.selectedBoxIndex = nil
 
 dashboard.themeFallbackUsed = {preflight = false, inflight = false, postflight = false}
 dashboard.themeFallbackTime = {preflight = 0, inflight = 0, postflight = 0}
