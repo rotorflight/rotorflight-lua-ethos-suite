@@ -294,16 +294,17 @@ function dashboard.overlaymessage(x, y, w, h, txt)
         end
     end
 
+    local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
     local opts = {}
-    if rfsuite.preferences.general.theme_loader == 0 then
+    if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
         opts.panelHeightRatio = 0.5   
         opts.fontSize = FONT_XXS
-    elseif rfsuite.preferences.general.theme_loader == 1 then
+    elseif themeLoader == 1 then
         opts.panelWidthRatio = 0.7
         opts.panelHeightRatio = 0.5
         opts.fontSize = FONT_XS
-    elseif rfsuite.preferences.general.theme_loader == 2 then
+    elseif themeLoader == 2 then
         opts.panelWidthRatio = 0.9
         opts.panelHeightRatio = 0.8       
         opts.fontSize = FONT_S
