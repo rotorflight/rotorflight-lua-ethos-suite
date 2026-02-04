@@ -11,9 +11,6 @@ local os_clock = os.clock
 local utils = rfsuite.utils
 local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
 
-local arg = {...}
-local config = arg[1]
-
 local msp = {}
 
 msp.activeProtocol = nil      -- Current telemetry protocol type in use
@@ -60,6 +57,7 @@ msp.mspQueue.drainMaxPolls = 5                 -- Max polls to wait during drain
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
 msp.api       = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
 msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
+-- Snapshot protocol version at load; later changes should call setProtocolVersion.
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
 
 -- Expose protocol logger
@@ -160,7 +158,8 @@ function msp.reset()
     msp.onConnectChecksInit = true
     delayStartTime = nil
     delayPending = false
-    if transport and transport.reset then transport.reset() end
+    local activeTransport = msp.protocolTransports[msp.protocol.mspProtocol]
+    if activeTransport and activeTransport.reset then activeTransport.reset() end
 end
 
 return msp
