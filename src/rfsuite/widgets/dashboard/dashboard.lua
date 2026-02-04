@@ -332,7 +332,7 @@ end
 
 function dashboard.loadObjectType(box)
     local typ = box and box.type
-    if not typ then return end
+    if type(typ) ~= "string" or typ == "" then return end
 
     if dashboard._moduleCache[typ] == nil then
         local bdir = baseDir or "default"
