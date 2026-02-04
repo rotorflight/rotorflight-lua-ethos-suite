@@ -705,6 +705,9 @@ function tasks.wakeup_protected()
 
     local cycleFlip = schedulerTick % 2
 
+    -- msp boost mode.  
+    --- as soon as we have any msp activity, prioritize msp and callback tasks only.
+    -- this ensures that the msp queue is drained as fast as possible to reduce latency.
     if rfsuite.session.mspBusy then
             if tasks.msp then
                 tasks.msp.wakeup()
@@ -713,6 +716,10 @@ function tasks.wakeup_protected()
                 tasks.callback.wakeup()
             end
     else
+    -- bulk task processing split across two cycles to reduce per-cycle load.    
+    -- this does include msp and callback so they are garuanteeed to run regardless
+    -- essentially this starts msp.. it then boosts.. then drops back to this cycle after 
+    -- msp is done.
         if cycleFlip == 0 then
             loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
         else
