@@ -1394,6 +1394,7 @@ function dashboard.listThemes()
     local num = 0
 
     local function scanThemes(basePath, sourceType)
+        if not basePath or basePath == "" then return end
         local folders = system.listFiles(basePath)
         if not folders then return end
 
