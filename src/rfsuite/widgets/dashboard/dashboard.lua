@@ -234,7 +234,7 @@ end
 function dashboard.overlaystatic(x, y, w, h, txt)
     local msg = txt
     if not msg or msg == "" then
-        msg = dashboard.computeOverlayMessage() or "@i18n(app.msg_loading)@"
+        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "@i18n(app.msg_loading)@"
     end
 
     local opts = {}
