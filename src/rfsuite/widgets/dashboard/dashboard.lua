@@ -1137,7 +1137,10 @@ function dashboard.event(widget, category, value, x, y)
     if category == EVT_KEY and lcd.hasFocus() then
         local indices = getOnpressBoxIndices()
         local count = #indices
-        if count == 0 then return end
+        if count == 0 then
+            dashboard.selectedBoxIndex = nil
+            return
+        end
 
         local current = dashboard.selectedBoxIndex or 1
         local pos = 1
