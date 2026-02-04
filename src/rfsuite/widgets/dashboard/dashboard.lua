@@ -611,21 +611,23 @@ function dashboard.renderLayout(widget, config)
     for i, rect in ipairs(dashboard.boxRects or {}) do
         if not rect.isHeader then
             local box = rect.box
-            local obj = dashboard.objectsByType[box.type]
-            if obj and obj.paint then
-                if objectProfiler then
-                    local id = _profIdFromRect(rect)
-                    local t0 = _profStart()
-                    obj.paint(rect.x, rect.y, rect.w, rect.h, box)
-                    _profStop("paint", id, box.type, t0)
-                else
-                    obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+            if box then
+                local obj = dashboard.objectsByType[box.type]
+                if obj and obj.paint then
+                    if objectProfiler then
+                        local id = _profIdFromRect(rect)
+                        local t0 = _profStart()
+                        obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                        _profStop("paint", id, box.type, t0)
+                    else
+                        obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                    end
                 end
-            end
 
-            if dashboard.selectedBoxIndex == i and box.onpress then
-                lcd.color(selColor)
-                lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+                if dashboard.selectedBoxIndex == i and box.onpress then
+                    lcd.color(selColor)
+                    lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+                end
             end
         end
     end
