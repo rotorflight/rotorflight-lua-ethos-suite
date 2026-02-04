@@ -17,6 +17,8 @@ local tasks = rfsuite.tasks
 local objectProfiler = false
 local mod
 
+local WAKEUP_MIN_INTERVAL = 0.25    -- we do not wakeup more often than this
+
 local supportedResolutions = {{784, 294}, {784, 316}, {800, 458}, {800, 480}, {472, 191}, {472, 210}, {480, 301}, {480, 320}, {630, 236}, {630, 258}, {640, 338}, {640, 360}}
 
 local lastFlightMode = nil
@@ -303,13 +305,16 @@ end
 
 
 local function computeObjectSchedulerPercentage(count)
-    if count >= 15 then
-        return 0.5
-    end        
+    -- clamp input
+    if count < 0 then count = 0 end
+    if count > 10 then count = 10 end
 
-    return 1.0
-    
+    -- linear slide from 1.0 → 0.5 over 0..1
+    -- adjust ratio to suit performance needs
+    local ratio = 0.3
+    return 1.0 - (count / 10) * ratio
 end
+
 
 function dashboard.loadObjectType(box)
     local typ = box and box.type
@@ -1183,20 +1188,6 @@ end
 function dashboard.wakeup_protected(widget)
 
     local now = os.clock()
-    local visible = lcd.isVisible()
-    local admin = rfsuite.app and rfsuite.app.guiIsRunning
-
-    if admin or not visible then
-
-        return
-    elseif isSliding then
-
-        if (now - isSlidingStart) > 1 then
-            isSliding = false
-        else
-            return
-        end
-    end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
@@ -1356,10 +1347,31 @@ function dashboard.wakeup_protected(widget)
 end
 
 function dashboard.wakeup()
+
+    -- early returns happen before the pcall to wakeup_protected
+    local now = os.clock()
+    if lastWakeup and (now - lastWakeup) < WAKEUP_MIN_INTERVAL then return end
+
+    local visible = lcd.isVisible()
+    local admin = rfsuite.app and rfsuite.app.guiIsRunning
+
+    if admin or not visible then
+
+        return
+    elseif isSliding then
+
+        if (now - isSlidingStart) > 1 then
+            isSliding = false
+        else
+            return
+        end
+    end    
+
     local success, err = pcall(dashboard.wakeup_protected)
     if not success then
         print("Error in wakeup_protected: " .. tostring(err))
     end
+    lastWakeup = now
 end
 
 function dashboard.listThemes()
