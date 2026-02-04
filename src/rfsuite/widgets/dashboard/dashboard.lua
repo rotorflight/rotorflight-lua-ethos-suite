@@ -91,6 +91,7 @@ dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
 dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
 
 local function _clearPendingInvalidates()
+    if not dashboard._pendingInvalidates then return end
     for i = #dashboard._pendingInvalidates, 1, -1 do
         dashboard._pendingInvalidates[i] = nil
     end
