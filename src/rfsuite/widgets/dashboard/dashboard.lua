@@ -1199,6 +1199,8 @@ function dashboard.wakeup_protected(widget)
 
     local W, H = lcd.getWindowSize()
 
+    dashboard.boxRects = dashboard.boxRects or {}
+
     dashboard._lastWH = dashboard._lastWH or {w = nil, h = nil, supported = nil}
 
     if W ~= dashboard._lastWH.w or H ~= dashboard._lastWH.h then
