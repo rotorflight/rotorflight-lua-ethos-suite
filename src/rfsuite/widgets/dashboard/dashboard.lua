@@ -837,6 +837,13 @@ end
 local function load_state_script(theme_folder, state, isFallback)
     isFallback = isFallback or false
 
+    if not theme_folder or theme_folder == "" then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = os.clock()
+        return nil
+    end
+
     local src, folder = theme_folder:match("([^/]+)/(.+)")
     local base = (src == "user") and themesUserPath or themesBasePath
 
