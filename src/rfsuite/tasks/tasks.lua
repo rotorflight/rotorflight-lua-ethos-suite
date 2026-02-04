@@ -6,8 +6,9 @@
 local rfsuite = require("rfsuite")
 
 local utils = rfsuite.utils
+local config = rfsuite.config
 
--- Load up event tables (no lazy loading)
+-- Load event tables (no lazy loading)
 local events = {}
 
 events.onconnect = loadfile("tasks/events/onconnect/tasks.lua")()
@@ -51,8 +52,6 @@ tasks._initByName = nil
 tasks._initIndex = 1
 
 local ethosVersionGood
-local telemetryCheckScheduler = os.clock
-
 local lastCheckAt
 local lastTelemetryType
 
@@ -86,18 +85,18 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm
 
--- Reuse source descriptor tables to avoid allocations in hot paths
+-- Reuse source descriptor tables to avoid allocations in hot paths.
 local SRC_SPORT = {appId = 0xF101}
 local SRC_CRSF  = {crsfId = 0x14, subIdStart = 0, subIdEnd = 1}
 local SRC_TLM_ACTIVE = {category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE}
 
 tasks.profile = {enabled = false, dumpInterval = 5, minDuration = 0, include = nil, exclude = nil, onDump = nil}
 
--- Reused tables to avoid per-cycle allocations (reduces GC churn)
+-- Reused tables to avoid per-cycle allocations (reduces GC churn).
 local normalEligibleTasks = {}
 local mustRunTasks = {}
 
--- Hoist comparator (avoid allocating closure each cycle)
+-- Hoist comparator (avoid allocating closure each cycle).
 local SORT_BY_LAST_RUN_ASC = function(a, b) return a.last_run < b.last_run end
 
 local function profWanted(name)
@@ -115,6 +114,7 @@ function tasks.setRateMultiplier(mult)
     for _, task in ipairs(tasksList) do
         local base = task.baseInterval or task.interval or 1
         local j = task.jitter or 0
+        -- Recompute scheduled interval from base + per-task jitter.
         task.interval = (base * mult) + j
     end
     utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
@@ -146,6 +146,7 @@ function tasks.isTaskActive(name)
 end
 
 local function taskOffset(name, interval)
+    -- Hash + jitter to distribute initial task phases and avoid sync spikes.
     local hash = 0
     for i = 1, #name do hash = (hash * 31 + name:byte(i)) % 100000 end
     local base = (hash % (interval * 1000)) / 1000
@@ -226,6 +227,7 @@ local function clearSessionAndQueue()
 
     local now = os.clock()
 
+    -- Tear down session state, MSP queues, and reset per-connection edge caches.
     -- Reset edge caches
     lastArmedState = false
     lastFlightModeValue = nil
@@ -357,7 +359,7 @@ function tasks.telemetryCheckScheduler()
     end
 
     -- Link is up. Start (or continue) a connect attempt timer until isConnected becomes true.
-    -- If we exceed the deadline, teardown and retry.
+    -- If we exceed the deadline, teardown and retry (with cooldown).
     if not rfsuite.session.isConnected then
         if not connectAttemptStartedAt then
             connectAttemptStartedAt = now
@@ -459,6 +461,7 @@ function tasks.telemetryCheckScheduler()
 
     end
 
+    -- Run ontransportchange event handler on telemetry type change.
     if currentTelemetryType ~= lastTelemetryType then
         local oldTelemetryType = lastTelemetryType
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
@@ -508,6 +511,7 @@ end
 local function overdue_seconds(task, now, grace_s) return (now - task.last_run) - (task.interval + (grace_s or 0)) end
 
 local function canRunTask(task, now)
+    -- Determine eligibility based on timing, priority class, and link/connection state.
     local hf = task.interval < SCHED_DT
     local grace = hf and OVERDUE_TOL or (task.interval * 0.25)
 
@@ -531,7 +535,8 @@ local function runNonSpreadTasks(now)
     local loopCpu = 0
 
     for _, task in ipairs(tasksListNonSpread) do
-        if tasks[task.name].wakeup then
+        local mod = tasks[task.name]
+        if mod and mod.wakeup then
             local okToRun, od = canRunTask(task, now)
             if okToRun then
                 local elapsed = now - task.last_run
@@ -540,10 +545,10 @@ local function runNonSpreadTasks(now)
                         if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "info") end
                     end
 
-                    local fn = tasks[task.name].wakeup
+                    local fn = mod.wakeup
                     if fn then
                         local c0 = os.clock()
-                        fn(tasks[task.name])
+                        fn(mod)
                         local c1 = os.clock()
                         local dur = c1 - c0
                         loopCpu = loopCpu + dur
@@ -566,6 +571,7 @@ local function runSpreadTasks(now)
 
     local loopCpu = 0
 
+    -- Split overdue tasks into "must run" vs "normal" to avoid starvation.
     -- Clear reused lists (no new tables)
     for i = #normalEligibleTasks, 1, -1 do normalEligibleTasks[i] = nil end
     for i = #mustRunTasks, 1, -1 do mustRunTasks[i] = nil end
@@ -593,14 +599,16 @@ local function runSpreadTasks(now)
     if nM > 1 then table.sort(mustRunTasks, SORT_BY_LAST_RUN_ASC) end
     if nN > 1 then table.sort(normalEligibleTasks, SORT_BY_LAST_RUN_ASC) end
 
+    -- Quota of spread tasks to run this cycle (scaled by scheduler percentage).
     tasksPerCycle = math.ceil(nonSpreadCount * taskSchedulerPercentage)
 
     for i = 1, #mustRunTasks do
         local task = mustRunTasks[i]
-        local fn = tasks[task.name].wakeup
+        local mod = tasks[task.name]
+        local fn = mod and mod.wakeup
         if fn then
             local c0 = os.clock()
-            fn(tasks[task.name])
+            fn(mod)
             local c1 = os.clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
@@ -612,10 +620,11 @@ local function runSpreadTasks(now)
     local n = math.min(tasksPerCycle, #normalEligibleTasks)
     for i = 1, n do
         local task = normalEligibleTasks[i]
-        local fn = tasks[task.name].wakeup
+        local mod = tasks[task.name]
+        local fn = mod and mod.wakeup
         if fn then
             local c0 = os.clock()
-            fn(tasks[task.name])
+            fn(mod)
             local c1 = os.clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
@@ -656,16 +665,19 @@ end
 
 function tasks.wakeup_protected()
 
-    schedulerTick = schedulerTick + 1
+    -- Primary scheduler tick: runs task loops, event edges, and profiling.
+    schedulerTick = (schedulerTick or 0) + 1
     tasks.heartbeat = os.clock()
     local t0 = tasks.heartbeat
     local loopCpu = 0
 
     tasks.profile.enabled = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler
 
+    -- Abort early on unsupported Ethos versions to avoid undefined APIs.
     if ethosVersionGood == nil then ethosVersionGood = utils.ethosVersionAtLeast() end
     if not ethosVersionGood then return end
 
+    -- One-shot initialization handshake.
     if tasks.begin == true then
         tasks.begin = false
         tasks._justInitialized = true
@@ -673,11 +685,13 @@ function tasks.wakeup_protected()
         return
     end
 
+    -- Skip one tick after init to allow tasks to settle.
     if tasks._justInitialized then
         tasks._justInitialized = false
         return
     end
 
+    -- Progressive task loading to avoid long stalls on a single tick.
     if tasks._initState == "loadNextTask" then
         local key = tasks._initKeys[tasks._initIndex]
         if key then
@@ -699,15 +713,16 @@ function tasks.wakeup_protected()
         end
     end
 
+    -- Connection/telemetry state machine (may reset session/queues).
     tasks.telemetryCheckScheduler()
 
     local now = os.clock()
 
     local cycleFlip = schedulerTick % 2
 
-    -- msp boost mode.  
-    --- as soon as we have any msp activity, prioritize msp and callback tasks only.
-    -- this ensures that the msp queue is drained as fast as possible to reduce latency.
+    -- MSP boost mode:
+    -- As soon as we have any MSP activity, prioritize MSP and callback tasks only.
+    -- This ensures that the MSP queue is drained as fast as possible to reduce latency.
     if rfsuite.session.mspBusy then
             if tasks.msp then
                 tasks.msp.wakeup()
@@ -716,10 +731,9 @@ function tasks.wakeup_protected()
                 tasks.callback.wakeup()
             end
     else
-    -- bulk task processing split across two cycles to reduce per-cycle load.    
-    -- this does include msp and callback so they are garuanteeed to run regardless
-    -- essentially this starts msp.. it then boosts.. then drops back to this cycle after 
-    -- msp is done.
+    -- Bulk task processing split across two cycles to reduce per-cycle load.
+    -- This includes MSP and callback so they are guaranteed to run regardless.
+    -- The cycle starts MSP; it then boosts, then drops back after MSP is done.
         if cycleFlip == 0 then
             loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
         else
@@ -773,6 +787,7 @@ function tasks.wakeup_protected()
         eventMaybeWake("ondisconnect", events.ondisconnect, now)
     end
 
+    -- Periodic profile dump (if enabled).
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
         local dumpEvery = tasks.profile.dumpInterval or 5
@@ -797,9 +812,8 @@ end
 
 function tasks.reset()
     for _, task in ipairs(tasksList) do
-        if tasks[task.name].reset then
-            tasks[task.name].reset()
-        end
+        local mod = tasks[task.name]
+        if mod and mod.reset then mod.reset() end
     end
     rfsuite.utils.session()
 end
@@ -846,6 +860,7 @@ function tasks.event(widget, category, value, x, y) print("Event:", widget, cate
 
 function tasks.init()
 
+    -- Reset scheduler state and metadata; called once at task start.
     tasks.rateMultiplier = tasks.rateMultiplier or 1.0
     currentTelemetrySensor = nil
     tasksPerCycle = 1
@@ -892,6 +907,7 @@ function tasks.write() end
 
 function tasks.unload(name)
 
+    -- Remove a task from scheduler lists and release its module.
     local mod = tasks[name]
     if mod and mod.reset then mod.reset() end
 
@@ -927,6 +943,7 @@ end
 
 function tasks.load(name, meta)
 
+    -- Load a task module and register it in the scheduler lists.
     if not meta then
         utils.log("[scheduler] No manifest entry for task '" .. tostring(name) .. "'", "warn")
         return false
