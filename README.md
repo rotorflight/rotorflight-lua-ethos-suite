@@ -155,7 +155,21 @@ RFSuite has been successfully tested on the following receiver models (with X10,
 -   R-XSR ACCESS / ACCST F.Port
     
 -   ELRS (all versions)
-    
+
+----------    
+
+## Installation Instructions
+
+### Windows Radio Updater (GUI)
+
+For Windows users, a prebuilt GUI updater is available to simplify updating files on the radio without using VS Code or Python.
+
+- **Direct download:** https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/update_radio_gui.exe
+- Standalone Windows executable
+- Intended for end users or quick updates
+
+![Updater](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/.github/gfx/updater.png)
+
 
 ----------
 
