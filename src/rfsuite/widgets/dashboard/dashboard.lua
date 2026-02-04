@@ -941,7 +941,6 @@ function dashboard.reload_active_theme_only(force)
     objectWakeupsPerCycle = nil
     lastLoadedBoxSig = nil
 
-    lcd.invalidate()
 end
 
 function dashboard.applySchedulerSettings()
