@@ -408,7 +408,9 @@ function dashboard.computeOverlayMessage()
     end
 
     local elapsed = os.clock() - initTime
-    if elapsed > 10 then if not tasks.active() then return "[ERROR] Background task is not enabled" end end
+    if elapsed > 10 then
+        if not tasks or not tasks.active or not tasks.active() then return "[ERROR] Background task is not enabled" end
+    end
 
     if not rfsuite.session.isConnected and state ~= "postflight" then
         local v = rfsuite.config.version
