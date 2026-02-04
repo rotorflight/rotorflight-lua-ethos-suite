@@ -1213,6 +1213,7 @@ function dashboard.wakeup_protected(widget)
     local W, H = lcd.getWindowSize()
 
     dashboard.boxRects = dashboard.boxRects or {}
+    dashboard.objectsByType = dashboard.objectsByType or {}
 
     dashboard._lastWH = dashboard._lastWH or {w = nil, h = nil, supported = nil}
 
