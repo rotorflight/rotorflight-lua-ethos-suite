@@ -20,7 +20,7 @@
     "needs_translation": false
   },
   "navigation_menu": {
-    "english": "MENU",
+    "english": "BACK",
     "translation": "ZURÜCK",
     "needs_translation": false
   },
@@ -1591,10 +1591,10 @@
         "translation": "Roll",
         "needs_translation": false
       },
-      "help_p5": {
+      "help_p4": {
         "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
-        "translation": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
-        "needs_translation": true
+        "translation": "Testen & Anpassen: Fliegen, beobachten und feinjustieren, um die beste Leistung unter realen Bedingungen zu erreichen.",
+        "needs_translation": false
       },
       "p": {
         "english": "P",
@@ -1624,11 +1624,6 @@
       "b": {
         "english": "B",
         "translation": "B",
-        "needs_translation": false
-      },
-      "help_p4": {
-        "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-        "translation": "Testen & Anpassen: Fliegen, beobachten und feinjustieren, um die beste Leistung unter realen Bedingungen zu erreichen.",
         "needs_translation": false
       },
       "help_p3": {
