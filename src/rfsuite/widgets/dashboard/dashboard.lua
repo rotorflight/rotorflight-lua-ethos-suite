@@ -363,8 +363,8 @@ function dashboard.loadAllObjects(boxConfigs)
     dashboard.objectsByType = {}
 
     for _, box in ipairs(boxConfigs or {}) do
-        local typ = box.type
-        if typ then
+        local typ = box and box.type
+        if type(typ) == "string" and typ ~= "" then
             if dashboard._moduleCache[typ] == nil then
                 local bdir = baseDir or "default"
                 local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
