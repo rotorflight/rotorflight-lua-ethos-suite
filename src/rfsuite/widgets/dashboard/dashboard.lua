@@ -473,7 +473,6 @@ end
 
 function dashboard.renderLayout(widget, config)
     local utils = dashboard.utils
-    local telemetry = tasks.telemetry
 
     dashboard.boxRects = dashboard.boxRects or {}
     scheduledBoxIndices = scheduledBoxIndices or {}
@@ -1196,7 +1195,6 @@ function dashboard.wakeup_protected(widget)
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
-    local telemetry = tasks.telemetry
     local W, H = lcd.getWindowSize()
 
     dashboard._lastWH = dashboard._lastWH or {w = nil, h = nil, supported = nil}
