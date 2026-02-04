@@ -1316,7 +1316,7 @@ function dashboard.wakeup_protected(widget)
 
         if dashboard._useSpreadScheduling == false then
 
-            for i, rect in ipairs(dashboard.boxRects) do
+            for i, rect in ipairs(dashboard.boxRects or {}) do
                 if rect and rect.box then
                     local obj = dashboard.objectsByType[rect.box.type]
                     if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
