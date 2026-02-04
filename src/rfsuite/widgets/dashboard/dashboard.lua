@@ -979,6 +979,7 @@ function dashboard.reload_themes(force)
     dashboard.applySchedulerSettings()
 
     local boxes = {}
+    local mod = loadedStateModules[dashboard.flightmode or "preflight"]
     if mod and mod.boxes then
         local rawBoxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
         for _, box in ipairs(rawBoxes or {}) do table.insert(boxes, box) end
