@@ -15,7 +15,6 @@ local utils = rfsuite.utils
 local log = utils.log
 local tasks = rfsuite.tasks
 local objectProfiler = false
-local mod
 
 local WAKEUP_MIN_INTERVAL = 0.25    -- we do not wakeup more often than this
 
