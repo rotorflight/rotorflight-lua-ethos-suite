@@ -15,7 +15,6 @@ local utils = rfsuite.utils
 local log = utils.log
 local tasks = rfsuite.tasks
 local objectProfiler = false
-local mod
 
 local WAKEUP_MIN_INTERVAL = 0.25    -- we do not wakeup more often than this
 
@@ -37,7 +36,6 @@ local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
 
 local loadedStateModules = {}
 
-local wakeupScheduler = 0
 
 local lastModelPath = model.path()
 local lastModelPathCheckAt = 0
@@ -49,8 +47,6 @@ local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 local lastBoxRectsCount = 0
 local lastLoadedBoxSig = nil
-
-local moduleState
 
 local statePreloadQueue = {"inflight", "postflight"}
 local statePreloadIndex = 1
@@ -65,7 +61,7 @@ local firstWakeup = true
 local firstWakeupCustomTheme = true
 
 dashboard.boxRects = {}
-dashboard.selectedBoxIndex = 1
+dashboard.selectedBoxIndex = nil
 
 dashboard.themeFallbackUsed = {preflight = false, inflight = false, postflight = false}
 dashboard.themeFallbackTime = {preflight = 0, inflight = 0, postflight = 0}
@@ -95,6 +91,7 @@ dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
 dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
 
 local function _clearPendingInvalidates()
+    if not dashboard._pendingInvalidates then return end
     for i = #dashboard._pendingInvalidates, 1, -1 do
         dashboard._pendingInvalidates[i] = nil
     end
@@ -102,6 +99,10 @@ end
 
 
 local function _queueInvalidateRect(x, y, w, h)
+    if x == nil or y == nil or w == nil or h == nil then return end
+    if w <= 0 or h <= 0 then return end
+    dashboard._pendingInvalidates = dashboard._pendingInvalidates or {}
+    dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
     local n = dashboard._pendingInvalidatesPoolN + 1
     dashboard._pendingInvalidatesPoolN = n
     local r = dashboard._pendingInvalidatesPool[n]
@@ -115,6 +116,7 @@ end
 
 local function _flushInvalidatesRespectingBudget()
     local now = os.clock()
+    if not dashboard._pendingInvalidates then return false end
     if (now - dashboard._lastInvalidateTime) < dashboard._minPaintInterval then return false end
 
     if #dashboard._pendingInvalidates == 0 then return false end
@@ -134,7 +136,13 @@ local function _flushInvalidatesRespectingBudget()
         if (r.x + r.w) > x2 then x2 = r.x + r.w end
         if (r.y + r.h) > y2 then y2 = r.y + r.h end
     end
+    if x2 <= x1 or y2 <= y1 then
+        _clearPendingInvalidates()
+        dashboard._pendingInvalidatesPoolN = 0
+        return false
+    end
     lcd.invalidate(x1, y1, x2 - x1, y2 - y1)
+    _clearPendingInvalidates()
     dashboard._pendingInvalidatesPoolN = 0
     dashboard._lastInvalidateTime = now
     return true
@@ -165,7 +173,7 @@ local function _profStop(kind, id, typ, t0)
 end
 
 local function _profIdFromRect(rect)
-    local b = rect.box
+    local b = rect.box or {}
 
     local H = rect.isHeader and "H" or "B"
     return string.format("%s@%s:%d,%d,%dx%d", b.type or "?", H, rect.x, rect.y, rect.w, rect.h)
@@ -211,6 +219,7 @@ end
 
 function dashboard.loader(x, y, w, h, txt)
 
+    if not dashboard.loaders then return end
     dashboard.overlaystatic(x, y, w, h, txt)
 
     _queueInvalidateRect(x, y, w, h)
@@ -218,9 +227,11 @@ function dashboard.loader(x, y, w, h, txt)
 end
 
 local function forceInvalidateAllObjects()
-    for _, rect in ipairs(dashboard.boxRects) do
-        local obj = dashboard.objectsByType[rect.box.type]
-        if obj and obj.dirty and obj.dirty(rect.box) then _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h) end
+    for _, rect in ipairs(dashboard.boxRects or {}) do
+        if rect and rect.box then
+            local obj = dashboard.objectsByType[rect.box.type]
+            if obj and obj.dirty and obj.dirty(rect.box) then _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h) end
+        end
     end
     _flushInvalidatesRespectingBudget()
 end
@@ -228,19 +239,20 @@ end
 function dashboard.overlaystatic(x, y, w, h, txt)
     local msg = txt
     if not msg or msg == "" then
-        msg = dashboard.computeOverlayMessage() or "@i18n(app.msg_loading)@"
+        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "@i18n(app.msg_loading)@"
     end
 
+    local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
     local opts = {}
-    if rfsuite.preferences.general.theme_loader == 0 then
+    if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
         opts.panelHeightRatio = 0.5
         opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
-    elseif rfsuite.preferences.general.theme_loader == 1 then
+    elseif themeLoader == 1 then
         opts.panelWidthRatio = 0.7
         opts.panelHeightRatio = 0.5
         opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
-    elseif rfsuite.preferences.general.theme_loader == 2 then
+    elseif themeLoader == 2 then
         opts.panelWidthRatio = 0.9
         opts.panelHeightRatio = 0.8
         opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
@@ -250,6 +262,7 @@ function dashboard.overlaystatic(x, y, w, h, txt)
     -- (it costs almost nothing), but allow callers to disable.
     opts.animateDots = true
 
+    if not dashboard.loaders or not dashboard.loaders.staticLoader then return end
     dashboard.loaders.staticLoader(dashboard, x, y, w, h, msg, opts)
 end
 
@@ -260,7 +273,9 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     dashboard._overlayQueue = dashboard._overlayQueue or {}
     local q = dashboard._overlayQueue
 
-    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
+    local logmsg = rfsuite.tasks and rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
+    if logmsg and type(logmsg) ~= "table" then logmsg = {tostring(logmsg)} end
+    if not dashboard.loaders or not dashboard.loaders.logsLoader then return end
 
     if not logmsg then
         if txt and txt ~= "" then
@@ -284,22 +299,24 @@ function dashboard.overlaymessage(x, y, w, h, txt)
         end
     end
 
+    local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
     local opts = {}
-    if rfsuite.preferences.general.theme_loader == 0 then
+    if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
         opts.panelHeightRatio = 0.5   
         opts.fontSize = FONT_XXS
-    elseif rfsuite.preferences.general.theme_loader == 1 then
+    elseif themeLoader == 1 then
         opts.panelWidthRatio = 0.7
         opts.panelHeightRatio = 0.5
         opts.fontSize = FONT_XS
-    elseif rfsuite.preferences.general.theme_loader == 2 then
+    elseif themeLoader == 2 then
         opts.panelWidthRatio = 0.9
         opts.panelHeightRatio = 0.8       
         opts.fontSize = FONT_S
     end
 
 
+    if not dashboard.loaders or not dashboard.loaders.logsLoader then return end
     dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
 end
 
@@ -318,7 +335,7 @@ end
 
 function dashboard.loadObjectType(box)
     local typ = box and box.type
-    if not typ then return end
+    if type(typ) ~= "string" or typ == "" then return end
 
     if dashboard._moduleCache[typ] == nil then
         local bdir = baseDir or "default"
@@ -349,8 +366,8 @@ function dashboard.loadAllObjects(boxConfigs)
     dashboard.objectsByType = {}
 
     for _, box in ipairs(boxConfigs or {}) do
-        local typ = box.type
-        if typ then
+        local typ = box and box.type
+        if type(typ) == "string" and typ ~= "" then
             if dashboard._moduleCache[typ] == nil then
                 local bdir = baseDir or "default"
                 local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
@@ -380,21 +397,24 @@ end
 
 local function getOnpressBoxIndices()
     local indices = {}
-    for i, rect in ipairs(dashboard.boxRects) do if rect.box.onpress then indices[#indices + 1] = i end end
+    for i, rect in ipairs(dashboard.boxRects or {}) do
+        if rect and rect.box and rect.box.onpress then indices[#indices + 1] = i end
+    end
     return indices
 end
 
 function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
-    local telemetry = tasks.telemetry
 
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
         return "[ERROR] Failed to load theme, using fallback" 
     end
 
     local elapsed = os.clock() - initTime
-    if elapsed > 10 then if not tasks.active() then return "[ERROR] Background task is not enabled" end end
+    if elapsed > 10 then
+        if not tasks or not tasks.active or not tasks.active() then return "[ERROR] Background task is not enabled" end
+    end
 
     if not rfsuite.session.isConnected and state ~= "postflight" then
         local v = rfsuite.config.version
@@ -465,8 +485,9 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
 end
 
 function dashboard.renderLayout(widget, config)
+    if not config then return end
+    if not dashboard.utils then return end
     local utils = dashboard.utils
-    local telemetry = tasks.telemetry
 
     dashboard.boxRects = dashboard.boxRects or {}
     scheduledBoxIndices = scheduledBoxIndices or {}
@@ -533,31 +554,37 @@ function dashboard.renderLayout(widget, config)
     for i = #scheduledBoxIndices, 1, -1 do scheduledBoxIndices[i] = nil end
 
     for _, box in ipairs(boxes) do
-        local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
-        box.xOffset = xOffset
-        local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
-        if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
+        if box then
+            local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+            box.xOffset = xOffset
+            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+            if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
 
-        local rect = {x = x, y = y, w = w, h = h, box = box, isHeader = false}
-        table.insert(dashboard.boxRects, rect)
+            local rect = {x = x, y = y, w = w, h = h, box = box, isHeader = false}
+            table.insert(dashboard.boxRects, rect)
 
-        local rectIndex = #dashboard.boxRects
-        dashboard._objectDirty[rectIndex] = nil
+            local rectIndex = #dashboard.boxRects
+            dashboard._objectDirty[rectIndex] = nil
 
-        local obj = dashboard.objectsByType[box.type]
-        if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+            if box.type then
+                local obj = dashboard.objectsByType[box.type]
+                if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+            end
+        end
     end
 
     if isFullScreen then
         local headerGeoms = {}
         local rightmost_idx, rightmost_x = 1, 0
         for idx, box in ipairs(headerBoxes) do
-            local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
-            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
-            headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
-            if x > rightmost_x then
-                rightmost_idx = idx
-                rightmost_x = x
+            if box then
+                local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
+                local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
+                headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
+                if x > rightmost_x then
+                    rightmost_idx = idx
+                    rightmost_x = x
+                end
             end
         end
 
@@ -570,8 +597,10 @@ function dashboard.renderLayout(widget, config)
             local idx_rect = #dashboard.boxRects
             dashboard._objectDirty[idx_rect] = nil
 
-            local obj = dashboard.objectsByType[geom.box.type]
-            if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, idx_rect) end
+            if geom.box.type then
+                local obj = dashboard.objectsByType[geom.box.type]
+                if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, idx_rect) end
+            end
         end
     end
 
@@ -603,24 +632,26 @@ function dashboard.renderLayout(widget, config)
     local selColor = layout.selectcolor or utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
     local selBorder = layout.selectborder or 2
 
-    for i, rect in ipairs(dashboard.boxRects) do
+    for i, rect in ipairs(dashboard.boxRects or {}) do
         if not rect.isHeader then
             local box = rect.box
-            local obj = dashboard.objectsByType[box.type]
-            if obj and obj.paint then
-                if objectProfiler then
-                    local id = _profIdFromRect(rect)
-                    local t0 = _profStart()
-                    obj.paint(rect.x, rect.y, rect.w, rect.h, box)
-                    _profStop("paint", id, box.type, t0)
-                else
-                    obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+            if box then
+                local obj = dashboard.objectsByType[box.type]
+                if obj and obj.paint then
+                    if objectProfiler then
+                        local id = _profIdFromRect(rect)
+                        local t0 = _profStart()
+                        obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                        _profStop("paint", id, box.type, t0)
+                    else
+                        obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                    end
                 end
-            end
 
-            if dashboard.selectedBoxIndex == i and box.onpress then
-                lcd.color(selColor)
-                lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+                if dashboard.selectedBoxIndex == i and box.onpress then
+                    lcd.color(selColor)
+                    lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+                end
             end
         end
     end
@@ -659,16 +690,18 @@ function dashboard.renderLayout(widget, config)
         for idx, geom in ipairs(headerGeoms) do
             local w = geom.w
             if idx == rightmost_idx then w = W_raw - geom.x end
-            local obj = dashboard.objectsByType[geom.box.type]
-            if obj and obj.paint then
-                if objectProfiler then
-                    local fakeRect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
-                    local id = _profIdFromRect(fakeRect)
-                    local t0 = _profStart()
-                    obj.paint(geom.x, geom.y, w, geom.h, geom.box)
-                    _profStop("paint", id, geom.box.type, t0)
-                else
-                    obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+            if geom.box then
+                local obj = dashboard.objectsByType[geom.box.type]
+                if obj and obj.paint then
+                    if objectProfiler then
+                        local fakeRect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
+                        local id = _profIdFromRect(fakeRect)
+                        local t0 = _profStart()
+                        obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                        _profStop("paint", id, geom.box.type, t0)
+                    else
+                        obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                    end
                 end
             end
         end
@@ -804,15 +837,15 @@ function dashboard.renderLayout(widget, config)
     dashboard._forceFullRepaint = true
 end
 
-local function getThemeForState(state)
-    local prefs = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard
-    local fallback = rfsuite.preferences.dashboard
-    local val = prefs and prefs["theme_" .. state]
-    return (val and val ~= "nil" and val) or fallback["theme_" .. state] or dashboard.DEFAULT_THEME
-end
-
 local function load_state_script(theme_folder, state, isFallback)
     isFallback = isFallback or false
+
+    if not theme_folder or theme_folder == "" then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = os.clock()
+        return nil
+    end
 
     local src, folder = theme_folder:match("([^/]+)/(.+)")
     local base = (src == "user") and themesUserPath or themesBasePath
@@ -895,7 +928,7 @@ local function reload_state_only(state)
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
     dashboard.boxRects = {}
-    if dashboard.boxRects then for k in pairs(dashboard.boxRects) do dashboard.boxRects[k] = nil end end
+    dashboard.selectedBoxIndex = nil
     lcd.invalidate()
 end
 
@@ -915,8 +948,8 @@ function dashboard.reload_active_theme_only(force)
     firstWakeup = true
     lcd.invalidate()
 
-    wakeupScheduler = 0
     dashboard.boxRects = {}
+    dashboard.selectedBoxIndex = nil
     objectsThreadedWakeupCount = 0
     objectWakeupIndex = 1
     lastLoadedBoxCount = 0
@@ -924,7 +957,6 @@ function dashboard.reload_active_theme_only(force)
     objectWakeupsPerCycle = nil
     lastLoadedBoxSig = nil
 
-    lcd.invalidate()
 end
 
 function dashboard.applySchedulerSettings()
@@ -963,6 +995,7 @@ function dashboard.reload_themes(force)
     dashboard.applySchedulerSettings()
 
     local boxes = {}
+    local mod = loadedStateModules[dashboard.flightmode or "preflight"]
     if mod and mod.boxes then
         local rawBoxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
         for _, box in ipairs(rawBoxes or {}) do table.insert(boxes, box) end
@@ -974,7 +1007,7 @@ function dashboard.reload_themes(force)
     dashboard._hg_cycles = dashboard._hg_cycles_required
 
     dashboard._forceFullRepaint = true
-    if dashboard.boxRects then for k in pairs(dashboard.boxRects) do dashboard.boxRects[k] = nil end end
+    dashboard.selectedBoxIndex = nil
     lastBoxRectsCount = 0
     lastLoadedBoxCount = 0
     objectWakeupIndex = 1
@@ -994,7 +1027,7 @@ local function callStateFunc(funcName, widget, paintFallback)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
-    if not tasks.active() then return nil end
+    if not tasks or not tasks.active or not tasks.active() then return nil end
 
     if type(module) == "table" and module.layout and funcName == "paint" then return module end
 
@@ -1020,7 +1053,6 @@ function dashboard.create()
 
     firstWakeup = true
     firstWakeupCustomTheme = true
-    wakeupScheduler = 0
     objectWakeupIndex = 1
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
@@ -1035,6 +1067,8 @@ end
 
 function dashboard.paint(widget)
 
+    if not dashboard.utils then return end
+
     local isCompiledCheck = "@i18n(iscompiledcheck)@"
     if isCompiledCheck ~= "true" then
         dashboard.utils.screenError("i18n not compiled - download a release version", true, 0.6)
@@ -1044,7 +1078,8 @@ function dashboard.paint(widget)
     if unsupportedResolution then
 
         local W, H = lcd.getWindowSize()
-        if H < (system.getVersion().lcdHeight / 5) or W < (system.getVersion().lcdWidth / 10) then
+        local sys = system.getVersion()
+        if H < (sys.lcdHeight / 5) or W < (sys.lcdWidth / 10) then
             dashboard.utils.screenError("@i18n(widgets.dashboard.unsupported_resolution)@", true, 0.4)
         else
             dashboard.overlaymessage(0, 0, W, H, "@i18n(widgets.dashboard.unsupported_resolution)@")
@@ -1056,7 +1091,6 @@ function dashboard.paint(widget)
         local W, H = lcd.getWindowSize()
         local loaderY = (isFullScreen and headerLayout.height) or 0
         dashboard.loader(0, loaderY, W, H - loaderY)
-        lcd.invalidate()
         return
     end
 
@@ -1069,7 +1103,6 @@ function dashboard.paint(widget)
             local W, H = lcd.getWindowSize()
             local loaderY = (isFullScreen and headerLayout.height) or 0
             dashboard.loader(0, loaderY, W, H - loaderY)
-            lcd.invalidate()
             return
         end
     end
@@ -1100,6 +1133,10 @@ function dashboard.event(widget, category, value, x, y)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
+    if dashboard.selectedBoxIndex and (not dashboard.boxRects or dashboard.selectedBoxIndex > #(dashboard.boxRects or {})) then
+        dashboard.selectedBoxIndex = nil
+    end
+
     if state == "postflight" and category == EVT_KEY and value == 131 then
         rfsuite.widgets.dashboard.flightmode = "preflight"
         dashboard.resetFlightModeAsk()
@@ -1113,7 +1150,10 @@ function dashboard.event(widget, category, value, x, y)
     if category == EVT_KEY and lcd.hasFocus() then
         local indices = getOnpressBoxIndices()
         local count = #indices
-        if count == 0 then return end
+        if count == 0 then
+            dashboard.selectedBoxIndex = nil
+            return
+        end
 
         local current = dashboard.selectedBoxIndex or 1
         local pos = 1
@@ -1150,8 +1190,9 @@ function dashboard.event(widget, category, value, x, y)
                 return true
             else
                 local idx = dashboard.selectedBoxIndex
-                local rect = dashboard.boxRects[idx]
-                if rect and rect.box.onpress then
+                local rects = dashboard.boxRects or {}
+                local rect = rects[idx]
+                if rect and rect.box and rect.box.onpress then
                     rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
                     system.killEvents(97)
                     return true
@@ -1167,9 +1208,9 @@ function dashboard.event(widget, category, value, x, y)
 
     if category == 1 and value == 16641 and lcd.hasFocus() then
         if x and y then
-            for i, rect in ipairs(dashboard.boxRects) do
+            for i, rect in ipairs(dashboard.boxRects or {}) do
                 if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
-                    if rect.box.onpress then
+                    if rect.box and rect.box.onpress then
                         dashboard.selectedBoxIndex = i
                         lcd.invalidate(widget)
                         rect.box.onpress(widget, rect.box, x, y, category, value)
@@ -1191,8 +1232,13 @@ function dashboard.wakeup_protected(widget)
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
-    local telemetry = tasks.telemetry
+    if not dashboard.utils then return end
+
     local W, H = lcd.getWindowSize()
+
+    dashboard.boxRects = dashboard.boxRects or {}
+    dashboard.objectsByType = dashboard.objectsByType or {}
+    scheduledBoxIndices = scheduledBoxIndices or {}
 
     dashboard._lastWH = dashboard._lastWH or {w = nil, h = nil, supported = nil}
 
@@ -1273,19 +1319,22 @@ function dashboard.wakeup_protected(widget)
         callStateFunc("wakeup", widget)
     end
 
-    if #dashboard.boxRects > 0 then
+    local rectCount = #(dashboard.boxRects or {})
+    if rectCount > 0 then
 
-        for _, idx in ipairs(scheduledBoxIndices) do
+        for _, idx in ipairs(scheduledBoxIndices or {}) do
             local rect = dashboard.boxRects[idx]
-            local obj = dashboard.objectsByType[rect.box.type]
-            if obj and obj.wakeup then
-                if objectProfiler then
-                    local id = _profIdFromRect(rect)
-                    local t0 = _profStart()
-                    obj.wakeup(rect.box)
-                    _profStop("wakeup", id, rect.box.type, t0)
-                else
-                    obj.wakeup(rect.box)
+            if rect and rect.box then
+                local obj = dashboard.objectsByType[rect.box.type]
+                if obj and obj.wakeup then
+                    if objectProfiler then
+                        local id = _profIdFromRect(rect)
+                        local t0 = _profStart()
+                        obj.wakeup(rect.box)
+                        _profStop("wakeup", id, rect.box.type, t0)
+                    else
+                        obj.wakeup(rect.box)
+                    end
                 end
             end
         end
@@ -1295,12 +1344,14 @@ function dashboard.wakeup_protected(widget)
 
         if dashboard._useSpreadScheduling == false then
 
-            for i, rect in ipairs(dashboard.boxRects) do
-                local obj = dashboard.objectsByType[rect.box.type]
-                if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
-                if trackDirty then
-                    local dirtyFn = obj and obj.dirty
-                    if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
+            for i, rect in ipairs(dashboard.boxRects or {}) do
+                if rect and rect.box then
+                    local obj = dashboard.objectsByType[rect.box.type]
+                    if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
+                    if trackDirty then
+                        local dirtyFn = obj and obj.dirty
+                        if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
+                    end
                 end
             end
 
@@ -1309,7 +1360,7 @@ function dashboard.wakeup_protected(widget)
             for i = 1, objectWakeupsPerCycle do
                 local idx = objectWakeupIndex
                 local rect = dashboard.boxRects[idx]
-                if rect then
+                if rect and rect.box then
                     local obj = dashboard.objectsByType[rect.box.type]
                     if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
                     if trackDirty then
@@ -1317,7 +1368,7 @@ function dashboard.wakeup_protected(widget)
                         if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
                     end
                 end
-                objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
+                objectWakeupIndex = (rectCount > 0) and ((objectWakeupIndex % rectCount) + 1) or 1
             end
 
         end
@@ -1367,6 +1418,7 @@ function dashboard.wakeup()
         end
     end    
 
+    if not dashboard.wakeup_protected then return end
     local success, err = pcall(dashboard.wakeup_protected)
     if not success then
         print("Error in wakeup_protected: " .. tostring(err))
@@ -1377,8 +1429,10 @@ end
 function dashboard.listThemes()
     local themes = {}
     local num = 0
+    if not utils then return themes end
 
     local function scanThemes(basePath, sourceType)
+        if not basePath or basePath == "" then return end
         local folders = system.listFiles(basePath)
         if not folders then return end
 
@@ -1390,8 +1444,8 @@ function dashboard.listThemes()
 
                     local chunk = compile(initPath)
                     if chunk then
-                        local initTable = chunk()
-                        if initTable and type(initTable.name) == "string" then
+                        local ok, initTable = pcall(chunk)
+                        if ok and initTable and type(initTable.name) == "string" then
                             num = num + 1
                             themes[num] = {
                                 name = initTable.name,
