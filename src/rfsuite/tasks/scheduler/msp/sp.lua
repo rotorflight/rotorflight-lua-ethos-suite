@@ -15,13 +15,6 @@ local REQUEST_FRAME_ID       = 0x30   -- Outbound MSP request frame
 local REPLY_FRAME_ID         = 0x32   -- Inbound MSP reply frame
 local MSP_STARTFLAG          = (1 << 4) -- Set on start packet
 
--- State for V2 (multi-frame) MSP
-local v2_inflight = false
-local v2_remaining = 0
-local v2_req = nil
-local v2_seq = nil
-local function v2_get_seq(st) return st & 0x0F end
-
 -- State for reply frame assembly
 local in_reply = false
 local expect_seq = nil
@@ -29,9 +22,6 @@ local expect_seq = nil
 -- Extract seq / start flag
 local function status_seq(st) return st & 0x0F end
 local function is_start(st) return (st & MSP_STARTFLAG) ~= 0 end
-
--- Debug trackers
-local lastSensorId, lastFrameId, lastDataId, lastValue
 
 -- Cached sensor handle
 local sensor
@@ -94,9 +84,6 @@ end
 transport.mspWrite = function(cmd, payload)
     return rfsuite.tasks.msp.common.mspSendRequest(cmd, payload)
 end
-
--- Maintain last popped frame
-local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
 
 -- Poll FrSky telemetry for incoming MSP reply frames
 transport.mspPoll = function()
