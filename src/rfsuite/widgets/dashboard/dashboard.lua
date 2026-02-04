@@ -1309,11 +1309,13 @@ function dashboard.wakeup_protected(widget)
         if dashboard._useSpreadScheduling == false then
 
             for i, rect in ipairs(dashboard.boxRects) do
-                local obj = dashboard.objectsByType[rect.box.type]
-                if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
-                if trackDirty then
-                    local dirtyFn = obj and obj.dirty
-                    if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
+                if rect and rect.box then
+                    local obj = dashboard.objectsByType[rect.box.type]
+                    if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
+                    if trackDirty then
+                        local dirtyFn = obj and obj.dirty
+                        if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
+                    end
                 end
             end
 
@@ -1322,7 +1324,7 @@ function dashboard.wakeup_protected(widget)
             for i = 1, objectWakeupsPerCycle do
                 local idx = objectWakeupIndex
                 local rect = dashboard.boxRects[idx]
-                if rect then
+                if rect and rect.box then
                     local obj = dashboard.objectsByType[rect.box.type]
                     if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
                     if trackDirty then
