@@ -52,8 +52,6 @@ tasks._initByName = nil
 tasks._initIndex = 1
 
 local ethosVersionGood
-local telemetryCheckScheduler = os.clock
-
 local lastCheckAt
 local lastTelemetryType
 
@@ -537,7 +535,8 @@ local function runNonSpreadTasks(now)
     local loopCpu = 0
 
     for _, task in ipairs(tasksListNonSpread) do
-        if tasks[task.name].wakeup then
+        local mod = tasks[task.name]
+        if mod and mod.wakeup then
             local okToRun, od = canRunTask(task, now)
             if okToRun then
                 local elapsed = now - task.last_run
@@ -546,10 +545,10 @@ local function runNonSpreadTasks(now)
                         if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "info") end
                     end
 
-                    local fn = tasks[task.name].wakeup
+                    local fn = mod.wakeup
                     if fn then
                         local c0 = os.clock()
-                        fn(tasks[task.name])
+                        fn(mod)
                         local c1 = os.clock()
                         local dur = c1 - c0
                         loopCpu = loopCpu + dur
@@ -605,10 +604,11 @@ local function runSpreadTasks(now)
 
     for i = 1, #mustRunTasks do
         local task = mustRunTasks[i]
-        local fn = tasks[task.name].wakeup
+        local mod = tasks[task.name]
+        local fn = mod and mod.wakeup
         if fn then
             local c0 = os.clock()
-            fn(tasks[task.name])
+            fn(mod)
             local c1 = os.clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
@@ -620,10 +620,11 @@ local function runSpreadTasks(now)
     local n = math.min(tasksPerCycle, #normalEligibleTasks)
     for i = 1, n do
         local task = normalEligibleTasks[i]
-        local fn = tasks[task.name].wakeup
+        local mod = tasks[task.name]
+        local fn = mod and mod.wakeup
         if fn then
             local c0 = os.clock()
-            fn(tasks[task.name])
+            fn(mod)
             local c1 = os.clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
@@ -811,9 +812,8 @@ end
 
 function tasks.reset()
     for _, task in ipairs(tasksList) do
-        if tasks[task.name].reset then
-            tasks[task.name].reset()
-        end
+        local mod = tasks[task.name]
+        if mod and mod.reset then mod.reset() end
     end
     rfsuite.utils.session()
 end
