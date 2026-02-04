@@ -395,7 +395,6 @@ end
 function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
-    local telemetry = tasks.telemetry
 
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
         return "[ERROR] Failed to load theme, using fallback" 
