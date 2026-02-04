@@ -1057,6 +1057,8 @@ end
 
 function dashboard.paint(widget)
 
+    if not dashboard.utils then return end
+
     local isCompiledCheck = "@i18n(iscompiledcheck)@"
     if isCompiledCheck ~= "true" then
         dashboard.utils.screenError("i18n not compiled - download a release version", true, 0.6)
