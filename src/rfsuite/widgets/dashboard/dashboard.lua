@@ -271,7 +271,7 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     dashboard._overlayQueue = dashboard._overlayQueue or {}
     local q = dashboard._overlayQueue
 
-    local logmsg = rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
+    local logmsg = rfsuite.tasks and rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
 
     if not logmsg then
         if txt and txt ~= "" then
