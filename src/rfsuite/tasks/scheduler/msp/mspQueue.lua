@@ -258,7 +258,9 @@ function MspQueueController:processQueue()
 
     -- Per-message timeout
     if self.currentMessage and self.currentMessageStartTime and (os_clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
-        if self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
+        local msg = self.currentMessage
+        if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
+        if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
@@ -334,8 +336,10 @@ function MspQueueController:processQueue()
 
     -- Too many retries → reset
     elseif self.retryCount > self.maxRetries then
+        local msg = self.currentMessage
         self:clear()
-        if self.currentMessage and self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
+        if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
+        if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end
     end
 end

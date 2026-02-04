@@ -12,8 +12,8 @@ local mspCallMade = false
 function telemetryconfig.wakeup()
 
     if rfsuite.session.apiVersion == nil then return end
-
     if rfsuite.session.mspBusy then return end
+    if rfsuite.tasks.msp.mspQueue:isProcessed() == false then return end
 
     if (rfsuite.session.telemetryConfig == nil) and (mspCallMade == false) then
         mspCallMade = true
@@ -42,13 +42,19 @@ function telemetryconfig.wakeup()
                 rfsuite.utils.log("Updated telemetry sensors: " .. tostring(#parts) .. " of " .. tostring(#slots), "connect")
             end    
         end)
+        API.setErrorHandler(function(self, err)
+            rfsuite.utils.log("Failed to read telemetry config via MSP: " .. err, "info")
+            mspCallMade = false
+        end)
         API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")
+        API.setTimeout(3000)
         API.read()
     end
 
 end
 
 function telemetryconfig.reset()
+
     rfsuite.session.telemetryConfig = nil
     mspCallMade = false
 end
