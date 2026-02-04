@@ -1157,7 +1157,7 @@ function dashboard.event(widget, category, value, x, y)
             else
                 local idx = dashboard.selectedBoxIndex
                 local rect = dashboard.boxRects[idx]
-                if rect and rect.box.onpress then
+                if rect and rect.box and rect.box.onpress then
                     rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
                     system.killEvents(97)
                     return true
@@ -1175,7 +1175,7 @@ function dashboard.event(widget, category, value, x, y)
         if x and y then
             for i, rect in ipairs(dashboard.boxRects) do
                 if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
-                    if rect.box.onpress then
+                    if rect.box and rect.box.onpress then
                         dashboard.selectedBoxIndex = i
                         lcd.invalidate(widget)
                         rect.box.onpress(widget, rect.box, x, y, category, value)
