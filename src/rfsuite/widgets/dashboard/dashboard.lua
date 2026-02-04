@@ -102,6 +102,8 @@ end
 
 
 local function _queueInvalidateRect(x, y, w, h)
+    if x == nil or y == nil or w == nil or h == nil then return end
+    if w <= 0 or h <= 0 then return end
     local n = dashboard._pendingInvalidatesPoolN + 1
     dashboard._pendingInvalidatesPoolN = n
     local r = dashboard._pendingInvalidatesPool[n]
@@ -135,6 +137,7 @@ local function _flushInvalidatesRespectingBudget()
         if (r.y + r.h) > y2 then y2 = r.y + r.h end
     end
     lcd.invalidate(x1, y1, x2 - x1, y2 - y1)
+    _clearPendingInvalidates()
     dashboard._pendingInvalidatesPoolN = 0
     dashboard._lastInvalidateTime = now
     return true
