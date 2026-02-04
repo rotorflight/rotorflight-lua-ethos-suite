@@ -273,6 +273,7 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     local q = dashboard._overlayQueue
 
     local logmsg = rfsuite.tasks and rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
+    if logmsg and type(logmsg) ~= "table" then logmsg = {tostring(logmsg)} end
 
     if not logmsg then
         if txt and txt ~= "" then
