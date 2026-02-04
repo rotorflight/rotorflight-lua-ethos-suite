@@ -1,0 +1,14 @@
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Exclude duplicate files from root
+requirements_updater.txt
+run_updater.bat
+run_updater.sh
