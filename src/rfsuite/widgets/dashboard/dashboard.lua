@@ -260,6 +260,7 @@ function dashboard.overlaystatic(x, y, w, h, txt)
     -- (it costs almost nothing), but allow callers to disable.
     opts.animateDots = true
 
+    if not dashboard.loaders or not dashboard.loaders.staticLoader then return end
     dashboard.loaders.staticLoader(dashboard, x, y, w, h, msg, opts)
 end
 
