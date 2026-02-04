@@ -470,6 +470,7 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
 end
 
 function dashboard.renderLayout(widget, config)
+    if not config then return end
     local utils = dashboard.utils
 
     dashboard.boxRects = dashboard.boxRects or {}
