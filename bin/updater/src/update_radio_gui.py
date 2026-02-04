@@ -20,7 +20,7 @@ import shutil
 import tempfile
 import zipfile
 import threading
-import subprocess
+import re
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -70,6 +70,202 @@ VERSION_MASTER = "master"
 ETHOS_SUITE_USB_MODE_REQUEST = 0x81
 USB_MODE_STORAGE = 0x69  # Stop debug mode = enable storage mode
 USB_MODE_DEBUG = 0x68    # Start debug mode
+
+TAG_RE = re.compile(
+    r'@i18n\(\s*([^)@,]+?)\s*(?:,\s*(upper|lower))?\s*\)'
+    r'((?::[a-z_]+(?:\([^@]*?\))?)*)@',
+    flags=re.IGNORECASE
+)
+
+I18N_FILE_EXTS = ('.lua', '.ts', '.tsx', '.js', '.jsx', '.json', '.md', '.txt')
+
+
+
+def _coerce_atom(value):
+    try:
+        return int(value)
+    except ValueError:
+        try:
+            return float(value)
+        except ValueError:
+            if str(value).lower() in ('true', 'false'):
+                return str(value).lower() == 'true'
+            return value
+
+
+def _parse_chain(chain):
+    if not chain:
+        return []
+    out = []
+    for seg in filter(None, chain.split(':')):
+        match = re.match(r'([a-z_][a-z0-9_]*)\s*(?:\((.*)\))?$', seg, flags=re.IGNORECASE)
+        if not match:
+            continue
+        name = match.group(1).lower()
+        argstr = (match.group(2) or '').strip()
+        args = []
+        if argstr:
+            parts = []
+            current = ''
+            depth = 0
+            for ch in argstr:
+                if ch == '(':
+                    depth += 1
+                    current += ch
+                elif ch == ')':
+                    depth = max(0, depth - 1)
+                    current += ch
+                elif ch == ',' and depth == 0:
+                    parts.append(current.strip())
+                    current = ''
+                else:
+                    current += ch
+            if current.strip():
+                parts.append(current.strip())
+            for part in parts:
+                parsed = part.strip()
+                if not parsed:
+                    args.append('')
+                elif (parsed.startswith('"') and parsed.endswith('"')) or (parsed.startswith("'") and parsed.endswith("'")):
+                    args.append(_coerce_atom(parsed[1:-1]))
+                else:
+                    args.append(_coerce_atom(parsed))
+        out.append((name, args))
+    return out
+
+
+def _upperfirst(text):
+    return text[:1].upper() + text[1:].lower() if text else text
+
+
+def _truncate(text, length, ellipsis=None):
+    length = int(length)
+    if length < 0:
+        return text
+    if len(text) <= length:
+        return text
+    if ellipsis:
+        ellipsis = str(ellipsis)
+        if length <= len(ellipsis):
+            return ellipsis[:length]
+        return text[:length - len(ellipsis)] + ellipsis
+    return text[:length]
+
+
+def _collapse_ws(text):
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def _slice(text, start, end=None):
+    start = int(start)
+    end = int(end) if end is not None else None
+    return text[start:end]
+
+
+def _ensure_char(char):
+    return char[0] if isinstance(char, str) and char else ' '
+
+
+TRANSFORMS = {
+    'upper': lambda s: s.upper(),
+    'lower': lambda s: s.lower(),
+    'upperfirst': _upperfirst,
+    'capitalize': lambda s: s[:1].upper() + s[1:],
+    'title': lambda s: s.title(),
+    'swapcase': lambda s: s.swapcase(),
+    'trim': lambda s: s.strip(),
+    'ltrim': lambda s: s.lstrip(),
+    'rtrim': lambda s: s.rstrip(),
+    'collapse_ws': _collapse_ws,
+    'truncate': lambda s, n, ellipsis=None: _truncate(s, n, ellipsis),
+    'slice': _slice,
+    'padleft': lambda s, width, char=' ': s.rjust(int(width), _ensure_char(char)),
+    'padright': lambda s, width, char=' ': s.ljust(int(width), _ensure_char(char)),
+    'center': lambda s, width, char=' ': s.center(int(width), _ensure_char(char)),
+    'replace': lambda s, old, new, count=None: s.replace(str(old), str(new), int(count) if count is not None else -1),
+    'remove': lambda s, pattern: re.sub(str(pattern), '', s),
+    'keep': lambda s, pattern: ' '.join(re.findall(str(pattern), s)),
+    'strip_prefix': lambda s, p: s[len(p):] if s.startswith(str(p)) else s,
+    'strip_suffix': lambda s, p: s[:-len(p)] if len(p) and s.endswith(str(p)) else s,
+    'prefix': lambda s, p: str(p) + s,
+    'suffix': lambda s, p: s + str(p),
+    'escape_html': lambda s: s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;'),
+    'escape_json': lambda s: s.replace('\\', '\\\\').replace('"', r'\"'),
+}
+
+
+def _sanitize_for_insertion(text):
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = text.replace("\n", r"\n")
+    text = text.replace('"', r'\"')
+    return text
+
+
+def _resolve_key(tree, dotted):
+    node = tree
+    for part in dotted.split('.'):
+        if not isinstance(node, dict) or part not in node:
+            return None
+        node = node[part]
+
+    if isinstance(node, dict):
+        if 'translation' in node and isinstance(node['translation'], (str, int, float)):
+            return str(node['translation'])
+        if 'english' in node and isinstance(node['english'], (str, int, float)):
+            return str(node['english'])
+        return None
+
+    if node is None:
+        return None
+
+    return str(node)
+
+
+def _apply_transform_pipeline(text, basic_mod, chain, stats):
+    if basic_mod:
+        fn = TRANSFORMS.get(basic_mod.lower())
+        if fn:
+            text = fn(text)
+
+    for name, args in _parse_chain(chain):
+        fn = TRANSFORMS.get(name)
+        if not fn:
+            stats.setdefault('unknown_transform', {}).setdefault(name, 0)
+            stats['unknown_transform'][name] += 1
+            continue
+        try:
+            text = fn(text, *args)
+        except Exception as exc:
+            stats.setdefault('transform_errors', []).append(f"{name}({args}) -> {exc}")
+    return text
+
+
+def _replace_tags_in_text(text, translations, stats):
+    def _sub(match):
+        key = match.group(1).strip()
+        basic_mod = match.group(2)
+        chain = match.group(3) or ''
+
+        resolved = _resolve_key(translations, key)
+        if resolved is None:
+            stats.setdefault('unresolved', {}).setdefault(key, 0)
+            stats['unresolved'][key] += 1
+            return match.group(0)
+
+        resolved = _apply_transform_pipeline(str(resolved), basic_mod, chain, stats)
+        resolved = _sanitize_for_insertion(resolved)
+        return resolved
+
+    new_text, count = TAG_RE.subn(_sub, text)
+    return new_text, count
+
+
+def _iter_source_files(root_path, exts=I18N_FILE_EXTS):
+    for path in root_path.rglob('*'):
+        if path.is_file() and path.suffix.lower() in exts:
+            yield path
+
+
 
 
 class RadioInterface:
@@ -354,7 +550,148 @@ class UpdaterGUI:
         for root, dirs, files in os.walk(directory):
             total += len(files)
         return total
-    
+
+    def get_deploy_language(self):
+        """Return deploy language from environment or default."""
+        return (os.environ.get("RFSUITE_LANG", "en").strip() or "en").lower()
+
+    def choose_language_for_release(self, staged_out_dir, preferred_lang):
+        """For release/snapshot: if multiple languages exist, choose en when available."""
+        i18n_dir = os.path.join(staged_out_dir, "i18n")
+        if not os.path.isdir(i18n_dir):
+            return preferred_lang
+
+        langs = []
+        for name in os.listdir(i18n_dir):
+            if name.lower().endswith(".json"):
+                langs.append(os.path.splitext(name)[0].lower())
+
+        if len(langs) > 1 and "en" in langs:
+            return "en"
+
+        return preferred_lang
+
+    def file_md5(self, path, chunk=1024 * 1024):
+        import hashlib
+        h = hashlib.md5()
+        with open(path, 'rb', buffering=0) as f:
+            while True:
+                b = f.read(chunk)
+                if not b:
+                    break
+                h.update(b)
+        return h.hexdigest()
+
+    def needs_copy_with_md5(self, srcf, dstf):
+        try:
+            ss = os.stat(srcf)
+        except FileNotFoundError:
+            return False
+        if not os.path.exists(dstf):
+            return True
+        try:
+            ds = os.stat(dstf)
+        except FileNotFoundError:
+            return True
+        if ss.st_size != ds.st_size:
+            return True
+        if (ss.st_mtime - ds.st_mtime) > 2.0:
+            return True
+        try:
+            return self.file_md5(srcf) != self.file_md5(dstf)
+        except Exception:
+            return True
+
+    def copy_tree_update_only(self, src, dest, label="Copying soundpack"):
+        """Copy directory tree, updating only changed files."""
+        if not os.path.isdir(src):
+            self.log(f"  ⚠ Source not found: {src}")
+            return False
+
+        files = []
+        for r, _, fs in os.walk(src):
+            for f in fs:
+                s = os.path.join(r, f)
+                rel = os.path.relpath(s, src)
+                d = os.path.join(dest, rel)
+                files.append((s, d, rel))
+
+        if not files:
+            self.log("  No files to copy.")
+            return True
+
+        self.set_progress_mode('determinate', maximum=len(files))
+        copied = 0
+        for s, d, rel in files:
+            if not self.is_updating:
+                return False
+            os.makedirs(os.path.dirname(d), exist_ok=True)
+            if self.needs_copy_with_md5(s, d):
+                try:
+                    shutil.copy2(s, d)
+                except Exception as e:
+                    self.log(f"  ⚠ Failed to copy {rel}: {e}")
+            copied += 1
+            if copied % 25 == 0 or copied == len(files):
+                percent = (copied / len(files)) * 100
+                self.update_progress(copied, f"{label}: {copied}/{len(files)} ({percent:.1f}%)")
+        return True
+
+    def resolve_i18n_tags_in_tree(self, json_path, root_dir):
+        """Resolve @i18n(...)@ tags in-place under root_dir using json_path."""
+        import json
+        from pathlib import Path
+
+        translations = None
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                translations = json.load(f)
+        except Exception as e:
+            self.log(f"  ⚠ Failed to load i18n JSON: {e}")
+            return False
+
+        root = Path(root_dir)
+        total_files_changed = 0
+        total_replacements = 0
+        unresolved_agg = {}
+
+        files = list(_iter_source_files(root))
+        if files:
+            self.set_progress_mode('determinate', maximum=len(files))
+        for idx, file_path in enumerate(files, 1):
+            if not self.is_updating:
+                return False
+            try:
+                before = file_path.read_text(encoding='utf-8')
+            except Exception:
+                continue
+
+            stats = {}
+            new_text, count = _replace_tags_in_text(before, translations, stats)
+
+            if count:
+                try:
+                    file_path.write_text(new_text, encoding='utf-8')
+                    total_files_changed += 1
+                    total_replacements += count
+                except Exception as e:
+                    self.log(f"  ⚠ Failed to write {file_path}: {e}")
+
+            unresolved = stats.get('unresolved', {})
+            for k, c in unresolved.items():
+                unresolved_agg[k] = unresolved_agg.get(k, 0) + c
+
+            if idx % 25 == 0 or idx == len(files):
+                percent = (idx / len(files)) * 100 if files else 0
+                self.update_progress(idx, f"Resolving i18n: {idx}/{len(files)} ({percent:.1f}%)")
+
+        self.log(f"✓ i18n resolved — files changed: {total_files_changed}, total replacements: {total_replacements}")
+        if unresolved_agg:
+            self.log("  Unresolved keys (top 10):")
+            for key, count in sorted(unresolved_agg.items(), key=lambda kv: (-kv[1], kv[0]))[:10]:
+                self.log(f"    {key}: {count} occurrence(s)")
+        return True
+
     def copy_tree_with_progress(self, src, dst):
         """Copy directory tree with progress updates."""
         # Count total files
@@ -623,9 +960,6 @@ class UpdaterGUI:
                 # Radio was already mounted, scripts_dir is already set
                 self.log("Skipping mount wait (radio already mounted)")
             
-            if not self.is_updating:
-                return
-            
             # Step 5: Download suite from GitHub
             self.set_status("Downloading suite from GitHub...")
             
@@ -719,10 +1053,65 @@ class UpdaterGUI:
             if not self.is_updating:
                 return
             
-            # Step 8: Copy files to radio
+            # Step 8: Stage files locally (apply steps before radio copy)
+            lang = self.get_deploy_language()
+            self.set_status("Staging files...")
+            self.log(f"Staging files for language: {lang}")
+
+            stage_dir = os.path.join(temp_dir, "stage")
+            staged_out_dir = os.path.join(stage_dir, TARGET_NAME)
+
+            if os.path.isdir(staged_out_dir):
+                self.remove_tree_with_progress(staged_out_dir)
+
+            if not self.copy_tree_with_progress(src_dir, staged_out_dir):
+                self.log("⚠ Staging cancelled")
+                return
+
+            if not self.is_updating:
+                return
+
+            # Step 9: Run deploy steps in-process (i18n + soundpack)
+            self.set_status("Applying deploy steps...")
+            self.log("Applying i18n and soundpack steps...")
+
+            if self.selected_version.get() in (VERSION_RELEASE, VERSION_SNAPSHOT):
+                chosen_lang = self.choose_language_for_release(staged_out_dir, lang)
+                if chosen_lang != lang:
+                    self.log(f"  Multiple languages detected; using {chosen_lang}")
+                    lang = chosen_lang
+
+            i18n_json = None
+            for base_path in [
+                os.path.join(staged_out_dir, "i18n", f"{lang}.json"),
+                os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{lang}.json"),
+                os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{lang}.json"),
+            ]:
+                if os.path.isfile(base_path):
+                    i18n_json = base_path
+                    break
+
+            if i18n_json:
+                self.log(f"  Resolving i18n tags using {os.path.basename(i18n_json)}")
+                self.resolve_i18n_tags_in_tree(i18n_json, staged_out_dir)
+            else:
+                self.log("⚠ i18n JSON not found; skipping i18n resolution")
+
+            soundpack_src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", lang)
+            soundpack_dst = os.path.join(staged_out_dir, "audio", lang)
+            if os.path.isdir(soundpack_src):
+                self.log(f"  Copying soundpack: {lang}")
+                self.copy_tree_update_only(soundpack_src, soundpack_dst, label="Soundpack")
+            else:
+                self.log(f"⚠ Soundpack not found at {soundpack_src}; skipping")
+
+            if not self.is_updating:
+                return
+
+            # Step 10: Copy files to radio
             dest_dir = os.path.join(scripts_dir, TARGET_NAME)
             self.set_status("Copying files to radio...")
-            self.log("Copying new files to radio...")
+            self.log("Copying staged files to radio...")
             
             # Remove old installation
             if os.path.isdir(dest_dir):
@@ -736,7 +1125,7 @@ class UpdaterGUI:
             
             # Copy new files
             self.log("  Copying new files...")
-            if not self.copy_tree_with_progress(src_dir, dest_dir):
+            if not self.copy_tree_with_progress(staged_out_dir, dest_dir):
                 self.log("⚠ Copy cancelled")
                 return
             
@@ -744,63 +1133,7 @@ class UpdaterGUI:
             
             if not self.is_updating:
                 return
-            
-            # Step 9: Compile i18n translations
-            self.set_status("Compiling translations...")
-            self.log("Compiling i18n translations...")
-            self.set_progress_mode('indeterminate')
-            
-            try:
-                # Find i18n JSON file in the extracted repo (try multiple locations)
-                i18n_json = None
-                for base_path in [
-                    os.path.join(repo_dir, "src", TARGET_NAME, "i18n", "en.json"),
-                    os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", "en.json"),
-                    os.path.join(repo_dir, TARGET_NAME, "i18n", "en.json"),
-                ]:
-                    if os.path.isfile(base_path):
-                        i18n_json = base_path
-                        break
-                
-                resolver_script = os.path.join(repo_dir, ".vscode", "scripts", "resolve_i18n_tags.py")
-                
-                if i18n_json and os.path.isfile(resolver_script):
-                    self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
-                    self.log(f"  Running resolver script...")
-                    
-                    result = subprocess.run(
-                        [sys.executable, resolver_script, "--json", i18n_json, "--root", dest_dir],
-                        capture_output=True,
-                        text=True,
-                        timeout=60
-                    )
-                    
-                    if result.returncode == 0:
-                        self.log("✓ i18n translations compiled successfully")
-                        if result.stdout:
-                            for line in result.stdout.strip().split('\n'):
-                                if line.strip():
-                                    self.log(f"  {line}")
-                    else:
-                        self.log(f"⚠ i18n compilation failed (exit code {result.returncode})")
-                        if result.stderr:
-                            for line in result.stderr.strip().split('\n')[:5]:  # Show first 5 error lines
-                                if line.strip():
-                                    self.log(f"  {line}")
-                else:
-                    self.log("⚠ i18n files not found, skipping translation compilation")
-                    if not os.path.isfile(i18n_json):
-                        self.log(f"  Missing: {i18n_json}")
-                    if not os.path.isfile(resolver_script):
-                        self.log(f"  Missing: {resolver_script}")
-            except subprocess.TimeoutExpired:
-                self.log("⚠ i18n compilation timed out")
-            except Exception as e:
-                self.log(f"⚠ i18n compilation error: {e}")
-            
-            if not self.is_updating:
-                return
-            
+
             # Step 11: Cleanup
             self.set_status("Cleaning up...")
             self.log("Cleaning up temporary files...")
