@@ -114,6 +114,7 @@ end
 
 local function _flushInvalidatesRespectingBudget()
     local now = os.clock()
+    if not dashboard._pendingInvalidates then return false end
     if (now - dashboard._lastInvalidateTime) < dashboard._minPaintInterval then return false end
 
     if #dashboard._pendingInvalidates == 0 then return false end
