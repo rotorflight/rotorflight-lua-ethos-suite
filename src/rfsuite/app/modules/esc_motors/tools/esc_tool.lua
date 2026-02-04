@@ -33,6 +33,22 @@ local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
+
+-- Update the model/version header without creating overlapping widgets.
+-- Ethos keeps old widgets; re-adding at the same position can overlay text (e.g. "UNKNOWN" over the real value).
+local function setModelHeaderText(text)
+    if not modelLine then return end
+    if not modelText then
+        modelText = form.addStaticText(modelLine, modelTextPos, text or "")
+        return
+    end
+    local ok = pcall(function() modelText:value(text or "") end)
+    if not ok then
+        -- Fallback for older widget types: recreate once
+        modelText = form.addStaticText(modelLine, modelTextPos, text or "")
+    end
+end
+
 local mspBusy = false
 
 local function getESCDetails()
@@ -222,7 +238,7 @@ local function openPage(pidx, title, script)
                 paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["esctool"] = pidx
-                    rfsuite.app.ui.progressDisplay()
+                    rfsuite.app.ui.progressDisplay(nil,nil,false)
 
                     rfsuite.app.ui.openPage(pidx, title, "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script)
 
@@ -260,7 +276,7 @@ local function wakeup()
         if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
             local text = escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
             rfsuite.escHeaderLineText = text
-            modelText = form.addStaticText(modelLine, modelTextPos, text)
+            setModelHeaderText(text)
         end
 
         for i, v in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
@@ -283,7 +299,7 @@ local function wakeup()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true
 
-        if ESC and ESC.powerCycle ~= true then modelText = form.addStaticText(modelLine, modelTextPos, "@i18n(app.modules.esc_tools.unknown)@") end
+        if ESC and ESC.powerCycle ~= true then setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@") end
 
         if ESC and ESC.powerCycle == true then showPowerCycleLoader = true end
 
@@ -302,7 +318,7 @@ local function wakeup()
 
             if powercycleLoaderCounter >= 100 then
                 powercycleLoader:close()
-                modelText = form.addStaticText(modelLine, modelTextPos, "@i18n(app.modules.esc_tools.unknown)@")
+                setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@")
                 showPowerCycleLoaderInProgress = false
                 rfsuite.app.triggers.disableRssiTimeout = false
                 showPowerCycleLoader = false
