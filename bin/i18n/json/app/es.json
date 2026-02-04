@@ -21,7 +21,7 @@
   },
   "navigation_menu": {
     "english": "MENU",
-    "translation": "Menú",
+    "translation": "Atrás",
     "needs_translation": false
   },
   "menu_section_hardware": {
@@ -1591,7 +1591,7 @@
         "translation": "Alabeo",
         "needs_translation": false
       },
-      "help_p5": {
+      "help_p4": {
         "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
         "translation": "Prueba & Ajuste: Vuele, observe, y afine hasta la mejor performance en condiciones reales.",
         "needs_translation": false
@@ -1602,8 +1602,8 @@
         "needs_translation": false
       },
       "f": {
-        "english": "F",
-        "translation": "F",
+        "english": "FF",
+        "translation": "FF",
         "needs_translation": false
       },
       "name": {
@@ -1624,11 +1624,6 @@
       "b": {
         "english": "B",
         "translation": "B",
-        "needs_translation": false
-      },
-      "help_p4": {
-        "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-        "translation": "Ganancia Detención Cola (Horaria CW/Antihoraria CCW): Ajuste separadamente para detenciones limpias, sin rebotes, en ambos sentidos.",
         "needs_translation": false
       },
       "help_p3": {
@@ -2119,8 +2114,8 @@
         "needs_translation": false
       },
       "f": {
-        "english": "F",
-        "translation": "F",
+        "english": "FF",
+        "translation": "FF",
         "needs_translation": false
       },
       "name": {

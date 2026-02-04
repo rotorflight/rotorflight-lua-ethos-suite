@@ -21,7 +21,7 @@
   },
   "navigation_menu": {
     "english": "MENU",
-    "translation": "MENU",
+    "translation": "Terug",
     "needs_translation": false
   },
   "menu_section_hardware": {
@@ -1593,8 +1593,8 @@
       },
       "help_p5": {
         "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
-        "translation": "Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n",
-        "needs_translation": false
+        "translation": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
+        "needs_translation": true
       },
       "p": {
         "english": "P",
@@ -1602,8 +1602,8 @@
         "needs_translation": false
       },
       "f": {
-        "english": "F",
-        "translation": "F",
+        "english": "FF",
+        "translation": "FF",
         "needs_translation": false
       },
       "name": {
@@ -1628,7 +1628,7 @@
       },
       "help_p4": {
         "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-        "translation": "Tail Stop Gain (CW/CCW): Afzonderlijk instelbaar voor een zuivere stop in beide richtingen.",
+        "translation": "Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n",
         "needs_translation": false
       },
       "help_p3": {
@@ -2119,8 +2119,8 @@
         "needs_translation": false
       },
       "f": {
-        "english": "F",
-        "translation": "F",
+        "english": "FF",
+        "translation": "FF",
         "needs_translation": false
       },
       "name": {

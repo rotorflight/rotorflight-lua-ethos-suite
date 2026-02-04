@@ -4160,9 +4160,9 @@
           "translation": "D"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "help_p1": {
           "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
@@ -4182,12 +4182,12 @@
         "help_p4": {
           "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
           "needs_translation": false,
-          "translation": "Tail Stop Gain (CW/CCW): Afzonderlijk instelbaar voor een zuivere stop in beide richtingen."
+          "translation": "Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n"
         },
         "help_p5": {
           "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
-          "needs_translation": false,
-          "translation": "Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n"
+          "needs_translation": true,
+          "translation": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions."
         },
         "i": {
           "english": "I",
@@ -4416,9 +4416,9 @@
           "translation": "Dyn. Min Gas"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "fallback_drop": {
           "english": "Thr. Fallback drop",
@@ -6579,7 +6579,7 @@
     "navigation_menu": {
       "english": "MENU",
       "needs_translation": false,
-      "translation": "MENU"
+      "translation": "Terug"
     },
     "navigation_reload": {
       "english": "RELOAD",
