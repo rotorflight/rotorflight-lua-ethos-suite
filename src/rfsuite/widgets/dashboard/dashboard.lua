@@ -1428,6 +1428,7 @@ end
 function dashboard.listThemes()
     local themes = {}
     local num = 0
+    if not utils then return themes end
 
     local function scanThemes(basePath, sourceType)
         if not basePath or basePath == "" then return end
