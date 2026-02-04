@@ -12,6 +12,13 @@ local config = arg[1]
 local preferences = rfsuite.preferences
 local utils = rfsuite.utils
 local tasks = rfsuite.tasks
+local apiCore
+
+local function getApiCore()
+    if apiCore then return apiCore end
+    apiCore = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+    return apiCore
+end
 
 function ui.progressDisplay(title, message, speed)
 
@@ -1884,7 +1891,21 @@ function ui.saveSettings()
             API.setValue(k, v)
         end
 
-        API.write()
+        local payload = nil
+        if app.Page.preSavePayload and payloadStructure then
+            local core = getApiCore()
+            if core and core.buildWritePayload then
+                payload = core.buildWritePayload(apiNAME, payloadData, payloadStructure, false)
+                local adjusted = app.Page.preSavePayload(payload)
+                if adjusted ~= nil then payload = adjusted end
+            end
+        end
+
+        if payload then
+            API.write(payload)
+        else
+            API.write()
+        end
 
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
 
