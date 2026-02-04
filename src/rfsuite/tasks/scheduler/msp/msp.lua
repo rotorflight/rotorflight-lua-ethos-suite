@@ -1,6 +1,6 @@
 --[[
   Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -82,7 +82,7 @@ local delayPending   = false
 -- Main MSP poll loop (called by script wakeups)
 function msp.wakeup()
 
-    -- enable loging
+    -- enable logging
     -- rfsuite.tasks.msp.enableProtoLog(true)
 
     -- Nothing to do if no telemetry sensor
