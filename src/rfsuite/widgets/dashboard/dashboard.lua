@@ -36,7 +36,6 @@ local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
 
 local loadedStateModules = {}
 
-local wakeupScheduler = 0
 
 local lastModelPath = model.path()
 local lastModelPathCheckAt = 0
@@ -920,7 +919,6 @@ function dashboard.reload_active_theme_only(force)
     firstWakeup = true
     lcd.invalidate()
 
-    wakeupScheduler = 0
     dashboard.boxRects = {}
     objectsThreadedWakeupCount = 0
     objectWakeupIndex = 1
@@ -1025,7 +1023,6 @@ function dashboard.create()
 
     firstWakeup = true
     firstWakeupCustomTheme = true
-    wakeupScheduler = 0
     objectWakeupIndex = 1
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
