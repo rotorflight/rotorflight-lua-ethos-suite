@@ -1293,7 +1293,7 @@ function dashboard.wakeup_protected(widget)
 
     if #dashboard.boxRects > 0 then
 
-        for _, idx in ipairs(scheduledBoxIndices) do
+        for _, idx in ipairs(scheduledBoxIndices or {}) do
             local rect = dashboard.boxRects[idx]
             if rect and rect.box then
                 local obj = dashboard.objectsByType[rect.box.type]
