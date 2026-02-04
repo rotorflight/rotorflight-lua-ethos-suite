@@ -1222,6 +1222,8 @@ function dashboard.wakeup_protected(widget)
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
+    if not dashboard.utils then return end
+
     local W, H = lcd.getWindowSize()
 
     dashboard.boxRects = dashboard.boxRects or {}
