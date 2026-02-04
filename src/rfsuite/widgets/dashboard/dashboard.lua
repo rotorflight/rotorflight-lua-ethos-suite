@@ -916,6 +916,7 @@ local function reload_state_only(state)
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
     dashboard.boxRects = {}
+    dashboard.selectedBoxIndex = nil
     lcd.invalidate()
 end
 
