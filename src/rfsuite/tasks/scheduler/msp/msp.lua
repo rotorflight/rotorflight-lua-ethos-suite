@@ -1,6 +1,6 @@
 --[[
   Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -10,9 +10,6 @@ local rfsuite = require("rfsuite")
 local os_clock = os.clock
 local utils = rfsuite.utils
 local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
-
-local arg = {...}
-local config = arg[1]
 
 local msp = {}
 
@@ -60,6 +57,7 @@ msp.mspQueue.drainMaxPolls = 5                 -- Max polls to wait during drain
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
 msp.api       = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
 msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
+-- Snapshot protocol version at load; later changes should call setProtocolVersion.
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
 
 -- Expose protocol logger
@@ -82,7 +80,7 @@ local delayPending   = false
 -- Main MSP poll loop (called by script wakeups)
 function msp.wakeup()
 
-    -- enable loging
+    -- enable logging
     -- rfsuite.tasks.msp.enableProtoLog(true)
 
     -- Nothing to do if no telemetry sensor
@@ -160,7 +158,8 @@ function msp.reset()
     msp.onConnectChecksInit = true
     delayStartTime = nil
     delayPending = false
-    if transport and transport.reset then transport.reset() end
+    local activeTransport = msp.protocolTransports[msp.protocol.mspProtocol]
+    if activeTransport and activeTransport.reset then activeTransport.reset() end
 end
 
 return msp

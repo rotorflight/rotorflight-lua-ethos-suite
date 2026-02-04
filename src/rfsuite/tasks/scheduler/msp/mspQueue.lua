@@ -1,6 +1,6 @@
---[[
+﻿--[[
   Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -10,6 +10,7 @@ local rfsuite = require("rfsuite")
 local os_clock = os.clock
 local utils = rfsuite.utils
 local math_max = math.max
+local DEFAULT_RETRY_BACKOFF_SECONDS = 1
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
@@ -102,7 +103,7 @@ function MspQueueController.new(opts)
     self.timeout = opts.timeout or 2.0
 
     -- Minimum seconds between re-sends of the same message (prevents pipelined retries)
-    self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS
+    self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS
 
     -- After a successful reply, briefly poll to drain any duplicate/late replies for the same cmd
     -- (common with slow/bursty links when retries were attempted).
@@ -198,10 +199,11 @@ function MspQueueController:processQueue()
     utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP    
 
     local cmd, buf, err
+    -- Minimum spacing between send attempts (protocol can override).
     local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.25
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
-    if not system:getVersion().simulation then
+    if not system.getVersion().simulation then
         -- Real MSP: send once, then wait; only resend after backoff/timeout
         if self.currentMessage then
             local now2 = os_clock()
@@ -210,7 +212,7 @@ function MspQueueController:processQueue()
             local canSendByInterval = (not self.lastTimeCommandSent) or ((self.lastTimeCommandSent + lastTimeInterval) < now2)
 
             -- Retry/backoff gate: we only resend if we've either never sent, or we've waited long enough.
-            local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or 1)
+            local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS)
             local canSendByBackoff = (self.retryCount == 0) or ((self.lastTimeCommandSent and (now2 - self.lastTimeCommandSent) >= backoff) or false)
 
             if canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
@@ -227,7 +229,7 @@ function MspQueueController:processQueue()
             end
         end
 
-        -- Pump TX 
+        -- Pump TX queue.
         rfsuite.tasks.msp.common.mspProcessTxQ()
 
         -- Poll for reply
@@ -243,7 +245,7 @@ function MspQueueController:processQueue()
             return
         end
     else
-        -- Simulator mode: use provided simulatorResponse
+        -- Simulator mode: use provided simulatorResponse.
         if not self.currentMessage.simulatorResponse then
             if LOG_ENABLED_MSP() then utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
@@ -291,13 +293,6 @@ function MspQueueController:processQueue()
                     rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
                 end
                 local logPayload
-                if rwState == "READ" then
-                    logPayload = buf
-                else
-                    logPayload = self.currentMessage.payload
-                end
-
-                local logPayload
                 if rwState == "WRITE" then
                     logPayload = self.currentMessage.payload
                 else
@@ -320,7 +315,7 @@ function MspQueueController:processQueue()
         end
 
         -- After a successful completion, briefly drain duplicate/late replies for this cmd
-        if not system:getVersion().simulation then
+        if not system.getVersion().simulation then
             drainAfterSuccess(self, self.currentMessage.command)
         end
 
@@ -334,7 +329,7 @@ function MspQueueController:processQueue()
         end        
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
 
-    -- Too many retries → reset
+    -- Too many retries - reset
     elseif self.retryCount > self.maxRetries then
         local msg = self.currentMessage
         self:clear()
@@ -398,3 +393,4 @@ function MspQueueController:pendingByteCost()
 end
 
 return MspQueueController.new()
+
