@@ -51,7 +51,7 @@
   },
   "altitude": {
     "english": "Altitude",
-    "translation": "Hoehe",
+    "translation": "Höhe",
     "needs_translation": false
   },
   "voltage": {
@@ -96,7 +96,7 @@
   },
   "link": {
     "english": "Link Quality",
-    "translation": "Verbindungsqualitaet",
+    "translation": "Verbindungsqualität",
     "needs_translation": false
   },
   "adj_val": {
