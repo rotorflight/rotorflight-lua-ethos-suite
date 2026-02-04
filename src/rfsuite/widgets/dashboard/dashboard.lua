@@ -1235,6 +1235,7 @@ function dashboard.wakeup_protected(widget)
 
     dashboard.boxRects = dashboard.boxRects or {}
     dashboard.objectsByType = dashboard.objectsByType or {}
+    scheduledBoxIndices = scheduledBoxIndices or {}
 
     dashboard._lastWH = dashboard._lastWH or {w = nil, h = nil, supported = nil}
 
