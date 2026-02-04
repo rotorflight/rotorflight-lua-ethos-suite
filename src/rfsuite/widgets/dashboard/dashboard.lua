@@ -995,6 +995,7 @@ function dashboard.reload_themes(force)
     dashboard._hg_cycles = dashboard._hg_cycles_required
 
     dashboard._forceFullRepaint = true
+    dashboard.selectedBoxIndex = nil
     lastBoxRectsCount = 0
     lastLoadedBoxCount = 0
     objectWakeupIndex = 1
