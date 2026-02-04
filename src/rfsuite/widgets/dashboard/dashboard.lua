@@ -1319,7 +1319,8 @@ function dashboard.wakeup_protected(widget)
         callStateFunc("wakeup", widget)
     end
 
-    if #dashboard.boxRects > 0 then
+    local rectCount = #(dashboard.boxRects or {})
+    if rectCount > 0 then
 
         for _, idx in ipairs(scheduledBoxIndices or {}) do
             local rect = dashboard.boxRects[idx]
@@ -1367,7 +1368,7 @@ function dashboard.wakeup_protected(widget)
                         if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
                     end
                 end
-                objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
+                objectWakeupIndex = (rectCount > 0) and ((objectWakeupIndex % rectCount) + 1) or 1
             end
 
         end
