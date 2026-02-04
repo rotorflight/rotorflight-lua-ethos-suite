@@ -8,7 +8,7 @@ local rfsuite = require("rfsuite")
 local utils = rfsuite.utils
 local config = rfsuite.config
 
--- Load up event tables (no lazy loading)
+-- Load event tables (no lazy loading)
 local events = {}
 
 events.onconnect = loadfile("tasks/events/onconnect/tasks.lua")()
@@ -87,18 +87,18 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm
 
--- Reuse source descriptor tables to avoid allocations in hot paths
+-- Reuse source descriptor tables to avoid allocations in hot paths.
 local SRC_SPORT = {appId = 0xF101}
 local SRC_CRSF  = {crsfId = 0x14, subIdStart = 0, subIdEnd = 1}
 local SRC_TLM_ACTIVE = {category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE}
 
 tasks.profile = {enabled = false, dumpInterval = 5, minDuration = 0, include = nil, exclude = nil, onDump = nil}
 
--- Reused tables to avoid per-cycle allocations (reduces GC churn)
+-- Reused tables to avoid per-cycle allocations (reduces GC churn).
 local normalEligibleTasks = {}
 local mustRunTasks = {}
 
--- Hoist comparator (avoid allocating closure each cycle)
+-- Hoist comparator (avoid allocating closure each cycle).
 local SORT_BY_LAST_RUN_ASC = function(a, b) return a.last_run < b.last_run end
 
 local function profWanted(name)
@@ -116,6 +116,7 @@ function tasks.setRateMultiplier(mult)
     for _, task in ipairs(tasksList) do
         local base = task.baseInterval or task.interval or 1
         local j = task.jitter or 0
+        -- Recompute scheduled interval from base + per-task jitter.
         task.interval = (base * mult) + j
     end
     utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
@@ -147,6 +148,7 @@ function tasks.isTaskActive(name)
 end
 
 local function taskOffset(name, interval)
+    -- Hash + jitter to distribute initial task phases and avoid sync spikes.
     local hash = 0
     for i = 1, #name do hash = (hash * 31 + name:byte(i)) % 100000 end
     local base = (hash % (interval * 1000)) / 1000
@@ -227,6 +229,7 @@ local function clearSessionAndQueue()
 
     local now = os.clock()
 
+    -- Tear down session state, MSP queues, and reset per-connection edge caches.
     -- Reset edge caches
     lastArmedState = false
     lastFlightModeValue = nil
@@ -358,7 +361,7 @@ function tasks.telemetryCheckScheduler()
     end
 
     -- Link is up. Start (or continue) a connect attempt timer until isConnected becomes true.
-    -- If we exceed the deadline, teardown and retry.
+    -- If we exceed the deadline, teardown and retry (with cooldown).
     if not rfsuite.session.isConnected then
         if not connectAttemptStartedAt then
             connectAttemptStartedAt = now
@@ -509,6 +512,7 @@ end
 local function overdue_seconds(task, now, grace_s) return (now - task.last_run) - (task.interval + (grace_s or 0)) end
 
 local function canRunTask(task, now)
+    -- Determine eligibility based on timing, priority class, and link/connection state.
     local hf = task.interval < SCHED_DT
     local grace = hf and OVERDUE_TOL or (task.interval * 0.25)
 
@@ -567,6 +571,7 @@ local function runSpreadTasks(now)
 
     local loopCpu = 0
 
+    -- Split overdue tasks into "must run" vs "normal" to avoid starvation.
     -- Clear reused lists (no new tables)
     for i = #normalEligibleTasks, 1, -1 do normalEligibleTasks[i] = nil end
     for i = #mustRunTasks, 1, -1 do mustRunTasks[i] = nil end
@@ -594,6 +599,7 @@ local function runSpreadTasks(now)
     if nM > 1 then table.sort(mustRunTasks, SORT_BY_LAST_RUN_ASC) end
     if nN > 1 then table.sort(normalEligibleTasks, SORT_BY_LAST_RUN_ASC) end
 
+    -- Quota of spread tasks to run this cycle (scaled by scheduler percentage).
     tasksPerCycle = math.ceil(nonSpreadCount * taskSchedulerPercentage)
 
     for i = 1, #mustRunTasks do
@@ -706,9 +712,9 @@ function tasks.wakeup_protected()
 
     local cycleFlip = schedulerTick % 2
 
-    -- msp boost mode.  
-    --- as soon as we have any msp activity, prioritize msp and callback tasks only.
-    -- this ensures that the msp queue is drained as fast as possible to reduce latency.
+    -- MSP boost mode:
+    -- As soon as we have any MSP activity, prioritize MSP and callback tasks only.
+    -- This ensures that the MSP queue is drained as fast as possible to reduce latency.
     if rfsuite.session.mspBusy then
             if tasks.msp then
                 tasks.msp.wakeup()
@@ -717,10 +723,9 @@ function tasks.wakeup_protected()
                 tasks.callback.wakeup()
             end
     else
-    -- bulk task processing split across two cycles to reduce per-cycle load.    
-    -- this does include msp and callback so they are guaranteed to run regardless
-    -- essentially this starts msp.. it then boosts.. then drops back to this cycle after 
-    -- msp is done.
+    -- Bulk task processing split across two cycles to reduce per-cycle load.
+    -- This includes MSP and callback so they are guaranteed to run regardless.
+    -- The cycle starts MSP; it then boosts, then drops back after MSP is done.
         if cycleFlip == 0 then
             loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
         else
