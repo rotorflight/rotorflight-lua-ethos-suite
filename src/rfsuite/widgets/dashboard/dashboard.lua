@@ -223,8 +223,10 @@ end
 
 local function forceInvalidateAllObjects()
     for _, rect in ipairs(dashboard.boxRects) do
-        local obj = dashboard.objectsByType[rect.box.type]
-        if obj and obj.dirty and obj.dirty(rect.box) then _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h) end
+        if rect and rect.box then
+            local obj = dashboard.objectsByType[rect.box.type]
+            if obj and obj.dirty and obj.dirty(rect.box) then _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h) end
+        end
     end
     _flushInvalidatesRespectingBudget()
 end
