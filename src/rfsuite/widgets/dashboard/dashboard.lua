@@ -1150,7 +1150,8 @@ function dashboard.event(widget, category, value, x, y)
                 return true
             else
                 local idx = dashboard.selectedBoxIndex
-                local rect = dashboard.boxRects[idx]
+                local rects = dashboard.boxRects or {}
+                local rect = rects[idx]
                 if rect and rect.box and rect.box.onpress then
                     rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
                     system.killEvents(97)
