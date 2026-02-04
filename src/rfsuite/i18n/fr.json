@@ -4180,11 +4180,6 @@
           "translation": "Gains P/I/D de queue: Augmentez P jusqu'a un leger tremblement en funnels, puis reduisez legerement. Montez I jusqu'a un maintien ferme de la queue dans les manoeuvres rapides (trop eleve provoque une oscillation lente). Ajustez D pour des arrets en douceur. Plus eleve pour les servos lents et plus faible pour des servos rapide"
         },
         "help_p4": {
-          "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-          "needs_translation": false,
-          "translation": "Gain d'arret de la queue (Horaire/Anti-horaire): Ajustez separement pour des arrets nets et sans rebonds dans les deux directions."
-        },
-        "help_p5": {
           "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
           "needs_translation": false,
           "translation": "Tester & Ajuster : Volez, observez et affinez pour obtenir les meilleures performances dans des conditions reelles."
@@ -6577,9 +6572,9 @@
       "translation": "?"
     },
     "navigation_menu": {
-      "english": "MENU",
+      "english": "BACK",
       "needs_translation": false,
-      "translation": "MENU"
+      "translation": "Retour"
     },
     "navigation_reload": {
       "english": "RELOAD",
