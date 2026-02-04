@@ -14,6 +14,7 @@ function battery.wakeup()
     if rfsuite.session.apiVersion == nil then return end
 
     if rfsuite.session.mspBusy then return end
+    if rfsuite.tasks.msp.mspQueue:isProcessed() == false then return end
 
     if (rfsuite.session.batteryConfig == nil) and mspCallMade == false then
         mspCallMade = true
@@ -62,6 +63,12 @@ function battery.wakeup()
             
 
         end)
+
+        API.setErrorHandler(function(self, err)
+            rfsuite.utils.log("Failed to read battery config via MSP: " .. err, "info")
+            mspCallMade = false
+        end)
+
         API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
         API.read()
     end

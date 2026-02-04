@@ -6,3 +6,5 @@ src/rfsuite.zip
 *subprocess_conout.cpython-312.*
 simulator/*
 deploy.json
+*.pyc
+*.pyc

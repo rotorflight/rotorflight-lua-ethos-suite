@@ -705,16 +705,13 @@ function tasks.wakeup_protected()
 
     local cycleFlip = schedulerTick % 2
 
-    if ((rfsuite.app and rfsuite.app.guiIsRunning and not rfsuite.app.escPowerCycleLoader) or not rfsuite.session.isConnected) and rfsuite.session.mspBusy then
-        if cycleFlip == 0 then
+    if rfsuite.session.mspBusy then
             if tasks.msp then
                 tasks.msp.wakeup()
             end
-        else
             if tasks.callback then
                 tasks.callback.wakeup()
             end
-        end
     else
         if cycleFlip == 0 then
             loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
