@@ -1,6 +1,6 @@
---[[
+﻿--[[
   Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 â€” https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -322,7 +322,7 @@ local function computeObjectSchedulerPercentage(count)
     if count < 0 then count = 0 end
     if count > 10 then count = 10 end
 
-    -- linear slide from 1.0 → 0.5 over 0..1
+    -- linear slide from 1.0 -> 0.7 over 0..1
     -- adjust ratio to suit performance needs
     local ratio = 0.3
     return 1.0 - (count / 10) * ratio
@@ -1490,3 +1490,4 @@ dashboard.title = false
 dashboard.isSliding = function() return isSliding end
 
 return dashboard
+
