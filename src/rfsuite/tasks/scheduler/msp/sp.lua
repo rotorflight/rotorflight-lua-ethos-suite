@@ -1,6 +1,6 @@
---[[
+﻿--[[
   Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 â€” https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -32,7 +32,7 @@ local function _isInboundReply(sensorId, frameId)
        and frameId == REPLY_FRAME_ID
 end
 
--- Convert a 16-bit dataId + 32‑bit value into 6 bytes as per FrSky subframe format
+-- Convert a 16-bit dataId + 32-bit value into 6 bytes as per FrSky subframe format
 local function _map_subframe(dataId, value)
     return {
         dataId & 0xFF,
@@ -66,11 +66,11 @@ function transport.sportTelemetryPop()
     return frame:physId(), frame:primId(), frame:appId(), frame:value()
 end
 
--- MSP send function: Pack the payload into a FrSky DATAID + 32‑bit VALUE frame
+-- MSP send function: Pack the payload into a FrSky DATAID + 32-bit VALUE frame
 transport.mspSend = function(payload)
     -- First two bytes form dataId
     local dataId = (payload[1] or 0) | ((payload[2] or 0) << 8)
-    -- Next four bytes form 32‑bit value
+    -- Next four bytes form 32-bit value
     local v3, v4, v5, v6 = payload[3] or 0, payload[4] or 0, payload[5] or 0, payload[6] or 0
     local value = v3 | (v4 << 8) | (v5 << 16) | (v6 << 24)
     return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
@@ -137,3 +137,4 @@ function transport.reset()
 end
 
 return transport
+

@@ -1,6 +1,6 @@
---[[
+﻿--[[
   Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -34,7 +34,7 @@ local mspRxError    = false          -- Error flag from remote
 local mspRxSize     = 0              -- Expected RX payload size
 local mspRxCRC      = 0              -- Accumulated CRC for V1
 local mspRxReq      = 0              -- Command ID of reply
-local mspStarted    = false          -- True when in middle of multi‑frame RX
+local mspStarted    = false          -- True when in middle of multi-frame RX
 local mspLastReq    = 0              -- Command ID we last sent
 local mspTxBuf      = {}             -- Outgoing payload buffer
 local mspTxIdx      = 1              -- Write pointer into TX buffer
@@ -55,7 +55,7 @@ local function pollBudget()
         cap_seconds       = 0.35 -- Hard max
     }
 
-    -- Protocol‑specific throughput
+    -- Protocol-specific throughput
     local proto   = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
     -- Default poll budget: keep this modest to reduce instruction burn on the radio.
     -- Large/slow payloads still get additional budget via the boost logic below.
@@ -100,7 +100,7 @@ local function mspClearTxBuf()
     mspTxCRC = 0
 end
 
--- Process TX buffer into protocol‑sized packets
+-- Process TX buffer into protocol-sized packets
 local function mspProcessTxQ()
     if #mspTxBuf == 0 then return false end
 
@@ -251,15 +251,15 @@ end
 local function mspPollReply()
     -- NOTE: This function is called from the MSP queue wakeup. Historically it could "block"
     -- (spin in a loop) for up to mspPollBudget seconds, which is expensive on Ethos.
-    -- We now support a non‑blocking "slice" mode: poll a small amount each wakeup and
-    -- complete multi‑packet replies over multiple frames.
+    -- We now support a non-blocking "slice" mode: poll a small amount each wakeup and
+    -- complete multi-packet replies over multiple frames.
     local protoCfg = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
 
     local budget = pollBudget() or 0.1
     local now = os.clock
 
-    -- Non‑blocking slice mode (recommended for S.Port).
-    -- Keeps CPU load smooth by limiting per‑wakeup work.
+    -- Non-blocking slice mode (recommended for S.Port).
+    -- Keeps CPU load smooth by limiting per-wakeup work.
     local nonBlocking = (protoCfg.mspNonBlocking == true)
     local sliceSeconds = protoCfg.mspPollSliceSeconds or 0.006
     local slicePolls   = protoCfg.mspPollSlicePolls or 4
@@ -309,7 +309,7 @@ local function mspPollReply()
         if pkt == nil then
             nilPolls = nilPolls + 1
 
-            -- “In-flight” if we’re mid frame OR we have an outstanding request we’re waiting on.
+            -- "In-flight" if we're mid frame OR we have an outstanding request we're waiting on.
             -- (mspStarted is set by _receivedReply() once it sees a valid start for our last request.)
             local inflight = mspStarted or (mspLastReq ~= 0)
 
@@ -347,3 +347,4 @@ return {
     mspPollReply       = mspPollReply,
     mspClearTxBuf      = mspClearTxBuf
 }
+
