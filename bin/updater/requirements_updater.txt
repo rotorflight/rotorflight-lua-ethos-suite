@@ -1,0 +1,9 @@
+# Requirements for Rotorflight Lua Ethos Suite Radio Updater
+# Install with: pip install -r requirements_updater.txt
+
+# USB HID communication with Ethos radio
+hidapi>=0.12.0
+
+# Windows-specific: Drive detection and management
+# Only needed on Windows, but safe to install on other platforms
+pywin32>=305; sys_platform == 'win32'
