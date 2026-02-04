@@ -1396,8 +1396,8 @@ function dashboard.listThemes()
 
                     local chunk = compile(initPath)
                     if chunk then
-                        local initTable = chunk()
-                        if initTable and type(initTable.name) == "string" then
+                        local ok, initTable = pcall(chunk)
+                        if ok and initTable and type(initTable.name) == "string" then
                             num = num + 1
                             themes[num] = {
                                 name = initTable.name,
