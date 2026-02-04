@@ -240,16 +240,17 @@ function dashboard.overlaystatic(x, y, w, h, txt)
         msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "@i18n(app.msg_loading)@"
     end
 
+    local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
     local opts = {}
-    if rfsuite.preferences.general.theme_loader == 0 then
+    if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
         opts.panelHeightRatio = 0.5
         opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
-    elseif rfsuite.preferences.general.theme_loader == 1 then
+    elseif themeLoader == 1 then
         opts.panelWidthRatio = 0.7
         opts.panelHeightRatio = 0.5
         opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
-    elseif rfsuite.preferences.general.theme_loader == 2 then
+    elseif themeLoader == 2 then
         opts.panelWidthRatio = 0.9
         opts.panelHeightRatio = 0.8
         opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
