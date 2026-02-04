@@ -1016,7 +1016,7 @@ local function callStateFunc(funcName, widget, paintFallback)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
-    if not tasks.active() then return nil end
+    if not tasks or not tasks.active or not tasks.active() then return nil end
 
     if type(module) == "table" and module.layout and funcName == "paint" then return module end
 
