@@ -540,31 +540,35 @@ function dashboard.renderLayout(widget, config)
     for i = #scheduledBoxIndices, 1, -1 do scheduledBoxIndices[i] = nil end
 
     for _, box in ipairs(boxes) do
-        local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
-        box.xOffset = xOffset
-        local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
-        if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
+        if box then
+            local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+            box.xOffset = xOffset
+            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+            if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
 
-        local rect = {x = x, y = y, w = w, h = h, box = box, isHeader = false}
-        table.insert(dashboard.boxRects, rect)
+            local rect = {x = x, y = y, w = w, h = h, box = box, isHeader = false}
+            table.insert(dashboard.boxRects, rect)
 
-        local rectIndex = #dashboard.boxRects
-        dashboard._objectDirty[rectIndex] = nil
+            local rectIndex = #dashboard.boxRects
+            dashboard._objectDirty[rectIndex] = nil
 
-        local obj = dashboard.objectsByType[box.type]
-        if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+            local obj = dashboard.objectsByType[box.type]
+            if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+        end
     end
 
     if isFullScreen then
         local headerGeoms = {}
         local rightmost_idx, rightmost_x = 1, 0
         for idx, box in ipairs(headerBoxes) do
-            local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
-            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
-            headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
-            if x > rightmost_x then
-                rightmost_idx = idx
-                rightmost_x = x
+            if box then
+                local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
+                local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
+                headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
+                if x > rightmost_x then
+                    rightmost_idx = idx
+                    rightmost_x = x
+                end
             end
         end
 
