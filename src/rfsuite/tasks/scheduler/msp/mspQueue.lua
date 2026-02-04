@@ -199,6 +199,7 @@ function MspQueueController:processQueue()
     utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP    
 
     local cmd, buf, err
+    -- Minimum spacing between send attempts (protocol can override).
     local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.25
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
@@ -228,7 +229,7 @@ function MspQueueController:processQueue()
             end
         end
 
-        -- Pump TX 
+        -- Pump TX queue.
         rfsuite.tasks.msp.common.mspProcessTxQ()
 
         -- Poll for reply
@@ -244,7 +245,7 @@ function MspQueueController:processQueue()
             return
         end
     else
-        -- Simulator mode: use provided simulatorResponse
+        -- Simulator mode: use provided simulatorResponse.
         if not self.currentMessage.simulatorResponse then
             if LOG_ENABLED_MSP() then utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
             self.currentMessage = nil
