@@ -6,7 +6,7 @@
   },
   "validate_sensors": {
     "english": "PLEASE CHECK SENSORS",
-    "translation": "BENOETIGTE SENSOREN NICHT VERFUEGBAR",
+    "translation": "BENÖTIGTE SENSOREN NICHT VERFÜGBAR",
     "needs_translation": false
   },
   "unsupported_resolution": {
@@ -46,17 +46,17 @@
   },
   "reset_flight": {
     "english": "Reset flight",
-    "translation": "Flug zuruecksetzen",
+    "translation": "Flug zurücksetzen",
     "needs_translation": false
   },
   "reset_flight_ask_title": {
     "english": "Reset flight",
-    "translation": "Flug zuruecksetzen",
+    "translation": "Flug zurücksetzen",
     "needs_translation": false
   },
   "reset_flight_ask_text": {
     "english": "Are you sure you want to reset the flight?",
-    "translation": "Sind Sie sicher, dass die den Flug zuruecksetzen moechten?",
+    "translation": "Sind Sie sicher, dass die den Flug zurücksetzen möchten?",
     "needs_translation": false
   },
   "voltage": {
@@ -141,7 +141,7 @@
   },
   "fuel_remaining": {
     "english": "Fuel Remaining",
-    "translation": "Verfuegbarer Kraftstoff",
+    "translation": "Verfügbarer Kraftstoff",
     "needs_translation": false
   },
   "min_volts_cell": {
@@ -171,7 +171,7 @@
   },
   "flights": {
     "english": "Flights",
-    "translation": "Fluege",
+    "translation": "Flüge",
     "needs_translation": false
   },
   "lq": {
@@ -251,12 +251,12 @@
   },
   "altitude": {
     "english": "Altitude",
-    "translation": "Hoehe",
+    "translation": "Höhe",
     "needs_translation": false
   },
   "altitude_max": {
     "english": "Altitude Max",
-    "translation": "Hoehe Max",
+    "translation": "Höhe Max",
     "needs_translation": false
   },
   "power": {
