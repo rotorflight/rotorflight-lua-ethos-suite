@@ -663,6 +663,7 @@ end
 
 function tasks.wakeup_protected()
 
+    -- Primary scheduler tick: runs task loops, event edges, and profiling.
     schedulerTick = (schedulerTick or 0) + 1
     tasks.heartbeat = os.clock()
     local t0 = tasks.heartbeat
@@ -670,9 +671,11 @@ function tasks.wakeup_protected()
 
     tasks.profile.enabled = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler
 
+    -- Abort early on unsupported Ethos versions to avoid undefined APIs.
     if ethosVersionGood == nil then ethosVersionGood = utils.ethosVersionAtLeast() end
     if not ethosVersionGood then return end
 
+    -- One-shot initialization handshake.
     if tasks.begin == true then
         tasks.begin = false
         tasks._justInitialized = true
@@ -680,11 +683,13 @@ function tasks.wakeup_protected()
         return
     end
 
+    -- Skip one tick after init to allow tasks to settle.
     if tasks._justInitialized then
         tasks._justInitialized = false
         return
     end
 
+    -- Progressive task loading to avoid long stalls on a single tick.
     if tasks._initState == "loadNextTask" then
         local key = tasks._initKeys[tasks._initIndex]
         if key then
@@ -706,6 +711,7 @@ function tasks.wakeup_protected()
         end
     end
 
+    -- Connection/telemetry state machine (may reset session/queues).
     tasks.telemetryCheckScheduler()
 
     local now = os.clock()
@@ -779,6 +785,7 @@ function tasks.wakeup_protected()
         eventMaybeWake("ondisconnect", events.ondisconnect, now)
     end
 
+    -- Periodic profile dump (if enabled).
     if tasks.profile.enabled then
         tasks._lastProfileDump = tasks._lastProfileDump or now
         local dumpEvery = tasks.profile.dumpInterval or 5
@@ -852,6 +859,7 @@ function tasks.event(widget, category, value, x, y) print("Event:", widget, cate
 
 function tasks.init()
 
+    -- Reset scheduler state and metadata; called once at task start.
     tasks.rateMultiplier = tasks.rateMultiplier or 1.0
     currentTelemetrySensor = nil
     tasksPerCycle = 1
@@ -898,6 +906,7 @@ function tasks.write() end
 
 function tasks.unload(name)
 
+    -- Remove a task from scheduler lists and release its module.
     local mod = tasks[name]
     if mod and mod.reset then mod.reset() end
 
@@ -933,6 +942,7 @@ end
 
 function tasks.load(name, meta)
 
+    -- Load a task module and register it in the scheduler lists.
     if not meta then
         utils.log("[scheduler] No manifest entry for task '" .. tostring(name) .. "'", "warn")
         return false
