@@ -936,6 +936,7 @@ function dashboard.reload_active_theme_only(force)
     lcd.invalidate()
 
     dashboard.boxRects = {}
+    dashboard.selectedBoxIndex = nil
     objectsThreadedWakeupCount = 0
     objectWakeupIndex = 1
     lastLoadedBoxCount = 0
