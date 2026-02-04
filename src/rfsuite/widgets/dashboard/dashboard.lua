@@ -311,6 +311,7 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     end
 
 
+    if not dashboard.loaders or not dashboard.loaders.logsLoader then return end
     dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
 end
 
