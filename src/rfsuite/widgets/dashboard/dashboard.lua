@@ -1130,7 +1130,7 @@ function dashboard.event(widget, category, value, x, y)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
-    if dashboard.selectedBoxIndex and (not dashboard.boxRects or dashboard.selectedBoxIndex > #dashboard.boxRects) then
+    if dashboard.selectedBoxIndex and (not dashboard.boxRects or dashboard.selectedBoxIndex > #(dashboard.boxRects or {})) then
         dashboard.selectedBoxIndex = nil
     end
 
