@@ -463,6 +463,7 @@ function tasks.telemetryCheckScheduler()
 
     end
 
+    -- Run ontransportchange event handler on telemetry type change.
     if currentTelemetryType ~= lastTelemetryType then
         local oldTelemetryType = lastTelemetryType
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
