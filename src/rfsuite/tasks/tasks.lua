@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 
 local utils = rfsuite.utils
+local config = rfsuite.config
 
 -- Load up event tables (no lazy loading)
 local events = {}
@@ -656,7 +657,7 @@ end
 
 function tasks.wakeup_protected()
 
-    schedulerTick = schedulerTick + 1
+    schedulerTick = (schedulerTick or 0) + 1
     tasks.heartbeat = os.clock()
     local t0 = tasks.heartbeat
     local loopCpu = 0
@@ -717,7 +718,7 @@ function tasks.wakeup_protected()
             end
     else
     -- bulk task processing split across two cycles to reduce per-cycle load.    
-    -- this does include msp and callback so they are garuanteeed to run regardless
+    -- this does include msp and callback so they are guaranteed to run regardless
     -- essentially this starts msp.. it then boosts.. then drops back to this cycle after 
     -- msp is done.
         if cycleFlip == 0 then
