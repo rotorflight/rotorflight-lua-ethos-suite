@@ -16,7 +16,7 @@ local log = utils.log
 local tasks = rfsuite.tasks
 local objectProfiler = false
 
-local WAKEUP_MIN_INTERVAL = 0.25    -- we do not wakeup more often than this
+local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
 
 local supportedResolutions = {{784, 294}, {784, 316}, {800, 458}, {800, 480}, {472, 191}, {472, 210}, {480, 301}, {480, 320}, {630, 236}, {630, 258}, {640, 338}, {640, 360}}
 
@@ -328,7 +328,7 @@ local function computeObjectSchedulerPercentage(count)
 
     -- linear slide from 1.0 → 0.5 over 0..1
     -- adjust ratio to suit performance needs
-    local ratio = 0.3
+    local ratio = 0.5
     return 1.0 - (count / 10) * ratio
 end
 
