@@ -21,6 +21,7 @@ import tempfile
 import zipfile
 import threading
 import subprocess
+import re
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -518,6 +519,77 @@ class UpdaterGUI:
         url = f"{GITHUB_REPO_URL}/archive/refs/heads/master.zip"
         name = "master"
         return url, name
+
+    def get_master_commit_suffix(self):
+        """Fetch the latest master commit SHA and return commit-<sha7>."""
+        import json
+        try:
+            req = Request(f"{GITHUB_API_URL}/commits/master", headers={'User-Agent': 'Mozilla/5.0'})
+            with urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+                sha = data.get("sha", "")
+                if sha:
+                    return f"commit-{sha[:7]}"
+        except Exception as e:
+            self.log(f"⚠ Failed to fetch master commit SHA: {e}")
+        return "master"
+
+    def derive_version_suffix(self, version_type, version_name):
+        """Derive the version suffix to write into main.lua based on workflows."""
+        # Strip common tag prefixes
+        if version_name.startswith("release/"):
+            return version_name.split("/", 1)[1]
+        if version_name.startswith("snapshot/"):
+            return version_name.split("/", 1)[1]
+        if version_type == VERSION_MASTER:
+            return self.get_master_commit_suffix()
+        # Fallback: use a sanitized first token
+        return (version_name.split()[0] if version_name else "master")
+
+    def update_main_lua_version(self, main_lua_path, version_suffix):
+        """Update the version suffix in main.lua."""
+        try:
+            with open(main_lua_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            self.log(f"⚠ Unable to read main.lua for version update: {e}")
+            return False
+
+        pattern = re.compile(r'(version\s*=\s*\{[^}]*suffix\s*=\s*")([^"]*)(")', re.S)
+        if not pattern.search(content):
+            self.log("⚠ Version suffix pattern not found in main.lua")
+            return False
+
+        updated = pattern.sub(rf'\1{version_suffix}\3', content)
+        try:
+            with open(main_lua_path, "w", encoding="utf-8") as f:
+                f.write(updated)
+            self.log(f"✓ Updated main.lua version suffix to '{version_suffix}'")
+            return True
+        except Exception as e:
+            self.log(f"⚠ Unable to write main.lua version update: {e}")
+            return False
+
+    def read_main_lua_version(self, main_lua_path):
+        """Read the full version string from main.lua."""
+        try:
+            with open(main_lua_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            self.log(f"⚠ Unable to read main.lua for version info: {e}")
+            return None
+
+        pattern = re.compile(
+            r'version\s*=\s*\{[^}]*major\s*=\s*(\d+)[^}]*minor\s*=\s*(\d+)[^}]*revision\s*=\s*(\d+)[^}]*suffix\s*=\s*"([^"]+)"',
+            re.S
+        )
+        match = pattern.search(content)
+        if not match:
+            self.log("⚠ Could not parse version fields from main.lua")
+            return None
+
+        major, minor, revision, suffix = match.groups()
+        return f"{major}.{minor}.{revision}-{suffix}"
     
     def start_update(self):
         """Start the update process in a background thread."""
@@ -631,7 +703,9 @@ class UpdaterGUI:
             
             # Get download URL based on selected version
             download_url, version_name = self.get_download_url_and_name()
+            version_suffix = self.derive_version_suffix(self.selected_version.get(), version_name)
             self.log(f"Selected version: {version_name}")
+            self.log(f"Version suffix for main.lua: {version_suffix}")
             self.log(f"Downloading from: {download_url}")
             
             temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-")
@@ -741,6 +815,13 @@ class UpdaterGUI:
                 return
             
             self.log(f"✓ Files copied to radio successfully")
+
+            # Update main.lua version suffix to match release/snapshot/master conventions
+            main_lua_path = os.path.join(dest_dir, "main.lua")
+            if os.path.isfile(main_lua_path):
+                self.update_main_lua_version(main_lua_path, version_suffix)
+            else:
+                self.log(f"⚠ main.lua not found at {main_lua_path} for version update")
             
             if not self.is_updating:
                 return
@@ -819,6 +900,11 @@ class UpdaterGUI:
             self.log("✓ UPDATE COMPLETED SUCCESSFULLY!")
             self.log("=" * 50)
             self.log("")
+            full_version = self.read_main_lua_version(main_lua_path) if 'main_lua_path' in locals() else None
+            if full_version:
+                self.log(f"Installed version: {full_version}")
+            else:
+                self.log(f"Installed version suffix: {version_suffix}")
             self.log("You can now disconnect your radio and restart it.")
             self.log("The new Rotorflight Lua Ethos Suite is ready to use.")
             
