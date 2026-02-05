@@ -206,38 +206,6 @@ class UpdaterGUI:
         title_frame.pack_propagate(False)
         title_frame.configure(height=90)
 
-        # Logo (optional)
-        self.logo_image = None
-        logo_label = None
-        try:
-            logo_path = Path(__file__).resolve().parents[2] / "src" / "logo.png"
-            logo_file = None
-            if logo_path.is_file():
-                logo_file = logo_path
-            else:
-                # Fallback: fetch logo from GitHub raw URL
-                req = Request(LOGO_URL, headers={'User-Agent': 'Mozilla/5.0'})
-                with self.urlopen_insecure(req, timeout=10) as response:
-                    logo_bytes = response.read()
-                tmp_logo = Path(tempfile.gettempdir()) / "rfsuite_logo.png"
-                with open(tmp_logo, "wb") as f:
-                    f.write(logo_bytes)
-                logo_file = tmp_logo
-
-            if logo_file:
-                logo_img = tk.PhotoImage(file=str(logo_file))
-                target_h = 70
-                target_w = 320
-                scale_h = math.ceil(logo_img.height() / target_h)
-                scale_w = math.ceil(logo_img.width() / target_w)
-                scale = max(1, scale_h, scale_w)
-                if scale > 1:
-                    logo_img = logo_img.subsample(scale, scale)
-                self.logo_image = logo_img
-                logo_label = tk.Label(title_frame, image=self.logo_image, bg=header_bg)
-        except Exception:
-            self.logo_image = None
-
         # Layout: text on left, logo on right (if available)
         text_frame = tk.Frame(title_frame, bg=header_bg)
         text_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=10, pady=10)
@@ -250,18 +218,68 @@ class UpdaterGUI:
             fg=header_fg
         )
         title_label.pack(anchor=tk.W)
-        
-        subtitle_label = tk.Label(
+
+        subtitle_text = "Open-source Helicopter flight controller"
+
+        # Right side: logo with tagline overlay (logo loads async)
+        logo_frame = tk.Frame(title_frame, bg=header_bg)
+        logo_frame.pack(side=tk.RIGHT, padx=(10, 10), pady=10)
+        self.logo_label = None
+        self.logo_image = None
+        subtitle_right = tk.Label(
+            logo_frame,
+            text=subtitle_text,
+            font=("Arial", 9),
+            bg=header_bg,
+            fg=header_fg
+        )
+
+        # Left strapline under title
+        subtitle_left = tk.Label(
             text_frame,
             text="Update your Ethos radio with the latest suite from GitHub",
             font=("Arial", 10),
             bg=header_bg,
             fg=header_fg
         )
-        subtitle_label.pack(anchor=tk.W)
+        subtitle_left.pack(anchor=tk.W, pady=(2, 0))
 
-        if logo_label:
-            logo_label.pack(side=tk.RIGHT, padx=(10, 10), pady=10)
+        def set_logo_image(path):
+            try:
+                logo_img = tk.PhotoImage(file=str(path))
+                target_h = 70
+                target_w = 320
+                scale_h = math.ceil(logo_img.height() / target_h)
+                scale_w = math.ceil(logo_img.width() / target_w)
+                scale = max(1, scale_h, scale_w)
+                if scale > 1:
+                    logo_img = logo_img.subsample(scale, scale)
+                self.logo_image = logo_img
+                if not self.logo_label:
+                    self.logo_label = tk.Label(logo_frame, image=self.logo_image, bg=header_bg)
+                    self.logo_label.pack(side=tk.TOP, anchor=tk.E)
+                else:
+                    self.logo_label.configure(image=self.logo_image)
+
+                # Place tagline over/below logo, nudged slightly right
+                subtitle_right.place(relx=1.0, x=-8, y=48, anchor=tk.NE)
+            except Exception:
+                pass
+
+        # Async fetch logo to avoid blocking UI
+        def fetch_logo():
+            try:
+                req = Request(LOGO_URL, headers={'User-Agent': 'Mozilla/5.0'})
+                with self.urlopen_insecure(req, timeout=10) as response:
+                    logo_bytes = response.read()
+                tmp_logo = Path(tempfile.gettempdir()) / "rfsuite_logo.png"
+                with open(tmp_logo, "wb") as f:
+                    f.write(logo_bytes)
+                self.root.after(0, lambda: set_logo_image(tmp_logo))
+            except Exception:
+                pass
+
+        threading.Thread(target=fetch_logo, daemon=True).start()
         
         # Version selection frame
         version_frame = ttk.LabelFrame(self.root, text="Version Selection", padding="10")
