@@ -199,20 +199,34 @@ class UpdaterGUI:
         # Title
         title_frame = ttk.Frame(self.root, padding="10")
         title_frame.pack(fill=tk.X)
-        
+
+        # Logo (optional)
+        self.logo_image = None
+        try:
+            logo_path = Path(__file__).resolve().parents[2] / "src" / "logo.png"
+            if logo_path.is_file():
+                self.logo_image = tk.PhotoImage(file=str(logo_path))
+                logo_label = ttk.Label(title_frame, image=self.logo_image)
+                logo_label.pack(side=tk.LEFT, padx=(0, 10))
+        except Exception:
+            self.logo_image = None
+
+        text_frame = ttk.Frame(title_frame)
+        text_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
         title_label = ttk.Label(
-            title_frame,
+            text_frame,
             text="Rotorflight Lua Ethos Suite Updater",
             font=("Arial", 16, "bold")
         )
-        title_label.pack()
+        title_label.pack(anchor=tk.W)
         
         subtitle_label = ttk.Label(
-            title_frame,
+            text_frame,
             text="Update your Ethos radio with the latest suite from GitHub",
             font=("Arial", 10)
         )
-        subtitle_label.pack()
+        subtitle_label.pack(anchor=tk.W)
         
         # Version selection frame
         version_frame = ttk.LabelFrame(self.root, text="Version Selection", padding="10")
