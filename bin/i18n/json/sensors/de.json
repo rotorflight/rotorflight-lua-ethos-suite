@@ -21,7 +21,7 @@
   },
   "accy": {
     "english": "Accel Y",
-    "translation": "Beschl. Z",
+    "translation": "Beschl. Y",
     "needs_translation": false
   },
   "accz": {
@@ -36,12 +36,12 @@
   },
   "esc_temp": {
     "english": "ESC Temperature",
-    "translation": "ESC Temperatur",
+    "translation": "ESC-Temperatur",
     "needs_translation": false
   },
   "rate_profile": {
     "english": "Rate Profile",
-    "translation": "Rate-Profil",
+    "translation": "Raten-Profil",
     "needs_translation": false
   },
   "headspeed": {
@@ -51,7 +51,7 @@
   },
   "altitude": {
     "english": "Altitude",
-    "translation": "Hoehe",
+    "translation": "Höhe",
     "needs_translation": false
   },
   "voltage": {
@@ -61,7 +61,7 @@
   },
   "bec_voltage": {
     "english": "Bec voltage",
-    "translation": "BEC Spannung",
+    "translation": "BEC-Spannung",
     "needs_translation": false
   },
   "cell_count": {
@@ -71,7 +71,7 @@
   },
   "governor": {
     "english": "Governor State",
-    "translation": "Governor Status",
+    "translation": "Governor-Status",
     "needs_translation": false
   },
   "adj_func": {
@@ -96,7 +96,7 @@
   },
   "link": {
     "english": "Link Quality",
-    "translation": "Verbindungsqualitaet",
+    "translation": "Verbindungsqualität",
     "needs_translation": false
   },
   "adj_val": {
@@ -136,7 +136,7 @@
   },
   "mcu_temp": {
     "english": "MCU Temperature",
-    "translation": "MCU Temperatur",
+    "translation": "MCU-Temperatur",
     "needs_translation": false
   },
   "armdisableflags": {
