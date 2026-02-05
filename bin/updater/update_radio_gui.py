@@ -67,6 +67,7 @@ DEFAULT_LOCALE = "en"
 DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
+COPY_SETTLE_SECONDS = 0.02
 
 # Version types
 VERSION_RELEASE = "release"
@@ -394,6 +395,7 @@ class UpdaterGUI:
                 try:
                     shutil.copy2(src_file, dst_file)
                     copied += 1
+                    time.sleep(COPY_SETTLE_SECONDS)
                     
                     # Update progress
                     percent = (copied / total_files) * 100
