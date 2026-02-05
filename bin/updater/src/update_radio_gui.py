@@ -93,7 +93,21 @@ LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-
 UPDATER_VERSION = "0.0.0"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
-UPDATER_LOCK_FILE = os.path.join(tempfile.gettempdir(), "rfsuite_updater.lock")
+def _get_app_dir():
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+APP_DIR = _get_app_dir()
+WORK_DIR = APP_DIR / "rfsuite_updater_work"
+try:
+    WORK_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    WORK_DIR = Path(tempfile.gettempdir()) / "rfsuite_updater_work"
+    WORK_DIR.mkdir(parents=True, exist_ok=True)
+
+UPDATER_LOCK_FILE = str(WORK_DIR / "rfsuite_updater.lock")
 
 # Version types
 VERSION_RELEASE = "release"
@@ -558,7 +572,7 @@ class UpdaterGUI:
                 req = Request(LOGO_URL, headers={'User-Agent': 'Mozilla/5.0'})
                 with self.urlopen_insecure(req, timeout=10) as response:
                     logo_bytes = response.read()
-                tmp_logo = Path(tempfile.gettempdir()) / "rfsuite_logo.png"
+                tmp_logo = WORK_DIR / "rfsuite_logo.png"
                 with open(tmp_logo, "wb") as f:
                     f.write(logo_bytes)
                 self.root.after(0, lambda: set_logo_image(tmp_logo))
@@ -1387,7 +1401,7 @@ class UpdaterGUI:
             self.log(f"Version suffix for main.lua: {version_suffix}")
             is_asset = False
             
-            temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-")
+            temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-", dir=str(WORK_DIR))
             # Sanitize version name for filename (replace / with -)
             safe_version_name = version_name.replace('/', '-').replace('\\', '-')
             zip_path = os.path.join(temp_dir, f"{safe_version_name}.zip")
