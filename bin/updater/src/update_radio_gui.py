@@ -803,7 +803,19 @@ class UpdaterGUI:
                 shutil.rmtree(dest)
             os.makedirs(dest, exist_ok=True)
             self.log(f"  Copying audio pack to: {dest}")
-            shutil.copytree(src, dest, dirs_exist_ok=True)
+            total_files = self.count_files(src)
+            copied = 0
+            for root, dirs, files in os.walk(src):
+                rel_path = os.path.relpath(root, src)
+                dst_dir = os.path.join(dest, rel_path) if rel_path != '.' else dest
+                os.makedirs(dst_dir, exist_ok=True)
+                for file in files:
+                    src_file = os.path.join(root, file)
+                    dst_file = os.path.join(dst_dir, file)
+                    shutil.copy2(src_file, dst_file)
+                    copied += 1
+                    self.log(f"  [AUDIO {copied}/{total_files}] {os.path.relpath(src_file, src)}")
+                    time.sleep(COPY_SETTLE_SECONDS)
             self.log(f"✓ Audio pack copied: {locale}")
             return True
         except Exception as e:
