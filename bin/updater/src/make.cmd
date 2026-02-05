@@ -10,7 +10,7 @@ if errorlevel 1 (
 )
 
 echo [2/5] Compiling update_radio_gui.py to standalone EXE...
-python -m PyInstaller --onefile update_radio_gui.py --name update_radio_gui --windowed || goto :error
+python -m PyInstaller --onefile --noupx update_radio_gui.py --name update_radio_gui --windowed || goto :error
 
 echo [3/5] Moving update_radio_gui.exe into parent folder...
 if exist ..\update_radio_gui.exe (
