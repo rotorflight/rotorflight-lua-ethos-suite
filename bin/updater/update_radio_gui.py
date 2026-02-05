@@ -222,8 +222,9 @@ class UpdaterGUI:
         subtitle_text = "Open-source Helicopter flight controller"
 
         # Right side: logo with tagline overlay (logo loads async)
-        logo_frame = tk.Frame(title_frame, bg=header_bg)
+        logo_frame = tk.Frame(title_frame, bg=header_bg, width=340, height=80)
         logo_frame.pack(side=tk.RIGHT, padx=(10, 10), pady=10)
+        logo_frame.pack_propagate(False)
         self.logo_label = None
         self.logo_image = None
         subtitle_right = tk.Label(
@@ -257,12 +258,13 @@ class UpdaterGUI:
                 self.logo_image = logo_img
                 if not self.logo_label:
                     self.logo_label = tk.Label(logo_frame, image=self.logo_image, bg=header_bg)
-                    self.logo_label.pack(side=tk.TOP, anchor=tk.E)
                 else:
                     self.logo_label.configure(image=self.logo_image)
 
-                # Place tagline over/below logo, nudged slightly right
-                subtitle_right.place(relx=1.0, x=-8, y=48, anchor=tk.NE)
+                # Place logo and overlay tagline within the logo frame
+                self.logo_label.place(relx=1.0, x=0, y=0, anchor=tk.NE)
+                subtitle_right.place(relx=1.0, x=-6, y=52, anchor=tk.NE)
+                subtitle_right.lift()
             except Exception:
                 pass
 
