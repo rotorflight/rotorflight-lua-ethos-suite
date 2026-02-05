@@ -6506,6 +6506,11 @@
       "needs_translation": false,
       "translation": "Connessione al flight controller..."
     },
+    "msg_loaded_task": {
+      "english": "Loaded task",
+      "needs_translation": false,
+      "translation": "Task caricato"
+    },
     "msg_loading": {
       "english": "Loading...",
       "needs_translation": false,
@@ -6515,6 +6520,11 @@
       "english": "Loading data from flight controller...",
       "needs_translation": false,
       "translation": "Carico dati dal flight controller..."
+    },
+    "msg_model_changed_reset": {
+      "english": "Model changed, resetting session",
+      "needs_translation": false,
+      "translation": "Modello cambiato, resetto sessione"
     },
     "msg_please_disarm_to_save": {
       "english": "Please disarm to save",
@@ -6565,6 +6575,26 @@
       "english": "Saving data to flight controller...",
       "needs_translation": false,
       "translation": "Salvo dati al flight controller..."
+    },
+    "msg_tasks_initialized": {
+      "english": "All tasks initialized.",
+      "needs_translation": false,
+      "translation": "Tutti i task inizializzati."
+    },
+    "msg_telem_sensor_changed": {
+      "english": "Telem. sensor changed to",
+      "needs_translation": false,
+      "translation": "Sensore telem. cambiato a"
+    },
+    "msg_telem_type_changed": {
+      "english": "Telem. type changed to",
+      "needs_translation": false,
+      "translation": "Tipo telem. cambiato a"
+    },
+    "msg_waiting_for_connection": {
+      "english": "Waiting for connection",
+      "needs_translation": false,
+      "translation": "In attesa di connessione"
     },
     "navigation_help": {
       "english": "?",

@@ -4621,5 +4621,35 @@
     "english": "This version of the Lua script \ncan't be used with the selected model",
     "translation": "Deze versie van het lua script \n kan niet gebruikt worden met het geselecteerde model",
     "needs_translation": false
+  },
+  "msg_waiting_for_connection": {
+    "english": "Waiting for connection",
+    "translation": "Wachten op verbinding",
+    "needs_translation": false
+  },
+  "msg_model_changed_reset": {
+    "english": "Model changed, resetting session",
+    "translation": "Model gewijzigd, sessie resetten",
+    "needs_translation": false
+  },
+  "msg_telem_sensor_changed": {
+    "english": "Telem. sensor changed to",
+    "translation": "Telem. sensor gewijzigd naar",
+    "needs_translation": false
+  },
+  "msg_telem_type_changed": {
+    "english": "Telem. type changed to",
+    "translation": "Telem. type gewijzigd naar",
+    "needs_translation": false
+  },
+  "msg_tasks_initialized": {
+    "english": "All tasks initialized.",
+    "translation": "Alle taken geïnitialiseerd.",
+    "needs_translation": false
+  },
+  "msg_loaded_task": {
+    "english": "Loaded task",
+    "translation": "Taak geladen",
+    "needs_translation": false
   }
 }

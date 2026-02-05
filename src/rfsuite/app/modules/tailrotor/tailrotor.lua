@@ -15,7 +15,7 @@ local apidata = {
         labels = {
             {t = "@i18n(app.modules.profile_tailrotor.collective_impulse_ff)@", label = 3, inline_size = 13.6, apiversionlte = 12.07},
             {t = "@i18n(app.modules.profile_tailrotor.yaw_stop_gain)@", label = 1, inline_size = 13.6},
-             {t = "@i18n(app.modules.profile_governor.tail_torque_assist)@", label = 4, inline_size = 13.6}
+            {t = "@i18n(app.modules.profile_governor.tail_torque_assist)@", label = 4, inline_size = 13.6}
         },
         fields = {
             {t = "@i18n(app.modules.profile_tailrotor.cyclic_ff_gain)@", mspapi = 1, apikey = "yaw_cyclic_ff_gain"},

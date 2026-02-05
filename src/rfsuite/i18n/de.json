@@ -6506,6 +6506,11 @@
       "needs_translation": false,
       "translation": "Verbindung zum Flugcontroller wird hergestellt..."
     },
+    "msg_loaded_task": {
+      "english": "Loaded task",
+      "needs_translation": false,
+      "translation": "Aufgabe geladen"
+    },
     "msg_loading": {
       "english": "Loading...",
       "needs_translation": false,
@@ -6515,6 +6520,11 @@
       "english": "Loading data from flight controller...",
       "needs_translation": false,
       "translation": "Daten vom Flugcontroller werden geladen..."
+    },
+    "msg_model_changed_reset": {
+      "english": "Model changed, resetting session",
+      "needs_translation": false,
+      "translation": "Modell geändert, Sitzung wird zurückgesetzt"
     },
     "msg_please_disarm_to_save": {
       "english": "Please disarm to save",
@@ -6565,6 +6575,26 @@
       "english": "Saving data to flight controller...",
       "needs_translation": false,
       "translation": "Daten werden auf dem Flugcontroller gespeichert..."
+    },
+    "msg_tasks_initialized": {
+      "english": "All tasks initialized.",
+      "needs_translation": false,
+      "translation": "Alle Aufgaben initialisiert."
+    },
+    "msg_telem_sensor_changed": {
+      "english": "Telem. sensor changed to",
+      "needs_translation": false,
+      "translation": "Telem. Sensor geändert zu"
+    },
+    "msg_telem_type_changed": {
+      "english": "Telem. type changed to",
+      "needs_translation": false,
+      "translation": "Telem. Typ geändert zu"
+    },
+    "msg_waiting_for_connection": {
+      "english": "Waiting for connection",
+      "needs_translation": false,
+      "translation": "Warte auf Verbindung"
     },
     "navigation_help": {
       "english": "?",
@@ -7686,7 +7716,7 @@
       "reset_flight": {
         "english": "Reset flight",
         "needs_translation": false,
-        "translation": "Flug zurücksetzen"
+        "translation": "Flug zuruecksetzen"
       },
       "reset_flight_ask_text": {
         "english": "Are you sure you want to reset the flight?",
