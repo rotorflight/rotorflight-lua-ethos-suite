@@ -697,6 +697,9 @@ class UpdaterGUI:
             return None
 
         major, minor, revision, suffix = match.groups()
+        prefix = f"{major}.{minor}.{revision}-"
+        if suffix.startswith(prefix):
+            return suffix
         return f"{major}.{minor}.{revision}-{suffix}"
     
     def start_update(self):
