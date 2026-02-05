@@ -24,6 +24,7 @@ import subprocess
 import re
 import ssl
 import traceback
+import math
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -69,6 +70,7 @@ DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
 COPY_SETTLE_SECONDS = 0.02
+LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
 
 # Version types
 VERSION_RELEASE = "release"
@@ -196,37 +198,70 @@ class UpdaterGUI:
     
     def setup_ui(self):
         """Setup the user interface."""
-        # Title
-        title_frame = ttk.Frame(self.root, padding="10")
+        # Title (dark header)
+        header_bg = "#1f1f1f"
+        header_fg = "#f2f2f2"
+        title_frame = tk.Frame(self.root, bg=header_bg)
         title_frame.pack(fill=tk.X)
+        title_frame.pack_propagate(False)
+        title_frame.configure(height=90)
 
         # Logo (optional)
         self.logo_image = None
+        logo_label = None
         try:
             logo_path = Path(__file__).resolve().parents[2] / "src" / "logo.png"
+            logo_file = None
             if logo_path.is_file():
-                self.logo_image = tk.PhotoImage(file=str(logo_path))
-                logo_label = ttk.Label(title_frame, image=self.logo_image)
-                logo_label.pack(side=tk.LEFT, padx=(0, 10))
+                logo_file = logo_path
+            else:
+                # Fallback: fetch logo from GitHub raw URL
+                req = Request(LOGO_URL, headers={'User-Agent': 'Mozilla/5.0'})
+                with self.urlopen_insecure(req, timeout=10) as response:
+                    logo_bytes = response.read()
+                tmp_logo = Path(tempfile.gettempdir()) / "rfsuite_logo.png"
+                with open(tmp_logo, "wb") as f:
+                    f.write(logo_bytes)
+                logo_file = tmp_logo
+
+            if logo_file:
+                logo_img = tk.PhotoImage(file=str(logo_file))
+                target_h = 70
+                target_w = 320
+                scale_h = math.ceil(logo_img.height() / target_h)
+                scale_w = math.ceil(logo_img.width() / target_w)
+                scale = max(1, scale_h, scale_w)
+                if scale > 1:
+                    logo_img = logo_img.subsample(scale, scale)
+                self.logo_image = logo_img
+                logo_label = tk.Label(title_frame, image=self.logo_image, bg=header_bg)
         except Exception:
             self.logo_image = None
 
-        text_frame = ttk.Frame(title_frame)
-        text_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        # Layout: text on left, logo on right (if available)
+        text_frame = tk.Frame(title_frame, bg=header_bg)
+        text_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=10, pady=10)
 
-        title_label = ttk.Label(
+        title_label = tk.Label(
             text_frame,
             text="Rotorflight Lua Ethos Suite Updater",
-            font=("Arial", 16, "bold")
+            font=("Arial", 16, "bold"),
+            bg=header_bg,
+            fg=header_fg
         )
         title_label.pack(anchor=tk.W)
         
-        subtitle_label = ttk.Label(
+        subtitle_label = tk.Label(
             text_frame,
             text="Update your Ethos radio with the latest suite from GitHub",
-            font=("Arial", 10)
+            font=("Arial", 10),
+            bg=header_bg,
+            fg=header_fg
         )
         subtitle_label.pack(anchor=tk.W)
+
+        if logo_label:
+            logo_label.pack(side=tk.RIGHT, padx=(10, 10), pady=10)
         
         # Version selection frame
         version_frame = ttk.LabelFrame(self.root, text="Version Selection", padding="10")
