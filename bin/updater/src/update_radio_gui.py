@@ -41,11 +41,27 @@ except ImportError:
     sys.exit(1)
 
 # HID imports for radio communication
+HID_IMPORT_ERROR = None
+HID_MODULE_PATH = None
 try:
-    import hid
-except ImportError:
-    print("Warning: hid module not found. Install with: pip install hidapi")
-    hid = None
+    import hid as _hid
+    if hasattr(_hid, "device"):
+        hid = _hid
+        HID_MODULE_PATH = getattr(_hid, "__file__", None)
+    else:
+        raise ImportError("hid module missing 'device' attribute")
+except Exception as e:
+    HID_IMPORT_ERROR = str(e)
+    try:
+        import hidapi as _hid
+        if hasattr(_hid, "device"):
+            hid = _hid
+            HID_MODULE_PATH = getattr(_hid, "__file__", None)
+        else:
+            hid = None
+    except Exception as e2:
+        HID_IMPORT_ERROR = f"{HID_IMPORT_ERROR}; hidapi fallback failed: {e2}"
+        hid = None
 
 # Windows-specific imports for drive detection
 if sys.platform == 'win32':
@@ -84,6 +100,231 @@ VERSION_RELEASE = "release"
 VERSION_SNAPSHOT = "snapshot"
 VERSION_MASTER = "master"
 
+# i18n tag resolution (embedded to support onefile builds)
+TAG_RE = re.compile(
+    r'@i18n\(\s*([^)@,]+?)\s*(?:,\s*(upper|lower))?\s*\)'
+    r'((?::[a-z_]+(?:\([^@]*?\))?)*)@',
+    flags=re.IGNORECASE
+)
+
+def _i18n_coerce_atom(s):
+    try:
+        return int(s)
+    except ValueError:
+        try:
+            return float(s)
+        except ValueError:
+            if s.lower() in ("true", "false"):
+                return s.lower() == "true"
+            return s
+
+def _i18n_parse_chain(chain):
+    if not chain:
+        return []
+    out = []
+    for seg in filter(None, chain.split(":")):
+        m = re.match(r'([a-z_][a-z0-9_]*)\s*(?:\((.*)\))?$', seg, flags=re.IGNORECASE)
+        if not m:
+            continue
+        name, argstr = m.group(1).lower(), (m.group(2) or "").strip()
+        args = []
+        if argstr:
+            parts = []
+            current = ""
+            depth = 0
+            for ch in argstr:
+                if ch == "(":
+                    depth += 1
+                    current += ch
+                elif ch == ")":
+                    depth = max(0, depth - 1)
+                    current += ch
+                elif ch == "," and depth == 0:
+                    parts.append(current.strip())
+                    current = ""
+                else:
+                    current += ch
+            if current.strip():
+                parts.append(current.strip())
+            for p in parts:
+                parsed = p.strip()
+                if parsed.startswith(("'", '"')) and parsed.endswith(("'", '"')) and len(parsed) >= 2:
+                    parsed = parsed[1:-1]
+                if parsed == "":
+                    args.append("")
+                else:
+                    args.append(_i18n_coerce_atom(parsed))
+        out.append((name, args, {}))
+    return out
+
+def _i18n_upperfirst(s):
+    return s[:1].upper() + s[1:].lower() if s else s
+
+def _i18n_truncate(s, n, ellipsis=None):
+    if n < 0:
+        return s
+    if len(s) <= n:
+        return s
+    if ellipsis:
+        if n <= len(ellipsis):
+            return ellipsis[:n]
+        return s[: n - len(ellipsis)] + ellipsis
+    return s[:n]
+
+def _i18n_collapse_ws(s):
+    return re.sub(r'\s+', ' ', s).strip()
+
+def _i18n_slice(s, start, end=None):
+    return s[start:end]
+
+def _i18n_ensure_char(c):
+    return c[0] if isinstance(c, str) and c else " "
+
+I18N_TRANSFORMS = {
+    "upper": lambda s: s.upper(),
+    "lower": lambda s: s.lower(),
+    "upperfirst": _i18n_upperfirst,
+    "capitalize": lambda s: s[:1].upper() + s[1:],
+    "title": lambda s: s.title(),
+    "swapcase": lambda s: s.swapcase(),
+    "trim": lambda s: s.strip(),
+    "ltrim": lambda s: s.lstrip(),
+    "rtrim": lambda s: s.rstrip(),
+    "collapse_ws": _i18n_collapse_ws,
+    "truncate": lambda s, n, ellipsis=None: _i18n_truncate(s, int(n), ellipsis),
+    "slice": _i18n_slice,
+    "padleft": lambda s, width, char=" ": s.rjust(int(width), _i18n_ensure_char(char)),
+    "padright": lambda s, width, char=" ": s.ljust(int(width), _i18n_ensure_char(char)),
+    "center": lambda s, width, char=" ": s.center(int(width), _i18n_ensure_char(char)),
+    "replace": lambda s, old, new, count=None: s.replace(str(old), str(new), int(count) if count is not None else -1),
+    "remove": lambda s, pattern: re.sub(str(pattern), "", s),
+    "keep": lambda s, pattern: " ".join(re.findall(str(pattern), s)),
+    "strip_prefix": lambda s, p: s[len(p):] if s.startswith(str(p)) else s,
+    "strip_suffix": lambda s, p: s[:-len(p)] if len(p) and s.endswith(str(p)) else s,
+    "prefix": lambda s, p: str(p) + s,
+    "suffix": lambda s, p: s + str(p),
+    "escape_html": lambda s: (
+        s.replace("&", "&amp;")
+         .replace("<", "&lt;")
+         .replace(">", "&gt;")
+         .replace('"', "&quot;")
+         .replace("'", "&#x27;")
+    ),
+    "escape_json": lambda s: s.replace("\\", "\\\\").replace('"', r'\"'),
+}
+
+def _i18n_apply_transform_pipeline(s, basic_mod, chain, stats):
+    if basic_mod:
+        fn = I18N_TRANSFORMS.get(basic_mod.lower())
+        if fn:
+            s = fn(s)
+    for name, args, _ in _i18n_parse_chain(chain):
+        fn = I18N_TRANSFORMS.get(name)
+        if not fn:
+            stats.setdefault("unknown_transform", {}).setdefault(name, 0)
+            stats["unknown_transform"][name] += 1
+            continue
+        try:
+            s = fn(s, *args)
+        except Exception as e:
+            stats.setdefault("transform_errors", []).append(f"{name}({args}) -> {e}")
+    return s
+
+def _i18n_load_translations(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def _i18n_resolve_key(tree, dotted):
+    node = tree
+    for part in dotted.split("."):
+        if not isinstance(node, dict) or part not in node:
+            return None
+        node = node[part]
+    if isinstance(node, dict):
+        if "translation" in node and isinstance(node["translation"], (str, int, float)):
+            return str(node["translation"])
+        if "english" in node and isinstance(node["english"], (str, int, float)):
+            return str(node["english"])
+        return None
+    if node is None:
+        return None
+    return str(node)
+
+def _i18n_sanitize_for_insertion(s):
+    s = s.replace("\r\n", "\n").replace("\r", "\n")
+    s = s.replace("\n", r"\n")
+    s = s.replace('"', r'\"')
+    return s
+
+def _i18n_replace_tags_in_text(text, translations, stats):
+    def _sub(m):
+        key = m.group(1).strip()
+        basic_mod = m.group(2)
+        chain = m.group(3) or ""
+        resolved = _i18n_resolve_key(translations, key)
+        if resolved is None:
+            stats.setdefault("unresolved", {}).setdefault(key, 0)
+            stats["unresolved"][key] += 1
+            return m.group(0)
+        resolved = _i18n_apply_transform_pipeline(str(resolved), basic_mod, chain, stats)
+        resolved = _i18n_sanitize_for_insertion(resolved)
+        return resolved
+    new_text, n = TAG_RE.subn(_sub, text)
+    return new_text, n
+
+def _i18n_process_file(path, translations, dry_run=False):
+    before = path.read_text(encoding="utf-8")
+    stats = {}
+    new_text, n = _i18n_replace_tags_in_text(before, translations, stats)
+    if n == 0:
+        return 0, stats.get("unresolved", {})
+    if dry_run:
+        return n, stats.get("unresolved", {})
+    try:
+        path.write_text(new_text, encoding="utf-8")
+    except Exception:
+        return 0, stats.get("unresolved", {})
+    return n, stats.get("unresolved", {})
+
+def _i18n_iter_source_files(root, exts=(".lua", ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".txt")):
+    for p in Path(root).rglob("*"):
+        if p.is_file() and p.suffix.lower() in exts:
+            yield p
+
+def compile_i18n_tags(json_path, root_dir, log_cb=None):
+    translations = _i18n_load_translations(json_path)
+    total_files_changed = 0
+    total_replacements = 0
+    unresolved_agg = {}
+    def _emit(msg):
+        if log_cb:
+            log_cb(msg)
+        try:
+            print(msg)
+        except Exception:
+            pass
+    
+    root_path = Path(root_dir)
+    for f in _i18n_iter_source_files(root_dir):
+        replaced, unresolved = _i18n_process_file(f, translations, dry_run=False)
+        if replaced:
+            total_files_changed += 1
+            total_replacements += replaced
+            try:
+                rel = f.relative_to(root_path)
+                _emit(f"[i18n] {rel} ({replaced} repl)")
+            except Exception:
+                _emit(f"[i18n] {f} ({replaced} repl)")
+        for k, c in unresolved.items():
+            unresolved_agg[k] = unresolved_agg.get(k, 0) + c
+
+    _emit(f"[i18n] DONE - files changed: {total_files_changed}, total replacements: {total_replacements}")
+    if unresolved_agg:
+        _emit("[i18n] Unresolved keys (top 20):")
+        for k, c in sorted(unresolved_agg.items(), key=lambda kv: (-kv[1], kv[0]))[:20]:
+            _emit(f"  {k}: {c}")
+    return total_files_changed, total_replacements, unresolved_agg
+
 # USB Mode Request Commands
 ETHOS_SUITE_USB_MODE_REQUEST = 0x81
 USB_MODE_STORAGE = 0x69  # Stop debug mode = enable storage mode
@@ -100,9 +341,12 @@ class RadioInterface:
     def connect(self):
         """Connect to the Ethos radio."""
         if hid is None:
-            raise RuntimeError("hidapi module not available. Install with: pip install hidapi")
+            details = f"hid import failed: {HID_IMPORT_ERROR}" if HID_IMPORT_ERROR else "hid import failed"
+            raise RuntimeError(f"hidapi module not available or invalid. {details}")
         
         try:
+            if HID_MODULE_PATH:
+                self.log(f"HID module: {HID_MODULE_PATH}")
             # Try to open the HID device
             self.device = hid.device()
             self.device.open(ETHOS_VID, ETHOS_PID)
@@ -185,6 +429,38 @@ class RadioInterface:
         
         return None
 
+    def find_scripts_dir_on_drives(self, removable_only=True):
+        """Fallback: scan drives for scripts folder."""
+        if sys.platform == 'win32':
+            if win32api is None or win32file is None:
+                return None
+            for drive in win32api.GetLogicalDriveStrings().split('\x00')[:-1]:
+                try:
+                    dtype = win32file.GetDriveType(drive)
+                    if removable_only and dtype != win32file.DRIVE_REMOVABLE:
+                        continue
+                    for folder in ("scripts", "script"):
+                        scripts = os.path.join(drive, folder)
+                        if os.path.isdir(scripts):
+                            return os.path.normpath(scripts)
+                except Exception:
+                    continue
+            return None
+        else:
+            for base in ["/Volumes", "/media", "/mnt"]:
+                if not os.path.isdir(base):
+                    continue
+                try:
+                    for entry in os.listdir(base):
+                        root = os.path.join(base, entry)
+                        for folder in ("scripts", "script"):
+                            scripts = os.path.join(root, folder)
+                            if os.path.isdir(scripts):
+                                return os.path.normpath(scripts)
+                except Exception:
+                    continue
+            return None
+
 
 class UpdaterGUI:
     """Main GUI application for updating the radio."""
@@ -200,6 +476,7 @@ class UpdaterGUI:
         self.is_updating = False
         self.selected_version = tk.StringVar(value=VERSION_RELEASE)
         self.selected_locale = tk.StringVar(value=DEFAULT_LOCALE)
+        self.chkdsk_attempted = False
         
         self.setup_ui()
     
@@ -517,6 +794,47 @@ class UpdaterGUI:
             total += len(files)
         return total
     
+    def attempt_chkdsk(self, path):
+        """Attempt to repair a corrupt filesystem, then prompt user to retry."""
+        if sys.platform != 'win32':
+            return False
+        if self.chkdsk_attempted:
+            return False
+        drive, _ = os.path.splitdrive(path)
+        if not drive:
+            return False
+        
+        self.chkdsk_attempted = True
+        self.log(f"Detected filesystem error. Running chkdsk {drive} /f ...")
+        try:
+            result = subprocess.run(
+                ["chkdsk", drive, "/f"],
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            if result.stdout:
+                for line in result.stdout.strip().splitlines()[:8]:
+                    self.log(f"  [chkdsk] {line}")
+            if result.stderr:
+                for line in result.stderr.strip().splitlines()[:8]:
+                    self.log(f"  [chkdsk] {line}")
+        except Exception as e:
+            self.log(f"  [chkdsk] Failed to run: {e}")
+        
+        if 'tk' in sys.modules:
+            try:
+                root = tk.Tk()
+                root.withdraw()
+                messagebox.showinfo(
+                    "Filesystem Repair",
+                    f"CHKDSK was run on {drive}. Please click Update again to retry."
+                )
+                root.destroy()
+            except Exception:
+                pass
+        return True
+    
     def copy_tree_with_progress(self, src, dst):
         """Copy directory tree with progress updates."""
         # Count total files
@@ -556,6 +874,11 @@ class UpdaterGUI:
                         self.log(f"  [{copied}/{total_files}] {rel_file}")
                 
                 except Exception as e:
+                    winerr = getattr(e, "winerror", None)
+                    if winerr == 483:
+                        self.log(f"  ⚠ Device error while copying {file}. The drive may be corrupted.")
+                        self.attempt_chkdsk(dst_file)
+                        return False
                     self.log(f"  ⚠ Failed to copy {file}: {e}")
         
         return True
@@ -586,8 +909,21 @@ class UpdaterGUI:
                 return False
             
             try:
-                os.remove(file_path)
+                attempt = 0
+                while True:
+                    try:
+                        os.remove(file_path)
+                        break
+                    except OSError as e:
+                        attempt += 1
+                        winerr = getattr(e, "winerror", None)
+                        if winerr == 483 and attempt < 3:
+                            # Transient device error on removable drives; wait and retry.
+                            time.sleep(0.5)
+                            continue
+                        raise
                 deleted += 1
+                time.sleep(COPY_SETTLE_SECONDS)
                 
                 # Update progress
                 percent = (deleted / total_files) * 100
@@ -599,7 +935,13 @@ class UpdaterGUI:
                     self.log(f"  [{deleted}/{total_files}] {rel_file}")
             
             except Exception as e:
-                self.log(f"  ⚠ Failed to delete {os.path.basename(file_path)}: {e}")
+                winerr = getattr(e, "winerror", None)
+                if winerr == 483:
+                    self.log(f"  ⚠ Device error while deleting {os.path.basename(file_path)}. The drive may be corrupted.")
+                    self.attempt_chkdsk(file_path)
+                    return False
+                else:
+                    self.log(f"  ⚠ Failed to delete {os.path.basename(file_path)}: {e}")
         
         # Remove empty directories
         for root, dirs, files in os.walk(directory, topdown=False):
@@ -950,6 +1292,13 @@ class UpdaterGUI:
             except Exception:
                 pass
             
+            if not scripts_dir:
+                scripts_dir = self.radio.find_scripts_dir_on_drives(removable_only=True)
+                if scripts_dir:
+                    radio_already_mounted = True
+                    self.log("✓ Found scripts directory on removable drive")
+                    self.log(f"  Found scripts directory: {scripts_dir}")
+            
             if not self.is_updating:
                 return
             
@@ -963,11 +1312,20 @@ class UpdaterGUI:
                     self.log("✓ Radio connected via USB HID")
                 except Exception as e:
                     self.log(f"✗ Failed to connect to radio: {e}")
-                    self.log("Make sure the radio is connected via USB")
-                    self.log("The radio should be either:")
-                    self.log("  - In debug mode (will be switched automatically)")
-                    self.log("  - In storage mode (mounted as a drive)")
-                    raise
+                    self.log("Attempting fallback: scanning all drives for scripts folder...")
+                    scripts_dir = self.radio.find_scripts_dir_on_drives(removable_only=False)
+                    if scripts_dir:
+                        radio_already_mounted = True
+                        self.log("✓ Found scripts directory on drive")
+                        self.log(f"  Found scripts directory: {scripts_dir}")
+                    else:
+                        self.log("No scripts directory found on any drive.")
+                    self.log("Please check the radio connection:")
+                    self.log("  - USB cable is connected and data-capable")
+                    self.log("  - Radio is powered on")
+                    self.log("  - Radio is in debug mode (will be switched automatically) or storage mode (mounted as a drive)")
+                    if not radio_already_mounted:
+                        raise
                 
                 if not self.is_updating:
                     return
@@ -1004,7 +1362,9 @@ class UpdaterGUI:
                     self.log(f"  Attempt {attempt + 1}/10...")
                 
                 if not scripts_dir:
-                    self.log("✗ Radio drive not found")
+                    self.log("✗ Radio drive not found.")
+                    self.log("Please confirm the radio is in storage mode and mounted as a drive.")
+                    self.log("If needed, unplug/replug USB or power-cycle the radio.")
                     raise RuntimeError("Could not find radio scripts directory")
                 
                 self.log(f"✓ Found scripts directory: {scripts_dir}")
@@ -1197,8 +1557,8 @@ class UpdaterGUI:
             if not self.is_updating:
                 return
             
-            # Step 9: Compile i18n translations (skip for prebuilt assets)
-            if not is_asset:
+            # Step 9: Compile i18n translations (master only)
+            if version_type == VERSION_MASTER:
                 self.log("Preparing translation compiler (this can take a moment)...")
                 self.set_status("Compiling translations...")
                 self.log("Compiling i18n translations...")
@@ -1220,41 +1580,17 @@ class UpdaterGUI:
                             i18n_json = base_path
                             break
                     
-                    resolver_script = os.path.join(repo_dir, ".vscode", "scripts", "resolve_i18n_tags.py")
-                    
-                    if i18n_json and os.path.isfile(resolver_script):
+                    if i18n_json and os.path.isfile(i18n_json):
                         self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
-                        self.log(f"  Running resolver script...")
-                        
-                        result = subprocess.run(
-                            [sys.executable, resolver_script, "--json", i18n_json, "--root", dest_dir],
-                            capture_output=True,
-                            text=True,
-                            timeout=60
-                        )
-                        
-                        if result.returncode == 0:
-                            self.log("✓ i18n translations compiled successfully")
-                            if result.stdout:
-                                for line in result.stdout.strip().split('\n'):
-                                    if line.strip():
-                                        self.log(f"  {line}")
-                        else:
-                            self.log(f"⚠ i18n compilation failed (exit code {result.returncode})")
-                            if result.stderr:
-                                for line in result.stderr.strip().split('\n')[:5]:  # Show first 5 error lines
-                                    if line.strip():
-                                        self.log(f"  {line}")
+                        self.log("  Running embedded i18n compiler...")
+                        compile_i18n_tags(i18n_json, dest_dir, self.log)
+                        self.log("OK i18n translations compiled successfully")
                     else:
-                        self.log("⚠ i18n files not found, skipping translation compilation")
-                        if not os.path.isfile(i18n_json):
+                        self.log("WARN i18n files not found, skipping translation compilation")
+                        if i18n_json:
                             self.log(f"  Missing: {i18n_json}")
-                        if not os.path.isfile(resolver_script):
-                            self.log(f"  Missing: {resolver_script}")
-                except subprocess.TimeoutExpired:
-                    self.log("⚠ i18n compilation timed out")
                 except Exception as e:
-                    self.log(f"⚠ i18n compilation error: {e}")
+                    self.log(f"WARN i18n compilation error: {e}")
             
             if not self.is_updating:
                 return
@@ -1321,9 +1657,10 @@ class UpdaterGUI:
 def check_dependencies():
     """Check if required dependencies are installed."""
     missing = []
+    optional = []
     
     if hid is None:
-        missing.append("hidapi (install with: pip install hidapi)")
+        optional.append("hidapi (install with: pip install hidapi)")
     
     if sys.platform == 'win32' and (win32api is None or win32file is None):
         missing.append("pywin32 (install with: pip install pywin32)")
@@ -1341,6 +1678,17 @@ def check_dependencies():
             print(msg)
         
         return False
+
+    if optional:
+        msg = "Optional dependencies missing:\n\n" + "\n".join(f"  • {dep}" for dep in optional)
+        msg += "\n\nHID features will be unavailable, but storage-mode updates can still work."
+        if 'tk' in sys.modules:
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showwarning("Optional Dependencies", msg)
+            root.destroy()
+        else:
+            print(msg)
     
     return True
 
