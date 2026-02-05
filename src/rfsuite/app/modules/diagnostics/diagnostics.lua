@@ -50,15 +50,13 @@ local function openPage(pidx, title, script)
         options = FONT_S,
         paint = function() end,
         press = function()
-            app.lastIdx = nil
-            rfsuite.session.lastPage = nil
-
-            if app.Page and app.Page.onNavMenu then
-                app.Page.onNavMenu(app.Page)
-            else
-                app.ui.progressDisplay(nil, nil, true)
-            end
-            app.ui.openMainMenu()
+                if app.Page and app.Page.onNavMenu then
+                    app.Page.onNavMenu(app.Page)
+                elseif app.lastMenu ~= nil then
+                    app.ui.openMainMenuSub(app.lastMenu)
+                else
+                    app.ui.openMainMenu()
+                end
         end
     })
     app.formNavigationFields['menu']:focus()
