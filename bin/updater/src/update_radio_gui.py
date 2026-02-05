@@ -296,19 +296,33 @@ def compile_i18n_tags(json_path, root_dir, log_cb=None):
     total_files_changed = 0
     total_replacements = 0
     unresolved_agg = {}
+    def _emit(msg):
+        if log_cb:
+            log_cb(msg)
+        try:
+            print(msg)
+        except Exception:
+            pass
+    
+    root_path = Path(root_dir)
     for f in _i18n_iter_source_files(root_dir):
         replaced, unresolved = _i18n_process_file(f, translations, dry_run=False)
         if replaced:
             total_files_changed += 1
             total_replacements += replaced
+            try:
+                rel = f.relative_to(root_path)
+                _emit(f"[i18n] {rel} ({replaced} repl)")
+            except Exception:
+                _emit(f"[i18n] {f} ({replaced} repl)")
         for k, c in unresolved.items():
             unresolved_agg[k] = unresolved_agg.get(k, 0) + c
-    if log_cb:
-        log_cb(f"[i18n] DONE - files changed: {total_files_changed}, total replacements: {total_replacements}")
-        if unresolved_agg:
-            log_cb("[i18n] Unresolved keys (top 20):")
-            for k, c in sorted(unresolved_agg.items(), key=lambda kv: (-kv[1], kv[0]))[:20]:
-                log_cb(f"  {k}: {c}")
+
+    _emit(f"[i18n] DONE - files changed: {total_files_changed}, total replacements: {total_replacements}")
+    if unresolved_agg:
+        _emit("[i18n] Unresolved keys (top 20):")
+        for k, c in sorted(unresolved_agg.items(), key=lambda kv: (-kv[1], kv[0]))[:20]:
+            _emit(f"  {k}: {c}")
     return total_files_changed, total_replacements, unresolved_agg
 
 # USB Mode Request Commands
@@ -909,6 +923,7 @@ class UpdaterGUI:
                             continue
                         raise
                 deleted += 1
+                time.sleep(COPY_SETTLE_SECONDS)
                 
                 # Update progress
                 percent = (deleted / total_files) * 100
