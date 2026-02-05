@@ -109,6 +109,25 @@ except Exception:
 
 UPDATER_LOCK_FILE = str(WORK_DIR / "rfsuite_updater.lock")
 
+
+def _cleanup_work_dir():
+    try:
+        if WORK_DIR.is_dir():
+            for item in WORK_DIR.iterdir():
+                try:
+                    if item.is_dir():
+                        shutil.rmtree(item)
+                    else:
+                        item.unlink()
+                except Exception:
+                    pass
+            try:
+                WORK_DIR.rmdir()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
 # Version types
 VERSION_RELEASE = "release"
 VERSION_SNAPSHOT = "snapshot"
@@ -1618,6 +1637,7 @@ class UpdaterGUI:
                 shutil.rmtree(temp_dir)
             except Exception:
                 pass
+            _cleanup_work_dir()
             
             # Success!
             self.set_status("Update completed successfully!")
@@ -1724,6 +1744,7 @@ def main():
         with open(UPDATER_LOCK_FILE, "w", encoding="utf-8") as f:
             f.write(str(os.getpid()))
         atexit.register(lambda: os.path.exists(UPDATER_LOCK_FILE) and os.remove(UPDATER_LOCK_FILE))
+        atexit.register(_cleanup_work_dir)
 
         if not check_dependencies():
             sys.exit(1)
