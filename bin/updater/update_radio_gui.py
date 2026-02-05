@@ -890,7 +890,7 @@ class UpdaterGUI:
             if version_type == VERSION_MASTER:
                 self.set_status("Fetching master via git...")
                 self.set_progress_mode('indeterminate')
-                self.log("Git sparse checkout: src/rfsuite/, .vscode/scripts/")
+                self.log("Git sparse checkout: src/rfsuite/, .vscode/scripts/, bin/sound-generator/soundpack/")
                 repo_dir = os.path.join(temp_dir, "repo")
                 if not self.sparse_checkout_master(repo_dir, locale):
                     repo_dir = None
