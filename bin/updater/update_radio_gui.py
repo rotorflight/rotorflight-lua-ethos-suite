@@ -64,6 +64,7 @@ ETHOS_VID = 0x0483
 ETHOS_PID = 0x5750
 TARGET_NAME = "rfsuite"
 DEFAULT_LOCALE = "en"
+AVAILABLE_LOCALES = ["en", "de", "es", "fr", "it", "nl"]
 DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
@@ -189,6 +190,7 @@ class UpdaterGUI:
         self.update_thread = None
         self.is_updating = False
         self.selected_version = tk.StringVar(value=VERSION_RELEASE)
+        self.selected_locale = tk.StringVar(value=DEFAULT_LOCALE)
         
         self.setup_ui()
     
@@ -244,6 +246,26 @@ class UpdaterGUI:
             variable=self.selected_version,
             value=VERSION_MASTER
         ).pack(side=tk.LEFT, padx=5)
+
+        # Language selection
+        locale_frame = ttk.Frame(self.root, padding="0 0 10 0")
+        locale_frame.pack(fill=tk.X, padx=10)
+
+        locale_label = ttk.Label(
+            locale_frame,
+            text="Language:",
+            font=("Arial", 9)
+        )
+        locale_label.pack(side=tk.LEFT, padx=5)
+
+        locale_combo = ttk.Combobox(
+            locale_frame,
+            textvariable=self.selected_locale,
+            values=AVAILABLE_LOCALES,
+            state="readonly",
+            width=8
+        )
+        locale_combo.pack(side=tk.LEFT, padx=5)
         
         # Status frame
         status_frame = ttk.LabelFrame(self.root, text="Status", padding="10")
@@ -468,7 +490,7 @@ class UpdaterGUI:
         
         return True
     
-    def get_download_url_and_name(self):
+    def get_download_url_and_name(self, locale):
         """Get the download URL and version name based on selected version."""
         import json
         
@@ -493,11 +515,17 @@ class UpdaterGUI:
                             tag_name = release.get('tag_name', '')
                             if tag_name:
                                 version = tag_name.split("/", 1)[1] if "/" in tag_name else tag_name
-                                asset_name = f"rotorflight-lua-ethos-suite-{version}-{DEFAULT_LOCALE}.zip"
+                                asset_name = f"rotorflight-lua-ethos-suite-{version}-{locale}.zip"
                                 for asset in release.get("assets", []):
                                     if asset.get("name") == asset_name:
                                         self.log(f"✓ Found latest pre-release asset: {asset_name}")
                                         return asset.get("browser_download_url"), tag_name, True
+                                if locale != DEFAULT_LOCALE:
+                                    fallback_name = f"rotorflight-lua-ethos-suite-{version}-{DEFAULT_LOCALE}.zip"
+                                    for asset in release.get("assets", []):
+                                        if asset.get("name") == fallback_name:
+                                            self.log(f"⚠ Locale '{locale}' asset not found; using {DEFAULT_LOCALE}")
+                                            return asset.get("browser_download_url"), tag_name, True
                                 # Fall back to source zip if asset missing
                                 url = f"{GITHUB_REPO_URL}/archive/refs/tags/{tag_name}.zip"
                                 self.log(f"✓ Found latest pre-release tag: {tag_name} (no asset)")
@@ -524,11 +552,17 @@ class UpdaterGUI:
                     tag_name = data.get('tag_name', '')
                     if tag_name:
                         version = tag_name.split("/", 1)[1] if "/" in tag_name else tag_name
-                        asset_name = f"rotorflight-lua-ethos-suite-{version}-{DEFAULT_LOCALE}.zip"
+                        asset_name = f"rotorflight-lua-ethos-suite-{version}-{locale}.zip"
                         for asset in data.get("assets", []):
                             if asset.get("name") == asset_name:
                                 self.log(f"✓ Found latest release asset: {asset_name}")
                                 return asset.get("browser_download_url"), tag_name, True
+                        if locale != DEFAULT_LOCALE:
+                            fallback_name = f"rotorflight-lua-ethos-suite-{version}-{DEFAULT_LOCALE}.zip"
+                            for asset in data.get("assets", []):
+                                if asset.get("name") == fallback_name:
+                                    self.log(f"⚠ Locale '{locale}' asset not found; using {DEFAULT_LOCALE}")
+                                    return asset.get("browser_download_url"), tag_name, True
                         # Fall back to source zip if asset missing
                         url = f"{GITHUB_REPO_URL}/archive/refs/tags/{tag_name}.zip"
                         self.log(f"✓ Found latest release tag: {tag_name} (no asset)")
@@ -561,7 +595,7 @@ class UpdaterGUI:
         except Exception:
             return False
 
-    def sparse_checkout_master(self, dest_dir):
+    def sparse_checkout_master(self, dest_dir, locale):
         """Sparse checkout required folders from master into dest_dir."""
         if not self.is_git_available():
             self.log("⚠ Git not available; falling back to ZIP download")
@@ -604,6 +638,8 @@ class UpdaterGUI:
         with open(sparse_file, "w", encoding="utf-8") as f:
             f.write("src/rfsuite/\n")
             f.write(".vscode/scripts/\n")
+            # Grab all soundpacks to avoid missing locale audio during master installs
+            f.write("bin/sound-generator/soundpack/\n")
 
         fetch = run_git(["fetch", "--depth", "1", "--progress", "origin", "master"], timeout=180)
         if fetch.returncode != 0:
@@ -617,6 +653,31 @@ class UpdaterGUI:
 
         self.log("✓ Sparse checkout completed")
         return True
+
+    def copy_sound_pack(self, repo_dir, dest_dir, locale):
+        """Copy sound pack for selected locale into destination tree."""
+        locale = locale or DEFAULT_LOCALE
+        src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
+        if not os.path.isdir(src):
+            if locale != DEFAULT_LOCALE:
+                self.log(f"⚠ Sound pack for '{locale}' not found; using {DEFAULT_LOCALE}")
+            locale = DEFAULT_LOCALE
+            src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
+        if not os.path.isdir(src):
+            self.log("⚠ Sound pack not found; skipping audio copy")
+            return False
+
+        dest = os.path.join(dest_dir, "audio", locale)
+        try:
+            if os.path.isdir(dest):
+                shutil.rmtree(dest)
+            os.makedirs(dest, exist_ok=True)
+            shutil.copytree(src, dest, dirs_exist_ok=True)
+            self.log(f"✓ Audio pack copied: {locale}")
+            return True
+        except Exception as e:
+            self.log(f"⚠ Failed to copy audio pack: {e}")
+            return False
 
     def locate_source_dir(self, extract_dir):
         """Locate the rfsuite source directory in extracted content."""
@@ -817,8 +878,11 @@ class UpdaterGUI:
             version_type = self.selected_version.get()
             version_name = "master" if version_type == VERSION_MASTER else ""
             version_suffix = self.derive_version_suffix(version_type, version_name)
+            locale = self.selected_locale.get() or DEFAULT_LOCALE
             self.log(f"Selected version: {version_name or version_type}")
+            self.log(f"Selected locale: {locale}")
             self.log(f"Version suffix for main.lua: {version_suffix}")
+            is_asset = False
             
             temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-")
             # Sanitize version name for filename (replace / with -)
@@ -832,14 +896,14 @@ class UpdaterGUI:
                 self.set_progress_mode('indeterminate')
                 self.log("Git sparse checkout: src/rfsuite/, .vscode/scripts/")
                 repo_dir = os.path.join(temp_dir, "repo")
-                if not self.sparse_checkout_master(repo_dir):
+                if not self.sparse_checkout_master(repo_dir, locale):
                     repo_dir = None
                 else:
                     self.log("✓ Using sparse checkout; skipping ZIP download")
 
             if repo_dir is None:
                 # Get download URL based on selected version (release/snapshot or master fallback)
-                download_url, version_name, is_asset = self.get_download_url_and_name()
+                download_url, version_name, is_asset = self.get_download_url_and_name(locale)
                 if not download_url:
                     raise RuntimeError("No download URL available")
                 if version_type != VERSION_MASTER:
@@ -862,9 +926,9 @@ class UpdaterGUI:
                                 if size_known:
                                     self.set_progress_mode('determinate', maximum=total_size)
                                 else:
-                                    total_size = 400 * 1024 * 1024  # 400MB estimate
+                                    total_size = 50 * 1024 * 1024  # 50MB estimate
                                     self.set_progress_mode('determinate', maximum=total_size)
-                                    self.log("  Download size unknown (no content-length); estimating 400MB")
+                                    self.log("  Download size unknown (no content-length); estimating 50MB")
 
                                 last_log_percent = -1
 
@@ -972,6 +1036,10 @@ class UpdaterGUI:
             
             self.log(f"✓ Files copied to radio successfully")
 
+            # Ensure audio pack matches selected locale for master/zip builds
+            if not is_asset:
+                self.copy_sound_pack(repo_dir, dest_dir, locale)
+
             # Update main.lua version suffix only for master (release/snapshot assets already stamped)
             main_lua_path = os.path.join(dest_dir, "main.lua")
             if version_type == VERSION_MASTER:
@@ -983,58 +1051,63 @@ class UpdaterGUI:
             if not self.is_updating:
                 return
             
-            # Step 9: Compile i18n translations
-            self.set_status("Compiling translations...")
-            self.log("Compiling i18n translations...")
-            self.set_progress_mode('indeterminate')
-            
-            try:
-                # Find i18n JSON file in the extracted repo (try multiple locations)
-                i18n_json = None
-                for base_path in [
-                    os.path.join(repo_dir, "src", TARGET_NAME, "i18n", "en.json"),
-                    os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", "en.json"),
-                    os.path.join(repo_dir, TARGET_NAME, "i18n", "en.json"),
-                ]:
-                    if os.path.isfile(base_path):
-                        i18n_json = base_path
-                        break
+            # Step 9: Compile i18n translations (skip for prebuilt assets)
+            if not is_asset:
+                self.set_status("Compiling translations...")
+                self.log("Compiling i18n translations...")
+                self.set_progress_mode('indeterminate')
                 
-                resolver_script = os.path.join(repo_dir, ".vscode", "scripts", "resolve_i18n_tags.py")
-                
-                if i18n_json and os.path.isfile(resolver_script):
-                    self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
-                    self.log(f"  Running resolver script...")
+                try:
+                    # Find i18n JSON file in the extracted repo (try multiple locations)
+                    i18n_json = None
+                    locale = self.selected_locale.get() or DEFAULT_LOCALE
+                    for base_path in [
+                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                    ]:
+                        if os.path.isfile(base_path):
+                            i18n_json = base_path
+                            break
                     
-                    result = subprocess.run(
-                        [sys.executable, resolver_script, "--json", i18n_json, "--root", dest_dir],
-                        capture_output=True,
-                        text=True,
-                        timeout=60
-                    )
+                    resolver_script = os.path.join(repo_dir, ".vscode", "scripts", "resolve_i18n_tags.py")
                     
-                    if result.returncode == 0:
-                        self.log("✓ i18n translations compiled successfully")
-                        if result.stdout:
-                            for line in result.stdout.strip().split('\n'):
-                                if line.strip():
-                                    self.log(f"  {line}")
+                    if i18n_json and os.path.isfile(resolver_script):
+                        self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
+                        self.log(f"  Running resolver script...")
+                        
+                        result = subprocess.run(
+                            [sys.executable, resolver_script, "--json", i18n_json, "--root", dest_dir],
+                            capture_output=True,
+                            text=True,
+                            timeout=60
+                        )
+                        
+                        if result.returncode == 0:
+                            self.log("✓ i18n translations compiled successfully")
+                            if result.stdout:
+                                for line in result.stdout.strip().split('\n'):
+                                    if line.strip():
+                                        self.log(f"  {line}")
+                        else:
+                            self.log(f"⚠ i18n compilation failed (exit code {result.returncode})")
+                            if result.stderr:
+                                for line in result.stderr.strip().split('\n')[:5]:  # Show first 5 error lines
+                                    if line.strip():
+                                        self.log(f"  {line}")
                     else:
-                        self.log(f"⚠ i18n compilation failed (exit code {result.returncode})")
-                        if result.stderr:
-                            for line in result.stderr.strip().split('\n')[:5]:  # Show first 5 error lines
-                                if line.strip():
-                                    self.log(f"  {line}")
-                else:
-                    self.log("⚠ i18n files not found, skipping translation compilation")
-                    if not os.path.isfile(i18n_json):
-                        self.log(f"  Missing: {i18n_json}")
-                    if not os.path.isfile(resolver_script):
-                        self.log(f"  Missing: {resolver_script}")
-            except subprocess.TimeoutExpired:
-                self.log("⚠ i18n compilation timed out")
-            except Exception as e:
-                self.log(f"⚠ i18n compilation error: {e}")
+                        self.log("⚠ i18n files not found, skipping translation compilation")
+                        if not os.path.isfile(i18n_json):
+                            self.log(f"  Missing: {i18n_json}")
+                        if not os.path.isfile(resolver_script):
+                            self.log(f"  Missing: {resolver_script}")
+                except subprocess.TimeoutExpired:
+                    self.log("⚠ i18n compilation timed out")
+                except Exception as e:
+                    self.log(f"⚠ i18n compilation error: {e}")
             
             if not self.is_updating:
                 return
