@@ -668,7 +668,7 @@ class UpdaterGUI:
             self.log("⚠ Version suffix pattern not found in main.lua")
             return False
 
-        updated = pattern.sub(rf'\1{version_suffix}\3', content)
+        updated = pattern.sub(lambda m: f"{m.group(1)}{version_suffix}{m.group(3)}", content)
         try:
             with open(main_lua_path, "w", encoding="utf-8") as f:
                 f.write(updated)
@@ -967,12 +967,13 @@ class UpdaterGUI:
             
             self.log(f"✓ Files copied to radio successfully")
 
-            # Update main.lua version suffix to match release/snapshot/master conventions
+            # Update main.lua version suffix only for master (release/snapshot assets already stamped)
             main_lua_path = os.path.join(dest_dir, "main.lua")
-            if os.path.isfile(main_lua_path):
-                self.update_main_lua_version(main_lua_path, version_suffix)
-            else:
-                self.log(f"⚠ main.lua not found at {main_lua_path} for version update")
+            if version_type == VERSION_MASTER:
+                if os.path.isfile(main_lua_path):
+                    self.update_main_lua_version(main_lua_path, version_suffix)
+                else:
+                    self.log(f"⚠ main.lua not found at {main_lua_path} for version update")
             
             if not self.is_updating:
                 return
