@@ -30,6 +30,7 @@ import webbrowser
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
+import atexit
 
 # GUI imports
 try:
@@ -76,6 +77,7 @@ LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-
 UPDATER_VERSION = "0.0.0"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
+UPDATER_LOCK_FILE = os.path.join(tempfile.gettempdir(), "rfsuite_updater.lock")
 
 # Version types
 VERSION_RELEASE = "release"
@@ -783,11 +785,13 @@ class UpdaterGUI:
         """Copy sound pack for selected locale into destination tree."""
         locale = locale or DEFAULT_LOCALE
         src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
+        self.log(f"  Audio source: {src}")
         if not os.path.isdir(src):
             if locale != DEFAULT_LOCALE:
                 self.log(f"⚠ Sound pack for '{locale}' not found; using {DEFAULT_LOCALE}")
             locale = DEFAULT_LOCALE
             src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
+            self.log(f"  Audio source fallback: {src}")
         if not os.path.isdir(src):
             self.log("⚠ Sound pack not found; skipping audio copy")
             return False
@@ -795,8 +799,10 @@ class UpdaterGUI:
         dest = os.path.join(dest_dir, "audio", locale)
         try:
             if os.path.isdir(dest):
+                self.log(f"  Removing existing audio pack: {dest}")
                 shutil.rmtree(dest)
             os.makedirs(dest, exist_ok=True)
+            self.log(f"  Copying audio pack to: {dest}")
             shutil.copytree(src, dest, dirs_exist_ok=True)
             self.log(f"✓ Audio pack copied: {locale}")
             return True
@@ -1161,8 +1167,11 @@ class UpdaterGUI:
             
             self.log(f"✓ Files copied to radio successfully")
 
+            self.set_status("Finalizing installation...")
+
             # Ensure audio pack matches selected locale for master/zip builds
             if not is_asset:
+                self.log("Updating audio pack...")
                 self.copy_sound_pack(repo_dir, dest_dir, locale)
 
             # Update main.lua version suffix only for master (release/snapshot assets already stamped)
@@ -1178,6 +1187,7 @@ class UpdaterGUI:
             
             # Step 9: Compile i18n translations (skip for prebuilt assets)
             if not is_asset:
+                self.log("Preparing translation compiler (this can take a moment)...")
                 self.set_status("Compiling translations...")
                 self.log("Compiling i18n translations...")
                 self.set_progress_mode('indeterminate')
@@ -1238,6 +1248,7 @@ class UpdaterGUI:
                 return
             
             # Step 11: Cleanup
+            self.log("Final cleanup...")
             self.set_status("Cleaning up...")
             self.log("Cleaning up temporary files...")
             self.set_progress_mode('indeterminate')
@@ -1325,6 +1336,21 @@ def check_dependencies():
 def main():
     """Main entry point."""
     try:
+        # Single-instance guard
+        if os.path.exists(UPDATER_LOCK_FILE):
+            try:
+                if 'tk' in sys.modules:
+                    root = tk.Tk()
+                    root.withdraw()
+                    messagebox.showinfo("Updater Running", "The updater is already running.")
+                    root.destroy()
+            except Exception:
+                pass
+            sys.exit(0)
+        with open(UPDATER_LOCK_FILE, "w", encoding="utf-8") as f:
+            f.write(str(os.getpid()))
+        atexit.register(lambda: os.path.exists(UPDATER_LOCK_FILE) and os.remove(UPDATER_LOCK_FILE))
+
         if not check_dependencies():
             sys.exit(1)
         
