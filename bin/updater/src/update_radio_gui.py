@@ -718,6 +718,9 @@ class UpdaterGUI:
         self.segment_items = []
         self.segment_labels = []
         self.segment_states = [False for _ in self.step_names]
+        self.segment_active_index = None
+        self.segment_pulse_on = False
+        self.segment_pulse_after_id = None
         self._draw_segment_bar()
         self.root.bind("<Configure>", lambda _e: self._draw_segment_bar())
         
@@ -858,7 +861,12 @@ class UpdaterGUI:
         seg_w = max(1, (width - padding * 2 - gap * (total_segments - 1)) // total_segments)
         x = padding
         for i, name in enumerate(self.step_names):
-            fill = "#1db954" if self.segment_states[i] else "#d9d9d9"
+            if self.segment_states[i]:
+                fill = "#1db954"
+            elif self.segment_active_index == i:
+                fill = "#f4a259" if self.segment_pulse_on else "#d9d9d9"
+            else:
+                fill = "#d9d9d9"
             rect = self.segment_bar.create_rectangle(
                 x,
                 bar_y1,
@@ -880,6 +888,7 @@ class UpdaterGUI:
 
     def reset_steps(self):
         self.segment_states = [False for _ in self.step_names]
+        self._stop_segment_pulse()
         self._draw_segment_bar()
 
     def mark_step_done(self, step_name):
@@ -887,10 +896,39 @@ class UpdaterGUI:
             return
         idx = self.step_names.index(step_name)
         self.segment_states[idx] = True
+        if self.segment_active_index == idx:
+            self._stop_segment_pulse()
         self._draw_segment_bar()
 
     def set_current_step(self, step_name):
+        if step_name in self.step_names:
+            self.segment_active_index = self.step_names.index(step_name)
+            self._start_segment_pulse()
         self.update_progress(0, f"Current step: {step_name}")
+
+    def _start_segment_pulse(self):
+        if self.segment_pulse_after_id is not None:
+            return
+        self.segment_pulse_on = False
+        self._pulse_active_segment()
+
+    def _stop_segment_pulse(self):
+        if self.segment_pulse_after_id is not None:
+            try:
+                self.root.after_cancel(self.segment_pulse_after_id)
+            except Exception:
+                pass
+        self.segment_pulse_after_id = None
+        self.segment_pulse_on = False
+        self.segment_active_index = None
+
+    def _pulse_active_segment(self):
+        if self.segment_active_index is None:
+            self.segment_pulse_after_id = None
+            return
+        self.segment_pulse_on = not self.segment_pulse_on
+        self._draw_segment_bar()
+        self.segment_pulse_after_id = self.root.after(500, self._pulse_active_segment)
     
     def count_files(self, directory):
         """Count total files in a directory recursively."""
@@ -1413,6 +1451,7 @@ class UpdaterGUI:
         self.is_updating = False
         self.log("Update cancelled by user")
         self.set_status("Update cancelled")
+        self._stop_segment_pulse()
         self.update_progress(0, "")
         self.update_button.config(state=tk.NORMAL)
         self.cancel_button.config(state=tk.DISABLED)
@@ -1792,6 +1831,7 @@ class UpdaterGUI:
             # Success!
             self.set_status("Update completed successfully!")
             self.progress_label.config(text="")
+            self._stop_segment_pulse()
             self.log("")
             self.log("=" * 50)
             self.log("✓ UPDATE COMPLETED SUCCESSFULLY!")
@@ -1826,6 +1866,7 @@ class UpdaterGUI:
         
         finally:
             self.is_updating = False
+            self._stop_segment_pulse()
             self.update_button.config(state=tk.NORMAL)
             self.cancel_button.config(state=tk.DISABLED)
             
