@@ -41,6 +41,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local eraseDataflashGo = false
+local progressBaseMessage
+local progressMspStatusLast
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -77,9 +79,24 @@ local function eraseDataflash()
     progress:value(0)
     progress:closeAllowed(false)
     progressCounter = 0
+    progressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+    progressMspStatusLast = nil
+    rfsuite.app.ui.registerProgressDialog(progress, progressBaseMessage)
 
     local message = {command = 72, processReply = function() isErase = false end}
     rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+local function updateProgressMessage()
+    if not progress or not progressBaseMessage then return end
+    local mspStatus = rfsuite.session and rfsuite.session.mspStatusMessage
+    if mspStatus and mspStatus ~= progressMspStatusLast then
+        progress:message(progressBaseMessage .. "\n" .. mspStatus)
+        progressMspStatusLast = mspStatus
+    elseif not mspStatus and progressMspStatusLast then
+        progress:message(progressBaseMessage)
+        progressMspStatusLast = nil
+    end
 end
 
 local function ensureCfg(box)
@@ -163,11 +180,15 @@ function render.wakeup(box)
     end
 
     if progress then
+        updateProgressMessage()
         progressCounter = (progressCounter or 0) + 20
         progress:value(progressCounter)
         if progressCounter >= 100 then
             progress:close()
+            rfsuite.app.ui.clearProgressDialog(progress)
             progress = nil
+            progressBaseMessage = nil
+            progressMspStatusLast = nil
         end
     end
 
