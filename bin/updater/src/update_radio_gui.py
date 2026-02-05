@@ -1899,6 +1899,10 @@ def main():
         
         root = tk.Tk()
         app = UpdaterGUI(root)
+        def on_close():
+            _cleanup_work_dir()
+            root.destroy()
+        root.protocol("WM_DELETE_WINDOW", on_close)
         root.mainloop()
     except Exception:
         error_log = Path(__file__).resolve().parent / "updater_error.log"
