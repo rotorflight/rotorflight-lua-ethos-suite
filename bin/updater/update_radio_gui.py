@@ -25,6 +25,8 @@ import re
 import ssl
 import traceback
 import math
+import json
+import webbrowser
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -71,6 +73,9 @@ DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
 COPY_SETTLE_SECONDS = 0.02
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
+UPDATER_VERSION = "0.0.0"
+UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
+UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 
 # Version types
 VERSION_RELEASE = "release"
@@ -331,6 +336,25 @@ class UpdaterGUI:
             width=8
         )
         locale_combo.pack(side=tk.LEFT, padx=5)
+
+        # Updater update notification (hidden by default)
+        self.update_notice = ttk.Frame(self.root, padding="8")
+        self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
+        self.update_notice.pack_forget()
+
+        self.update_notice_label = ttk.Label(
+            self.update_notice,
+            text="",
+            font=("Arial", 9)
+        )
+        self.update_notice_label.pack(side=tk.LEFT)
+
+        self.update_notice_button = ttk.Button(
+            self.update_notice,
+            text="Open Download Page",
+            command=lambda: webbrowser.open(UPDATER_INFO_URL)
+        )
+        self.update_notice_button.pack(side=tk.RIGHT)
         
         # Status frame
         status_frame = ttk.LabelFrame(self.root, text="Status", padding="10")
@@ -415,6 +439,9 @@ class UpdaterGUI:
             font=("Arial", 8),
             justify=tk.LEFT
         ).pack(anchor=tk.W)
+
+        # Async check for updater updates
+        threading.Thread(target=self.check_updater_update, daemon=True).start()
     
     def log(self, message):
         """Add a message to the log."""
@@ -427,6 +454,39 @@ class UpdaterGUI:
         """Open URL without SSL verification (to avoid SSL issues on some systems)."""
         context = ssl._create_unverified_context()
         return urlopen(req, timeout=timeout, context=context)
+
+    def _parse_version_tuple(self, version):
+        try:
+            parts = version.strip().split(".")
+            return tuple(int(p) for p in parts)
+        except Exception:
+            return None
+
+    def _is_newer_version(self, current, remote):
+        cur = self._parse_version_tuple(current)
+        rem = self._parse_version_tuple(remote)
+        if cur is None or rem is None:
+            return current != remote
+        return rem > cur
+
+    def check_updater_update(self):
+        """Check if a newer updater version is available."""
+        try:
+            req = Request(UPDATER_RELEASE_JSON_URL, headers={'User-Agent': 'Mozilla/5.0'})
+            with self.urlopen_insecure(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+            remote_version = data.get("version", "").strip()
+            remote_url = data.get("url") or UPDATER_INFO_URL
+            if remote_version and self._is_newer_version(UPDATER_VERSION, remote_version):
+                msg = f"Updater {remote_version} is available (current {UPDATER_VERSION})."
+                self.root.after(0, lambda: self.show_update_notice(msg, remote_url))
+        except Exception:
+            pass
+
+    def show_update_notice(self, message, url):
+        self.update_notice_label.config(text=message)
+        self.update_notice_button.config(command=lambda: webbrowser.open(url))
+        self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
     
     def set_status(self, message):
         """Update the status label."""
