@@ -88,6 +88,7 @@ THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
 THROTTLE_CHUNK = 32 * 1024          # 32 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024    # pause+fsync every 64 KiB written
 THROTTLE_PAUSE_S = 0.1              # 100 ms
+COPY_SETTLE_S = float(os.environ.get("DEPLOY_COPY_SETTLE_S", "0.10"))  # 100 ms
 
 # --- staging (run steps locally then copy to radio) --------------------------
 STAGING_ENABLED = True  # can be disabled via --no-stage or env DEPLOY_STAGE=0
@@ -341,6 +342,8 @@ def throttled_copyfile(src, dst):
         shutil.copymode(src, dst)
     except Exception:
         pass
+    if COPY_SETTLE_S > 0:
+        time.sleep(COPY_SETTLE_S)
 
 def scan_usb_drives_for_radio():
     """
@@ -912,7 +915,6 @@ def copy_verbose(src, dst):
     if DEPLOY_TO_RADIO:
         throttled_copyfile(src, dst)
         flush_fs()
-        time.sleep(0.05)
     else:
         shutil.copy(src, dst)
 

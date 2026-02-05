@@ -72,7 +72,7 @@ local logs = {
     }
 }
 
-local LEVEL = { debug = 0, info = 1, off = 2 }
+local LEVEL = { debug = 0, info = 1, error = 2, off = 3 }
 
 -- We keep this as a function so changing config.min_print_level at runtime works.
 local function getMinLevel(cfg)
@@ -181,17 +181,21 @@ function logs.log(message, level)
 
     local e = { msg = message, lvl = lvl }
 
-    -- RULE 1: info -> console
+    -- ROUTING RULES
+    -- info  : show info/error on console
+    -- debug : show info on console, log debug/error to disk
     if devLevel == "info" then
-        if lvl == LEVEL.info then
+        if lvl >= LEVEL.info and lvl < LEVEL.off then
             qConsole:push(e)
         end
         return
     end
 
-    -- RULE 2: debug -> disk (and optionally console if you ever want it later)
     if devLevel == "debug" then
-        if (lvl == LEVEL.debug or lvl == LEVEL.info) then
+        if lvl == LEVEL.info then
+            qConsole:push(e)
+            qDisk:push(e)
+        elseif lvl == LEVEL.debug or lvl == LEVEL.error then
             qDisk:push(e)
         end
     end
@@ -204,6 +208,11 @@ function logs.add(message, level)
         local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
         qConnect:push(e)
         qConnectView:push(e)
+    elseif level == "console" then
+        local cfg = logs.config
+        local pfx = getPrefix(cfg)
+        local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
+        qConsole:push(e)
     else
         logs.log(message, level)
     end
