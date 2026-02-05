@@ -501,8 +501,8 @@ class UpdaterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Rotorflight Lua Ethos Suite Updater")
-        self.root.geometry("700x680")
-        self.root.resizable(True, True)
+        self.root.geometry("800x680")
+        self.root.resizable(False, False)
         
         self.radio = RadioInterface()
         self.update_thread = None
@@ -565,8 +565,8 @@ class UpdaterGUI:
         def set_logo_image(path):
             try:
                 logo_img = tk.PhotoImage(file=str(path))
-                target_h = 70
-                target_w = 320
+                target_h = logo_frame.winfo_reqheight() or 80
+                target_w = logo_frame.winfo_reqwidth() or 340
                 scale_h = math.ceil(logo_img.height() / target_h)
                 scale_w = math.ceil(logo_img.width() / target_w)
                 scale = max(1, scale_h, scale_w)
@@ -579,7 +579,7 @@ class UpdaterGUI:
                     self.logo_label.configure(image=self.logo_image)
 
                 # Place logo and overlay tagline within the logo frame
-                self.logo_label.place(relx=1.0, x=0, y=0, anchor=tk.NE)
+                self.logo_label.place(relx=1.0, x=0, y=-5, anchor=tk.NE)
                 subtitle_right.place(relx=1.0, x=-6, y=52, anchor=tk.NE)
                 subtitle_right.lift()
             except Exception:
