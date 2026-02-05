@@ -110,6 +110,13 @@ except Exception:
 UPDATER_LOCK_FILE = str(WORK_DIR / "rfsuite_updater.lock")
 
 
+def _ensure_work_dir():
+    try:
+        WORK_DIR.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
+
 def _cleanup_work_dir():
     try:
         if WORK_DIR.is_dir():
@@ -588,6 +595,7 @@ class UpdaterGUI:
         # Async fetch logo to avoid blocking UI
         def fetch_logo():
             try:
+                _ensure_work_dir()
                 req = Request(LOGO_URL, headers={'User-Agent': 'Mozilla/5.0'})
                 with self.urlopen_insecure(req, timeout=10) as response:
                     logo_bytes = response.read()
@@ -1390,6 +1398,7 @@ class UpdaterGUI:
         if self.is_updating:
             return
         
+        _ensure_work_dir()
         self.is_updating = True
         self.update_button.config(state=tk.DISABLED)
         self.cancel_button.config(state=tk.NORMAL)
@@ -1539,6 +1548,7 @@ class UpdaterGUI:
             self.log(f"Version suffix for main.lua: {version_suffix}")
             is_asset = False
             
+            _ensure_work_dir()
             temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-", dir=str(WORK_DIR))
             # Sanitize version name for filename (replace / with -)
             safe_version_name = version_name.replace('/', '-').replace('\\', '-')
