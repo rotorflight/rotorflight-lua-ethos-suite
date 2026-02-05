@@ -246,20 +246,16 @@ class UpdaterGUI:
             variable=self.selected_version,
             value=VERSION_MASTER
         ).pack(side=tk.LEFT, padx=5)
-
-        # Language selection
-        locale_frame = ttk.Frame(self.root, padding="0 0 10 0")
-        locale_frame.pack(fill=tk.X, padx=10)
-
+        # Language selection (within version frame)
         locale_label = ttk.Label(
-            locale_frame,
+            version_frame,
             text="Language:",
             font=("Arial", 9)
         )
-        locale_label.pack(side=tk.LEFT, padx=5)
+        locale_label.pack(side=tk.LEFT, padx=10)
 
         locale_combo = ttk.Combobox(
-            locale_frame,
+            version_frame,
             textvariable=self.selected_locale,
             values=AVAILABLE_LOCALES,
             state="readonly",
