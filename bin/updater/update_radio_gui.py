@@ -23,6 +23,7 @@ import threading
 import subprocess
 import re
 import ssl
+import traceback
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -62,6 +63,10 @@ GITHUB_API_URL = "https://api.github.com/repos/rotorflight/rotorflight-lua-ethos
 ETHOS_VID = 0x0483
 ETHOS_PID = 0x5750
 TARGET_NAME = "rfsuite"
+DEFAULT_LOCALE = "en"
+DOWNLOAD_TIMEOUT = 120
+DOWNLOAD_RETRIES = 3
+DOWNLOAD_RETRY_DELAY = 2
 
 # Version types
 VERSION_RELEASE = "release"
@@ -471,47 +476,61 @@ class UpdaterGUI:
             # Master branch
             url = f"{GITHUB_REPO_URL}/archive/refs/heads/master.zip"
             name = "master"
-            return url, name
+            return url, name, False
         
         elif version_type == VERSION_SNAPSHOT:
             # Snapshot branch - try to get pre-release from GitHub API
             try:
                 self.log("Fetching latest pre-release information...")
                 req = Request(f"{GITHUB_API_URL}/releases", headers={'User-Agent': 'Mozilla/5.0'})
-                with self.urlopen_insecure(req, timeout=10) as response:
+                with self.urlopen_insecure(req, timeout=DOWNLOAD_TIMEOUT) as response:
                     data = json.loads(response.read().decode())
                     # Find first pre-release
                     for release in data:
                         if release.get('prerelease', False):
                             tag_name = release.get('tag_name', '')
                             if tag_name:
+                                version = tag_name.split("/", 1)[1] if "/" in tag_name else tag_name
+                                asset_name = f"rotorflight-lua-ethos-suite-{version}-{DEFAULT_LOCALE}.zip"
+                                for asset in release.get("assets", []):
+                                    if asset.get("name") == asset_name:
+                                        self.log(f"✓ Found latest pre-release asset: {asset_name}")
+                                        return asset.get("browser_download_url"), tag_name, True
+                                # Fall back to source zip if asset missing
                                 url = f"{GITHUB_REPO_URL}/archive/refs/tags/{tag_name}.zip"
-                                self.log(f"✓ Found latest pre-release: {tag_name}")
-                                return url, tag_name
+                                self.log(f"✓ Found latest pre-release tag: {tag_name} (no asset)")
+                                return url, tag_name, False
                     # No pre-release found, fall back to master
                     self.log("⚠ No pre-release found, using master branch")
                     url = f"{GITHUB_REPO_URL}/archive/refs/heads/master.zip"
                     name = "master (no snapshot)"
-                    return url, name
+                    return url, name, False
             except Exception as e:
                 self.log(f"⚠ Failed to fetch pre-release info: {e}")
                 self.log("  Falling back to master branch")
                 url = f"{GITHUB_REPO_URL}/archive/refs/heads/master.zip"
                 name = "master (fallback)"
-                return url, name
+                return url, name, False
         
         elif version_type == VERSION_RELEASE:
             # Latest release
             try:
                 self.log("Fetching latest release information...")
                 req = Request(f"{GITHUB_API_URL}/releases/latest", headers={'User-Agent': 'Mozilla/5.0'})
-                with self.urlopen_insecure(req, timeout=10) as response:
+                with self.urlopen_insecure(req, timeout=DOWNLOAD_TIMEOUT) as response:
                     data = json.loads(response.read().decode())
                     tag_name = data.get('tag_name', '')
                     if tag_name:
+                        version = tag_name.split("/", 1)[1] if "/" in tag_name else tag_name
+                        asset_name = f"rotorflight-lua-ethos-suite-{version}-{DEFAULT_LOCALE}.zip"
+                        for asset in data.get("assets", []):
+                            if asset.get("name") == asset_name:
+                                self.log(f"✓ Found latest release asset: {asset_name}")
+                                return asset.get("browser_download_url"), tag_name, True
+                        # Fall back to source zip if asset missing
                         url = f"{GITHUB_REPO_URL}/archive/refs/tags/{tag_name}.zip"
-                        self.log(f"✓ Found latest release: {tag_name}")
-                        return url, tag_name
+                        self.log(f"✓ Found latest release tag: {tag_name} (no asset)")
+                        return url, tag_name, False
                     else:
                         raise RuntimeError("No tag_name in release data")
             except Exception as e:
@@ -519,19 +538,102 @@ class UpdaterGUI:
                 self.log("  Falling back to master branch")
                 url = f"{GITHUB_REPO_URL}/archive/refs/heads/master.zip"
                 name = "master (fallback)"
-                return url, name
+                return url, name, False
         
         # Default fallback
         url = f"{GITHUB_REPO_URL}/archive/refs/heads/master.zip"
         name = "master"
-        return url, name
+        return url, name, False
+
+    def is_git_available(self):
+        """Check if git is available."""
+        try:
+            result = subprocess.run(
+                ["git", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            )
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def sparse_checkout_master(self, dest_dir):
+        """Sparse checkout required folders from master into dest_dir."""
+        if not self.is_git_available():
+            self.log("⚠ Git not available; falling back to ZIP download")
+            return False
+
+        self.log("Using git sparse checkout for master...")
+        os.makedirs(dest_dir, exist_ok=True)
+
+        def run_git(args, timeout=60):
+            cmd = ["git"] + args
+            self.log(f"  Git: {' '.join(cmd)}")
+            result = subprocess.run(
+                cmd,
+                cwd=dest_dir,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            )
+            if result.stdout:
+                for line in result.stdout.strip().splitlines():
+                    if line.strip():
+                        self.log(f"    [git] {line}")
+            if result.stderr:
+                for line in result.stderr.strip().splitlines():
+                    if line.strip():
+                        self.log(f"    [git] {line}")
+            return result
+
+        # Initialize repository and configure sparse checkout
+        init = run_git(["init"])
+        if init.returncode != 0:
+            self.log(f"⚠ Git init failed: {init.stderr.strip()}")
+            return False
+
+        run_git(["remote", "add", "origin", GITHUB_REPO_URL + ".git"])
+        run_git(["config", "core.sparseCheckout", "true"])
+
+        sparse_file = os.path.join(dest_dir, ".git", "info", "sparse-checkout")
+        with open(sparse_file, "w", encoding="utf-8") as f:
+            f.write("src/rfsuite/\n")
+            f.write(".vscode/scripts/\n")
+
+        fetch = run_git(["fetch", "--depth", "1", "--progress", "origin", "master"], timeout=180)
+        if fetch.returncode != 0:
+            self.log(f"⚠ Git fetch failed: {fetch.stderr.strip()}")
+            return False
+
+        checkout = run_git(["checkout", "FETCH_HEAD"])
+        if checkout.returncode != 0:
+            self.log(f"⚠ Git checkout failed: {checkout.stderr.strip()}")
+            return False
+
+        self.log("✓ Sparse checkout completed")
+        return True
+
+    def locate_source_dir(self, extract_dir):
+        """Locate the rfsuite source directory in extracted content."""
+        possible_paths = [
+            os.path.join(extract_dir, "scripts", TARGET_NAME),  # prebuilt asset layout
+            os.path.join(extract_dir, "src", TARGET_NAME),      # repo layout
+            os.path.join(extract_dir, TARGET_NAME),             # direct
+        ]
+        for path in possible_paths:
+            if os.path.isdir(path):
+                return path
+        return None
 
     def get_master_commit_suffix(self):
         """Fetch the latest master commit SHA and return commit-<sha7>."""
         import json
         try:
             req = Request(f"{GITHUB_API_URL}/commits/master", headers={'User-Agent': 'Mozilla/5.0'})
-            with self.urlopen_insecure(req, timeout=10) as response:
+            with self.urlopen_insecure(req, timeout=DOWNLOAD_TIMEOUT) as response:
                 data = json.loads(response.read().decode())
                 sha = data.get("sha", "")
                 if sha:
@@ -704,115 +806,139 @@ class UpdaterGUI:
             if not self.is_updating:
                 return
             
-            # Step 5: Download suite from GitHub
-            self.set_status("Downloading suite from GitHub...")
-            
-            # Get download URL based on selected version
-            download_url, version_name = self.get_download_url_and_name()
-            version_suffix = self.derive_version_suffix(self.selected_version.get(), version_name)
-            self.log(f"Selected version: {version_name}")
+            # Step 5: Download suite from GitHub (or git sparse checkout for master)
+            self.set_status("Preparing download...")
+
+            version_type = self.selected_version.get()
+            version_name = "master" if version_type == VERSION_MASTER else ""
+            version_suffix = self.derive_version_suffix(version_type, version_name)
+            self.log(f"Selected version: {version_name or version_type}")
             self.log(f"Version suffix for main.lua: {version_suffix}")
-            self.log(f"Downloading from: {download_url}")
             
             temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-")
             # Sanitize version name for filename (replace / with -)
             safe_version_name = version_name.replace('/', '-').replace('\\', '-')
             zip_path = os.path.join(temp_dir, f"{safe_version_name}.zip")
-            
-            try:
-                req = Request(download_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with self.urlopen_insecure(req, timeout=30) as response:
-                    total_size = int(response.headers.get('content-length', 0))
-                    downloaded = 0
 
-                    if total_size > 0:
-                        self.set_progress_mode('determinate', maximum=total_size)
-                    else:
-                        total_size = 400 * 1024 * 1024  # 400MB estimate
-                        self.set_progress_mode('determinate', maximum=total_size)
-                        self.log("  Download size unknown (no content-length); estimating 400MB")
+            # For master, prefer sparse checkout to avoid full repo download
+            repo_dir = None
+            if version_type == VERSION_MASTER:
+                self.set_status("Fetching master via git...")
+                self.set_progress_mode('indeterminate')
+                self.log("Git sparse checkout: src/rfsuite/, .vscode/scripts/")
+                repo_dir = os.path.join(temp_dir, "repo")
+                if not self.sparse_checkout_master(repo_dir):
+                    repo_dir = None
+                else:
+                    self.log("✓ Using sparse checkout; skipping ZIP download")
 
-                    last_log_percent = -1
-                    last_log_bytes = 0
-                    log_chunk_bytes = 5 * 1024 * 1024  # 5MB when size unknown
+            if repo_dir is None:
+                # Get download URL based on selected version (release/snapshot or master fallback)
+                download_url, version_name, is_asset = self.get_download_url_and_name()
+                if not download_url:
+                    raise RuntimeError("No download URL available")
+                if version_type != VERSION_MASTER:
+                    version_suffix = self.derive_version_suffix(version_type, version_name)
+                    self.log(f"Selected version: {version_name}")
+                    self.log(f"Version suffix for main.lua: {version_suffix}")
+                self.log(f"Downloading from: {download_url}")
+                try:
+                    req = Request(download_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    attempt = 0
+                    while True:
+                        attempt += 1
+                        try:
+                            self.log(f"  Download attempt {attempt}/{DOWNLOAD_RETRIES} (timeout {DOWNLOAD_TIMEOUT}s)")
+                            with self.urlopen_insecure(req, timeout=DOWNLOAD_TIMEOUT) as response:
+                                total_size = int(response.headers.get('content-length', 0))
+                                size_known = total_size > 0
+                                downloaded = 0
 
-                    with open(zip_path, 'wb') as f:
-                        while True:
-                            if not self.is_updating:
-                                return
+                                if size_known:
+                                    self.set_progress_mode('determinate', maximum=total_size)
+                                else:
+                                    total_size = 400 * 1024 * 1024  # 400MB estimate
+                                    self.set_progress_mode('determinate', maximum=total_size)
+                                    self.log("  Download size unknown (no content-length); estimating 400MB")
 
-                            chunk = response.read(8192)
-                            if not chunk:
-                                break
+                                last_log_percent = -1
 
-                            f.write(chunk)
-                            downloaded += len(chunk)
+                                with open(zip_path, 'wb') as f:
+                                    while True:
+                                        if not self.is_updating:
+                                            return
 
-                            if total_size > 0:
-                                percent = (downloaded / total_size) * 100
-                                if int(percent) != last_log_percent:
-                                    last_log_percent = int(percent)
-                                    self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
-                                self.update_progress(downloaded, f"Downloading... {percent:.1f}%")
-                            else:
-                                if downloaded - last_log_bytes >= log_chunk_bytes:
-                                    last_log_bytes = downloaded
-                                    self.log(f"  Downloaded: {downloaded} bytes (estimated)")
-                                self.update_progress(downloaded, f"Downloading... {downloaded} bytes (est.)")
+                                        chunk = response.read(8192)
+                                        if not chunk:
+                                            break
 
-                self.log(f"✓ Downloaded {downloaded} bytes")
-            except (URLError, HTTPError) as e:
-                self.log(f"✗ Download failed: {e}")
-                raise
+                                        f.write(chunk)
+                                        downloaded += len(chunk)
+
+                                        percent = (downloaded / total_size) * 100 if total_size > 0 else 0
+                                        if int(percent) != last_log_percent:
+                                            last_log_percent = int(percent)
+                                            if size_known:
+                                                self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
+                                            else:
+                                                self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%) (estimated)")
+                                        self.update_progress(downloaded, f"Downloading... {percent:.1f}%")
+
+                            break
+                        except (URLError, HTTPError) as e:
+                            if attempt >= DOWNLOAD_RETRIES:
+                                raise
+                            self.log(f"  Download failed: {e}. Retrying in {DOWNLOAD_RETRY_DELAY}s...")
+                            time.sleep(DOWNLOAD_RETRY_DELAY)
+                    self.log(f"✓ Downloaded {downloaded} bytes")
+                except (URLError, HTTPError) as e:
+                    self.log(f"✗ Download failed: {e}")
+                    raise
             
             if not self.is_updating:
                 return
             
-            # Step 6: Extract archive
-            self.set_status("Extracting archive...")
-            self.log("Extracting downloaded archive...")
-            
-            extract_dir = os.path.join(temp_dir, "extracted")
-            
-            try:
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(extract_dir)
-                self.log("✓ Archive extracted")
-            except Exception as e:
-                self.log(f"✗ Extraction failed: {e}")
-                raise
+            # Step 6: Extract archive (if we downloaded a zip)
+            extract_dir = None
+            if repo_dir is None:
+                self.set_status("Extracting archive...")
+                self.log("Extracting downloaded archive...")
+
+                extract_dir = os.path.join(temp_dir, "extracted")
+
+                try:
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_dir)
+                    self.log("✓ Archive extracted")
+                except Exception as e:
+                    self.log(f"✗ Extraction failed: {e}")
+                    raise
             
             if not self.is_updating:
                 return
             
             # Step 7: Find source directory
             self.log("Locating source files...")
-            
-            # GitHub creates a folder like "rotorflight-lua-ethos-suite-master"
-            extracted_items = os.listdir(extract_dir)
-            if not extracted_items:
-                raise RuntimeError("Extracted archive is empty")
-            
-            repo_dir = os.path.join(extract_dir, extracted_items[0])
-            
-            # Try different possible locations for the source
-            possible_paths = [
-                os.path.join(repo_dir, "src", TARGET_NAME),      # Standard: src/rfsuite
-                os.path.join(repo_dir, "scripts", TARGET_NAME),  # Alternative: scripts/rfsuite
-                os.path.join(repo_dir, TARGET_NAME),             # Direct: rfsuite
-            ]
-            
-            src_dir = None
-            for path in possible_paths:
-                if os.path.isdir(path):
-                    src_dir = path
-                    self.log(f"✓ Found source: {os.path.relpath(path, extract_dir)}")
-                    break
+
+            if repo_dir is None:
+                # GitHub creates a folder like "rotorflight-lua-ethos-suite-master"
+                extracted_items = os.listdir(extract_dir)
+                if not extracted_items:
+                    raise RuntimeError("Extracted archive is empty")
+                repo_dir = os.path.join(extract_dir, extracted_items[0])
+
+            src_dir = self.locate_source_dir(repo_dir)
+            if src_dir:
+                self.log(f"✓ Found source: {os.path.relpath(src_dir, repo_dir)}")
             
             if not src_dir:
                 self.log(f"✗ Source directory not found in any of these locations:")
-                for path in possible_paths:
-                    self.log(f"  - {os.path.relpath(path, extract_dir)}")
+                for path in [
+                    os.path.join(repo_dir, "scripts", TARGET_NAME),
+                    os.path.join(repo_dir, "src", TARGET_NAME),
+                    os.path.join(repo_dir, TARGET_NAME),
+                ]:
+                    self.log(f"  - {os.path.relpath(path, repo_dir)}")
                 raise RuntimeError(f"Could not find {TARGET_NAME} in extracted archive")
             
             if not self.is_updating:
@@ -994,12 +1120,29 @@ def check_dependencies():
 
 def main():
     """Main entry point."""
-    if not check_dependencies():
+    try:
+        if not check_dependencies():
+            sys.exit(1)
+        
+        root = tk.Tk()
+        app = UpdaterGUI(root)
+        root.mainloop()
+    except Exception:
+        error_log = Path(__file__).resolve().parent / "updater_error.log"
+        with open(error_log, "w", encoding="utf-8") as f:
+            f.write(traceback.format_exc())
+        try:
+            if 'tk' in sys.modules:
+                root = tk.Tk()
+                root.withdraw()
+                messagebox.showerror(
+                    "Updater Error",
+                    f"Updater failed to start.\n\nDetails written to:\n{error_log}"
+                )
+                root.destroy()
+        except Exception:
+            pass
         sys.exit(1)
-    
-    root = tk.Tk()
-    app = UpdaterGUI(root)
-    root.mainloop()
 
 
 if __name__ == "__main__":
