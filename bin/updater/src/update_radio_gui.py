@@ -462,6 +462,7 @@ class UpdaterGUI:
         self.is_updating = False
         self.selected_version = tk.StringVar(value=VERSION_RELEASE)
         self.selected_locale = tk.StringVar(value=DEFAULT_LOCALE)
+        self.chkdsk_attempted = False
         
         self.setup_ui()
     
@@ -779,6 +780,47 @@ class UpdaterGUI:
             total += len(files)
         return total
     
+    def attempt_chkdsk(self, path):
+        """Attempt to repair a corrupt filesystem, then prompt user to retry."""
+        if sys.platform != 'win32':
+            return False
+        if self.chkdsk_attempted:
+            return False
+        drive, _ = os.path.splitdrive(path)
+        if not drive:
+            return False
+        
+        self.chkdsk_attempted = True
+        self.log(f"Detected filesystem error. Running chkdsk {drive} /f ...")
+        try:
+            result = subprocess.run(
+                ["chkdsk", drive, "/f"],
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            if result.stdout:
+                for line in result.stdout.strip().splitlines()[:8]:
+                    self.log(f"  [chkdsk] {line}")
+            if result.stderr:
+                for line in result.stderr.strip().splitlines()[:8]:
+                    self.log(f"  [chkdsk] {line}")
+        except Exception as e:
+            self.log(f"  [chkdsk] Failed to run: {e}")
+        
+        if 'tk' in sys.modules:
+            try:
+                root = tk.Tk()
+                root.withdraw()
+                messagebox.showinfo(
+                    "Filesystem Repair",
+                    f"CHKDSK was run on {drive}. Please click Update again to retry."
+                )
+                root.destroy()
+            except Exception:
+                pass
+        return True
+    
     def copy_tree_with_progress(self, src, dst):
         """Copy directory tree with progress updates."""
         # Count total files
@@ -818,6 +860,11 @@ class UpdaterGUI:
                         self.log(f"  [{copied}/{total_files}] {rel_file}")
                 
                 except Exception as e:
+                    winerr = getattr(e, "winerror", None)
+                    if winerr == 483:
+                        self.log(f"  ⚠ Device error while copying {file}. The drive may be corrupted.")
+                        self.attempt_chkdsk(dst_file)
+                        return False
                     self.log(f"  ⚠ Failed to copy {file}: {e}")
         
         return True
@@ -848,7 +895,19 @@ class UpdaterGUI:
                 return False
             
             try:
-                os.remove(file_path)
+                attempt = 0
+                while True:
+                    try:
+                        os.remove(file_path)
+                        break
+                    except OSError as e:
+                        attempt += 1
+                        winerr = getattr(e, "winerror", None)
+                        if winerr == 483 and attempt < 3:
+                            # Transient device error on removable drives; wait and retry.
+                            time.sleep(0.5)
+                            continue
+                        raise
                 deleted += 1
                 
                 # Update progress
@@ -861,7 +920,13 @@ class UpdaterGUI:
                     self.log(f"  [{deleted}/{total_files}] {rel_file}")
             
             except Exception as e:
-                self.log(f"  ⚠ Failed to delete {os.path.basename(file_path)}: {e}")
+                winerr = getattr(e, "winerror", None)
+                if winerr == 483:
+                    self.log(f"  ⚠ Device error while deleting {os.path.basename(file_path)}. The drive may be corrupted.")
+                    self.attempt_chkdsk(file_path)
+                    return False
+                else:
+                    self.log(f"  ⚠ Failed to delete {os.path.basename(file_path)}: {e}")
         
         # Remove empty directories
         for root, dirs, files in os.walk(directory, topdown=False):
