@@ -682,7 +682,7 @@ class UpdaterGUI:
         # Progress bar
         self.progress = ttk.Progressbar(
             status_frame,
-            mode='indeterminate',
+            mode='determinate',
             length=300
         )
         self.progress.pack(pady=5)
@@ -694,6 +694,8 @@ class UpdaterGUI:
             font=("Arial", 8)
         )
         self.progress_label.pack()
+        self.progress_phase_start = 0.0
+        self.progress_phase_span = 100.0
         
         # Log frame
         log_frame = ttk.LabelFrame(self.root, text="Log", padding="10")
@@ -813,12 +815,32 @@ class UpdaterGUI:
             self.progress.start()
             self.progress_label.config(text="")
         self.root.update_idletasks()
-    
+
     def update_progress(self, value, text=""):
         """Update progress bar value and label."""
         self.progress.config(value=value)
         self.progress_label.config(text=text)
         self.root.update_idletasks()
+
+    def set_phase(self, start, span, label=""):
+        """Define a progress phase within the 0-100 range."""
+        start = max(0.0, min(100.0, float(start)))
+        span = max(0.0, min(100.0 - start, float(span)))
+        self.progress_phase_start = start
+        self.progress_phase_span = span
+        self.set_progress_mode('determinate', maximum=100)
+        if label:
+            self.progress_label.config(text=label)
+        self.update_progress(self.progress_phase_start, label or self.progress_label.cget("text"))
+
+    def update_phase(self, phase_percent, text=""):
+        """Update progress within the current phase (0-100)."""
+        pct = max(0.0, min(100.0, float(phase_percent)))
+        overall = self.progress_phase_start + (self.progress_phase_span * pct / 100.0)
+        self.update_progress(overall, text)
+
+    def finish_phase(self, text=""):
+        self.update_phase(100.0, text)
     
     def count_files(self, directory):
         """Count total files in a directory recursively."""
@@ -868,14 +890,15 @@ class UpdaterGUI:
                 pass
         return True
     
-    def copy_tree_with_progress(self, src, dst):
+    def copy_tree_with_progress(self, src, dst, use_phase=False):
         """Copy directory tree with progress updates."""
         # Count total files
         total_files = self.count_files(src)
         self.log(f"  Total files to copy: {total_files}")
         
-        # Switch to determinate progress
-        self.set_progress_mode('determinate', maximum=total_files)
+        # Switch to determinate progress when not using 0-100 phase tracking
+        if not use_phase:
+            self.set_progress_mode('determinate', maximum=total_files)
         
         copied = 0
         for root, dirs, files in os.walk(src):
@@ -898,8 +921,11 @@ class UpdaterGUI:
                     time.sleep(COPY_SETTLE_SECONDS)
                     
                     # Update progress
-                    percent = (copied / total_files) * 100
-                    self.update_progress(copied, f"Copied {copied}/{total_files} files ({percent:.1f}%)")
+                    percent = (copied / total_files) * 100 if total_files else 100
+                    if use_phase:
+                        self.update_phase(percent, f"Copied {copied}/{total_files} files ({percent:.1f}%)")
+                    else:
+                        self.update_progress(copied, f"Copied {copied}/{total_files} files ({percent:.1f}%)")
                     
                     # Log every 10th file or last file
                     if copied % 10 == 0 or copied == total_files:
@@ -916,7 +942,7 @@ class UpdaterGUI:
         
         return True
     
-    def remove_tree_with_progress(self, directory):
+    def remove_tree_with_progress(self, directory, use_phase=False):
         """Remove directory tree with progress updates."""
         if not os.path.exists(directory):
             return True
@@ -925,8 +951,9 @@ class UpdaterGUI:
         total_files = self.count_files(directory)
         self.log(f"  Total files to delete: {total_files}")
         
-        # Switch to determinate progress
-        self.set_progress_mode('determinate', maximum=total_files)
+        # Switch to determinate progress when not using 0-100 phase tracking
+        if not use_phase:
+            self.set_progress_mode('determinate', maximum=total_files)
         
         deleted = 0
         files_to_delete = []
@@ -959,8 +986,11 @@ class UpdaterGUI:
                 time.sleep(COPY_SETTLE_SECONDS)
                 
                 # Update progress
-                percent = (deleted / total_files) * 100
-                self.update_progress(deleted, f"Deleted {deleted}/{total_files} files ({percent:.1f}%)")
+                percent = (deleted / total_files) * 100 if total_files else 100
+                if use_phase:
+                    self.update_phase(percent, f"Deleted {deleted}/{total_files} files ({percent:.1f}%)")
+                else:
+                    self.update_progress(deleted, f"Deleted {deleted}/{total_files} files ({percent:.1f}%)")
                 
                 # Log every 10th file or last file
                 if deleted % 10 == 0 or deleted == total_files:
@@ -1156,7 +1186,7 @@ class UpdaterGUI:
         self.log("✓ Sparse checkout completed")
         return True
 
-    def copy_sound_pack(self, repo_dir, dest_dir, locale):
+    def copy_sound_pack(self, repo_dir, dest_dir, locale, use_phase=False):
         """Copy sound pack for selected locale into destination tree."""
         locale = locale or DEFAULT_LOCALE
         src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
@@ -1189,6 +1219,9 @@ class UpdaterGUI:
                     dst_file = os.path.join(dst_dir, file)
                     shutil.copy2(src_file, dst_file)
                     copied += 1
+                    percent = (copied / total_files) * 100 if total_files else 100
+                    if use_phase:
+                        self.update_phase(percent, f"Audio {copied}/{total_files} files ({percent:.1f}%)")
                     self.log(f"  [AUDIO {copied}/{total_files}] {os.path.relpath(src_file, src)}")
                     time.sleep(COPY_SETTLE_SECONDS)
             self.log(f"✓ Audio pack copied: {locale}")
@@ -1291,7 +1324,8 @@ class UpdaterGUI:
         self.is_updating = True
         self.update_button.config(state=tk.DISABLED)
         self.cancel_button.config(state=tk.NORMAL)
-        self.progress.start()
+        self.set_progress_mode('determinate', maximum=100)
+        self.update_progress(0, "Starting...")
         
         self.update_thread = threading.Thread(target=self.update_process, daemon=True)
         self.update_thread.start()
@@ -1302,14 +1336,20 @@ class UpdaterGUI:
         self.log("Update cancelled by user")
         self.set_status("Update cancelled")
         self.progress.stop()
+        self.update_progress(0, "")
         self.update_button.config(state=tk.NORMAL)
         self.cancel_button.config(state=tk.DISABLED)
     
     def update_process(self):
         """Main update process (runs in background thread)."""
         try:
+            # Overall progress is 0-100 across phases
+            self.set_progress_mode('determinate', maximum=100)
+            self.update_progress(0, "Starting...")
+
             # Step 1: Check if radio is already mounted (storage mode)
             self.set_status("Looking for radio...")
+            self.set_phase(0, 5, "Looking for radio...")
             self.log("Checking if radio is already in storage mode...")
             
             scripts_dir = None
@@ -1334,10 +1374,16 @@ class UpdaterGUI:
             
             if not self.is_updating:
                 return
+
+            if radio_already_mounted:
+                self.finish_phase("Radio found")
+                self.set_phase(5, 10, "Radio ready")
+                self.finish_phase("Radio ready")
             
             # Step 2: If not mounted, try to connect via HID and switch mode
             if not radio_already_mounted:
                 self.set_status("Connecting to radio...")
+                self.set_phase(5, 10, "Connecting to radio...")
                 self.log("Radio not in storage mode, attempting to connect via USB HID...")
                 
                 try:
@@ -1401,6 +1447,7 @@ class UpdaterGUI:
                     raise RuntimeError("Could not find radio scripts directory")
                 
                 self.log(f"✓ Found scripts directory: {scripts_dir}")
+                self.finish_phase("Radio ready")
             else:
                 # Radio was already mounted, scripts_dir is already set
                 self.log("Skipping mount wait (radio already mounted)")
@@ -1410,6 +1457,7 @@ class UpdaterGUI:
             
             # Step 5: Download suite from GitHub (or git sparse checkout for master)
             self.set_status("Preparing download...")
+            self.set_phase(15, 35, "Preparing download...")
 
             version_type = self.selected_version.get()
             version_name = "master" if version_type == VERSION_MASTER else ""
@@ -1429,13 +1477,14 @@ class UpdaterGUI:
             repo_dir = None
             if version_type == VERSION_MASTER:
                 self.set_status("Fetching master via git...")
-                self.set_progress_mode('indeterminate')
+                self.update_phase(0, "Fetching master via git...")
                 self.log("Git sparse checkout: src/rfsuite/, .vscode/scripts/, bin/sound-generator/soundpack/")
                 repo_dir = os.path.join(temp_dir, "repo")
                 if not self.sparse_checkout_master(repo_dir, locale):
                     repo_dir = None
                 else:
                     self.log("✓ Using sparse checkout; skipping ZIP download")
+                    self.finish_phase("Fetched master via git")
 
             if repo_dir is None:
                 # Get download URL based on selected version (release/snapshot or master fallback)
@@ -1460,10 +1509,10 @@ class UpdaterGUI:
                                 downloaded = 0
 
                                 if size_known:
-                                    self.set_progress_mode('determinate', maximum=total_size)
+                                    self.update_phase(0, "Downloading...")
                                 else:
                                     total_size = 50 * 1024 * 1024  # 50MB estimate
-                                    self.set_progress_mode('determinate', maximum=total_size)
+                                    self.update_phase(0, "Downloading (size unknown)...")
                                     self.log("  Download size unknown (no content-length); estimating 50MB")
 
                                 last_log_percent = -1
@@ -1487,7 +1536,7 @@ class UpdaterGUI:
                                                 self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
                                             else:
                                                 self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%) (estimated)")
-                                        self.update_progress(downloaded, f"Downloading... {percent:.1f}%")
+                                        self.update_phase(percent, f"Downloading... {percent:.1f}%")
 
                             break
                         except (URLError, HTTPError) as e:
@@ -1496,6 +1545,7 @@ class UpdaterGUI:
                             self.log(f"  Download failed: {e}. Retrying in {DOWNLOAD_RETRY_DELAY}s...")
                             time.sleep(DOWNLOAD_RETRY_DELAY)
                     self.log(f"✓ Downloaded {downloaded} bytes")
+                    self.finish_phase("Download complete")
                 except (URLError, HTTPError) as e:
                     self.log(f"✗ Download failed: {e}")
                     raise
@@ -1507,6 +1557,7 @@ class UpdaterGUI:
             extract_dir = None
             if repo_dir is None:
                 self.set_status("Extracting archive...")
+                self.set_phase(50, 10, "Extracting archive...")
                 self.log("Extracting downloaded archive...")
 
                 extract_dir = os.path.join(temp_dir, "extracted")
@@ -1515,6 +1566,7 @@ class UpdaterGUI:
                     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                         zip_ref.extractall(extract_dir)
                     self.log("✓ Archive extracted")
+                    self.finish_phase("Archive extracted")
                 except Exception as e:
                     self.log(f"✗ Extraction failed: {e}")
                     raise
@@ -1555,29 +1607,39 @@ class UpdaterGUI:
             self.log("Copying new files to radio...")
             
             # Remove old installation
+            self.set_phase(60, 10, "Removing old files...")
             if os.path.isdir(dest_dir):
                 self.log("  Removing old installation...")
-                if not self.remove_tree_with_progress(dest_dir):
+                if not self.remove_tree_with_progress(dest_dir, use_phase=True):
                     self.log("⚠ Removal cancelled")
                     return
+                self.finish_phase("Old files removed")
+            else:
+                self.finish_phase("No existing files to remove")
             
             if not self.is_updating:
                 return
             
             # Copy new files
             self.log("  Copying new files...")
-            if not self.copy_tree_with_progress(src_dir, dest_dir):
+            self.set_phase(70, 20, "Copying files...")
+            if not self.copy_tree_with_progress(src_dir, dest_dir, use_phase=True):
                 self.log("⚠ Copy cancelled")
                 return
+            self.finish_phase("Files copied")
             
             self.log(f"✓ Files copied to radio successfully")
 
             self.set_status("Finalizing installation...")
 
             # Ensure audio pack matches selected locale for master/zip builds
+            self.set_phase(90, 5, "Updating audio pack...")
             if not is_asset:
                 self.log("Updating audio pack...")
-                self.copy_sound_pack(repo_dir, dest_dir, locale)
+                self.copy_sound_pack(repo_dir, dest_dir, locale, use_phase=True)
+                self.finish_phase("Audio pack updated")
+            else:
+                self.finish_phase("Audio pack up to date")
 
             # Update main.lua version suffix only for master (release/snapshot assets already stamped)
             main_lua_path = os.path.join(dest_dir, "main.lua")
@@ -1595,7 +1657,7 @@ class UpdaterGUI:
                 self.log("Preparing translation compiler (this can take a moment)...")
                 self.set_status("Compiling translations...")
                 self.log("Compiling i18n translations...")
-                self.set_progress_mode('indeterminate')
+                self.set_phase(95, 3, "Compiling translations...")
                 
                 try:
                     # Find i18n JSON file in the extracted repo (try multiple locations)
@@ -1618,12 +1680,14 @@ class UpdaterGUI:
                         self.log("  Running embedded i18n compiler...")
                         compile_i18n_tags(i18n_json, dest_dir, self.log)
                         self.log("OK i18n translations compiled successfully")
+                        self.finish_phase("Translations compiled")
                     else:
                         self.log("WARN i18n files not found, skipping translation compilation")
                         if i18n_json:
                             self.log(f"  Missing: {i18n_json}")
                 except Exception as e:
                     self.log(f"WARN i18n compilation error: {e}")
+                    self.finish_phase("Translations step complete")
             
             if not self.is_updating:
                 return
@@ -1632,12 +1696,13 @@ class UpdaterGUI:
             self.log("Final cleanup...")
             self.set_status("Cleaning up...")
             self.log("Cleaning up temporary files...")
-            self.set_progress_mode('indeterminate')
+            self.set_phase(98, 2, "Cleaning up...")
             try:
                 shutil.rmtree(temp_dir)
             except Exception:
                 pass
             _cleanup_work_dir()
+            self.finish_phase("Cleanup complete")
             
             # Success!
             self.set_status("Update completed successfully!")
