@@ -22,6 +22,7 @@ import zipfile
 import threading
 import subprocess
 import re
+import ssl
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -328,6 +329,11 @@ class UpdaterGUI:
         self.log_text.insert(tk.END, f"[{timestamp}] {message}\n")
         self.log_text.see(tk.END)
         self.root.update_idletasks()
+
+    def urlopen_insecure(self, req, timeout=10):
+        """Open URL without SSL verification (to avoid SSL issues on some systems)."""
+        context = ssl._create_unverified_context()
+        return urlopen(req, timeout=timeout, context=context)
     
     def set_status(self, message):
         """Update the status label."""
@@ -472,7 +478,7 @@ class UpdaterGUI:
             try:
                 self.log("Fetching latest pre-release information...")
                 req = Request(f"{GITHUB_API_URL}/releases", headers={'User-Agent': 'Mozilla/5.0'})
-                with urlopen(req, timeout=10) as response:
+                with self.urlopen_insecure(req, timeout=10) as response:
                     data = json.loads(response.read().decode())
                     # Find first pre-release
                     for release in data:
@@ -499,7 +505,7 @@ class UpdaterGUI:
             try:
                 self.log("Fetching latest release information...")
                 req = Request(f"{GITHUB_API_URL}/releases/latest", headers={'User-Agent': 'Mozilla/5.0'})
-                with urlopen(req, timeout=10) as response:
+                with self.urlopen_insecure(req, timeout=10) as response:
                     data = json.loads(response.read().decode())
                     tag_name = data.get('tag_name', '')
                     if tag_name:
@@ -525,7 +531,7 @@ class UpdaterGUI:
         import json
         try:
             req = Request(f"{GITHUB_API_URL}/commits/master", headers={'User-Agent': 'Mozilla/5.0'})
-            with urlopen(req, timeout=10) as response:
+            with self.urlopen_insecure(req, timeout=10) as response:
                 data = json.loads(response.read().decode())
                 sha = data.get("sha", "")
                 if sha:
@@ -715,26 +721,45 @@ class UpdaterGUI:
             
             try:
                 req = Request(download_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urlopen(req, timeout=30) as response:
+                with self.urlopen_insecure(req, timeout=30) as response:
                     total_size = int(response.headers.get('content-length', 0))
                     downloaded = 0
-                    
+
+                    if total_size > 0:
+                        self.set_progress_mode('determinate', maximum=total_size)
+                    else:
+                        total_size = 400 * 1024 * 1024  # 400MB estimate
+                        self.set_progress_mode('determinate', maximum=total_size)
+                        self.log("  Download size unknown (no content-length); estimating 400MB")
+
+                    last_log_percent = -1
+                    last_log_bytes = 0
+                    log_chunk_bytes = 5 * 1024 * 1024  # 5MB when size unknown
+
                     with open(zip_path, 'wb') as f:
                         while True:
                             if not self.is_updating:
                                 return
-                            
+
                             chunk = response.read(8192)
                             if not chunk:
                                 break
-                            
+
                             f.write(chunk)
                             downloaded += len(chunk)
-                            
+
                             if total_size > 0:
                                 percent = (downloaded / total_size) * 100
-                                self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
-                
+                                if int(percent) != last_log_percent:
+                                    last_log_percent = int(percent)
+                                    self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
+                                self.update_progress(downloaded, f"Downloading... {percent:.1f}%")
+                            else:
+                                if downloaded - last_log_bytes >= log_chunk_bytes:
+                                    last_log_bytes = downloaded
+                                    self.log(f"  Downloaded: {downloaded} bytes (estimated)")
+                                self.update_progress(downloaded, f"Downloading... {downloaded} bytes (est.)")
+
                 self.log(f"✓ Downloaded {downloaded} bytes")
             except (URLError, HTTPError) as e:
                 self.log(f"✗ Download failed: {e}")
