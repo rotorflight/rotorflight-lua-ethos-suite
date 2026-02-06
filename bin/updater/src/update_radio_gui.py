@@ -90,7 +90,7 @@ DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
 COPY_SETTLE_SECONDS = 0.03
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "0.0.0"
+UPDATER_VERSION = "1.0.1"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
@@ -657,25 +657,6 @@ class UpdaterGUI:
         )
         locale_combo.pack(side=tk.LEFT, padx=5)
 
-        # Updater update notification (hidden by default)
-        self.update_notice = ttk.Frame(self.root, padding="8")
-        self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
-        self.update_notice.pack_forget()
-
-        self.update_notice_label = ttk.Label(
-            self.update_notice,
-            text="",
-            font=("Arial", 9)
-        )
-        self.update_notice_label.pack(side=tk.LEFT)
-
-        self.update_notice_button = ttk.Button(
-            self.update_notice,
-            text="Open Download Page",
-            command=lambda: webbrowser.open(UPDATER_INFO_URL)
-        )
-        self.update_notice_button.pack(side=tk.RIGHT)
-        
         # Status frame
         status_frame = ttk.LabelFrame(self.root, text="Status", padding="10")
         status_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -787,6 +768,24 @@ class UpdaterGUI:
             justify=tk.LEFT
         ).pack(anchor=tk.W)
 
+        # Updater update notification (always visible)
+        self.update_notice = ttk.Frame(self.root, padding="8")
+        self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
+        
+        self.update_notice_label = ttk.Label(
+            self.update_notice,
+            text=f"Checking for updates... (Current: {UPDATER_VERSION})",
+            font=("Arial", 9)
+        )
+        self.update_notice_label.pack(side=tk.LEFT)
+        
+        self.update_notice_button = ttk.Button(
+            self.update_notice,
+            text="Open Download Page",
+            command=lambda: webbrowser.open(UPDATER_INFO_URL)
+        )
+        self.update_notice_button.pack(side=tk.RIGHT)
+
         # Async check for updater updates
         threading.Thread(target=self.check_updater_update, daemon=True).start()
     
@@ -824,11 +823,18 @@ class UpdaterGUI:
                 data = json.loads(response.read().decode())
             remote_version = data.get("version", "").strip()
             remote_url = data.get("url") or UPDATER_INFO_URL
-            if remote_version and self._is_newer_version(UPDATER_VERSION, remote_version):
-                msg = f"Updater {remote_version} is available (current {UPDATER_VERSION})."
+            if remote_version:
+                if self._is_newer_version(UPDATER_VERSION, remote_version):
+                    msg = f"New version available. Current: {UPDATER_VERSION} | Latest: {remote_version}"
+                else:
+                    msg = f"Updater is up to date. Current: {UPDATER_VERSION} | Latest: {remote_version}"
                 self.root.after(0, lambda: self.show_update_notice(msg, remote_url))
+            else:
+                msg = f"Updater version check failed. Current: {UPDATER_VERSION} | Latest: unknown"
+                self.root.after(0, lambda: self.show_update_notice(msg, UPDATER_INFO_URL))
         except Exception:
-            pass
+            msg = f"Updater version check failed. Current: {UPDATER_VERSION} | Latest: unknown"
+            self.root.after(0, lambda: self.show_update_notice(msg, UPDATER_INFO_URL))
 
     def show_update_notice(self, message, url):
         self.update_notice_label.config(text=message)
