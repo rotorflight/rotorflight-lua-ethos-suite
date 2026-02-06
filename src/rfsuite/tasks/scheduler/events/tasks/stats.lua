@@ -14,7 +14,8 @@ local fullSensorTable = nil
 local filteredSensors = nil
 local lastTrackTime = 0
 
-local telemetry
+local os_clock = os.clock
+local math_huge = math.huge
 
 local inflightStartTime = nil
 local rpmStatDelay = 15
@@ -40,10 +41,8 @@ end
 
 function stats.wakeup()
 
-    if not telemetry then
-        telemetry = rfsuite.tasks.telemetry
-        return
-    end
+    local telemetry = rfsuite.tasks.telemetry
+    if not telemetry then return end
 
     if rfsuite.flightmode.current ~= "inflight" then
         inflightStartTime = nil
@@ -51,7 +50,7 @@ function stats.wakeup()
         return
     end
 
-    local now = os.clock()
+    local now = os_clock()
     if now - lastTrackTime < 0.25 then return end
     lastTrackTime = now
 
@@ -61,31 +60,34 @@ function stats.wakeup()
         buildFilteredList()
     end
 
-    if not telemetry.sensorStats then telemetry.sensorStats = {} end
+    local statsTable = telemetry.sensorStats
+    if not statsTable then
+        statsTable = {}
+        telemetry.sensorStats = statsTable
+    end
 
     if not inflightStartTime then
         inflightStartTime = now
         rpmReset = false
     end
 
-    local statsTable = telemetry.sensorStats
+    if not rpmReset and (now - inflightStartTime >= rpmStatDelay) then
+        if filteredSensors["rpm"] then statsTable["rpm"] = nil end
+        rpmReset = true
+    end
 
     for sensorKey, _ in pairs(filteredSensors) do
         local val = telemetry.getSensor(sensorKey)
 
-        if sensorKey == "rpm" then
-            if not rpmReset and now - inflightStartTime >= rpmStatDelay then
-                statsTable[sensorKey] = nil
-                rpmReset = true
-            end
-        end
-
         if val and type(val) == "number" then
-            if not statsTable[sensorKey] then statsTable[sensorKey] = {min = math.huge, max = -math.huge, sum = 0, count = 0, avg = 0} end
-
             local entry = statsTable[sensorKey]
-            entry.min = math.min(entry.min, val)
-            entry.max = math.max(entry.max, val)
+            if not entry then
+                entry = {min = math_huge, max = -math_huge, sum = 0, count = 0, avg = 0}
+                statsTable[sensorKey] = entry
+            end
+
+            if val < entry.min then entry.min = val end
+            if val > entry.max then entry.max = val end
             entry.sum = entry.sum + val
             entry.count = entry.count + 1
             entry.avg = entry.sum / entry.count
@@ -94,6 +96,7 @@ function stats.wakeup()
 end
 
 function stats.reset()
+    local telemetry = rfsuite.tasks.telemetry
     if telemetry then telemetry.sensorStats = {} end
     fullSensorTable = nil
     filteredSensors = nil

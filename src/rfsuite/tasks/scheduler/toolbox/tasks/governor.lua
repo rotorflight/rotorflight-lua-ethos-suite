@@ -9,11 +9,13 @@ local arg = {...}
 local config = arg[1]
 
 local governor = {}
+local math_floor = math.floor
 
 function governor.wakeup()
 
-    local value = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("governor") or 0
-    displayValue = rfsuite.utils.getGovernorState(math.floor(value))
+    local telemetry = rfsuite.tasks.telemetry
+    local value = telemetry and telemetry.getSensor("governor") or 0
+    local displayValue = rfsuite.utils.getGovernorState(math_floor(value))
     rfsuite.session.toolbox.governor = displayValue
 
 end

@@ -17,6 +17,10 @@ local READ_DATA = {}
 local pendingStatsSyncAt = nil
 local pendingStatsSync   = false
 
+local os_time = os.time
+local utils = rfsuite.utils
+local ini = rfsuite.ini
+
 local function copyTable(src)
     if type(src) ~= "table" then return src end
     local dst = {}
@@ -28,14 +32,14 @@ local function saveToEeprom()
     local mspEepromWrite = {
         command = 250, 
         simulatorResponse = {}, 
-        processReply = function() rfsuite.utils.log("EEPROM write command sent","info") end
+        processReply = function() utils.log("EEPROM write command sent","info") end
     }
     rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
 end
 
 local function writeStats()
     -- call is not present in older firmwares
-    if not rfsuite.utils.apiVersionCompare(">=", "12.09") then return end
+    if not utils.apiVersionCompare(">=", "12.09") then return end
 
     local function toNumber(v, dflt)
         local n = tonumber(v)
@@ -46,8 +50,8 @@ local function writeStats()
     local prefs = rfsuite.session.modelPreferences
     if not prefs then return end
 
-    local totalflighttime = toNumber(rfsuite.ini.getvalue(prefs, "general", "totalflighttime"), 0)
-    local flightcount     = toNumber(rfsuite.ini.getvalue(prefs, "general", "flightcount"), 0)
+    local totalflighttime = toNumber(ini.getvalue(prefs, "general", "totalflighttime"), 0)
+    local flightcount     = toNumber(ini.getvalue(prefs, "general", "flightcount"), 0)
 
     local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
     API.setRebuildOnWrite(true)
@@ -61,11 +65,11 @@ local function writeStats()
     API.setValue("totalflighttime", totalflighttime)
     API.setValue("flightcount", flightcount)
 
-    rfsuite.utils.log("Totalflight: " .. totalflighttime, "info")
-    rfsuite.utils.log("Flightcount: " .. flightcount, "info")
+    utils.log("Totalflight: " .. totalflighttime, "info")
+    utils.log("Flightcount: " .. flightcount, "info")
 
     API.setCompleteHandler(function()
-        rfsuite.utils.log("Synchronized flight stats to FBL", "info")
+        utils.log("Synchronized flight stats to FBL", "info")
         saveToEeprom()
     end)
 
@@ -75,7 +79,7 @@ end
 
 local function syncStatsToFBL()
     -- call is not present in older firmwares
-    if not rfsuite.utils.apiVersionCompare(">=", "12.09") then return end
+    if not utils.apiVersionCompare(">=", "12.09") then return end
 
     local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
     API.setCompleteHandler(function()
@@ -97,9 +101,10 @@ function timer.reset()
     local timerSession = {}
     rfsuite.session.timer = timerSession
     rfsuite.session.flightCounted = false
+    local prefs = rfsuite.session.modelPreferences
 
-    timerSession.baseLifetime = tonumber(rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")) or 0
-
+    timerSession.baseLifetime = (prefs and tonumber(ini.getvalue(prefs, "general", "totalflighttime"))) or 0
+    
     timerSession.session = 0
     timerSession.lifetime = timerSession.baseLifetime
     timerSession.live = 0
@@ -107,25 +112,26 @@ function timer.reset()
 end
 
 function timer.save()
-    local prefs = rfsuite.session.modelPreferences
-    local prefsFile = rfsuite.session.modelPreferencesFile
+    local session = rfsuite.session
+    local prefs = session.modelPreferences
+    local prefsFile = session.modelPreferencesFile
 
     if not prefsFile then
-        rfsuite.utils.log("No model preferences file set, cannot save flight timers", "info")
+        utils.log("No model preferences file set, cannot save flight timers", "info")
         return
     end
 
-    rfsuite.utils.log("Saving flight timers to INI: " .. prefsFile, "info")
+    utils.log("Saving flight timers to INI: " .. prefsFile, "info")
 
     if prefs then
-        rfsuite.ini.setvalue(prefs, "general", "totalflighttime", rfsuite.session.timer.baseLifetime or 0)
-        rfsuite.ini.setvalue(prefs, "general", "lastflighttime", rfsuite.session.timer.session or 0)
-        rfsuite.ini.save_ini_file(prefsFile, prefs)
+        ini.setvalue(prefs, "general", "totalflighttime", rfsuite.session.timer.baseLifetime or 0)
+        ini.setvalue(prefs, "general", "lastflighttime", rfsuite.session.timer.session or 0)
+        ini.save_ini_file(prefsFile, prefs)
     end
 
     -- defer FBL sync by 1 seconds to avoid clash with FC internal writes
     pendingStatsSync   = true
-    pendingStatsSyncAt = os.time() + 1
+    pendingStatsSyncAt = os_time() + 1
 
 end
 
@@ -137,43 +143,38 @@ local function finalizeFlightSegment(now)
     timerSession.session = (timerSession.session or 0) + segment
     timerSession.start = nil
 
-    if timerSession.baseLifetime == nil then timerSession.baseLifetime = tonumber(rfsuite.ini.getvalue(prefs, "general", "totalflighttime")) or 0 end
+    if timerSession.baseLifetime == nil then timerSession.baseLifetime = tonumber(ini.getvalue(prefs, "general", "totalflighttime")) or 0 end
 
     timerSession.baseLifetime = timerSession.baseLifetime + segment
     timerSession.lifetime = timerSession.baseLifetime
 
-    if prefs then rfsuite.ini.setvalue(prefs, "general", "totalflighttime", timerSession.baseLifetime) end
+    if prefs then ini.setvalue(prefs, "general", "totalflighttime", timerSession.baseLifetime) end
     timer.save()
 end
 
 function timer.wakeup()
+    local tasks = rfsuite.tasks
+    if tasks and tasks.onconnect and tasks.onconnect.active and tasks.onconnect.active() then return end
 
-    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
-
-    local now = os.time()
-    local timerSession = rfsuite.session.timer
-    local prefs = rfsuite.session.modelPreferences
+    local now = os_time()
+    local session = rfsuite.session
+    local timerSession = session.timer
+    local prefs = session.modelPreferences
     local flightMode = rfsuite.flightmode.current
 
     lastFlightMode = flightMode
 
     -- delayed sync with run only when disarmed
     -- doing when armed risks corrupting ongoing flight data
-    if not rfsuite.session.isArmed then
+    if not session.isArmed then
         if pendingStatsSync and pendingStatsSyncAt and now >= pendingStatsSyncAt then
             -- must be connected and not mid-onconnect
-            if rfsuite.session and rfsuite.session.isConnected then
-                if not (rfsuite.tasks
-                    and rfsuite.tasks.onconnect
-                    and rfsuite.tasks.onconnect.active
-                    and rfsuite.tasks.onconnect.active()) then
+            if session.isConnected then
+                pendingStatsSync   = false
+                pendingStatsSyncAt = nil
 
-                    pendingStatsSync   = false
-                    pendingStatsSyncAt = nil
-
-                    rfsuite.utils.log("Starting delayed FLIGHT_STATS sync", "info")
-                    syncStatsToFBL()
-                end
+                utils.log("Starting delayed FLIGHT_STATS sync", "info")
+                syncStatsToFBL()
             end
         end
     end    
@@ -188,13 +189,13 @@ function timer.wakeup()
         local computedLifetime = (timerSession.baseLifetime or 0) + currentSegment
         timerSession.lifetime = computedLifetime
 
-        if timerSession.live >= 25 and not rfsuite.session.flightCounted then
-            rfsuite.session.flightCounted = true
+        if timerSession.live >= 25 and not session.flightCounted then
+            session.flightCounted = true
 
-            if prefs and rfsuite.ini.section_exists(prefs, "general") then
-                local count = rfsuite.ini.getvalue(prefs, "general", "flightcount") or 0
-                rfsuite.ini.setvalue(prefs, "general", "flightcount", count + 1)
-                rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, prefs)
+            if prefs and ini.section_exists(prefs, "general") then
+                local count = ini.getvalue(prefs, "general", "flightcount") or 0
+                ini.setvalue(prefs, "general", "flightcount", count + 1)
+                ini.save_ini_file(session.modelPreferencesFile, prefs)
             end
         end
 

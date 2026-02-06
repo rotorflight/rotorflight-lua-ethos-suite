@@ -5,6 +5,16 @@
 
 local rfsuite = require("rfsuite")
 
+-- Optimized locals to reduce global/table lookups
+local os_clock = os.clock
+local math_max = math.max
+local math_min = math.min
+local math_ceil = math.ceil
+local math_floor = math.floor
+local table_insert = table.insert
+local tostring = tostring
+local type = type
+local pcall = pcall
 
 -- Optional protocol trace logger (raw frames). Inert unless enabled.
 local function plog(dir, cmd, payload, extra)
@@ -67,13 +77,13 @@ local function pollBudget()
     local msg = q and q.currentMessage
     local rx  = (msg and msg.minBytes) or 0
     local tx  = (msg and msg.payload and #msg.payload) or 0
-    local pending = math.max(rx, tx)
+    local pending = math_max(rx, tx)
 
     -- Compute boost when message size is large
     local threshold = (TUNE.threshold_windows * perPoll)
     local boost = 0
     if perPoll > 0 and pending > threshold then
-        local extraWindows = math.ceil((pending - threshold) / perPoll)
+        local extraWindows = math_ceil((pending - threshold) / perPoll)
         boost = extraWindows * TUNE.step_seconds
     end
 
@@ -108,9 +118,10 @@ local function mspProcessTxQ()
     payload[1] = _mkStatusByte(mspTxIdx == 1) -- Mark start of frame
     mspSeq = (mspSeq + 1) & 0x0F
 
+    local limit = maxTx()
     -- Fill payload until maxTx or TX buffer exhausted
     local i = 2
-    while (i <= maxTx()) and (mspTxIdx <= #mspTxBuf) do
+    while (i <= limit) and (mspTxIdx <= #mspTxBuf) do
         payload[i] = mspTxBuf[mspTxIdx]
         mspTxIdx = mspTxIdx + 1
         if _mspVersion == 1 then mspTxCRC = mspTxCRC ~ payload[i] end
@@ -119,9 +130,9 @@ local function mspProcessTxQ()
 
     if _mspVersion == 1 then
         -- For V1, include CRC when final packet
-        if i <= maxTx() then
+        if i <= limit then
             payload[i] = mspTxCRC
-            for j = i + 1, maxTx() do payload[j] = 0 end
+            for j = i + 1, limit do payload[j] = 0 end
             mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
             plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
             proto().mspSend(payload)
@@ -133,7 +144,7 @@ local function mspProcessTxQ()
         end
     else
         -- V2 pads unused bytes but CRC is handled differently
-        for j = i, maxTx() do payload[j] = payload[j] or 0 end
+        for j = i, limit do payload[j] = payload[j] or 0 end
             plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
             proto().mspSend(payload)
         if mspTxIdx > #mspTxBuf then
@@ -158,9 +169,9 @@ local function mspSendRequest(cmd, payload)
         -- V2: flags=0, CMD16, LEN16
         local len = #payload
         local cmd1 = cmd % 256
-        local cmd2 = math.floor(cmd / 256) % 256
+        local cmd2 = math_floor(cmd / 256) % 256
         local len1 = len % 256
-        local len2 = math.floor(len / 256) % 256
+        local len2 = math_floor(len / 256) % 256
         mspTxBuf = {0, cmd1, cmd2, len1, len2}
         for i = 1, len do mspTxBuf[#mspTxBuf + 1] = payload[i] % 256 end
     end
@@ -270,7 +281,7 @@ local function mspPollReply()
     local protoCfg = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
 
     local budget = pollBudget() or 0.1
-    local now = os.clock
+    local now = os_clock
 
     -- Non-blocking slice mode (recommended for S.Port).
     -- Keeps CPU load smooth by limiting per-wakeup work.
@@ -288,7 +299,7 @@ local function mspPollReply()
     if nonBlocking then
         window = inflight0 and (sliceSeconds * 2) or sliceSeconds
     else
-        window = inflight0 and budget or math.min(budget, idleCap)
+        window = inflight0 and budget or math_min(budget, idleCap)
     end
 
     local deadline = now() + window
@@ -305,7 +316,7 @@ local function mspPollReply()
     -- Fast path: when idle, bail quickly on nil (avoid instruction burn).
     -- Slow path: when a reply is in progress / outstanding request, allow more gaps.
     local MAX_NIL_IDLE     = 4
-    local MAX_NIL_INFLIGHT = nonBlocking and math.max(2, slicePolls) or 16
+    local MAX_NIL_INFLIGHT = nonBlocking and math_max(2, slicePolls) or 16
 
     -- Hard cap on total poll iterations per wakeup to prevent instruction spikes.
     local MAX_POLLS = nonBlocking and slicePolls or 24
@@ -363,4 +374,3 @@ return {
     getLastTxCmd       = function() return mspLastReq end,
     getLastRxCmd       = function() return mspRxReq end
 }
-

@@ -12,6 +12,7 @@ local type = type
 local tonumber = tonumber
 local ipairs = ipairs
 local print = print
+local table_concat = table.concat
 
 local string_rep = string.rep
 local string_sub = string.sub
@@ -152,15 +153,6 @@ local function getPrefix(cfg)
     return rawp or ""
 end
 
-local function getDevLogLevel()
-    -- Avoid repeated deep table walks everywhere
-    local pref = rfsuite.preferences
-    if not pref then return "info" end
-    local dev = pref.developer
-    if not dev then return "info" end
-    return dev.loglevel or "info"
-end
-
 function logs.log(message, level)
     local cfg = logs.config
     if not cfg.enabled then return end
@@ -168,8 +160,8 @@ function logs.log(message, level)
     local minlvl = getMinLevel(cfg)
     if minlvl == LEVEL.off then return end
 
-    local devLevel = getDevLogLevel()
-    if devLevel == "off" then return end
+    local devLevelStr = cfg.min_print_level or "info"
+    if devLevelStr == "off" then return end
 
     local lvl = LEVEL[level or "info"]
     if not lvl or lvl < minlvl then return end
@@ -179,20 +171,22 @@ function logs.log(message, level)
     if #message > maxlen then
         message = string_sub(message, 1, maxlen) .. " [truncated]"
     end
-
-    local e = { msg = message, lvl = lvl }
+    
+    -- Capture prefix (timestamp) at creation time for accuracy
+    local pfx = getPrefix(cfg)
+    local e = { msg = message, lvl = lvl, pfx = pfx }
 
     -- ROUTING RULES
     -- info  : show info/error on console
     -- debug : show info on console, log debug/error to disk
-    if devLevel == "info" then
+    if devLevelStr == "info" then
         if lvl >= LEVEL.info and lvl < LEVEL.off then
             qConsole:push(e)
         end
         return
     end
 
-    if devLevel == "debug" then
+    if devLevelStr == "debug" then
         if lvl == LEVEL.info then
             qConsole:push(e)
             qDisk:push(e)
@@ -223,13 +217,13 @@ local function drain_console(now, cfg)
     if (now - lastPrint) < cfg.print_interval or qConsole:empty() then return end
     lastPrint = now
 
-    local pfx = getPrefix(cfg)
-    local pad = (#pfx > 0) and string_rep(" ", #pfx) or ""
-
     for _ = 1, 5 do
         local e = qConsole:pop()
         if not e then break end
-        local parts = split(pfx .. e.msg, cfg.max_line_length, pad)
+        
+        local p = e.pfx or ""
+        local pad = (#p > 0) and string_rep(" ", #p) or ""
+        local parts = split(p .. e.msg, cfg.max_line_length, pad)
         for i = 1, #parts do
             print(parts[i])
         end
@@ -250,7 +244,7 @@ local function flush_disk(cfg)
     -- Write buffered lines in one go (less overhead than per-line write)
     -- Ethos Lua usually supports table.concat efficiently.
     local ok = pcall(function()
-        f:write(table.concat(diskBuf, "\n"))
+        f:write(table_concat(diskBuf, "\n"))
         f:write("\n")
         if f.flush then f:flush() end
     end)
@@ -287,14 +281,12 @@ local function drain_disk(now, cfg)
     -- Time-based flush gate
     local doTimeFlush = (now - lastDisk) >= cfg.disk_write_interval
 
-    local pfx = getPrefix(cfg)
-
     -- Pull a batch from qDisk into buffer (cheap, no disk I/O yet)
     local batchMax = cfg.disk_flush_batch or 50
     for _ = 1, batchMax do
         local e = qDisk:pop()
         if not e then break end
-        diskBufPush(pfx .. e.msg)
+        diskBufPush((e.pfx or "") .. e.msg)
         if diskBufBytes >= (cfg.disk_buffer_max or 4096) then
             doTimeFlush = true
             break

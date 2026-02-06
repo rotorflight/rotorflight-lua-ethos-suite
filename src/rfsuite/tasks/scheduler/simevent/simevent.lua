@@ -7,28 +7,51 @@ local rfsuite = require("rfsuite")
 
 local simevent = {}
 
+-- Localize globals
+local loadfile = loadfile
+local pcall = pcall
+local pairs = pairs
+local print = print
+
+-- Cache simulation state
+local isSim = system.getVersion().simulation
+
+-- Ensure rfsuite.simevent exists
+rfsuite.simevent = rfsuite.simevent or {}
+
 local source = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/sim/sensors/"
 
-local handlers = {simevent_telemetry_state = function(value) rfsuite.simevent.telemetry_state = (value == 0) end}
+local handlers = {
+    simevent_telemetry_state = function(value) rfsuite.simevent.telemetry_state = (value == 0) end
+}
+
+-- Pre-calculate paths
+local handlerPaths = {}
+for name, _ in pairs(handlers) do
+    handlerPaths[name] = source .. name .. ".lua"
+end
 
 local lastValues = {}
 
 function simevent.wakeup()
-
-    if not system.getVersion().simulation then return end
+    if not isSim then return end
 
     for name, handler in pairs(handlers) do
-        local path = source .. name .. ".lua"
+        local path = handlerPaths[name]
 
         local chunk, loadErr = loadfile(path)
         if not chunk then
             print(("sim: could not load %s.lua: %s"):format(name, loadErr))
         else
-            local result = chunk()
+            local success, result = pcall(chunk)
 
-            if result ~= lastValues[name] then
-                lastValues[name] = result
-                handler(result)
+            if success then
+                if result ~= lastValues[name] then
+                    lastValues[name] = result
+                    handler(result)
+                end
+            else
+                print("sim: error executing " .. name .. ": " .. tostring(result))
             end
         end
     end

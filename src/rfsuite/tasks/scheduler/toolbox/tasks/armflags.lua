@@ -10,15 +10,19 @@ local config = arg[1]
 
 local armflags = {}
 
+local math_floor = math.floor
+
 function armflags.wakeup()
 
-    local value = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("armflags")
-    local disableflags = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("armdisableflags")
+    local telemetry = rfsuite.tasks.telemetry
+    local value = telemetry and telemetry.getSensor("armflags")
+    local disableflags = telemetry and telemetry.getSensor("armdisableflags")
 
     local showReason = false
+    local displayValue
 
     if disableflags ~= nil then
-        disableflags = math.floor(disableflags)
+        disableflags = math_floor(disableflags)
         local reason = rfsuite.utils.armingDisableFlagsToString(disableflags)
         if reason and reason ~= "OK" then
             displayValue = reason
