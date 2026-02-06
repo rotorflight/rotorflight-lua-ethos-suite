@@ -23,6 +23,9 @@ local table_insert = table.insert
 
 local logging = {}
 
+local utils = rfsuite.utils
+local ini = rfsuite.ini
+
 -- Queue / flushing policy
 local MAX_QUEUE = 200                 -- bigger queue so we can batch better
 local FLUSH_QUEUE_SIZE = 20
@@ -199,7 +202,7 @@ function logging.writeLogs(forcewrite)
 
     if isDebugEnabled() then
         -- Avoid string.format cost unless debug really enabled
-        rfsuite.utils.log("Write " .. tostring(n) .. " (of " .. tostring(#log_queue) .. ") lines to " .. tostring(logFileName), "debug")
+        utils.log("Write " .. tostring(n) .. " (of " .. tostring(#log_queue) .. ") lines to " .. tostring(logFileName), "debug")
     end
 
     local f
@@ -247,8 +250,9 @@ function logging.getLogHeader()
     return "time, " .. table_concat(names, ", ")
 end
 
+local logLineValues = {}
 function logging.getLogLine()
-    local values = {}
+    
     -- If cached sources exist, prefer them
     for i, sensor in ipairs(logTable) do
         local src = sensorSources[i]
@@ -256,10 +260,10 @@ function logging.getLogLine()
             src = telemetry.getSensorSource(sensor.name)
             sensorSources[i] = src
         end
-        values[i] = (src and src.value and src:value()) or 0
+        logLineValues[i] = (src and src.value and src:value()) or 0
     end
     local ts = os_time()
-    return ts .. ", " .. table_concat(values, ", ")
+    return ts .. ", " .. table_concat(logLineValues, ", ")
 end
 
 function logging.getLogTable()
@@ -268,7 +272,7 @@ end
 
 function logging.flushLogs()
     if logFileName or logHeader then
-        rfsuite.utils.log("Flushing logs - " .. tostring(logFileName), "info")
+        utils.log("Flushing logs - " .. tostring(logFileName), "info")
         logging.writeLogs(true)
         logFileName, logHeader = nil, nil
         cachedFilePath = nil
@@ -305,17 +309,17 @@ function logging.wakeup()
         return
     end
 
-    if rfsuite.utils.inFlight() then
+    if utils.inFlight() then
         if not logFileName then
             logFileName = generateLogFilename()
             cacheFilePath()
             lastDiskFlush = os_clock()
-            rfsuite.utils.log("Logging triggered by inFlight() - " .. logFileName, "info")
+            utils.log("Logging triggered by inFlight() - " .. logFileName, "info")
 
-            local iniData = rfsuite.ini.load_ini_file(cachedIniPath) or {}
+            local iniData = ini.load_ini_file(cachedIniPath) or {}
             if not iniData.model then iniData.model = {} end
             iniData.model.name = session.craftName or model.name() or "Unknown"
-            rfsuite.ini.save_ini_file(cachedIniPath, iniData)
+            ini.save_ini_file(cachedIniPath, iniData)
 
             sourcesCached = false
             sensorSources = {}

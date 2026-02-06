@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 
 local transport = {}
+local crsf = crsf
 
 -- CRSF address definitions
 local CRSF_ADDRESS_BETAFLIGHT        = 0xC8  -- FC device address
@@ -21,16 +22,19 @@ local crsfMspCmd = 0
 
 -- Sensor object (lazy initialization)
 local sensor
+local mspCommon
 
 -- Pop a CRSF frame
 transport.popFrame = function(...)
     if not sensor then sensor = crsf.getSensor() end
+    if not sensor then return nil end
     return sensor:popFrame(...)
 end
 
 -- Push a CRSF frame
 transport.pushFrame = function(x, y)
     if not sensor then sensor = crsf.getSensor() end
+    if not sensor then return nil end
     return sensor:pushFrame(x, y)
 end
 
@@ -59,19 +63,22 @@ end
 -- Issue an MSP READ request over CRSF
 transport.mspRead = function(cmd)
     crsfMspCmd = CRSF_FRAMETYPE_MSP_REQ
-    return rfsuite.tasks.msp.common.mspSendRequest(cmd, {})
+    if not mspCommon then mspCommon = rfsuite.tasks.msp.common end
+    return mspCommon.mspSendRequest(cmd, {})
 end
 
 -- Issue an MSP WRITE request over CRSF
 transport.mspWrite = function(cmd, payload)
     crsfMspCmd = CRSF_FRAMETYPE_MSP_WRITE
-    return rfsuite.tasks.msp.common.mspSendRequest(cmd, payload)
+    if not mspCommon then mspCommon = rfsuite.tasks.msp.common end
+    return mspCommon.mspSendRequest(cmd, payload)
 end
 
+local rxBuf = {}
 -- Poll for MSP reply frames over CRSF
 transport.mspPoll = function()
     -- Pop only MSP_RESP frames
-    local cmd, data = transport.popFrame(CRSF_FRAMETYPE_MSP_RESP, CRSF_FRAMETYPE_MSP_RESP)
+    local cmd, data = transport.popFrame(CRSF_FRAMETYPE_MSP_RESP)
     if not cmd then return nil end
 
     -- Validate FROM/TO addresses in the returned data
@@ -80,13 +87,15 @@ transport.mspPoll = function()
         return nil
     end
 
-    -- Extract MSP payload (skip CRSF routing bytes)
-    local out = {}
+    -- Reuse rxBuf to avoid allocation
+    for i = 1, #rxBuf do rxBuf[i] = nil end
+
+    -- Extract MSP payload (skip CRSF routing bytes: [1]=Dest, [2]=Src)
     for i = 3, #data do
-        out[i - 2] = data[i]
+        rxBuf[i - 2] = data[i]
     end
 
-    return out
+    return rxBuf
 end
 
 return transport

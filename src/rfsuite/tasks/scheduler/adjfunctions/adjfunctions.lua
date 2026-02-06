@@ -13,6 +13,16 @@ local firstRun = true
 
 local initTime = os.clock()
 
+-- Localize globals
+local os_clock = os.clock
+local string_format = string.format
+local table_concat = table.concat
+local math_max = math.max
+local math_floor = math.floor
+local print = print
+local tostring = tostring
+local system_playNumber = system.playNumber
+
 local DEBUG_SPEECH = false
 local SPEAK_WAV_MS = 450
 local SPEAK_NUM_MS = 600
@@ -22,24 +32,28 @@ local function canSpeak(now) return now >= speakingUntil end
 
 local function speakWavs(adjFuncId, wavs, now)
     if not wavs or #wavs == 0 then return end
-    local playFile = rfsuite.utils and rfsuite.utils.playFile
+    local utils = rfsuite.utils
+    local playFile = utils and utils.playFile
 
-    local files = {}
-    for i = 1, #wavs do files[i] = wavs[i] .. ".wav" end
+    if DEBUG_SPEECH then
+        local files = {}
+        for i = 1, #wavs do files[i] = wavs[i] .. ".wav" end
+        print(string_format("[DEBUG] adjfunc %d will play: %s", adjFuncId, table_concat(files, ", ")))
+    end
 
-    if DEBUG_SPEECH then print(string.format("[DEBUG] adjfunc %d will play: %s", adjFuncId, table.concat(files, ", "))) end
+    if playFile then
+        for i = 1, #wavs do playFile("adjfunctions", wavs[i] .. ".wav") end
+    end
 
-    if playFile then for i = 1, #files do playFile("adjfunctions", files[i]) end end
-
-    speakingUntil = now + ((SPEAK_WAV_MS * #files) / 1000.0)
+    speakingUntil = now + ((SPEAK_WAV_MS * #wavs) / 1000.0)
 end
 
 local function speakNumber(n, now)
-    if system and system.playNumber then
-        if DEBUG_SPEECH then print(string.format("[DEBUG] playNumber: %s", tostring(n))) end
-        system.playNumber(n)
+    if system_playNumber then
+        if DEBUG_SPEECH then print(string_format("[DEBUG] playNumber: %s", tostring(n))) end
+        system_playNumber(n)
 
-        speakingUntil = math.max(speakingUntil, now + (SPEAK_NUM_MS / 1000.0))
+        speakingUntil = math_max(speakingUntil, now + (SPEAK_NUM_MS / 1000.0))
     end
 end
 
@@ -117,8 +131,6 @@ local adjWavs = {
     [75] = {"yaw", "precomp", "cutoff"}
 }
 
-local adjfuncAdjValueSrc = nil
-local adjfuncAdjFunctionSrc = nil
 local adjfuncAdjValue = nil
 local adjfuncAdjFunction = nil
 local adjfuncAdjValueOld = nil
@@ -131,17 +143,21 @@ local adjfuncAdjJustUpCounter
 local adjfuncPendingFuncAnnounce = false
 
 function adjfunc.wakeup()
-    local now = os.clock()
-    local events = rfsuite.preferences and rfsuite.preferences.events
+    local now = os_clock()
+    local prefs = rfsuite.preferences
+    local events = prefs and prefs.events
     if not (events and (events.adj_f or events.adj_v)) then return end
     if (now - initTime) < 5 then return end
 
-    adjfuncAdjValue = rfsuite.tasks.telemetry.getSensor("adj_v")
-    adjfuncAdjFunction = rfsuite.tasks.telemetry.getSensor("adj_f")
+    local telemetry = rfsuite.tasks.telemetry
+    if not telemetry then return end
+
+    adjfuncAdjValue = telemetry.getSensor("adj_v")
+    adjfuncAdjFunction = telemetry.getSensor("adj_f")
     if adjfuncAdjValue == nil or adjfuncAdjFunction == nil then return end
 
-    if type(adjfuncAdjValue) == "number" then adjfuncAdjValue = adjfuncAdjValue - (adjfuncAdjValue % 1) end
-    if type(adjfuncAdjFunction) == "number" then adjfuncAdjFunction = adjfuncAdjFunction - (adjfuncAdjFunction % 1) end
+    if type(adjfuncAdjValue) == "number" then adjfuncAdjValue = math_floor(adjfuncAdjValue) end
+    if type(adjfuncAdjFunction) == "number" then adjfuncAdjFunction = math_floor(adjfuncAdjFunction) end
 
     adjfuncAdjfuncIdChanged = (adjfuncAdjFunction ~= adjfuncAdjFunctionOld)
     adjfuncAdjfuncValueChanged = (adjfuncAdjValue ~= adjfuncAdjValueOld)

@@ -22,7 +22,7 @@ local proto_logger = protocol.getProtoLogger and protocol.getProtoLogger() or ni
 
 local telemetryTypeChanged = false -- Set when switching CRSF/S.Port/etc.
 
-msp.mspQueue = nil
+local mspQueue
 
 -- Protocol parameters for current telemetry type
 msp.protocol = protocol.getProtocol()
@@ -44,14 +44,15 @@ msp.protocol.mspWrite = transport.mspWrite
 msp.protocol.mspPoll  = transport.mspPoll
 
 -- Load MSP queue with protocol settings
-msp.mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
-msp.mspQueue.maxRetries   = msp.protocol.maxRetries
-msp.mspQueue.loopInterval = 0                -- Queue processing rate
-msp.mspQueue.copyOnAdd    = true             -- Clone messages on enqueue
-msp.mspQueue.interMessageDelay = 0.1         -- Delay between messages
-msp.mspQueue.timeout      = msp.protocol.mspQueueTimeout or 2.0
-msp.mspQueue.drainAfterReplyMss = 0.05         -- No drain delay after reply
-msp.mspQueue.drainMaxPolls = 5                 -- Max polls to wait during drain
+mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
+msp.mspQueue = mspQueue
+mspQueue.maxRetries   = msp.protocol.maxRetries
+mspQueue.loopInterval = 0                -- Queue processing rate
+mspQueue.copyOnAdd    = true             -- Clone messages on enqueue
+mspQueue.interMessageDelay = 0.1         -- Delay between messages
+mspQueue.timeout      = msp.protocol.mspQueueTimeout or 2.0
+mspQueue.drainAfterReplyMss = 0.05         -- No drain delay after reply
+mspQueue.drainMaxPolls = 5                 -- Max polls to wait during drain
 
 -- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
@@ -80,17 +81,18 @@ local delayPending   = false
 -- Main MSP poll loop (called by script wakeups)
 function msp.wakeup()
 
+    local session = rfsuite.session
     -- enable logging
     -- rfsuite.tasks.msp.enableProtoLog(true)
 
     -- Nothing to do if no telemetry sensor
-    if rfsuite.session.telemetrySensor == nil then return end
+    if session.telemetrySensor == nil then return end
 
     -- Apply delay after reset request
-    if rfsuite.session.resetMSP and not delayPending then
+    if session.resetMSP and not delayPending then
         delayStartTime = os_clock()
         delayPending = true
-        rfsuite.session.resetMSP = false
+        session.resetMSP = false
         utils.log("Delaying msp wakeup for " .. delayDuration .. " seconds", "info")
         return
     end
@@ -101,12 +103,12 @@ function msp.wakeup()
             utils.log("Delay complete; resuming msp wakeup", "info")
             delayPending = false
         else
-            rfsuite.tasks.msp.mspQueue:clear()
+            mspQueue:clear()
             return
         end
     end
 
-    msp.activeProtocol = rfsuite.session.telemetryType
+    msp.activeProtocol = session.telemetryType
 
     -- Telemetry type changed (e.g., CRSF <-> S.Port)
     if telemetryTypeChanged == true then
@@ -125,24 +127,16 @@ function msp.wakeup()
     end
 
     -- If telemetry was disconnected, re-run init handlers
-    if rfsuite.session.telemetrySensor ~= nil and rfsuite.session.telemetryState == false then
+    if session.telemetrySensor ~= nil and session.telemetryState == false then
         utils.session()
         msp.onConnectChecksInit = true
     end
 
-    -- Determine telemetry connection state
-    local state
-    if rfsuite.session.telemetrySensor then
-        state = rfsuite.session.telemetryState
-    else
-        state = false
-    end
-
     -- Run queue when connected, otherwise clear it
-    if state == true then
-        msp.mspQueue:processQueue()
+    if session.telemetryState == true then
+        mspQueue:processQueue()
     else
-        msp.mspQueue:clear()
+        mspQueue:clear()
     end
 end
 
@@ -153,7 +147,7 @@ end
 
 -- Reset MSP state and transport
 function msp.reset()
-    rfsuite.tasks.msp.mspQueue:clear()
+    mspQueue:clear()
     msp.activeProtocol = nil
     msp.onConnectChecksInit = true
     delayStartTime = nil

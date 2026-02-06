@@ -10,6 +10,10 @@ local config = arg[1]
 
 local craftname = {}
 
-function craftname.wakeup() rfsuite.session.toolbox.craftname = rfsuite.session.craftName or model.name() end
+function craftname.wakeup()
+    local session = rfsuite.session
+    if not session then return end
+    session.toolbox.craftname = session.craftName or model.name()
+end
 
 return craftname
