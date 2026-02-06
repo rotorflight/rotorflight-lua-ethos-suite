@@ -229,8 +229,9 @@ local function register_widgets()
                 rfsuite.widgets[base] = scriptModule
 
                 if v.type == "glasses" then
-                    if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) then
-                        print(string.format("[widgets] registering glasses widget '%s' with key '%s'", v.name, v.key))
+
+                    -- we only register glasses widgets if the system supports them
+                    if system.registerGlassesWidget then
                         system.registerGlassesWidget({
                             key = v.key,
                             name = v.name,
