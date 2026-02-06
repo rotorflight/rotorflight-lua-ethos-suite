@@ -190,6 +190,7 @@ To build and deploy RFSuite locally:
     pip install serial
     pip install pywin32 
     pip install hid
+    pip install debugpy
     ```
 
 -    Install this package 
@@ -199,18 +200,6 @@ To build and deploy RFSuite locally:
      Simply copy the dll's for your architecture into c:\windows\system32
 
 - Install vscode extention 'ethos'
-
-
-
-### Config file
-
-Copy the file bin/config-example.json to a folder outside of github and name to suite your preference.
-
-Setup en env var of RFSUITE_CONFIG=C:\GitHub\rotorflight-lua-ethos-suite.json  (the path to the file)
-
-Suggested:
-Repo:  C:\GitHub\rotorflight-lua-ethos-suite\<files>
-Config: C:\GitHub\rotorflight-lua-ethos-suite.json
 
 
 ### VS Code Tasks
