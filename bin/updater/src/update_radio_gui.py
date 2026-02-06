@@ -1304,16 +1304,13 @@ class UpdaterGUI:
     def copy_sound_pack(self, repo_dir, dest_dir, locale, use_phase=False):
         """Copy sound pack for selected locale into destination tree."""
         locale = locale or DEFAULT_LOCALE
+        if locale == DEFAULT_LOCALE:
+            self.log(f"  Audio pack '{DEFAULT_LOCALE}' already included; skipping copy")
+            return True
         src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
         self.log(f"  Audio source: {src}")
         if not os.path.isdir(src):
-            if locale != DEFAULT_LOCALE:
-                self.log(f"⚠ Sound pack for '{locale}' not found; using {DEFAULT_LOCALE}")
-            locale = DEFAULT_LOCALE
-            src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
-            self.log(f"  Audio source fallback: {src}")
-        if not os.path.isdir(src):
-            self.log("⚠ Sound pack not found; skipping audio copy")
+            self.log(f"⚠ Sound pack for '{locale}' not found; default audio already included, skipping copy")
             return False
 
         dest = os.path.join(dest_dir, "audio", locale)
