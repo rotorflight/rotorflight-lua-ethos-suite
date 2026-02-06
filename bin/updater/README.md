@@ -8,7 +8,7 @@ Windows updater for the Rotorflight Lua Ethos Suite.
 
 Windows executable:
 
-[RFSuite Updator Download](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/update_radio_gui.exe)
+[RFSuite Updater Download](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/update_radio_gui.exe)
 
 ## Developer Notes
 
