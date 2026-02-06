@@ -114,8 +114,6 @@ This section describes the MSP API loader and its capabilities for parsing and i
 
 * **Parsing Functions**:
 
-  * `parseMSPChunk(buf, structure, state)`:
-
     * Processes up to a fixed number of fields per call (default 5), allowing chunked parsing across ticks.
   * `parseMSPData(buf, structure, processed, other, options)`:
 

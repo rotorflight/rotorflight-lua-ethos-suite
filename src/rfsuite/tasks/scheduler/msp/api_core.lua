@@ -97,40 +97,6 @@ local function get_type_size(data_type)
     return TYPE_SIZES[data_type] or 1
 end
 
-------------------------------------------------------------
--- Chunk parser (processes a few fields at a time)
-------------------------------------------------------------
-
-local function parseMSPChunk(buf, structure, state)
-    local processedFields = 0
-    local startIndex = state.index
-
-    while state.index <= #structure and processedFields < 5 do
-        local field = structure[state.index]
-        state.index = state.index + 1
-
-        -- Skip if API version too old
-        if field.apiVersion and utils.apiVersionCompare("<", field.apiVersion) then goto continue end
-
-        local readFunction = mspHelper["read" .. field.type]
-        if not readFunction then
-            utils.log("Error: Unknown type " .. field.type, "debug")
-            state.error = "Unknown type: " .. field.type
-            return false
-        end
-
-        local data = readFunction(buf, field.byteorder or "little")
-        state.parsedData[field.field] = data
-        processedFields = processedFields + 1
-
-        ::continue::
-    end
-
-    utils.log(string.format("Chunk processed fields %d–%d", startIndex, state.index - 1), "debug")
-    return state.index > #structure
-end
-
-------------------------------------------------------------
 -- Full MSP data parsing (supports chunked mode)
 ------------------------------------------------------------
 
@@ -260,51 +226,12 @@ end
 -- Structure analysis helpers
 ------------------------------------------------------------
 
-function core.calculateMinBytes(structure)
-    local total = 0
-    for _, param in ipairs(structure) do
-        if (not param.apiVersion or utils.apiVersionCompare(">=", param.apiVersion))
-           and param.mandatory ~= false then
-            total = total + get_type_size(param.type)
-        end
-    end
-    return total
-end
-
-function core.filterByApiVersion(structure)
-    local filtered = {}
-    for _, param in ipairs(structure) do
-        if not param.apiVersion or utils.apiVersionCompare(">=", param.apiVersion) then
-            table.insert(filtered, param)
-        end
-    end
-    return filtered
-end
-
--- Build simulation response from structure definition
-function core.buildSimResponse(dataStructure, apiName)
-    if system.getVersion().simulation == false then return nil end
-
-    local response = {}
-    for _, field in ipairs(dataStructure) do
-        if field.simResponse then
-            for _, v in ipairs(field.simResponse) do table.insert(response, v) end
-        else
-            local size = get_type_size(field.type)
-            for i = 1, size do table.insert(response, 0) end
-        end
-    end
-
-    return response
-end
-
-------------------------------------------------------------
 -- Completion / error handler helpers
 ------------------------------------------------------------
 
 function core.createHandlers()
     local completeHandler = nil
-    privateErrorHandler = nil
+    local privateErrorHandler = nil
 
     return {
         setCompleteHandler = function(fn)
@@ -519,9 +446,8 @@ function core.prepareStructureData(structure)
 end
 
 function core.filterByApiVersion(structure)
-    local filtered = {}
-    local f = core.prepareStructureData(structure)
-    return f
+    local filtered = core.prepareStructureData(structure)
+    return filtered
 end
 
 function core.calculateMinBytes(structure)
