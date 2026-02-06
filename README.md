@@ -190,6 +190,7 @@ To build and deploy RFSuite locally:
     pip install serial
     pip install pywin32 
     pip install hid
+    pip install debugpy
     ```
 
 -    Install this package 
