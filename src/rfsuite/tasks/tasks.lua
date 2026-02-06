@@ -337,7 +337,7 @@ function tasks.telemetryCheckScheduler()
         if not rfsuite.session.isConnected then
             if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
                 lastCheckAt = now
-                utils.log("Waiting for connection", "connect")
+                utils.log("@i18n(app.msg_waiting_for_connection)@", "connect")
             end
         end
 
@@ -392,7 +392,7 @@ function tasks.telemetryCheckScheduler()
         if newModelPath ~= lastModelPath then
             local oldModelPath = lastModelPath
             utils.log("Model changed, resetting session", "info")
-            utils.log("Model changed, resetting session", "connect")
+            utils.log("@i18n(app.msg_model_changed_reset)@", "connect")
             utils.log("[event] onmodelchange", "info")
 
             local omc = events.onmodelchange
@@ -418,7 +418,7 @@ function tasks.telemetryCheckScheduler()
             lastNameCheckAt = now
             if currentSensor:name() ~= lastSensorName then
                 utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
-                utils.log("Telem. sensor changed to " .. tostring(currentSensor:name()), "connect")
+                utils.log("@i18n(app.msg_telem_sensor_changed)@ " .. tostring(currentSensor:name()), "connect")
                 lastSensorName = currentSensor:name()
                 currentSensor = nil
                 clearSessionAndQueue()
@@ -465,7 +465,7 @@ function tasks.telemetryCheckScheduler()
     if currentTelemetryType ~= lastTelemetryType then
         local oldTelemetryType = lastTelemetryType
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
-        rfsuite.utils.log("Telem. type changed to " .. tostring(currentTelemetryType), "connect")
+        rfsuite.utils.log("@i18n(app.msg_telem_type_changed)@ " .. tostring(currentTelemetryType), "connect")
         utils.log("[event] ontransportchange", "info")
 
         local otc = events.ontransportchange
@@ -708,7 +708,7 @@ function tasks.wakeup_protected()
             tasks._initByName = nil
             tasks._initIndex = 1
             utils.log("All tasks initialized.", "info")
-            utils.log("All tasks initialized.", "connect")
+            utils.log("@i18n(app.msg_tasks_initialized)@", "connect")
             return
         end
     end
@@ -1002,7 +1002,7 @@ function tasks.load(name, meta)
     end
 
     utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
-    utils.log(string.format("[scheduler] Loaded task [%s]", name), "connect")
+    utils.log(string.format("[scheduler] @i18n(app.msg_loaded_task)@ [%s]", name), "connect")
     return true
 end
 

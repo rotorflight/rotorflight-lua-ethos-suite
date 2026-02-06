@@ -4160,9 +4160,9 @@
           "translation": "D"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "help_p1": {
           "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
@@ -4180,11 +4180,6 @@
           "translation": "Tail P/I/D Gains: Verhoog P tot een lichte wag in hurricanes, en ga dan iets terug. Verhoog I tot de staart locked-in is in harde bewegingen (te hoog veroorzaakt langzame wag). Pas D aan voor soepele stops: hoger voor langzame servo's, lager voor snelle."
         },
         "help_p4": {
-          "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-          "needs_translation": false,
-          "translation": "Tail Stop Gain (CW/CCW): Afzonderlijk instelbaar voor een zuivere stop in beide richtingen."
-        },
-        "help_p5": {
           "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
           "needs_translation": false,
           "translation": "Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n"
@@ -4416,9 +4411,9 @@
           "translation": "Dyn. Min Gas"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "fallback_drop": {
           "english": "Thr. Fallback drop",
@@ -6511,6 +6506,11 @@
       "needs_translation": false,
       "translation": "Verbinden met vliegcontroller..."
     },
+    "msg_loaded_task": {
+      "english": "Loaded task",
+      "needs_translation": false,
+      "translation": "Taak geladen"
+    },
     "msg_loading": {
       "english": "Loading...",
       "needs_translation": false,
@@ -6520,6 +6520,11 @@
       "english": "Loading data from flight controller...",
       "needs_translation": false,
       "translation": "Laden data van vliegcontroller..."
+    },
+    "msg_model_changed_reset": {
+      "english": "Model changed, resetting session",
+      "needs_translation": false,
+      "translation": "Model gewijzigd, sessie resetten"
     },
     "msg_please_disarm_to_save": {
       "english": "Please disarm to save",
@@ -6571,15 +6576,35 @@
       "needs_translation": false,
       "translation": "Data opslaan op vliegcontroller..."
     },
+    "msg_tasks_initialized": {
+      "english": "All tasks initialized.",
+      "needs_translation": false,
+      "translation": "Alle taken geïnitialiseerd."
+    },
+    "msg_telem_sensor_changed": {
+      "english": "Telem. sensor changed to",
+      "needs_translation": false,
+      "translation": "Telem. sensor gewijzigd naar"
+    },
+    "msg_telem_type_changed": {
+      "english": "Telem. type changed to",
+      "needs_translation": false,
+      "translation": "Telem. type gewijzigd naar"
+    },
+    "msg_waiting_for_connection": {
+      "english": "Waiting for connection",
+      "needs_translation": false,
+      "translation": "Wachten op verbinding"
+    },
     "navigation_help": {
       "english": "?",
       "needs_translation": false,
       "translation": "?"
     },
     "navigation_menu": {
-      "english": "MENU",
+      "english": "BACK",
       "needs_translation": false,
-      "translation": "MENU"
+      "translation": "Terug"
     },
     "navigation_reload": {
       "english": "RELOAD",

@@ -12,7 +12,7 @@
     },
     "accel_limit_4": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "setpoint_boost_gain_4": {
@@ -37,7 +37,7 @@
     },
     "accel_limit_1": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "setpoint_boost_cutoff_1": {
@@ -57,7 +57,7 @@
     },
     "accel_limit_2": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "yaw_dynamic_deadband_gain": {
@@ -67,7 +67,7 @@
     },
     "accel_limit_3": {
       "english": "Maximum acceleration of the craft in response to a stick movement.",
-      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+      "translation": "Maximale Beschleunigung des Modells als Reaktion auf eine Knüppelbewegung.",
       "needs_translation": false
     },
     "response_time_4": {
@@ -99,12 +99,12 @@
   "RESCUE_PROFILE": {
     "rescue_flip_gain": {
       "english": "Determine how aggressively the heli flips during inverted rescue.",
-      "translation": "Bestimmt, wie aggressiv der Heli waehrend der invertierten Rettung flippt.",
+      "translation": "Bestimmt, wie aggressiv der Heli während der invertierten Rettung flippt.",
       "needs_translation": false
     },
     "rescue_level_gain": {
       "english": "Determine how aggressively the heli levels during rescue.",
-      "translation": "Bestimmt, wie aggressiv der Heli sich waehrend der Rettung ausrichtet.",
+      "translation": "Bestimmt, wie aggressiv der Heli sich während der Rettung ausrichtet.",
       "needs_translation": false
     },
     "tbl_off": {
@@ -144,7 +144,7 @@
     },
     "rescue_exit_time": {
       "english": "This limits rapid application of negative collective if the helicopter has rolled during rescue.",
-      "translation": "Begrenzt die schnelle Anwendung von negativem Kollektiv, falls der Heli sich waehrend der Rettung gedreht hat.",
+      "translation": "Begrenzt die schnelle Anwendung von negativem Kollektiv, falls der Heli sich während der Rettung gedreht hat.",
       "needs_translation": false
     },
     "rescue_pull_up_collective": {
@@ -248,8 +248,8 @@
     },
     "tbl_alwaysoff": {
       "english": "Always Off",
-      "translation": "Always Off",
-      "needs_translation": true
+      "translation": "Immer aus",
+      "needs_translation": false
     },
     "throttle_min": {
       "english": "Minimum throttle calibration value",
@@ -343,12 +343,12 @@
     },
     "tbl_linear_thr": {
       "english": "Linear Throttle",
-      "translation": "Linear Throttle",
+      "translation": "Lineares Gas",
       "needs_translation": false
     },
     "tbl_rf_gov": {
       "english": "RF Gyro Governor",
-      "translation": "RF Gyro Governor",
+      "translation": "RF Gyro-Governor",
       "needs_translation": false
     },
     "buzzer_volume": {
@@ -358,7 +358,7 @@
     },
     "drive_freq": {
       "english": "PWM drive frequency",
-      "translation": "PWM drive frequency",
+      "translation": "PWM-Antriebsfrequenz",
       "needs_translation": false
     },
     "tbl_enabled": {
@@ -385,7 +385,7 @@
     },
     "tbl_modestore": {
       "english": "Heli Governor Store",
-      "translation": "Heli Governor Speicher",
+      "translation": "Heli Governor (gespeichert)",
       "needs_translation": false
     },
     "tbl_modefree": {
@@ -400,7 +400,7 @@
     },
     "tbl_modeext": {
       "english": "Heli Ext Governor",
-      "translation": "Heli Externer Governor",
+      "translation": "Heli ext. Governor",
       "needs_translation": false
     },
     "tbl_modeheli": {
@@ -415,7 +415,7 @@
     },
     "tbl_autonorm": {
       "english": "Auto Normal",
-      "translation": "Automatisch Normal",
+      "translation": "Auto Normal",
       "needs_translation": false
     },
     "tbl_reverse": {
@@ -490,7 +490,7 @@
     },
     "tbl_autopower": {
       "english": "Auto Power",
-      "translation": "Automatisch Leistung",
+      "translation": "Automatische Leistung",
       "needs_translation": false
     },
     "tbl_unused": {
@@ -507,17 +507,17 @@
     },
     "governor_collective_ff_weight": {
       "english": "Collective precompensation weight - how much collective is mixed into the feedforward.",
-      "translation": "Kollektive Vorkompensationsgewichtung – wie stark kollektiv in das Feedforward gemischt wird.",
+      "translation": "Kollektive Vorkompensationsgewichtung - wie stark kollektiv in das Feedforward gemischt wird.",
       "needs_translation": false
     },
     "governor_i_gain": {
       "english": "PID loop I-term gain.",
-      "translation": "I-Term-Verstaerkung der PID-Regler.",
+      "translation": "I-Term-Verstärkung der PID-Regler.",
       "needs_translation": false
     },
     "governor_cyclic_ff_weight": {
       "english": "Cyclic precompensation weight - how much cyclic is mixed into the feedforward.",
-      "translation": "Zyklische Vorkompensationsgewichtung – wie stark zyklisch in das Feedforward gemischt wird.",
+      "translation": "Zyklische Vorkompensationsgewichtung - wie stark zyklisch in das Feedforward gemischt wird.",
       "needs_translation": false
     },
     "governor_f_gain": {
@@ -552,7 +552,7 @@
     },
     "governor_yaw_ff_weight": {
       "english": "Yaw precompensation weight - how much yaw is mixed into the feedforward.",
-      "translation": "Gier-Vorkompensationsgewicht – wie stark Gier in das Feedforward gemischt wird.",
+      "translation": "Gier-Vorkompensationsgewicht - wie stark Gier in das Feedforward gemischt wird.",
       "needs_translation": false
     },
     "governor_max_throttle": {
@@ -694,7 +694,7 @@
     },
     "iterm_relax_type": {
       "english": "Choose the axes in which this is active. RP: Roll, Pitch. RPY: Roll, Pitch, Yaw.",
-      "translation": "Waehlen Sie die Achsen, auf denen dies aktiv ist. RP: Roll, Pitch. RPY: Roll, Pitch, Gier.",
+      "translation": "Waehlen Sie die Achsen, auf denen dies aktiv ist. RP: Roll, Nick. RPY: Roll, Nick, Gier.",
       "needs_translation": false
     },
     "offset_limit_1": {
@@ -802,12 +802,12 @@
     "tbl_normal": {
       "english": "Normal",
       "translation": "Normal",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_reversed": {
       "english": "Reversed",
-      "translation": "Reversed",
-      "needs_translation": true
+      "translation": "Umgekehrt",
+      "needs_translation": false
     }
   },
   "MIXER_CONFIG": {
@@ -828,18 +828,18 @@
     },
     "tbl_tail_variable_pitch": {
       "english": "Variable Pitch",
-      "translation": "Variable Pitch",
-      "needs_translation": true
+      "translation": "Variabler Pitch",
+      "needs_translation": false
     },
     "tbl_tail_motororized_tail": {
       "english": "Motorized Tail",
-      "translation": "Motorized Tail",
-      "needs_translation": true
+      "translation": "Motorisiertes Heck",
+      "needs_translation": false
     },
     "tbl_tail_bidirectional": {
       "english": "Bidirectional",
-      "translation": "Bidirectional",
-      "needs_translation": true
+      "translation": "Bidirektional",
+      "needs_translation": false
     },
     "tbl_cw": {
       "english": "CW",
@@ -920,12 +920,12 @@
     },
     "main_rotor_gear_ratio_1": {
       "english": "Main Gear Tooth Count",
-      "translation": "Zahnzahl des Hauptgetriebes.",
+      "translation": "Zahnzahl des Hauptzahnrads.",
       "needs_translation": false
     },
     "tail_rotor_gear_ratio_1": {
       "english": "Autorotation Gear Tooth Count",
-      "translation": "Zahnzahl des Autorotationsgetriebes.",
+      "translation": "Zahnzahl des Autorotationszahnrads.",
       "needs_translation": false
     },
     "motor_pwm_rate": {
@@ -935,7 +935,7 @@
     },
     "tail_rotor_gear_ratio_0": {
       "english": "Tail Gear Tooth Count",
-      "translation": "Zahnzahl des Heckgetriebes.",
+      "translation": "Zahnzahl des Heckzahnrads.",
       "needs_translation": false
     },
     "motor_pole_count_0": {
@@ -945,13 +945,13 @@
     },
     "tbl_on": {
       "english": "ON",
-      "translation": "On",
-      "needs_translation": true
+      "translation": "EIN",
+      "needs_translation": false
     },
     "tbl_off": {
       "english": "OFF",
-      "translation": "Off",
-      "needs_translation": true
+      "translation": "AUS",
+      "needs_translation": false
     }
   },
   "ESC_PARAMETERS_HW5": {
@@ -1029,7 +1029,7 @@
   "PILOT_CONFIG": {
     "model_param1_value": {
       "english": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
-      "translation": "Setzen Sie die erwartete Flugzeit in Sekunden. Die Fernsteuerung biept sobald die Flugzeit erreicht wurde.",
+      "translation": "Setzen Sie die erwartete Flugzeit in Sekunden. Die Fernsteuerung piept, sobald die Flugzeit erreicht wurde.",
       "needs_translation": false
     }
   },
@@ -1073,18 +1073,18 @@
   "BATTERY_CONFIG": {
     "source_none": {
       "english": "None",
-      "translation": "None",
-      "needs_translation": true
+      "translation": "Keine",
+      "needs_translation": false
     },
     "source_adc": {
       "english": "Battery ADC",
-      "translation": "Battery ADC",
-      "needs_translation": true
+      "translation": "Akku ADC",
+      "needs_translation": false
     },
     "source_esc": {
       "english": "ESC Telemetry",
-      "translation": "ESC Telemetry",
-      "needs_translation": true
+      "translation": "ESC-Telemetrie",
+      "needs_translation": false
     },
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
@@ -1103,7 +1103,7 @@
     },
     "batteryCellCount": {
       "english": "The number of cells in your battery.",
-      "translation": "Die Anzahl der Zellen in Ihrer Batterie.",
+      "translation": "Zellenanzahl des Akkus.",
       "needs_translation": false
     },
     "vbatfullcellvoltage": {
@@ -1275,12 +1275,12 @@
     "tbl_govmode_limit": {
       "english": "LIMIT",
       "translation": "LIMIT",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_govmode_direct": {
       "english": "DIRECT",
-      "translation": "DIRECT",
-      "needs_translation": true
+      "translation": "DIREKT",
+      "needs_translation": false
     },
     "tbl_govmode_electric": {
       "english": "ELECTRIC",
@@ -1299,13 +1299,13 @@
     },
     "tbl_throttle_type_switch": {
       "english": "SWITCH",
-      "translation": "SWITCH",
-      "needs_translation": true
+      "translation": "SCHALTER",
+      "needs_translation": false
     },
     "tbl_throttle_type_function": {
       "english": "FUNCTION",
-      "translation": "FUNCTION",
-      "needs_translation": true
+      "translation": "FUNKTION",
+      "needs_translation": false
     },
     "governor_idle_throttle": {
       "english": "Idle throttle",
@@ -1398,7 +1398,7 @@
     },
     "gyro_lpf1_dyn_max_hz": {
       "english": "Dynamic filter max cutoff in Hz.",
-      "translation": "Dynamischer Filter – maximale Grenzfrequenz in Hz.",
+      "translation": "Dynamischer Filter - maximale Grenzfrequenz in Hz.",
       "needs_translation": false
     },
     "gyro_soft_notch_hz_2": {
@@ -1418,7 +1418,7 @@
     },
     "dyn_notch_count": {
       "english": "Number of notches to apply.",
-      "translation": "Anzahl der Noteches.",
+      "translation": "Anzahl der Notches.",
       "needs_translation": false
     },
     "dyn_notch_q": {
@@ -1433,7 +1433,7 @@
     },
     "gyro_lpf1_dyn_min_hz": {
       "english": "Dynamic filter min cutoff in Hz.",
-      "translation": "Dynamischer Filter – minimale Grenzfrequenz in Hz.",
+      "translation": "Dynamischer Filter - minimale Grenzfrequenz in Hz.",
       "needs_translation": false
     },
     "tbl_2nd": {
@@ -1570,7 +1570,7 @@
     },
     "tbl_white": {
       "english": "WHITE",
-      "translation": "Weiss",
+      "translation": "Weiß",
       "needs_translation": false
     },
     "tbl_cyan": {
@@ -1595,7 +1595,7 @@
     },
     "tbl_fwgov": {
       "english": "Fixed Wing",
-      "translation": "Flaechenflugzeug-Governor",
+      "translation": "Flaechenflugzeug",
       "needs_translation": false
     },
     "tbl_on": {
@@ -1607,143 +1607,143 @@
   "ESC_PARAMETERS_ZTW": {
     "tbl_jadegreen": {
       "english": "JADE GREEN",
-      "translation": "JADE GREEN",
-      "needs_translation": true
+      "translation": "Jadegruen",
+      "needs_translation": false
     },
     "tbl_off": {
       "english": "Off",
-      "translation": "Off",
-      "needs_translation": true
+      "translation": "Aus",
+      "needs_translation": false
     },
     "tbl_low": {
       "english": "Low",
-      "translation": "Low",
-      "needs_translation": true
+      "translation": "Niedrig",
+      "needs_translation": false
     },
     "tbl_orange": {
       "english": "ORANGE",
-      "translation": "ORANGE",
-      "needs_translation": true
+      "translation": "Orange",
+      "needs_translation": false
     },
     "tbl_fmfw": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
-      "needs_translation": true
+      "translation": "Flaechenflugzeug",
+      "needs_translation": false
     },
     "tbl_ccw": {
       "english": "CCW",
       "translation": "CCW",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_medium": {
       "english": "Medium",
-      "translation": "Medium",
-      "needs_translation": true
+      "translation": "Mittel",
+      "needs_translation": false
     },
     "tbl_yellow": {
       "english": "YELLOW",
-      "translation": "YELLOW",
-      "needs_translation": true
+      "translation": "Gelb",
+      "needs_translation": false
     },
     "tbl_reverse": {
       "english": "Reverse",
-      "translation": "Reverse",
-      "needs_translation": true
+      "translation": "Umgekehrt",
+      "needs_translation": false
     },
     "tbl_red": {
       "english": "Red",
-      "translation": "Red",
-      "needs_translation": true
+      "translation": "Rot",
+      "needs_translation": false
     },
     "tbl_high": {
       "english": "High",
-      "translation": "High",
-      "needs_translation": true
+      "translation": "Hoch",
+      "needs_translation": false
     },
     "tbl_auto": {
       "english": "Auto",
-      "translation": "Auto",
-      "needs_translation": true
+      "translation": "Automatisch",
+      "needs_translation": false
     },
     "tbl_cw": {
       "english": "CW",
       "translation": "CW",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_fmheli": {
       "english": "Helicopter",
-      "translation": "Helicopter",
-      "needs_translation": true
+      "translation": "Helikopter",
+      "needs_translation": false
     },
     "tbl_purple": {
       "english": "PURPLE",
-      "translation": "PURPLE",
-      "needs_translation": true
+      "translation": "Lila",
+      "needs_translation": false
     },
     "tbl_green": {
       "english": "GREEN",
-      "translation": "GREEN",
-      "needs_translation": true
+      "translation": "Gruen",
+      "needs_translation": false
     },
     "tbl_blue": {
       "english": "BLUE",
-      "translation": "BLUE",
-      "needs_translation": true
+      "translation": "Blau",
+      "needs_translation": false
     },
     "tbl_slow": {
       "english": "Slow",
-      "translation": "Slow",
-      "needs_translation": true
+      "translation": "Langsam",
+      "needs_translation": false
     },
     "tbl_normal": {
       "english": "Normal",
       "translation": "Normal",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_fast": {
       "english": "Fast",
-      "translation": "Fast",
-      "needs_translation": true
+      "translation": "Schnell",
+      "needs_translation": false
     },
     "tbl_escgov": {
       "english": "ESC Governor",
-      "translation": "ESC Governor",
-      "needs_translation": true
+      "translation": "ESC-Governor",
+      "needs_translation": false
     },
     "tbl_white": {
       "english": "WHITE",
-      "translation": "WHITE",
-      "needs_translation": true
+      "translation": "Weiß",
+      "needs_translation": false
     },
     "tbl_cyan": {
       "english": "CYAN",
-      "translation": "CYAN",
-      "needs_translation": true
+      "translation": "Cyan",
+      "needs_translation": false
     },
     "tbl_vslow": {
       "english": "Very Slow",
-      "translation": "Very Slow",
-      "needs_translation": true
+      "translation": "Sehr langsam",
+      "needs_translation": false
     },
     "tbl_extgov": {
       "english": "External Governor",
-      "translation": "External Governor",
-      "needs_translation": true
+      "translation": "Externer Governor",
+      "needs_translation": false
     },
     "tbl_pink": {
       "english": "PINK",
-      "translation": "PINK",
-      "needs_translation": true
+      "translation": "Pink",
+      "needs_translation": false
     },
     "tbl_fwgov": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
-      "needs_translation": true
+      "translation": "Flaechenflugzeug",
+      "needs_translation": false
     },
     "tbl_on": {
       "english": "On",
-      "translation": "On",
-      "needs_translation": true
+      "translation": "An",
+      "needs_translation": false
     }
   },
   "ESC_PARAMETERS_OMP": {
@@ -1854,7 +1854,7 @@
     },
     "tbl_white": {
       "english": "WHITE",
-      "translation": "Weiss",
+      "translation": "Weiß",
       "needs_translation": false
     },
     "tbl_cyan": {
@@ -1879,7 +1879,7 @@
     },
     "tbl_fwgov": {
       "english": "Fixed Wing",
-      "translation": "Flaechenflugzeug-Governor",
+      "translation": "Flaechenflugzeug",
       "needs_translation": false
     },
     "tbl_on": {
@@ -1926,7 +1926,7 @@
     },
     "tbl_unsolicited": {
       "english": "Unsolicited",
-      "translation": "Ungefragt",
+      "translation": "Unaufgefordert",
       "needs_translation": false
     },
     "tbl_futsbus": {

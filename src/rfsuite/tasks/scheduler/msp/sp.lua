@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 
 local transport = {}
+local os_clock = os.clock
 
 -- FrSky / F.Port identifiers
 local LOCAL_SENSOR_ID        = 0x0D   -- Our device's sensor ID when sending
@@ -87,7 +88,12 @@ end
 
 -- Poll FrSky telemetry for incoming MSP reply frames
 transport.mspPoll = function()
+    local protoCfg = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
+    local budget = protoCfg.mspTransportPollBudgetSeconds or 0.004
+    local deadline = (budget and budget > 0) and (os_clock() + budget) or nil
+
     while true do
+        if deadline and os_clock() >= deadline then return nil end
         local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
         if not sensorId then return nil end
 

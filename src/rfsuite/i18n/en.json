@@ -4160,9 +4160,9 @@
           "translation": "D"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "help_p1": {
           "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
@@ -4180,11 +4180,6 @@
           "translation": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones."
         },
         "help_p4": {
-          "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-          "needs_translation": false,
-          "translation": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions."
-        },
-        "help_p5": {
           "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
           "needs_translation": false,
           "translation": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions."
@@ -4416,9 +4411,9 @@
           "translation": "Dyn. Min Throttle"
         },
         "f": {
-          "english": "F",
+          "english": "FF",
           "needs_translation": false,
-          "translation": "F"
+          "translation": "FF"
         },
         "fallback_drop": {
           "english": "Thr. Fallback drop",
@@ -6511,6 +6506,11 @@
       "needs_translation": false,
       "translation": "Connecting to flight controller..."
     },
+    "msg_loaded_task": {
+      "english": "Loaded task",
+      "needs_translation": false,
+      "translation": "Loaded task"
+    },
     "msg_loading": {
       "english": "Loading...",
       "needs_translation": false,
@@ -6520,6 +6520,11 @@
       "english": "Loading data from flight controller...",
       "needs_translation": false,
       "translation": "Loading data from flight controller..."
+    },
+    "msg_model_changed_reset": {
+      "english": "Model changed, resetting session",
+      "needs_translation": false,
+      "translation": "Model changed, resetting session"
     },
     "msg_please_disarm_to_save": {
       "english": "Please disarm to save",
@@ -6571,15 +6576,35 @@
       "needs_translation": false,
       "translation": "Saving data to flight controller..."
     },
+    "msg_tasks_initialized": {
+      "english": "All tasks initialized.",
+      "needs_translation": false,
+      "translation": "All tasks initialized."
+    },
+    "msg_telem_sensor_changed": {
+      "english": "Telem. sensor changed to",
+      "needs_translation": false,
+      "translation": "Telem. sensor changed to"
+    },
+    "msg_telem_type_changed": {
+      "english": "Telem. type changed to",
+      "needs_translation": false,
+      "translation": "Telem. type changed to"
+    },
+    "msg_waiting_for_connection": {
+      "english": "Waiting for connection",
+      "needs_translation": false,
+      "translation": "Waiting for connection"
+    },
     "navigation_help": {
       "english": "?",
       "needs_translation": false,
       "translation": "?"
     },
     "navigation_menu": {
-      "english": "MENU",
+      "english": "BACK",
       "needs_translation": false,
-      "translation": "MENU"
+      "translation": "BACK"
     },
     "navigation_reload": {
       "english": "RELOAD",

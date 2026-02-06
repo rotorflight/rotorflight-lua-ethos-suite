@@ -636,7 +636,11 @@ function elrs.wakeup()
     rebuildRelevantSidSet()
 
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        while elrs.crossfirePop() do end
+        local budget = (elrs.popBudgetSeconds or (config and config.elrsPopBudgetSeconds) or 0.1)
+        local deadline = (budget and budget > 0) and (os.clock() + budget) or nil
+        while elrs.crossfirePop() do
+            if deadline and os.clock() >= deadline then break end
+        end
         refreshStaleSensors()
     else
         resetSensors()

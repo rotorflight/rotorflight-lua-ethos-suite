@@ -20,8 +20,8 @@
     "needs_translation": false
   },
   "navigation_menu": {
-    "english": "MENU",
-    "translation": "Menú",
+    "english": "BACK",
+    "translation": "Atrás",
     "needs_translation": false
   },
   "menu_section_hardware": {
@@ -1591,7 +1591,7 @@
         "translation": "Alabeo",
         "needs_translation": false
       },
-      "help_p5": {
+      "help_p4": {
         "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
         "translation": "Prueba & Ajuste: Vuele, observe, y afine hasta la mejor performance en condiciones reales.",
         "needs_translation": false
@@ -1602,8 +1602,8 @@
         "needs_translation": false
       },
       "f": {
-        "english": "F",
-        "translation": "F",
+        "english": "FF",
+        "translation": "FF",
         "needs_translation": false
       },
       "name": {
@@ -1624,11 +1624,6 @@
       "b": {
         "english": "B",
         "translation": "B",
-        "needs_translation": false
-      },
-      "help_p4": {
-        "english": "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-        "translation": "Ganancia Detención Cola (Horaria CW/Antihoraria CCW): Ajuste separadamente para detenciones limpias, sin rebotes, en ambos sentidos.",
         "needs_translation": false
       },
       "help_p3": {
@@ -2119,8 +2114,8 @@
         "needs_translation": false
       },
       "f": {
-        "english": "F",
-        "translation": "F",
+        "english": "FF",
+        "translation": "FF",
         "needs_translation": false
       },
       "name": {
@@ -4626,5 +4621,35 @@
     "english": "This version of the Lua script \ncan't be used with the selected model",
     "translation": "Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado",
     "needs_translation": false
+  },
+  "msg_waiting_for_connection": {
+    "english": "Waiting for connection",
+    "translation": "Esperando conexión",
+    "needs_translation": true
+  },
+  "msg_model_changed_reset": {
+    "english": "Model changed, resetting session",
+    "translation": "Model changed, resetting session",
+    "needs_translation": true
+  },
+  "msg_telem_sensor_changed": {
+    "english": "Telem. sensor changed to",
+    "translation": "Telem. sensor changed to",
+    "needs_translation": true
+  },
+  "msg_telem_type_changed": {
+    "english": "Telem. type changed to",
+    "translation": "Telem. type changed to",
+    "needs_translation": true
+  },
+  "msg_tasks_initialized": {
+    "english": "All tasks initialized.",
+    "translation": "All tasks initialized.",
+    "needs_translation": true
+  },
+  "msg_loaded_task": {
+    "english": "Loaded task",
+    "translation": "Loaded task",
+    "needs_translation": true
   }
 }
