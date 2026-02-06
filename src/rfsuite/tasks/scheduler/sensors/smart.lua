@@ -95,7 +95,9 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         lastModule = currentModule
     end
 
-    if sensorCache[appId] == nil and negativeCache[appId] then end
+    if sensorCache[appId] == nil and negativeCache[appId] then
+        return
+    end
 
     if not sensorCache[appId] and not negativeCache[appId] then
         local existingSensor = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
