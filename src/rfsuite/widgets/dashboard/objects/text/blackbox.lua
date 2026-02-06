@@ -89,9 +89,11 @@ end
 
 local function updateProgressMessage()
     if not progress or not progressBaseMessage then return end
-    local mspStatus = rfsuite.session and rfsuite.session.mspStatusMessage
+    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus and mspStatus ~= progressMspStatusLast then
-        progress:message(progressBaseMessage .. "\n" .. mspStatus)
+        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+        progress:message(progressBaseMessage .. " [" .. mspStatus .. "]")
         progressMspStatusLast = mspStatus
     elseif not mspStatus and progressMspStatusLast then
         progress:message(progressBaseMessage)

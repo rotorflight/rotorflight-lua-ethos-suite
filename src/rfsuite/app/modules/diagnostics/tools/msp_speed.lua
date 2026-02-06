@@ -40,9 +40,11 @@ local Rate = 0.25
 
 local function updateTestLoaderMessage()
     if not testLoader or not testLoaderBaseMessage then return end
-    local mspStatus = rfsuite.session and rfsuite.session.mspStatusMessage
+    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus and mspStatus ~= testLoaderMspStatusLast then
-        testLoader:message(testLoaderBaseMessage .. "\n" .. mspStatus)
+        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+        testLoader:message(testLoaderBaseMessage .. " [" .. mspStatus .. "]")
         testLoaderMspStatusLast = mspStatus
     elseif not mspStatus and testLoaderMspStatusLast then
         testLoader:message(testLoaderBaseMessage)

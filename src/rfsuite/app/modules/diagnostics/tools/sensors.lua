@@ -154,9 +154,11 @@ end
 
 local function updateProgressLoaderMessage()
     if not progressLoader or not progressLoaderBaseMessage then return end
-    local mspStatus = rfsuite.session and rfsuite.session.mspStatusMessage
+    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus and mspStatus ~= progressLoaderMspStatusLast then
-        progressLoader:message(progressLoaderBaseMessage .. "\n" .. mspStatus)
+        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+        progressLoader:message(progressLoaderBaseMessage .. " [" .. mspStatus .. "]")
         progressLoaderMspStatusLast = mspStatus
     elseif not mspStatus and progressLoaderMspStatusLast then
         progressLoader:message(progressLoaderBaseMessage)

@@ -59,25 +59,31 @@ local function secondsToSamples(sec) return math.floor(sec * SAMPLE_RATE) end
 local function setProgressLoaderMessage(baseMessage)
     if not progressLoader then return end
     progressLoaderBaseMessage = baseMessage
-    local mspStatus = rfsuite.session and rfsuite.session.mspStatusMessage
+    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus and mspStatus ~= "" then
-        progressLoader:message(baseMessage .. "\n" .. mspStatus)
+        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+        progressLoader:message(baseMessage .. " [" .. mspStatus .. "]")
+        progressLoaderMspStatusLast = mspStatus
     else
         progressLoader:message(baseMessage)
+        progressLoaderMspStatusLast = nil
     end
-    progressLoaderMspStatusLast = mspStatus
 end
 
 local function refreshProgressLoaderMessage()
     if not progressLoader or not progressLoaderBaseMessage then return end
-    local mspStatus = rfsuite.session and rfsuite.session.mspStatusMessage
+    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus ~= progressLoaderMspStatusLast then
         if mspStatus and mspStatus ~= "" then
-            progressLoader:message(progressLoaderBaseMessage .. "\n" .. mspStatus)
+            if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+            progressLoader:message(progressLoaderBaseMessage .. " [" .. mspStatus .. "]")
+            progressLoaderMspStatusLast = mspStatus
         else
             progressLoader:message(progressLoaderBaseMessage)
+            progressLoaderMspStatusLast = nil
         end
-        progressLoaderMspStatusLast = mspStatus
     end
 end
 
