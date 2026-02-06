@@ -35,8 +35,6 @@ local readNextChunk
 local logData = {}
 local maxMinData = {}
 local progressLoader
-local progressLoaderBaseMessage
-local progressLoaderMspStatusLast
 local logLineCount
 
 local logColumns = rfsuite.tasks.logging.getLogTable()
@@ -55,37 +53,6 @@ local zoomLevelToTime = {[1] = 600, [2] = 300, [3] = 120, [4] = 60, [5] = 30}
 
 local SAMPLE_RATE = 1
 local function secondsToSamples(sec) return math.floor(sec * SAMPLE_RATE) end
-
-local function setProgressLoaderMessage(baseMessage)
-    if not progressLoader then return end
-    progressLoaderBaseMessage = baseMessage
-    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
-    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if mspStatus and mspStatus ~= "" then
-        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-        progressLoader:message(baseMessage .. " [" .. mspStatus .. "]")
-        progressLoaderMspStatusLast = mspStatus
-    else
-        progressLoader:message(baseMessage)
-        progressLoaderMspStatusLast = nil
-    end
-end
-
-local function refreshProgressLoaderMessage()
-    if not progressLoader or not progressLoaderBaseMessage then return end
-    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
-    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if mspStatus ~= progressLoaderMspStatusLast then
-        if mspStatus and mspStatus ~= "" then
-            if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-            progressLoader:message(progressLoaderBaseMessage .. " [" .. mspStatus .. "]")
-            progressLoaderMspStatusLast = mspStatus
-        else
-            progressLoader:message(progressLoaderBaseMessage)
-            progressLoaderMspStatusLast = nil
-        end
-    end
-end
 
 local function readNextChunk()
     if logDataRawReadComplete then return end
@@ -605,11 +572,7 @@ local function wakeup()
     if not progressLoader then
         progressLoader = form.openProgressDialog("Processing", "Loading log data")
         progressLoader:closeAllowed(false)
-        setProgressLoaderMessage("Loading log data")
-        rfsuite.app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage or "Loading log data")
     end
-
-    refreshProgressLoaderMessage()
 
     if not logDataRawReadComplete then
         progressLoader:value(slowcount)
@@ -658,7 +621,7 @@ local function wakeup()
         updateProgress(5)
         logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
 
-        setProgressLoaderMessage("Processing data " .. currentDataIndex .. " of " .. #logColumns)
+        progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
 
         if currentDataIndex >= #logColumns then
             logLineCount = #logData[currentDataIndex]['data']
@@ -677,9 +640,6 @@ local function wakeup()
             end
 
             progressLoader:close()
-            rfsuite.app.ui.clearProgressDialog(progressLoader)
-            progressLoaderBaseMessage = nil
-            progressLoaderMspStatusLast = nil
             processedLogData = true
             paintCache.needsUpdate = true
             lcd.invalidate()
