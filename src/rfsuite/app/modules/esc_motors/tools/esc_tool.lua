@@ -109,7 +109,7 @@ end
 
 local function updatePowercycleLoaderMessage()
     if not powercycleLoader or not powercycleLoaderBaseMessage then return end
-    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus and mspStatus ~= powercycleLoaderMspStatusLast then
         if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end

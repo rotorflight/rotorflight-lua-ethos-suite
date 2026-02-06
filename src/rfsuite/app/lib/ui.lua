@@ -53,7 +53,7 @@ function ui.updateProgressDialogMessage(statusOverride)
             local mspStatus = statusOverride or getMspStatusForDialog()
             local base = app.dialogs.progressBaseMessage or ""
             local msg = base
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
                 if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
                 msg = msg .. " [" .. mspStatus .. "]"
             end
@@ -63,7 +63,7 @@ function ui.updateProgressDialogMessage(statusOverride)
             local mspStatus = statusOverride or getMspStatusForDialog()
             local base = app.dialogs.saveBaseMessage or ""
             local msg = base
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
                 if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
                 msg = msg .. " [" .. mspStatus .. "]"
             end
@@ -77,7 +77,7 @@ function ui.updateProgressDialogMessage(statusOverride)
     if pd and pd.handle then
         local mspStatus = statusOverride or getMspStatusForDialog()
         local composedMessage = pd.baseMessage or ""
-        if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+        if mspStatus and rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
             if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
             composedMessage = composedMessage .. " [" .. mspStatus .. "]"
         end
@@ -200,7 +200,7 @@ function ui.progressDisplay(title, message, speed)
 
             local mspStatus = getMspStatusForDialog()
             local msg = app.dialogs.progressBaseMessage or ""
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
                 if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
                 msg = msg .. "    [" .. mspStatus .. "]"
             end
@@ -291,7 +291,7 @@ function ui.progressDisplaySave(message)
 
             local mspStatus = getMspStatusForDialog()
             local msg = app.dialogs.saveBaseMessage or ""
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
                 if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
                 msg = msg .. " [" .. mspStatus .. "]"
             end

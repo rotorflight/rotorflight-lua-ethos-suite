@@ -59,7 +59,7 @@ local function secondsToSamples(sec) return math.floor(sec * SAMPLE_RATE) end
 local function setProgressLoaderMessage(baseMessage)
     if not progressLoader then return end
     progressLoaderBaseMessage = baseMessage
-    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus and mspStatus ~= "" then
         if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
@@ -73,7 +73,7 @@ end
 
 local function refreshProgressLoaderMessage()
     if not progressLoader or not progressLoaderBaseMessage then return end
-    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if mspStatus ~= progressLoaderMspStatusLast then
         if mspStatus and mspStatus ~= "" then
