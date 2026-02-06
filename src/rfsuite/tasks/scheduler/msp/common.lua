@@ -239,9 +239,23 @@ local function _receivedReply(payload)
     mspStarted = false
 
     -- V1 CRC check
-    if _mspVersion == 1 then
+            if _mspVersion == 1 then
         local rxCRC = payload[idx] or 0
-        if mspRxCRC ~= rxCRC and versionBits == 0 then return nil end
+        if mspRxCRC ~= rxCRC and versionBits == 0 then
+            if rfsuite and rfsuite.session then
+                local n = (rfsuite.session.mspCrcErrors or 0) + 1
+                rfsuite.session.mspCrcErrors = n
+                rfsuite.session.mspStatusMessage = "MSP CRC error (" .. tostring(n) .. ")"
+                rfsuite.session.mspStatusUpdatedAt = os.clock()
+                if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.updateProgressDialogMessage then
+                    rfsuite.app.ui.updateProgressDialogMessage(rfsuite.session.mspStatusMessage)
+                end
+                if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.applyMspStatusToActiveDialogs then
+                    rfsuite.app.ui.applyMspStatusToActiveDialogs(rfsuite.session.mspStatusMessage)
+                end
+            end
+            return nil
+        end
     end
 
     return true

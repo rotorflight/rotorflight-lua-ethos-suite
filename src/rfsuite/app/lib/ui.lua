@@ -14,6 +14,77 @@ local utils = rfsuite.utils
 local tasks = rfsuite.tasks
 local apiCore
 
+local function getMspStatusForDialog()
+    local session = rfsuite.session
+    if not session then return nil end
+    if session.mspStatusClearAt and os.clock() >= session.mspStatusClearAt then
+        session.mspStatusMessage = nil
+        session.mspStatusClearAt = nil
+    end
+    local mspStatus = session.mspStatusMessage
+    if not mspStatus and session.mspStatusLast and session.mspStatusUpdatedAt and (os.clock() - session.mspStatusUpdatedAt) < 0.75 then
+        mspStatus = session.mspStatusLast
+    end
+    return mspStatus
+end
+
+function ui.registerProgressDialog(handle, baseMessage)
+    if not rfsuite.session then return end
+    rfsuite.session.progressDialog = {
+        handle = handle,
+        baseMessage = baseMessage or ""
+    }
+end
+
+function ui.clearProgressDialog(handle)
+    local session = rfsuite.session
+    if not session or not session.progressDialog then return end
+    if handle == nil or session.progressDialog.handle == handle then
+        session.progressDialog = nil
+    end
+end
+
+function ui.updateProgressDialogMessage(statusOverride)
+    local app = rfsuite.app
+
+    -- First update the standard app dialogs (the ones actually on screen)
+    if app and app.dialogs then
+        if app.dialogs.progressDisplay and app.dialogs.progress then
+            local mspStatus = statusOverride or getMspStatusForDialog()
+            local base = app.dialogs.progressBaseMessage or ""
+            local msg = base
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. " [" .. mspStatus .. "]"
+            end
+            pcall(function() app.dialogs.progress:message(msg) end)
+        end
+        if app.dialogs.saveDisplay and app.dialogs.save then
+            local mspStatus = statusOverride or getMspStatusForDialog()
+            local base = app.dialogs.saveBaseMessage or ""
+            local msg = base
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. " [" .. mspStatus .. "]"
+            end
+            pcall(function() app.dialogs.save:message(msg) end)
+        end
+    end
+
+    -- Then update any custom registered dialog
+    local session = rfsuite.session
+    local pd = session and session.progressDialog
+    if pd and pd.handle then
+        local mspStatus = statusOverride or getMspStatusForDialog()
+        local composedMessage = pd.baseMessage or ""
+        if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+            if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+            composedMessage = composedMessage .. " [" .. mspStatus .. "]"
+        end
+        pcall(function() pd.handle:message(composedMessage) end)
+    end
+end
+
 local function getApiCore()
     if apiCore then return apiCore end
     apiCore = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
@@ -39,12 +110,15 @@ function ui.progressDisplay(title, message, speed)
 
     app.dialogs.progressDisplay = true
     app.dialogs.progressWatchDog = os.clock()
+    app.dialogs.progressBaseMessage = message
+    app.dialogs.progressMspStatusLast = nil
     app.dialogs.progress = form.openProgressDialog({
         title = title,
         message = message,
         close = function() end,
         wakeup = function()
             local app = rfsuite.app
+            local now = os.clock()
 
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
@@ -72,6 +146,7 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
+                    ui.clearProgressDialog(app.dialogs.progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
@@ -82,6 +157,7 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
+                    ui.clearProgressDialog(app.dialogs.progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
@@ -97,6 +173,7 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progress:message("@i18n(app.error_timed_out)@")
                 app.dialogs.progress:closeAllowed(true)
                 app.dialogs.progress:value(100)
+                ui.clearProgressDialog(app.dialogs.progress)
                 app.Page = app.PageTmp
                 app.PageTmp = nil
                 app.dialogs.progressCounter = 0
@@ -113,6 +190,7 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
+                    ui.clearProgressDialog(app.dialogs.progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.dialogs.progressSpeed = false
@@ -120,12 +198,21 @@ function ui.progressDisplay(title, message, speed)
                 end
             end
 
+            local mspStatus = getMspStatusForDialog()
+            local msg = app.dialogs.progressBaseMessage or ""
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. "    [" .. mspStatus .. "]"
+            end
+            app.dialogs.progress:message(msg)
+
         end
     })
 
     app.dialogs.progressCounter = 0
     app.dialogs.progress:value(0)
     app.dialogs.progress:closeAllowed(false)
+    ui.registerProgressDialog(app.dialogs.progress, app.dialogs.progressBaseMessage)
 end
 
 function ui.progressDisplaySave(message)
@@ -135,11 +222,14 @@ function ui.progressDisplaySave(message)
 
     app.dialogs.saveDisplay = true
     app.dialogs.saveWatchDog = os.clock()
+    app.dialogs.saveBaseMessage = nil
+    app.dialogs.saveMspStatusLast = nil
 
     local SAVE_MESSAGE_TAG = {[app.pageStatus.saving] = "@i18n(app.msg_saving_settings)@", [app.pageStatus.eepromWrite] = "@i18n(app.msg_saving_settings)@", [app.pageStatus.rebooting] = "@i18n(app.msg_rebooting)@"}
 
     local resolvedMessage = message or SAVE_MESSAGE_TAG[app.pageState] or "@i18n(app.msg_saving_settings)@"
     local title = "@i18n(app.msg_saving)@"
+    app.dialogs.saveBaseMessage = resolvedMessage
 
     app.dialogs.save = form.openProgressDialog({
         title = title,
@@ -147,6 +237,7 @@ function ui.progressDisplaySave(message)
         close = function() end,
         wakeup = function()
             local app = rfsuite.app
+            local now = os.clock()
 
             app.dialogs.save:value(app.dialogs.saveProgressCounter)
 
@@ -164,12 +255,14 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
                     app.dialogs.save:close()
+                    ui.clearProgressDialog(app.dialogs.save)
 
                 end
             elseif tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
                     app.dialogs.save:close()
+                    ui.clearProgressDialog(app.dialogs.save)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveProgressCounter = 0
                     app.triggers.closeSave = false
@@ -190,15 +283,25 @@ function ui.progressDisplaySave(message)
                 app.dialogs.saveProgressCounter = 0
                 app.dialogs.saveDisplay = false
                 app.triggers.isSaving = false
+                ui.clearProgressDialog(app.dialogs.save)
                 app.Page = app.PageTmp
                 app.PageTmp = nil
 
             end
+
+            local mspStatus = getMspStatusForDialog()
+            local msg = app.dialogs.saveBaseMessage or ""
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. " [" .. mspStatus .. "]"
+            end
+            pcall(function() app.dialogs.save:message(msg) end)
         end
     })
 
     app.dialogs.save:value(0)
     app.dialogs.save:closeAllowed(false)
+    ui.registerProgressDialog(app.dialogs.save, app.dialogs.saveBaseMessage)
 end
 
 function ui.progressDisplayIsActive()

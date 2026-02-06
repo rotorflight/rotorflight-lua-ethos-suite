@@ -50,6 +50,12 @@ function utils.session()
         telemetryModuleNumber = nil,
 
         mspBusy = false,
+        mspStatusMessage = nil,
+        mspStatusUpdatedAt = nil,
+        mspStatusLast = nil,
+        mspStatusClearAt = nil,
+        mspCrcErrors = 0,
+        progressDialog = nil,
 
         repairSensors = false,
 
