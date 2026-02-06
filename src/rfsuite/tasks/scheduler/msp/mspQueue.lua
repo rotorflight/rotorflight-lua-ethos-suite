@@ -81,12 +81,12 @@ local function formatMspStatus(msg, suffix)
     if not msg then return nil end
     local rw
     if msg.isWrite ~= nil then
-        rw = msg.isWrite and "WRITE" or "READ"
+        rw = msg.isWrite and "Write" or "Read"
     else
-        rw = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+        rw = (msg.payload and #msg.payload > 0) and "Write" or "Read"
     end
     local cmd = msg.command
-    local head = "MSP " .. (rw == "WRITE" and "W" or "R")
+    local head = "MSP " .. rw
     if cmd ~= nil then head = head .. " " .. tostring(cmd) end
     if suffix and suffix ~= "" then return head .. " " .. suffix end
     return head

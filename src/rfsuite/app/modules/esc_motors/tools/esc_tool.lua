@@ -23,6 +23,7 @@ local powercycleLoaderRateLimit = 2
 local showPowerCycleLoaderFinished = false
 local powercycleLoaderBaseMessage
 local powercycleLoaderMspStatusLast
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 
 local modelField
 local versionField
@@ -111,13 +112,17 @@ local function updatePowercycleLoaderMessage()
     if not powercycleLoader or not powercycleLoaderBaseMessage then return end
     local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if mspStatus and mspStatus ~= powercycleLoaderMspStatusLast then
-        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-        powercycleLoader:message(powercycleLoaderBaseMessage .. " [" .. mspStatus .. "]")
-        powercycleLoaderMspStatusLast = mspStatus
-    elseif not mspStatus and powercycleLoaderMspStatusLast then
-        powercycleLoader:message(powercycleLoaderBaseMessage)
-        powercycleLoaderMspStatusLast = nil
+    if showMsp then
+        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+        if msg ~= powercycleLoaderMspStatusLast then
+            powercycleLoader:message(msg)
+            powercycleLoaderMspStatusLast = msg
+        end
+    else
+        if powercycleLoaderMspStatusLast ~= nil then
+            powercycleLoader:message(powercycleLoaderBaseMessage)
+            powercycleLoaderMspStatusLast = nil
+        end
     end
 end
 

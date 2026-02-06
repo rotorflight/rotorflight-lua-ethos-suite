@@ -27,6 +27,7 @@ local progressLoader
 local progressLoaderCounter = 0
 local progressLoaderBaseMessage
 local progressLoaderMspStatusLast
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local doDiscoverNotify = false
 
 local function sortSensorListByName(sensorList)
@@ -156,13 +157,17 @@ local function updateProgressLoaderMessage()
     if not progressLoader or not progressLoaderBaseMessage then return end
     local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if mspStatus and mspStatus ~= progressLoaderMspStatusLast then
-        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-        progressLoader:message(progressLoaderBaseMessage .. " [" .. mspStatus .. "]")
-        progressLoaderMspStatusLast = mspStatus
-    elseif not mspStatus and progressLoaderMspStatusLast then
-        progressLoader:message(progressLoaderBaseMessage)
-        progressLoaderMspStatusLast = nil
+    if showMsp then
+        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+        if msg ~= progressLoaderMspStatusLast then
+            progressLoader:message(msg)
+            progressLoaderMspStatusLast = msg
+        end
+    else
+        if progressLoaderMspStatusLast ~= nil then
+            progressLoader:message(progressLoaderBaseMessage)
+            progressLoaderMspStatusLast = nil
+        end
     end
 end
 

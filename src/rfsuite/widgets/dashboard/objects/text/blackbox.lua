@@ -43,6 +43,7 @@ local resolveThemeColor = utils.resolveThemeColor
 local eraseDataflashGo = false
 local progressBaseMessage
 local progressMspStatusLast
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -91,13 +92,17 @@ local function updateProgressMessage()
     if not progress or not progressBaseMessage then return end
     local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if mspStatus and mspStatus ~= progressMspStatusLast then
-        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-        progress:message(progressBaseMessage .. " [" .. mspStatus .. "]")
-        progressMspStatusLast = mspStatus
-    elseif not mspStatus and progressMspStatusLast then
-        progress:message(progressBaseMessage)
-        progressMspStatusLast = nil
+    if showMsp then
+        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+        if msg ~= progressMspStatusLast then
+            progress:message(msg)
+            progressMspStatusLast = msg
+        end
+    else
+        if progressMspStatusLast ~= nil then
+            progress:message(progressBaseMessage)
+            progressMspStatusLast = nil
+        end
     end
 end
 
