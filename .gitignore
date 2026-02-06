@@ -8,3 +8,10 @@ simulator/*
 deploy.json
 *.pyc
 *.pyc
+bin/updater/src/rfsuite_updater_work
+bin/updater/src/build
+bin/updater/src/build_embed
+bin/updater/src/dist_embed
+bin/updater/src/build
+/bin/updater/src/rfsuite_updater_work
+/bin/updater/rfsuite_updater_work

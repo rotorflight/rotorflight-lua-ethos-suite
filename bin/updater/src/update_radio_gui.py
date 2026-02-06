@@ -35,7 +35,7 @@ import atexit
 # GUI imports
 try:
     import tkinter as tk
-    from tkinter import ttk, scrolledtext, messagebox
+    from tkinter import ttk, scrolledtext, messagebox, filedialog
 except ImportError:
     print("Error: tkinter is required but not found.")
     sys.exit(1)
@@ -88,9 +88,9 @@ AVAILABLE_LOCALES = ["en", "de", "es", "fr", "it", "nl"]
 DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
-COPY_SETTLE_SECONDS = 0.02
+COPY_SETTLE_SECONDS = 0.03
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "0.0.0"
+UPDATER_VERSION = "1.0.1"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
@@ -508,7 +508,7 @@ class UpdaterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Rotorflight Lua Ethos Suite Updater")
-        self.root.geometry("800x680")
+        self.root.geometry("800x800")
         self.root.resizable(False, False)
         
         self.radio = RadioInterface()
@@ -657,25 +657,6 @@ class UpdaterGUI:
         )
         locale_combo.pack(side=tk.LEFT, padx=5)
 
-        # Updater update notification (hidden by default)
-        self.update_notice = ttk.Frame(self.root, padding="8")
-        self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
-        self.update_notice.pack_forget()
-
-        self.update_notice_label = ttk.Label(
-            self.update_notice,
-            text="",
-            font=("Arial", 9)
-        )
-        self.update_notice_label.pack(side=tk.LEFT)
-
-        self.update_notice_button = ttk.Button(
-            self.update_notice,
-            text="Open Download Page",
-            command=lambda: webbrowser.open(UPDATER_INFO_URL)
-        )
-        self.update_notice_button.pack(side=tk.RIGHT)
-        
         # Status frame
         status_frame = ttk.LabelFrame(self.root, text="Status", padding="10")
         status_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -701,10 +682,10 @@ class UpdaterGUI:
             "Connect",
             "Download",
             "Extract",
+            "Translate",
             "Remove",
             "Copy",
             "Audio",
-            "Translate",
             "Cleanup",
         ]
         self.segment_bar = tk.Canvas(
@@ -755,6 +736,13 @@ class UpdaterGUI:
             state=tk.DISABLED
         )
         self.cancel_button.pack(side=tk.LEFT, padx=5)
+
+        self.save_log_button = ttk.Button(
+            button_frame,
+            text="Save Log",
+            command=self.save_log
+        )
+        self.save_log_button.pack(side=tk.LEFT, padx=5)
         
         ttk.Button(
             button_frame,
@@ -763,11 +751,10 @@ class UpdaterGUI:
         ).pack(side=tk.RIGHT, padx=5)
         
         # Info frame
-        info_frame = ttk.Frame(self.root, padding="10")
-        info_frame.pack(fill=tk.X)
+        info_frame = ttk.LabelFrame(self.root, text="Instructions", padding="10")
+        info_frame.pack(fill=tk.X, padx=10, pady=5)
         
         info_text = (
-            "Instructions:\n"
             "1. Select the version you want to install (Release recommended)\n"
             "2. Connect your Ethos radio via USB\n"
             "3. Click 'Start Update' to begin\n"
@@ -780,6 +767,24 @@ class UpdaterGUI:
             font=("Arial", 8),
             justify=tk.LEFT
         ).pack(anchor=tk.W)
+
+        # Updater update notification (always visible)
+        self.update_notice = ttk.Frame(self.root, padding="8")
+        self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
+        
+        self.update_notice_label = ttk.Label(
+            self.update_notice,
+            text=f"Checking for updates... (Current: {UPDATER_VERSION})",
+            font=("Arial", 9)
+        )
+        self.update_notice_label.pack(side=tk.LEFT)
+        
+        self.update_notice_button = ttk.Button(
+            self.update_notice,
+            text="Open Download Page",
+            command=lambda: webbrowser.open(UPDATER_INFO_URL)
+        )
+        self.update_notice_button.pack(side=tk.RIGHT)
 
         # Async check for updater updates
         threading.Thread(target=self.check_updater_update, daemon=True).start()
@@ -818,16 +823,47 @@ class UpdaterGUI:
                 data = json.loads(response.read().decode())
             remote_version = data.get("version", "").strip()
             remote_url = data.get("url") or UPDATER_INFO_URL
-            if remote_version and self._is_newer_version(UPDATER_VERSION, remote_version):
-                msg = f"Updater {remote_version} is available (current {UPDATER_VERSION})."
+            if remote_version:
+                if self._is_newer_version(UPDATER_VERSION, remote_version):
+                    msg = f"New version available. Current: {UPDATER_VERSION} | Latest: {remote_version}"
+                else:
+                    msg = f"Updater is up to date. Current: {UPDATER_VERSION} | Latest: {remote_version}"
                 self.root.after(0, lambda: self.show_update_notice(msg, remote_url))
+            else:
+                msg = f"Updater version check failed. Current: {UPDATER_VERSION} | Latest: unknown"
+                self.root.after(0, lambda: self.show_update_notice(msg, UPDATER_INFO_URL))
         except Exception:
-            pass
+            msg = f"Updater version check failed. Current: {UPDATER_VERSION} | Latest: unknown"
+            self.root.after(0, lambda: self.show_update_notice(msg, UPDATER_INFO_URL))
 
     def show_update_notice(self, message, url):
         self.update_notice_label.config(text=message)
         self.update_notice_button.config(command=lambda: webbrowser.open(url))
         self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
+
+    def save_log(self):
+        """Save the current log to a user-selected file."""
+        try:
+            log_text = self.log_text.get("1.0", tk.END)
+        except Exception:
+            log_text = ""
+        if not log_text.strip():
+            messagebox.showinfo("Save Log", "There is no log content to save yet.")
+            return
+        filename = filedialog.asksaveasfilename(
+            title="Save Updater Log",
+            defaultextension=".txt",
+            initialfile="rfsuite_updater_log.txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        if not filename:
+            return
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(log_text)
+            messagebox.showinfo("Save Log", f"Log saved to:\n{filename}")
+        except Exception as e:
+            messagebox.showerror("Save Log", f"Failed to save log:\n{e}")
     
     def set_status(self, message):
         """Update the status label."""
@@ -1304,16 +1340,13 @@ class UpdaterGUI:
     def copy_sound_pack(self, repo_dir, dest_dir, locale, use_phase=False):
         """Copy sound pack for selected locale into destination tree."""
         locale = locale or DEFAULT_LOCALE
+        if locale == DEFAULT_LOCALE:
+            self.log(f"  Audio pack '{DEFAULT_LOCALE}' already included; skipping copy")
+            return True
         src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
         self.log(f"  Audio source: {src}")
         if not os.path.isdir(src):
-            if locale != DEFAULT_LOCALE:
-                self.log(f"⚠ Sound pack for '{locale}' not found; using {DEFAULT_LOCALE}")
-            locale = DEFAULT_LOCALE
-            src = os.path.join(repo_dir, "bin", "sound-generator", "soundpack", locale)
-            self.log(f"  Audio source fallback: {src}")
-        if not os.path.isdir(src):
-            self.log("⚠ Sound pack not found; skipping audio copy")
+            self.log(f"⚠ Sound pack for '{locale}' not found; default audio already included, skipping copy")
             return False
 
         dest = os.path.join(dest_dir, "audio", locale)
@@ -1342,6 +1375,9 @@ class UpdaterGUI:
             self.log(f"✓ Audio pack copied: {locale}")
             return True
         except Exception as e:
+            # On Windows, hardware/device I/O errors should abort the update.
+            if sys.platform == "win32" and getattr(e, "winerror", None) is not None:
+                raise RuntimeError(f"Audio pack copy failed due to Windows device error: {e}") from e
             self.log(f"⚠ Failed to copy audio pack: {e}")
             return False
 
@@ -1520,7 +1556,7 @@ class UpdaterGUI:
                     self.log("  - Radio is powered on")
                     self.log("  - Radio is in debug mode (will be switched automatically) or storage mode (mounted as a drive)")
                     if not radio_already_mounted:
-                        raise
+                        raise RuntimeError("Radio not detected. Please plug in your radio and try again.") from e
                 
                 if not self.is_updating:
                     return
@@ -1723,13 +1759,55 @@ class UpdaterGUI:
             if not self.is_updating:
                 return
             
-            # Step 8: Copy files to radio
+            # Step 8: Compile i18n translations (master only) BEFORE copying to radio
+            if version_type == VERSION_MASTER:
+                self.log("Preparing translation compiler (this can take a moment)...")
+                self.set_status("Compiling translations...")
+                self.log("Compiling i18n translations...")
+                self.set_current_step("Translate")
+
+                try:
+                    # Find i18n JSON file in the extracted repo (try multiple locations)
+                    i18n_json = None
+                    locale = self.selected_locale.get() or DEFAULT_LOCALE
+                    for base_path in [
+                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                    ]:
+                        if os.path.isfile(base_path):
+                            i18n_json = base_path
+                            break
+
+                    if i18n_json and os.path.isfile(i18n_json):
+                        self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
+                        self.log("  Running embedded i18n compiler...")
+                        compile_i18n_tags(i18n_json, src_dir, self.log)
+                        self.log("OK i18n translations compiled successfully")
+                        self.mark_step_done("Translate")
+                    else:
+                        self.log("WARN i18n files not found, skipping translation compilation")
+                        if i18n_json:
+                            self.log(f"  Missing: {i18n_json}")
+                except Exception as e:
+                    self.log(f"WARN i18n compilation error: {e}")
+                    self.mark_step_done("Translate")
+            else:
+                self.mark_step_done("Translate")
+
+            if not self.is_updating:
+                return
+
+            # Step 9: Copy files to radio
             dest_dir = os.path.join(scripts_dir, TARGET_NAME)
-            self.set_status("Copying files to radio...")
             self.log("Copying new files to radio...")
             
             # Remove old installation
             self.set_current_step("Remove")
+            self.set_status("Removing old installation...")
             if os.path.isdir(dest_dir):
                 self.log("  Removing old installation...")
                 if not self.remove_tree_with_progress(dest_dir, use_phase=True):
@@ -1745,6 +1823,7 @@ class UpdaterGUI:
             # Copy new files
             self.log("  Copying new files...")
             self.set_current_step("Copy")
+            self.set_status("Copying files to radio...")
             if not self.copy_tree_with_progress(src_dir, dest_dir, use_phase=True):
                 self.log("⚠ Copy cancelled")
                 return
@@ -1770,48 +1849,6 @@ class UpdaterGUI:
                     self.update_main_lua_version(main_lua_path, version_suffix)
                 else:
                     self.log(f"⚠ main.lua not found at {main_lua_path} for version update")
-            
-            if not self.is_updating:
-                return
-            
-            # Step 9: Compile i18n translations (master only)
-            if version_type == VERSION_MASTER:
-                self.log("Preparing translation compiler (this can take a moment)...")
-                self.set_status("Compiling translations...")
-                self.log("Compiling i18n translations...")
-                self.set_current_step("Translate")
-                
-                try:
-                    # Find i18n JSON file in the extracted repo (try multiple locations)
-                    i18n_json = None
-                    locale = self.selected_locale.get() or DEFAULT_LOCALE
-                    for base_path in [
-                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{locale}.json"),
-                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{locale}.json"),
-                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{locale}.json"),
-                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
-                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
-                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
-                    ]:
-                        if os.path.isfile(base_path):
-                            i18n_json = base_path
-                            break
-                    
-                    if i18n_json and os.path.isfile(i18n_json):
-                        self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
-                        self.log("  Running embedded i18n compiler...")
-                        compile_i18n_tags(i18n_json, dest_dir, self.log)
-                        self.log("OK i18n translations compiled successfully")
-                        self.mark_step_done("Translate")
-                    else:
-                        self.log("WARN i18n files not found, skipping translation compilation")
-                        if i18n_json:
-                            self.log(f"  Missing: {i18n_json}")
-                except Exception as e:
-                    self.log(f"WARN i18n compilation error: {e}")
-                    self.mark_step_done("Translate")
-            else:
-                self.mark_step_done("Translate")
             
             if not self.is_updating:
                 return

@@ -10,6 +10,8 @@ local config = arg[1]
 local cacheExpireTime = 10
 local lastCacheFlushTime = os.clock()
 local sensorTlm
+local os_clock = os.clock
+local POP_BUDGET_SECONDS = (config and config.frskyLegacyPopBudgetSeconds) or 0.004
 
 local frsky_legacy = {}
 
@@ -152,9 +154,9 @@ function frsky_legacy.wakeup()
         frsky_legacy.dropSensorCache = {}
     end
 
-    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
+    if os_clock() - lastCacheFlushTime >= cacheExpireTime then
         clearCaches()
-        lastCacheFlushTime = os.clock()
+        lastCacheFlushTime = os_clock()
     end
 
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
@@ -167,7 +169,10 @@ function frsky_legacy.wakeup()
     end
 
     if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-         while telemetryPop() do end
+        local deadline = (POP_BUDGET_SECONDS and POP_BUDGET_SECONDS > 0) and (os_clock() + POP_BUDGET_SECONDS) or nil
+        while telemetryPop() do
+            if deadline and os_clock() >= deadline then break end
+        end
     end
 
 end
