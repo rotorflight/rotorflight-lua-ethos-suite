@@ -81,12 +81,12 @@ local function formatMspStatus(msg, suffix)
     if not msg then return nil end
     local rw
     if msg.isWrite ~= nil then
-        rw = msg.isWrite and "WRITE" or "READ"
+        rw = msg.isWrite and "Write" or "Read"
     else
-        rw = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+        rw = (msg.payload and #msg.payload > 0) and "Write" or "Read"
     end
     local cmd = msg.command
-    local head = "MSP " .. (rw == "WRITE" and "W" or "R")
+    local head = "MSP " .. rw
     if cmd ~= nil then head = head .. " " .. tostring(cmd) end
     if suffix and suffix ~= "" then return head .. " " .. suffix end
     return head
@@ -307,6 +307,9 @@ function MspQueueController:processQueue()
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
+        if rfsuite.session then
+            rfsuite.session.mspTimeouts = (rfsuite.session.mspTimeouts or 0) + 1
+        end
         setMspStatus(formatMspStatus(self.currentMessage, "timeout"))
         self.currentMessage = nil
         self.uuid = nil
@@ -383,6 +386,9 @@ function MspQueueController:processQueue()
         local msg = self.currentMessage
         self:clear()
         setMspStatus(formatMspStatus(msg, "max retries"))
+        if rfsuite.session then
+            rfsuite.session.mspTimeouts = (rfsuite.session.mspTimeouts or 0) + 1
+        end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end

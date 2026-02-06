@@ -291,8 +291,8 @@
         "needs_translation": false
       },
       "txt_mspstatusdialog": {
-        "english": "MSP Debug in Dialog",
-        "translation": "MSP-debug in dialoog",
+        "english": "MSP Activity Display",
+        "translation": "MSP Activity Display",
         "needs_translation": false
       },
       "txt_queuesize": {
