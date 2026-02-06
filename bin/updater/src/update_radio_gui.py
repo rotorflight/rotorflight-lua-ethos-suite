@@ -1339,6 +1339,9 @@ class UpdaterGUI:
             self.log(f"✓ Audio pack copied: {locale}")
             return True
         except Exception as e:
+            # On Windows, hardware/device I/O errors should abort the update.
+            if sys.platform == "win32" and getattr(e, "winerror", None) is not None:
+                raise RuntimeError(f"Audio pack copy failed due to Windows device error: {e}") from e
             self.log(f"⚠ Failed to copy audio pack: {e}")
             return False
 
