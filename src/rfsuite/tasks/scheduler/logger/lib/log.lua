@@ -69,6 +69,7 @@ local logs = {
         disk_keep_open = true,       -- keep handle open between flushes (reduces open/close spikes)
         disk_buffer_max = 4096,      -- flush if buffered bytes exceed this
         disk_flush_batch = 50,       -- max lines per flush
+        disk_drain_budget_seconds = 0.003, -- time budget for draining qDisk when log_to_file is false
     }
 }
 
@@ -269,7 +270,12 @@ end
 local function drain_disk(now, cfg)
     if not cfg.log_to_file then
         -- Still drain queue to prevent growth, but do not touch disk.
-        while not qDisk:empty() do qDisk:pop() end
+        local budget = cfg.disk_drain_budget_seconds or 0
+        local deadline = (budget > 0) and (os_clock() + budget) or nil
+        while not qDisk:empty() do
+            qDisk:pop()
+            if deadline and os_clock() >= deadline then break end
+        end
         diskBuf = {}
         diskBufBytes = 0
         diskClose()
