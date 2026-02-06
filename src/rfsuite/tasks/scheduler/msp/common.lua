@@ -359,6 +359,8 @@ return {
     mspProcessTxQ      = mspProcessTxQ,
     mspSendRequest     = mspSendRequest,
     mspPollReply       = mspPollReply,
-    mspClearTxBuf      = mspClearTxBuf
+    mspClearTxBuf      = mspClearTxBuf,
+    getLastTxCmd       = function() return mspLastReq end,
+    getLastRxCmd       = function() return mspRxReq end
 }
 
