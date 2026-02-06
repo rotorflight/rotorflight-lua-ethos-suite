@@ -14,6 +14,42 @@ local utils = rfsuite.utils
 local tasks = rfsuite.tasks
 local apiCore
 
+local function getMspStatusExtras()
+    local m = rfsuite.tasks and rfsuite.tasks.msp
+    if not m then return nil end
+    local q = m.mspQueue
+    if not q then return nil end
+
+    local parts = {}
+
+    local common = m.common
+    if common and common.getLastTxCmd then
+        local ok_tx, tx = pcall(common.getLastTxCmd)
+        if ok_tx and tx and tx ~= 0 then parts[#parts + 1] = "TX " .. tostring(tx) end
+    end
+    if common and common.getLastRxCmd then
+        local ok_rx, rx = pcall(common.getLastRxCmd)
+        if ok_rx and rx and rx ~= 0 then parts[#parts + 1] = "RX " .. tostring(rx) end
+    end
+
+    if q.retryCount and q.retryCount > 0 then
+        parts[#parts + 1] = "Retry " .. tostring(q.retryCount)
+    end
+
+    local crc = rfsuite.session and rfsuite.session.mspCrcErrors
+    if crc and crc > 0 then
+        parts[#parts + 1] = "CRC " .. tostring(crc)
+    end
+
+    local tout = rfsuite.session and rfsuite.session.mspTimeouts
+    if tout and tout > 0 then
+        parts[#parts + 1] = "Timeout " .. tostring(tout)
+    end
+
+    if #parts == 0 then return nil end
+    return table.concat(parts, " ")
+end
+
 local function getMspStatusForDialog()
     local session = rfsuite.session
     if not session then return nil end
@@ -25,6 +61,17 @@ local function getMspStatusForDialog()
     if not mspStatus and session.mspStatusLast and session.mspStatusUpdatedAt and (os.clock() - session.mspStatusUpdatedAt) < 0.75 then
         mspStatus = session.mspStatusLast
     end
+    if rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
+        local extras = getMspStatusExtras()
+        if extras then
+            if mspStatus then
+                mspStatus = mspStatus .. " " .. extras
+            else
+                mspStatus = extras
+            end
+        end
+    end
+
     return mspStatus
 end
 
