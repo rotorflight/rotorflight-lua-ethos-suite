@@ -14,6 +14,44 @@ local utils = rfsuite.utils
 local tasks = rfsuite.tasks
 local apiCore
 
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+
+local function getMspStatusExtras()
+    local m = rfsuite.tasks and rfsuite.tasks.msp
+    if not m then return nil end
+    local q = m.mspQueue
+    if not q then return nil end
+
+    local parts = {}
+
+    local common = m.common
+    if common and common.getLastTxCmd then
+        local ok_tx, tx = pcall(common.getLastTxCmd)
+        if ok_tx and tx and tx ~= 0 then parts[#parts + 1] = "Transmit " .. tostring(tx) end
+    end
+    if common and common.getLastRxCmd then
+        local ok_rx, rx = pcall(common.getLastRxCmd)
+        if ok_rx and rx and rx ~= 0 then parts[#parts + 1] = "Receive " .. tostring(rx) end
+    end
+
+    if q.retryCount and q.retryCount > 0 then
+        parts[#parts + 1] = "Retry " .. tostring(q.retryCount)
+    end
+
+    local crc = rfsuite.session and rfsuite.session.mspCrcErrors
+    if crc and crc > 0 then
+        parts[#parts + 1] = "CRC " .. tostring(crc)
+    end
+
+    local tout = rfsuite.session and rfsuite.session.mspTimeouts
+    if tout and tout > 0 then
+        parts[#parts + 1] = "Timeout " .. tostring(tout)
+    end
+
+    if #parts == 0 then return nil end
+    return table.concat(parts, " ")
+end
+
 local function getMspStatusForDialog()
     local session = rfsuite.session
     if not session then return nil end
@@ -25,6 +63,17 @@ local function getMspStatusForDialog()
     if not mspStatus and session.mspStatusLast and session.mspStatusUpdatedAt and (os.clock() - session.mspStatusUpdatedAt) < 0.75 then
         mspStatus = session.mspStatusLast
     end
+    if rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog then
+        local extras = getMspStatusExtras()
+        if extras then
+            if mspStatus then
+                mspStatus = mspStatus .. " " .. extras
+            else
+                mspStatus = extras
+            end
+        end
+    end
+
     return mspStatus
 end
 
@@ -52,21 +101,17 @@ function ui.updateProgressDialogMessage(statusOverride)
         if app.dialogs.progressDisplay and app.dialogs.progress then
             local mspStatus = statusOverride or getMspStatusForDialog()
             local base = app.dialogs.progressBaseMessage or ""
-            local msg = base
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
-                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-                msg = msg .. " [" .. mspStatus .. "]"
-            end
+            local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+            local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or base
+            if showDebug and mspStatus then msg = mspStatus end
             pcall(function() app.dialogs.progress:message(msg) end)
         end
         if app.dialogs.saveDisplay and app.dialogs.save then
             local mspStatus = statusOverride or getMspStatusForDialog()
             local base = app.dialogs.saveBaseMessage or ""
-            local msg = base
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
-                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-                msg = msg .. " [" .. mspStatus .. "]"
-            end
+            local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+            local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or base
+            if showDebug and mspStatus then msg = mspStatus end
             pcall(function() app.dialogs.save:message(msg) end)
         end
     end
@@ -77,9 +122,9 @@ function ui.updateProgressDialogMessage(statusOverride)
     if pd and pd.handle then
         local mspStatus = statusOverride or getMspStatusForDialog()
         local composedMessage = pd.baseMessage or ""
-        if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
-            if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-            composedMessage = composedMessage .. " [" .. mspStatus .. "]"
+        local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+        if showDebug then
+            composedMessage = mspStatus or MSP_DEBUG_PLACEHOLDER
         end
         pcall(function() pd.handle:message(composedMessage) end)
     end
@@ -199,11 +244,9 @@ function ui.progressDisplay(title, message, speed)
             end
 
             local mspStatus = getMspStatusForDialog()
-            local msg = app.dialogs.progressBaseMessage or ""
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
-                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-                msg = msg .. "    [" .. mspStatus .. "]"
-            end
+            local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+            local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.progressBaseMessage or "")
+            if showDebug and mspStatus then msg = mspStatus end
             app.dialogs.progress:message(msg)
 
         end
@@ -290,11 +333,9 @@ function ui.progressDisplaySave(message)
             end
 
             local mspStatus = getMspStatusForDialog()
-            local msg = app.dialogs.saveBaseMessage or ""
-            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
-                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
-                msg = msg .. " [" .. mspStatus .. "]"
-            end
+            local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+            local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.saveBaseMessage or "")
+            if showDebug and mspStatus then msg = mspStatus end
             pcall(function() app.dialogs.save:message(msg) end)
         end
     })
