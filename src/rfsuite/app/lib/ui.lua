@@ -45,21 +45,28 @@ function ui.clearProgressDialog(handle)
 end
 
 function ui.updateProgressDialogMessage(statusOverride)
-    local mspStatus = statusOverride or getMspStatusForDialog()
     local app = rfsuite.app
 
     -- First update the standard app dialogs (the ones actually on screen)
     if app and app.dialogs then
         if app.dialogs.progressDisplay and app.dialogs.progress then
+            local mspStatus = statusOverride or getMspStatusForDialog()
             local base = app.dialogs.progressBaseMessage or ""
             local msg = base
-            if mspStatus then msg = msg .. "\n" .. mspStatus end
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. " [" .. mspStatus .. "]"
+            end
             pcall(function() app.dialogs.progress:message(msg) end)
         end
         if app.dialogs.saveDisplay and app.dialogs.save then
+            local mspStatus = statusOverride or getMspStatusForDialog()
             local base = app.dialogs.saveBaseMessage or ""
             local msg = base
-            if mspStatus then msg = msg .. "\n" .. mspStatus end
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. " [" .. mspStatus .. "]"
+            end
             pcall(function() app.dialogs.save:message(msg) end)
         end
     end
@@ -68,8 +75,12 @@ function ui.updateProgressDialogMessage(statusOverride)
     local session = rfsuite.session
     local pd = session and session.progressDialog
     if pd and pd.handle then
+        local mspStatus = statusOverride or getMspStatusForDialog()
         local composedMessage = pd.baseMessage or ""
-        if mspStatus then composedMessage = composedMessage .. "\n" .. mspStatus end
+        if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+            if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+            composedMessage = composedMessage .. " [" .. mspStatus .. "]"
+        end
         pcall(function() pd.handle:message(composedMessage) end)
     end
 end
@@ -187,7 +198,13 @@ function ui.progressDisplay(title, message, speed)
                 end
             end
 
-            ui.updateProgressDialogMessage()
+            local mspStatus = getMspStatusForDialog()
+            local msg = app.dialogs.progressBaseMessage or ""
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. "    [" .. mspStatus .. "]"
+            end
+            app.dialogs.progress:message(msg)
 
         end
     })
@@ -272,7 +289,13 @@ function ui.progressDisplaySave(message)
 
             end
 
-            ui.updateProgressDialogMessage()
+            local mspStatus = getMspStatusForDialog()
+            local msg = app.dialogs.saveBaseMessage or ""
+            if mspStatus and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog then
+                if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+                msg = msg .. " [" .. mspStatus .. "]"
+            end
+            pcall(function() app.dialogs.save:message(msg) end)
         end
     })
 

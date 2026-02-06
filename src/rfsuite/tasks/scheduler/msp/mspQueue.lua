@@ -85,14 +85,10 @@ local function formatMspStatus(msg, suffix)
     else
         rw = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
     end
-    local api = msg.apiname
     local cmd = msg.command
-    local head = "MSP " .. rw
-    if api and api ~= "" then head = head .. " " .. tostring(api) end
-    if cmd ~= nil then head = head .. " (" .. tostring(cmd) .. ")" end
-    if suffix and suffix ~= "" then
-        return head .. " " .. suffix
-    end
+    local head = "MSP " .. (rw == "WRITE" and "W" or "R")
+    if cmd ~= nil then head = head .. " " .. tostring(cmd) end
+    if suffix and suffix ~= "" then return head .. " " .. suffix end
     return head
 end
 
