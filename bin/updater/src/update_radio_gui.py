@@ -1767,11 +1767,11 @@ class UpdaterGUI:
 
             # Step 9: Copy files to radio
             dest_dir = os.path.join(scripts_dir, TARGET_NAME)
-            self.set_status("Copying files to radio...")
             self.log("Copying new files to radio...")
             
             # Remove old installation
             self.set_current_step("Remove")
+            self.set_status("Removing old installation...")
             if os.path.isdir(dest_dir):
                 self.log("  Removing old installation...")
                 if not self.remove_tree_with_progress(dest_dir, use_phase=True):
@@ -1787,6 +1787,7 @@ class UpdaterGUI:
             # Copy new files
             self.log("  Copying new files...")
             self.set_current_step("Copy")
+            self.set_status("Copying files to radio...")
             if not self.copy_tree_with_progress(src_dir, dest_dir, use_phase=True):
                 self.log("⚠ Copy cancelled")
                 return
