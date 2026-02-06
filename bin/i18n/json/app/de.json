@@ -290,6 +290,11 @@
         "translation": "Protokolliere MSP-Daten",
         "needs_translation": false
       },
+      "txt_mspstatusdialog": {
+        "english": "MSP Debug in Dialog",
+        "translation": "MSP-Debug im Dialog",
+        "needs_translation": false
+      },
       "txt_queuesize": {
         "english": "Log MSP queue size",
         "translation": "MSP-Warteschlange",
