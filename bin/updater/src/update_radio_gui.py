@@ -508,7 +508,7 @@ class UpdaterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Rotorflight Lua Ethos Suite Updater")
-        self.root.geometry("800x680")
+        self.root.geometry("800x800")
         self.root.resizable(False, False)
         
         self.radio = RadioInterface()
@@ -763,11 +763,10 @@ class UpdaterGUI:
         ).pack(side=tk.RIGHT, padx=5)
         
         # Info frame
-        info_frame = ttk.Frame(self.root, padding="10")
-        info_frame.pack(fill=tk.X)
+        info_frame = ttk.LabelFrame(self.root, text="Instructions", padding="10")
+        info_frame.pack(fill=tk.X, padx=10, pady=5)
         
         info_text = (
-            "Instructions:\n"
             "1. Select the version you want to install (Release recommended)\n"
             "2. Connect your Ethos radio via USB\n"
             "3. Click 'Start Update' to begin\n"
