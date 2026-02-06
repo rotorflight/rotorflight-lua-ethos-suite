@@ -7,9 +7,6 @@ local rfsuite = require("rfsuite")
 
 local engodash = {}
 
-local context = {}
-
-
 function engodash.create()
     return {}
 end
@@ -19,11 +16,10 @@ function engodash.build(context)
 end
 
 function engodash.wakeup(context)
-        print("arming engodash glasses widget")
-        glasses.layoutClearAndDisplay(context.layout, "ARMED!")
+
+        glasses.layoutClearAndDisplay(context.layout, "ROTORFLIGHT")
         context.armed = true
 end
 
-engodash.title = false
 
 return engodash
