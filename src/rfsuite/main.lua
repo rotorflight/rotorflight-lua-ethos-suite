@@ -84,6 +84,7 @@ local userpref_defaults = {
         logmsp = false,
         logobjprof = false,
         logmspQueue = false,
+        mspstatusdialog = false,
         memstats = false,
         taskprofiler = false,
         mspexpbytes = 8,

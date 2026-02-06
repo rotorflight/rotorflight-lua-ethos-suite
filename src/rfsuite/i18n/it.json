@@ -6261,6 +6261,11 @@
           "needs_translation": false,
           "translation": "Log msp data"
         },
+        "txt_mspstatusdialog": {
+          "english": "MSP Debug in Dialog",
+          "needs_translation": false,
+          "translation": "Debug MSP nella finestra"
+        },
         "txt_objectprofiler": {
           "english": "Log dashboard speed",
           "needs_translation": false,
