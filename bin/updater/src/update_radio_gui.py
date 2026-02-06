@@ -701,10 +701,10 @@ class UpdaterGUI:
             "Connect",
             "Download",
             "Extract",
+            "Translate",
             "Remove",
             "Copy",
             "Audio",
-            "Translate",
             "Cleanup",
         ]
         self.segment_bar = tk.Canvas(
@@ -1723,7 +1723,49 @@ class UpdaterGUI:
             if not self.is_updating:
                 return
             
-            # Step 8: Copy files to radio
+            # Step 8: Compile i18n translations (master only) BEFORE copying to radio
+            if version_type == VERSION_MASTER:
+                self.log("Preparing translation compiler (this can take a moment)...")
+                self.set_status("Compiling translations...")
+                self.log("Compiling i18n translations...")
+                self.set_current_step("Translate")
+
+                try:
+                    # Find i18n JSON file in the extracted repo (try multiple locations)
+                    i18n_json = None
+                    locale = self.selected_locale.get() or DEFAULT_LOCALE
+                    for base_path in [
+                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{locale}.json"),
+                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
+                    ]:
+                        if os.path.isfile(base_path):
+                            i18n_json = base_path
+                            break
+
+                    if i18n_json and os.path.isfile(i18n_json):
+                        self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
+                        self.log("  Running embedded i18n compiler...")
+                        compile_i18n_tags(i18n_json, src_dir, self.log)
+                        self.log("OK i18n translations compiled successfully")
+                        self.mark_step_done("Translate")
+                    else:
+                        self.log("WARN i18n files not found, skipping translation compilation")
+                        if i18n_json:
+                            self.log(f"  Missing: {i18n_json}")
+                except Exception as e:
+                    self.log(f"WARN i18n compilation error: {e}")
+                    self.mark_step_done("Translate")
+            else:
+                self.mark_step_done("Translate")
+
+            if not self.is_updating:
+                return
+
+            # Step 9: Copy files to radio
             dest_dir = os.path.join(scripts_dir, TARGET_NAME)
             self.set_status("Copying files to radio...")
             self.log("Copying new files to radio...")
@@ -1770,48 +1812,6 @@ class UpdaterGUI:
                     self.update_main_lua_version(main_lua_path, version_suffix)
                 else:
                     self.log(f"⚠ main.lua not found at {main_lua_path} for version update")
-            
-            if not self.is_updating:
-                return
-            
-            # Step 9: Compile i18n translations (master only)
-            if version_type == VERSION_MASTER:
-                self.log("Preparing translation compiler (this can take a moment)...")
-                self.set_status("Compiling translations...")
-                self.log("Compiling i18n translations...")
-                self.set_current_step("Translate")
-                
-                try:
-                    # Find i18n JSON file in the extracted repo (try multiple locations)
-                    i18n_json = None
-                    locale = self.selected_locale.get() or DEFAULT_LOCALE
-                    for base_path in [
-                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{locale}.json"),
-                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{locale}.json"),
-                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{locale}.json"),
-                        os.path.join(repo_dir, "src", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
-                        os.path.join(repo_dir, "scripts", TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
-                        os.path.join(repo_dir, TARGET_NAME, "i18n", f"{DEFAULT_LOCALE}.json"),
-                    ]:
-                        if os.path.isfile(base_path):
-                            i18n_json = base_path
-                            break
-                    
-                    if i18n_json and os.path.isfile(i18n_json):
-                        self.log(f"  Using i18n JSON: {os.path.basename(i18n_json)}")
-                        self.log("  Running embedded i18n compiler...")
-                        compile_i18n_tags(i18n_json, dest_dir, self.log)
-                        self.log("OK i18n translations compiled successfully")
-                        self.mark_step_done("Translate")
-                    else:
-                        self.log("WARN i18n files not found, skipping translation compilation")
-                        if i18n_json:
-                            self.log(f"  Missing: {i18n_json}")
-                except Exception as e:
-                    self.log(f"WARN i18n compilation error: {e}")
-                    self.mark_step_done("Translate")
-            else:
-                self.mark_step_done("Translate")
             
             if not self.is_updating:
                 return
