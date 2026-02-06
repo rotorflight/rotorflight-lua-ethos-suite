@@ -25,6 +25,8 @@ local sensorTlm = nil
 
 local progressLoader
 local progressLoaderCounter = 0
+local progressLoaderBaseMessage
+local progressLoaderMspStatusLast
 local doDiscoverNotify = false
 
 local function sortSensorListByName(sensorList)
@@ -150,6 +152,20 @@ local function runRepair(data)
 
 end
 
+local function updateProgressLoaderMessage()
+    if not progressLoader or not progressLoaderBaseMessage then return end
+    local showMsp = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
+    if mspStatus and mspStatus ~= progressLoaderMspStatusLast then
+        if #mspStatus > 32 then mspStatus = string.sub(mspStatus, 1, 29) .. "..." end
+        progressLoader:message(progressLoaderBaseMessage .. " [" .. mspStatus .. "]")
+        progressLoaderMspStatusLast = mspStatus
+    elseif not mspStatus and progressLoaderMspStatusLast then
+        progressLoader:message(progressLoaderBaseMessage)
+        progressLoaderMspStatusLast = nil
+    end
+end
+
 local function wakeup()
 
     if enableWakeup == false then return end
@@ -203,6 +219,10 @@ local function wakeup()
         progressLoader = form.openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
         progressLoader:closeAllowed(false)
         progressLoaderCounter = 0
+        progressLoaderBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+        progressLoaderMspStatusLast = nil
+        updateProgressLoaderMessage()
+        rfsuite.app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage)
 
         API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setUUID("550e8400-e29b-41d4-a716-446655440000")
@@ -223,12 +243,16 @@ local function wakeup()
     end
 
     if progressLoader then
+        updateProgressLoaderMessage()
         if progressLoaderCounter < 100 then
             progressLoaderCounter = progressLoaderCounter + 5
             progressLoader:value(progressLoaderCounter)
         else
             progressLoader:close()
+            rfsuite.app.ui.clearProgressDialog(progressLoader)
             progressLoader = nil
+            progressLoaderBaseMessage = nil
+            progressLoaderMspStatusLast = nil
 
             doDiscoverNotify = true
 

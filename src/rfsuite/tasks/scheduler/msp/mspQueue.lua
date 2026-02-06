@@ -58,6 +58,40 @@ end
 -- Logging toggles
 local function LOG_ENABLED_MSP() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp end
 
+-- Lightweight status updates for UI progress loaders.
+local function setMspStatus(message)
+    if not rfsuite or not rfsuite.session then return end
+    if rfsuite.session.mspStatusMessage ~= message then
+        rfsuite.session.mspStatusMessage = message
+        rfsuite.session.mspStatusUpdatedAt = os_clock()
+        if message then
+            rfsuite.session.mspStatusLast = message
+            rfsuite.session.mspStatusClearAt = nil
+        end
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.updateProgressDialogMessage then
+            rfsuite.app.ui.updateProgressDialogMessage(message)
+        end
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.applyMspStatusToActiveDialogs then
+            rfsuite.app.ui.applyMspStatusToActiveDialogs(message)
+        end
+    end
+end
+
+local function formatMspStatus(msg, suffix)
+    if not msg then return nil end
+    local rw
+    if msg.isWrite ~= nil then
+        rw = msg.isWrite and "WRITE" or "READ"
+    else
+        rw = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+    end
+    local cmd = msg.command
+    local head = "MSP " .. (rw == "WRITE" and "W" or "R")
+    if cmd ~= nil then head = head .. " " .. tostring(cmd) end
+    if suffix and suffix ~= "" then return head .. " " .. suffix end
+    return head
+end
+
 
 -- Drain duplicate/late replies for the same command for a brief window after success.
 -- This reduces "spillover" where a late duplicate reply (from an earlier resend) is consumed by the next message.
@@ -153,6 +187,9 @@ function MspQueueController:processQueue()
     if self:isProcessed() then
         rfsuite.session.mspBusy = false
         self.mspBusyStart = nil
+        if rfsuite.session and rfsuite.session.mspStatusMessage then
+            rfsuite.session.mspStatusClearAt = os_clock() + 0.75
+        end
         return
     end
 
@@ -224,6 +261,11 @@ function MspQueueController:processQueue()
                         self.currentMessageStartTime = now2
                     end
                     self.retryCount = self.retryCount + 1
+                    if self.retryCount > 1 then
+                        setMspStatus(formatMspStatus(self.currentMessage, "retry " .. tostring(self.retryCount) .. "/" .. tostring(self.maxRetries + 1)))
+                    else
+                        setMspStatus(formatMspStatus(self.currentMessage, "send"))
+                    end
                     if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
                 end
             end
@@ -240,6 +282,7 @@ function MspQueueController:processQueue()
             if LOG_ENABLED_MSP() then
                 utils.log("mspPollReply error: " .. tostring(a), "info")
             end
+            setMspStatus("MSP poll error")
             -- back off a little so we don't hammer the same fault every frame
             self._nextMessageAt = os_clock() + 0.05
             return
@@ -264,6 +307,7 @@ function MspQueueController:processQueue()
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
+        setMspStatus(formatMspStatus(self.currentMessage, "timeout"))
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
@@ -313,6 +357,11 @@ function MspQueueController:processQueue()
                 utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
+        if err then
+            setMspStatus(formatMspStatus(self.currentMessage, "error flag"))
+        else
+            setMspStatus(formatMspStatus(self.currentMessage, "ok"))
+        end
 
         -- After a successful completion, briefly drain duplicate/late replies for this cmd
         if not system.getVersion().simulation then
@@ -333,6 +382,7 @@ function MspQueueController:processQueue()
     elseif self.retryCount > self.maxRetries then
         local msg = self.currentMessage
         self:clear()
+        setMspStatus(formatMspStatus(msg, "max retries"))
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end
@@ -375,6 +425,7 @@ function MspQueueController:add(message)
     self._qidSeq = (self._qidSeq or 0) + 1
     toQueue._qid = self._qidSeq
     qpush(self.queue, toQueue)
+    setMspStatus(formatMspStatus(toQueue, "queued"))
     return self
 end
 
