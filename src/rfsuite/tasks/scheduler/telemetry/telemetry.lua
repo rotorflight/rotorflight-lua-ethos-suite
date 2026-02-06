@@ -23,6 +23,8 @@ local t_remove = table.remove
 local t_pairs = pairs
 local t_ipairs = ipairs
 local t_type = type
+local isSim = sys_getVersion().simulation == true
+local math_floor = math.floor
 
 local protocol, crsfSOURCE
 
@@ -77,6 +79,18 @@ local memo_listSensors, memo_listSwitchSensors, memo_listAudioUnits = nil, nil, 
 
 local filteredOnchangeSensors = nil
 local onchangeInitialized = false
+
+local function convertThresholds(thrs, conv)
+    if not thrs then return nil end
+    local result = {}
+    for i, t in t_ipairs(thrs) do
+        local copy = {}
+        for k, v in t_pairs(t) do copy[k] = v end
+        if t_type(copy.value) == "number" then copy.value = conv(copy.value) end
+        t_insert(result, copy)
+    end
+    return result
+end
 
 local sensorTable = {
 
@@ -220,17 +234,6 @@ local sensorTable = {
             local prefs = rfsuite.preferences.localizations
             local isFahrenheit = prefs and prefs.temperature_unit == 1
 
-            local function convertThresholds(thrs, conv)
-                if not thrs then return nil end
-                local result = {}
-                for i, t in t_ipairs(thrs) do
-                    local copy = {}
-                    for k, v in t_pairs(t) do copy[k] = v end
-                    if t_type(copy.value) == "number" then copy.value = conv(copy.value) end
-                    t_insert(result, copy)
-                end
-                return result
-            end
 
             if isFahrenheit then
                 return value * 1.8 + 32, UNIT_DEGREE, "°F", min * 1.8 + 32, max * 1.8 + 32, convertThresholds(thresholds, function(v) return v * 1.8 + 32 end)
@@ -265,17 +268,6 @@ local sensorTable = {
             local prefs = rfsuite.preferences.localizations
             local isFahrenheit = prefs and prefs.temperature_unit == 1
 
-            local function convertThresholds(thrs, conv)
-                if not thrs then return nil end
-                local result = {}
-                for i, t in t_ipairs(thrs) do
-                    local copy = {}
-                    for k, v in t_pairs(t) do copy[k] = v end
-                    if t_type(copy.value) == "number" then copy.value = conv(copy.value) end
-                    t_insert(result, copy)
-                end
-                return result
-            end
 
             if isFahrenheit then
                 return value * 1.8 + 32, UNIT_DEGREE, "°F", min * 1.8 + 32, max * 1.8 + 32, convertThresholds(thresholds, function(v) return v * 1.8 + 32 end)
@@ -631,6 +623,7 @@ end
 
 function telemetry.getSensorSource(name)
 
+    local session = rfsuite.session
     local entry = sensorTable[name]
     if not entry then return nil end
 
@@ -640,8 +633,6 @@ function telemetry.getSensorSource(name)
         mark_hot(name)
         return src
     end
-
-    local isSim = sys_getVersion().simulation == true
 
     if isSim then
         protocol = "sport"
@@ -669,7 +660,7 @@ function telemetry.getSensorSource(name)
             end
         end
 
-    elseif rfsuite.session.telemetryType == "crsf" then
+    elseif session and session.telemetryType == "crsf" then
 
         if not crsfSOURCE then crsfSOURCE = sys_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
         if crsfSOURCE then
@@ -699,7 +690,7 @@ function telemetry.getSensorSource(name)
             end
         end
 
-    elseif rfsuite.session.telemetryType == "sport" then
+    elseif session and session.telemetryType == "sport" then
         protocol = "sport"
         for _, sensor in t_ipairs(entry.sensors.sport or {}) do
             if checkCondition(sensor) and t_type(sensor) == "table" then
@@ -752,7 +743,8 @@ function telemetry.validateSensors(returnValid)
     if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then return lastValidationResult or true end
     lastValidationTime = now
 
-    if not rfsuite.session.telemetryState then
+    local session = rfsuite.session
+    if not (session and session.telemetryState) then
         if not memo_listSensors then build_memo_lists() end
         lastValidationResult = memo_listSensors
         return memo_listSensors
@@ -782,7 +774,7 @@ function telemetry.simSensors(returnValid)
     return result
 end
 
-function telemetry.active() return rfsuite.session.telemetryState or false end
+function telemetry.active() return (rfsuite.session and rfsuite.session.telemetryState) or false end
 
 function telemetry.reset()
     protocol, crsfSOURCE = nil, nil
@@ -800,10 +792,12 @@ end
 
 function telemetry.wakeup()
     local now = os_clock()
+    local session = rfsuite.session
 
-    if rfsuite.session.mspBusy then return end
+    if session and session.mspBusy then return end
 
-    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
+    local tasks = rfsuite.tasks
+    if tasks and tasks.onconnect and tasks.onconnect.active and tasks.onconnect.active() then return end
 
     if (now - sensorRateLimit) >= ONCHANGE_RATE then
         sensorRateLimit = now
@@ -830,7 +824,7 @@ function telemetry.wakeup()
         end
     end
 
-    if (not rfsuite.session.telemetryState) then telemetry.reset() end
+    if not (session and session.telemetryState) then telemetry.reset() end
 end
 
 function telemetry.getSensorStats(sensorKey) return telemetry.sensorStats[sensorKey] or {min = nil, max = nil} end

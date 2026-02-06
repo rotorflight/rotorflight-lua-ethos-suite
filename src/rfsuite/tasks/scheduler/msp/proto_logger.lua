@@ -36,6 +36,11 @@ local pcall = pcall
 local string_byte = string.byte
 local table_concat = table.concat
 
+local hex_lookup = {}
+for i = 0, 255 do
+    hex_lookup[i] = string_format("%02X", i)
+end
+
 local function now()
     return string_format("%.3f", os_clock())
 end
@@ -59,7 +64,8 @@ end
 local function hexFromTable(t)
     local out = {}
     for i = 1, #t do
-        out[#out + 1] = string_format("%02X", t[i] or 0)
+        local b = t[i] or 0
+        out[#out + 1] = hex_lookup[b & 0xFF] or "00"
     end
     return table_concat(out, " ")
 end
@@ -67,7 +73,7 @@ end
 local function hexFromString(s)
     local out = {}
     for i = 1, #s do
-        out[#out + 1] = string_format("%02X", string_byte(s, i) or 0)
+        out[#out + 1] = hex_lookup[string_byte(s, i)]
     end
     return table_concat(out, " ")
 end

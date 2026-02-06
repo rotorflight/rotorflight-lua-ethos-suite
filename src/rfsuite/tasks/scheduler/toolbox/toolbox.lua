@@ -11,6 +11,7 @@ local toolbox = {}
 local telemetryStartTime = nil
 local wakeupStep = 0
 local wakeupHandlers = {}
+local os_clock = os.clock
 
 local taskNames = {"armflags", "governor", "craftname", "bbl", "craftimage"}
 local taskExecutionPercent = 50
@@ -20,21 +21,21 @@ for _, name in ipairs(taskNames) do
     table.insert(wakeupHandlers, function() toolbox[name].wakeup() end)
 end
 
+local tasksPerWakeup = math.max(1, math.floor((taskExecutionPercent / 100) * #wakeupHandlers))
+local numHandlers = #wakeupHandlers
+
 function toolbox.wakeup()
 
     if rfsuite.session.toolbox == nil then return end
-    local currentTime = os.clock()
+    local currentTime = os_clock()
 
     if rfsuite.session.isConnected and rfsuite.session.telemetryState then
         if telemetryStartTime == nil then telemetryStartTime = currentTime end
 
         if (currentTime - telemetryStartTime) < 2.5 then return end
 
-        local percent = taskExecutionPercent or 25
-        local tasksPerWakeup = math.max(1, math.floor((percent / 100) * #wakeupHandlers))
-
         for i = 1, tasksPerWakeup do
-            wakeupStep = (wakeupStep % #wakeupHandlers) + 1
+            wakeupStep = (wakeupStep % numHandlers) + 1
             wakeupHandlers[wakeupStep]()
         end
     else
@@ -46,4 +47,3 @@ end
 function toolbox.reset() telemetryStartTime = nil end
 
 return toolbox
-

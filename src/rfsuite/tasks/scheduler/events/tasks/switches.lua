@@ -19,6 +19,10 @@ local switchStartTime = nil
 local validCache = {}
 local lastValidityCheck = {}
 local VALIDITY_RECHECK_SEC = 5
+local initialized = false
+
+local os_clock = os.clock
+local system_playNumber = system.playNumber
 
 local function initializeSwitches()
     local prefs = rfsuite.preferences.switches
@@ -34,29 +38,33 @@ local function initializeSwitches()
     end
 
     switchTable.units = rfsuite.tasks.telemetry.listSensorAudioUnits()
+    initialized = true
 end
 
 function switches.wakeup()
-    local now = os.clock()
+    local now = os_clock()
 
-    if next(switchTable.switches) == nil then initializeSwitches() end
+    if not initialized then initializeSwitches() end
+    if next(switchTable.switches) == nil then return end
 
     if not switchStartTime then switchStartTime = now end
 
     if (now - switchStartTime) <= 5 then return end
 
-    local mode = (rfsuite and rfsuite.flightmode and rfsuite.flightmode.current) or nil
+    local flightmode = rfsuite.flightmode
+    local mode = (flightmode and flightmode.current) or nil
     local allowRecheck = (mode == "preflight")
+    local telemetry = rfsuite.tasks.telemetry
 
     for key, sensor in pairs(switchTable.switches) do
 
         local isValid = validCache[key]
         local lastChk = lastValidityCheck[key] or 0
-        local needCheck = (isValid == nil) or (allowRecheck and (now - lastChk) >= VALIDITY_RECHECK_SEC)
 
-        if needCheck then
-
-            local s = sensor:state()
+        if isValid == nil or (allowRecheck and (now - lastChk) >= VALIDITY_RECHECK_SEC) then
+            -- sensor:state() returns boolean for validity/active state on some sources
+            -- optimization: call only when needed
+            local s = sensor:state() 
             validCache[key] = (s == true)
             lastValidityCheck[key] = now
         end
@@ -71,13 +79,13 @@ function switches.wakeup()
         if not prevState or (now - lastTime) >= 10 then playNow = true end
 
         if playNow then
-            local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
+            local sensorSrc = telemetry.getSensorSource(key)
             if sensorSrc then
                 local value = sensorSrc:value()
                 if value and type(value) == "number" then
                     local unit = switchTable.units[key]
                     local decimals = tonumber(sensorSrc:decimals())
-                    system.playNumber(value, unit, decimals)
+                    system_playNumber(value, unit, decimals)
                     lastPlayTime[key] = now
                 end
             end
@@ -88,13 +96,14 @@ function switches.wakeup()
     end
 end
 
-function switches.resetSwitchStates()
+function switches.reset()
     switchTable.switches = {}
     lastPlayTime = {}
     lastSwitchState = {}
     switchStartTime = nil
     validCache = {}
     lastValidityCheck = {}
+    initialized = false
 end
 
 switches.switchTable = switchTable
