@@ -35,7 +35,7 @@ import atexit
 # GUI imports
 try:
     import tkinter as tk
-    from tkinter import ttk, scrolledtext, messagebox
+    from tkinter import ttk, scrolledtext, messagebox, filedialog
 except ImportError:
     print("Error: tkinter is required but not found.")
     sys.exit(1)
@@ -755,6 +755,13 @@ class UpdaterGUI:
             state=tk.DISABLED
         )
         self.cancel_button.pack(side=tk.LEFT, padx=5)
+
+        self.save_log_button = ttk.Button(
+            button_frame,
+            text="Save Log",
+            command=self.save_log
+        )
+        self.save_log_button.pack(side=tk.LEFT, padx=5)
         
         ttk.Button(
             button_frame,
@@ -827,6 +834,30 @@ class UpdaterGUI:
         self.update_notice_label.config(text=message)
         self.update_notice_button.config(command=lambda: webbrowser.open(url))
         self.update_notice.pack(fill=tk.X, padx=10, pady=(0, 5))
+
+    def save_log(self):
+        """Save the current log to a user-selected file."""
+        try:
+            log_text = self.log_text.get("1.0", tk.END)
+        except Exception:
+            log_text = ""
+        if not log_text.strip():
+            messagebox.showinfo("Save Log", "There is no log content to save yet.")
+            return
+        filename = filedialog.asksaveasfilename(
+            title="Save Updater Log",
+            defaultextension=".txt",
+            initialfile="rfsuite_updater_log.txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        if not filename:
+            return
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(log_text)
+            messagebox.showinfo("Save Log", f"Log saved to:\n{filename}")
+        except Exception as e:
+            messagebox.showerror("Save Log", f"Failed to save log:\n{e}")
     
     def set_status(self, message):
         """Update the status label."""
