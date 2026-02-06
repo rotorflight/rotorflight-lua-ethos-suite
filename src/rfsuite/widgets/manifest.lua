@@ -10,6 +10,7 @@ return {
     varname = "dashboard",
     key = "rf2sdh",
     folder = "dashboard",
+    type = "widget",
   },
   [2] = {
     name = "Rotorflight Toolbox",
@@ -17,5 +18,14 @@ return {
     varname = "rftlbx",
     key = "rftlbx",
     folder = "toolbox",
+    type = "widget",    
+  },
+  [3] = {
+    name = "Rotorflight Engo",
+    script = "engodash.lua",
+    varname = "rfengo",
+    key = "rfengo",
+    folder = "engodash",
+    type = "glasses",    
   },
 }

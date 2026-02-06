@@ -228,22 +228,35 @@ local function register_widgets()
                 end
                 rfsuite.widgets[base] = scriptModule
 
-                system.registerWidget({
-                    name = v.name,
-                    key = v.key,
-                    event = scriptModule.event,
-                    create = scriptModule.create,
-                    paint = scriptModule.paint,
-                    wakeup = scriptModule.wakeup,
-                    build = scriptModule.build,
-                    close = scriptModule.close,
-                    configure = scriptModule.configure,
-                    read = scriptModule.read,
-                    write = scriptModule.write,
-                    persistent = scriptModule.persistent or false,
-                    menu = scriptModule.menu,
-                    title = scriptModule.title
-                })
+                if v.type == "glasses" then
+                    if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) then
+                        print(string.format("[widgets] registering glasses widget '%s' with key '%s'", v.name, v.key))
+                        system.registerGlassesWidget({
+                            key = v.key,
+                            name = v.name,
+                            create = scriptModule.create,
+                            build = scriptModule.build,
+                            wakeup = scriptModule.wakeup
+                        })
+                    end
+                else
+                    system.registerWidget({
+                        name = v.name,
+                        key = v.key,
+                        event = scriptModule.event,
+                        create = scriptModule.create,
+                        paint = scriptModule.paint,
+                        wakeup = scriptModule.wakeup,
+                        build = scriptModule.build,
+                        close = scriptModule.close,
+                        configure = scriptModule.configure,
+                        read = scriptModule.read,
+                        write = scriptModule.write,
+                        persistent = scriptModule.persistent or false,
+                        menu = scriptModule.menu,
+                        title = scriptModule.title
+                    })
+                end
             else
                 rfsuite.utils.log("[widgets] widget did not return a module table: " .. path, "info")
             end
