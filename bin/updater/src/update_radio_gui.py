@@ -1520,7 +1520,7 @@ class UpdaterGUI:
                     self.log("  - Radio is powered on")
                     self.log("  - Radio is in debug mode (will be switched automatically) or storage mode (mounted as a drive)")
                     if not radio_already_mounted:
-                        raise
+                        raise RuntimeError("Radio not detected. Please plug in your radio and try again.") from e
                 
                 if not self.is_updating:
                     return
