@@ -153,16 +153,19 @@ end
 
 local function rebuildRelevantSidSet()
 
-    if elrs._relevantSidSet ~= nil then return end
     local cfg = rfsuite and rfsuite.session and rfsuite.session.telemetryConfig
     if not cfg then
 
         elrs._relevantSidSet = nil
+        elrs._relevantSig = nil
         return
     end
-    elrs._relevantSidSet = {}
 
-    elrs._relevantSig = telemetrySlotsSignature(cfg)
+    local sig = telemetrySlotsSignature(cfg)
+    if elrs._relevantSidSet ~= nil and elrs._relevantSig == sig then return end
+
+    elrs._relevantSidSet = {}
+    elrs._relevantSig = sig
 
     for _, slotId in ipairs(cfg) do
         local apps = sidLookup[slotId]
@@ -558,10 +561,13 @@ elrs._haveFrameId = false
 function elrs.crossfirePop()
 
     if (rfsuite.session.telemetryState == false) then
-        local module = model.getModule(rfsuite.session.telemetrySensor:module())
-        if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
+        local ts = rfsuite.session.telemetrySensor
+        if ts then
+            local module = model.getModule(ts:module())
+            if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
+        end
 
-        if rfsuite.session.telemetryState == false then resetSensors() end
+        resetSensors()
 
         return false
     else
