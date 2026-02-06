@@ -5,6 +5,15 @@
 
 local rfsuite = require("rfsuite")
 
+-- Optimized locals
+local loadfile = loadfile
+local table_insert = table.insert
+local table_remove = table.remove
+local tostring = tostring
+local type = type
+local pairs = pairs
+local ipairs = ipairs
+
 local apiLoader = {}
 
 -- Caches to avoid repeated disk checks and module loads
@@ -28,9 +37,9 @@ local function getChunk(apiName, apiFilePath)
     if chunk then
         -- MRU touch (optional)
         for i, name in ipairs(apiLoader._chunkCacheOrder) do
-            if name == apiName then table.remove(apiLoader._chunkCacheOrder, i); break end
+            if name == apiName then table_remove(apiLoader._chunkCacheOrder, i); break end
         end
-        table.insert(apiLoader._chunkCacheOrder, apiName)
+        table_insert(apiLoader._chunkCacheOrder, apiName)
         return chunk
     end
 
@@ -42,11 +51,11 @@ local function getChunk(apiName, apiFilePath)
     end
 
     apiLoader._chunkCache[apiName] = loaderFn
-    table.insert(apiLoader._chunkCacheOrder, apiName)
+    table_insert(apiLoader._chunkCacheOrder, apiName)
 
     -- Enforce max (optional)
     if #apiLoader._chunkCacheOrder > apiLoader._chunkCacheMax then
-        local oldest = table.remove(apiLoader._chunkCacheOrder, 1)
+        local oldest = table_remove(apiLoader._chunkCacheOrder, 1)
         apiLoader._chunkCache[oldest] = nil
     end
 

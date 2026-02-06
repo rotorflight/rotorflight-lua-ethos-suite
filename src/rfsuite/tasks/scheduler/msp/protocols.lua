@@ -6,6 +6,9 @@
 local rfsuite = require("rfsuite")
 
 local protocol = {}
+local pairs = pairs
+
+local scriptBase = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/"
 
 local supportedProtocols = {
   sport = {
@@ -42,10 +45,9 @@ local supportedProtocols = {
 }
 
 function protocol.getProtocol()
-    if rfsuite.session and rfsuite.session.telemetryType then
-        if rfsuite.session.telemetryType == "crsf" then
-            return supportedProtocols.crsf
-        end
+    local session = rfsuite.session
+    if session and session.telemetryType == "crsf" then
+        return supportedProtocols.crsf
     end
     return supportedProtocols.sport
 end
@@ -53,7 +55,7 @@ end
 function protocol.getTransports()
     local transport = {}
     for i, v in pairs(supportedProtocols) do
-        transport[i] = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/" .. v.mspTransport
+        transport[i] = scriptBase .. v.mspTransport
     end
     return transport
 end
@@ -61,7 +63,7 @@ end
 
 -- Optional protocol logger (writes raw TX/RX frames to /LOGS/msp_proto.log)
 -- Enabled at runtime via: rfsuite.tasks.msp.enableProtoLog(true)
-local proto_logger = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/proto_logger.lua"))()
+local proto_logger = assert(loadfile(scriptBase .. "proto_logger.lua"))()
 
 function protocol.enableProtoLog(on)
     proto_logger.enable(on)

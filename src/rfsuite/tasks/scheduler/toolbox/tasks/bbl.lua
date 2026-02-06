@@ -9,11 +9,13 @@ local arg = {...}
 local config = arg[1]
 
 local bbl = {}
+local string_format = string.format
 
 function bbl.wakeup()
 
-    local totalSize = rfsuite.session.bblSize
-    local usedSize = rfsuite.session.bblUsed
+    local session = rfsuite.session
+    local totalSize = session.bblSize
+    local usedSize = session.bblUsed
 
     local displayValue
     local percentUsed
@@ -25,13 +27,13 @@ function bbl.wakeup()
         local decimals = 1
         local transformedUsed = usedMB
         local transformedTotal = totalMB
-        displayValue = string.format("%." .. decimals .. "f/%." .. decimals .. "f %s", transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
+        displayValue = string_format("%." .. decimals .. "f/%." .. decimals .. "f %s", transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
     else
         displayValue = "-"
         percentUsed = nil
     end
 
-    rfsuite.session.toolbox.bbl = displayValue
+    session.toolbox.bbl = displayValue
 
 end
 

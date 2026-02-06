@@ -14,6 +14,7 @@ local channelNames = {"aileron", "elevator", "collective", "rudder", "throttle",
 
 local channelSources = {}
 local initialized = false
+local utils = rfsuite.utils
 
 local function initChannelSources()
     local rxMap = rfsuite.session.rx.map
@@ -28,16 +29,18 @@ local function initChannelSources()
 end
 
 function rxmap.wakeup()
-    if not rfsuite.utils.rxmapReady() then return end
+    if not utils.rxmapReady() then return end
 
     if not initialized then initChannelSources() end
+
+    local values = rfsuite.session.rx.values
 
     for name, src in pairs(channelSources) do
         if src then
             local val = src:value()
-            if val and type(val) == "number" then rfsuite.session.rx.values[name] = val end
+            if val and type(val) == "number" then values[name] = val end
         else
-            rfsuite.session.rx.values[name] = nil
+            values[name] = nil
         end
     end
 end

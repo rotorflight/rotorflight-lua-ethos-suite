@@ -9,28 +9,31 @@ local arg = {...}
 
 local developer = {}
 
-function developer.wakeup()
+-- Localize globals
+local print = print
+local math_random = math.random
+local tostring = tostring
 
-    if rfsuite.session.mcu_id and rfsuite.config.preferences then
-        local iniName = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
-        local api = rfsuite.tasks.ini.api.load("api_template")
+function developer.wakeup()
+    local session = rfsuite.session
+    local config = rfsuite.config
+
+    if not session or not session.mcu_id or not config or not config.preferences then return end
+
+    local tasks = rfsuite.tasks
+    if not tasks or not tasks.ini or not tasks.ini.api then return end
+
+    local iniName = "SCRIPTS:/" .. config.preferences .. "/models/" .. session.mcu_id .. ".ini"
+    local api = tasks.ini.api.load("api_template")
+
+    if api then
         api.setIniFile(iniName)
         local pitch = api.readValue("pitch")
-
         print(pitch)
-    end
-
-    if rfsuite.session.mcu_id and rfsuite.config.preferences then
-        local iniName = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
-        local api = rfsuite.tasks.ini.api.load("api_template")
-        api.setIniFile(iniName)
-
-        api.setValue("pitch", math.random(-300, 300))
-
+        api.setValue("pitch", math_random(-300, 300))
         local ok, err = api.write()
-        if not ok then error("Failed to save INI: " .. err) end
+        if not ok then print("Failed to save INI: " .. tostring(err)) end
     end
-
 end
 
 return developer

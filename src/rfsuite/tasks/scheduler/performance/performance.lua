@@ -10,6 +10,13 @@ local config = arg and arg[1]
 
 local performance = {}
 
+-- Localize globals for performance
+local os_clock = os.clock
+local math_exp = math.exp
+local math_min = math.min
+local collectgarbage = collectgarbage
+local system_getMemoryUsage = system.getMemoryUsage
+
 local PROF_PERIOD_S = 0.05
 local CPU_TICK_HZ = 1 / PROF_PERIOD_S
 local SCHED_DT = PROF_PERIOD_S
@@ -41,19 +48,9 @@ local function clamp(v, lo, hi)
     return v
 end
 
-local function getMemoryUsageTable()
-    if system.getMemoryUsage then
-        local m = system.getMemoryUsage()
-        if type(m) == "table" then
-            return m
-        end
-    end
-    return {}
-end
-
 
 function performance.wakeup()
-    local t_now = os.clock()
+    local t_now = os_clock()
 
     local dt
     if last_wakeup_start ~= nil then
@@ -64,10 +61,20 @@ function performance.wakeup()
 
     if dt < (0.25 * SCHED_DT) then dt = SCHED_DT end
 
+    -- Cache table reference
+    local perf = rfsuite.performance
+    if not perf then
+        perf = {}
+        rfsuite.performance = perf
+    end
+
     if (t_now - last_mem_t) >= MEM_PERIOD then
         last_mem_t = t_now
 
-        local m = getMemoryUsageTable()
+        local m
+        if system_getMemoryUsage then m = system_getMemoryUsage() end
+        if type(m) ~= "table" then m = {} end
+
         local free_lua_kb = clamp(((m.luaRamAvailable or 0) / 1024), 0, 1e12)
         local free_bmp_kb = clamp(((m.luaBitmapsRamAvailable or 0) / 1024), 0, 1e12)
 
@@ -76,7 +83,7 @@ function performance.wakeup()
         else
             mem_avg_kb = clamp(MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb, 0, 1e12)
         end
-        rfsuite.performance.freeram = mem_avg_kb
+        perf.freeram = mem_avg_kb
 
         local gc_total_kb = clamp(collectgarbage("count") or 0, 0, 1e12)
         if usedram_avg_kb == nil then
@@ -84,19 +91,18 @@ function performance.wakeup()
         else
             usedram_avg_kb = clamp(MEM_ALPHA * gc_total_kb + (1 - MEM_ALPHA) * usedram_avg_kb, 0, 1e12)
         end
-        rfsuite.performance.usedram = usedram_avg_kb
+        perf.usedram = usedram_avg_kb
 
         if free_bmp_kb > bitmap_pool_est_kb then bitmap_pool_est_kb = free_bmp_kb end
-        rfsuite.performance.luaBitmapsRamKB = free_bmp_kb
+        perf.luaBitmapsRamKB = free_bmp_kb
 
-        rfsuite.performance.mainStackKB = (m.mainStackAvailable or 0) / 1024
-        rfsuite.performance.ramKB = (m.ramAvailable or 0) / 1024
-        rfsuite.performance.luaRamKB = (m.luaRamAvailable or 0) / 1024
-        rfsuite.performance.luaBitmapsRamKB = (m.luaBitmapsRamAvailable or 0) / 1024
+        perf.mainStackKB = (m.mainStackAvailable or 0) / 1024
+        perf.ramKB = (m.ramAvailable or 0) / 1024
+        perf.luaRamKB = (m.luaRamAvailable or 0) / 1024
+        perf.luaBitmapsRamKB = (m.luaBitmapsRamAvailable or 0) / 1024
     end
 
-    rfsuite.performance = rfsuite.performance or {}
-    local loop_ms = tonumber(rfsuite.performance.taskLoopCpuMs) or tonumber(rfsuite.performance.taskLoopTime) or 0
+    local loop_ms = tonumber(perf.taskLoopCpuMs) or tonumber(perf.taskLoopTime) or 0
     local budget_ms = SCHED_DT * 1000.0
 
     local instant_util = 0
@@ -111,7 +117,7 @@ function performance.wakeup()
 
         if window_util < 0 then window_util = 0 end
         if window_util > 1 then window_util = 1 end
-        rfsuite.performance.cpuload_window100 = window_util * 100
+        perf.cpuload_window100 = window_util * 100
 
         win_sum_ms, win_budget_ms, win_t = 0, 0, 0
     end
@@ -121,17 +127,22 @@ function performance.wakeup()
     if instant_util < 0 then instant_util = 0 end
     if instant_util > 1 then instant_util = 1 end
 
-    if usingSimulator and instant_util < SIM_TARGET_UTIL then instant_util = math.min(SIM_MAX_UTIL, instant_util + (SIM_TARGET_UTIL - instant_util) * SIM_BLEND) end
+    if usingSimulator and instant_util < SIM_TARGET_UTIL then 
+        instant_util = math_min(SIM_MAX_UTIL, instant_util + (SIM_TARGET_UTIL - instant_util) * SIM_BLEND) 
+    end
 
-    local alpha = 1 - math.exp(-dt / CPU_TAU)
+    local alpha = 1 - math_exp(-dt / CPU_TAU)
     cpu_avg = alpha * instant_util + (1 - alpha) * cpu_avg
 
-    rfsuite.performance.cpuload = clamp(cpu_avg * 100, 0, 100)
+    -- Inline clamp for high frequency path
+    local load = cpu_avg * 100
+    if load < 0 then load = 0 elseif load > 100 then load = 100 end
+    perf.cpuload = load
 
-    rfsuite.performance.loop_ms = loop_ms
-    rfsuite.performance.budget_ms = budget_ms
-    rfsuite.performance.util_raw = instant_util * 100
-    rfsuite.performance.tick_ms = dt * 1000.0
+    perf.loop_ms = loop_ms
+    perf.budget_ms = budget_ms
+    perf.util_raw = instant_util * 100
+    perf.tick_ms = dt * 1000.0
 
     last_wakeup_start = t_now
 end

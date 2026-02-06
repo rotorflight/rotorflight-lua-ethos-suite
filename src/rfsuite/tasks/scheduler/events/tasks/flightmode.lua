@@ -13,14 +13,17 @@ local lastFlightMode = nil
 local hasBeenInFlight = false
 local lastArmed = false
 
+local tasks = rfsuite.tasks
+local utils = rfsuite.utils
+
 local throttleThreshold = 35
 
 local function isGovernorActive(value) return type(value) == "number" and value >= 4 and value <= 8 end
 
 function flightmode.inFlight()
-    local telemetry = rfsuite.tasks.telemetry
+    local telemetry = tasks.telemetry
 
-    if not telemetry.active() or not rfsuite.session.isArmed then return false end
+    if not rfsuite.session.isArmed or not telemetry or (telemetry.active and not telemetry.active()) then return false end
 
     local governor = telemetry.getSensor("governor")
     if isGovernorActive(governor) then return true end
@@ -67,9 +70,9 @@ end
 
 function flightmode.wakeup()
     local mode = determineMode()
-
+    
     if lastFlightMode ~= mode then
-        rfsuite.utils.log("Flight mode: " .. mode, "info")
+        utils.log("Flight mode: " .. mode, "info")
         rfsuite.flightmode.current = mode
         lastFlightMode = mode
     end
