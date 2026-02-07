@@ -181,6 +181,19 @@ end
 local function armedSaveWarning()
     local app = rfsuite.app
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
+    local pref = rfsuite.preferences.general.save_armed_warning
+    local showDialog = not (pref == false or pref == "false")
+    if not showDialog then
+        if app.dialogs.progressDisplay then
+            app.dialogs.progressDisplay = false
+            app.dialogs.progress:close()
+        end
+        if not app.dialogs.progressDisplay then
+            app.audio.playSaveArmed = true
+        end
+        app.triggers.showSaveArmedWarning = false
+        return
+    end
     if not app.dialogs.progressDisplay then
         app.audio.playSaveArmed = true
         app.dialogs.progressCounter = 0
