@@ -6,7 +6,11 @@
 local rfsuite = require("rfsuite")
 
 local msp = {}
-msp.clock = os.clock()
+local os_clock = os.clock
+local math_abs = math.abs
+msp.clock = os_clock()
+local system_getSource = system.getSource
+local model_createSensor = model.createSensor
 
 local log
 local tasks
@@ -250,7 +254,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
     if sensorCache[appId] == nil and negativeCache[appId] then return end
 
     if not sensorCache[appId] and not negativeCache[appId] then
-        local existingSensor = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+        local existingSensor = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
         if existingSensor then
             sensorCache[appId] = existingSensor
         else
@@ -258,7 +262,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
                 negativeCache[appId] = true
                 return
             end
-            local sensor = model.createSensor()
+            local sensor = model_createSensor()
             sensor:name(fieldMeta.sensorname)
             sensor:appId(appId)
             sensor:physId(0)
@@ -293,7 +297,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         return
     end
 
-    if last == nil or math.abs(v - last) >= VALUE_EPSILON or stale then
+    if last == nil or math_abs(v - last) >= VALUE_EPSILON or stale then
         if useRawValue then
             sensor:rawValue(v)
         else
@@ -330,7 +334,7 @@ local function getApi(api_name, fields)
 
     -- Install a stable completion handler (set once)
     API.setCompleteHandler(function(self, buf)
-        local now = os.clock()
+        local now = os_clock()
         msp.clock = now
 
         for field_key, meta in pairs(fields) do
@@ -361,7 +365,7 @@ function msp.wakeup()
         if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
     end
 
-    msp.clock = os.clock()
+    msp.clock = os_clock()
 
     if firstWakeup then
         log = rfsuite.utils.log
@@ -507,7 +511,7 @@ function msp.reset()
         isConnected = false
     }
 
-    local now = msp.clock
+    local now = os_clock()
     for api_name, _ in pairs(msp_sensors) do next_due[api_name] = now end
 
     for _, api_meta in pairs(msp_sensors) do

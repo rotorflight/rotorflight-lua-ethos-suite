@@ -7,9 +7,12 @@ local rfsuite = require("rfsuite")
 
 local arg = {...}
 local config = arg[1] or {}
+local os_clock = os.clock
+local system_getSource = system.getSource
+local model_createSensor = model.createSensor
 
 local cacheExpireTime = 30
-local lastCacheFlushTime = os.clock()
+local lastCacheFlushTime = os_clock()
 
 local lastWakeupTime = 0
 
@@ -62,7 +65,7 @@ local sensors = {uid = {}, lastvalue = {}, lastupdate = {}}
 local REFRESH_INTERVAL = 5
 
 local function createSensor(uid, name, unit, dec, value, min, max)
-    local sensor = model.createSensor({type = SENSOR_TYPE_DIY})
+    local sensor = model_createSensor({type = SENSOR_TYPE_DIY})
     sensor:name(name)
     sensor:appId(uid)
     sensor:module(rfsuite.session.telemetrySensor:module())
@@ -89,20 +92,20 @@ local function createSensor(uid, name, unit, dec, value, min, max)
 
     sensors.uid[uid] = sensor
     sensors.lastvalue[uid] = value
-    sensors.lastupdate[uid] = os.clock()
+    sensors.lastupdate[uid] = os_clock()
 end
 
 local function dropSensor(uid)
-    local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
+    local src = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
     if src then src:drop() end
 end
 
 local function ensureSensorExists(uid, name, unit, dec, value, min, max)
     if not sensors.uid[uid] then
-        local existingSensor = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
+        local existingSensor = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
         if existingSensor then
             sensors.uid[uid] = existingSensor
-            sensors.lastupdate[uid] = os.clock()
+            sensors.lastupdate[uid] = os_clock()
         else
             rfsuite.utils.log("Create sensor: " .. uid, "info")
             createSensor(uid, name, unit, dec, value, min, max)
@@ -113,7 +116,7 @@ end
 local function updateSensorValue(uid, value)
     if sensors.uid[uid] then
         if type(value) == "function" then value = value() end
-        local now = os.clock()
+        local now = os_clock()
         local lastVal = sensors.lastvalue[uid]
         local lastUpdate = sensors.lastupdate[uid] or 0
         if value ~= lastVal or (now - lastUpdate) >= REFRESH_INTERVAL then
@@ -129,11 +132,11 @@ local function updateSensorValue(uid, value)
 end
 
 local function flushCacheIfNeeded()
-    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
+    if os_clock() - lastCacheFlushTime >= cacheExpireTime then
         sensors.uid = {}
         sensors.lastvalue = {}
         sensors.lastupdate = {}
-        lastCacheFlushTime = os.clock()
+        lastCacheFlushTime = os_clock()
     end
 end
 
@@ -151,7 +154,7 @@ local function handleSensors()
 end
 
 local function wakeup()
-    local now = os.clock()
+    local now = os_clock()
 
     if now - lastWakeupTime >= wakeupInterval then
         handleSensors()

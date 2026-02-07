@@ -5,6 +5,13 @@
 
 local rfsuite = require("rfsuite")
 
+local os_clock = os.clock
+local math_floor = math.floor
+local math_min = math.min
+local math_max = math.max
+local table_insert = table.insert
+local table_remove = table.remove
+
 local batteryConfigCache = nil
 local fuelStartingPercent = nil
 local fuelStartingConsumption = nil
@@ -27,7 +34,7 @@ for i = 0, 120 do
     local v = 3.00 + i * 0.01
     local a, b, c = 12, 3.7, 100
     local percent = 100 / (1 + math.exp(-a * (v - b)))
-    dischargeCurveTable[i + 1] = math.floor(math.min(100, math.max(0, percent)) + 0.5)
+    dischargeCurveTable[i + 1] = math_floor(math_min(100, math_max(0, percent)) + 0.5)
 end
 
 local function fuelPercentageFromVoltage(voltage, cellCount, bc)
@@ -45,10 +52,10 @@ local function fuelPercentageFromVoltage(voltage, cellCount, bc)
     local sigmoidMin, sigmoidMax = 3.00, 4.20
     local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
 
-    scaledV = math.max(sigmoidMin, math.min(sigmoidMax, scaledV))
+    scaledV = math_max(sigmoidMin, math_min(sigmoidMax, scaledV))
 
-    local index = math.floor((scaledV - sigmoidMin) / 0.01) + 1
-    index = math.max(1, math.min(#dischargeCurveTable, index))
+    local index = math_floor((scaledV - sigmoidMin) / 0.01) + 1
+    index = math_max(1, math_min(#dischargeCurveTable, index))
 
     return dischargeCurveTable[index]
 end
@@ -87,7 +94,7 @@ local function smartFuelCalc()
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         resetVoltageTracking()
-        stabilizeNotBefore = os.clock() + preStabiliseDelay
+        stabilizeNotBefore = os_clock() + preStabiliseDelay
     end
 
     if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
@@ -105,7 +112,7 @@ local function smartFuelCalc()
         return nil
     end
 
-    local now = os.clock()
+    local now = os_clock()
 
     if currentMode ~= lastMode then
         rfsuite.utils.log("Flight mode changed – resetting voltage & fuel state", "info")
@@ -125,8 +132,8 @@ local function smartFuelCalc()
 
     if stabilizeNotBefore and now < stabilizeNotBefore then return nil end
 
-    table.insert(lastVoltages, voltage)
-    if #lastVoltages > maxVoltageSamples then table.remove(lastVoltages, 1) end
+    table_insert(lastVoltages, voltage)
+    if #lastVoltages > maxVoltageSamples then table_remove(lastVoltages, 1) end
 
     if not voltageStabilised then
         if isVoltageStable() then
@@ -148,7 +155,7 @@ local function smartFuelCalc()
             fuelStartingPercent = nil
             fuelStartingConsumption = nil
             resetVoltageTracking()
-            stabilizeNotBefore = os.clock() + preStabiliseDelay
+            stabilizeNotBefore = os_clock() + preStabiliseDelay
             return nil
         end
     end
@@ -186,11 +193,11 @@ local function smartFuelCalc()
     if consumption and fuelStartingConsumption and packCapacity > 0 then
         local used = consumption - fuelStartingConsumption
         local percentUsed = used / usableCapacity * 100
-        local remaining = math.max(0, fuelStartingPercent - percentUsed)
-        return math.floor(math.min(100, remaining) + 0.5)
+        local remaining = math_max(0, fuelStartingPercent - percentUsed)
+        return math_floor(math_min(100, remaining) + 0.5)
     else
 
-        if not voltageStabilised or (stabilizeNotBefore and os.clock() < stabilizeNotBefore) then
+        if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then
             print("Voltage not stabilised or pre-stabilisation delay active, returning nil")
             return nil
         end
