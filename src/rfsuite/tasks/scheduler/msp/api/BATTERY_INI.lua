@@ -13,6 +13,10 @@ local INI_SECTION = "battery"
 local ini = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
 
+local math_floor = math.floor
+local tonumber = tonumber
+local ipairs = ipairs
+
 local handlers = core.createHandlers()
 
 local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
@@ -69,7 +73,7 @@ local function write()
     local tbl = ini.load_ini_file(INI_FILE) or {}
 
     for k, v in pairs(payloadData) do
-        if k == "calc_local" then v = math.floor(v) end
+        if k == "calc_local" then v = math_floor(v) end
 
         ini.setvalue(tbl, INI_SECTION, k, v)
 
