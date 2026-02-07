@@ -53,7 +53,8 @@ local userpref_defaults = {
         theme_loader = 1,  
         save_confirm = true,   
         reload_confirm = true,
-        mspstatusdialog = true
+        mspstatusdialog = true,
+        save_armed_warning = true
     },
     localizations = {
         temperature_unit = 0,
