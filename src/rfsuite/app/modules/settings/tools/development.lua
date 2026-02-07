@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 local settings = {}
 local enableWakeup = false
+local system = system
 
 local function openPage(pageIdx, title, script)
     enableWakeup = true

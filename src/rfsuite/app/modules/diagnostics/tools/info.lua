@@ -4,13 +4,18 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+local app = rfsuite.app
+local tasks = rfsuite.tasks
+local session = rfsuite.session
 
 local version = rfsuite.version().version
 local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.environment.minor .. "." .. rfsuite.config.environment.revision
-local apiVersion = rfsuite.session.apiVersion
-local fcVersion = rfsuite.session.fcVersion
-local rfVersion = rfsuite.session.rfVersion
-local mspTransport = (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol) or "-"
+local apiVersion = session.apiVersion
+local fcVersion = session.fcVersion
+local rfVersion = session.rfVersion
+local mspTransport = (tasks and tasks.msp and tasks.msp.protocol and tasks.msp.protocol.mspProtocol) or "-"
 local closeProgressLoader = true
 local simulation
 
@@ -37,7 +42,7 @@ local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
-displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 300, h = rfsuite.app.radio.navbuttonHeight}
+displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 300, h = app.radio.navbuttonHeight}
 
 local apidata = {
     api = {[1] = nil},
@@ -53,7 +58,7 @@ local apidata = {
 
 local function wakeup()
     if closeProgressLoader == false then
-        rfsuite.app.triggers.closeProgressLoader = true
+        app.triggers.closeProgressLoader = true
         closeProgressLoader = true
     end
 end
@@ -61,14 +66,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+        app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
         return true
     end
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    app.ui.progressDisplay(nil, nil, true)
+    app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
 end
 
 return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

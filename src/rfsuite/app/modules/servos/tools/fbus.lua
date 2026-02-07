@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local FBUS_FUNCTIONMASK = 524288
 local triggerOverRide = false

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local  S_PAGES ={
         [1] = { name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png" },

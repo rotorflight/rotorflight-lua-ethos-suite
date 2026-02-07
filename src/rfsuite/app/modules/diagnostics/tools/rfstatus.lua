@@ -4,6 +4,13 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+local model = model
+local app = rfsuite.app
+local tasks = rfsuite.tasks
+local rfutils = rfsuite.utils
+local session = rfsuite.session
 
 local enableWakeup = false
 local lastWakeup = 0
@@ -15,7 +22,7 @@ local xRight = w - 15
 
 local x, y
 
-local displayPos = {x = xRight - btnW - btnWs - 5 - btnWs, y = rfsuite.app.radio.linePaddingTop, w = 150, h = rfsuite.app.radio.navbuttonHeight}
+local displayPos = {x = xRight - btnW - btnWs - 5 - btnWs, y = app.radio.linePaddingTop, w = 150, h = app.radio.navbuttonHeight}
 
 local IDX_CPULOAD = 0
 local IDX_FREERAM = 1
@@ -43,10 +50,10 @@ end
 
 local function addStatusLine(captionText, initialText)
 
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(captionText)
-    rfsuite.app.formFields[rfsuite.app.formFieldCount] = form.addStaticText(rfsuite.app.formLines[rfsuite.app.formLineCnt], displayPos, initialText)
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formFieldCount = rfsuite.app.formFieldCount + 1
+    app.formLines[app.formLineCnt] = form.addLine(captionText)
+    app.formFields[app.formFieldCount] = form.addStaticText(app.formLines[app.formLineCnt], displayPos, initialText)
+    app.formLineCnt = app.formLineCnt + 1
+    app.formFieldCount = app.formFieldCount + 1
 end
 
 local function moduleEnabled()
@@ -63,19 +70,18 @@ end
 
 local function openPage(pidx, title, script)
     enableWakeup = false
-    rfsuite.app.triggers.closeProgressLoader = true
+    app.triggers.closeProgressLoader = true
     form.clear()
 
-    rfsuite.app.lastIdx = pidx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    app.lastIdx = pidx
+    app.lastTitle = title
+    app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.rfstatus.name)@")
+    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.rfstatus.name)@")
 
-    rfsuite.app.formLineCnt = 0
-    rfsuite.app.formFieldCount = 0
+    app.formLineCnt = 0
+    app.formFieldCount = 0
 
-    local app = rfsuite.app
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
@@ -83,7 +89,7 @@ local function openPage(pidx, title, script)
 
     addStatusLine("@i18n(app.modules.msp_speed.memory_free)@", string.format("%.1f kB", rfsuite.performance.freeram or 0))
 
-    addStatusLine("@i18n(app.modules.rfstatus.bgtask)@", rfsuite.tasks.active() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@")
+    addStatusLine("@i18n(app.modules.rfstatus.bgtask)@", tasks.active() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@")
 
     addStatusLine("@i18n(app.modules.rfstatus.rfmodule)@", moduleEnabled() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@")
 
@@ -98,8 +104,8 @@ local function openPage(pidx, title, script)
     enableWakeup = true
 end
 
-local function postLoad(self) rfsuite.utils.log("postLoad", "debug") end
-local function postRead(self) rfsuite.utils.log("postRead", "debug") end
+local function postLoad(self) rfutils.log("postLoad", "debug") end
+local function postRead(self) rfutils.log("postRead", "debug") end
 
 local function wakeup()
     if not enableWakeup then return end
@@ -109,35 +115,35 @@ local function wakeup()
     lastWakeup = now
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_CPULOAD]
+        local field = app.formFields and app.formFields[IDX_CPULOAD]
         if field then field:value(string.format("%.1f%%", rfsuite.performance.cpuload or 0)) end
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_FREERAM]
-        if field then field:value(string.format("%.1f kB", rfsuite.utils.round(rfsuite.performance.freeram or 0, 1))) end
+        local field = app.formFields and app.formFields[IDX_FREERAM]
+        if field then field:value(string.format("%.1f kB", rfutils.round(rfsuite.performance.freeram or 0, 1))) end
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_BG_TASK]
-        local ok = rfsuite.tasks and rfsuite.tasks.active()
+        local field = app.formFields and app.formFields[IDX_BG_TASK]
+        local ok = tasks and tasks.active()
         setStatus(field, ok)
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_RF_MODULE]
+        local field = app.formFields and app.formFields[IDX_RF_MODULE]
         setStatus(field, moduleEnabled())
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_MSP]
+        local field = app.formFields and app.formFields[IDX_MSP]
         setStatus(field, haveMspSensor())
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_TELEM]
+        local field = app.formFields and app.formFields[IDX_TELEM]
         if field then
-            local sensors = rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.validateSensors(false) or false
+            local sensors = tasks and tasks.telemetry and tasks.telemetry.validateSensors(false) or false
             if type(sensors) == "table" then
 
                 setStatus(field, #sensors == 0)
@@ -149,9 +155,9 @@ local function wakeup()
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_FBLCONNECTED]
+        local field = app.formFields and app.formFields[IDX_FBLCONNECTED]
         if field then
-            local isConnected = rfsuite.session and rfsuite.session.isConnected
+            local isConnected = session and session.isConnected
             if isConnected then
                 setStatus(field, isConnected)
             else
@@ -161,9 +167,9 @@ local function wakeup()
     end
 
     do
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_APIVERSION]
+        local field = app.formFields and app.formFields[IDX_APIVERSION]
         if field then
-            local isInvalid = not rfsuite.session.apiVersionInvalid
+            local isInvalid = not session.apiVersionInvalid
             setStatus(field, isInvalid)
         end
     end
@@ -173,14 +179,14 @@ end
 local function event(widget, category, value, x, y)
 
     if (category == EVT_CLOSE and value == 0) or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+        app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
         return true
     end
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    app.ui.progressDisplay(nil, nil, true)
+    app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
 end
 
 return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}
