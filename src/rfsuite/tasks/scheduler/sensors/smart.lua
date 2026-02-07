@@ -13,8 +13,12 @@ local smartfuelvoltage = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelv
 local log
 local tasks
 
+local os_clock = os.clock
+local math_abs = math.abs
 local interval = 1
-local lastWake = os.clock()
+local lastWake = os_clock()
+local system_getSource = system.getSource
+local model_createSensor = model.createSensor
 local telemetry
 local firstWakeup = true
 
@@ -29,39 +33,26 @@ local FORCE_REFRESH_INTERVAL = 2.0
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
 
 local function calculateFuel()
-
-    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-        if rfsuite.session.modelPreferences.battery.calc_local == 1 then
-            return smartfuelvoltage.calculate()
-        else
-            return smartfuel.calculate()
-        end
-    else
-        return smartfuel.calculate()
+    local prefs = rfsuite.session.modelPreferences
+    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+        return smartfuelvoltage.calculate()
     end
-
+    return smartfuel.calculate()
 end
 
 local function calculateConsumption()
-
-    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-        if rfsuite.session.modelPreferences.battery.calc_local == 1 then
-            local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
-            local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
-            local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
-            if smartfuelPct then
-                local usableCapacity = capacity * (1 - warningPercentage / 100)
-                local usedPercent = 100 - smartfuelPct
-                return (usedPercent / 100) * usableCapacity
-            end
-        else
-
-            return rfsuite.tasks.telemetry.getSensor("consumption") or 0
+    local prefs = rfsuite.session.modelPreferences
+    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+        local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
+        local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
+        local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
+        if smartfuelPct then
+            local usableCapacity = capacity * (1 - warningPercentage / 100)
+            local usedPercent = 100 - smartfuelPct
+            return (usedPercent / 100) * usableCapacity
         end
-    else
-
-        return rfsuite.tasks.telemetry.getSensor("consumption") or 0
     end
+    return rfsuite.tasks.telemetry.getSensor("consumption") or 0
 end
 
 local function resetFuel()
@@ -100,7 +91,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
     end
 
     if not sensorCache[appId] and not negativeCache[appId] then
-        local existingSensor = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+        local existingSensor = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
         if existingSensor then
             sensorCache[appId] = existingSensor
         else
@@ -108,7 +99,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
                 negativeCache[appId] = true
                 return
             end
-            local sensor = model.createSensor({type = SENSOR_TYPE_DIY})
+            local sensor = model_createSensor({type = SENSOR_TYPE_DIY})
             sensor:name(fieldMeta.name)
             sensor:appId(appId)
             sensor:physId(0)
@@ -131,9 +122,9 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         local maxv = fieldMeta.maximum or 1000000000
         local v = clamp(value, minv, maxv)
         local last = lastValue[appId]
-        local now = os.clock()
+        local now = os_clock()
         local stale = (now - (lastPush[appId] or 0)) >= FORCE_REFRESH_INTERVAL
-        if last == nil or math.abs(v - last) >= VALUE_EPSILON or stale then
+        if last == nil or math_abs(v - last) >= VALUE_EPSILON or stale then
             if useRawValue then
                 sensorCache[appId]:rawValue(v)
             else
@@ -145,7 +136,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
     else
         sensorCache[appId]:reset()
         lastValue[appId] = nil
-        lastPush[appId] = os.clock()
+        lastPush[appId] = os_clock()
     end
 end
 
@@ -168,8 +159,8 @@ function smart.wakeup()
         return
     end
 
-    if (os.clock() - lastWake) < interval then return end
-    lastWake = os.clock()
+    if (os_clock() - lastWake) < interval then return end
+    lastWake = os_clock()
 
     for name, meta in pairs(smart_sensors) do
         local value

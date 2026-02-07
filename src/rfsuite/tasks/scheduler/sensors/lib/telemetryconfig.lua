@@ -6,6 +6,10 @@
 local rfsuite = require("rfsuite")
 
 local telemetryconfig = {}
+local tonumber = tonumber
+local tostring = tostring
+local table_concat = table.concat
+local log = rfsuite.utils.log
 
 local mspCallMade = false
 
@@ -35,15 +39,15 @@ function telemetryconfig.wakeup()
                     parts[#parts + 1] = tostring(v) 
                 end 
             end
-            local slotsStr = table.concat(parts, ",")
+            local slotsStr = table_concat(parts, ",")
 
-            if rfsuite.utils and rfsuite.utils.log then 
-                rfsuite.utils.log("Updated telemetry sensors: " .. slotsStr, "info") 
-                rfsuite.utils.log("Updated telemetry sensors: " .. tostring(#parts) .. " of " .. tostring(#slots), "connect")
+            if log then 
+                log("Updated telemetry sensors: " .. slotsStr, "info") 
+                log("Updated telemetry sensors: " .. tostring(#parts) .. " of " .. tostring(#slots), "connect")
             end    
         end)
         API.setErrorHandler(function(self, err)
-            rfsuite.utils.log("Failed to read telemetry config via MSP: " .. err, "info")
+            log("Failed to read telemetry config via MSP: " .. err, "info")
             mspCallMade = false
         end)
         API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")

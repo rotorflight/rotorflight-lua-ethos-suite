@@ -21,6 +21,9 @@ local MSP_API_STRUCTURE_READ = {
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ
 
 local mspData = nil
+local string_format = string.format
+local tonumber = tonumber
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
@@ -53,11 +56,6 @@ local function errorHandlerStatic(self, buf)
 end
 
 local function read()
-    if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-        return
-    end
-
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -65,14 +63,14 @@ end
 local function data() return mspData end
 
 local function readComplete()
-    if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then return true end
+    if mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES then return true end
     return false
 end
 
 local function readVersion()
     if mspData then
-        local parsed = mspData['parsed']
-        return string.format("%d.%d.%d", parsed.version_major, parsed.version_minor, parsed.version_patch)
+        local parsed = mspData.parsed
+        return string_format("%d.%d.%d", parsed.version_major, parsed.version_minor, parsed.version_patch)
     end
     return nil
 end
@@ -92,11 +90,11 @@ local function readRfVersion()
 
     if maj < 0 or min < 0 then return raw end
 
-    return string.format("%d.%d.%d", maj, min, patch)
+    return string_format("%d.%d.%d", maj, min, patch)
 end
 
 local function readValue(fieldName)
-    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
+    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
     return nil
 end
 

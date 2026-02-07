@@ -42,6 +42,9 @@ local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
+local os_clock = os.clock
+local tostring = tostring
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
@@ -86,11 +89,6 @@ local function errorHandlerStatic(self, buf)
 end
 
 local function read()
-    if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-        return
-    end
-
     local message = {
         command = MSP_API_CMD_READ,
         apiname = API_NAME,
@@ -110,11 +108,6 @@ local function read()
 end
 
 local function write(suppliedPayload)
-    if MSP_API_CMD_WRITE == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
-        return
-    end
-
     local v = {
         index = FIXED_INDEX,
         rate_stabilized_yaw  = (payloadData.rate_stabilized_yaw ~= nil) and payloadData.rate_stabilized_yaw or curRate,
@@ -124,7 +117,7 @@ local function write(suppliedPayload)
 
     local payload = core.buildFullPayload(API_NAME, v, MSP_API_STRUCTURE_WRITE)
 
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
+    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
     lastWriteUUID = uuid
 
     local message = {
@@ -144,13 +137,13 @@ local function write(suppliedPayload)
 end
 
 local function readValue(fieldName)
-    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
+    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
     return nil
 end
 
 local function setValue(fieldName, value) payloadData[fieldName] = value end
 
-local function readComplete() return mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES end
+local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
 
 local function writeComplete() return mspWriteComplete end
 

@@ -43,6 +43,10 @@ local MSP_API_STRUCTURE_WRITE = {
 local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
+local os_clock = os.clock
+local tostring = tostring
+local tonumber = tonumber
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
@@ -86,11 +90,6 @@ end
 
 -- Read one channel (index is 0-based, per firmware)
 local function read(index)
-    if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-        return
-    end
-
     local idx = index
     if idx == nil then idx = payloadData.index end
     if idx == nil then idx = rfsuite.currentFbusServoIndex end
@@ -117,16 +116,11 @@ local function read(index)
 end
 
 local function write(suppliedPayload)
-    if MSP_API_CMD_WRITE == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
-        return
-    end
-
     -- Ensure index is present; forms typically set this.
     local idx = payloadData.index
     if idx == nil then idx = rfsuite.currentFbusServoIndex end
     if idx == nil then
-        rfsuite.utils.log("FBUS_MASTER_CHANNEL.write requires payloadData.index (0-based channel index)", "debug")
+        log("FBUS_MASTER_CHANNEL.write requires payloadData.index (0-based channel index)", "debug")
         return
     end
 
@@ -134,7 +128,7 @@ local function write(suppliedPayload)
 
     local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
-    local uuid = MSP_API_UUID or (rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid()) or tostring(os.clock())
+    local uuid = MSP_API_UUID or (rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid()) or tostring(os_clock())
     lastWriteUUID = uuid
 
     local message = {

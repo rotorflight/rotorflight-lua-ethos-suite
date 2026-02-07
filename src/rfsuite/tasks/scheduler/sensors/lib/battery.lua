@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 
 local battery = {}
+local log = rfsuite.utils.log
 
 local mspCallMade = false
 
@@ -42,30 +43,30 @@ function battery.wakeup()
             rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
 
-            rfsuite.utils.log("Capacity: " .. batteryCapacity .. "mAh", "info")
-            rfsuite.utils.log("Cell Count: " .. batteryCellCount, "info")
-            rfsuite.utils.log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "info")
-            rfsuite.utils.log("Min Voltage: " .. vbatmincellvoltage .. "V", "info")
-            rfsuite.utils.log("Max Voltage: " .. vbatmaxcellvoltage .. "V", "info")
-            rfsuite.utils.log("Full Cell Voltage: " .. vbatfullcellvoltage .. "V", "info")
-            rfsuite.utils.log("LVC Percentage: " .. lvcPercentage .. "%", "info")
-            rfsuite.utils.log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%", "info")
-            rfsuite.utils.log("Battery Config Complete", "info")
+            log("Capacity: " .. batteryCapacity .. "mAh", "info")
+            log("Cell Count: " .. batteryCellCount, "info")
+            log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "info")
+            log("Min Voltage: " .. vbatmincellvoltage .. "V", "info")
+            log("Max Voltage: " .. vbatmaxcellvoltage .. "V", "info")
+            log("Full Cell Voltage: " .. vbatfullcellvoltage .. "V", "info")
+            log("LVC Percentage: " .. lvcPercentage .. "%", "info")
+            log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%", "info")
+            log("Battery Config Complete", "info")
 
-            rfsuite.utils.log("Capacity: " .. batteryCapacity .. "mAh", "connect")
-            rfsuite.utils.log("Cell Count: " .. batteryCellCount, "connect")
-            rfsuite.utils.log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "connect")
-            rfsuite.utils.log("Min Voltage: " .. vbatmincellvoltage .. "V", "connect")
-            rfsuite.utils.log("Max Voltage: " .. vbatmaxcellvoltage .. "V", "connect")
-            rfsuite.utils.log("Full Cell Voltage: " .. vbatfullcellvoltage .. "V", "connect")
-            rfsuite.utils.log("LVC Percentage: " .. lvcPercentage .. "%", "connect")
-            rfsuite.utils.log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%", "connect")
+            log("Capacity: " .. batteryCapacity .. "mAh", "connect")
+            log("Cell Count: " .. batteryCellCount, "connect")
+            log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "connect")
+            log("Min Voltage: " .. vbatmincellvoltage .. "V", "connect")
+            log("Max Voltage: " .. vbatmaxcellvoltage .. "V", "connect")
+            log("Full Cell Voltage: " .. vbatfullcellvoltage .. "V", "connect")
+            log("LVC Percentage: " .. lvcPercentage .. "%", "connect")
+            log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%", "connect")
             
 
         end)
 
         API.setErrorHandler(function(self, err)
-            rfsuite.utils.log("Failed to read battery config via MSP: " .. err, "info")
+            log("Failed to read battery config via MSP: " .. err, "info")
             mspCallMade = false
         end)
 

@@ -13,13 +13,20 @@ local MSP_REBUILD_ON_WRITE = true
 local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
 local MSP_MIN_BYTES = 1
 
-local MSP_API_STRUCTURE_WRITE = nil
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
+
+local os_clock = os.clock
+local tostring = tostring
+local ipairs = ipairs
+local table_insert = table.insert
+local string_format = string.format
+local tonumber = tonumber
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
@@ -41,7 +48,7 @@ local function generateMSPStructureRead(servoCount)
         {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
     }
 
-    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table.insert(MSP_API_STRUCTURE, {field = string.format("servo_%d_%s", i, field.field), type = field.type, apiVersion = 12.07}) end end
+    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table_insert(MSP_API_STRUCTURE, {field = string_format("servo_%d_%s", i, field.field), type = field.type, apiVersion = 12.07}) end end
 
     return MSP_API_STRUCTURE
 end
@@ -115,24 +122,14 @@ local function errorHandlerStatic(self, buf)
 end
 
 local function read()
-    if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-        return
-    end
-
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
-    if MSP_API_CMD_WRITE == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
-        return
-    end
-
     local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
+    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
     lastWriteUUID = uuid
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
@@ -141,13 +138,13 @@ local function write(suppliedPayload)
 end
 
 local function readValue(fieldName)
-    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
+    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
     return nil
 end
 
 local function setValue(fieldName, value) payloadData[fieldName] = value end
 
-local function readComplete() return mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES end
+local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
 
 local function writeComplete() return mspWriteComplete end
 
