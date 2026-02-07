@@ -338,6 +338,10 @@ function MspQueueController:processQueue()
     if cmd then self.lastTimeCommandSent = nil end -- allow next send
 
     -- Success paths (or special-case shortcuts)
+    if not self.currentMessage then
+        return
+    end
+
     if (cmd == self.currentMessage.command and not err)
         or (self.currentMessage.command == 68 and self.retryCount == 2)
         or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
