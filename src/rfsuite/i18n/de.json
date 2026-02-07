@@ -6262,9 +6262,9 @@
           "translation": "Protokolliere MSP-Daten"
         },
         "txt_mspstatusdialog": {
-          "english": "MSP Debug in Dialog",
+          "english": "MSP Activity Display",
           "needs_translation": false,
-          "translation": "MSP-Debug im Dialog"
+          "translation": "MSP Activity Display"
         },
         "txt_objectprofiler": {
           "english": "Log dashboard speed",
@@ -6300,6 +6300,11 @@
           "english": "Confirm on reload",
           "needs_translation": false,
           "translation": "Bestätigen beim Neuladen"
+        },
+        "txt_save_armed_warning": {
+          "english": "Show disarm-to-save warning",
+          "needs_translation": false,
+          "translation": "Warnung 'Bitte disarmen zum Speichern' anzeigen"
         },
         "txt_save_confirm": {
           "english": "Confirm on save",

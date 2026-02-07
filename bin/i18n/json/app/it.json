@@ -410,6 +410,11 @@
         "translation": "Confirm on save",
         "needs_translation": true
       },
+      "txt_save_armed_warning": {
+        "english": "Show disarm-to-save warning",
+        "translation": "Show disarm-to-save warning",
+        "needs_translation": true
+      },
       "txt_reload_confirm": {
         "english": "Confirm on reload",
         "translation": "Confirm on reload",
