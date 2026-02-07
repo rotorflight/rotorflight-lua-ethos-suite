@@ -74,7 +74,10 @@ local function resolveModelImage(cfg)
 
     if model and model.bitmap then
         local bm = model.bitmap()
-        if bm and type(bm) == "string" and not string.find(bm, "default_") then return bm end
+        if bm and type(bm) == "string" and bm ~= "" and not string.find(bm, "default_") then
+            local loaded = loadImage(bm)
+            if loaded then return loaded end
+        end
     end
 
     local paramImage = getParam(cfg.box, "image")
@@ -134,6 +137,7 @@ function render.wakeup(box)
 
     local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
     if cfg._lastCraftName ~= craftName then
+        print("Craft name changed. Updating image. New craft name: ", craftName)
         cfg.image = resolveModelImage(cfg)
         cfg._lastCraftName = craftName
     end
