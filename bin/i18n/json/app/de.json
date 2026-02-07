@@ -3835,15 +3835,10 @@
         "translation": "PWM-Ausgang",
         "needs_translation": false
       },
-      "fbus": {
-        "english": "FBUS Output",
-        "translation": "FBUS-Ausgang",
-        "needs_translation": false
-      },
-      "sbus": {
-        "english": "SBUS Output",
-        "translation": "SBUS-Ausgang",
-        "needs_translation": false
+      "bus": {
+        "english": "BUS Output",
+        "translation": "BUS Output",
+        "needs_translation": true
       },
       "tbl_yes": {
         "english": "YES",

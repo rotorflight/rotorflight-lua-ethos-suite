@@ -5629,6 +5629,11 @@
         }
       },
       "servos": {
+        "bus": {
+          "english": "BUS Output",
+          "needs_translation": true,
+          "translation": "BUS Output"
+        },
         "center": {
           "english": "Center",
           "needs_translation": false,
@@ -5678,11 +5683,6 @@
           "english": "Enabling servo override...",
           "needs_translation": false,
           "translation": "Abilita servo override..."
-        },
-        "fbus": {
-          "english": "FBUS Output",
-          "needs_translation": true,
-          "translation": "FBUS Output"
         },
         "geometry": {
           "english": "Geometry",
@@ -5813,11 +5813,6 @@
           "english": "Saving data...",
           "needs_translation": false,
           "translation": "Salva dati..."
-        },
-        "sbus": {
-          "english": "SBUS Output",
-          "needs_translation": true,
-          "translation": "SBUS Output"
         },
         "scale_negative": {
           "english": "Scale Negative",

@@ -4,7 +4,6 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local lcd = lcd
 
 local servoTable = {}
 servoTable = {}
@@ -14,8 +13,7 @@ local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 
-local pwmServoCount 
-local busServoOffset = 18
+local busServoCount = 16    -- how many bus servos we display
 
 local function writeEeprom()
 
@@ -26,22 +24,8 @@ end
 
 local function buildServoTable()
 
-    -- calculate servo count based on bus enabled or not
-    if rfsuite.session.servoBusEnabled == nil or rfsuite.session.servoBusEnabled == false then
-        pwmServoCount = rfsuite.session.servoCount
-    else    
-        if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-            if system.getVersion().simulation == true then
-                pwmServoCount = rfsuite.session.servoCount
-            else
-                pwmServoCount = rfsuite.session.servoCount - busServoOffset
-            end
-        else
-            pwmServoCount = rfsuite.session.servoCount
-        end
-    end
 
-    for i = 1, pwmServoCount do
+    for i = 1, busServoCount do
         servoTable[i] = {}
         servoTable[i] = {}
         servoTable[i]['title'] = "@i18n(app.modules.servos.servo_prefix)@" .. i
@@ -49,7 +33,7 @@ local function buildServoTable()
         servoTable[i]['disabled'] = true
     end
 
-    for i = 1, pwmServoCount do
+    for i = 1, busServoCount do
 
         servoTable[i]['disabled'] = false
 
@@ -182,11 +166,11 @@ local function openPage(pidx, title, script)
     local bx = 0
     local y = 0
 
-    if rfsuite.app.gfx_buttons["pwm"] == nil then rfsuite.app.gfx_buttons["pwm"] = {} end
-    if rfsuite.preferences.menulastselected["pwm"] == nil then rfsuite.preferences.menulastselected["pwm"] = 1 end
+    if rfsuite.app.gfx_buttons["bus"] == nil then rfsuite.app.gfx_buttons["bus"] = {} end
+    if rfsuite.preferences.menulastselected["bus"] == nil then rfsuite.preferences.menulastselected["bus"] = 1 end
 
-    if rfsuite.app.gfx_buttons["pwm"] == nil then rfsuite.app.gfx_buttons["pwm"] = {} end
-    if rfsuite.preferences.menulastselected["pwm"] == nil then rfsuite.preferences.menulastselected["pwm"] = 1 end
+    if rfsuite.app.gfx_buttons["bus"] == nil then rfsuite.app.gfx_buttons["bus"] = {} end
+    if rfsuite.preferences.menulastselected["bus"] == nil then rfsuite.preferences.menulastselected["bus"] = 1 end
 
     for pidx, pvalue in ipairs(servoTable) do
 
@@ -216,26 +200,26 @@ local function openPage(pidx, title, script)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["pwm"][pidx] == nil then rfsuite.app.gfx_buttons["pwm"][pidx] = lcd.loadMask("app/modules/servos/gfx/" .. pvalue.image) end
+                if rfsuite.app.gfx_buttons["bus"][pidx] == nil then rfsuite.app.gfx_buttons["bus"][pidx] = lcd.loadMask("app/modules/servos/gfx/" .. pvalue.image) end
             else
-                rfsuite.app.gfx_buttons["pwm"][pidx] = nil
+                rfsuite.app.gfx_buttons["bus"][pidx] = nil
             end
 
             rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                 text = pvalue.title,
-                icon = rfsuite.app.gfx_buttons["pwm"][pidx],
+                icon = rfsuite.app.gfx_buttons["bus"][pidx],
                 options = FONT_S,
                 paint = function() end,
                 press = function()
-                    rfsuite.preferences.menulastselected["pwm"] = pidx
+                    rfsuite.preferences.menulastselected["bus"] = pidx
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
 
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/pwm_tool.lua", servoTable)
+                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/bus_tool.lua", servoTable)
                 end
             })
 
-            if rfsuite.preferences.menulastselected["pwm"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.preferences.menulastselected["bus"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
             lc = lc + 1
 
