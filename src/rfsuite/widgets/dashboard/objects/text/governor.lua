@@ -39,6 +39,10 @@ thresholds = {
 
 local rfsuite = require("rfsuite")
 
+local gmatch = string.gmatch
+local rep = string.rep
+local clock = os.clock
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -47,7 +51,7 @@ local resolveThemeColor = utils.resolveThemeColor
 
 local function splitCSV(str)
     local t = {}
-    for part in string.gmatch(str, "([^,]+)") do
+    for part in gmatch(str, "([^,]+)") do
         t[#t + 1] = part:gsub("^%s*(.-)%s*$", "%1") -- trim
     end
     return t
@@ -113,7 +117,7 @@ function render.wakeup(box)
     if raw == nil then
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
 
         -- reset CSV state
@@ -129,12 +133,12 @@ function render.wakeup(box)
             box._csvRaw = displayValue
             box._csvParts = splitCSV(displayValue)
             box._csvIndex = 1
-            box._csvLastTick = os.clock()
+            box._csvLastTick = clock()
         end
 
         -- Rotate every 1s
         if box._csvParts and #box._csvParts > 0 then
-            local now = os.clock()
+            local now = clock()
             if now - (box._csvLastTick or 0) >= 1.5 then  -- 1.5 seconds per value
                 box._csvIndex = (box._csvIndex % #box._csvParts) + 1
                 box._csvLastTick = now

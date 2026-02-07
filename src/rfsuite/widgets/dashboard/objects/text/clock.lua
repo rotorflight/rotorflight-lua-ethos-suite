@@ -30,6 +30,8 @@
 
 local rfsuite = require("rfsuite")
 
+local format = string.format
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -90,7 +92,7 @@ function render.wakeup(box)
 
     local now = os.time()
     local t = os.date("*t", now)
-    local displayValue = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
+    local displayValue = format("%02d:%02d:%02d", t.hour, t.min, t.sec)
 
     box._currentDisplayValue = displayValue
 end

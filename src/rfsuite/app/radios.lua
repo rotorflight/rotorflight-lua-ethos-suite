@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local LCD_W, LCD_H = lcd.getWindowSize()
 local resolution = LCD_W .. "x" .. LCD_H

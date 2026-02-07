@@ -49,6 +49,13 @@ needle styling
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+local rep = string.rep
+local ipairs = ipairs
 
 local render = {}
 
@@ -134,7 +141,7 @@ function render.wakeup(box)
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end
@@ -250,8 +257,8 @@ function render.paint(x, y, w, h, box)
             labelRadius = radius + thickness / 2 + c.bandlabeloffset
         end
 
-        local tx = cx + labelRadius * math.cos(math.rad(midAngle))
-        local ty = cy - labelRadius * math.sin(math.rad(midAngle))
+        local tx = cx + labelRadius * cos(rad(midAngle))
+        local ty = cy - labelRadius * sin(rad(midAngle))
         ty = ty + 12
 
         local label = c.bandlabels[i]

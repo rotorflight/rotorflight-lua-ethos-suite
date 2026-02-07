@@ -35,6 +35,9 @@
 
 local rfsuite = require("rfsuite")
 
+local format = string.format
+local rep = string.rep
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -161,13 +164,13 @@ function render.wakeup(box)
 
         local transformedUsed = utils.transformValue(usedMB, box)
         local transformedTotal = utils.transformValue(totalMB, box)
-        displayValue = string.format("%." .. cfg.decimals .. "f/%." .. cfg.decimals .. "f %s", transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
+        displayValue = format("%." .. cfg.decimals .. "f/%." .. cfg.decimals .. "f %s", transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
     else
         if totalSize == nil and usedSize == nil then
 
             local maxDots = 3
             box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-            displayValue = string.rep(".", box._dotCount)
+            displayValue = rep(".", box._dotCount)
             if displayValue == "" then displayValue = "." end
         else
             displayValue = cfg.novalue

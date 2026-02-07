@@ -49,6 +49,10 @@ Bar padding parameters
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local floor = math.floor
+local rep = string.rep
 
 local render = {}
 
@@ -112,7 +116,7 @@ function render.wakeup(box)
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end
@@ -209,14 +213,14 @@ function render.paint(x, y, w, h, box)
     local barH = h - title_area_top - title_area_bottom - barpaddingtop - barpaddingbottom
 
     local reqSteps = c.stepcount or 4
-    local maxFitSteps = math.max(2, math.floor((barW + stepGap) / (minStepW + stepGap)))
+    local maxFitSteps = math.max(2, floor((barW + stepGap) / (minStepW + stepGap)))
     local steps = math.min(reqSteps, maxFitSteps)
     local stepW = (barW - (steps - 1) * stepGap) / steps
     local maxStepH = math.max(minStepH, barH)
-    local activeSteps = math.floor((c.percent or 0) * steps + 0.5)
+    local activeSteps = floor((c.percent or 0) * steps + 0.5)
 
     for i = 1, steps do
-        local stepH = math.floor((maxStepH / steps) * i)
+        local stepH = floor((maxStepH / steps) * i)
         local stepY = barY + maxStepH - stepH
         local stepX = barX + (i - 1) * (stepW + stepGap)
         lcd.color(i <= activeSteps and c.fillcolor or c.fillbgcolor)

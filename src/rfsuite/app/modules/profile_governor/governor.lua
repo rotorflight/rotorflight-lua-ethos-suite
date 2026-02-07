@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local S_PAGES = {
     [1] = { name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png" },
