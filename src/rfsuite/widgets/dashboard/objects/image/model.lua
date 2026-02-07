@@ -137,7 +137,6 @@ function render.wakeup(box)
 
     local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
     if cfg._lastCraftName ~= craftName then
-        print("Craft name changed. Updating image. New craft name: ", craftName)
         cfg.image = resolveModelImage(cfg)
         cfg._lastCraftName = craftName
     end
