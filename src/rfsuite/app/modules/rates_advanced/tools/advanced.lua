@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local activateWakeup = false
 local extraMsgOnSave = nil

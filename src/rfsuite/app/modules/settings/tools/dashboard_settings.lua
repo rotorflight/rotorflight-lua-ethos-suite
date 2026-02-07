@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
+local lcd = lcd
 
 local enableWakeup = false
 local prevConnectedState = nil
