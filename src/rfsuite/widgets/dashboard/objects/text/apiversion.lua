@@ -32,6 +32,9 @@
 
 local rfsuite = require("rfsuite")
 
+local rep = string.rep
+local tostring = tostring
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -95,7 +98,7 @@ function render.wakeup(box)
     if value == nil then
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     else
         displayValue = tostring(value)

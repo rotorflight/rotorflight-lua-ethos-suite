@@ -5,6 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
+local max = math.max
+local abs = math.abs
+local tonumber = tonumber
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -19,8 +23,8 @@ local function getUserVoltageOverride(which)
     if prefs and prefs["system/@rt-rc"] then
         local v = tonumber(prefs["system/@rt-rc"][which])
 
-        if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
-        if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+        if which == "v_min" and v and abs(v - 18.0) > 0.05 then return v end
+        if which == "v_max" and v and abs(v - 25.2) > 0.05 then return v end
     end
     return nil
 end
@@ -170,7 +174,7 @@ local function buildBoxes(W)
                 local cfg = rfsuite.session.batteryConfig
                 local cells = (cfg and cfg.batteryCellCount) or 3
                 local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-                return math.max(0, cells * minV)
+                return max(0, cells * minV)
             end,
 
             max = function()
@@ -179,7 +183,7 @@ local function buildBoxes(W)
                 local cfg = rfsuite.session.batteryConfig
                 local cells = (cfg and cfg.batteryCellCount) or 3
                 local maxV = (cfg and cfg.vbatfullcellvoltage) or 4.2
-                return math.max(0, cells * maxV)
+                return max(0, cells * maxV)
             end,
 
             thresholds = {

@@ -5,6 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local pairs = pairs
+local tonumber = tonumber
+
 local config = {}
 
 local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 3000, bec_min = 3.0, bec_warn = 6.0, bec_max = 13.0, esctemp_warn = 90, esctemp_max = 140}
@@ -54,7 +58,7 @@ local function configure()
     local bec_min_line = bec_panel:addLine("@i18n(widgets.dashboard.min)@")
     formFields[#formFields + 1] = form.addNumberField(bec_min_line, nil, 20, 150, function()
         local v = config.bec_min or THEME_DEFAULTS.bec_min
-        return math.floor((v * 10) + 0.5)
+        return floor((v * 10) + 0.5)
     end, function(val)
         local min_val = val / 10
         config.bec_min = clamp(min_val, 2, config.bec_max - 0.1)
@@ -65,7 +69,7 @@ local function configure()
     local bec_warn_line = bec_panel:addLine("@i18n(widgets.dashboard.warning)@")
     formFields[#formFields + 1] = form.addNumberField(bec_warn_line, nil, 20, 150, function()
         local v = config.bec_warn or THEME_DEFAULTS.bec_warn
-        return math.floor((v * 10) + 0.5)
+        return floor((v * 10) + 0.5)
     end, function(val)
         local warn_val = val / 10
         config.bec_warn = clamp(warn_val, config.bec_min + 0.1, config.bec_max - 0.1)
@@ -76,7 +80,7 @@ local function configure()
     local bec_max_line = bec_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(bec_max_line, nil, 20, 150, function()
         local v = config.bec_max or THEME_DEFAULTS.bec_max
-        return math.floor((v * 10) + 0.5)
+        return floor((v * 10) + 0.5)
     end, function(val)
         local max_val = val / 10
         config.bec_max = clamp(max_val, config.bec_min + 0.1, 15)

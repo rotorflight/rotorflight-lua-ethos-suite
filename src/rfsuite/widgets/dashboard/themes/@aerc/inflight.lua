@@ -5,6 +5,8 @@
 
 local rfsuite = require("rfsuite")
 
+local tonumber = tonumber
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()

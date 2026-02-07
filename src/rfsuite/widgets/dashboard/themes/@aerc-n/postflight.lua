@@ -5,6 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local max = math.max
+local tonumber = tonumber
+
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
@@ -14,8 +18,8 @@ local function maxVoltageToCellVoltage(value)
     local cells = 2
 
     if cells and value then
-        value = math.max(0, value / cells)
-        value = math.floor(value * 100 + 0.5) / 100
+        value = max(0, value / cells)
+        value = floor(value * 100 + 0.5) / 100
     end
 
     return value

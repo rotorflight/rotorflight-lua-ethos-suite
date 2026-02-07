@@ -30,6 +30,9 @@
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local format = string.format
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -102,9 +105,9 @@ function render.wakeup(box)
     local displayValue
 
     if type(value) == "number" and value > 0 then
-        local minutes = math.floor(value / 60)
-        local seconds = math.floor(value % 60)
-        displayValue = string.format("%02d:%02d", minutes, seconds)
+        local minutes = floor(value / 60)
+        local seconds = floor(value % 60)
+        displayValue = format("%02d:%02d", minutes, seconds)
     else
         displayValue = getParam(box, "novalue") or "00:00"
     end

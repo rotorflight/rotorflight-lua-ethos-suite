@@ -5,6 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local pairs = pairs
+local tonumber = tonumber
+
 local config = {}
 local THEME_DEFAULTS = {v_min = 18.0, v_max = 25.2}
 
@@ -35,7 +39,7 @@ local function configure()
     local voltage_min_line = voltage_panel:addLine("@i18n(widgets.dashboard.min)@")
     formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 50, 650, function()
         local v = config.v_min or THEME_DEFAULTS.v_min
-        return math.floor((v * 10) + 0.5)
+        return floor((v * 10) + 0.5)
     end, function(val)
         local min_val = val / 10
         config.v_min = clamp(min_val, 5, config.v_max - 0.1)
@@ -46,7 +50,7 @@ local function configure()
     local voltage_max_line = voltage_panel:addLine("@i18n(widgets.dashboard.max)@")
     formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 50, 650, function()
         local v = config.v_max or THEME_DEFAULTS.v_max
-        return math.floor((v * 10) + 0.5)
+        return floor((v * 10) + 0.5)
     end, function(val)
         local max_val = val / 10
         config.v_max = clamp(max_val, config.v_min + 0.1, 65)
