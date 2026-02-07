@@ -111,19 +111,8 @@ end
 
 local function updatePowercycleLoaderMessage()
     if not powercycleLoader or not powercycleLoaderBaseMessage then return end
-    local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
-    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if showMsp then
-        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
-        if msg ~= powercycleLoaderMspStatusLast then
-            powercycleLoader:message(msg)
-            powercycleLoaderMspStatusLast = msg
-        end
-    else
-        if powercycleLoaderMspStatusLast ~= nil then
-            powercycleLoader:message(powercycleLoaderBaseMessage)
-            powercycleLoaderMspStatusLast = nil
-        end
+    if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.updateProgressDialogMessage then
+        rfsuite.app.ui.updateProgressDialogMessage()
     end
 end
 

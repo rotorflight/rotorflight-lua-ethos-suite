@@ -7,6 +7,7 @@ local rfsuite = require("rfsuite")
 
 local arg = {...}
 local config = arg[1]
+local os_clock = os.clock
 
 local sensors = {}
 local loadedSensorModule = nil
@@ -68,7 +69,7 @@ function sensors.wakeup()
     schedulerTick = schedulerTick + 1
 
     if rfsuite.session.resetSensors and not delayPending then
-        delayStartTime = os.clock()
+        delayStartTime = os_clock()
         delayPending = true
         rfsuite.session.resetSensors = false
 
@@ -77,7 +78,7 @@ function sensors.wakeup()
     end
 
     if delayPending then
-        if os.clock() - delayStartTime >= delayDuration then
+        if os_clock() - delayStartTime >= delayDuration then
             log("Delay complete; resuming sensor wakeup", "info")
             delayPending = false
         else

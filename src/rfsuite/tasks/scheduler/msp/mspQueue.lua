@@ -433,6 +433,11 @@ function MspQueueController:add(message)
         if LOG_ENABLED_MSP() then utils.log("Unable to queue - nil message.", "debug") end
         return
     end
+    -- Reset per-transfer timeout stats when starting a fresh queue.
+    local session = rfsuite.session
+    if session and self.currentMessage == nil and self:queueCount() == 0 then
+        session.mspTimeouts = 0
+    end
     -- allow apiname to distinguish otherwise identical MSP calls
     local key = message.uuid
     if message.apiname then

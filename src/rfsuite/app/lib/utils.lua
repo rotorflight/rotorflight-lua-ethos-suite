@@ -173,7 +173,10 @@ function utils.settingsSaved()
                 app.utils.invalidatePages()
             end
         end,
-        errorHandler = function(self) app.triggers.closeSave = true end,
+        errorHandler = function(self) 
+            app.triggers.closeSave = true 
+            app.triggers.showSaveArmedWarning = true
+        end,
         simulatorResponse = {}
     }
 
