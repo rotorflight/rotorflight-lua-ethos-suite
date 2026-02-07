@@ -45,6 +45,12 @@ dial image & needle styling
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local format = string.format
+local rep = string.rep
+local tostring = tostring
+local tonumber = tonumber
 
 local render = {}
 
@@ -70,10 +76,10 @@ end
 local function resolveDialAsset(value, basePath)
     if type(value) == "function" then value = value() end
     if type(value) == "number" then
-        return string.format("%s/%d.png", basePath, value)
+        return format("%s/%d.png", basePath, value)
     elseif type(value) == "string" then
         if value:match("^%d+$") then
-            return string.format("%s/%s.png", basePath, value)
+            return format("%s/%s.png", basePath, value)
         else
             return value
         end
@@ -139,7 +145,7 @@ function render.wakeup(box)
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end

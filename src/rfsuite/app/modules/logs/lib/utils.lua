@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local system = system
 
 local utils = {}
 

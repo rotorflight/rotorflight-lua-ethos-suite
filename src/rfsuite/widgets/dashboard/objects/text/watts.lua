@@ -22,6 +22,10 @@
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local rep = string.rep
+local tostring = tostring
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -86,7 +90,7 @@ end
 local function nextDots(box)
     local maxDots = 3
     box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-    local s = string.rep(".", box._dotCount)
+    local s = rep(".", box._dotCount)
     if s == "" then s = "." end
     return s
 end
@@ -133,9 +137,9 @@ function render.wakeup(box)
     local unit = cfg.manualUnit
 
     if type(value) == "number" then
-        displayValue = tostring(math.floor(value))
+        displayValue = tostring(floor(value))
     elseif box._lastValidValue ~= nil then
-        displayValue = tostring(math.floor(box._lastValidValue))
+        displayValue = tostring(floor(box._lastValidValue))
         unit = box._lastValidUnit
     else
         displayValue = nextDots(box)

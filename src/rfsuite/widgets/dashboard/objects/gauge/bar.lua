@@ -82,6 +82,16 @@ Subtext
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+
+local floor = math.floor
+local ceil = math.ceil
+local min = math.min
+local max = math.max
+local format = string.format
+local rep = string.rep
+local tonumber = tonumber
 
 local render = {}
 
@@ -107,10 +117,10 @@ function render.dirty(box)
 end
 
 local function drawFilledRoundedRectangle(x, y, w, h, r)
-    x = math.floor(x + 0.5)
-    y = math.floor(y + 0.5)
-    w = math.floor(w + 0.5)
-    h = math.floor(h + 0.5)
+    x = floor(x + 0.5)
+    y = floor(y + 0.5)
+    w = floor(w + 0.5)
+    h = floor(h + 0.5)
     r = r or 0
     if r > 0 then
         lcd.drawFilledRectangle(x + r, y, w - 2 * r, h)
@@ -134,12 +144,12 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
     if gaugeorientation == "vertical" then
         local capH = 0
         if batteryframe then
-            local maxCapH = math.floor(h * 0.5)
-            capH = math.min(math.max(8, math.floor(h * 0.10)), maxCapH)
+            local maxCapH = floor(h * 0.5)
+            capH = min(max(8, floor(h * 0.10)), maxCapH)
 
             lcd.color(accentcolor)
-            local capW = math.min(math.max(4, math.floor(w * 0.40)), w)
-            local capX = x + math.floor((w - capW) / 2 + 0.5) + (cappaddingleft or 0)
+            local capW = min(max(4, floor(w * 0.40)), w)
+            local capX = x + floor((w - capW) / 2 + 0.5) + (cappaddingleft or 0)
             local capY = y + (cappaddingtop or 0)
             local capWFinal = capW - (cappaddingleft or 0) - (cappaddingright or 0)
             local capHFinal = capH - (cappaddingtop or 0) - (cappaddingbottom or 0)
@@ -149,8 +159,8 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
         local bodyH = h - capH
 
         if battery then
-            local segCount = math.max(1, segments)
-            local fillSegs = math.floor(segCount * percent + 0.5)
+            local segCount = max(1, segments)
+            local fillSegs = floor(segCount * percent + 0.5)
             local totalSpacing = (segCount - 1) * spacing
             local segH = (bodyH - totalSpacing) / segCount
             for i = 1, segCount do
@@ -163,7 +173,7 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
             lcd.drawFilledRectangle(x, bodyY, w, bodyH)
             if percent > 0 then
                 lcd.color(fillcolor)
-                local fillH = math.floor(bodyH * percent)
+                local fillH = floor(bodyH * percent)
                 local fillY = bodyY + bodyH - fillH
                 lcd.drawFilledRectangle(x, fillY, w, fillH)
             end
@@ -176,13 +186,13 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
 
     else
 
-        local maxCapW = math.floor(w * 0.5)
-        local capOffset = math.min(math.max(8, math.floor(w * 0.03)), maxCapW)
+        local maxCapW = floor(w * 0.5)
+        local capOffset = min(max(8, floor(w * 0.03)), maxCapW)
         local bodyW = w - capOffset
 
         if battery then
-            local segCount = math.max(1, segments)
-            local fillSegs = math.floor(segCount * percent + 0.5)
+            local segCount = max(1, segments)
+            local fillSegs = floor(segCount * percent + 0.5)
             local totalSpacing = (segCount - 1) * spacing
             local segW = (bodyW - totalSpacing) / segCount
             local segPadT = batterysegmentpaddingtop or 0
@@ -203,7 +213,7 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
             lcd.drawFilledRectangle(x, y, bodyW, h)
             if percent > 0 then
                 lcd.color(fillcolor)
-                local fillW = math.floor(bodyW * percent)
+                local fillW = floor(bodyW * percent)
                 lcd.drawFilledRectangle(x, y, fillW, h)
             end
         end
@@ -212,10 +222,10 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
             lcd.color(accentcolor)
             lcd.drawRectangle(x, y, bodyW, h, frameThickness)
             local capW = capOffset
-            local capH = math.min(math.max(4, math.floor(h * 0.33)), h)
+            local capH = min(max(4, floor(h * 0.33)), h)
 
             local capX = x + bodyW + (cappaddingleft or 0)
-            local capY = y + math.floor((h - capH) / 2 + 0.5) + (cappaddingtop or 0)
+            local capY = y + floor((h - capH) / 2 + 0.5) + (cappaddingtop or 0)
             local capWFinal = capW - (cappaddingleft or 0) - (cappaddingright or 0)
             local capHFinal = capH - (cappaddingtop or 0) - (cappaddingbottom or 0)
             for i = 0, frameThickness - 1 do lcd.drawFilledRectangle(capX + i, capY + i, capWFinal, capHFinal - 2 * i) end
@@ -225,15 +235,15 @@ end
 
 local function compileTransform(t, decimals)
     local pow = decimals and (10 ^ decimals) or nil
-    local function round(v) return pow and (math.floor(v * pow + 0.5) / pow) or v end
+    local function round(v) return pow and (floor(v * pow + 0.5) / pow) or v end
 
     if type(t) == "number" then
         local mul = t
         return function(v) return round(v * mul) end
     elseif t == "floor" then
-        return function(v) return math.floor(v) end
+        return function(v) return floor(v) end
     elseif t == "ceil" then
-        return function(v) return math.ceil(v) end
+        return function(v) return ceil(v) end
     elseif t == "round" or t == nil then
         return function(v) return round(v) end
     elseif type(t) == "function" then
@@ -365,33 +375,33 @@ function render.wakeup(box)
 
     if cfg.hidevalue == true then displayValue = nil end
 
-    local min, max
+    local vmin, vmax
     if source == "txbatt" then
-        min = getParam(box, "min") or 7.2
-        max = getParam(box, "max") or 8.4
+        vmin = getParam(box, "min") or 7.2
+        vmax = getParam(box, "max") or 8.4
     else
-        min = getParam(box, "min") or 0
-        max = getParam(box, "max") or 100
+        vmin = getParam(box, "min") or 0
+        vmax = getParam(box, "max") or 100
     end
 
     local percent = 0
-    if value and max ~= min then
-        percent = (value - min) / (max - min)
-        percent = math.max(0, math.min(1, percent))
+    if value and vmax ~= vmin then
+        percent = (value - vmin) / (vmax - vmin)
+        percent = max(0, min(1, percent))
     end
 
     if value == nil then
         local maxDots = 3
         if c._dotCount == nil then c._dotCount = 0 end
         c._dotCount = (c._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", c._dotCount)
+        displayValue = rep(".", c._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end
 
     local battadv = cfg.battadv
     if battadv then
-        box._batteryLines = {line1 = string.format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount), line2 = string.format("%d mah", consumed)}
+        box._batteryLines = {line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount), line2 = format("%d mah", consumed)}
     else
         box._batteryLines = nil
     end
@@ -403,8 +413,8 @@ function render.wakeup(box)
     c.value = value
     c.displayValue = displayValue
     c.unit = unit
-    c.min = min
-    c.max = max
+    c.min = vmin
+    c.max = vmax
     c.percent = percent
     c.voltage = voltage
     c.cellCount = cellCount
@@ -531,13 +541,13 @@ function render.paint(x, y, w, h, box)
         if not c.battstats and (tonumber(c.percent) or 0) > 0 then
             lcd.color(c.fillcolor)
             if c.gaugeorientation == "vertical" then
-                local fillH = math.floor(gauge_h * c.percent)
+                local fillH = floor(gauge_h * c.percent)
                 local fillY = gauge_y + gauge_h - fillH
                 lcd.setClipping(gauge_x, fillY, gauge_w, fillH)
                 drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
                 lcd.setClipping()
             else
-                local fillW = math.floor(gauge_w * c.percent)
+                local fillW = floor(gauge_w * c.percent)
                 if fillW > 0 then
                     lcd.setClipping(gauge_x, gauge_y, fillW, gauge_h)
                     drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
@@ -556,7 +566,7 @@ function render.paint(x, y, w, h, box)
         if c.subtextalign == "right" then
             sx = gauge_x + gauge_w - textW - c.subtextpaddingright
         elseif c.subtextalign == "center" then
-            sx = gauge_x + math.floor((gauge_w - textW) / 2 + 0.5)
+            sx = gauge_x + floor((gauge_w - textW) / 2 + 0.5)
         else
             sx = gauge_x + c.subtextpaddingleft
         end
@@ -586,15 +596,15 @@ function render.paint(x, y, w, h, box)
         lcd.font(_G[c.battadvfont] or FONT_S)
         local w1, h1 = lcd.getTextSize(line1)
         local w2, h2 = lcd.getTextSize(line2)
-        local blockW = math.max(w1, w2) + c.battadvpaddingleft + c.battadvpaddingright
+        local blockW = max(w1, w2) + c.battadvpaddingleft + c.battadvpaddingright
         local blockH = h1 + h2 + c.battadvpaddingtop + c.battadvpaddingbottom + c.battadvgap
 
-        local startY = y + math.max(0, math.floor((h - blockH) / 2 + 0.5))
+        local startY = y + max(0, floor((h - blockH) / 2 + 0.5))
         local startX
         if c.battadvblockalign == "left" then
             startX = x
         elseif c.battadvblockalign == "center" then
-            startX = x + math.floor((w - blockW) / 2 + 0.5)
+            startX = x + floor((w - blockW) / 2 + 0.5)
         else
             startX = x + w - blockW
         end

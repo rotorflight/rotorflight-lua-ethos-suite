@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local S_PAGES = {
         [1] = { name = "@i18n(app.modules.power.battery_name)@", script = "battery.lua", image = "battery.png" },

@@ -26,6 +26,16 @@
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local floor = math.floor
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local format = string.format
+local ipairs = ipairs
+local tostring = tostring
 
 local render = {}
 local utils = rfsuite.widgets.dashboard.utils
@@ -35,8 +45,8 @@ local resolveThemeColor = utils.resolveThemeColor
 function render.invalidate(box) box._cfg = nil end
 
 local function rotate(px, py, cx, cy, angle)
-    local s = math.sin(angle)
-    local c = math.cos(angle)
+    local s = sin(angle)
+    local c = cos(angle)
     px, py = px - cx, py - cy
     local xnew = px * c - py * s
     local ynew = px * s + py * c
@@ -130,12 +140,12 @@ function render.paint(x, y, w, h, box)
     local xL, yL = rotate(cx - 3 * w, horizonY, cx, horizonY, rollRad)
     local xR, yR = rotate(cx + 3 * w, horizonY, cx, horizonY, rollRad)
 
-    local nx, ny = -math.sin(rollRad), math.cos(rollRad)
+    local nx, ny = -sin(rollRad), cos(rollRad)
 
     local overlayColor = (pitch >= 0) and groundColor or skyColor
     lcd.color(overlayColor)
 
-    local BIG = 4 * math.max(w, h)
+    local BIG = 4 * max(w, h)
     local sx, sy
     if pitch >= 0 then
         sx, sy = nx * BIG, ny * BIG
@@ -161,10 +171,10 @@ function render.paint(x, y, w, h, box)
         local arcR = w * 0.4
         for _, ang in ipairs({-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60}) do
             local rad = math.rad(ang)
-            local x1 = cx + arcR * math.sin(rad)
-            local y1 = y + 10 + arcR * (1 - math.cos(rad))
-            local x2 = cx + (arcR - 6) * math.sin(rad)
-            local y2 = y + 10 + (arcR - 6) * (1 - math.cos(rad))
+            local x1 = cx + arcR * sin(rad)
+            local y1 = y + 10 + arcR * (1 - cos(rad))
+            local x2 = cx + (arcR - 6) * sin(rad)
+            local y2 = y + 10 + (arcR - 6) * (1 - cos(rad))
             lcd.drawLine(x1, y1, x2, y2)
         end
         lcd.drawFilledTriangle(cx, y + 5, cx - 6, y + 15, cx + 6, y + 15)
@@ -194,7 +204,7 @@ function render.paint(x, y, w, h, box)
 
     if c.showcompass then
         lcd.color(c.compasscolor)
-        local heading = math.floor((yaw + 360) % 360)
+        local heading = floor((yaw + 360) % 360)
         local compassY = y + h - 24
         local labels = {[0] = "N", [45] = "NE", [90] = "E", [135] = "SE", [180] = "S", [225] = "SW", [270] = "W", [315] = "NW"}
         for ang = -90, 90, 10 do
@@ -215,7 +225,7 @@ function render.paint(x, y, w, h, box)
             lcd.drawFilledRectangle(bx, by, bw, bh)
             lcd.color(c.compasscolor);
             lcd.drawRectangle(bx, by, bw, bh)
-            lcd.drawText(cx, by + 1, string.format("%03d° %s", heading, labels[heading - (heading % 45)] or (heading .. "°")), CENTERED + FONT_XS)
+            lcd.drawText(cx, by + 1, format("%03d° %s", heading, labels[heading - (heading % 45)] or (heading .. "°")), CENTERED + FONT_XS)
         end
     end
 
@@ -224,12 +234,12 @@ function render.paint(x, y, w, h, box)
         local barX = x + w - 10
         local barY = y + 5
         local barH = h - 10
-        local fillH = math.floor((d.altitude - c.altitudemin) / (c.altitudemax - c.altitudemin) * barH)
-        fillH = math.max(0, math.min(barH, fillH))
+        local fillH = floor((d.altitude - c.altitudemin) / (c.altitudemax - c.altitudemin) * barH)
+        fillH = max(0, min(barH, fillH))
         lcd.drawRectangle(barX, barY, 6, barH)
         lcd.drawFilledRectangle(barX, barY + barH - fillH, 6, fillH)
         lcd.font(FONT_XS)
-        local label = string.format("%d m", math.floor(d.altitude))
+        local label = format("%d m", floor(d.altitude))
         lcd.drawText(barX - 4, barY + barH - fillH - 6, label, RIGHT)
     end
 
@@ -238,12 +248,12 @@ function render.paint(x, y, w, h, box)
         local barX = x + 4
         local barY = y + 5
         local barH = h - 10
-        local fillH = math.floor((d.groundspeed - c.groundspeedmin) / (c.groundspeedmax - c.groundspeedmin) * barH)
-        fillH = math.max(0, math.min(barH, fillH))
+        local fillH = floor((d.groundspeed - c.groundspeedmin) / (c.groundspeedmax - c.groundspeedmin) * barH)
+        fillH = max(0, min(barH, fillH))
         lcd.drawRectangle(barX, barY, 6, barH)
         lcd.drawFilledRectangle(barX, barY + barH - fillH, 6, fillH)
         lcd.font(FONT_XS)
-        local label = string.format("%d knots", math.floor(d.groundspeed))
+        local label = format("%d knots", floor(d.groundspeed))
         lcd.drawText(barX + 10, barY + barH - fillH - 6, label, LEFT)
     end
 

@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 local app = rfsuite.app
 local log = rfsuite.utils.log
+local lcd = lcd
 
 local S_PAGES = {
     {name = "@i18n(app.modules.rfstatus.name)@", script = "rfstatus.lua", image = "rfstatus.png", bgtask = false, offline = false}, {name = "@i18n(app.modules.msp_speed.name)@", script = "msp_speed.lua", image = "msp_speed.png", bgtask = true, offline = true}, {name = "@i18n(app.modules.validate_sensors.name)@", script = "sensors.lua", image = "sensors.png", bgtask = true, offline = true},

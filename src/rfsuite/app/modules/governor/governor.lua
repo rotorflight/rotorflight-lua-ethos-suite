@@ -4,6 +4,12 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local app = rfsuite.app
+local prefs = rfsuite.preferences
+local tasks = rfsuite.tasks
+local utils = rfsuite.utils
+local session = rfsuite.session
 
 local S_PAGES = {
     [1] = { name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png" },
@@ -18,29 +24,29 @@ local initTime = os.clock()
 
 local function openPage(pidx, title, script)
 
-    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    tasks.msp.protocol.mspIntervalOveride = nil
 
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
+    app.triggers.isReady = false
+    app.uiState = app.uiStatus.mainMenu
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    app.lastIdx = idx
+    app.lastTitle = title
+    app.lastScript = script
 
-    for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "governor" then rfsuite.app.gfx_buttons[i] = nil end end
+    for i in pairs(app.gfx_buttons) do if i ~= "governor" then app.gfx_buttons[i] = nil end end
 
-    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
-        rfsuite.preferences.general.iconsize = 1
+    if prefs.general.iconsize == nil or prefs.general.iconsize == "" then
+        prefs.general.iconsize = 1
     else
-        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
+        prefs.general.iconsize = tonumber(prefs.general.iconsize)
     end
 
     local w, h = lcd.getWindowSize()
     local windowWidth = w
     local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
+    local padding = app.radio.buttonPadding
 
     local sc
     local panel
@@ -48,38 +54,38 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.governor.name)@")
+    app.ui.fieldHeader("@i18n(app.modules.governor.name)@")
 
     local buttonW
     local buttonH
     local padding
     local numPerRow
 
-    if rfsuite.preferences.general.iconsize == 0 then
-        padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
-        buttonH = rfsuite.app.radio.navbuttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
+    if prefs.general.iconsize == 0 then
+        padding = app.radio.buttonPaddingSmall
+        buttonW = (app.lcdWidth - padding) / app.radio.buttonsPerRow - padding
+        buttonH = app.radio.navbuttonHeight
+        numPerRow = app.radio.buttonsPerRow
     end
 
-    if rfsuite.preferences.general.iconsize == 1 then
+    if prefs.general.iconsize == 1 then
 
-        padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = rfsuite.app.radio.buttonWidthSmall
-        buttonH = rfsuite.app.radio.buttonHeightSmall
-        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+        padding = app.radio.buttonPaddingSmall
+        buttonW = app.radio.buttonWidthSmall
+        buttonH = app.radio.buttonHeightSmall
+        numPerRow = app.radio.buttonsPerRowSmall
     end
 
-    if rfsuite.preferences.general.iconsize == 2 then
+    if prefs.general.iconsize == 2 then
 
-        padding = rfsuite.app.radio.buttonPadding
-        buttonW = rfsuite.app.radio.buttonWidth
-        buttonH = rfsuite.app.radio.buttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
+        padding = app.radio.buttonPadding
+        buttonW = app.radio.buttonWidth
+        buttonH = app.radio.buttonHeight
+        numPerRow = app.radio.buttonsPerRow
     end
 
-    if rfsuite.app.gfx_buttons["governor"] == nil then rfsuite.app.gfx_buttons["governor"] = {} end
-    if rfsuite.preferences.menulastselected["governor"] == nil then rfsuite.preferences.menulastselected["governor"] = 1 end
+    if app.gfx_buttons["governor"] == nil then app.gfx_buttons["governor"] = {} end
+    if prefs.menulastselected["governor"] == nil then prefs.menulastselected["governor"] = 1 end
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -90,38 +96,38 @@ local function openPage(pidx, title, script)
     for pidx, pvalue in ipairs(S_PAGES) do
 
         if lc == 0 then
-            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+            if prefs.general.iconsize == 0 then y = form.height() + app.radio.buttonPaddingSmall end
+            if prefs.general.iconsize == 1 then y = form.height() + app.radio.buttonPaddingSmall end
+            if prefs.general.iconsize == 2 then y = form.height() + app.radio.buttonPadding end
         end
 
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
-        if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["governor"][pidx] == nil then rfsuite.app.gfx_buttons["governor"][pidx] = lcd.loadMask("app/modules/governor/gfx/" .. pvalue.image) end
+        if prefs.general.iconsize ~= 0 then
+            if app.gfx_buttons["governor"][pidx] == nil then app.gfx_buttons["governor"][pidx] = lcd.loadMask("app/modules/governor/gfx/" .. pvalue.image) end
         else
-            rfsuite.app.gfx_buttons["governor"][pidx] = nil
+            app.gfx_buttons["governor"][pidx] = nil
         end
 
-        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+        app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.name,
-            icon = rfsuite.app.gfx_buttons["governor"][pidx],
+            icon = app.gfx_buttons["governor"][pidx],
             options = FONT_S,
             paint = function() end,
             press = function()
-                rfsuite.preferences.menulastselected["governor"] = pidx
-                rfsuite.app.ui.progressDisplay()
+                prefs.menulastselected["governor"] = pidx
+                app.ui.progressDisplay()
                 local name = "@i18n(app.modules.governor.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "governor/tools/" .. pvalue.script)
+                app.ui.openPage(pidx, name, "governor/tools/" .. pvalue.script)
             end
         })
 
         -- keep disabled until we know governor session vars exist
-        rfsuite.app.formFields[pidx]:enable(false)
+        app.formFields[pidx]:enable(false)
 
-        local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+        local currState = (session.isConnected and session.mcu_id) and true or false
 
-        if rfsuite.preferences.menulastselected["governor"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if prefs.menulastselected["governor"] == pidx then app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
@@ -136,14 +142,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+        app.ui.openMainMenuSub(app.lastMenu)
         return true
     end
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openMainMenuSub('hardware')
+    app.ui.progressDisplay()
+    app.ui.openMainMenuSub('hardware')
     return true
 end
 
@@ -152,38 +158,38 @@ local function wakeup()
 
     if os.clock() - initTime < 0.25 then return end
 
-    if rfsuite.session.governorMode == nil then
-        if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
-            rfsuite.tasks.msp.helpers.governorMode(function(governorMode)
-                rfsuite.utils.log("Received governor mode: " .. tostring(governorMode), "info")
+    if session.governorMode == nil then
+        if tasks and tasks.msp and tasks.msp.helpers then
+            tasks.msp.helpers.governorMode(function(governorMode)
+                utils.log("Received governor mode: " .. tostring(governorMode), "info")
             end)
         end
     end
 
 
     -- enable the buttons once we have servo info
-    if rfsuite.session.governorMode ~= nil then
-        for i, v in pairs(rfsuite.app.formFields) do
+    if session.governorMode ~= nil then
+        for i, v in pairs(app.formFields) do
             if v.enable then
                 v:enable(true)
             end    
         end
         -- close progress loader
-        rfsuite.app.triggers.closeProgressLoader = true
+        app.triggers.closeProgressLoader = true
     end
 
-    local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+    local currState = (session.isConnected and session.mcu_id) and true or false
 
     if currState ~= prevConnectedState then
 
-        rfsuite.app.formFields[2]:enable(currState)
+        app.formFields[2]:enable(currState)
 
-        if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
+        if not currState then app.formNavigationFields['menu']:focus() end
 
         prevConnectedState = currState
     end
 end
 
-rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+app.uiState = app.uiStatus.pages
 
 return {pages = pages, openPage = openPage, onNavMenu = onNavMenu, event = event, wakeup = wakeup, API = {}, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}}

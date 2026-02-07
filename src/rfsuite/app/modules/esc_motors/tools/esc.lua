@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
 
 local function findMFG()
     local mfgsList = {}
