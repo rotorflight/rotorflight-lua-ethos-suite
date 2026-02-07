@@ -51,6 +51,7 @@ Background
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local min = math.min
 local max = math.max

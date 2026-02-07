@@ -82,6 +82,8 @@ Subtext
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
 
 local floor = math.floor
 local ceil = math.ceil

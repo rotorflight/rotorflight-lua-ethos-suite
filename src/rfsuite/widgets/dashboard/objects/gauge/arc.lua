@@ -54,6 +54,7 @@ Arc Geometry/Advanced
 ]]--
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local floor = math.floor
 local ceil = math.ceil

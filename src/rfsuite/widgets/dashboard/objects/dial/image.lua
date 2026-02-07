@@ -45,6 +45,7 @@ dial image & needle styling
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local format = string.format
 local rep = string.rep

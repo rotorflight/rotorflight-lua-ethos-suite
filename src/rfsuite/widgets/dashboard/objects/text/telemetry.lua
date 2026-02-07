@@ -35,6 +35,7 @@
 ]]
 
 local rfsuite = require("rfsuite")
+local system = system
 
 local floor = math.floor
 local ceil = math.ceil

@@ -55,6 +55,7 @@ Battery Ring Mode (Optional fuel-based battery style)
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local floor = math.floor
 local min = math.min

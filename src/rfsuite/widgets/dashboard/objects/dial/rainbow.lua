@@ -49,6 +49,7 @@ needle styling
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local sin = math.sin
 local cos = math.cos
