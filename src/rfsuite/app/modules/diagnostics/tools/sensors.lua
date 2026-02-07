@@ -160,19 +160,8 @@ end
 
 local function updateProgressLoaderMessage()
     if not progressLoader or not progressLoaderBaseMessage then return end
-    local showMsp = prefs and prefs.general and prefs.general.mspstatusdialog
-    local mspStatus = (showMsp and session and session.mspStatusMessage) or nil
-    if showMsp then
-        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
-        if msg ~= progressLoaderMspStatusLast then
-            progressLoader:message(msg)
-            progressLoaderMspStatusLast = msg
-        end
-    else
-        if progressLoaderMspStatusLast ~= nil then
-            progressLoader:message(progressLoaderBaseMessage)
-            progressLoaderMspStatusLast = nil
-        end
+    if app and app.ui and app.ui.updateProgressDialogMessage then
+        app.ui.updateProgressDialogMessage()
     end
 end
 

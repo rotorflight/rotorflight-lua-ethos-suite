@@ -22,15 +22,12 @@ local MSP_API_STRUCTURE_READ = {
 local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ
 
 local mspData = nil
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
-
-local lastWriteUUID = nil
-
-local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
 
 local function processReplyStaticRead(self, buf)
     core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
@@ -46,11 +43,6 @@ local function processReplyStaticRead(self, buf)
 end
 
 local function read()
-    if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-        return
-    end
-
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -58,14 +50,14 @@ end
 local function data() return mspData end
 
 local function readComplete()
-    if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then return true end
+    if mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES then return true end
     return false
 end
 
-local function readVersion() if mspData then return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100 end end
+local function readVersion() if mspData then return mspData.parsed.version_major + mspData.parsed.version_minor / 100 end end
 
 local function readValue(fieldName)
-    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
+    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
     return nil
 end
 

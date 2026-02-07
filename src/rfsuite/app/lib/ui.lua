@@ -46,8 +46,11 @@ local function getMspStatusExtras()
         if ok_rx and rx and rx ~= 0 then parts[#parts + 1] = "Receive " .. tostring(rx) end
     end
 
-    if q.retryCount and q.retryCount > 0 then
-        parts[#parts + 1] = "Retry " .. tostring(q.retryCount)
+    if q.retryCount ~= nil then
+        local retries = q.retryCount - 1
+        if retries > 0 then
+            parts[#parts + 1] = "Retry " .. tostring(retries)
+        end
     end
 
     local crc = session and session.mspCrcErrors
@@ -55,9 +58,11 @@ local function getMspStatusExtras()
         parts[#parts + 1] = "CRC " .. tostring(crc)
     end
 
-    local tout = session and session.mspTimeouts
-    if tout and tout > 0 then
-        parts[#parts + 1] = "Timeout " .. tostring(tout)
+    if session then
+        local tout = session.mspTimeouts or 0
+        if tout > 0 then
+            parts[#parts + 1] = "Timeout " .. tostring(tout)
+        end
     end
 
     if #parts == 0 then return nil end
@@ -160,6 +165,7 @@ function ui.progressDisplay(title, message, speed)
 
     local reachedTimeout = false
 
+    if session then session.mspTimeouts = 0 end
     app.dialogs.progressDisplay = true
     app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressBaseMessage = message
@@ -268,6 +274,7 @@ function ui.progressDisplaySave(message)
 
     local reachedTimeout = false
 
+    if session then session.mspTimeouts = 0 end
     app.dialogs.saveDisplay = true
     app.dialogs.saveWatchDog = osClock()
     app.dialogs.saveBaseMessage = nil

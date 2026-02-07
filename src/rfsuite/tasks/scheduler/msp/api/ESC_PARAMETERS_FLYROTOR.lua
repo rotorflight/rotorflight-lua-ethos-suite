@@ -67,6 +67,9 @@ local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
+local os_clock = os.clock
+local tostring = tostring
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
@@ -112,7 +115,7 @@ end
 
 local function read()
     if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
+        log("No value set for MSP_API_CMD_READ", "debug")
         return
     end
 
@@ -122,13 +125,13 @@ end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
+        log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
     local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
+    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
     lastWriteUUID = uuid
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}

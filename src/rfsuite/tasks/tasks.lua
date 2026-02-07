@@ -8,6 +8,25 @@ local rfsuite = require("rfsuite")
 local utils = rfsuite.utils
 local config = rfsuite.config
 
+local os_clock = os.clock
+local table_insert = table.insert
+local table_remove = table.remove
+local table_sort = table.sort
+local math_max = math.max
+local math_min = math.min
+local math_ceil = math.ceil
+local math_random = math.random
+local string_format = string.format
+local string_byte = string.byte
+local ipairs = ipairs
+local pairs = pairs
+local type = type
+local tostring = tostring
+local tonumber = tonumber
+local pcall = pcall
+local print = print
+local loadfile = loadfile
+
 -- Load event tables (no lazy loading)
 local events = {}
 
@@ -117,7 +136,7 @@ function tasks.setRateMultiplier(mult)
         -- Recompute scheduled interval from base + per-task jitter.
         task.interval = (base * mult) + j
     end
-    utils.log(string.format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
+    utils.log(string_format("[scheduler] Global rate multiplier set to %.3f", tasks.rateMultiplier), "info")
 end
 
 local function profRecord(task, dur)
@@ -126,13 +145,13 @@ local function profRecord(task, dur)
     task.duration = dur
     task.totalDuration = (task.totalDuration or 0) + dur
     task.runs = (task.runs or 0) + 1
-    task.maxDuration = math.max(task.maxDuration or 0, dur)
+    task.maxDuration = math_max(task.maxDuration or 0, dur)
 end
 
 function tasks.isTaskActive(name)
     for _, t in ipairs(tasksList) do
         if t.name == name then
-            local age = os.clock() - t.last_run
+            local age = os_clock() - t.last_run
             if name == "msp" then
                 return rfsuite.session.mspBusy
             elseif name == "callback" then
@@ -148,14 +167,14 @@ end
 local function taskOffset(name, interval)
     -- Hash + jitter to distribute initial task phases and avoid sync spikes.
     local hash = 0
-    for i = 1, #name do hash = (hash * 31 + name:byte(i)) % 100000 end
+    for i = 1, #name do hash = (hash * 31 + string_byte(name, i)) % 100000 end
     local base = (hash % (interval * 1000)) / 1000
-    local jitter = math.random() * interval
+    local jitter = math_random() * interval
     return (base + jitter) % interval
 end
 
 function tasks.dumpSchedule()
-    local now = os.clock()
+    local now = os_clock()
 
     -- Latch that we have/had a session attempt; used to allow a single teardown on telemetry-down
     if rfsuite.session.isConnected or connectAttemptStartedAt ~= nil or rfsuite.session.mspBusy then
@@ -165,7 +184,7 @@ function tasks.dumpSchedule()
     for _, t in ipairs(tasksList) do
         local next_run = t.last_run + t.interval
         local in_secs = next_run - now
-        utils.log(string.format("%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs", t.name, t.interval, t.last_run, in_secs), "info")
+        utils.log(string_format("%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs", t.name, t.interval, t.last_run, in_secs), "info")
     end
 
     utils.log("================================", "info")
@@ -225,7 +244,7 @@ end
 
 local function clearSessionAndQueue()
 
-    local now = os.clock()
+    local now = os_clock()
 
     -- Tear down session state, MSP queues, and reset per-connection edge caches.
     -- Reset edge caches
@@ -308,7 +327,7 @@ function tasks.telemetryCheckScheduler()
 
     if rfsuite.app and rfsuite.app.triggers and rfsuite.app.escPowerCycleLoader then return end
 
-    local now = os.clock()
+    local now = os_clock()
 
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
@@ -367,7 +386,7 @@ function tasks.telemetryCheckScheduler()
             if now >= (connectAttemptResetCooldownUntil or 0) then
                 local elapsed = now - connectAttemptStartedAt
                 if elapsed >= CONNECT_WATCHDOG_TIMEOUT_S then
-                    utils.log(string.format(
+                    utils.log(string_format(
                         "[watchdog] Connect attempt exceeded %.0fs (%.1fs) without isConnected; tearing down and retrying",
                         CONNECT_WATCHDOG_TIMEOUT_S, elapsed
                     ), "error")
@@ -503,7 +522,7 @@ end
 
 function tasks.active()
 
-    if tasks.heartbeat and (os.clock() - tasks.heartbeat) < 5 then return true end
+    if tasks.heartbeat and (os_clock() - tasks.heartbeat) < 5 then return true end
 
     return false
 end
@@ -542,14 +561,14 @@ local function runNonSpreadTasks(now)
                 local elapsed = now - task.last_run
                 if elapsed + OVERDUE_TOL >= task.interval then
                     if (od or 0) > 0 then
-                        if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "info") end
+                        if LOG_OVERDUE_TASKS then utils.log(string_format("[scheduler] %s overdue by %.3fs", task.name, od), "info") end
                     end
 
                     local fn = mod.wakeup
                     if fn then
-                        local c0 = os.clock()
+                        local c0 = os_clock()
                         fn(mod)
-                        local c1 = os.clock()
+                        local c1 = os_clock()
                         local dur = c1 - c0
                         loopCpu = loopCpu + dur
 
@@ -585,31 +604,31 @@ local function runSpreadTasks(now)
             if elapsed >= 2 * task.interval then
                 nM = nM + 1
                 mustRunTasks[nM] = task
-                if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s hard overdue by %.3fs", task.name, elapsed - 2 * task.interval), "info") end
+                if LOG_OVERDUE_TASKS then utils.log(string_format("[scheduler] %s hard overdue by %.3fs", task.name, elapsed - 2 * task.interval), "info") end
             elseif elapsed + OVERDUE_TOL >= task.interval then
                 nN = nN + 1
                 normalEligibleTasks[nN] = task
                 if elapsed - task.interval > 0 then
-                    if LOG_OVERDUE_TASKS then utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, elapsed - task.interval), "info") end
+                    if LOG_OVERDUE_TASKS then utils.log(string_format("[scheduler] %s overdue by %.3fs", task.name, elapsed - task.interval), "info") end
                 end
             end
         end
     end
 
-    if nM > 1 then table.sort(mustRunTasks, SORT_BY_LAST_RUN_ASC) end
-    if nN > 1 then table.sort(normalEligibleTasks, SORT_BY_LAST_RUN_ASC) end
+    if nM > 1 then table_sort(mustRunTasks, SORT_BY_LAST_RUN_ASC) end
+    if nN > 1 then table_sort(normalEligibleTasks, SORT_BY_LAST_RUN_ASC) end
 
     -- Quota of spread tasks to run this cycle (scaled by scheduler percentage).
-    tasksPerCycle = math.ceil(nonSpreadCount * taskSchedulerPercentage)
+    tasksPerCycle = math_ceil(nonSpreadCount * taskSchedulerPercentage)
 
     for i = 1, #mustRunTasks do
         local task = mustRunTasks[i]
         local mod = tasks[task.name]
         local fn = mod and mod.wakeup
         if fn then
-            local c0 = os.clock()
+            local c0 = os_clock()
             fn(mod)
-            local c1 = os.clock()
+            local c1 = os_clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
             if profWanted(task.name) then profRecord(task, dur) end
@@ -617,15 +636,15 @@ local function runSpreadTasks(now)
         task.last_run = now
     end
 
-    local n = math.min(tasksPerCycle, #normalEligibleTasks)
+    local n = math_min(tasksPerCycle, #normalEligibleTasks)
     for i = 1, n do
         local task = normalEligibleTasks[i]
         local mod = tasks[task.name]
         local fn = mod and mod.wakeup
         if fn then
-            local c0 = os.clock()
+            local c0 = os_clock()
             fn(mod)
-            local c1 = os.clock()
+            local c1 = os_clock()
             local dur = c1 - c0
             loopCpu = loopCpu + dur
             if profWanted(task.name) then profRecord(task, dur) end
@@ -667,7 +686,7 @@ function tasks.wakeup_protected()
 
     -- Primary scheduler tick: runs task loops, event edges, and profiling.
     schedulerTick = (schedulerTick or 0) + 1
-    tasks.heartbeat = os.clock()
+    tasks.heartbeat = os_clock()
     local t0 = tasks.heartbeat
     local loopCpu = 0
 
@@ -716,7 +735,7 @@ function tasks.wakeup_protected()
     -- Connection/telemetry state machine (may reset session/queues).
     tasks.telemetryCheckScheduler()
 
-    local now = os.clock()
+    local now = os_clock()
 
     local cycleFlip = schedulerTick % 2
 
@@ -797,7 +816,7 @@ function tasks.wakeup_protected()
         end
     end
 
-    local t1 = os.clock()
+    local t1 = os_clock()
     rfsuite.performance = rfsuite.performance or {}
     rfsuite.performance.taskLoopCpuMs = loopCpu * 1000.0
     rfsuite.performance.taskLoopTime = (t1 - t0) * 1000.0
@@ -834,13 +853,13 @@ function tasks.dumpProfile(opts)
         total = function(a, b) return a.total > b.total end,
         runs = function(a, b) return a.runs > b.runs end
     }
-    table.sort(snapshot, order[sortKey] or order.avg)
+    table_sort(snapshot, order[sortKey] or order.avg)
 
     if tasks.profile.onDump and tasks.profile.onDump(snapshot) then return end
 
     utils.log("====== Task Profile ======", "info")
     for _, p in ipairs(snapshot) do
-        utils.log(string.format("%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs",
+        utils.log(string_format("%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs",
             p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval), "info")
     end
     utils.log("================================", "info")
@@ -920,7 +939,7 @@ function tasks.unload(name)
     for i, t in ipairs(tasksList) do
         if t.name == name then
             removed = t
-            table.remove(tasksList, i)
+            table_remove(tasksList, i)
             break
         end
     end
@@ -929,15 +948,15 @@ function tasks.unload(name)
         local list = removed.spreadschedule and tasksListSpread or tasksListNonSpread
         for i, t in ipairs(list) do
             if t.name == name then
-                table.remove(list, i)
+                table_remove(list, i)
                 break
             end
         end
-        if not removed.spreadschedule then nonSpreadCount = math.max(0, nonSpreadCount - 1) end
+        if not removed.spreadschedule then nonSpreadCount = math_max(0, nonSpreadCount - 1) end
     end
 
     tasks[name] = nil
-    utils.log(string.format("[scheduler] Unloaded task '%s'", tostring(name)), "info")
+    utils.log(string_format("[scheduler] Unloaded task '%s'", tostring(name)), "info")
     return true
 end
 
@@ -972,9 +991,9 @@ function tasks.load(name, meta)
         return true
     end
 
-    local jitter = (math.random() * 0.1)
+    local jitter = (math_random() * 0.1)
     local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
-    local offset = math.random() * interval
+    local offset = math_random() * interval
 
     local task = {
         name = name,
@@ -986,23 +1005,23 @@ function tasks.load(name, meta)
         connected = meta.connected or false,
         simulatoronly = meta.simulatoronly or false,
         spreadschedule = meta.spreadschedule or false,
-        last_run = os.clock() - offset,
+        last_run = os_clock() - offset,
         duration = 0,
         totalDuration = 0,
         runs = 0,
         maxDuration = 0
     }
 
-    table.insert(tasksList, task)
+    table_insert(tasksList, task)
     if task.spreadschedule then
-        table.insert(tasksListSpread, task)
+        table_insert(tasksListSpread, task)
     else
-        table.insert(tasksListNonSpread, task)
+        table_insert(tasksListNonSpread, task)
         nonSpreadCount = nonSpreadCount + 1
     end
 
-    utils.log(string.format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
-    utils.log(string.format("[scheduler] @i18n(app.msg_loaded_task)@ [%s]", name), "connect")
+    utils.log(string_format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
+    utils.log(string_format("[scheduler] @i18n(app.msg_loaded_task)@ [%s]", name), "connect")
     return true
 end
 
@@ -1023,10 +1042,10 @@ function tasks.reload(name)
             end
         end
         if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then
-            utils.log(string.format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn")
+            utils.log(string_format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn")
         end
     else
-        utils.log(string.format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
+        utils.log(string_format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
     end
 
     return ok

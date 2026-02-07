@@ -17,6 +17,9 @@ local MSP_STRUCTURE_WRITE = {
 
 local mspWriteComplete = false
 
+local os_time = os.time
+local ipairs = ipairs
+
 local payloadData = {}
 local defaultData = {}
 
@@ -43,7 +46,7 @@ end
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
-local function getDefaults() return {seconds = os.time(), milliseconds = 0} end
+local function getDefaults() return {seconds = os_time(), milliseconds = 0} end
 
 local function write()
     local defaults = getDefaults()

@@ -13,6 +13,11 @@ local INI_SECTION = "general"
 local ini = rfsuite.ini
 local mspModule = rfsuite.tasks.msp.api
 
+local math_floor = math.floor
+local ipairs = ipairs
+local pairs = pairs
+local tonumber = tonumber
+
 local handlers = core.createHandlers()
 
 -- LuaFormatter off
@@ -32,7 +37,7 @@ local payloadData = {}
 local function loadParsedFromINI()
     local tbl = ini.load_ini_file(INI_FILE) or {}
     local parsed = {}
-    for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do parsed[entry.field] = ini.getvalue(tbl, INI_SECTION, entry.field) or entry.simResponse[1] or 0 end
+    for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do parsed[entry.field] = tonumber(ini.getvalue(tbl, INI_SECTION, entry.field)) or entry.simResponse[1] or 0 end
     return parsed
 end
 

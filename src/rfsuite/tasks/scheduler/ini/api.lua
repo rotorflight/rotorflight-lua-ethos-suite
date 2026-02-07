@@ -8,6 +8,13 @@ local rfsuite = require("rfsuite")
 local ini = rfsuite.ini
 local apidir = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/ini/api/"
 
+local assert = assert
+local type = type
+local dofile = dofile
+local tostring = tostring
+local ipairs = ipairs
+local pairs = pairs
+
 local M = {}
 
 function M.load(apiName)
@@ -52,9 +59,10 @@ function M.load(apiName)
         local out = {}
         local sec = data[apiName] or {}
         for _, def in ipairs(apiDef.API_STRUCTURE or {}) do
-            local key = type(def) == "table" and def.field or def
+            local isTable = type(def) == "table"
+            local key = isTable and def.field or def
             out[key] = sec[key]
-            if out[key] == nil and type(def) == "table" and def.default ~= nil then
+            if out[key] == nil and isTable and def.default ~= nil then
                 out[key] = def.default
             end
         end
