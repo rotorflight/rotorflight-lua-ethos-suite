@@ -11,6 +11,9 @@ local lcdFont = lcd.font
 local lcdGetTextSize = lcd.getTextSize
 local lcdGetWindowSize = lcd.getWindowSize
 local lcdLoadMask = lcd.loadMask
+local osClock = os.clock
+local tableConcat = table.concat
+local mathFloor = math.floor
 local app = rfsuite.app
 local session = rfsuite.session
 
@@ -58,17 +61,17 @@ local function getMspStatusExtras()
     end
 
     if #parts == 0 then return nil end
-    return table.concat(parts, " ")
+    return tableConcat(parts, " ")
 end
 
 local function getMspStatusForDialog()
     if not session then return nil end
-    if session.mspStatusClearAt and os.clock() >= session.mspStatusClearAt then
+    if session.mspStatusClearAt and osClock() >= session.mspStatusClearAt then
         session.mspStatusMessage = nil
         session.mspStatusClearAt = nil
     end
     local mspStatus = session.mspStatusMessage
-    if not mspStatus and session.mspStatusLast and session.mspStatusUpdatedAt and (os.clock() - session.mspStatusUpdatedAt) < 0.75 then
+    if not mspStatus and session.mspStatusLast and session.mspStatusUpdatedAt and (osClock() - session.mspStatusUpdatedAt) < 0.75 then
         mspStatus = session.mspStatusLast
     end
     if preferences and preferences.general and preferences.general.mspstatusdialog then
@@ -158,7 +161,7 @@ function ui.progressDisplay(title, message, speed)
     local reachedTimeout = false
 
     app.dialogs.progressDisplay = true
-    app.dialogs.progressWatchDog = os.clock()
+    app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressBaseMessage = message
     app.dialogs.progressMspStatusLast = nil
     app.dialogs.progress = form.openProgressDialog({
@@ -166,7 +169,7 @@ function ui.progressDisplay(title, message, speed)
         message = message,
         close = function() end,
         wakeup = function()
-            local now = os.clock()
+            local now = osClock()
 
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
@@ -215,7 +218,7 @@ function ui.progressDisplay(title, message, speed)
                 end
             end
 
-            if app.dialogs.progressWatchDog and tasks.msp and (os.clock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and reachedTimeout == false then
+            if app.dialogs.progressWatchDog and tasks.msp and (osClock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and reachedTimeout == false then
                 reachedTimeout = true
                 app.audio.playTimeout = true
                 app.dialogs.progress:message("@i18n(app.error_timed_out)@")
@@ -266,7 +269,7 @@ function ui.progressDisplaySave(message)
     local reachedTimeout = false
 
     app.dialogs.saveDisplay = true
-    app.dialogs.saveWatchDog = os.clock()
+    app.dialogs.saveWatchDog = osClock()
     app.dialogs.saveBaseMessage = nil
     app.dialogs.saveMspStatusLast = nil
 
@@ -281,7 +284,7 @@ function ui.progressDisplaySave(message)
         message = resolvedMessage,
         close = function() end,
         wakeup = function()
-            local now = os.clock()
+            local now = osClock()
 
             app.dialogs.save:value(app.dialogs.saveProgressCounter)
 
@@ -318,7 +321,7 @@ function ui.progressDisplaySave(message)
             end
 
             local timeout = tonumber(tasks.msp.protocol.saveTimeout + 5)
-            if (app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout) and reachedTimeout == false or (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed()) and app.dialogs.saveDisplay == true and reachedTimeout == false then
+            if (app.dialogs.saveWatchDog and (osClock() - app.dialogs.saveWatchDog) > timeout) and reachedTimeout == false or (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed()) and app.dialogs.saveDisplay == true and reachedTimeout == false then
                 reachedTimeout = true
                 app.audio.playTimeout = true
                 app.dialogs.save:message("@i18n(app.error_timed_out)@")
@@ -1300,7 +1303,7 @@ function ui.fieldHeader(title)
 
     local w, _ = lcdGetWindowSize()
     local padding = 5
-    local colStart = math.floor(w * 59.4 / 100)
+    local colStart = mathFloor(w * 59.4 / 100)
     if radio.navButtonOffset then colStart = colStart - radio.navButtonOffset end
 
     local buttonW = radio.buttonWidth and radio.menuButtonWidth or ((w - colStart) / 3 - padding)
@@ -1552,7 +1555,7 @@ end
 function ui.openPageHelp(txtData, section)
 
 
-    local message = table.concat(txtData, "\r\n\r\n")
+    local message = tableConcat(txtData, "\r\n\r\n")
     form.openDialog({width = app.lcdWidth, title = "Help - " .. app.lastTitle, message = message, buttons = {{label = "@i18n(app.btn_close)@", action = function() return true end}}, options = TEXT_LEFT})
 end
 
@@ -1929,7 +1932,7 @@ function ui.saveSettings()
     if app.pageState == app.pageStatus.saving then return end
 
     app.pageState = app.pageStatus.saving
-    app.saveTS = os.clock()
+    app.saveTS = osClock()
 
     log("Saving data", "debug")
 
@@ -1986,7 +1989,7 @@ function ui.saveSettings()
                 local originalValue = tonumber(v) or 0
                 local newValue = originalValue
                 for bit, idx in pairs(fieldMapBitmap[k]) do
-                    local fieldVal = math.floor(tonumber(app.Page.apidata.formdata.fields[idx].value) or 0)
+                    local fieldVal = mathFloor(tonumber(app.Page.apidata.formdata.fields[idx].value) or 0)
                     local mask = 1 << (bit)
                     if fieldVal ~= 0 then
                         newValue = newValue | mask
