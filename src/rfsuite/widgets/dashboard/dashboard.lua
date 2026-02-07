@@ -85,6 +85,8 @@ dashboard._loader_min_duration = 0
 dashboard._loader_start_time = nil
 
 dashboard._minPaintInterval = 0.12
+dashboard._minPaintIntervalMin = 0.06
+dashboard._minPaintIntervalMax = 0.12
 dashboard._lastInvalidateTime = 0
 dashboard._pendingInvalidates = {}
 dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
@@ -117,7 +119,19 @@ end
 local function _flushInvalidatesRespectingBudget()
     local now = os.clock()
     if not dashboard._pendingInvalidates then return false end
-    if (now - dashboard._lastInvalidateTime) < dashboard._minPaintInterval then return false end
+    local interval = dashboard._minPaintInterval
+    local perf = rfsuite.performance
+    if perf and perf.cpuload then
+        local load = perf.cpuload
+        local minI = dashboard._minPaintIntervalMin or interval
+        local maxI = dashboard._minPaintIntervalMax or interval
+        local t = math.max(0, math.min(1, (load - 40) / 40))
+        interval = minI + (maxI - minI) * t
+    end
+    if #dashboard._pendingInvalidates <= 2 then
+        interval = math.min(interval, dashboard._minPaintIntervalMin or interval)
+    end
+    if (now - dashboard._lastInvalidateTime) < interval then return false end
 
     if #dashboard._pendingInvalidates == 0 then return false end
 
