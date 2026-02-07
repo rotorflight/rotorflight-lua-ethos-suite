@@ -300,8 +300,8 @@ local function parseMenuGet(buf)
             submenuId = submenuId,
             short = label
         }
-        print(string.format("[CMS MENU] mid=%s idx=%s type=%s vtype=%s flags=%s sub=%s label=%s",
-            tostring(menuId), tostring(itemIndex), tostring(itemType), tostring(valType), tostring(flags), tostring(submenuId), tostring(label)))
+        -- print(string.format("[CMS MENU] mid=%s idx=%s type=%s vtype=%s flags=%s sub=%s label=%s",
+        --     tostring(menuId), tostring(itemIndex), tostring(itemType), tostring(valType), tostring(flags), tostring(submenuId), tostring(label)))
     end
 
     return {
@@ -480,7 +480,7 @@ local function requestValue(menuId, itemIndex)
     state.retries = state.retries + 1
 
     local payload = buildValueGetPayload(menuId, itemIndex)
-    print(string.format("[CMS VALUE REQ] mid=%s idx=%s", tostring(menuId), tostring(itemIndex)))
+    -- print(string.format("[CMS VALUE REQ] mid=%s idx=%s", tostring(menuId), tostring(itemIndex)))
 
     enqueue(CMD_VALUE_GET, payload, function(self, buf)
         if not buf or #buf < 11 then
@@ -488,11 +488,11 @@ local function requestValue(menuId, itemIndex)
             state.inflight = false
             return
         end
-        do
-            local s = {}
-            for i = 1, #buf do s[#s + 1] = tostring(buf[i]) end
-            print("[CMS VALUE RAW] " .. table.concat(s, ","))
-        end
+        -- do
+        --     local s = {}
+        --     for i = 1, #buf do s[#s + 1] = tostring(buf[i]) end
+        --     print("[CMS VALUE RAW] " .. table.concat(s, ","))
+        -- end
         local b = {offset = 1}
         for i = 1, #buf do b[i] = buf[i] end
         local gen = bufReadU16(b)
@@ -500,7 +500,7 @@ local function requestValue(menuId, itemIndex)
         local idx = mspHelper.readU8(b)
         local val = bufReadU32(b)
         local flags = bufReadU16(b)
-        print(string.format("[CMS VALUE] gen=%s mid=%s idx=%s val=%s flags=%s", tostring(gen), tostring(mid), tostring(idx), tostring(val), tostring(flags)))
+        -- print(string.format("[CMS VALUE] gen=%s mid=%s idx=%s val=%s flags=%s", tostring(gen), tostring(mid), tostring(idx), tostring(val), tostring(flags)))
         if checkMenuGen(gen) and mid == menuId then
             cms.values[mid .. ":" .. tostring(idx)] = {value = val, flags = flags}
             state.done = true
@@ -523,7 +523,7 @@ local function requestValue(menuId, itemIndex)
 end
 
 local function sendValue(menuId, itemIndex, value)
-    print(string.format("[CMS VALUE_SET REQ] mid=%s idx=%s val=%s", tostring(menuId), tostring(itemIndex), tostring(value)))
+    -- print(string.format("[CMS VALUE_SET REQ] mid=%s idx=%s val=%s", tostring(menuId), tostring(itemIndex), tostring(value)))
     enqueue(CMD_VALUE_SET, buildValueSetPayload(menuId, itemIndex, value), function(self, buf)
         local b = {offset = 1}
         for i = 1, #buf do b[i] = buf[i] end
@@ -533,7 +533,7 @@ local function sendValue(menuId, itemIndex, value)
         local applied = bufReadU32(b)
         local result = mspHelper.readU8(b)
         local flags = bufReadU16(b)
-        print(string.format("[CMS VALUE_SET] gen=%s mid=%s idx=%s applied=%s result=%s flags=%s", tostring(gen), tostring(mid), tostring(idx), tostring(applied), tostring(result), tostring(flags)))
+        -- print(string.format("[CMS VALUE_SET] gen=%s mid=%s idx=%s applied=%s result=%s flags=%s", tostring(gen), tostring(mid), tostring(idx), tostring(applied), tostring(result), tostring(flags)))
         if checkMenuGen(gen) and mid == menuId then
             cms.values[mid .. ":" .. tostring(idx)] = {value = applied, flags = flags, result = result}
         end
@@ -544,28 +544,28 @@ end
 
 local function sendSave(menuId)
     if (cms.info.caps & CMS_CAP_SAVE) == 0 then
-        print("[CMS SAVE_NOEXIT] not supported")
+        -- print("[CMS SAVE_NOEXIT] not supported")
         return
     end
     if not menuId then
-        print("[CMS SAVE_NOEXIT] missing menuId")
+        -- print("[CMS SAVE_NOEXIT] missing menuId")
         return
     end
-    print("[CMS SAVE_NOEXIT] request")
+    -- print("[CMS SAVE_NOEXIT] request")
     local payload = {}
     bufWriteU16(payload, menuId)
     enqueue(CMD_SAVE, payload, function(self, buf)
         if not buf or #buf < 3 then return end
-        do
-            local s = {}
-            for i = 1, #buf do s[#s + 1] = tostring(buf[i]) end
-            print("[CMS SAVE_NOEXIT RAW] " .. table.concat(s, ","))
-        end
+        -- do
+        --     local s = {}
+        --     for i = 1, #buf do s[#s + 1] = tostring(buf[i]) end
+        --     print("[CMS SAVE_NOEXIT RAW] " .. table.concat(s, ","))
+        -- end
         local b = {offset = 1}
         for i = 1, #buf do b[i] = buf[i] end
         local gen = bufReadU16(b)
         local result = mspHelper.readU8(b)
-        print(string.format("[CMS SAVE_NOEXIT] gen=%s result=%s", tostring(gen), tostring(result)))
+        -- print(string.format("[CMS SAVE_NOEXIT] gen=%s result=%s", tostring(gen), tostring(result)))
         if checkMenuGen(gen) then
             if result == 0 then
                 cms.lastStatus = "saved"
