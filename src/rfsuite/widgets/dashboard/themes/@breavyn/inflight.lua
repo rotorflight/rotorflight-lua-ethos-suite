@@ -1,0 +1,209 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+local utils = rfsuite.widgets.dashboard.utils
+
+local headeropts = utils.getHeaderOptions()
+local colorMode = utils.themeColors()
+
+local theme_section = "system/@rt-rc"
+
+local THEME_DEFAULTS = {v_min = 18.0, v_max = 25.2}
+
+local function getUserVoltageOverride(which)
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if prefs and prefs["system/@breavyn"] then
+        local v = tonumber(prefs["system/@breavyn"][which])
+
+        if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
+        if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+    end
+    return nil
+end
+
+local function getThemeValue(key)
+
+    if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
+        if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+            local val = rfsuite.preferences.general[key]
+            if val ~= nil then return tonumber(val) end
+        end
+    end
+
+    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
+        local val = rfsuite.session.modelPreferences[theme_section][key]
+        val = tonumber(val)
+        if val ~= nil then return val end
+    end
+    return THEME_DEFAULTS[key]
+end
+
+local function getThemeOptionKey(W)
+    if W == 800 then
+        return "ls_full"
+    elseif W == 784 then
+        return "ls_std"
+    elseif W == 640 then
+        return "ss_full"
+    elseif W == 630 then
+        return "ss_std"
+    elseif W == 480 then
+        return "ms_full"
+    elseif W == 472 then
+        return "ms_std"
+    end
+end
+
+local themeOptions = {ls_full = {thickness = 50, valuepaddingtop = 35, gaugepadding = 20}, ls_std = {thickness = 30, valuepaddingtop = 25, gaugepadding = 10}, ms_full = {thickness = 35, valuepaddingtop = 25, gaugepadding = 5}, ms_std = {thickness = 20, valuepaddingtop = 20, gaugepadding = 5}, ss_full = {thickness = 35, valuepaddingtop = 30, gaugepadding = 5}, ss_std = {thickness = 25, valuepaddingtop = 20, gaugepadding = 5}}
+
+local lastScreenW = nil
+local boxes_cache = nil
+local header_boxes_cache = nil
+local themeconfig = nil
+local last_txbatt_type = nil
+
+local layout = {cols = 8, rows = 14, padding = 2, showstats = false}
+
+local header_layout = utils.standardHeaderLayout(headeropts)
+
+local function header_boxes()
+    local txbatt_type = 0
+    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
+
+    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
+        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        last_txbatt_type = txbatt_type
+    end
+    return header_boxes_cache
+end
+
+local function buildBoxes(W)
+
+    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
+
+    return {
+        {
+            col = 1,
+            row = 1,
+            colspan = 4,
+            rowspan = 12,
+            type = "gauge",
+            subtype = "arc",
+            source = "voltage",
+            fillbgcolor = colorMode.fillbgcolor,
+            title = "@i18n(widgets.dashboard.voltage):upper()@",
+            font = "FONT_XXL",
+            thickness = opts.thickness,
+            titlepos = "bottom",
+            fillcolor = colorMode.fillcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
+            bgcolor = colorMode.bgcolor,
+            gaugepadding = opts.gaugepadding,
+            valuepaddingtop = opts.valuepaddingtop,
+            min = function()
+                local override = getUserVoltageOverride("v_min")
+                if override then return override end
+                local cfg = rfsuite.session.batteryConfig
+                local cells = (cfg and cfg.batteryCellCount) or 3
+                local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+                return math.max(0, cells * minV)
+            end,
+
+            max = function()
+                local override = getUserVoltageOverride("v_max")
+                if override then return override end
+                local cfg = rfsuite.session.batteryConfig
+                local cells = (cfg and cfg.batteryCellCount) or 3
+                local maxV = (cfg and cfg.vbatfullcellvoltage) or 4.2
+                return math.max(0, cells * maxV)
+            end,
+
+            thresholds = {
+                {
+                    value = function(box)
+                        local raw_gm = utils.getParam(box, "min")
+                        if type(raw_gm) == "function" then raw_gm = raw_gm(box) end
+                        local raw_gM = utils.getParam(box, "max")
+                        if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                        return raw_gm + 0.30 * (raw_gM - raw_gm)
+                    end,
+                    fillcolor = colorMode.fillcritcolor,
+                    textcolor = colorMode.textcolor
+                }, {
+                    value = function(box)
+                        local raw_gm = utils.getParam(box, "min")
+                        if type(raw_gm) == "function" then raw_gm = raw_gm(box) end
+                        local raw_gM = utils.getParam(box, "max")
+                        if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                        return raw_gm + 0.50 * (raw_gM - raw_gm)
+                    end,
+                    fillcolor = colorMode.fillwarncolor,
+                    textcolor = colorMode.textcolor
+                }, {
+                    value = function(box)
+                        local raw_gM = utils.getParam(box, "max")
+                        if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                        return raw_gM
+                    end,
+                    fillcolor = colorMode.fillcolor,
+                    textcolor = colorMode.textcolor
+                }
+            }
+        }, {
+            type = "gauge",
+            subtype = "arc",
+            col = 5,
+            row = 1,
+            colspan = 4,
+            rowspan = 12,
+            gaugepadding = opts.gaugepadding,
+            thickness = opts.thickness,
+            valuepaddingtop = opts.valuepaddingtop,
+            source = "smartfuel",
+            transform = "floor",
+            min = 0,
+            max = 100,
+            font = "FONT_XXL",
+            fillbgcolor = colorMode.fillbgcolor,
+            title = "@i18n(widgets.dashboard.fuel):upper()@",
+            titlepos = "bottom",
+            bgcolor = colorMode.bgcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.textcolor,
+            thresholds = {{value = 30, fillcolor = colorMode.fillcritcolor, textcolor = colorMode.textcolor}, {value = 50, fillcolor = colorMode.fillwarncolor, textcolor = colorMode.textcolor}, {value = 140, fillcolor = colorMode.fillcolor, textcolor = colorMode.textcolor}}
+        }, {
+            col = 1,
+            row = 13,
+            colspan = 2,
+            rowspan = 2,
+            type = "text",
+            subtype = "governor",
+            thresholds = {
+                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
+                {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
+            },
+            bgcolor = colorMode.bgcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor
+        }, {col = 7, row = 13, colspan = 2, rowspan = 2, type = "time", subtype = "flight", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor}, {col = 5, row = 13, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "rpm", unit = "rpm", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor},
+        {col = 3, row = 13, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor}
+    }
+end
+
+local function boxes()
+    local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
+    local W = lcd.getWindowSize()
+    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W then
+        boxes_cache = buildBoxes(W)
+        themeconfig = config
+        lastScreenW = W
+    end
+    return boxes_cache
+end
+
+return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.5}}
