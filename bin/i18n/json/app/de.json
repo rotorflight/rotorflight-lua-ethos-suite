@@ -410,6 +410,11 @@
         "translation": "Bestätigen beim Speichern",
         "needs_translation": false
       },
+      "txt_save_armed_warning": {
+        "english": "Show disarm-to-save warning",
+        "translation": "Warnung 'Bitte disarmen zum Speichern' anzeigen",
+        "needs_translation": false
+      },
       "txt_reload_confirm": {
         "english": "Confirm on reload",
         "translation": "Bestätigen beim Neuladen",
