@@ -35,6 +35,11 @@
 ]]
 
 local rfsuite = require("rfsuite")
+local system = system
+
+local floor = math.floor
+local ceil = math.ceil
+local rep = string.rep
 
 local render = {}
 
@@ -59,15 +64,15 @@ end
 
 local function compileTransform(t, decimals)
     local pow = decimals and (10 ^ decimals) or nil
-    local function round(v) return pow and (math.floor(v * pow + 0.5) / pow) or v end
+    local function round(v) return pow and (floor(v * pow + 0.5) / pow) or v end
 
     if type(t) == "number" then
         local mul = t
         return function(v) return round(v * mul) end
     elseif t == "floor" then
-        return function(v) return math.floor(v) end
+        return function(v) return floor(v) end
     elseif t == "ceil" then
-        return function(v) return math.ceil(v) end
+        return function(v) return ceil(v) end
     elseif t == "round" or t == nil then
         return function(v) return round(v) end
     elseif type(t) == "function" then
@@ -147,7 +152,7 @@ function render.wakeup(box)
 
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     end
 

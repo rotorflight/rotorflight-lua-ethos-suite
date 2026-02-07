@@ -4,6 +4,13 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local model = model
+local app = rfsuite.app
+local prefs = rfsuite.preferences
+local tasks = rfsuite.tasks
+local rfutils = rfsuite.utils
+local session = rfsuite.session
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
@@ -35,17 +42,17 @@ end
 
 local function openPage(pidx, title, script, displaymode)
 
-    if not rfsuite.utils.ethosVersionAtLeast() then return end
+    if not rfutils.ethosVersionAtLeast() then return end
 
-    if not rfsuite.tasks.active() then
+    if not tasks.active() then
 
         local buttons = {
             {
                 label = "@i18n(app.btn_ok)@",
                 action = function()
 
-                    rfsuite.app.triggers.exitAPP = true
-                    rfsuite.app.dialogs.nolinkDisplayErrorDialog = false
+                    app.triggers.exitAPP = true
+                    app.dialogs.nolinkDisplayErrorDialog = false
                     return true
                 end
             }
@@ -57,21 +64,21 @@ local function openPage(pidx, title, script, displaymode)
 
     currentDisplayMode = displaymode
 
-    if rfsuite.tasks.msp then rfsuite.tasks.msp.protocol.mspIntervalOveride = nil end
+    if tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
 
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    app.triggers.isReady = false
+    app.uiState = app.uiStatus.pages
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    app.lastIdx = idx
+    app.lastTitle = title
+    app.lastScript = script
 
     local w, h = lcd.getWindowSize()
     local windowWidth = w
     local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
+    local padding = app.radio.buttonPadding
 
     local sc
     local panel
@@ -80,35 +87,35 @@ local function openPage(pidx, title, script, displaymode)
 
     local logs = utils.getLogs(logDir)
 
-    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.app.activeLogDir)
-    rfsuite.app.ui.fieldHeader("Logs / " .. name)
+    local name = utils.resolveModelName(session.mcu_id or app.activeLogDir)
+    app.ui.fieldHeader("Logs / " .. name)
 
     local buttonW
     local buttonH
     local padding
     local numPerRow
 
-    if rfsuite.preferences.general.iconsize == 0 then
-        padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
-        buttonH = rfsuite.app.radio.navbuttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
+    if prefs.general.iconsize == 0 then
+        padding = app.radio.buttonPaddingSmall
+        buttonW = (app.lcdWidth - padding) / app.radio.buttonsPerRow - padding
+        buttonH = app.radio.navbuttonHeight
+        numPerRow = app.radio.buttonsPerRow
     end
 
-    if rfsuite.preferences.general.iconsize == 1 then
+    if prefs.general.iconsize == 1 then
 
-        padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = rfsuite.app.radio.buttonWidthSmall
-        buttonH = rfsuite.app.radio.buttonHeightSmall
-        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+        padding = app.radio.buttonPaddingSmall
+        buttonW = app.radio.buttonWidthSmall
+        buttonH = app.radio.buttonHeightSmall
+        numPerRow = app.radio.buttonsPerRowSmall
     end
 
-    if rfsuite.preferences.general.iconsize == 2 then
+    if prefs.general.iconsize == 2 then
 
-        padding = rfsuite.app.radio.buttonPadding
-        buttonW = rfsuite.app.radio.buttonWidth
-        buttonH = rfsuite.app.radio.buttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
+        padding = app.radio.buttonPadding
+        buttonW = app.radio.buttonWidth
+        buttonH = app.radio.buttonHeight
+        numPerRow = app.radio.buttonsPerRow
     end
 
     local x = windowWidth - buttonW + 10
@@ -116,11 +123,11 @@ local function openPage(pidx, title, script, displaymode)
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["logs_logs"] == nil then rfsuite.app.gfx_buttons["logs_logs"] = {} end
-    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs_logs"] = 1 end
+    if app.gfx_buttons["logs_logs"] == nil then app.gfx_buttons["logs_logs"] = {} end
+    if prefs.menulastselected["logs"] == nil then prefs.menulastselected["logs_logs"] = 1 end
 
-    if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.preferences.menulastselected["logs_logs"] == nil then rfsuite.preferences.menulastselected["logs_logs"] = 1 end
+    if app.gfx_buttons["logs"] == nil then app.gfx_buttons["logs"] = {} end
+    if prefs.menulastselected["logs_logs"] == nil then prefs.menulastselected["logs_logs"] = 1 end
 
     local groupedLogs = {}
     for _, filename in ipairs(logs) do
@@ -145,14 +152,14 @@ local function openPage(pidx, title, script, displaymode)
         local eposX = ew / 2 - etsizeW / 2
         local eposY = eh / 2 - etsizeH / 2
 
-        local posErr = {w = etsizeW, h = rfsuite.app.radio.navbuttonHeight, x = eposX, y = ePosY}
+        local posErr = {w = etsizeW, h = app.radio.navbuttonHeight, x = eposX, y = ePosY}
 
         line = form.addLine("", nil, false)
         form.addStaticText(line, posErr, str)
 
     else
-        rfsuite.app.gfx_buttons["logs_logs"] = rfsuite.app.gfx_buttons["logs_logs"] or {}
-        rfsuite.preferences.menulastselected["logs_logs"] = rfsuite.preferences.menulastselected["logs_logs"] or 1
+        app.gfx_buttons["logs_logs"] = app.gfx_buttons["logs_logs"] or {}
+        prefs.menulastselected["logs_logs"] = prefs.menulastselected["logs_logs"] or 1
 
         for idx, section in ipairs(dates) do
 
@@ -161,28 +168,28 @@ local function openPage(pidx, title, script, displaymode)
 
             for pidx, page in ipairs(groupedLogs[section]) do
 
-                if lc == 0 then y = form.height() + (rfsuite.preferences.general.iconsize == 2 and rfsuite.app.radio.buttonPadding or rfsuite.app.radio.buttonPaddingSmall) end
+                if lc == 0 then y = form.height() + (prefs.general.iconsize == 2 and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
 
                 local x = (buttonW + padding) * lc
-                if rfsuite.preferences.general.iconsize ~= 0 then
-                    if rfsuite.app.gfx_buttons["logs_logs"][pidx] == nil then rfsuite.app.gfx_buttons["logs_logs"][pidx] = lcd.loadMask("app/modules/logs/gfx/logs.png") end
+                if prefs.general.iconsize ~= 0 then
+                    if app.gfx_buttons["logs_logs"][pidx] == nil then app.gfx_buttons["logs_logs"][pidx] = lcd.loadMask("app/modules/logs/gfx/logs.png") end
                 else
-                    rfsuite.app.gfx_buttons["logs_logs"][pidx] = nil
+                    app.gfx_buttons["logs_logs"][pidx] = nil
                 end
 
-                rfsuite.app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
                     text = extractHourMinute(page),
-                    icon = rfsuite.app.gfx_buttons["logs_logs"][pidx],
+                    icon = app.gfx_buttons["logs_logs"][pidx],
                     options = FONT_S,
                     paint = function() end,
                     press = function()
-                        rfsuite.preferences.menulastselected["logs_logs"] = tostring(idx) .. "_" .. tostring(pidx)
-                        rfsuite.app.ui.progressDisplay()
-                        rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs_view.lua", page)
+                        prefs.menulastselected["logs_logs"] = tostring(idx) .. "_" .. tostring(pidx)
+                        app.ui.progressDisplay()
+                        app.ui.openPage(pidx, "Logs", "logs/logs_view.lua", page)
                     end
                 })
 
-                if rfsuite.preferences.menulastselected["logs_logs"] == tostring(idx) .. "_" .. tostring(pidx) then rfsuite.app.formFields[pidx]:focus() end
+                if prefs.menulastselected["logs_logs"] == tostring(idx) .. "_" .. tostring(pidx) then app.formFields[pidx]:focus() end
 
                 lc = (lc + 1) % numPerRow
 
@@ -192,7 +199,7 @@ local function openPage(pidx, title, script, displaymode)
 
     end
 
-    if rfsuite.tasks.msp then rfsuite.app.triggers.closeProgressLoader = true end
+    if tasks.msp then app.triggers.closeProgressLoader = true end
     enableWakeup = true
 
     return
@@ -200,7 +207,7 @@ end
 
 local function event(widget, category, value, x, y)
     if value == 35 then
-        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_dir.lua")
+        app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_dir.lua")
         return true
     end
     return false
@@ -208,6 +215,6 @@ end
 
 local function wakeup() if enableWakeup == true then end end
 
-local function onNavMenu() rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_dir.lua") end
+local function onNavMenu() app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_dir.lua") end
 
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

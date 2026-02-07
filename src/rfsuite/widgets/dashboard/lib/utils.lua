@@ -4,6 +4,21 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+
+local floor = math.floor
+local ceil = math.ceil
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+local format = string.format
+local ipairs = ipairs
+local pairs = pairs
+local tostring = tostring
+local tonumber = tonumber
 
 local utils = {}
 
@@ -35,13 +50,13 @@ function utils.supportedResolution(W, H, supportedResolutions)
 end
 
 function utils.drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
-    local angleRad = math.rad(angleDeg)
+    local angleRad = rad(angleDeg)
     local step = 1
     local rad_thick = thickness / 2
     lcd.color(color)
     for i = 0, length, step do
-        local px = cx + i * math.cos(angleRad)
-        local py = cy + i * math.sin(angleRad)
+        local px = cx + i * cos(angleRad)
+        local py = cy + i * sin(angleRad)
         lcd.drawFilledCircle(px, py, rad_thick)
     end
 end
@@ -375,9 +390,9 @@ function utils.resolveColor(value, variantFactor)
         headergrey = {35, 35, 35}
     }
 
-    local VARIANT_FACTOR = type(variantFactor) == "number" and math.max(0, math.min(1, variantFactor)) or 0.3
+    local VARIANT_FACTOR = type(variantFactor) == "number" and max(0, min(1, variantFactor)) or 0.3
 
-    local function clamp(v) return math.max(0, math.min(255, math.floor(v + 0.5))) end
+    local function clamp(v) return max(0, min(255, floor(v + 0.5))) end
 
     local function lighten(rgb) return {clamp(rgb[1] + (255 - rgb[1]) * VARIANT_FACTOR), clamp(rgb[2] + (255 - rgb[2]) * VARIANT_FACTOR), clamp(rgb[3] + (255 - rgb[3]) * VARIANT_FACTOR)} end
 
@@ -576,7 +591,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             lcd.font(valueFont)
         end
 
-        local fudgeTitle = (title and (titlepos or "top") == "top") and -math.floor(bestH * 0.15 + 0.5) or (title and titlepos == "bottom") and math.floor(bestH * 0.15 + 0.5) or 0
+        local fudgeTitle = (title and (titlepos or "top") == "top") and -floor(bestH * 0.15 + 0.5) or (title and titlepos == "bottom") and floor(bestH * 0.15 + 0.5) or 0
 
         local sy = region_vy + ((region_vh - bestH) / 2) + fudgeTitle
         local align = (valuealign or "center"):lower()
@@ -638,17 +653,17 @@ function utils.transformValue(value, box)
         if type(transform) == "function" then
             value = transform(value)
         elseif transform == "floor" then
-            value = math.floor(value)
+            value = floor(value)
         elseif transform == "ceil" then
-            value = math.ceil(value)
+            value = ceil(value)
         elseif transform == "round" then
-            value = math.floor(value + 0.5)
+            value = floor(value + 0.5)
         end
     end
     local decimals = utils.getParam(box, "decimals")
 
     if decimals ~= nil and value ~= nil then
-        value = string.format("%." .. decimals .. "f", value)
+        value = format("%." .. decimals .. "f", value)
     elseif value ~= nil then
         value = tostring(value)
     end

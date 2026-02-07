@@ -4,6 +4,24 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+local model = model
+
+local floor = math.floor
+local ceil = math.ceil
+local min = math.min
+local max = math.max
+local format = string.format
+local insert = table.insert
+local remove = table.remove
+local sort = table.sort
+local concat = table.concat
+local clock = os.clock
+local ipairs = ipairs
+local pairs = pairs
+local tostring = tostring
+local tonumber = tonumber
 
 local dashboard = {}
 
@@ -22,9 +40,9 @@ local supportedResolutions = {{784, 294}, {784, 316}, {800, 458}, {800, 480}, {4
 
 local lastFlightMode = nil
 
-local initTime = os.clock()
+local initTime = clock()
 
-local lastWakeup = os.clock()
+local lastWakeup = clock()
 
 local isSliding = false
 local isSlidingStart = 0
@@ -85,6 +103,8 @@ dashboard._loader_min_duration = 0
 dashboard._loader_start_time = nil
 
 dashboard._minPaintInterval = 0.12
+dashboard._minPaintIntervalMin = 0.06
+dashboard._minPaintIntervalMax = 0.12
 dashboard._lastInvalidateTime = 0
 dashboard._pendingInvalidates = {}
 dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
@@ -115,9 +135,21 @@ local function _queueInvalidateRect(x, y, w, h)
 end
 
 local function _flushInvalidatesRespectingBudget()
-    local now = os.clock()
+    local now = clock()
     if not dashboard._pendingInvalidates then return false end
-    if (now - dashboard._lastInvalidateTime) < dashboard._minPaintInterval then return false end
+    local interval = dashboard._minPaintInterval
+    local perf = rfsuite.performance
+    if perf and perf.cpuload then
+        local load = perf.cpuload
+        local minI = dashboard._minPaintIntervalMin or interval
+        local maxI = dashboard._minPaintIntervalMax or interval
+        local t = max(0, min(1, (load - 40) / 40))
+        interval = minI + (maxI - minI) * t
+    end
+    if #dashboard._pendingInvalidates <= 2 then
+        interval = min(interval, dashboard._minPaintIntervalMin or interval)
+    end
+    if (now - dashboard._lastInvalidateTime) < interval then return false end
 
     if #dashboard._pendingInvalidates == 0 then return false end
 
@@ -152,12 +184,12 @@ dashboard.prof = dashboard.prof or {enabled = true, reportEvery = 2.0, lastRepor
 
 local function _profStart()
     if not (dashboard.prof and dashboard.prof.enabled) then return 0 end
-    return os.clock()
+    return clock()
 end
 
 local function _profStop(kind, id, typ, t0)
     if t0 == 0 then return end
-    local dt = os.clock() - t0
+    local dt = clock() - t0
     local rec = dashboard.prof.perId[id]
     if not rec then
         rec = {type = typ, paint = 0, wakeup = 0, pc = 0, wc = 0}
@@ -176,13 +208,13 @@ local function _profIdFromRect(rect)
     local b = rect.box or {}
 
     local H = rect.isHeader and "H" or "B"
-    return string.format("%s@%s:%d,%d,%dx%d", b.type or "?", H, rect.x, rect.y, rect.w, rect.h)
+    return format("%s@%s:%d,%d,%dx%d", b.type or "?", H, rect.x, rect.y, rect.w, rect.h)
 end
 
 local function _profReportIfDue()
     local P = dashboard.prof
     if not (P and P.enabled) then return end
-    local now = os.clock()
+    local now = clock()
     if P.lastReport == 0 then
         P.lastReport = now
         return
@@ -198,20 +230,20 @@ local function _profReportIfDue()
         agg.paint, agg.wake, agg.pc, agg.wc, agg.tot = agg.paint + v.paint, agg.wake + v.wakeup, agg.pc + v.pc, agg.wc + v.wc, agg.tot + tot
         perTypeAgg[T] = agg
     end
-    table.sort(rows, function(a, b) return a.tot > b.tot end)
+    sort(rows, function(a, b) return a.tot > b.tot end)
 
     log("--------------- OBJECT PROFILER (per instance) ---------------", "info")
     for _, r in ipairs(rows) do
         local pms, wms = r.paint * 1000, r.wake * 1000
         local ap = r.pc > 0 and (pms / r.pc) or 0
         local aw = r.wc > 0 and (wms / r.wc) or 0
-        log(string.format("[prof] %-40s | paint:%7.3fms (%4d, avg %6.3f) | wakeup:%7.3fms (%4d, avg %6.3f)", r.id, pms, r.pc, ap, wms, r.wc, aw), "info")
+        log(format("[prof] %-40s | paint:%7.3fms (%4d, avg %6.3f) | wakeup:%7.3fms (%4d, avg %6.3f)", r.id, pms, r.pc, ap, wms, r.wc, aw), "info")
 
         local rec = P.perId[r.id];
         rec.paint, rec.wakeup, rec.pc, rec.wc = 0, 0, 0, 0
     end
     log("-------------------- per-type summary ------------------------", "info")
-    for T, a in pairs(perTypeAgg) do log(string.format("[sum ] %-18s | paint:%7.3fms | wakeup:%7.3fms | total:%7.3fms", T, a.paint * 1000, a.wake * 1000, a.tot * 1000), "info") end
+    for T, a in pairs(perTypeAgg) do log(format("[sum ] %-18s | paint:%7.3fms | wakeup:%7.3fms | total:%7.3fms", T, a.paint * 1000, a.wake * 1000, a.tot * 1000), "info") end
     log("--------------------------------------------------------------", "info")
 
     P.lastReport = now
@@ -283,12 +315,12 @@ function dashboard.overlaymessage(x, y, w, h, txt)
             -- every paint/wakeup while idle.
             if dashboard._overlayLastTxt ~= txt then
                 dashboard._overlayLastTxt = txt
-                local prefix = string.format("[%.2f] ", os.clock())
+                local prefix = format("[%.2f] ", clock())
                 q[#q + 1] = prefix .. txt
                 if #q > MAX then
                     -- MAX is tiny (3) but avoid shifting on every call by only
                     -- removing when we actually appended.
-                    table.remove(q, 1)
+                    remove(q, 1)
                 end
             end
             logmsg = q
@@ -407,11 +439,11 @@ function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
 
-    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
+    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
         return "[ERROR] Failed to load theme, using fallback" 
     end
 
-    local elapsed = os.clock() - initTime
+    local elapsed = clock() - initTime
     if elapsed > 10 then
         if not tasks or not tasks.active or not tasks.active() then return "[ERROR] Background task is not enabled" end
     end
@@ -421,7 +453,7 @@ function dashboard.computeOverlayMessage()
         local verStr
 
         if type(v) == "table" then
-            verStr = string.format(
+            verStr = format(
                 "%d.%d.%d%s",
                 v.major or 0,
                 v.minor or 0,
@@ -444,14 +476,14 @@ local function getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
         local hp = box.h_pct
         if wp > 1 then wp = wp / 100 end
         if hp > 1 then hp = hp / 100 end
-        local w = math.floor(wp * WIDGET_W)
-        local h = math.floor(hp * WIDGET_H)
+        local w = floor(wp * WIDGET_W)
+        local h = floor(hp * WIDGET_H)
         return w, h
     elseif box.w and box.h then
         return tonumber(box.w) or boxWidth, tonumber(box.h) or boxHeight
     elseif box.colspan or box.rowspan then
-        local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
-        local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
+        local w = floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
+        local h = floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
         return w, h
     else
         return boxWidth, boxHeight
@@ -466,8 +498,8 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
         if xp > 1 then xp = xp / 100 end
         if yp > 1 then yp = yp / 100 end
 
-        local x = math.floor(xp * (WIDGET_W - (w or boxWidth)))
-        local y = math.floor(yp * (WIDGET_H - (h or boxHeight)))
+        local x = floor(xp * (WIDGET_W - (w or boxWidth)))
+        local y = floor(yp * (WIDGET_H - (h or boxHeight)))
         return x, y
     elseif box.x and box.y then
         local x = tonumber(box.x) or 0
@@ -476,8 +508,8 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
     elseif box.col and box.row then
         local col = box.col or 1
         local row = box.row or 1
-        local x = math.floor((col - 1) * (boxWidth + PADDING)) + (box.xOffset or 0)
-        local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
+        local x = floor((col - 1) * (boxWidth + PADDING)) + (box.xOffset or 0)
+        local y = floor(PADDING + (row - 1) * (boxHeight + PADDING))
         return x, y
     else
         return 0, 0
@@ -502,8 +534,8 @@ function dashboard.renderLayout(widget, config)
 
     if (#boxes + #headerBoxes) ~= lastLoadedBoxCount then
         local allBoxes = {}
-        for _, b in ipairs(boxes) do table.insert(allBoxes, b) end
-        for _, b in ipairs(headerBoxes) do table.insert(allBoxes, b) end
+        for _, b in ipairs(boxes) do insert(allBoxes, b) end
+        for _, b in ipairs(headerBoxes) do insert(allBoxes, b) end
         dashboard.loadAllObjects(allBoxes)
         lastLoadedBoxCount = #boxes + #headerBoxes
     end
@@ -512,8 +544,8 @@ function dashboard.renderLayout(widget, config)
         local t = {}
         for _, b in ipairs(bx or {}) do t[#t + 1] = tostring(b.type or "") end
         for _, b in ipairs(hbx or {}) do t[#t + 1] = tostring(b.type or "") end
-        table.sort(t)
-        return table.concat(t, "|")
+        sort(t)
+        return concat(t, "|")
     end
 
     local thisSig = makeBoxesSig(boxes, headerBoxes)
@@ -541,7 +573,7 @@ function dashboard.renderLayout(widget, config)
 
     local W = adjustDimension(W_raw, cols, cols - 1)
     local H = adjustDimension(H_raw, rows, rows + 1)
-    local xOffset = math.floor((W_raw - W) / 2)
+    local xOffset = floor((W_raw - W) / 2)
 
     local contentW = W - ((cols - 1) * pad)
     local contentH = H - ((rows + 1) * pad)
@@ -561,14 +593,14 @@ function dashboard.renderLayout(widget, config)
             if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
 
             local rect = {x = x, y = y, w = w, h = h, box = box, isHeader = false}
-            table.insert(dashboard.boxRects, rect)
+            insert(dashboard.boxRects, rect)
 
             local rectIndex = #dashboard.boxRects
             dashboard._objectDirty[rectIndex] = nil
 
             if box.type then
                 local obj = dashboard.objectsByType[box.type]
-                if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, rectIndex) end
+                if obj and obj.scheduler and obj.wakeup then insert(scheduledBoxIndices, rectIndex) end
             end
         end
     end
@@ -593,13 +625,13 @@ function dashboard.renderLayout(widget, config)
             if idx == rightmost_idx then w = W_raw - geom.x end
 
             local rect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
-            table.insert(dashboard.boxRects, rect)
+            insert(dashboard.boxRects, rect)
             local idx_rect = #dashboard.boxRects
             dashboard._objectDirty[idx_rect] = nil
 
             if geom.box.type then
                 local obj = dashboard.objectsByType[geom.box.type]
-                if obj and obj.scheduler and obj.wakeup then table.insert(scheduledBoxIndices, idx_rect) end
+                if obj and obj.scheduler and obj.wakeup then insert(scheduledBoxIndices, idx_rect) end
             end
         end
     end
@@ -613,14 +645,14 @@ function dashboard.renderLayout(widget, config)
             log("Accelerating first wakeup pass with 100% objects per cycle", "info")
         end
 
-        objectWakeupsPerCycle = math.max(1, math.ceil(count * percentage))
+        objectWakeupsPerCycle = max(1, ceil(count * percentage))
         lastBoxRectsCount = count
 
         log("Object scheduler set to " .. objectWakeupsPerCycle .. " out of " .. count .. " boxes", "info")
     end
 
-    dashboard._loader_start_time = dashboard._loader_start_time or os.clock()
-    local loaderElapsed = os.clock() - dashboard._loader_start_time
+    dashboard._loader_start_time = dashboard._loader_start_time or clock()
+    local loaderElapsed = clock() - dashboard._loader_start_time
     if objectsThreadedWakeupCount < 1 or loaderElapsed < dashboard._loader_min_duration then
         local loaderY = (isFullScreen and headerLayout.height) or 0
         dashboard.loader(0, loaderY, W, H - loaderY)
@@ -711,12 +743,12 @@ function dashboard.renderLayout(widget, config)
             lcd.pen(1)
 
             for i = 1, h_cols - 1 do
-                local x = math.floor(i * (h_boxW + h_pad)) - math.floor(h_pad / 2)
+                local x = floor(i * (h_boxW + h_pad)) - floor(h_pad / 2)
                 lcd.drawLine(x, 0, x, headerLayout.height)
             end
 
             for i = 1, h_rows - 1 do
-                local y = math.floor(i * (h_boxH + h_pad)) - math.floor(h_pad / 2)
+                local y = floor(i * (h_boxH + h_pad)) - floor(h_pad / 2)
                 lcd.drawLine(0, y, W_raw, y)
             end
 
@@ -732,12 +764,12 @@ function dashboard.renderLayout(widget, config)
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
         for i = 1, cols - 1 do
-            local x = math.floor(i * (boxW + pad)) + xOffset - math.floor(pad / 2)
+            local x = floor(i * (boxW + pad)) + xOffset - floor(pad / 2)
             lcd.drawLine(x, headerOffset, x, H_raw + headerOffset)
         end
 
         for i = 1, rows - 1 do
-            local y = math.floor(i * (boxH + pad)) + pad + headerOffset
+            local y = floor(i * (boxH + pad)) + pad + headerOffset
             lcd.drawLine(0, y, W_raw, y)
         end
 
@@ -751,7 +783,7 @@ function dashboard.renderLayout(widget, config)
         local loopMs = (rfsuite.performance and rfsuite.performance.loop_ms) or 0
         local budgetMs = (rfsuite.performance and rfsuite.performance.budget_ms) or 50
         local tickMs = (rfsuite.performance and rfsuite.performance.tick_ms)
-        local headroomPct = math.max(0, 100 - (cpuUsage or 0))
+        local headroomPct = max(0, 100 - (cpuUsage or 0))
 
         local ramFreeKB = (rfsuite.performance and rfsuite.performance.luaRamKB) or 0
         local ramUsedGC_KB = (rfsuite.performance and rfsuite.performance.usedram) or 0
@@ -765,11 +797,11 @@ function dashboard.renderLayout(widget, config)
         local cfg = {padX = 8, padY = 6, colGap = 10, rowGap = 2, labelW = 170, valueW = 120, unitW = 30, sectionGap = 8, decimalsMS = 1, decimalsKB = 1, boxX = 4, boxY = 4 + headerOffset, bg = {0, 0, 0, 0.9}, fg = {255, 255, 255}, border = true, showActualPeriod = true}
 
         local function fmtPct(n) return rfsuite.utils.round(n or 0, 0) end
-        local function fmtMS(n) return string.format("%." .. cfg.decimalsMS .. "f", n or 0) end
-        local function fmtKB(n) return string.format("%." .. cfg.decimalsKB .. "f", n or 0) end
+        local function fmtMS(n) return format("%." .. cfg.decimalsMS .. "f", n or 0) end
+        local function fmtKB(n) return format("%." .. cfg.decimalsKB .. "f", n or 0) end
 
         local schedRows = {{"LOAD", fmtPct(cpuUsage), "%"}, {"LOAD (100ms window)", fmtPct(rfsuite.performance.cpuload_window100 or 0), "%"}, {"HEADROOM", fmtPct(headroomPct), "%"}, {"LOOP / BUDGET", fmtMS(loopMs) .. " / " .. fmtMS(budgetMs), "ms"}}
-        if cfg.showActualPeriod and tickMs then table.insert(schedRows, {"ACTUAL PERIOD", fmtMS(tickMs), "ms"}) end
+        if cfg.showActualPeriod and tickMs then insert(schedRows, {"ACTUAL PERIOD", fmtMS(tickMs), "ms"}) end
 
         local memRows = {{"LUA RAM FREE", fmtKB(ramFreeKB), "KB"}, {"LUA RAM USED (GC)", fmtKB(ramUsedGC_KB), "KB"}, {"SYSTEM RAM FREE", fmtKB(sysRamFreeKB), "KB"}, {"LUA BITMAP RAM", fmtKB(bitmapRamFreeKB), "KB"}}
 
@@ -780,8 +812,8 @@ function dashboard.renderLayout(widget, config)
         local boxH = cfg.padY * 2 + sectionHeaderH + (#schedRows * (lineH + cfg.rowGap)) + cfg.sectionGap + sectionHeaderH + (#memRows * (lineH + cfg.rowGap))
 
         local screenW, screenH = lcd.getWindowSize()
-        local boxX = math.floor((screenW - boxW) / 2)
-        local boxY = math.floor((screenH - boxH) / 2)
+        local boxX = floor((screenW - boxW) / 2)
+        local boxY = floor((screenH - boxH) / 2)
         local minY = 4 + headerOffset
         if boxY < minY then boxY = minY end
 
@@ -843,7 +875,7 @@ local function load_state_script(theme_folder, state, isFallback)
     if not theme_folder or theme_folder == "" then
         if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
         dashboard.themeFallbackUsed[state] = true
-        dashboard.themeFallbackTime[state] = os.clock()
+        dashboard.themeFallbackTime[state] = clock()
         return nil
     end
 
@@ -854,7 +886,7 @@ local function load_state_script(theme_folder, state, isFallback)
         if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
 
         dashboard.themeFallbackUsed[state] = true
-        dashboard.themeFallbackTime[state] = os.clock()
+        dashboard.themeFallbackTime[state] = clock()
         return nil
     end
 
@@ -865,7 +897,7 @@ local function load_state_script(theme_folder, state, isFallback)
     if not initChunk then
         if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
         dashboard.themeFallbackUsed[state] = true
-        dashboard.themeFallbackTime[state] = os.clock()
+        dashboard.themeFallbackTime[state] = clock()
         return nil
     end
 
@@ -873,7 +905,7 @@ local function load_state_script(theme_folder, state, isFallback)
     if not ok or type(initTable) ~= "table" then
         if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
         dashboard.themeFallbackUsed[state] = true
-        dashboard.themeFallbackTime[state] = os.clock()
+        dashboard.themeFallbackTime[state] = clock()
         return nil
     end
 
@@ -886,12 +918,12 @@ local function load_state_script(theme_folder, state, isFallback)
 
         log("dashboard: Could not load " .. scriptName .. " for " .. folder .. " or default: " .. tostring(chunkErr), "info")
         dashboard.themeFallbackUsed[state] = true
-        dashboard.themeFallbackTime[state] = os.clock()
+        dashboard.themeFallbackTime[state] = clock()
         return nil
     end
 
     dashboard.themeFallbackUsed[state] = (isFallback == true)
-    dashboard.themeFallbackTime[state] = isFallback and os.clock() or 0
+    dashboard.themeFallbackTime[state] = isFallback and clock() or 0
     setPath()
 
     if initTable.standalone then
@@ -901,7 +933,7 @@ local function load_state_script(theme_folder, state, isFallback)
         if not ok2 then
             if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
             dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = os.clock()
+            dashboard.themeFallbackTime[state] = clock()
             return nil
         end
         return module
@@ -998,7 +1030,7 @@ function dashboard.reload_themes(force)
     local mod = loadedStateModules[dashboard.flightmode or "preflight"]
     if mod and mod.boxes then
         local rawBoxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
-        for _, box in ipairs(rawBoxes or {}) do table.insert(boxes, box) end
+        for _, box in ipairs(rawBoxes or {}) do insert(boxes, box) end
     end
     dashboard.loadAllObjects(boxes)
 
@@ -1094,9 +1126,9 @@ function dashboard.paint(widget)
         return
     end
 
-    if os.clock() - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
+    if clock() - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
         local newModelPath = model.path()
-        lastModelPathCheckAt = os.clock()
+        lastModelPathCheckAt = clock()
         if newModelPath ~= lastModelPath then
             lastModelPath = newModelPath
 
@@ -1144,7 +1176,7 @@ function dashboard.event(widget, category, value, x, y)
 
     if category == 1 and value == TOUCH_MOVE then
         isSliding = true
-        isSlidingStart = os.clock()
+        isSlidingStart = clock()
     end
 
     if category == EVT_KEY and lcd.hasFocus() then
@@ -1228,7 +1260,7 @@ end
 
 function dashboard.wakeup_protected(widget)
 
-    local now = os.clock()
+    local now = clock()
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
@@ -1400,7 +1432,7 @@ end
 function dashboard.wakeup()
 
     -- early returns happen before the pcall to wakeup_protected
-    local now = os.clock()
+    local now = clock()
     if lastWakeup and (now - lastWakeup) < WAKEUP_MIN_INTERVAL then return end
 
     local visible = lcd.isVisible()

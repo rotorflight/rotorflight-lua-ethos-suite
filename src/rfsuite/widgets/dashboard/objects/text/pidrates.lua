@@ -51,6 +51,14 @@ Background
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local min = math.min
+local max = math.max
+local rep = string.rep
+local ipairs = ipairs
+local tostring = tostring
+local tonumber = tonumber
 
 local render = {}
 
@@ -121,7 +129,7 @@ local function ensureCfg(box)
         cfg.rowspacing = getParam(box, "rowspacing")
         cfg.rowfont = getParam(box, "rowfont")
         cfg.highlightlarger = getParam(box, "highlightlarger")
-        cfg.profilecount = math.max(1, math.min(6, tonumber(getParam(box, "profilecount")) or 6))
+        cfg.profilecount = max(1, min(6, tonumber(getParam(box, "profilecount")) or 6))
 
         cfg.novalue = getParam(box, "novalue") or "-"
         cfg.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
@@ -145,7 +153,7 @@ function render.wakeup(box)
 
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     else
         displayValue = utils.transformValue(value, box)

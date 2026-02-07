@@ -4,6 +4,20 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+local model = model
+
+local floor = math.floor
+local min = math.min
+local max = math.max
+local format = string.format
+local rep = string.rep
+local insert = table.insert
+local clock = os.clock
+local ipairs = ipairs
+local tostring = tostring
+local tonumber = tonumber
 
 local loaders = {}
 
@@ -70,7 +84,7 @@ local function fmtRfsuiteVersion()
     local minor = tonumber(v.minor) or 0
     local rev   = tonumber(v.revision) or 0
     local sfx   = v.suffix
-    local base = string.format("RFSUITE %d.%d.%d", major, minor, rev)
+    local base = format("RFSUITE %d.%d.%d", major, minor, rev)
     if sfx and sfx ~= "" then
         base = base .. "-" .. tostring(sfx)
     end
@@ -96,14 +110,14 @@ local function fmtEthosVersion()
         local minor = tonumber(info.minor) or 0
         local rev   = tonumber(info.revision) or 0
 
-        ver = string.format("%d.%d.%d", major, minor, rev)
+        ver = format("%d.%d.%d", major, minor, rev)
 
         if info.suffix and info.suffix ~= "" then
             ver = ver .. "-" .. tostring(info.suffix)
         end
     end
 
-    return string.format("%s %s", tostring(board), tostring(ver))
+    return format("%s %s", tostring(board), tostring(ver))
 end
 
 
@@ -111,15 +125,15 @@ end
 -- r is corner radius in pixels.
 local function drawFilledRoundRect(x, y, w, h, r)
     -- Round inputs once (avoid float leakage)
-    x = math.floor((x or 0) + 0.5)
-    y = math.floor((y or 0) + 0.5)
-    w = math.floor((w or 0) + 0.5)
-    h = math.floor((h or 0) + 0.5)
+    x = floor((x or 0) + 0.5)
+    y = floor((y or 0) + 0.5)
+    w = floor((w or 0) + 0.5)
+    h = floor((h or 0) + 0.5)
 
     if w <= 0 or h <= 0 then return end
 
-    r = math.floor((r or 0) + 0.5)
-    r = math.max(0, math.min(r, math.floor(math.min(w, h) / 2)))
+    r = floor((r or 0) + 0.5)
+    r = max(0, min(r, floor(min(w, h) / 2)))
 
     if r <= 0 or not lcd.drawFilledCircle then
         lcd.drawFilledRectangle(x, y, w, h)
@@ -148,14 +162,14 @@ local function drawFilledRoundRect(x, y, w, h, r)
 end
 
 local function drawRoundRectFrame(x, y, w, h, r, borderW)
-    x = math.floor((x or 0) + 0.5)
-    y = math.floor((y or 0) + 0.5)
-    w = math.floor((w or 0) + 0.5)
-    h = math.floor((h or 0) + 0.5)
+    x = floor((x or 0) + 0.5)
+    y = floor((y or 0) + 0.5)
+    w = floor((w or 0) + 0.5)
+    h = floor((h or 0) + 0.5)
     if w <= 0 or h <= 0 then return end
 
-    borderW = math.max(1, math.floor((borderW or 2) + 0.5))
-    r = math.floor((r or 0) + 0.5)
+    borderW = max(1, floor((borderW or 2) + 0.5))
+    r = floor((r or 0) + 0.5)
 
     drawFilledRoundRect(x, y, w, h, r)
 
@@ -167,7 +181,7 @@ local function drawRoundRectFrame(x, y, w, h, r, borderW)
             y + borderW,
             iw,
             ih,
-            math.max(0, r - borderW)
+            max(0, r - borderW)
         )
     end
 end
@@ -181,7 +195,7 @@ local function drawLogoImage(cx, cy, w, h, scale)
         -- scale is a ratio of the provided box size (min(w,h)).
         -- Default to 40% which works well for the rectangular loader panel.
         scale = scale or 0.40
-        local imgSize = math.min(w, h) * scale
+        local imgSize = min(w, h) * scale
         lcd.drawBitmap(cx - imgSize / 2, cy - imgSize / 2, bmp, imgSize, imgSize)
     end
 end
@@ -217,7 +231,7 @@ local function resolveLogLines(linesSrc, maxLines)
         -- Plain array of lines
         if #linesSrc > 0 then
             local out = {}
-            local start = math.max(1, #linesSrc - maxLines + 1)
+            local start = max(1, #linesSrc - maxLines + 1)
             for i = start, #linesSrc do out[#out + 1] = tostring(linesSrc[i]) end
             return out
         end
@@ -244,22 +258,22 @@ local function getWrappedTextLines(message, fonts, maxWidth, maxHeight)
 
     local function wrap(str)
         local words = {}
-        for w in str:gmatch("%S+") do table.insert(words, w) end
+        for w in str:gmatch("%S+") do insert(words, w) end
         local current = words[1] or ""
         for i = 2, #words do
             local test = current .. " " .. words[i]
             if lcd.getTextSize(test) <= maxWidth then
                 current = test
             else
-                table.insert(lines, current)
+                insert(lines, current)
                 current = words[i]
             end
         end
-        table.insert(lines, current)
+        insert(lines, current)
     end
 
     wrap(message)
-    local maxLines = math.floor(maxHeight / lineH)
+    local maxLines = floor(maxHeight / lineH)
     if #lines > maxLines then
         lines = {table.unpack(lines, 1, maxLines)}
         local last = lines[#lines]
@@ -297,17 +311,17 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     opts = opts or {}
 
     -- Panel size (roughly "50% screen area" by default)
-    local panelW = math.floor(w * (opts.panelWidthRatio or 0.7))
-    local panelH = math.floor(h * (opts.panelHeightRatio or 0.6))
-    local panelX = math.floor(x + (w - panelW) / 2 + 0.5)
-    local panelY = math.floor(y + (h - panelH) / 2 + 0.5)
+    local panelW = floor(w * (opts.panelWidthRatio or 0.7))
+    local panelH = floor(h * (opts.panelHeightRatio or 0.6))
+    local panelX = floor(x + (w - panelW) / 2 + 0.5)
+    local panelY = floor(y + (h - panelH) / 2 + 0.5)
 
     -- Prevent 1px clipping at the edges due to rounding
-    panelX = math.max(x + 1, math.min(panelX, x + w - panelW - 1))
-    panelY = math.max(y + 1, math.min(panelY, y + h - panelH - 1))
+    panelX = max(x + 1, min(panelX, x + w - panelW - 1))
+    panelY = max(y + 1, min(panelY, y + h - panelH - 1))
 
-    local borderW = opts.borderW or math.max(4, math.floor(math.min(panelW, panelH) * 0.06))
-    local cornerR = opts.cornerR or math.floor(math.min(panelW, panelH) * 0.14)
+    local borderW = opts.borderW or max(4, floor(min(panelW, panelH) * 0.06))
+    local cornerR = opts.cornerR or floor(min(panelW, panelH) * 0.14)
 
     -- Frame like the circle: bright outer, dark inner.
     local isDark = lcd.darkMode()
@@ -331,10 +345,10 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local innerH = panelH - 2 * borderW
     if innerW > 0 and innerH > 0 then
         lcd.color(inner)
-        drawFilledRoundRect(innerX, innerY, innerW, innerH, math.max(0, cornerR - borderW))
+        drawFilledRoundRect(innerX, innerY, innerW, innerH, max(0, cornerR - borderW))
     end
 
-    local pad = math.max(6, math.floor(panelH * 0.10))
+    local pad = max(6, floor(panelH * 0.10))
     local contentX = innerX + pad
     local contentY = innerY + pad
     local contentW = innerW - 2 * pad
@@ -342,9 +356,9 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     if contentW <= 1 or contentH <= 1 then return end
 
     -- Split: logo (top), console (bottom)
-    local splitGap = math.max(6, math.floor(contentH * (opts.splitGapRatio or 0.06)))
-    local logoH = math.floor(contentH * (opts.logoHeightRatio or 0.50))
-    logoH = math.max(1, math.min(logoH, contentH - splitGap - 1))
+    local splitGap = max(6, floor(contentH * (opts.splitGapRatio or 0.06)))
+    local logoH = floor(contentH * (opts.logoHeightRatio or 0.50))
+    logoH = max(1, min(logoH, contentH - splitGap - 1))
     local logH = contentH - logoH - splitGap
 
     local logoX = contentX
@@ -353,7 +367,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
     -- Right-side info column 
     local infoWRatio = opts.infoWRatio or 0.45   -- 0.30..0.42 feels good
-    local infoW = math.max(1, math.floor(logoW * infoWRatio))
+    local infoW = max(1, floor(logoW * infoWRatio))
 
     local logX = contentX
     local logY = contentY + logoH + splitGap
@@ -390,18 +404,18 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
         local bh = bmp:height()
 
         if type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
-            local padX = math.floor(logoAreaW * (opts.logoPadXRatio or 0.06))
-            local padY = math.floor(logoAreaH * (opts.logoPadYRatio or 0.18))
-            local boxW = math.max(1, logoAreaW - 2 * padX)
-            local boxH = math.max(1, logoAreaH - 2 * padY)
+            local padX = floor(logoAreaW * (opts.logoPadXRatio or 0.06))
+            local padY = floor(logoAreaH * (opts.logoPadYRatio or 0.18))
+            local boxW = max(1, logoAreaW - 2 * padX)
+            local boxH = max(1, logoAreaH - 2 * padY)
 
-            local scale = math.min(boxW / bw, boxH / bh) * (opts.logoScale or 1.0)
-            local drawW = math.max(1, math.floor(bw * scale))
-            local drawH = math.max(1, math.floor(bh * scale))
+            local scale = min(boxW / bw, boxH / bh) * (opts.logoScale or 1.0)
+            local drawW = max(1, floor(bw * scale))
+            local drawH = max(1, floor(bh * scale))
 
             lcd.drawBitmap(
-                math.floor(anchorX - drawW / 2),
-                math.floor(anchorY - drawH / 2),
+                floor(anchorX - drawW / 2),
+                floor(anchorY - drawH / 2),
                 bmp,
                 drawW,
                 drawH
@@ -424,18 +438,18 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
         local isDark = lcd.darkMode()
         local txt = isDark and lcd.RGB(255,255,255,1.0) or lcd.RGB(0,0,0,1.0)
 
-        local padX = math.max(4, math.floor(infoW * 0.10))
-        local padY = math.max(4, math.floor(infoH * 0.14))
+        local padX = max(4, floor(infoW * 0.10))
+        local padY = max(4, floor(infoH * 0.14))
         local iy = infoY + padY
 
         -- Vertical separator line (kept)
-        local sepW = math.max(1, math.floor(infoW * 0.02))
+        local sepW = max(1, floor(infoW * 0.02))
         local sepCol = isDark and lcd.RGB(90,90,90,1.0) or lcd.RGB(110,110,110,1.0)
         lcd.color(sepCol)
-        lcd.drawFilledRectangle(infoX + math.floor(sepW / 2), infoY + padY, sepW, math.max(1, infoH - 2 * padY))
+        lcd.drawFilledRectangle(infoX + floor(sepW / 2), infoY + padY, sepW, max(1, infoH - 2 * padY))
 
         -- Text starts after the separator with a little gap
-        local gap = math.max(6, math.floor(infoW * 0.03))
+        local gap = max(6, floor(infoW * 0.03))
         local tx = infoX + padX + sepW + gap
         local tw = (infoX + infoW) - tx - padX
 
@@ -471,9 +485,9 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local fontSize = opts.fontSize or FONT_XXS
     lcd.font(fontSize)
     local _, lineH = lcd.getTextSize("Ay")
-    lineH = math.max(1, lineH)
+    lineH = max(1, lineH)
 
-    local maxLines = math.max(1, math.floor((logH) / lineH))
+    local maxLines = max(1, floor((logH) / lineH))
     local lines = resolveLogLines(linesSrc, maxLines)
 
     -- If caller didn't pass a source, try common dashboard fields.
@@ -484,12 +498,12 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     -- Draw bottom-aligned (console), with safe padding.
     local safeTop = logY
     local safeBottom = logY + logH - 1
-    local n = math.min(#lines, maxLines)
+    local n = min(#lines, maxLines)
     local lastLineY = safeBottom - lineH
     for i = 1, n do
         local s = tostring(lines[#lines - n + i])
         s = ellipsizeRight(s, logW)
-        local yy = math.floor(lastLineY - (n - i) * lineH)
+        local yy = floor(lastLineY - (n - i) * lineH)
         if yy >= safeTop and (yy + lineH) <= (safeBottom + 1) then
             lcd.drawText(logX, yy, s)
         end
@@ -503,17 +517,17 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
     opts = opts or {}
 
     -- Panel size (mirrors logsLoader defaults)
-    local panelW = math.floor(w * (opts.panelWidthRatio or 0.7))
-    local panelH = math.floor(h * (opts.panelHeightRatio or 0.6))
-    local panelX = math.floor(x + (w - panelW) / 2 + 0.5)
-    local panelY = math.floor(y + (h - panelH) / 2 + 0.5)
+    local panelW = floor(w * (opts.panelWidthRatio or 0.7))
+    local panelH = floor(h * (opts.panelHeightRatio or 0.6))
+    local panelX = floor(x + (w - panelW) / 2 + 0.5)
+    local panelY = floor(y + (h - panelH) / 2 + 0.5)
 
     -- Prevent 1px clipping at the edges due to rounding
-    panelX = math.max(x + 1, math.min(panelX, x + w - panelW - 1))
-    panelY = math.max(y + 1, math.min(panelY, y + h - panelH - 1))
+    panelX = max(x + 1, min(panelX, x + w - panelW - 1))
+    panelY = max(y + 1, min(panelY, y + h - panelH - 1))
 
-    local borderW = opts.borderW or math.max(4, math.floor(math.min(panelW, panelH) * 0.06))
-    local cornerR = opts.cornerR or math.floor(math.min(panelW, panelH) * 0.14)
+    local borderW = opts.borderW or max(4, floor(min(panelW, panelH) * 0.06))
+    local cornerR = opts.cornerR or floor(min(panelW, panelH) * 0.14)
 
     local isDark = lcd.darkMode()
     local outer = isDark
@@ -534,10 +548,10 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
     local innerH = panelH - 2 * borderW
     if innerW > 0 and innerH > 0 then
         lcd.color(inner)
-        drawFilledRoundRect(innerX, innerY, innerW, innerH, math.max(0, cornerR - borderW))
+        drawFilledRoundRect(innerX, innerY, innerW, innerH, max(0, cornerR - borderW))
     end
 
-    local pad = math.max(6, math.floor(panelH * 0.10))
+    local pad = max(6, floor(panelH * 0.10))
     local contentX = innerX + pad
     local contentY = innerY + pad
     local contentW = innerW - 2 * pad
@@ -545,9 +559,9 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
     if contentW <= 1 or contentH <= 1 then return end
 
     -- Split: logo (top), message (bottom)
-    local splitGap = math.max(6, math.floor(contentH * (opts.splitGapRatio or 0.06)))
-    local logoH = math.floor(contentH * (opts.logoHeightRatio or 0.60))
-    logoH = math.max(1, math.min(logoH, contentH - splitGap - 1))
+    local splitGap = max(6, floor(contentH * (opts.splitGapRatio or 0.06)))
+    local logoH = floor(contentH * (opts.logoHeightRatio or 0.60))
+    logoH = max(1, min(logoH, contentH - splitGap - 1))
     local msgH = contentH - logoH - splitGap
 
     local logoX = contentX
@@ -571,18 +585,18 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
             local bh = bmp:height()
 
             if type(bw) == "number" and type(bh) == "number" and bw > 0 and bh > 0 then
-                local padX = math.floor(logoW * (opts.logoPadXRatio or 0.10))
-                local padY = math.floor(logoH * (opts.logoPadYRatio or 0.20))
-                local boxW = math.max(1, logoW - 2 * padX)
-                local boxH = math.max(1, logoH - 2 * padY)
+                local padX = floor(logoW * (opts.logoPadXRatio or 0.10))
+                local padY = floor(logoH * (opts.logoPadYRatio or 0.20))
+                local boxW = max(1, logoW - 2 * padX)
+                local boxH = max(1, logoH - 2 * padY)
 
-                local scale = math.min(boxW / bw, boxH / bh) * (opts.logoScale or 1.0)
-                local drawW = math.max(1, math.floor(bw * scale))
-                local drawH = math.max(1, math.floor(bh * scale))
+                local scale = min(boxW / bw, boxH / bh) * (opts.logoScale or 1.0)
+                local drawW = max(1, floor(bw * scale))
+                local drawH = max(1, floor(bh * scale))
 
                 lcd.drawBitmap(
-                    math.floor(cx - drawW / 2),
-                    math.floor(cy - drawH / 2),
+                    floor(cx - drawW / 2),
+                    floor(cy - drawH / 2),
                     bmp,
                     drawW,
                     drawH
@@ -610,8 +624,8 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
         msg = tostring(msg or "@i18n(app.msg_loading)@")
 
         if opts.animateDots ~= false then
-            local phase = math.floor((os.clock() * (opts.dotRate or 1.4)) % 4)
-            msg = msg .. string.rep(".", phase)
+            local phase = floor((clock() * (opts.dotRate or 1.4)) % 4)
+            msg = msg .. rep(".", phase)
         end
 
         local fonts = opts.fonts
@@ -620,17 +634,17 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
         end
         fonts = fonts or {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
 
-        local padY = math.max(2, math.floor(msgH * 0.10))
-        local textH = math.max(1, msgH - 2 * padY)
+        local padY = max(2, floor(msgH * 0.10))
+        local textH = max(1, msgH - 2 * padY)
 
         local lines, chosenFont, lineH = getWrappedTextLines(msg, fonts, msgW, textH)
         lcd.font(chosenFont)
 
         local totalH = #lines * lineH
-        local baseY = msgY + math.floor((msgH - totalH) / 2)
+        local baseY = msgY + floor((msgH - totalH) / 2)
         for i, line in ipairs(lines) do
             local tw = lcd.getTextSize(line)
-            lcd.drawText(msgX + math.floor((msgW - tw) / 2), baseY + (i - 1) * lineH, line)
+            lcd.drawText(msgX + floor((msgW - tw) / 2), baseY + (i - 1) * lineH, line)
         end
     end
 end

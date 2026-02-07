@@ -32,6 +32,7 @@
 ]]
 
 local rfsuite = require("rfsuite")
+local model = model
 
 local render = {}
 

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 

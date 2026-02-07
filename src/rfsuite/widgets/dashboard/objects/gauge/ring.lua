@@ -55,6 +55,13 @@ Battery Ring Mode (Optional fuel-based battery style)
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local floor = math.floor
+local min = math.min
+local max = math.max
+local format = string.format
+local rep = string.rep
 
 local render = {}
 
@@ -82,7 +89,7 @@ end
 local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
     lcd.color(color)
     local outer = radius
-    local inner = math.max(1, radius - (thickness or 6))
+    local inner = max(1, radius - (thickness or 6))
 
     startAngle = startAngle % 360
     endAngle = endAngle % 360
@@ -115,8 +122,8 @@ function render.wakeup(box)
     if ringbatt and telemetry and telemetry.getSensor then
         fuel = telemetry.getSensor("fuel") or 0
         consumption = telemetry.getSensor("consumption") or 0
-        percent = math.max(0, math.min(1, fuel / 100))
-        mahUnit = string.format("%dmah", math.floor(consumption + 0.5))
+        percent = max(0, min(1, fuel / 100))
+        mahUnit = format("%dmah", floor(consumption + 0.5))
 
         local override = getParam(box, "ringbattsubtext")
         if override == "" or override == false then
@@ -146,7 +153,7 @@ function render.wakeup(box)
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end
@@ -229,10 +236,10 @@ function render.paint(x, y, w, h, box)
     end
 
     local ringPadding = 2
-    local baseSize = math.min(w, h - (c.title and ringPadding * 2 or 0))
-    local ringSize = math.min(0.88 * (c.title and 1 or 1.05), 1.0)
+    local baseSize = min(w, h - (c.title and ringPadding * 2 or 0))
+    local ringSize = min(0.88 * (c.title and 1 or 1.05), 1.0)
     local radius = baseSize * 0.5 * ringSize
-    local thickness = c.thickness or math.max(8, radius * 0.18)
+    local thickness = c.thickness or max(8, radius * 0.18)
 
     if c.ringbatt then
 

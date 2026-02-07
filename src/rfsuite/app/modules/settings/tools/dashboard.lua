@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local S_PAGES = {
     [1] = {name = "@i18n(app.modules.settings.dashboard_theme)@", script = "dashboard_theme.lua", image = "dashboard_theme.png"}, 

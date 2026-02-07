@@ -4,11 +4,17 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-
+local lcd = lcd
+local system = system
 local app = rfsuite.app
+local tasks = rfsuite.tasks
+local rfutils = rfsuite.utils
+local session = rfsuite.session
+local prefs = rfsuite.preferences
+
 local formFields = app.formFields
 local formLines = app.formLines
-local radio = rfsuite.app.radio
+local radio = app.radio
 
 local enableWakeup = false
 local haveData = false
@@ -24,12 +30,12 @@ local function saveData()
     local snap = APIDATA["GOVERNOR_CONFIG"]
     local form = FORMDATA["GOVERNOR_CONFIG"]
     if not snap or not snap.values or not form then
-        rfsuite.utils.log("Save failed: missing GOVERNOR_CONFIG snapshot", "error")
-        rfsuite.app.triggers.closeProgressLoader = true
+        rfutils.log("Save failed: missing GOVERNOR_CONFIG snapshot", "error")
+        app.triggers.closeProgressLoader = true
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+    local API = tasks.msp.api.load("GOVERNOR_CONFIG")
     API.setRebuildOnWrite(true)
 
     -- restore snapshot values
@@ -49,9 +55,9 @@ local function saveData()
 
     API.setCompleteHandler(function()
         -- EEPROM commit
-        local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+        local EAPI = tasks.msp.api.load("EEPROM_WRITE")
         EAPI.setCompleteHandler(function()
-            rfsuite.app.triggers.closeProgressLoader = true
+            app.triggers.closeProgressLoader = true
         end)
         EAPI.write()
     end)
@@ -71,7 +77,7 @@ local function loadData()
             return dst
         end
 
-        local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
+        local API = tasks.msp.api.load("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
 
             -- store form data
@@ -97,7 +103,7 @@ local function loadData()
             APIDATA["GOVERNOR_CONFIG"]['other']              = copyTable(d.other)
 
 
-            rfsuite.utils.log("Governor Bypass Throttle Curves loaded", "info")   
+            rfutils.log("Governor Bypass Throttle Curves loaded", "info")   
             haveData = true
             isDirty = true
             
@@ -109,21 +115,21 @@ end
 
 local function openPage(idx, title, script)
 
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-    rfsuite.app.triggers.isReady = false
+    app.uiState = app.uiStatus.pages
+    app.triggers.isReady = false
 
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
+    app.lastIdx = idx
+    app.lastTitle = title
+    app.lastScript = script
+    session.lastPage = script
 
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    app.uiState = app.uiStatus.pages
 
     local longPage = false
 
     form.clear()
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.governor.menu_curves_long)@")
+    app.ui.fieldHeader("@i18n(app.modules.governor.menu_curves_long)@")
 
 
     local res = system.getVersion()
@@ -195,8 +201,8 @@ local function wakeup()
     if enableWakeup == false then return end
 
     -- we are compromised if we don't have governor mode known
-    if rfsuite.session.governorMode == nil then
-        rfsuite.app.ui.openMainMenu()
+    if session.governorMode == nil then
+        app.ui.openMainMenu()
         return
     end
 
@@ -209,7 +215,7 @@ local function wakeup()
     end
 
     if triggerSave then
-        rfsuite.app.ui.progressDisplay(
+        app.ui.progressDisplay(
             "@i18n(app.msg_saving_settings)@",
             "@i18n(app.msg_saving_to_fbl)@"
         )
@@ -222,14 +228,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "governor/governor.lua")
+        app.ui.openPage(pidx, title, "governor/governor.lua")
         return true
     end
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(pidx, title, "governor/governor.lua")
+    app.ui.progressDisplay()
+    app.ui.openPage(pidx, title, "governor/governor.lua")
     return true
 end
 
@@ -324,7 +330,7 @@ end
 
 local function onSaveMenu()
 
-    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+    if prefs.general.save_confirm == false or prefs.general.save_confirm == "false" then
         triggerSave = true
         return
     end   
@@ -353,7 +359,7 @@ local function onSaveMenu()
 end
 
 local function onReloadMenu()
-    rfsuite.app.triggers.triggerReloadFull = true
+    app.triggers.triggerReloadFull = true
 end
 
 return {apidata = apidata, reboot = true, onSaveMenu = onSaveMenu, onReloadMenu = onReloadMenu, eepromWrite = true, paint = paint, openPage = openPage, postSave = postSave, onNavMenu = onNavMenu, event = event, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}}
