@@ -454,6 +454,45 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
+    if preferences and preferences.developer and preferences.developer.memstats then
+        local mem_kb = collectgarbage("count")
+        local function tcount(t)
+            if type(t) ~= "table" then return 0 end
+            local n = 0
+            for _ in pairs(t) do n = n + 1 end
+            return n
+        end
+        local apidata = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata
+        local apiLoader = tasks and tasks.msp and tasks.msp.api
+        local cbq = tasks and tasks.callback and tasks.callback._queue
+        local pageLabel = (app and app.lastScript) or (app and app.Page and app.Page.pageTitle) or "?"
+        local function gfxMaskCount()
+            if not app or type(app.gfx_buttons) ~= "table" then return 0 end
+            local total = 0
+            for _, section in pairs(app.gfx_buttons) do
+                if type(section) == "table" then
+                    for _ in pairs(section) do total = total + 1 end
+                end
+            end
+            return total
+        end
+        utils.log(string.format(
+            "[mem] cleanup start: %.1f KB | page=%s | apidata v=%d s=%d b=%d bc=%d p=%d o=%d | apiCache file=%d chunk=%d | help=%d gfx=%d cbq=%d",
+            mem_kb, tostring(pageLabel),
+            tcount(apidata and apidata.values),
+            tcount(apidata and apidata.structure),
+            tcount(apidata and apidata.receivedBytes),
+            tcount(apidata and apidata.receivedBytesCount),
+            tcount(apidata and apidata.positionmap),
+            tcount(apidata and apidata.other),
+            tcount(apiLoader and apiLoader._fileExistsCache),
+            tcount(apiLoader and apiLoader._chunkCache),
+            tcount(ui._helpCache),
+            gfxMaskCount(),
+            tcount(cbq)
+        ), "debug")
+    end
+
     -- Let the current page release resources.
     if app.Page then
         local hook = app.Page.close or app.Page.onClose or app.Page.destroy
@@ -466,6 +505,22 @@ function ui.cleanupCurrentPage()
     end
 
     if app.Page and app.Page.apidata then
+        -- Drop cached MSP API data for just this page's APIs.
+        if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and app.Page.apidata.api then
+            local apidata = tasks.msp.api.apidata
+            for _, v in ipairs(app.Page.apidata.api) do
+                local apiKey = type(v) == "string" and v or v.name
+                if apiKey then
+                    if apidata.values then apidata.values[apiKey] = nil end
+                    if apidata.structure then apidata.structure[apiKey] = nil end
+                    if apidata.receivedBytes then apidata.receivedBytes[apiKey] = nil end
+                    if apidata.receivedBytesCount then apidata.receivedBytesCount[apiKey] = nil end
+                    if apidata.positionmap then apidata.positionmap[apiKey] = nil end
+                    if apidata.other then apidata.other[apiKey] = nil end
+                end
+            end
+        end
+
         if app.Page.apidata.formdata then
             if app.Page.apidata.formdata.rows then for i = 1, #app.Page.apidata.formdata.rows do app.Page.apidata.formdata.rows[i] = nil end end
             if app.Page.apidata.formdata.cols then for i = 1, #app.Page.apidata.formdata.cols do app.Page.apidata.formdata.cols[i] = nil end end
@@ -488,6 +543,47 @@ function ui.cleanupCurrentPage()
 
     app.Page = nil
     app.PageTmp = nil
+
+    collectgarbage('collect')
+
+    if preferences and preferences.developer and preferences.developer.memstats then
+        local mem_kb = collectgarbage("count")
+        local function tcount(t)
+            if type(t) ~= "table" then return 0 end
+            local n = 0
+            for _ in pairs(t) do n = n + 1 end
+            return n
+        end
+        local apidata = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata
+        local apiLoader = tasks and tasks.msp and tasks.msp.api
+        local cbq = tasks and tasks.callback and tasks.callback._queue
+        local pageLabel = (app and app.lastScript) or (app and app.Page and app.Page.pageTitle) or "?"
+        local function gfxMaskCount()
+            if not app or type(app.gfx_buttons) ~= "table" then return 0 end
+            local total = 0
+            for _, section in pairs(app.gfx_buttons) do
+                if type(section) == "table" then
+                    for _ in pairs(section) do total = total + 1 end
+                end
+            end
+            return total
+        end
+        utils.log(string.format(
+            "[mem] cleanup end: %.1f KB | page=%s | apidata v=%d s=%d b=%d bc=%d p=%d o=%d | apiCache file=%d chunk=%d | help=%d gfx=%d cbq=%d",
+            mem_kb, tostring(pageLabel),
+            tcount(apidata and apidata.values),
+            tcount(apidata and apidata.structure),
+            tcount(apidata and apidata.receivedBytes),
+            tcount(apidata and apidata.receivedBytesCount),
+            tcount(apidata and apidata.positionmap),
+            tcount(apidata and apidata.other),
+            tcount(apiLoader and apiLoader._fileExistsCache),
+            tcount(apiLoader and apiLoader._chunkCache),
+            tcount(ui._helpCache),
+            gfxMaskCount(),
+            tcount(cbq)
+        ), "debug")
+    end
 end
 
 function ui.resetPageState(activesection)
@@ -726,6 +822,31 @@ function ui.openMainMenuSub(activesection)
                     end
                 end
             end
+        end
+    end
+
+    -- Aggressive cache clearing on page exit to minimize memory retention.
+    if app and type(app.gfx_buttons) == "table" then
+        app.gfx_buttons = {}
+        if preferences and preferences.developer and preferences.developer.memstats then
+            utils.log("[mem] gfx cache cleared on page exit", "debug")
+        end
+    end
+
+    if tasks and tasks.msp and tasks.msp.api then
+        if tasks.msp.api.clearFileExistsCache then tasks.msp.api.clearFileExistsCache() end
+        if tasks.msp.api.clearChunkCache then tasks.msp.api.clearChunkCache() end
+        if preferences and preferences.developer and preferences.developer.memstats then
+            utils.log("[mem] msp api caches cleared on page exit", "debug")
+        end
+    end
+
+    -- Trim MSP API file-exists cache if it grows (can creep with many module/API loads).
+    if tasks and tasks.msp and tasks.msp.api and tasks.msp.api._fileExistsCache then
+        local cache = tasks.msp.api._fileExistsCache
+        local n = 0
+        for _ in pairs(cache) do n = n + 1 end
+            tasks.msp.api.clearFileExistsCache()
         end
     end
 
