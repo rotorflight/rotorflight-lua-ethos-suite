@@ -100,7 +100,15 @@ def _get_app_dir():
 
 
 APP_DIR = _get_app_dir()
-WORK_DIR = APP_DIR / "rfsuite_updater_work"
+def _get_work_dir():
+    # Keep runtime files out of the current working directory on macOS/Linux.
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "rfsuite-updater"
+    if sys.platform.startswith("linux"):
+        return Path.home() / ".local" / "share" / "rfsuite-updater"
+    return APP_DIR / "rfsuite_updater_work"
+
+WORK_DIR = _get_work_dir()
 try:
     WORK_DIR.mkdir(parents=True, exist_ok=True)
 except Exception:
@@ -1996,7 +2004,7 @@ def main():
         root.protocol("WM_DELETE_WINDOW", on_close)
         root.mainloop()
     except Exception:
-        error_log = Path(__file__).resolve().parent / "updater_error.log"
+        error_log = WORK_DIR / "updater_error.log"
         with open(error_log, "w", encoding="utf-8") as f:
             f.write(traceback.format_exc())
         try:
