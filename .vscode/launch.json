@@ -112,7 +112,8 @@
         "es",
         "it",
         "pt-br",
-        "no"
+        "no",
+        "cs"
       ],
       "default": "en"
     }

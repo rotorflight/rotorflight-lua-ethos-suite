@@ -1,0 +1,32 @@
+{
+  "erase_dataflash": {
+    "english": "Erase dataflash",
+    "translation": "Erase dataflash",
+    "needs_translation": false
+  },
+  "erasing": {
+    "english": "Erasing...",
+    "translation": "Erasing...",
+    "needs_translation": false
+  },
+  "display": {
+    "english": "Display",
+    "translation": "Display",
+    "needs_translation": false
+  },
+  "display_free": {
+    "english": "Free",
+    "translation": "Free",
+    "needs_translation": false
+  },
+  "display_used": {
+    "english": "Used",
+    "translation": "Pouzito",
+    "needs_translation": false
+  },
+  "display_outof": {
+    "english": "Used/Total",
+    "translation": "Pouzito/Celkem",
+    "needs_translation": false
+  }
+}

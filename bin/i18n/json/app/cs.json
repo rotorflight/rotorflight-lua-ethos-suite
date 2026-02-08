@@ -1,0 +1,4695 @@
+{
+  "header_configuration": {
+    "english": "Configuration",
+    "translation": "Konfigurace",
+    "needs_translation": false
+  },
+  "header_system": {
+    "english": "System",
+    "translation": "System",
+    "needs_translation": false
+  },
+  "header_help": {
+    "english": "Help",
+    "translation": "Napoveda",
+    "needs_translation": false
+  },
+  "btn_ok": {
+    "english": "          OK           ",
+    "translation": "          OK           ",
+    "needs_translation": false
+  },
+  "btn_close": {
+    "english": "CLOSE",
+    "translation": "ZAVRIT",
+    "needs_translation": false
+  },
+  "navigation_menu": {
+    "english": "BACK",
+    "translation": "ZPET",
+    "needs_translation": false
+  },
+  "menu_section_hardware": {
+    "english": "Hardware",
+    "translation": "Hardware",
+    "needs_translation": false
+  },
+  "msg_please_disarm_to_save_warning": {
+    "english": "Settings will only be saved to eeprom on disarm",
+    "translation": "Nastaveni will only be saved to eeprom on disarm",
+    "needs_translation": false
+  },
+  "msg_saving_settings": {
+    "english": "Saving settings...",
+    "translation": "Saving Nastaveni...",
+    "needs_translation": false
+  },
+  "msg_saving_to_fbl": {
+    "english": "Saving data to flight controller...",
+    "translation": "Saving data to flight controller...",
+    "needs_translation": false
+  },
+  "navigation_reload": {
+    "english": "RELOAD",
+    "translation": "NAHRAT",
+    "needs_translation": false
+  },
+  "menu_section_developer": {
+    "english": "Developer",
+    "translation": "Vyvojar",
+    "needs_translation": false
+  },
+  "check_msp_version": {
+    "english": "Unable to determine MSP version in use.",
+    "translation": "Nelze zjistit verzi MSP v pouziti.",
+    "needs_translation": false
+  },
+  "menu_section_about": {
+    "english": "About",
+    "translation": "programu",
+    "needs_translation": false
+  },
+  "msg_please_disarm_to_save": {
+    "english": "Please disarm to save",
+    "translation": "Odzbrojte pro ulozeni",
+    "needs_translation": false
+  },
+  "unit_hertz": {
+    "english": "Hz",
+    "translation": "Hz",
+    "needs_translation": false
+  },
+  "msg_rebooting": {
+    "english": "Rebooting...",
+    "translation": "Restartuji...",
+    "needs_translation": false
+  },
+  "msg_save_settings": {
+    "english": "Save settings",
+    "translation": "Ulozit Nastaveni",
+    "needs_translation": false
+  },
+  "btn_cancel": {
+    "english": "CANCEL",
+    "translation": "ZRUSIT",
+    "needs_translation": false
+  },
+  "msg_connecting_to_fbl": {
+    "english": "Connecting to flight controller...",
+    "translation": "Connecting to flight controller...",
+    "needs_translation": false
+  },
+  "navigation_help": {
+    "english": "?",
+    "translation": "?",
+    "needs_translation": false
+  },
+  "modules": {
+    "diagnostics": {
+      "name": {
+        "english": "Diagnostics",
+        "translation": "Diagnostika",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
+        "translation": "This module provides various tools to Napoveda diagnose issues with your flight controller or Konfigurace.",
+        "needs_translation": false
+      }
+    },
+    "stats": {
+      "name": {
+        "english": "Stats",
+        "translation": "Statistiky",
+        "needs_translation": false
+      },
+      "totalflighttime": {
+        "english": "Total Flight Time",
+        "translation": "Celkem Flight Cas",
+        "needs_translation": false
+      },
+      "flightcount": {
+        "english": "Flight Count",
+        "translation": "Flight Count",
+        "needs_translation": false
+      },
+      "lastflighttime": {
+        "english": "Last Flight Time",
+        "translation": "Last Flight Cas",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Use this module to update the recorded flight statistics on the flight controller.",
+        "translation": "Use this module to update the recorded flight statistics on the flight controller.",
+        "needs_translation": false
+      }
+    },
+    "settings": {
+      "name": {
+        "english": "Settings",
+        "translation": "Nastaveni",
+        "needs_translation": false
+      },
+      "dashboard": {
+        "english": "Dashboard",
+        "translation": "Dashboard",
+        "needs_translation": false
+      },
+      "txt_overlaygrid": {
+        "english": "Overlay grid in dashboard",
+        "translation": "Overlay mrizka v Dashboard",
+        "needs_translation": false
+      },
+      "txt_overlaystats": {
+        "english": "Overlay stats in dashboard",
+        "translation": "Overlay statistiky v Dashboard",
+        "needs_translation": false
+      },
+      "txt_overlaystatsadmin": {
+        "english": "Overlay stats in admin",
+        "translation": "Overlay statistiky v admin",
+        "needs_translation": false
+      },
+      "no_themes_available_to_configure": {
+        "english": "No configurable themes installed on this device",
+        "translation": "No configurable themes installed on this device",
+        "needs_translation": false
+      },
+      "txt_audio_timer": {
+        "english": "Timer",
+        "translation": "Timer",
+        "needs_translation": false
+      },
+      "txt_audio_events": {
+        "english": "Events",
+        "translation": "Udalosti",
+        "needs_translation": false
+      },
+      "txt_audio_switches": {
+        "english": "Switches",
+        "translation": "Prepinace",
+        "needs_translation": false
+      },
+      "txt_iconsize": {
+        "english": "Icon Size",
+        "translation": "Velikost ikony",
+        "needs_translation": false
+      },
+      "txt_general": {
+        "english": "General",
+        "translation": "Obecne",
+        "needs_translation": false
+      },
+      "txt_text": {
+        "english": "TEXT",
+        "translation": "TEXT",
+        "needs_translation": false
+      },
+      "txt_small": {
+        "english": "SMALL",
+        "translation": "SMALL",
+        "needs_translation": false
+      },
+      "txt_large": {
+        "english": "LARGE",
+        "translation": "LARGE",
+        "needs_translation": false
+      },
+      "txt_syncname": {
+        "english": "Sync model name",
+        "translation": "Synchronizovat nazev modelu",
+        "needs_translation": false
+      },
+      "txt_hs_loader": {
+        "english": "Progress Loader",
+        "translation": "Nacitani prubehu",
+        "needs_translation": false
+      },
+      "txt_hs_loader_fastclose": {
+        "english": "CLOSE ASAP",
+        "translation": "ZAVRIT HNED",
+        "needs_translation": false
+      },
+      "txt_hs_loader_wait": {
+        "english": "CLOSE AT 100%",
+        "translation": "ZAVRIT PRI 100%",
+        "needs_translation": false
+      },
+      "txt_apiversion": {
+        "english": "SIM API Version",
+        "translation": "SIM API verze",
+        "needs_translation": false
+      },
+      "txt_logging": {
+        "english": "Logging",
+        "translation": "Logovani",
+        "needs_translation": false
+      },
+      "txt_objectprofiler": {
+        "english": "Log dashboard speed",
+        "translation": "Log Dashboard Rychlost",
+        "needs_translation": false
+      },
+      "txt_compilation": {
+        "english": "Compilation",
+        "translation": "Kompilace",
+        "needs_translation": false
+      },
+      "txt_loglocation": {
+        "english": "Log location",
+        "translation": "Umisteni logu",
+        "needs_translation": false
+      },
+      "txt_console": {
+        "english": "CONSOLE",
+        "translation": "KONZOLE",
+        "needs_translation": false
+      },
+      "txt_consolefile": {
+        "english": "CONSOLE & FILE",
+        "translation": "KONZOLE & FILE",
+        "needs_translation": false
+      },
+      "txt_loglevel": {
+        "english": "Log level",
+        "translation": "Log level",
+        "needs_translation": false
+      },
+      "txt_off": {
+        "english": "OFF",
+        "translation": "OFF",
+        "needs_translation": false
+      },
+      "txt_info": {
+        "english": "INFO",
+        "translation": "INFO",
+        "needs_translation": false
+      },
+      "txt_debug": {
+        "english": "DEBUG",
+        "translation": "DEBUG",
+        "needs_translation": false
+      },
+      "txt_mspdata": {
+        "english": "Log msp data",
+        "translation": "Log msp data",
+        "needs_translation": false
+      },
+      "txt_mspstatusdialog": {
+        "english": "MSP Activity Display",
+        "translation": "MSP Activity Display",
+        "needs_translation": false
+      },
+      "txt_queuesize": {
+        "english": "Log MSP queue size",
+        "translation": "Log MSP fronty",
+        "needs_translation": false
+      },
+      "txt_taskprofiler": {
+        "english": "Log tasks speed",
+        "translation": "Log tasks Rychlost",
+        "needs_translation": false
+      },
+      "txt_memusage": {
+        "english": "Log memory usage",
+        "translation": "Log pouziti pameti",
+        "needs_translation": false
+      },
+      "txt_batttype": {
+        "english": "Tx Battery Options",
+        "translation": "Tx Battery Options",
+        "needs_translation": false
+      },
+      "txt_battdef": {
+        "english": "Default",
+        "translation": "Default",
+        "needs_translation": false
+      },
+      "txt_batttext": {
+        "english": "Text",
+        "translation": "Text",
+        "needs_translation": false
+      },
+      "txt_battdig": {
+        "english": "Digital",
+        "translation": "Digital",
+        "needs_translation": false
+      },
+      "dashboard_theme": {
+        "english": "Theme",
+        "translation": "Tema",
+        "needs_translation": false
+      },
+      "dashboard_theme_panel_global": {
+        "english": "Default theme for all models",
+        "translation": "Default Tema for all models",
+        "needs_translation": false
+      },
+      "dashboard_theme_panel_model": {
+        "english": "Optional theme for this model",
+        "translation": "Volitelne tema pro tento model",
+        "needs_translation": false
+      },
+      "dashboard_theme_panel_model_disabled": {
+        "english": "Disabled",
+        "translation": "Disabled",
+        "needs_translation": false
+      },
+      "dashboard_settings": {
+        "english": "Settings",
+        "translation": "Nastaveni",
+        "needs_translation": false
+      },
+      "dashboard_loader": {
+        "english": "Loader",
+        "translation": "Loader",
+        "needs_translation": false
+      },
+      "loader_style_small": {
+        "english": "SMALL",
+        "translation": "SMALL",
+        "needs_translation": false
+      },
+      "loader_style_medium": {
+        "english": "MEDIUM",
+        "translation": "MEDIUM",
+        "needs_translation": false
+      },
+      "loader_style_large": {
+        "english": "LARGE",
+        "translation": "LARGE",
+        "needs_translation": false
+      },
+      "dashboard_loader_loader_style_select": {
+        "english": "Theme loader style",
+        "translation": "Tema loader style",
+        "needs_translation": false
+      },
+      "dashboard_theme_preflight": {
+        "english": "Preflight Theme",
+        "translation": "Tema pred letem",
+        "needs_translation": false
+      },
+      "dashboard_theme_inflight": {
+        "english": "Inflight Theme",
+        "translation": "Tema v letu",
+        "needs_translation": false
+      },
+      "dashboard_theme_postflight": {
+        "english": "Postflight Theme",
+        "translation": "Tema po letu",
+        "needs_translation": false
+      },
+      "audio": {
+        "english": "Audio",
+        "translation": "Audio",
+        "needs_translation": false
+      },
+      "localizations": {
+        "english": "Localization",
+        "translation": "Lokalizace",
+        "needs_translation": false
+      },
+      "txt_save_confirm": {
+        "english": "Confirm on save",
+        "translation": "Confirm on Ulozit",
+        "needs_translation": false
+      },
+      "txt_save_armed_warning": {
+        "english": "Show disarm-to-save warning",
+        "translation": "Show disarm-to-Ulozit Varovani",
+        "needs_translation": false
+      },
+      "txt_reload_confirm": {
+        "english": "Confirm on reload",
+        "translation": "Confirm on Nahrat",
+        "needs_translation": false
+      },
+      "txt_development": {
+        "english": "Development",
+        "translation": "Development",
+        "needs_translation": false
+      },
+      "temperature_unit": {
+        "english": "Temperature Unit",
+        "translation": "Jednotka teploty",
+        "needs_translation": false
+      },
+      "altitude_unit": {
+        "english": "Altitude Unit",
+        "translation": "Jednotka vysky",
+        "needs_translation": false
+      },
+      "celcius": {
+        "english": "Celsius",
+        "translation": "Celsius",
+        "needs_translation": false
+      },
+      "fahrenheit": {
+        "english": "Fahrenheit",
+        "translation": "Fahrenheit",
+        "needs_translation": false
+      },
+      "meters": {
+        "english": "Meters",
+        "translation": "Metry",
+        "needs_translation": false
+      },
+      "feet": {
+        "english": "Feet",
+        "translation": "Stopy",
+        "needs_translation": false
+      },
+      "warning": {
+        "english": "Warning",
+        "translation": "Varovani",
+        "needs_translation": false
+      },
+      "governor_state": {
+        "english": "Governor State",
+        "translation": "Stav governoru",
+        "needs_translation": false
+      },
+      "arming_flags": {
+        "english": "Arming Flags",
+        "translation": "Arming Flags",
+        "needs_translation": false
+      },
+      "voltage": {
+        "english": "Voltage",
+        "translation": "Voltage",
+        "needs_translation": false
+      },
+      "pid_rates_profile": {
+        "english": "PID/Rates Profile",
+        "translation": "Profil PID/Rate",
+        "needs_translation": false
+      },
+      "pid_profile": {
+        "english": "PID Profile",
+        "translation": "Profil PID",
+        "needs_translation": false
+      },
+      "rate_profile": {
+        "english": "Rate Profile",
+        "translation": "Rate Profil",
+        "needs_translation": false
+      },
+      "esc_temperature": {
+        "english": "ESC Temperature",
+        "translation": "Teplota ESC",
+        "needs_translation": false
+      },
+      "esc_threshold": {
+        "english": "Threshold (°)",
+        "translation": "Mez ()",
+        "needs_translation": false
+      },
+      "bec_voltage": {
+        "english": "BEC Voltage",
+        "translation": "BEC Voltage",
+        "needs_translation": false
+      },
+      "bec_threshold": {
+        "english": "Threshold (V)",
+        "translation": "Mez (V)",
+        "needs_translation": false
+      },
+      "fuel": {
+        "english": "Fuel",
+        "translation": "Fuel",
+        "needs_translation": false
+      },
+      "fuel_callout_default": {
+        "english": "Default (Only at 10%)",
+        "translation": "Default (Only at 10%)",
+        "needs_translation": false
+      },
+      "fuel_callout_5": {
+        "english": "50% and 5%",
+        "translation": "50% and 5%",
+        "needs_translation": false
+      },
+      "fuel_callout_10": {
+        "english": "Every 10%",
+        "translation": "Kazde 10%",
+        "needs_translation": false
+      },
+      "fuel_callout_20": {
+        "english": "Every 20%",
+        "translation": "Kazde 20%",
+        "needs_translation": false
+      },
+      "fuel_callout_25": {
+        "english": "Every 25%",
+        "translation": "Kazde 25%",
+        "needs_translation": false
+      },
+      "fuel_callout_50": {
+        "english": "Every 50%",
+        "translation": "Kazde 50%",
+        "needs_translation": false
+      },
+      "fuel_callout_percent": {
+        "english": "Callout %",
+        "translation": "Hlaseni %",
+        "needs_translation": false
+      },
+      "fuel_repeats_below": {
+        "english": "Repeats below 0%",
+        "translation": "Opakovat pod 0%",
+        "needs_translation": false
+      },
+      "fuel_haptic_below": {
+        "english": "Haptic below 0%",
+        "translation": "Haptika pod 0%",
+        "needs_translation": false
+      },
+      "timer_alerting": {
+        "english": "Timer Alerting",
+        "translation": "Upozorneni timeru",
+        "needs_translation": false
+      },
+      "timer_elapsed_alert_mode": {
+        "english": "Timer Elapsed Alert",
+        "translation": "Timer Elapsed Alert",
+        "needs_translation": false
+      },
+      "timer_prealert_options": {
+        "english": "Pre-timer Alert Options",
+        "translation": "Pre-Timer Alert Options",
+        "needs_translation": false
+      },
+      "timer_prealert": {
+        "english": "Pre-timer Alert",
+        "translation": "Pre-Timer Alert",
+        "needs_translation": false
+      },
+      "timer_alert_period": {
+        "english": "Alert Period",
+        "translation": "Alert Period",
+        "needs_translation": false
+      },
+      "timer_postalert_options": {
+        "english": "Post-timer Alert Options",
+        "translation": "Post-Timer Alert Options",
+        "needs_translation": false
+      },
+      "timer_postalert": {
+        "english": "Post-timer Alert",
+        "translation": "Post-Timer Alert",
+        "needs_translation": false
+      },
+      "timer_postalert_period": {
+        "english": "Alert Period",
+        "translation": "Alert Period",
+        "needs_translation": false
+      },
+      "timer_postalert_interval": {
+        "english": "Alert Interval",
+        "translation": "Alert Interval",
+        "needs_translation": false
+      },
+      "adj_callouts": {
+        "english": "Adjustment Callouts",
+        "translation": "Hlaseni uprav",
+        "needs_translation": false
+      },
+      "adj_function": {
+        "english": "Adjustment Function",
+        "translation": "Funkce uprav",
+        "needs_translation": false
+      },
+      "adj_value": {
+        "english": "Adjustment Value",
+        "translation": "Uprava Value",
+        "needs_translation": false
+      },
+      "otherSoundSettings": {
+        "english": "Other",
+        "translation": "Jine",
+        "needs_translation": false
+      },
+      "modelAnnouncement": {
+        "english": "Model announcement",
+        "translation": "Oznameni modelu",
+        "needs_translation": false
+      },
+      "help_modelAnnouncement": {
+        "english": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+        "translation": "Oznameni modelu requires a .wav Soubor in the 'Audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+        "needs_translation": false
+      }
+    },
+    "telemetry": {
+      "name": {
+        "english": "Telemetry",
+        "translation": "Telemetry",
+        "needs_translation": false
+      },
+      "invalid_version": {
+        "english": "RF2.2 or later required",
+        "translation": "Vyaduje RF2.2 nebo novejsi",
+        "needs_translation": false
+      },
+      "msg_set_defaults": {
+        "english": "Apply default sensors?",
+        "translation": "Apply default Senzory?",
+        "needs_translation": false
+      },
+      "no_more_than_40": {
+        "english": "No more than 40 sensors can be enabled at once",
+        "translation": "No more than 40 Senzory can be enabled at once",
+        "needs_translation": false
+      }
+    },
+    "validate_sensors": {
+      "help_p1": {
+        "english": "This tool attempts to list all the sensors that you are not receiving in a concise list.",
+        "translation": "This tool attempts to list all the Senzory that you are not receiving in a concise list.",
+        "needs_translation": false
+      },
+      "invalid": {
+        "english": "INVALID",
+        "translation": "NEPLATNE",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Sensors",
+        "translation": "Senzory",
+        "needs_translation": false
+      },
+      "msg_repair": {
+        "english": "Enable required sensors on flight controller?",
+        "translation": "Enable required Senzory on flight controller?",
+        "needs_translation": false
+      },
+      "msg_repair_fin": {
+        "english": "The flight controller has been configured? You may need to perform a discover sensors to see the changes.",
+        "translation": "The flight controller has been configured? You may need to perform a discover Senzory to see the changes.",
+        "needs_translation": false
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Use this tool to ensure you are sending the correct sensors.",
+        "translation": "Use this tool to ensure you are sending the correct Senzory.",
+        "needs_translation": false
+      }
+    },
+    "msp_exp": {
+      "help_p1": {
+        "english": "This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
+        "translation": "This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "MSP Expermental",
+        "translation": "MSP Experimental",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "If you do not understand what you are doing, do not use it as bad things can happen.",
+        "translation": "Pokud nerozumite, nepouzivejte to.",
+        "needs_translation": false
+      }
+    },
+    "esc_tools": {
+      "unknown": {
+        "english": "UNKNOWN",
+        "translation": "NEZNAME",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "ESC Tools",
+        "translation": "ESC Tools",
+        "needs_translation": false
+      },
+      "please_powercycle": {
+        "english": "Please power cycle the ESC...",
+        "translation": "Please power cycle the ESC...",
+        "needs_translation": false
+      },
+      "mfg": {
+        "hw5": {
+          "esc": {
+            "english": "ESC",
+            "translation": "ESC",
+            "needs_translation": false
+          },
+          "brake_force": {
+            "english": "Brake Force%",
+            "translation": "Brake Force%",
+            "needs_translation": false
+          },
+          "rotation": {
+            "english": "Rotation",
+            "translation": "Rotace",
+            "needs_translation": false
+          },
+          "soft_start": {
+            "english": "Soft Start",
+            "translation": "Soft Start",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "Hobbywing V5",
+            "translation": "Hobbywing V5",
+            "needs_translation": false
+          },
+          "limits": {
+            "english": "Limits",
+            "translation": "Limity",
+            "needs_translation": false
+          },
+          "bec_voltage": {
+            "english": "BEC Voltage",
+            "translation": "BEC Voltage",
+            "needs_translation": false
+          },
+          "gov_i_gain": {
+            "english": "I-Gain",
+            "translation": "I-Gain",
+            "needs_translation": false
+          },
+          "startup_time": {
+            "english": "Startup Time",
+            "translation": "Startup Cas",
+            "needs_translation": false
+          },
+          "lipo_cell_count": {
+            "english": "LiPo Cell Count",
+            "translation": "LiPo Cell Count",
+            "needs_translation": false
+          },
+          "restart_time": {
+            "english": "Restart Time",
+            "translation": "Restart Cas",
+            "needs_translation": false
+          },
+          "volt_cutoff_type": {
+            "english": "Volt Cutoff Type",
+            "translation": "Volt Cutoff Type",
+            "needs_translation": false
+          },
+          "motor": {
+            "english": "Motor",
+            "translation": "Motor",
+            "needs_translation": false
+          },
+          "brake_type": {
+            "english": "Brake Type",
+            "translation": "Brake Type",
+            "needs_translation": false
+          },
+          "brake": {
+            "english": "Brake",
+            "translation": "Brake",
+            "needs_translation": false
+          },
+          "governor": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Zakladni",
+            "needs_translation": false
+          },
+          "flight_mode": {
+            "english": "Flight Mode",
+            "translation": "Flight Mode",
+            "needs_translation": false
+          },
+          "auto_restart": {
+            "english": "Auto Restart",
+            "translation": "Auto Restart",
+            "needs_translation": false
+          },
+          "active_freewheel": {
+            "english": "Active Freewheel",
+            "translation": "Aktivni volnobeh",
+            "needs_translation": false
+          },
+          "cutoff_voltage": {
+            "english": "Cutoff Voltage",
+            "translation": "Cutoff Voltage",
+            "needs_translation": false
+          },
+          "startup_power": {
+            "english": "Startup Power",
+            "translation": "Startup Power",
+            "needs_translation": false
+          },
+          "other": {
+            "english": "Other",
+            "translation": "Jine",
+            "needs_translation": false
+          },
+          "timing": {
+            "english": "Timing",
+            "translation": "Timing",
+            "needs_translation": false
+          },
+          "gov_p_gain": {
+            "english": "P-Gain",
+            "translation": "P-Gain",
+            "needs_translation": false
+          }
+        },
+        "xdfly": {
+          "hv_bec_voltage": {
+            "english": "HV BEC Voltage",
+            "translation": "HV BEC Voltage",
+            "needs_translation": false
+          },
+          "gov": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "brake_force": {
+            "english": "Brake Force",
+            "translation": "Brake Force",
+            "needs_translation": false
+          },
+          "sr_function": {
+            "english": "SR Function",
+            "translation": "SR Function",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "XDFLY",
+            "translation": "XDFLY",
+            "needs_translation": false
+          },
+          "lv_bec_voltage": {
+            "english": "LV BEC Voltage",
+            "translation": "LV BEC Voltage",
+            "needs_translation": false
+          },
+          "auto_restart_time": {
+            "english": "Auto Restart Time",
+            "translation": "Auto Restart Cas",
+            "needs_translation": false
+          },
+          "acceleration": {
+            "english": "Acceleration",
+            "translation": "Zrychleni",
+            "needs_translation": false
+          },
+          "motor_direction": {
+            "english": "Motor Direction",
+            "translation": "Motor Direction",
+            "needs_translation": false
+          },
+          "smart_fan": {
+            "english": "Smart Fan",
+            "translation": "Chytry vetrak",
+            "needs_translation": false
+          },
+          "governor": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "gov_i": {
+            "english": "Gov-I",
+            "translation": "Gov-I",
+            "needs_translation": false
+          },
+          "cell_cutoff": {
+            "english": "Cell Cutoff",
+            "translation": "Cell Cutoff",
+            "needs_translation": false
+          },
+          "led_color": {
+            "english": "LED Color",
+            "translation": "LED Color",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Zakladni",
+            "needs_translation": false
+          },
+          "startup_power": {
+            "english": "Startup Power",
+            "translation": "Startup Power",
+            "needs_translation": false
+          },
+          "motor_poles": {
+            "english": "Motor Poles",
+            "translation": "Motor Poles",
+            "needs_translation": false
+          },
+          "capacity_correction": {
+            "english": "Capacity Correction",
+            "translation": "Capacity Korekce",
+            "needs_translation": false
+          },
+          "timing": {
+            "english": "Timing",
+            "translation": "Timing",
+            "needs_translation": false
+          },
+          "gov_p": {
+            "english": "Gov-P",
+            "translation": "Gov-P",
+            "needs_translation": false
+          }
+        },
+        "omp": {
+          "hv_bec_voltage": {
+            "english": "HV BEC Voltage",
+            "translation": "HV BEC Voltage",
+            "needs_translation": false
+          },
+          "gov": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "brake_force": {
+            "english": "Brake Force",
+            "translation": "Brake Force",
+            "needs_translation": false
+          },
+          "sr_function": {
+            "english": "SR Function",
+            "translation": "SR Function",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "OMP",
+            "translation": "OMP",
+            "needs_translation": false
+          },
+          "lv_bec_voltage": {
+            "english": "LV BEC Voltage",
+            "translation": "LV BEC Voltage",
+            "needs_translation": false
+          },
+          "auto_restart_time": {
+            "english": "Auto Restart Time",
+            "translation": "Auto Restart Cas",
+            "needs_translation": false
+          },
+          "acceleration": {
+            "english": "Acceleration",
+            "translation": "Zrychleni",
+            "needs_translation": false
+          },
+          "motor_direction": {
+            "english": "Motor Direction",
+            "translation": "Motor Direction",
+            "needs_translation": false
+          },
+          "smart_fan": {
+            "english": "Smart Fan",
+            "translation": "Chytry vetrak",
+            "needs_translation": false
+          },
+          "governor": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "gov_i": {
+            "english": "Gov-I",
+            "translation": "Gov-I",
+            "needs_translation": false
+          },
+          "cell_cutoff": {
+            "english": "Cell Cutoff",
+            "translation": "Cell Cutoff",
+            "needs_translation": false
+          },
+          "led_color": {
+            "english": "LED Color",
+            "translation": "LED Color",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Zakladni",
+            "needs_translation": false
+          },
+          "startup_power": {
+            "english": "Startup Power",
+            "translation": "Startup Power",
+            "needs_translation": false
+          },
+          "motor_poles": {
+            "english": "Motor Poles",
+            "translation": "Motor Poles",
+            "needs_translation": false
+          },
+          "capacity_correction": {
+            "english": "Capacity Correction",
+            "translation": "Capacity Korekce",
+            "needs_translation": false
+          },
+          "timing": {
+            "english": "Timing",
+            "translation": "Timing",
+            "needs_translation": false
+          },
+          "gov_p": {
+            "english": "Gov-P",
+            "translation": "Gov-P",
+            "needs_translation": false
+          }
+        },
+        "ztw": {
+          "hv_bec_voltage": {
+            "english": "HV BEC Voltage",
+            "translation": "HV BEC Voltage",
+            "needs_translation": false
+          },
+          "gov": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "brake_force": {
+            "english": "Brake Force",
+            "translation": "Brake Force",
+            "needs_translation": false
+          },
+          "sr_function": {
+            "english": "SR Function",
+            "translation": "SR Function",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "ZTW",
+            "translation": "ZTW",
+            "needs_translation": false
+          },
+          "lv_bec_voltage": {
+            "english": "LV BEC Voltage",
+            "translation": "LV BEC Voltage",
+            "needs_translation": false
+          },
+          "auto_restart_time": {
+            "english": "Auto Restart Time",
+            "translation": "Auto Restart Cas",
+            "needs_translation": false
+          },
+          "acceleration": {
+            "english": "Acceleration",
+            "translation": "Zrychleni",
+            "needs_translation": false
+          },
+          "motor_direction": {
+            "english": "Motor Direction",
+            "translation": "Motor Direction",
+            "needs_translation": false
+          },
+          "smart_fan": {
+            "english": "Smart Fan",
+            "translation": "Chytry vetrak",
+            "needs_translation": false
+          },
+          "governor": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "gov_i": {
+            "english": "Gov-I",
+            "translation": "Gov-I",
+            "needs_translation": false
+          },
+          "cell_cutoff": {
+            "english": "Cell Cutoff",
+            "translation": "Cell Cutoff",
+            "needs_translation": false
+          },
+          "led_color": {
+            "english": "LED Color",
+            "translation": "LED Color",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Zakladni",
+            "needs_translation": false
+          },
+          "startup_power": {
+            "english": "Startup Power",
+            "translation": "Startup Power",
+            "needs_translation": false
+          },
+          "motor_poles": {
+            "english": "Motor Poles",
+            "translation": "Motor Poles",
+            "needs_translation": false
+          },
+          "capacity_correction": {
+            "english": "Capacity Correction",
+            "translation": "Capacity Korekce",
+            "needs_translation": false
+          },
+          "timing": {
+            "english": "Timing",
+            "translation": "Timing",
+            "needs_translation": false
+          },
+          "gov_p": {
+            "english": "Gov-P",
+            "translation": "Gov-P",
+            "needs_translation": false
+          }
+        },
+        "flrtr": {
+          "auto_restart_time": {
+            "english": "Auto Bailout Time",
+            "translation": "Auto Bailout Cas",
+            "needs_translation": false
+          },
+          "restart_acc": {
+            "english": "Auto Bailout Accel",
+            "translation": "Auto Bailout Accel",
+            "needs_translation": false
+          },
+          "gov": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "motor_temp_sensor": {
+            "english": "Motor Temperture Sensor",
+            "translation": "Motor Temperture Senzor",
+            "needs_translation": false
+          },
+          "active_freewheel": {
+            "english": "Active Freewheeling",
+            "translation": "Aktivni volnobehing",
+            "needs_translation": false
+          },
+          "starting_torque": {
+            "english": "Starting Power",
+            "translation": "Starting Power",
+            "needs_translation": false
+          },
+          "cell_count": {
+            "english": "LiPo Cell Count",
+            "translation": "LiPo Cell Count",
+            "needs_translation": false
+          },
+          "gov_p": {
+            "english": "Governor P",
+            "translation": "Governor P",
+            "needs_translation": false
+          },
+          "motor_erpm_max": {
+            "english": "Maximum Motor ERPM",
+            "translation": "Max Motor ERPM",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "FLYROTOR",
+            "translation": "FLYROTOR",
+            "needs_translation": false
+          },
+          "low_voltage_protection": {
+            "english": "Low Voltage Limit",
+            "translation": "Low Voltage Limit",
+            "needs_translation": false
+          },
+          "drive_freq": {
+            "english": "Drive Frequency",
+            "translation": "Drive Frequency",
+            "needs_translation": false
+          },
+          "telemetry_protocol": {
+            "english": "Telemetry Protocol",
+            "translation": "Telemetry Protocol",
+            "needs_translation": false
+          },
+          "motor_direction": {
+            "english": "Motor Direction",
+            "translation": "Motor Direction",
+            "needs_translation": false
+          },
+          "throttle_protocol": {
+            "english": "Throttle Protocol",
+            "translation": "Throttle Protocol",
+            "needs_translation": false
+          },
+          "soft_start": {
+            "english": "Soft Start Time",
+            "translation": "Soft Start Cas",
+            "needs_translation": false
+          },
+          "other": {
+            "english": "Other",
+            "translation": "Jine",
+            "needs_translation": false
+          },
+          "temperature_protection": {
+            "english": "Temperature Limit",
+            "translation": "Teplota Limit",
+            "needs_translation": false
+          },
+          "buzzer_volume": {
+            "english": "Beeper Volume",
+            "translation": "Hlasitost pipaku",
+            "needs_translation": false
+          },
+          "electrical_angle": {
+            "english": "Electrical Angle",
+            "translation": "Elektricky uhel",
+            "needs_translation": false
+          },
+          "governor": {
+            "english": "Governor",
+            "translation": "Governor",
+            "needs_translation": false
+          },
+          "esc_mode": {
+            "english": "ESC Mode",
+            "translation": "ESC Mode",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "gov_i": {
+            "english": "Governor I",
+            "translation": "Governor I",
+            "needs_translation": false
+          },
+          "bec_voltage": {
+            "english": "SBEC Voltage",
+            "translation": "SBEC Voltage",
+            "needs_translation": false
+          },
+          "fan_control": {
+            "english": "Cooling Fan Mode",
+            "translation": "Cooling Vetrak Mode",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "General",
+            "translation": "Obecne",
+            "needs_translation": false
+          },
+          "current_gain": {
+            "english": "Current Gain",
+            "translation": "Current Gain",
+            "needs_translation": false
+          },
+          "led_color": {
+            "english": "LED Color",
+            "translation": "LED Color",
+            "needs_translation": false
+          },
+          "motor_temp": {
+            "english": "Motor Temperture Limit",
+            "translation": "Motor Temperture Limit",
+            "needs_translation": false
+          },
+          "response_speed": {
+            "english": "Response Speed",
+            "translation": "Response Rychlost",
+            "needs_translation": false
+          },
+          "battery_capacity": {
+            "english": "Capacity Limit",
+            "translation": "Capacity Limit",
+            "needs_translation": false
+          }
+        },
+        "scorp": {
+          "esc_mode": {
+            "english": "ESC Mode",
+            "translation": "ESC Mode",
+            "needs_translation": false
+          },
+          "min_voltage": {
+            "english": "Min Voltage",
+            "translation": "Min Voltage",
+            "needs_translation": false
+          },
+          "rotation": {
+            "english": "Rotation",
+            "translation": "Rotace",
+            "needs_translation": false
+          },
+          "telemetry_protocol": {
+            "english": "Telemetry Protocol",
+            "translation": "Telemetry Protocol",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "Scorpion",
+            "translation": "Scorpion",
+            "needs_translation": false
+          },
+          "runup_time": {
+            "english": "Runup Time",
+            "translation": "Runup Cas",
+            "needs_translation": false
+          },
+          "motor_startup_sound": {
+            "english": "Motor Startup Sound",
+            "translation": "Zvuk startu motoru",
+            "needs_translation": false
+          },
+          "gov_integral": {
+            "english": "Gov Integral",
+            "translation": "Gov Integral",
+            "needs_translation": false
+          },
+          "gov_proportional": {
+            "english": "Gov Proportional",
+            "translation": "Gov Proportional",
+            "needs_translation": false
+          },
+          "cutoff_handling": {
+            "english": "Cutoff Handling",
+            "translation": "Cutoff Handling",
+            "needs_translation": false
+          },
+          "bailout": {
+            "english": "Bailout",
+            "translation": "Bailout",
+            "needs_translation": false
+          },
+          "limits": {
+            "english": "Limits",
+            "translation": "Limity",
+            "needs_translation": false
+          },
+          "soft_start_time": {
+            "english": "Soft Start Time",
+            "translation": "Soft Start Cas",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "bec_voltage": {
+            "english": "BEC Voltage",
+            "translation": "BEC Voltage",
+            "needs_translation": false
+          },
+          "extra_msg_save": {
+            "english": "Please reboot the ESC to apply the changes",
+            "translation": "Please reboot the ESC to apply the changes",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Zakladni",
+            "needs_translation": false
+          },
+          "max_current": {
+            "english": "Max Current",
+            "translation": "Max Current",
+            "needs_translation": false
+          },
+          "max_temperature": {
+            "english": "Max Temperature",
+            "translation": "Max teplota",
+            "needs_translation": false
+          },
+          "protection_delay": {
+            "english": "Protection Delay",
+            "translation": "Zpozdeni ochrany",
+            "needs_translation": false
+          },
+          "max_used": {
+            "english": "Max Used",
+            "translation": "Max pouzito",
+            "needs_translation": false
+          }
+        },
+        "yge": {
+          "esc_mode": {
+            "english": "ESC Mode",
+            "translation": "ESC Mode",
+            "needs_translation": false
+          },
+          "esc": {
+            "english": "ESC",
+            "translation": "ESC",
+            "needs_translation": false
+          },
+          "current_limit": {
+            "english": "Current Limit",
+            "translation": "Current Limit",
+            "needs_translation": false
+          },
+          "f3c_auto": {
+            "english": "F3C Autorotation",
+            "translation": "F3C Autorotace",
+            "needs_translation": false
+          },
+          "name": {
+            "english": "YGE",
+            "translation": "YGE",
+            "needs_translation": false
+          },
+          "max_start_power": {
+            "english": "Max Start Power",
+            "translation": "Max Start Power",
+            "needs_translation": false
+          },
+          "lv_bec_voltage": {
+            "english": "BEC",
+            "translation": "BEC",
+            "needs_translation": false
+          },
+          "pinion_teeth": {
+            "english": "Pinion Teeth",
+            "translation": "Pocet zubu pastorku",
+            "needs_translation": false
+          },
+          "auto_restart_time": {
+            "english": "Auto Restart Time",
+            "translation": "Auto Restart Cas",
+            "needs_translation": false
+          },
+          "main_teeth": {
+            "english": "Main Teeth",
+            "translation": "Pocet zubu hlavniho kola",
+            "needs_translation": false
+          },
+          "other": {
+            "english": "Other",
+            "translation": "Jine",
+            "needs_translation": false
+          },
+          "limits": {
+            "english": "Limits",
+            "translation": "Limity",
+            "needs_translation": false
+          },
+          "cell_cutoff": {
+            "english": "Cell Cutoff",
+            "translation": "Cell Cutoff",
+            "needs_translation": false
+          },
+          "throttle_response": {
+            "english": "Throttle Response",
+            "translation": "Throttle Response",
+            "needs_translation": false
+          },
+          "stick_zero_us": {
+            "english": "Stick Zero",
+            "translation": "Nula sticku",
+            "needs_translation": false
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Pokrocile",
+            "needs_translation": false
+          },
+          "gov_i": {
+            "english": "Gov-I",
+            "translation": "Gov-I",
+            "needs_translation": false
+          },
+          "motor_pole_pairs": {
+            "english": "Motor Pole Pairs",
+            "translation": "Pary polu motoru",
+            "needs_translation": false
+          },
+          "stick_range_us": {
+            "english": "Stick Range",
+            "translation": "Rozsah sticku",
+            "needs_translation": false
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Zakladni",
+            "needs_translation": false
+          },
+          "min_start_power": {
+            "english": "Min Start Power",
+            "translation": "Min Start Power",
+            "needs_translation": false
+          },
+          "active_freewheel": {
+            "english": "Active Freewheel",
+            "translation": "Aktivni volnobeh",
+            "needs_translation": false
+          },
+          "direction": {
+            "english": "Direction",
+            "translation": "Direction",
+            "needs_translation": false
+          },
+          "timing": {
+            "english": "Motor Timing",
+            "translation": "Motor Timing",
+            "needs_translation": false
+          },
+          "gov_p": {
+            "english": "Gov-P",
+            "translation": "Gov-P",
+            "needs_translation": false
+          }
+        }
+      },
+      "searching": {
+        "english": "Searching",
+        "translation": "Hledani",
+        "needs_translation": false
+      }
+    },
+    "pids": {
+      "help_p1": {
+        "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
+        "translation": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
+        "needs_translation": false
+      },
+      "o": {
+        "english": "O",
+        "translation": "O",
+        "needs_translation": false
+      },
+      "pitch": {
+        "english": "Pitch",
+        "translation": "Pitch",
+        "needs_translation": false
+      },
+      "i": {
+        "english": "I",
+        "translation": "I",
+        "needs_translation": false
+      },
+      "yaw": {
+        "english": "Yaw",
+        "translation": "Yaw",
+        "needs_translation": false
+      },
+      "roll": {
+        "english": "Roll",
+        "translation": "Roll",
+        "needs_translation": false
+      },
+      "help_p4": {
+        "english": "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
+        "translation": "Test & Adjust: Fly, observe, and fine-tune for best Vykon in real conditions.",
+        "needs_translation": false
+      },
+      "p": {
+        "english": "P",
+        "translation": "P",
+        "needs_translation": false
+      },
+      "f": {
+        "english": "FF",
+        "translation": "FF",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "PIDs",
+        "translation": "PIDs",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
+        "translation": "I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
+        "needs_translation": false
+      },
+      "d": {
+        "english": "D",
+        "translation": "D",
+        "needs_translation": false
+      },
+      "b": {
+        "english": "B",
+        "translation": "B",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones.",
+        "translation": "Ocas P/I/D Zisky: Increase P until slight wobble in funnels, then Zpet Off slightly. Raise I until Ocas holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones.",
+        "needs_translation": false
+      }
+    },
+    "msp_speed": {
+      "seconds_600": {
+        "english": "  600S  ",
+        "translation": "  600S  ",
+        "needs_translation": false
+      },
+      "avg_query_time": {
+        "english": "Average query time",
+        "translation": "Prumer Dotaz Cas",
+        "needs_translation": false
+      },
+      "seconds_30": {
+        "english": "  30S  ",
+        "translation": "  30S  ",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "MSP Speed",
+        "translation": "MSP Rychlost",
+        "needs_translation": false
+      },
+      "max_query_time": {
+        "english": "Maximum query time",
+        "translation": "Max Dotaz Cas",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "translation": "This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "needs_translation": false
+      },
+      "retries": {
+        "english": "Retries",
+        "translation": "Opakovani",
+        "needs_translation": false
+      },
+      "checksum_errors": {
+        "english": "Checksum errors",
+        "translation": "Checksum errors",
+        "needs_translation": false
+      },
+      "test_length": {
+        "english": "Test length",
+        "translation": "Test length",
+        "needs_translation": false
+      },
+      "start": {
+        "english": "Start",
+        "translation": "Start",
+        "needs_translation": false
+      },
+      "memory_free": {
+        "english": "Memory free",
+        "translation": "Memory free",
+        "needs_translation": false
+      },
+      "start_prompt": {
+        "english": "Would you like to start the test? Choose the test run time below.",
+        "translation": "Would you like to Start the test? Choose the test run Cas Pod.",
+        "needs_translation": false
+      },
+      "rf_protocol": {
+        "english": "RF protocol",
+        "translation": "RF protocol",
+        "needs_translation": false
+      },
+      "min_query_time": {
+        "english": "Minimum query time",
+        "translation": "Min Dotaz Cas",
+        "needs_translation": false
+      },
+      "seconds_120": {
+        "english": "  120S  ",
+        "translation": "  120S  ",
+        "needs_translation": false
+      },
+      "seconds_300": {
+        "english": "  300S  ",
+        "translation": "  300S  ",
+        "needs_translation": false
+      },
+      "testing": {
+        "english": "Testing",
+        "translation": "Testuji",
+        "needs_translation": false
+      },
+      "successful_queries": {
+        "english": "Successful queries",
+        "translation": "OK queries",
+        "needs_translation": false
+      },
+      "timeouts": {
+        "english": "Timeouts",
+        "translation": "Timeouty",
+        "needs_translation": false
+      },
+      "testing_performance": {
+        "english": "Testing MSP performance...",
+        "translation": "Testuji MSP Vykon...",
+        "needs_translation": false
+      },
+      "total_queries": {
+        "english": "Total queries",
+        "translation": "Celkem queries",
+        "needs_translation": false
+      }
+    },
+    "copyprofiles": {
+      "profile_type": {
+        "english": "Profile Type",
+        "translation": "Profil Type",
+        "needs_translation": false
+      },
+      "profile_type_pid": {
+        "english": "PID",
+        "translation": "PID",
+        "needs_translation": false
+      },
+      "profile_type_rate": {
+        "english": "Rate",
+        "translation": "Rate",
+        "needs_translation": false
+      },
+      "msgbox_save": {
+        "english": "Save settings",
+        "translation": "Ulozit Nastaveni",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Copy Profiles",
+        "translation": "Kopirovat profily",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Copy PID profile or Rate profile from Source to Destination.",
+        "translation": "Kopirovat PID Profil or Rate Profil from Source to Destination.",
+        "needs_translation": false
+      },
+      "dest_profile": {
+        "english": "Dest. Profile",
+        "translation": "Cilovy profil",
+        "needs_translation": false
+      },
+      "source_profile": {
+        "english": "Source Profile",
+        "translation": "Source Profil",
+        "needs_translation": false
+      },
+      "msgbox_msg": {
+        "english": "Save current page to flight controller?",
+        "translation": "Ulozit current page to flight controller?",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Choose the source and destinations and save to copy the profile.",
+        "translation": "Choose the source and destinations and Ulozit to Kopirovat the Profil.",
+        "needs_translation": false
+      }
+    },
+    "esc_motors": {
+      "use_dshot_telemetry": {
+        "english": "DShot RPM Telemetry",
+        "translation": "DShot RPM Telemetry",
+        "needs_translation": false
+      },
+      "rpm_sensor_source": {
+        "english": "RPM Sensor",
+        "translation": "RPM Senzor",
+        "needs_translation": false
+      },
+      "throttle": {
+        "english": "Throttle",
+        "translation": "Throttle",
+        "needs_translation": false
+      },
+      "telemetry": {
+        "english": "Telemetry",
+        "translation": "Telemetry",
+        "needs_translation": false
+      },
+      "rpm": {
+        "english": "RPM",
+        "translation": "RPM",
+        "needs_translation": false
+      },
+      "unsynced": {
+        "english": "Unsynced ESC Update",
+        "translation": "Unsynced ESC Update",
+        "needs_translation": false
+      },
+      "min_throttle": {
+        "english": "0% Throttle PWM Value",
+        "translation": "0% Throttle PWM Value",
+        "needs_translation": false
+      },
+      "tail_motor_ratio": {
+        "english": "Tail Motor Ratio",
+        "translation": "Pomery motoru ocas",
+        "needs_translation": false
+      },
+      "max_throttle": {
+        "english": "100% Throttle PWM value",
+        "translation": "100% Throttle PWM value",
+        "needs_translation": false
+      },
+      "main_motor_ratio": {
+        "english": "Main Motor Ratio",
+        "translation": "Hlavni Motor Pomer",
+        "needs_translation": false
+      },
+      "pinion": {
+        "english": "Pinion",
+        "translation": "Pastorek",
+        "needs_translation": false
+      },
+      "main": {
+        "english": "Main",
+        "translation": "Hlavni",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Configure the motor and speed controller features.",
+        "translation": "Configure the Motor and Rychlost controller features.",
+        "needs_translation": false
+      },
+      "rear": {
+        "english": "Rear",
+        "translation": "Zadni",
+        "needs_translation": false
+      },
+      "front": {
+        "english": "Front",
+        "translation": "Predni",
+        "needs_translation": false
+      },
+      "voltage_correction": {
+        "english": "Voltage Correction",
+        "translation": "Voltage Korekce",
+        "needs_translation": false
+      },
+      "mincommand": {
+        "english": "Motor Stop PWM Value",
+        "translation": "Motor Stop PWM Value",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "ESC/Motors",
+        "translation": "ESC/Motory",
+        "needs_translation": false
+      },
+      "motor_pole_count": {
+        "english": "Motor Pole Count",
+        "translation": "Motor Pol Count",
+        "needs_translation": false
+      },
+      "current_correction": {
+        "english": "Current Correction",
+        "translation": "Current Korekce",
+        "needs_translation": false
+      },
+      "consumption_correction": {
+        "english": "Consumption Correction",
+        "translation": "Korekce spotreby",
+        "needs_translation": false
+      },
+      "throttle_protocol": {
+        "english": "Throttle Protocol",
+        "translation": "Throttle Protocol",
+        "needs_translation": false
+      },
+      "motor_pwm_rate": {
+        "english": "Update frequency",
+        "translation": "Update frequency",
+        "needs_translation": false
+      },
+      "telemetry_protocol": {
+        "english": "Telemetry Protocol",
+        "translation": "Telemetry Protocol",
+        "needs_translation": false
+      },
+      "half_duplex": {
+        "english": "Half Duplex",
+        "translation": "Half Duplex",
+        "needs_translation": false
+      },
+      "pin_swap": {
+        "english": "Pin Swap",
+        "translation": "Pin Swap",
+        "needs_translation": false
+      }
+    },
+    "radio_config": {
+      "deflection": {
+        "english": "Deflection",
+        "translation": "Deflection",
+        "needs_translation": false
+      },
+      "max_throttle": {
+        "english": "Max",
+        "translation": "Max",
+        "needs_translation": false
+      },
+      "stick": {
+        "english": "Stick",
+        "translation": "Stick",
+        "needs_translation": false
+      },
+      "arming": {
+        "english": "Arming",
+        "translation": "Arming",
+        "needs_translation": false
+      },
+      "yaw_deadband": {
+        "english": "Yaw",
+        "translation": "Yaw",
+        "needs_translation": false
+      },
+      "cyclic": {
+        "english": "Cyclic",
+        "translation": "Cyklicky",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Radio Config",
+        "translation": "Radio Config",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Configure your radio settings. Stick center, arm, throttle hold, and throttle cut.",
+        "translation": "Configure your radio Nastaveni. Stick Stred, arm, throttle hold, and throttle cut.",
+        "needs_translation": false
+      },
+      "min_throttle": {
+        "english": "Min",
+        "translation": "Min",
+        "needs_translation": false
+      },
+      "throttle": {
+        "english": "Throttle",
+        "translation": "Throttle",
+        "needs_translation": false
+      },
+      "deadband": {
+        "english": "Deadband",
+        "translation": "Mrtva zona",
+        "needs_translation": false
+      },
+      "center": {
+        "english": "Center",
+        "translation": "Stred",
+        "needs_translation": false
+      }
+    },
+    "profile_select": {
+      "help_p1": {
+        "english": "Set the current flight profile or rate profile you would like to use.",
+        "translation": "Set the current flight Profil or rate Profil you would like to use.",
+        "needs_translation": false
+      },
+      "rate_profile": {
+        "english": "Rate Profile",
+        "translation": "Rate Profil",
+        "needs_translation": false
+      },
+      "pid_profile": {
+        "english": "PID profile",
+        "translation": "PID Profil",
+        "needs_translation": false
+      },
+      "save_prompt": {
+        "english": "Save current page to flight controller?",
+        "translation": "Ulozit current page to flight controller?",
+        "needs_translation": false
+      },
+      "save_prompt_local": {
+        "english": "Save current page to radio?",
+        "translation": "Ulozit current page to radio?",
+        "needs_translation": false
+      },
+      "cancel": {
+        "english": "CANCEL",
+        "translation": "ZRUSIT",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Select Profile",
+        "translation": "Vybrat profil",
+        "needs_translation": false
+      },
+      "save_settings": {
+        "english": "Save settings",
+        "translation": "Ulozit Nastaveni",
+        "needs_translation": false
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch.",
+        "translation": "If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch.",
+        "needs_translation": false
+      }
+    },
+    "profile_governor": {
+      "tail_torque_assist": {
+        "english": "Tail Torque Assist",
+        "translation": "Pomoc momentu ocas",
+        "needs_translation": false
+      },
+      "fc_throttle_curve": {
+        "english": "FC Throttle Curve",
+        "translation": "FC Throttle Curve",
+        "needs_translation": false
+      },
+      "tx_precomp_curve": {
+        "english": "TX Throttle V-Curve",
+        "translation": "TX Throttle V-Curve",
+        "needs_translation": false
+      },
+      "fallback_precomp": {
+        "english": "Fallback Precomp",
+        "translation": "Fallback Precomp",
+        "needs_translation": false
+      },
+      "voltage_comp": {
+        "english": "Voltage Compensation",
+        "translation": "Voltage Compensation",
+        "needs_translation": false
+      },
+      "pid_spoolup": {
+        "english": "Governed Spoolup",
+        "translation": "Spoolup s governorem",
+        "needs_translation": false
+      },
+      "hs_adjustment": {
+        "english": "Headspeed Adjustment",
+        "translation": "Uprava otacek",
+        "needs_translation": false
+      },
+      "dyn_min_throttle": {
+        "english": "Dyn. Min Throttle",
+        "translation": "Dyn. Min Throttle",
+        "needs_translation": false
+      },
+      "autorotation": {
+        "english": "Autorotation",
+        "translation": "Autorotace",
+        "needs_translation": false
+      },
+      "suspend": {
+        "english": "Suspend",
+        "translation": "Pozastavit",
+        "needs_translation": false
+      },
+      "bypass": {
+        "english": "Bypass",
+        "translation": "Bypass",
+        "needs_translation": false
+      },
+      "p": {
+        "english": "P",
+        "translation": "P",
+        "needs_translation": false
+      },
+      "i": {
+        "english": "I",
+        "translation": "I",
+        "needs_translation": false
+      },
+      "yaw": {
+        "english": "Yaw",
+        "translation": "Yaw",
+        "needs_translation": false
+      },
+      "cyc": {
+        "english": "Cyc",
+        "translation": "Cyc",
+        "needs_translation": false
+      },
+      "f": {
+        "english": "FF",
+        "translation": "FF",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Governor",
+        "translation": "Governor",
+        "needs_translation": false
+      },
+      "d": {
+        "english": "D",
+        "translation": "D",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Full headspeed: Headspeed target when at 100% throttle input.",
+        "translation": "Plne otacky: Otacky target when at 100% throttle input.",
+        "needs_translation": false
+      },
+      "help_p6": {
+        "english": "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist.",
+        "translation": "Pomoc momentu ocas: For motorized tails. Gain and limit of Otacky increase when using Hlavni rotor Moment for yaw Pomoc.",
+        "needs_translation": false
+      },
+      "help_p4": {
+        "english": "Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.",
+        "translation": "Precomp: Governor Precomp gain for yaw, Cyklicky, and Kolektiv inputs.",
+        "needs_translation": false
+      },
+      "max_throttle": {
+        "english": "Max throttle",
+        "translation": "Max throttle",
+        "needs_translation": false
+      },
+      "idle_throttle": {
+        "english": "Idle throttle",
+        "translation": "Idle throttle",
+        "needs_translation": false
+      },
+      "auto_throttle": {
+        "english": "Auto throttle",
+        "translation": "Auto throttle",
+        "needs_translation": false
+      },
+      "fallback_drop": {
+        "english": "Thr. Fallback drop",
+        "translation": "Pokles Fallback plynu",
+        "needs_translation": false
+      },
+      "full_headspeed": {
+        "english": "Full headspeed",
+        "translation": "Plne otacky",
+        "needs_translation": false
+      },
+      "precomp": {
+        "english": "Precomp",
+        "translation": "Precomp",
+        "needs_translation": false
+      },
+      "gain": {
+        "english": "PID master gain",
+        "translation": "PID master gain",
+        "needs_translation": false
+      },
+      "disabled_message": {
+        "english": "Rotorflight governor is not enabled",
+        "translation": "Rotorflight Governor is not enabled",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Gains: Fine tuning of the governor.",
+        "translation": "Zisky: Fine tuning of the Governor.",
+        "needs_translation": false
+      },
+      "col": {
+        "english": "Col",
+        "translation": "Col",
+        "needs_translation": false
+      },
+      "min_throttle": {
+        "english": "Min throttle",
+        "translation": "Min throttle",
+        "needs_translation": false
+      },
+      "tta_limit": {
+        "english": "Limit",
+        "translation": "Limit",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "PID master gain: How hard the governor works to hold the RPM.",
+        "translation": "PID master gain: How hard the Governor works to hold the RPM.",
+        "needs_translation": false
+      },
+      "gains": {
+        "english": "Gains",
+        "translation": "Zisky",
+        "needs_translation": false
+      },
+      "help_p5": {
+        "english": "Max throttle: The maximum throttle % the governor is allowed to use.",
+        "translation": "Max throttle: The Max throttle % the Governor is allowed to use.",
+        "needs_translation": false
+      },
+      "tta_gain": {
+        "english": "Gain",
+        "translation": "Gain",
+        "needs_translation": false
+      }
+    },
+    "profile_tailrotor": {
+      "gain": {
+        "english": "Gain",
+        "translation": "Gain",
+        "needs_translation": false
+      },
+      "help_p4": {
+        "english": "Collective FF Gain: Tail precompensation for collective inputs.",
+        "translation": "Kolektiv FF Gain: Ocas precompensation for Kolektiv inputs.",
+        "needs_translation": false
+      },
+      "collective_impulse_ff": {
+        "english": "Collective Impulse FF",
+        "translation": "Kolektiv Impuls FF",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
+        "translation": "Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
+        "needs_translation": false
+      },
+      "cutoff": {
+        "english": "Cutoff",
+        "translation": "Cutoff",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Cyclic FF Gain: Tail precompensation for cyclic inputs.",
+        "translation": "Cyklicky FF Gain: Ocas precompensation for Cyklicky inputs.",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
+        "translation": "Yaw Stop Gain: Higher stop gain will make the Ocas stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
+        "needs_translation": false
+      },
+      "inertia_precomp": {
+        "english": "Inertia Precomp",
+        "translation": "Setrvacnost Precomp",
+        "needs_translation": false
+      },
+      "cyclic_ff_gain": {
+        "english": "Cyclic FF gain",
+        "translation": "Cyklicky FF gain",
+        "needs_translation": false
+      },
+      "help_p5": {
+        "english": "Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input.",
+        "translation": "Kolektiv Impuls FF: Impuls Ocas precompensation for Kolektiv inputs. If you need extra Ocas precompensation at the beginning of Kolektiv input.",
+        "needs_translation": false
+      },
+      "cw": {
+        "english": "CW",
+        "translation": "CW",
+        "needs_translation": false
+      },
+      "ccw": {
+        "english": "CCW",
+        "translation": "CCW",
+        "needs_translation": false
+      },
+      "yaw_stop_gain": {
+        "english": "Yaw stop gain",
+        "translation": "Yaw stop gain",
+        "needs_translation": false
+      },
+      "precomp_cutoff": {
+        "english": "Precomp Cutoff",
+        "translation": "Precomp Cutoff",
+        "needs_translation": false
+      },
+      "collective_ff_gain": {
+        "english": "Collective FF gain",
+        "translation": "Kolektiv FF gain",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Tail Rotor",
+        "translation": "Ocasni rotor",
+        "needs_translation": false
+      },
+      "decay": {
+        "english": "Decay",
+        "translation": "Utlum",
+        "needs_translation": false
+      }
+    },
+    "profile_pidcontroller": {
+      "help_p4": {
+        "english": "Error rotation: Allow errors to be shared between all axes.",
+        "translation": "Chyba Rotace: Allow errors to be shared between all axes.",
+        "needs_translation": false
+      },
+      "ground_error_decay": {
+        "english": "Ground Error Decay",
+        "translation": "Utlum chyby na zemi",
+        "needs_translation": false
+      },
+      "yaw": {
+        "english": "Y",
+        "translation": "Y",
+        "needs_translation": false
+      },
+      "inflight_error_decay": {
+        "english": "Inflight Error Decay",
+        "translation": "Utlum chyby v letu",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Error limit: Angle limit for I-term.",
+        "translation": "Chyba limit: Uhel limit for I-term.",
+        "needs_translation": false
+      },
+      "error_limit": {
+        "english": "Error limit",
+        "translation": "Chyba limit",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Offset limit: Angle limit for High Speed Integral (O-term).",
+        "translation": "Offset limit: Uhel limit for High Rychlost Integral (O-term).",
+        "needs_translation": false
+      },
+      "cutoff_point": {
+        "english": "Cut-off point",
+        "translation": "Cut-Off point",
+        "needs_translation": false
+      },
+      "limit": {
+        "english": "Limit",
+        "translation": "Limit",
+        "needs_translation": false
+      },
+      "iterm_relax": {
+        "english": "I-term relax",
+        "translation": "I-term relax",
+        "needs_translation": false
+      },
+      "hsi_offset_limit": {
+        "english": "HSI Offset limit",
+        "translation": "HSI Offset limit",
+        "needs_translation": false
+      },
+      "pitch": {
+        "english": "P",
+        "translation": "P",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "PID Controller",
+        "translation": "PID Controller",
+        "needs_translation": false
+      },
+      "error_rotation": {
+        "english": "Error rotation",
+        "translation": "Chyba Rotace",
+        "needs_translation": false
+      },
+      "roll": {
+        "english": "R",
+        "translation": "R",
+        "needs_translation": false
+      },
+      "help_p5": {
+        "english": "I-term relax: Limit accumulation of I-term during fast movements - helps reduce bounce back after fast stick movements. Generally needs to be lower for large helis and can be higher for small helis. Best to only reduce as much as is needed for your flying style.",
+        "translation": "I-term relax: Limit accumulation of I-term during fast movements - helps reduce bounce Zpet after fast stick movements. Generally needs to be lower for large helis and can be higher for small helis. Best to only reduce as much as is needed for your flying style.",
+        "needs_translation": false
+      },
+      "time": {
+        "english": "Time",
+        "translation": "Cas",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Error decay ground: PID decay to help prevent heli from tipping over when on the ground.",
+        "translation": "Chyba Utlum Zeme: PID Utlum to Napoveda prevent heli from tipping over when on the Zeme.",
+        "needs_translation": false
+      }
+    },
+    "logs": {
+      "help_logs_p2": {
+        "english": "Note. To enable logging it is essential for you to have the following sensors enabled.",
+        "translation": "Note. To enable Logovani it is essential for you to have the following Senzory enabled.",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Logs",
+        "translation": "Logs",
+        "needs_translation": false
+      },
+      "help_logs_p1": {
+        "english": "Please select a log file from the list below.",
+        "translation": "Please Vybrat a log Soubor from the list Pod.",
+        "needs_translation": false
+      },
+      "msg_no_logs_found": {
+        "english": "NO LOG FILES FOUND",
+        "translation": "NO LOG FILES FOUND",
+        "needs_translation": false
+      },
+      "help_logs_tool_p1": {
+        "english": "Please use the slider to navigate the graph.",
+        "translation": "Please use the slider to navigate the graph.",
+        "needs_translation": false
+      },
+      "help_logs_p3": {
+        "english": "- arm status, voltage, headspeed, current, esc temperature",
+        "translation": "- arm status, voltage, Otacky, current, esc Teplota",
+        "needs_translation": false
+      }
+    },
+    "power": {
+      "calcfuel_local": {
+        "english": "Calculate Fuel Using",
+        "translation": "Calculate Fuel Using",
+        "needs_translation": false
+      },
+      "voltage_meter_source": {
+        "english": "Voltage Source",
+        "translation": "Voltage Source",
+        "needs_translation": false
+      },
+      "current_meter_source": {
+        "english": "Current Source",
+        "translation": "Current Source",
+        "needs_translation": false
+      },
+      "max_cell_voltage": {
+        "english": "Max Cell Voltage",
+        "translation": "Max Cell Voltage",
+        "needs_translation": false
+      },
+      "full_cell_voltage": {
+        "english": "Full Cell Voltage",
+        "translation": "Plny Cell Voltage",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Power",
+        "translation": "Power",
+        "needs_translation": false
+      },
+      "battery_name": {
+        "english": "Battery",
+        "translation": "Battery",
+        "needs_translation": false
+      },
+      "source_name": {
+        "english": "Sources",
+        "translation": "Sources",
+        "needs_translation": false
+      },
+      "alert_name": {
+        "english": "Alerts",
+        "translation": "Alerts",
+        "needs_translation": false
+      },
+      "min_cell_voltage": {
+        "english": "Min Cell Voltage",
+        "translation": "Min Cell Voltage",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+        "translation": "The battery Nastaveni are Pouzito to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops Pod a certain level.",
+        "needs_translation": false
+      },
+      "battery_capacity": {
+        "english": "Battery Capacity",
+        "translation": "Battery Capacity",
+        "needs_translation": false
+      },
+      "warn_cell_voltage": {
+        "english": "Warn Cell Voltage",
+        "translation": "Warn Cell Voltage",
+        "needs_translation": false
+      },
+      "cell_count": {
+        "english": "Cell Count",
+        "translation": "Cell Count",
+        "needs_translation": false
+      },
+      "consumption_warning_percentage": {
+        "english": "Consumption Warning %",
+        "translation": "Spotreba Varovani %",
+        "needs_translation": false
+      },
+      "timer": {
+        "english": "Flight Time Alarm",
+        "translation": "Flight Cas Alarm",
+        "needs_translation": false
+      },
+      "voltage_multiplier": {
+        "english": "Sag Compensation",
+        "translation": "Sag Compensation",
+        "needs_translation": false
+      },
+      "alert_type": {
+        "english": "Rx Voltage Alert",
+        "translation": "Rx Voltage Alert",
+        "needs_translation": false
+      },
+      "bec_voltage_alert": {
+        "english": "BEC Alert Value",
+        "translation": "BEC Alert Value",
+        "needs_translation": false
+      },
+      "rx_voltage_alert": {
+        "english": "RxBatt Alert Value",
+        "translation": "RxBatt Alert Value",
+        "needs_translation": false
+      }
+    },
+    "profile_mainrotor": {
+      "gain": {
+        "english": "Gain",
+        "translation": "Gain",
+        "needs_translation": false
+      },
+      "help_p4": {
+        "english": "Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
+        "translation": "Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
+        "needs_translation": false
+      },
+      "collective_pitch_comp_short": {
+        "english": "Col. Pitch Compensation",
+        "translation": "Col. Pitch Compensation",
+        "needs_translation": false
+      },
+      "cyclic_cross_coupling": {
+        "english": "Cyclic Cross coupling",
+        "translation": "Cyklicky Cross coupling",
+        "needs_translation": false
+      },
+      "collective_pitch_comp": {
+        "english": "Collective Pitch Compensation",
+        "translation": "Kolektiv Pitch Compensation",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Main Rotor",
+        "translation": "Hlavni Rotor",
+        "needs_translation": false
+      },
+      "cutoff": {
+        "english": "Cutoff",
+        "translation": "Cutoff",
+        "needs_translation": false
+      },
+      "ratio": {
+        "english": "Ratio",
+        "translation": "Pomer",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.",
+        "translation": "Kolektiv Pitch Compensation: Increasing will compensate for the pitching motion caused by Ocas drag when climbing.",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
+        "translation": "Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
+        "translation": "Cross Coupling Pomer: Amount of compensation (pitch vs roll) to apply.",
+        "needs_translation": false
+      }
+    },
+    "sbusout": {
+      "title": {
+        "english": "SBUS Output",
+        "translation": "SBUS Output",
+        "needs_translation": false
+      },
+      "help_fields_source": {
+        "english": "Source id for the mix, counting from 0-15.",
+        "translation": "Source id for the mix, counting from 0-15.",
+        "needs_translation": false
+      },
+      "help_default_p4": {
+        "english": "- For motors, use 0, 1000.",
+        "translation": "- For motors, use 0, 1000.",
+        "needs_translation": false
+      },
+      "ch_prefix": {
+        "english": "CH",
+        "translation": "CH",
+        "needs_translation": false
+      },
+      "channel_prefix": {
+        "english": "CHANNEL ",
+        "translation": "CHANNEL ",
+        "needs_translation": false
+      },
+      "saving": {
+        "english": "Saving",
+        "translation": "Saving",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "SBUS Out",
+        "translation": "SBUS Out",
+        "needs_translation": false
+      },
+      "channel_page": {
+        "english": "Sbus out / CH",
+        "translation": "Sbus out / CH",
+        "needs_translation": false
+      },
+      "receiver": {
+        "english": "Receiver",
+        "translation": "Receiver",
+        "needs_translation": false
+      },
+      "servo": {
+        "english": "Servo",
+        "translation": "Servo",
+        "needs_translation": false
+      },
+      "type": {
+        "english": "Type",
+        "translation": "Type",
+        "needs_translation": false
+      },
+      "saving_data": {
+        "english": "Saving data...",
+        "translation": "Saving data...",
+        "needs_translation": false
+      },
+      "help_fields_max": {
+        "english": "The maximum pwm value to send",
+        "translation": "The Max pwm value to send",
+        "needs_translation": false
+      },
+      "motor": {
+        "english": "Motor",
+        "translation": "Motor",
+        "needs_translation": false
+      },
+      "help_default_p5": {
+        "english": "- Or you can customize your own mapping.",
+        "translation": "- Or you can customize your own mapping.",
+        "needs_translation": false
+      },
+      "help_default_p1": {
+        "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "translation": "Configure Pokrocile mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "needs_translation": false
+      },
+      "max": {
+        "english": "Max",
+        "translation": "Max",
+        "needs_translation": false
+      },
+      "save_prompt": {
+        "english": "Save current page to flight controller?",
+        "translation": "Ulozit current page to flight controller?",
+        "needs_translation": false
+      },
+      "help_fields_min": {
+        "english": "The minimum pwm value to send.",
+        "translation": "The Min pwm value to send.",
+        "needs_translation": false
+      },
+      "mixer": {
+        "english": "Mixer",
+        "translation": "Mixer",
+        "needs_translation": false
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
+      },
+      "cancel": {
+        "english": "CANCEL",
+        "translation": "ZRUSIT",
+        "needs_translation": false
+      },
+      "help_default_p2": {
+        "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "translation": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "needs_translation": false
+      },
+      "save_settings": {
+        "english": "Save settings",
+        "translation": "Ulozit Nastaveni",
+        "needs_translation": false
+      },
+      "min": {
+        "english": "Min",
+        "translation": "Min",
+        "needs_translation": false
+      },
+      "help_default_p3": {
+        "english": "- For mixer rules, use -1000, 1000.",
+        "translation": "- For mixer rules, use -1000, 1000.",
+        "needs_translation": false
+      },
+      "source": {
+        "english": "Source",
+        "translation": "Source",
+        "needs_translation": false
+      }
+    },
+    "fbusout": {
+      "title": {
+        "english": "FBUS Output",
+        "translation": "FBUS Output",
+        "needs_translation": false
+      },
+      "help_fields_source": {
+        "english": "Source id for the mix, counting from 0-15.",
+        "translation": "Source id for the mix, counting from 0-15.",
+        "needs_translation": false
+      },
+      "help_default_p4": {
+        "english": "- For motors, use 0, 1000.",
+        "translation": "- For motors, use 0, 1000.",
+        "needs_translation": false
+      },
+      "ch_prefix": {
+        "english": "CH",
+        "translation": "CH",
+        "needs_translation": false
+      },
+      "channel_prefix": {
+        "english": "CHANNEL ",
+        "translation": "CHANNEL ",
+        "needs_translation": false
+      },
+      "saving": {
+        "english": "Saving",
+        "translation": "Saving",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "FBUS Out",
+        "translation": "FBUS Out",
+        "needs_translation": false
+      },
+      "channel_page": {
+        "english": "Fbus out / CH",
+        "translation": "Fbus out / CH",
+        "needs_translation": false
+      },
+      "receiver": {
+        "english": "Receiver",
+        "translation": "Receiver",
+        "needs_translation": false
+      },
+      "servo": {
+        "english": "Servo",
+        "translation": "Servo",
+        "needs_translation": false
+      },
+      "type": {
+        "english": "Type",
+        "translation": "Type",
+        "needs_translation": false
+      },
+      "saving_data": {
+        "english": "Saving data...",
+        "translation": "Saving data...",
+        "needs_translation": false
+      },
+      "help_fields_max": {
+        "english": "The maximum pwm value to send",
+        "translation": "The Max pwm value to send",
+        "needs_translation": false
+      },
+      "motor": {
+        "english": "Motor",
+        "translation": "Motor",
+        "needs_translation": false
+      },
+      "help_default_p5": {
+        "english": "- Or you can customize your own mapping.",
+        "translation": "- Or you can customize your own mapping.",
+        "needs_translation": false
+      },
+      "help_default_p1": {
+        "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "translation": "Configure Pokrocile mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "needs_translation": false
+      },
+      "max": {
+        "english": "Max",
+        "translation": "Max",
+        "needs_translation": false
+      },
+      "save_prompt": {
+        "english": "Save current page to flight controller?",
+        "translation": "Ulozit current page to flight controller?",
+        "needs_translation": false
+      },
+      "help_fields_min": {
+        "english": "The minimum pwm value to send.",
+        "translation": "The Min pwm value to send.",
+        "needs_translation": false
+      },
+      "mixer": {
+        "english": "Mixer",
+        "translation": "Mixer",
+        "needs_translation": false
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
+      },
+      "cancel": {
+        "english": "CANCEL",
+        "translation": "ZRUSIT",
+        "needs_translation": false
+      },
+      "help_default_p2": {
+        "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "translation": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "needs_translation": false
+      },
+      "save_settings": {
+        "english": "Save settings",
+        "translation": "Ulozit Nastaveni",
+        "needs_translation": false
+      },
+      "min": {
+        "english": "Min",
+        "translation": "Min",
+        "needs_translation": false
+      },
+      "help_default_p3": {
+        "english": "- For mixer rules, use -1000, 1000.",
+        "translation": "- For mixer rules, use -1000, 1000.",
+        "needs_translation": false
+      },
+      "source": {
+        "english": "Source",
+        "translation": "Source",
+        "needs_translation": false
+      }
+    },
+    "profile_rescue": {
+      "help_p4": {
+        "english": "Hover: How much collective to maintain a steady hover.",
+        "translation": "Hover: How much Kolektiv to maintain a steady hover.",
+        "needs_translation": false
+      },
+      "hover": {
+        "english": "Hover",
+        "translation": "Hover",
+        "needs_translation": false
+      },
+      "collective": {
+        "english": "Collective",
+        "translation": "Kolektiv",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Pull-up: How much collective and for how long to arrest the fall.",
+        "translation": "Pull-up: How much Kolektiv and for how long to arrest the fall.",
+        "needs_translation": false
+      },
+      "climb": {
+        "english": "Climb",
+        "translation": "Climb",
+        "needs_translation": false
+      },
+      "mode_enable": {
+        "english": "Rescue mode enable",
+        "translation": "Rescue mode enable",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Climb: How much collective to maintain a steady climb - and how long.",
+        "translation": "Climb: How much Kolektiv to maintain a steady climb - and how long.",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Flip to upright: Flip the heli upright when rescue is activated.",
+        "translation": "Flip to upright: Flip the heli upright when rescue is activated.",
+        "needs_translation": false
+      },
+      "flip_upright": {
+        "english": "Flip to upright",
+        "translation": "Flip to upright",
+        "needs_translation": false
+      },
+      "flip": {
+        "english": "Flip",
+        "translation": "Flip",
+        "needs_translation": false
+      },
+      "level_gain": {
+        "english": "Level",
+        "translation": "Level",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Rescue",
+        "translation": "Rescue",
+        "needs_translation": false
+      },
+      "exit_time": {
+        "english": "Exit time",
+        "translation": "Exit Cas",
+        "needs_translation": false
+      },
+      "help_p5": {
+        "english": "Flip: How long to wait before aborting because the flip did not work.",
+        "translation": "Flip: How long to wait before aborting because the flip did not work.",
+        "needs_translation": false
+      },
+      "help_p6": {
+        "english": "Gains: How hard to fight to keep heli level when engaging rescue mode.",
+        "translation": "Zisky: How hard to fight to keep heli level when engaging rescue mode.",
+        "needs_translation": false
+      },
+      "fail_time": {
+        "english": "Fail time",
+        "translation": "Fail Cas",
+        "needs_translation": false
+      },
+      "pull_up": {
+        "english": "Pull-up",
+        "translation": "Pull-up",
+        "needs_translation": false
+      },
+      "rate": {
+        "english": "Rate",
+        "translation": "Rate",
+        "needs_translation": false
+      },
+      "help_p7": {
+        "english": "Rate and Accel: Max rotation and acceleration rates when leveling during rescue.",
+        "translation": "Rate and Accel: Max Rotace and Zrychleni rates when leveling during rescue.",
+        "needs_translation": false
+      },
+      "gains": {
+        "english": "Gains",
+        "translation": "Zisky",
+        "needs_translation": false
+      },
+      "time": {
+        "english": "Time",
+        "translation": "Cas",
+        "needs_translation": false
+      },
+      "accel": {
+        "english": "Accel",
+        "translation": "Accel",
+        "needs_translation": false
+      }
+    },
+    "trim": {
+      "disable_mixer_message": {
+        "english": "Return control of the servos to the flight controller.",
+        "translation": "Return control of the servos to the flight controller.",
+        "needs_translation": false
+      },
+      "tail_motor_idle": {
+        "english": "Tail Motor idle  %",
+        "translation": "Ocas Motor idle  %",
+        "needs_translation": false
+      },
+      "disable_mixer_override": {
+        "english": "Disable mixer override",
+        "translation": "Disable mixer override",
+        "needs_translation": false
+      },
+      "yaw_trim": {
+        "english": "Yaw. trim %",
+        "translation": "Yaw. trim %",
+        "needs_translation": false
+      },
+      "enable_mixer_message": {
+        "english": "Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim.",
+        "translation": "Set all servos to their configured Stred position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim.",
+        "needs_translation": false
+      },
+      "mixer_override_disabling": {
+        "english": "Disabling mixer override...",
+        "translation": "Disabling mixer override...",
+        "needs_translation": false
+      },
+      "roll_trim": {
+        "english": "Roll trim %",
+        "translation": "Roll trim %",
+        "needs_translation": false
+      },
+      "pitch_trim": {
+        "english": "Pitch trim %",
+        "translation": "Pitch trim %",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Trim",
+        "translation": "Trim",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
+        "translation": "Motorised Ocas: If using a motorised Ocas, use this to set the Min idle Rychlost and zero yaw.",
+        "needs_translation": false
+      },
+      "mixer_override": {
+        "english": "Mixer Override",
+        "translation": "Mixer Override",
+        "needs_translation": false
+      },
+      "mixer_override_enabling": {
+        "english": "Enabling mixer override...",
+        "translation": "Enabling mixer override...",
+        "needs_translation": false
+      },
+      "enable_mixer_override": {
+        "english": "Enable mixer override",
+        "translation": "Enable mixer override",
+        "needs_translation": false
+      },
+      "collective_trim": {
+        "english": "Col. trim %",
+        "translation": "Col. trim %",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.",
+        "translation": "Link trims: Use to trim out small leveling issues in your swash plate. Typically only Pouzito if the swash links are non-adjustable.",
+        "needs_translation": false
+      }
+    },
+    "governor": {
+      "menu_general": {
+        "english": "General",
+        "translation": "Obecne",
+        "needs_translation": false
+      },
+      "menu_flags": {
+        "english": "Behaviour",
+        "translation": "Behaviour",
+        "needs_translation": false
+      },
+      "menu_filters": {
+        "english": "Filters",
+        "translation": "Filters",
+        "needs_translation": false
+      },
+      "menu_curves": {
+        "english": "Bypass Curve",
+        "translation": "Bypass Curve",
+        "needs_translation": false
+      },
+      "menu_curves_long": {
+        "english": "Governor Bypass Curve",
+        "translation": "Governor Bypass Curve",
+        "needs_translation": false
+      },
+      "menu_time": {
+        "english": "Ramp Time",
+        "translation": "Ramp Cas",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "These parameters apply globally to the governor regardless of the profile in use.",
+        "translation": "These parameters apply globally to the Governor regardless of the Profil in use.",
+        "needs_translation": false
+      },
+      "auto_timeout": {
+        "english": "Autorotation Timeout",
+        "translation": "Autorotace Timeout",
+        "needs_translation": false
+      },
+      "handover_throttle": {
+        "english": "Handover throttle%",
+        "translation": "Handover throttle%",
+        "needs_translation": false
+      },
+      "spoolup_min_throttle": {
+        "english": "Spoolup min throttle%",
+        "translation": "Spoolup min throttle%",
+        "needs_translation": false
+      },
+      "recovery_time": {
+        "english": "Recovery time",
+        "translation": "Recovery Cas",
+        "needs_translation": false
+      },
+      "mode": {
+        "english": "Mode",
+        "translation": "Mode",
+        "needs_translation": false
+      },
+      "throttle_type": {
+        "english": "Throttle type",
+        "translation": "Throttle type",
+        "needs_translation": false
+      },
+      "collective": {
+        "english": "Collective",
+        "translation": "Kolektiv",
+        "needs_translation": false
+      },
+      "idle_collective": {
+        "english": "Col->Idle Throttle",
+        "translation": "Col->Idle Throttle",
+        "needs_translation": false
+      },
+      "wot_collective": {
+        "english": "Col->Full Throttle",
+        "translation": "Col->Plny Throttle",
+        "needs_translation": false
+      },
+      "throttle_hold_timeout": {
+        "english": "Throttle hold timeout",
+        "translation": "Throttle hold timeout",
+        "needs_translation": false
+      },
+      "ramp_time": {
+        "english": "Ramp time",
+        "translation": "Ramp Cas",
+        "needs_translation": false
+      },
+      "startup_time": {
+        "english": "Startup time",
+        "translation": "Startup Cas",
+        "needs_translation": false
+      },
+      "spoolup_time": {
+        "english": "Spoolup time",
+        "translation": "Spoolup Cas",
+        "needs_translation": false
+      },
+      "spooldown_time": {
+        "english": "Spooldown time",
+        "translation": "Spooldown Cas",
+        "needs_translation": false
+      },
+      "tracking_time": {
+        "english": "Tracking time",
+        "translation": "Tracking Cas",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Each parameter is simply a time value in seconds for each governor action.",
+        "translation": "Each parameter is simply a Cas value in seconds for each Governor action.",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Governor",
+        "translation": "Governor",
+        "needs_translation": false
+      },
+      "gov_rpm_filter": {
+        "english": "RPM Filter Cutoff",
+        "translation": "RPM Filter Cutoff",
+        "needs_translation": false
+      },
+      "gov_pwr_filter": {
+        "english": "Voltage Filter Cutoff",
+        "translation": "Voltage Filter Cutoff",
+        "needs_translation": false
+      },
+      "gov_tta_filter": {
+        "english": "TTA Bandwidth",
+        "translation": "TTA Bandwidth",
+        "needs_translation": false
+      },
+      "gov_ff_filter": {
+        "english": "Precomp Bandwidth",
+        "translation": "Precomp Bandwidth",
+        "needs_translation": false
+      },
+      "gov_d_filter": {
+        "english": "D-Term Cutoff",
+        "translation": "D-Term Cutoff",
+        "needs_translation": false
+      }
+    },
+    "accelerometer": {
+      "help_p1": {
+        "english": "The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
+        "translation": "The accelerometer is Pouzito to measure the Uhel of the flight controller in relation to the horizon. This data is Pouzito to stabilize the aircraft and provide self-leveling functionality.",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Accelerometer",
+        "translation": "Accelerometer",
+        "needs_translation": false
+      },
+      "pitch": {
+        "english": "Pitch",
+        "translation": "Pitch",
+        "needs_translation": false
+      },
+      "msg_calibrate": {
+        "english": "Calibrate the accelerometer?",
+        "translation": "Calibrate the accelerometer?",
+        "needs_translation": false
+      },
+      "roll": {
+        "english": "Roll",
+        "translation": "Roll",
+        "needs_translation": false
+      }
+    },
+    "rates": {
+      "help_table_5_p2": {
+        "english": "Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation": "Max Rate: Max Rotace rate at Plny stick deflection in degrees per second.",
+        "needs_translation": false
+      },
+      "rotorflight": {
+        "english": "ROTORFLIGHT",
+        "translation": "ROTORFLIGHT",
+        "needs_translation": false
+      },
+      "actual": {
+        "english": "ACTUAL",
+        "translation": "ACTUAL",
+        "needs_translation": false
+      },
+      "max_rate": {
+        "english": "Max Rate",
+        "translation": "Max Rate",
+        "needs_translation": false
+      },
+      "help_table_4_p3": {
+        "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "Expo: Reduces sensitivity near the stick's Stred where fine controls are needed.",
+        "needs_translation": false
+      },
+      "rate": {
+        "english": "Rate",
+        "translation": "Rate",
+        "needs_translation": false
+      },
+      "shape": {
+        "english": "Shape",
+        "translation": "Shape",
+        "needs_translation": false
+      },
+      "help_table_5_p1": {
+        "english": "RC Rate: Use to reduce sensitivity around center stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around center stick. Higher than one half of the Max Rate will also increase the Max Rate.",
+        "translation": "RC Rate: Use to reduce sensitivity around Stred stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around Stred stick. Higher than one half of the Max Rate will also increase the Max Rate.",
+        "needs_translation": false
+      },
+      "help_table_4_p2": {
+        "english": "Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation": "Max Rate: Max Rotace rate at Plny stick deflection in degrees per second.",
+        "needs_translation": false
+      },
+      "center_sensitivity": {
+        "english": "Cntr. Sens.",
+        "translation": "Cntr. Sens.",
+        "needs_translation": false
+      },
+      "rc_curve": {
+        "english": "RC Curve",
+        "translation": "RC Curve",
+        "needs_translation": false
+      },
+      "roll": {
+        "english": "Roll",
+        "translation": "Roll",
+        "needs_translation": false
+      },
+      "none": {
+        "english": "NONE",
+        "translation": "NONE",
+        "needs_translation": false
+      },
+      "betaflight": {
+        "english": "BETAFLIGHT",
+        "translation": "BETAFLIGHT",
+        "needs_translation": false
+      },
+      "kiss": {
+        "english": "KISS",
+        "translation": "KISS",
+        "needs_translation": false
+      },
+      "help_table_1_p3": {
+        "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "Expo: Reduces sensitivity near the stick's Stred where fine controls are needed.",
+        "needs_translation": false
+      },
+      "help_table_3_p2": {
+        "english": "Rate: Increases maximum rotation rate while reducing sensitivity around half stick.",
+        "translation": "Rate: Increases Max Rotace rate while reducing sensitivity around half stick.",
+        "needs_translation": false
+      },
+      "help_table_2_p2": {
+        "english": "Acro+: Increases the maximum rotation rate while reducing sensitivity around half stick.",
+        "translation": "Acro+: Increases the Max Rotace rate while reducing sensitivity around half stick.",
+        "needs_translation": false
+      },
+      "superrate": {
+        "english": "SuperRate",
+        "translation": "SuperRate",
+        "needs_translation": false
+      },
+      "help_table_2_p3": {
+        "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "Expo: Reduces sensitivity near the stick's Stred where fine controls are needed.",
+        "needs_translation": false
+      },
+      "raceflight": {
+        "english": "RACEFLIGHT",
+        "translation": "RACEFLIGHT",
+        "needs_translation": false
+      },
+      "yaw": {
+        "english": "Yaw",
+        "translation": "Yaw",
+        "needs_translation": false
+      },
+      "collective": {
+        "english": "Col",
+        "translation": "Col",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Rates",
+        "translation": "Rates",
+        "needs_translation": false
+      },
+      "help_table_5_p3": {
+        "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "Expo: Reduces sensitivity near the stick's Stred where fine controls are needed.",
+        "needs_translation": false
+      },
+      "help_table_3_p3": {
+        "english": "RC Curve: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "RC Curve: Reduces sensitivity near the stick's Stred where fine controls are needed.",
+        "needs_translation": false
+      },
+      "expo": {
+        "english": "Expo",
+        "translation": "Expo",
+        "needs_translation": false
+      },
+      "help_table_1_p2": {
+        "english": "SuperRate: Increases maximum rotation rate while reducing sensitivity around half stick.",
+        "translation": "SuperRate: Increases Max Rotace rate while reducing sensitivity around half stick.",
+        "needs_translation": false
+      },
+      "help_default_p2": {
+        "english": "We will use the sub keys below.",
+        "translation": "We will use the sub keys Pod.",
+        "needs_translation": false
+      },
+      "help_default_p1": {
+        "english": "Default: We keep this to make button appear for rates.",
+        "translation": "Default: We keep this to make button appear for rates.",
+        "needs_translation": false
+      },
+      "quick": {
+        "english": "QUICK",
+        "translation": "QUICK",
+        "needs_translation": false
+      },
+      "pitch": {
+        "english": "Pitch",
+        "translation": "Pitch",
+        "needs_translation": false
+      },
+      "acroplus": {
+        "english": "Acro+",
+        "translation": "Acro+",
+        "needs_translation": false
+      },
+      "help_table_1_p1": {
+        "english": "RC Rate: Maximum rotation rate at full stick deflection.",
+        "translation": "RC Rate: Max Rotace rate at Plny stick deflection.",
+        "needs_translation": false
+      },
+      "rc_rate": {
+        "english": "RC Rate",
+        "translation": "RC Rate",
+        "needs_translation": false
+      },
+      "help_table_2_p1": {
+        "english": "Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation": "Rate: Max Rotace rate at Plny stick deflection in degrees per second.",
+        "needs_translation": false
+      },
+      "help_table_4_p1": {
+        "english": "Center Sensitivity: Use to reduce sensitivity around center stick. Set Center Sensitivity to the same as Max Rate for a linear response. A lower number than Max Rate will reduce sensitivity around center stick. Note that higher than Max Rate will increase the Max Rate - not recommended as it causes issues in the Blackbox log.",
+        "translation": "Stred Sensitivity: Use to reduce sensitivity around Stred stick. Set Stred Sensitivity to the same as Max Rate for a linear response. A lower number than Max Rate will reduce sensitivity around Stred stick. Note that higher than Max Rate will increase the Max Rate - not recommended as it causes issues in the Blackbox log.",
+        "needs_translation": false
+      },
+      "help_table_0_p1": {
+        "english": "All values are set to zero because no RATE TABLE is in use.",
+        "translation": "All values are set to zero because no RATE TABLE is in use.",
+        "needs_translation": false
+      },
+      "help_table_3_p1": {
+        "english": "RC Rate: Maximum rotation rate at full stick deflection.",
+        "translation": "RC Rate: Max Rotace rate at Plny stick deflection.",
+        "needs_translation": false
+      },
+      "help_table_6_p1": {
+        "english": "Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation": "Rate: Max Rotace rate at Plny stick deflection in degrees per second.",
+        "needs_translation": false
+      },
+      "help_table_6_p2": {
+        "english": "Shape: Shifts the vertex of the control curve. Up to this point, the signal translation is linear. This defines how far the stick travel remains proportional before the curve becomes progressive.",
+        "translation": "Shape: Shifts the vertex of the control curve. Up to this point, the signal translation is linear. This defines how far the stick travel remains proportional before the curve becomes progressive.",
+        "needs_translation": false
+      },
+      "help_table_6_p3": {
+        "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "Expo: Reduces sensitivity near the stick's Stred where fine controls are needed.",
+        "needs_translation": false
+      }
+    },
+    "mixer": {
+      "tail_center_offset": {
+        "english": "Tail Center Offset",
+        "translation": "Ocas Stred Offset",
+        "needs_translation": false
+      },
+      "cyclic_calibration": {
+        "english": "Cyclic Calibration",
+        "translation": "Cyklicky Calibration",
+        "needs_translation": false
+      },
+      "collective_calibration": {
+        "english": "Collective Calibration",
+        "translation": "Kolektiv Calibration",
+        "needs_translation": false
+      },
+      "cyclic_pitch_limit": {
+        "english": "Cyclic Pitch Limit",
+        "translation": "Cyklicky Pitch Limit",
+        "needs_translation": false
+      },
+      "collective_pitch_limit": {
+        "english": "Collective Pitch Limit",
+        "translation": "Kolektiv Pitch Limit",
+        "needs_translation": false
+      },
+      "yaw_calibration": {
+        "english": "Yaw Calibration",
+        "translation": "Yaw Calibration",
+        "needs_translation": false
+      },
+      "yaw_cw_limit": {
+        "english": "Yaw CW Limit",
+        "translation": "Yaw CW Limit",
+        "needs_translation": false
+      },
+      "yaw_center_trim": {
+        "english": "Yaw Center Trim",
+        "translation": "Yaw Stred Trim",
+        "needs_translation": false
+      },
+      "yaw_ccw_limit": {
+        "english": "Yaw CCW Limit",
+        "translation": "Yaw CCW Limit",
+        "needs_translation": false
+      },
+      "swash": {
+        "english": "Swash",
+        "translation": "Swash",
+        "needs_translation": false
+      },
+      "configuration": {
+        "english": "Configuration",
+        "translation": "Konfigurace",
+        "needs_translation": false
+      },
+      "directions": {
+        "english": "Mix Directions",
+        "translation": "Mix Directions",
+        "needs_translation": false
+      },
+      "geometry": {
+        "english": "Geometry",
+        "translation": "Geometry",
+        "needs_translation": false
+      },
+      "aileron_direction": {
+        "english": "Aileron Direction",
+        "translation": "Aileron Direction",
+        "needs_translation": false
+      },
+      "elevator_direction": {
+        "english": "Elevator Direction",
+        "translation": "Elevator Direction",
+        "needs_translation": false
+      },
+      "collective_direction": {
+        "english": "Collective Direction",
+        "translation": "Kolektiv Direction",
+        "needs_translation": false
+      },
+      "yaw_direction": {
+        "english": "Yaw Direction",
+        "translation": "Yaw Direction",
+        "needs_translation": false
+      },
+      "settings": {
+        "english": "Settings",
+        "translation": "Nastaveni",
+        "needs_translation": false
+      },
+      "trims": {
+        "english": "Trims",
+        "translation": "Trims",
+        "needs_translation": false
+      },
+      "tail": {
+        "english": "Tail",
+        "translation": "Ocas",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Adust swash plate geometry, phase angles, and limits.",
+        "translation": "Adust swash plate geometry, phase angles, and Limity.",
+        "needs_translation": false
+      },
+      "swash_type": {
+        "english": "Swash Type",
+        "translation": "Swash Type",
+        "needs_translation": false
+      },
+      "main_rotor_dir": {
+        "english": "Rotor Direction",
+        "translation": "Rotor Direction",
+        "needs_translation": false
+      },
+      "tail_rotor_mode": {
+        "english": "Tail Mode",
+        "translation": "Ocas Mode",
+        "needs_translation": false
+      },
+      "collective_tilt_correction_pos": {
+        "english": "Collective Tilt Correction +",
+        "translation": "Kolektiv Tilt Korekce +",
+        "needs_translation": false
+      },
+      "collective_tilt_correction_neg": {
+        "english": "Collective Tilt Correction -",
+        "translation": "Kolektiv Tilt Korekce -",
+        "needs_translation": false
+      },
+      "geo_correction": {
+        "english": "Geo Correction",
+        "translation": "Geo Korekce",
+        "needs_translation": false
+      },
+      "swash_tta_precomp": {
+        "english": "TTA Precomp",
+        "translation": "TTA Precomp",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Mixer",
+        "translation": "Mixer",
+        "needs_translation": false
+      },
+      "tail_motor_idle": {
+        "english": "Tail Idle Thr%",
+        "translation": "Ocas Idle Thr%",
+        "needs_translation": false
+      },
+      "swash_phase": {
+        "english": "Phase Angle",
+        "translation": "Phase Uhel",
+        "needs_translation": false
+      },
+      "collective_tilt_correction": {
+        "english": "Collective Tilt Correction",
+        "translation": "Kolektiv Tilt Korekce",
+        "needs_translation": false
+      },
+      "swash_pitch_limit": {
+        "english": "Total Pitch Limit",
+        "translation": "Celkem Pitch Limit",
+        "needs_translation": false
+      }
+    },
+    "info": {
+      "ethos_version": {
+        "english": "Ethos Version",
+        "translation": "Ethos Version",
+        "needs_translation": false
+      },
+      "rf_version": {
+        "english": "Rotorflight Version",
+        "translation": "Rotorflight Version",
+        "needs_translation": false
+      },
+      "fc_version": {
+        "english": "FC Version",
+        "translation": "FC Version",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Info",
+        "translation": "INFO",
+        "needs_translation": false
+      },
+      "supported_versions": {
+        "english": "Supported MSP Versions",
+        "translation": "Supported MSP Versions",
+        "needs_translation": false
+      },
+      "simulation": {
+        "english": "Simulation",
+        "translation": "Simulation",
+        "needs_translation": false
+      },
+      "version": {
+        "english": "Version",
+        "translation": "Version",
+        "needs_translation": false
+      },
+      "msp_version": {
+        "english": "MSP Version",
+        "translation": "MSP Version",
+        "needs_translation": false
+      },
+      "msp_transport": {
+        "english": "MSP Transport",
+        "translation": "MSP Transport",
+        "needs_translation": false
+      }
+    },
+    "rates_advanced": {
+      "advanced": {
+        "english": "Advanced",
+        "translation": "Pokrocile",
+        "needs_translation": false
+      },
+      "table": {
+        "english": "Rate Table",
+        "translation": "Rate Table",
+        "needs_translation": false
+      },
+      "dyn_ceiling_gain": {
+        "english": "Dynamic ceiling gain",
+        "translation": "Dynamic ceiling gain",
+        "needs_translation": false
+      },
+      "acc_limit": {
+        "english": "Accelerometer Limit",
+        "translation": "Accelerometer Limit",
+        "needs_translation": false
+      },
+      "roll": {
+        "english": "Roll",
+        "translation": "Roll",
+        "needs_translation": false
+      },
+      "yaw_dynamics": {
+        "english": "Yaw dynamics",
+        "translation": "Yaw dynamics",
+        "needs_translation": false
+      },
+      "pitch": {
+        "english": "Pitch",
+        "translation": "Pitch",
+        "needs_translation": false
+      },
+      "col": {
+        "english": "Col",
+        "translation": "Col",
+        "needs_translation": false
+      },
+      "setpoint_boost_cutoff": {
+        "english": "Setpoint boost cutoff",
+        "translation": "Setpoint boost cutoff",
+        "needs_translation": false
+      },
+      "yaw_dynamic_deadband_gain": {
+        "english": "D. Band",
+        "translation": "D. Band",
+        "needs_translation": false
+      },
+      "rates_type": {
+        "english": "Rates Type",
+        "translation": "Rates Type",
+        "needs_translation": false
+      },
+      "setpoint_boost_gain": {
+        "english": "Setpoint boost gain",
+        "translation": "Setpoint boost gain",
+        "needs_translation": false
+      },
+      "msg_reset_to_defaults": {
+        "english": "Rate type changed. Values will be reset to defaults.",
+        "translation": "Rate type changed. Values will be reset to defaults.",
+        "needs_translation": false
+      },
+      "yaw_dynamic_ceiling_gain": {
+        "english": "Ceiling",
+        "translation": "Ceiling",
+        "needs_translation": false
+      },
+      "yaw_boost": {
+        "english": "Yaw boost",
+        "translation": "Yaw boost",
+        "needs_translation": false
+      },
+      "gain": {
+        "english": "Gain",
+        "translation": "Gain",
+        "needs_translation": false
+      },
+      "rate_table": {
+        "english": "Rate Table",
+        "translation": "Rate Table",
+        "needs_translation": false
+      },
+      "dynamics": {
+        "english": "Dynamics",
+        "translation": "Dynamics",
+        "needs_translation": false
+      },
+      "yaw": {
+        "english": "Yaw",
+        "translation": "Yaw",
+        "needs_translation": false
+      },
+      "yaw_dynamic_deadband_filter": {
+        "english": "Filter",
+        "translation": "Filter",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Rates",
+        "translation": "Rates",
+        "needs_translation": false
+      },
+      "cutoff": {
+        "english": "Cutoff",
+        "translation": "Cutoff",
+        "needs_translation": false
+      },
+      "help_rate_table": {
+        "english": "Please select the rate you would like to use. Saving will apply the choice to the active profile.",
+        "translation": "Please Vybrat the rate you would like to use. Saving will apply the choice to the Aktivni Profil.",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
+        "translation": "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
+        "needs_translation": false
+      },
+      "pitch_boost": {
+        "english": "Pitch boost",
+        "translation": "Pitch boost",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
+        "translation": "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
+        "needs_translation": false
+      },
+      "accel_limit": {
+        "english": "Accel",
+        "translation": "Accel",
+        "needs_translation": false
+      },
+      "dyn_deadband_filter": {
+        "english": "Dynamic deadband filter",
+        "translation": "Dynamic deadband filter",
+        "needs_translation": false
+      },
+      "roll_boost": {
+        "english": "Roll boost",
+        "translation": "Roll boost",
+        "needs_translation": false
+      },
+      "dyn_deadband_gain": {
+        "english": "Dynamic deadband gain",
+        "translation": "Dynamic deadband gain",
+        "needs_translation": false
+      },
+      "collective_dynamics": {
+        "english": "Collective dynamics",
+        "translation": "Kolektiv dynamics",
+        "needs_translation": false
+      },
+      "roll_dynamics": {
+        "english": "Roll dynamics",
+        "translation": "Roll dynamics",
+        "needs_translation": false
+      },
+      "collective_boost": {
+        "english": "Collective boost",
+        "translation": "Kolektiv boost",
+        "needs_translation": false
+      },
+      "pitch_dynamics": {
+        "english": "Pitch dynamics",
+        "translation": "Pitch dynamics",
+        "needs_translation": false
+      },
+      "response_time": {
+        "english": "Response Time",
+        "translation": "Response Cas",
+        "needs_translation": false
+      }
+    },
+    "servos": {
+      "pwm": {
+        "english": "PWM Output",
+        "translation": "PWM Output",
+        "needs_translation": false
+      },
+      "bus": {
+        "english": "BUS Output",
+        "translation": "BUS Output",
+        "needs_translation": false
+      },
+      "tbl_yes": {
+        "english": "YES",
+        "translation": "YES",
+        "needs_translation": false
+      },
+      "enable_servo_override": {
+        "english": "Enable servo override",
+        "translation": "Enable servo override",
+        "needs_translation": false
+      },
+      "disabling_servo_override": {
+        "english": "Disabling servo override...",
+        "translation": "Disabling servo override...",
+        "needs_translation": false
+      },
+      "help_tool_p3": {
+        "english": "Minimum/Maximum: Adjust the end points of the selected servo.",
+        "translation": "Min/Max: Adjust the end points of the selected servo.",
+        "needs_translation": false
+      },
+      "tail": {
+        "english": "TAIL",
+        "translation": "TAIL",
+        "needs_translation": false
+      },
+      "scale_negative": {
+        "english": "Scale Negative",
+        "translation": "Scale Negative",
+        "needs_translation": false
+      },
+      "help_tool_p1": {
+        "english": "Override: [*] Enable override to allow real-time updates of servo center point.",
+        "translation": "Override: [*] Enable override to allow real-Cas updates of servo Stred point.",
+        "needs_translation": false
+      },
+      "tbl_no": {
+        "english": "NO",
+        "translation": "NO",
+        "needs_translation": false
+      },
+      "maximum": {
+        "english": "Maximum",
+        "translation": "Max",
+        "needs_translation": false
+      },
+      "help_tool_p6": {
+        "english": "Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure.",
+        "translation": "Rychlost: The Rychlost the servo moves. Generally only Pouzito for the Cyklicky servos to Napoveda the swash move evenly. Volitelne - leave all at 0 if unsure.",
+        "needs_translation": false
+      },
+      "help_fields_rate": {
+        "english": "Servo PWM rate.",
+        "translation": "Servo PWM rate.",
+        "needs_translation": false
+      },
+      "cyc_pitch": {
+        "english": "CYC.PITCH",
+        "translation": "CYC.PITCH",
+        "needs_translation": false
+      },
+      "center": {
+        "english": "Center",
+        "translation": "Stred",
+        "needs_translation": false
+      },
+      "minimum": {
+        "english": "Minimum",
+        "translation": "Min",
+        "needs_translation": false
+      },
+      "speed": {
+        "english": "Speed",
+        "translation": "Rychlost",
+        "needs_translation": false
+      },
+      "help_fields_speed": {
+        "english": "Servo motion speed in milliseconds.",
+        "translation": "Servo motion Rychlost in milliseconds.",
+        "needs_translation": false
+      },
+      "disable_servo_override": {
+        "english": "Disable servo override",
+        "translation": "Disable servo override",
+        "needs_translation": false
+      },
+      "help_fields_scale_pos": {
+        "english": "Servo positive scaling.",
+        "translation": "Servo positive scaling.",
+        "needs_translation": false
+      },
+      "saving_data": {
+        "english": "Saving data...",
+        "translation": "Saving data...",
+        "needs_translation": false
+      },
+      "cyc_left": {
+        "english": "CYC.LEFT",
+        "translation": "CYC.LEFT",
+        "needs_translation": false
+      },
+      "saving": {
+        "english": "Saving",
+        "translation": "Saving",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Servos",
+        "translation": "Servos",
+        "needs_translation": false
+      },
+      "help_tool_p5": {
+        "english": "Rate: The frequency the servo runs best at - check with manufacturer.",
+        "translation": "Rate: The frequency the servo runs best at - check with manufacturer.",
+        "needs_translation": false
+      },
+      "help_tool_p2": {
+        "english": "Center: Adjust the center position of the servo.",
+        "translation": "Stred: Adjust the Stred position of the servo.",
+        "needs_translation": false
+      },
+      "enabling_servo_override": {
+        "english": "Enabling servo override...",
+        "translation": "Enabling servo override...",
+        "needs_translation": false
+      },
+      "servo_prefix": {
+        "english": "SERVO ",
+        "translation": "SERVO ",
+        "needs_translation": false
+      },
+      "reverse": {
+        "english": "Reverse",
+        "translation": "Reverse",
+        "needs_translation": false
+      },
+      "enable_servo_override_msg": {
+        "english": "Servo override allows you to 'trim' your servo center point in real time.",
+        "translation": "Servo override allows you to 'trim' your servo Stred point in real Cas.",
+        "needs_translation": false
+      },
+      "cyc_right": {
+        "english": "CYC.RIGHT",
+        "translation": "CYC.RIGHT",
+        "needs_translation": false
+      },
+      "help_default_p2": {
+        "english": "Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'.",
+        "translation": "Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'.",
+        "needs_translation": false
+      },
+      "scale_positive": {
+        "english": "Scale Positive",
+        "translation": "Scale Positive",
+        "needs_translation": false
+      },
+      "help_default_p1": {
+        "english": "Please select the servo you would like to configure from the list below.",
+        "translation": "Please Vybrat the servo you would like to configure from the list Pod.",
+        "needs_translation": false
+      },
+      "servo_override": {
+        "english": "Servo Override",
+        "translation": "Servo Override",
+        "needs_translation": false
+      },
+      "disable_servo_override_msg": {
+        "english": "Return control of the servos to the flight controller.",
+        "translation": "Return control of the servos to the flight controller.",
+        "needs_translation": false
+      },
+      "help_fields_min": {
+        "english": "Servo negative travel limit.",
+        "translation": "Servo negative travel limit.",
+        "needs_translation": false
+      },
+      "help_default_p3": {
+        "english": "Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'.",
+        "translation": "Any Jine servos that are not controlled by the primary flight mixer will be displayed in the section called 'Jine servos'.",
+        "needs_translation": false
+      },
+      "help_fields_mid": {
+        "english": "Servo center position pulse width.",
+        "translation": "Servo Stred position pulse width.",
+        "needs_translation": false
+      },
+      "help_fields_scale_neg": {
+        "english": "Servo negative scaling.",
+        "translation": "Servo negative scaling.",
+        "needs_translation": false
+      },
+      "rate": {
+        "english": "Rate",
+        "translation": "Rate",
+        "needs_translation": false
+      },
+      "help_tool_p4": {
+        "english": "Scale: Adjust the amount the servo moves for a given input.",
+        "translation": "Scale: Adjust the amount the servo moves for a given input.",
+        "needs_translation": false
+      },
+      "help_fields_flags": {
+        "english": "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction",
+        "translation": "0 = Default, 1=Reverse, 2 = Geo Korekce, 3 = Reverse + Geo Korekce",
+        "needs_translation": false
+      },
+      "geometry": {
+        "english": "Geometry",
+        "translation": "Geometry",
+        "needs_translation": false
+      },
+      "help_fields_max": {
+        "english": "Servo positive travel limit.",
+        "translation": "Servo positive travel limit.",
+        "needs_translation": false
+      }
+    },
+    "profile_autolevel": {
+      "acro_trainer": {
+        "english": "Acro trainer",
+        "translation": "Acro trainer",
+        "needs_translation": false
+      },
+      "angle_mode": {
+        "english": "Angle mode",
+        "translation": "Uhel mode",
+        "needs_translation": false
+      },
+      "max": {
+        "english": "Max",
+        "translation": "Max",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Autolevel",
+        "translation": "Autolevel",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.",
+        "translation": "Acro Trainer: How aggressively the heli tilts Zpet to level when flying in Acro Trainer Mode.",
+        "needs_translation": false
+      },
+      "horizon_mode": {
+        "english": "Horizon mode",
+        "translation": "Horizon mode",
+        "needs_translation": false
+      },
+      "gain": {
+        "english": "Gain",
+        "translation": "Gain",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.",
+        "translation": "Uhel Mode: How aggressively the heli tilts Zpet to level when flying in Uhel Mode.",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode.",
+        "translation": "Horizon Mode: How aggressively the heli tilts Zpet to level when flying in Horizon Mode.",
+        "needs_translation": false
+      }
+    },
+    "filters": {
+      "filter_type": {
+        "english": "Filter type",
+        "translation": "Filter type",
+        "needs_translation": false
+      },
+      "help_p4": {
+        "english": "Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range.",
+        "translation": "Dynamic Notch Filters: Automatically creates notch filters within the min and Max frequency range.",
+        "needs_translation": false
+      },
+      "notch_c": {
+        "english": "Notch Count",
+        "translation": "Notch Count",
+        "needs_translation": false
+      },
+      "rpm_preset": {
+        "english": "Type",
+        "translation": "Type",
+        "needs_translation": false
+      },
+      "lowpass_1": {
+        "english": "Lowpass 1",
+        "translation": "Lowpass 1",
+        "needs_translation": false
+      },
+      "rpm_min_hz": {
+        "english": "Min. Frequency",
+        "translation": "Min. Frequency",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.",
+        "translation": "Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.",
+        "needs_translation": false
+      },
+      "cutoff": {
+        "english": "Cutoff",
+        "translation": "Cutoff",
+        "needs_translation": false
+      },
+      "notch_1": {
+        "english": "Notch 1",
+        "translation": "Notch 1",
+        "needs_translation": false
+      },
+      "max_cutoff": {
+        "english": "Max cutoff",
+        "translation": "Max cutoff",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.",
+        "translation": "Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.",
+        "needs_translation": false
+      },
+      "lowpass_2": {
+        "english": "Lowpass 2",
+        "translation": "Lowpass 2",
+        "needs_translation": false
+      },
+      "rpm_filter": {
+        "english": "RPM filter",
+        "translation": "RPM filter",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Typically you would not edit this page without checking your Blackbox logs!",
+        "translation": "Typically you would not edit this page without checking your Blackbox logs!",
+        "needs_translation": false
+      },
+      "dyn_notch": {
+        "english": "Dynamic Filters",
+        "translation": "Dynamic Filters",
+        "needs_translation": false
+      },
+      "notch_q": {
+        "english": "Notch Q",
+        "translation": "Notch Q",
+        "needs_translation": false
+      },
+      "lowpass_1_dyn": {
+        "english": "Lowpass 1 dyn.",
+        "translation": "Lowpass 1 dyn.",
+        "needs_translation": false
+      },
+      "notch_min_hz": {
+        "english": "Min",
+        "translation": "Min",
+        "needs_translation": false
+      },
+      "notch_max_hz": {
+        "english": "Max",
+        "translation": "Max",
+        "needs_translation": false
+      },
+      "notch_2": {
+        "english": "Notch 2",
+        "translation": "Notch 2",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "Filters",
+        "translation": "Filters",
+        "needs_translation": false
+      },
+      "min_cutoff": {
+        "english": "Min cutoff",
+        "translation": "Min cutoff",
+        "needs_translation": false
+      },
+      "center": {
+        "english": "Center",
+        "translation": "Stred",
+        "needs_translation": false
+      }
+    },
+    "rfstatus": {
+      "name": {
+        "english": "Status",
+        "translation": "Status",
+        "needs_translation": false
+      },
+      "error": {
+        "english": "ERROR",
+        "translation": "CHYBA",
+        "needs_translation": false
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
+      },
+      "unknown": {
+        "english": "UNKNOWN",
+        "translation": "NEZNAME",
+        "needs_translation": false
+      },
+      "mspsensor": {
+        "english": "MSP Sensor",
+        "translation": "MSP Senzor",
+        "needs_translation": false
+      },
+      "rfmodule": {
+        "english": "RF Module",
+        "translation": "RF Module",
+        "needs_translation": false
+      },
+      "bgtask": {
+        "english": "Background Task",
+        "translation": "Background Task",
+        "needs_translation": false
+      },
+      "fblconnected": {
+        "english": "FBL Connected",
+        "translation": "FBL Connected",
+        "needs_translation": false
+      },
+      "telemetrysensors": {
+        "english": "Telemetry Sensors",
+        "translation": "Telemetry Senzory",
+        "needs_translation": false
+      },
+      "apiversion": {
+        "english": "MSP API Version",
+        "translation": "MSP API Version",
+        "needs_translation": false
+      }
+    },
+    "fblstatus": {
+      "fbl_date": {
+        "english": "Date",
+        "translation": "Date",
+        "needs_translation": false
+      },
+      "fbl_time": {
+        "english": "Time",
+        "translation": "Cas",
+        "needs_translation": false
+      },
+      "arming_disable_flag_3": {
+        "english": "Bad RX Recovery",
+        "translation": "Bad RX Recovery",
+        "needs_translation": false
+      },
+      "arming_disable_flag_20": {
+        "english": "RPM Filter",
+        "translation": "RPM Filter",
+        "needs_translation": false
+      },
+      "arming_disable_flag_11": {
+        "english": "Load",
+        "translation": "Load",
+        "needs_translation": false
+      },
+      "arming_disable_flag_22": {
+        "english": "DSHOT Bitbang",
+        "translation": "DSHOT Bitbang",
+        "needs_translation": false
+      },
+      "dataflash_free_space": {
+        "english": "Dataflash Free Space",
+        "translation": "Dataflash Free Space",
+        "needs_translation": false
+      },
+      "arming_disable_flag_25": {
+        "english": "Arm Switch",
+        "translation": "Arm Switch",
+        "needs_translation": false
+      },
+      "erasing": {
+        "english": "Erasing",
+        "translation": "Erasing",
+        "needs_translation": false
+      },
+      "arming_disable_flag_9": {
+        "english": "Boot Grace Time",
+        "translation": "Boot Grace Cas",
+        "needs_translation": false
+      },
+      "arming_disable_flag_6": {
+        "english": "RPM Signal",
+        "translation": "RPM Signal",
+        "needs_translation": false
+      },
+      "megabyte": {
+        "english": "MB",
+        "translation": "MB",
+        "needs_translation": false
+      },
+      "arming_disable_flag_17": {
+        "english": "Paralyze",
+        "translation": "Paralyze",
+        "needs_translation": false
+      },
+      "arming_disable_flag_5": {
+        "english": "Governor",
+        "translation": "Governor",
+        "needs_translation": false
+      },
+      "arming_disable_flag_8": {
+        "english": "Angle",
+        "translation": "Uhel",
+        "needs_translation": false
+      },
+      "arming_disable_flag_1": {
+        "english": "Fail Safe",
+        "translation": "Fail Safe",
+        "needs_translation": false
+      },
+      "cpu_load": {
+        "english": "CPU Load",
+        "translation": "CPU Load",
+        "needs_translation": false
+      },
+      "arming_disable_flag_15": {
+        "english": "BST",
+        "translation": "BST",
+        "needs_translation": false
+      },
+      "arming_disable_flag_12": {
+        "english": "Calibrating",
+        "translation": "Calibrating",
+        "needs_translation": false
+      },
+      "arming_disable_flag_19": {
+        "english": "Resc",
+        "translation": "Resc",
+        "needs_translation": false
+      },
+      "arming_disable_flag_4": {
+        "english": "Box Fail Safe",
+        "translation": "Box Fail Safe",
+        "needs_translation": false
+      },
+      "arming_disable_flag_24": {
+        "english": "Motor Protocol",
+        "translation": "Motor Protocol",
+        "needs_translation": false
+      },
+      "real_time_load": {
+        "english": "Real-time Load",
+        "translation": "Real-Cas Load",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'.",
+        "translation": "To erase the dataflash for more log Soubor storage, press the button on the menu denoted by a '*'.",
+        "needs_translation": false
+      },
+      "arming_disable_flag_2": {
+        "english": "RX Fail Safe",
+        "translation": "RX Fail Safe",
+        "needs_translation": false
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
+      },
+      "arming_disable_flag_0": {
+        "english": "No Gyro",
+        "translation": "No Gyro",
+        "needs_translation": false
+      },
+      "arming_disable_flag_18": {
+        "english": "GPS",
+        "translation": "GPS",
+        "needs_translation": false
+      },
+      "help_p1": {
+        "english": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
+        "translation": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
+        "needs_translation": false
+      },
+      "arming_flags": {
+        "english": "Arming Flags",
+        "translation": "Arming Flags",
+        "needs_translation": false
+      },
+      "unsupported": {
+        "english": "Unsupported",
+        "translation": "Unsupported",
+        "needs_translation": false
+      },
+      "erase_prompt": {
+        "english": "Would you like to erase the dataflash?",
+        "translation": "Would you like to erase the dataflash?",
+        "needs_translation": false
+      },
+      "erase": {
+        "english": "Erase",
+        "translation": "Erase",
+        "needs_translation": false
+      },
+      "arming_disable_flag_10": {
+        "english": "No Pre Arm",
+        "translation": "No Pre Arm",
+        "needs_translation": false
+      },
+      "arming_disable_flag_21": {
+        "english": "Reboot Required",
+        "translation": "Reboot Required",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "FBL Status",
+        "translation": "FBL Status",
+        "needs_translation": false
+      },
+      "arming_disable_flag_13": {
+        "english": "CLI",
+        "translation": "CLI",
+        "needs_translation": false
+      },
+      "arming_disable_flag_14": {
+        "english": "CMS Menu",
+        "translation": "CMS Menu",
+        "needs_translation": false
+      },
+      "arming_disable_flag_16": {
+        "english": "MSP",
+        "translation": "MSP",
+        "needs_translation": false
+      },
+      "arming_disable_flag_7": {
+        "english": "Throttle",
+        "translation": "Throttle",
+        "needs_translation": false
+      },
+      "erasing_dataflash": {
+        "english": "Erasing dataflash...",
+        "translation": "Erasing dataflash...",
+        "needs_translation": false
+      },
+      "arming_disable_flag_23": {
+        "english": "Acc Calibration",
+        "translation": "Acc Calibration",
+        "needs_translation": false
+      }
+    },
+    "profile_pidbandwidth": {
+      "help_p1": {
+        "english": "PID Bandwidth: Overall bandwidth in HZ used by the PID loop.",
+        "translation": "PID Bandwidth: Overall bandwidth in HZ Pouzito by the PID loop.",
+        "needs_translation": false
+      },
+      "pitch": {
+        "english": "P",
+        "translation": "P",
+        "needs_translation": false
+      },
+      "yaw": {
+        "english": "Y",
+        "translation": "Y",
+        "needs_translation": false
+      },
+      "name": {
+        "english": "PID Bandwidth",
+        "translation": "PID Bandwidth",
+        "needs_translation": false
+      },
+      "bterm_cutoff": {
+        "english": "B-term cut-off",
+        "translation": "B-term cut-Off",
+        "needs_translation": false
+      },
+      "help_p3": {
+        "english": "B-term cutoff: B-term cutoff frequency in HZ.",
+        "translation": "B-term cutoff: B-term cutoff frequency in HZ.",
+        "needs_translation": false
+      },
+      "dterm_cutoff": {
+        "english": "D-term cut-off",
+        "translation": "D-term cut-Off",
+        "needs_translation": false
+      },
+      "help_p2": {
+        "english": "D-term cutoff: D-term cutoff frequency in HZ.",
+        "translation": "D-term cutoff: D-term cutoff frequency in HZ.",
+        "needs_translation": false
+      },
+      "roll": {
+        "english": "R",
+        "translation": "R",
+        "needs_translation": false
+      }
+    }
+  },
+  "navigation_save": {
+    "english": "SAVE",
+    "translation": "ULOZIT",
+    "needs_translation": false
+  },
+  "menu_section_flight_tuning": {
+    "english": "Flight Tuning",
+    "translation": "Flight Tuning",
+    "needs_translation": false
+  },
+  "error_timed_out": {
+    "english": "Error: timed out",
+    "translation": "Chyba: timed out",
+    "needs_translation": false
+  },
+  "check_rf_module_on": {
+    "english": "Please check your rf module is turned on.",
+    "translation": "Please check your rf module is turned on.",
+    "needs_translation": false
+  },
+  "msg_saving": {
+    "english": "Saving...",
+    "translation": "Saving...",
+    "needs_translation": false
+  },
+  "msg_save_not_commited": {
+    "english": "Save not committed to EEPROM",
+    "translation": "Ulozit not committed to EEPROM",
+    "needs_translation": false
+  },
+  "menu_section_advanced": {
+    "english": "Advanced",
+    "translation": "Pokrocile",
+    "needs_translation": false
+  },
+  "msg_loading_from_fbl": {
+    "english": "Loading data from flight controller...",
+    "translation": "Nahravam data from flight controller...",
+    "needs_translation": false
+  },
+  "msg_reload_settings": {
+    "english": "Reload data from flight controller?",
+    "translation": "Nahrat data from flight controller?",
+    "needs_translation": false
+  },
+  "menu_section_tools": {
+    "english": "Tools",
+    "translation": "Tools",
+    "needs_translation": false
+  },
+  "msg_connecting": {
+    "english": "Connecting",
+    "translation": "Connecting",
+    "needs_translation": false
+  },
+  "msg_save_current_page": {
+    "english": "Save current page to flight controller?",
+    "translation": "Ulozit current page to flight controller?",
+    "needs_translation": false
+  },
+  "btn_ok_long": {
+    "english": "                OK                ",
+    "translation": "                OK                ",
+    "needs_translation": false
+  },
+  "check_discovered_sensors": {
+    "english": "Please check you have discovered all sensors.",
+    "translation": "Please check you have discovered all Senzory.",
+    "needs_translation": false
+  },
+  "msg_loading": {
+    "english": "Loading...",
+    "translation": "Nahravam...",
+    "needs_translation": false
+  },
+  "check_heli_on": {
+    "english": "Please check your heli is powered up and radio connected.",
+    "translation": "Please check your heli is powered up and radio connected.",
+    "needs_translation": false
+  },
+  "check_bg_task": {
+    "english": "Please enable the background task.",
+    "translation": "Please enable the background task.",
+    "needs_translation": false
+  },
+  "navigation_tools": {
+    "english": "*",
+    "translation": "*",
+    "needs_translation": false
+  },
+  "check_supported_version": {
+    "english": "This version of the Lua script \ncan't be used with the selected model",
+    "translation": "This version of the Lua script \ncan't be Pouzito with the selected model",
+    "needs_translation": false
+  },
+  "msg_waiting_for_connection": {
+    "english": "Waiting for connection",
+    "translation": "Waiting for connection",
+    "needs_translation": false
+  },
+  "msg_model_changed_reset": {
+    "english": "Model changed, resetting session",
+    "translation": "Model changed, resetting session",
+    "needs_translation": false
+  },
+  "msg_telem_sensor_changed": {
+    "english": "Telem. sensor changed to",
+    "translation": "Telem. Senzor changed to",
+    "needs_translation": false
+  },
+  "msg_telem_type_changed": {
+    "english": "Telem. type changed to",
+    "translation": "Telem. type changed to",
+    "needs_translation": false
+  },
+  "msg_tasks_initialized": {
+    "english": "All tasks initialized.",
+    "translation": "All tasks initialized.",
+    "needs_translation": false
+  },
+  "msg_loaded_task": {
+    "english": "Loaded task",
+    "translation": "Loaded task",
+    "needs_translation": false
+  }
+}
