@@ -27,7 +27,7 @@ jobs:
             os_name: windows
             arch: x86
             py_arch: x86
-          - runner: macos-12
+          - runner: macos-13
             os_name: macos
             arch: x64
           - runner: macos-14
@@ -36,7 +36,7 @@ jobs:
           - runner: ubuntu-latest
             os_name: linux
             arch: x64
-          - runner: ubuntu-24.04-arm64
+          - runner: ubuntu-24.04-arm
             os_name: linux
             arch: arm64
     steps:
