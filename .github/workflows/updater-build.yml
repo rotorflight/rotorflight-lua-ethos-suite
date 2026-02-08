@@ -27,6 +27,13 @@ jobs:
         shell: bash
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            echo "OS_NAME=macos" >> $GITHUB_ENV
+          elif [ "${{ runner.os }}" = "Windows" ]; then
+            echo "OS_NAME=windows" >> $GITHUB_ENV
+          else
+            echo "OS_NAME=linux" >> $GITHUB_ENV
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -67,5 +74,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rfsuite-updater-${{ matrix.os }}-latest-${{ env.SHORT_SHA }}
+          name: rfsuite-updater-${{ env.OS_NAME }}-latest-${{ env.SHORT_SHA }}
           path: bin/updater/src/dist/update_radio_gui*
