@@ -1,0 +1,57 @@
+{
+  "iscompiledcheck": {
+    "english": "true",
+    "translation": "true",
+    "needs_translation": true
+  },
+  "reload": {
+    "english": "reload",
+    "translation": "reload",
+    "needs_translation": true
+  },
+  "image": {
+    "english": "image",
+    "translation": "image",
+    "needs_translation": true
+  },
+  "error": {
+    "english": "error",
+    "translation": "error",
+    "needs_translation": true
+  },
+  "save": {
+    "english": "save",
+    "translation": "save",
+    "needs_translation": true
+  },
+  "ethos": {
+    "english": "ethos",
+    "translation": "ethos",
+    "needs_translation": true
+  },
+  "version": {
+    "english": "version",
+    "translation": "version",
+    "needs_translation": true
+  },
+  "bg_task_disabled": {
+    "english": "bg task disabled",
+    "translation": "bg task disabled",
+    "needs_translation": true
+  },
+  "no_link": {
+    "english": "no link",
+    "translation": "no link",
+    "needs_translation": true
+  },
+  "background_task_disabled": {
+    "english": "background task disabled",
+    "translation": "background task disabled",
+    "needs_translation": true
+  },
+  "no_sensor": {
+    "english": "no sensor",
+    "translation": "no sensor",
+    "needs_translation": true
+  }
+}
