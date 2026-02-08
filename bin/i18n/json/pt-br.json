@@ -2,56 +2,56 @@
   "iscompiledcheck": {
     "english": "true",
     "translation": "true",
-    "needs_translation": true
+    "needs_translation": false
   },
   "reload": {
     "english": "reload",
-    "translation": "reload",
-    "needs_translation": true
+    "translation": "Recarregar",
+    "needs_translation": false
   },
   "image": {
     "english": "image",
-    "translation": "image",
-    "needs_translation": true
+    "translation": "imagem",
+    "needs_translation": false
   },
   "error": {
     "english": "error",
-    "translation": "error",
-    "needs_translation": true
+    "translation": "Erro",
+    "needs_translation": false
   },
   "save": {
     "english": "save",
-    "translation": "save",
-    "needs_translation": true
+    "translation": "Salvar",
+    "needs_translation": false
   },
   "ethos": {
     "english": "ethos",
     "translation": "ethos",
-    "needs_translation": true
+    "needs_translation": false
   },
   "version": {
     "english": "version",
-    "translation": "version",
-    "needs_translation": true
+    "translation": "versao",
+    "needs_translation": false
   },
   "bg_task_disabled": {
     "english": "bg task disabled",
-    "translation": "bg task disabled",
-    "needs_translation": true
+    "translation": "bg task Desab",
+    "needs_translation": false
   },
   "no_link": {
     "english": "no link",
-    "translation": "no link",
-    "needs_translation": true
+    "translation": "sem link",
+    "needs_translation": false
   },
   "background_task_disabled": {
     "english": "background task disabled",
-    "translation": "background task disabled",
-    "needs_translation": true
+    "translation": "background task Desab",
+    "needs_translation": false
   },
   "no_sensor": {
     "english": "no sensor",
-    "translation": "no sensor",
-    "needs_translation": true
+    "translation": "no Sensor",
+    "needs_translation": false
   }
 }
