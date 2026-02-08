@@ -183,5 +183,13 @@ end
 
 local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeRateProfile ~= nil then if rfsuite.app.formFields['title'] then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end end end end
 
+local function onHelpMenu()
 
-return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, API = {}}
+    local helpPath = "app/modules/rates/help.lua"
+    local help = assert(loadfile(helpPath))()
+    print("Opening Help for Rate Table: " .. rfsuite.session.activeRateTable)
+    rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.activeRateTable])
+
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, API = {}}

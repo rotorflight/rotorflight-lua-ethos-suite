@@ -5144,7 +5144,7 @@
         "help_table_3_p1": {
           "english": "RC Rate: Maximum rotation rate at full stick deflection.",
           "needs_translation": false,
-          "translation": "RC Rate: Velocita' di rotazione massima a piena deflessione dello Stick."
+          "translation": "RC Rate: Velocita' di rotazione massima a piena deflessione dello stick."
         },
         "help_table_3_p2": {
           "english": "Rate: Increases maximum rotation rate while reducing sensitivity around half stick.",
@@ -5185,6 +5185,21 @@
           "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
           "needs_translation": false,
           "translation": "Expo: Riduce la sensibilita' vicino al centro del joystick, dove sono necessari controlli precisi."
+        },
+        "help_table_6_p1": {
+          "english": "Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+          "needs_translation": true,
+          "translation": "Rate: Maximum rotation rate at full stick deflection in degrees per second."
+        },
+        "help_table_6_p2": {
+          "english": "Shape: Shifts the vertex of the control curve. Up to this point, the signal translation is linear. This defines how far the stick travel remains proportional before the curve becomes progressive.",
+          "needs_translation": false,
+          "translation": "Forma: Sposta il vertice della curva di controllo. Fino a questo punto, la conversione del segnale è lineare. Questo definisce quanto il movimento dello stick rimanga proporzionale prima che la curva diventi progressiva."
+        },
+        "help_table_6_p3": {
+          "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+          "needs_translation": false,
+          "translation": "Expo: Riduce la sensibilità vicino al centro dello stick dove sono necessari controlli precisi."
         },
         "kiss": {
           "english": "KISS",

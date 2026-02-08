@@ -5186,6 +5186,21 @@
           "needs_translation": false,
           "translation": "Expo : Reduit la sensibilite pres du centre du manche ou des controles fins sont necessaires."
         },
+        "help_table_6_p1": {
+          "english": "Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+          "needs_translation": false,
+          "translation": "Taux : Taux de rotation maximal a pleine deviation du manche en degres par seconde."
+        },
+        "help_table_6_p2": {
+          "english": "Shape: Shifts the vertex of the control curve. Up to this point, the signal translation is linear. This defines how far the stick travel remains proportional before the curve becomes progressive.",
+          "needs_translation": false,
+          "translation": "Forme: Déplace le sommet de la courbe de contrôle. Jusqu'à ce point, la conversion du signal est linéaire. Cela définit jusqu'où la course du manche reste proportionnelle avant que la courbe ne devienne progressive."
+        },
+        "help_table_6_p3": {
+          "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+          "needs_translation": false,
+          "translation": "Expo : Reduit la sensibilite pres du centre du manche ou des controles fins sont necessaires."
+        },
         "kiss": {
           "english": "KISS",
           "needs_translation": false,

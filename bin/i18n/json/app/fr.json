@@ -3451,6 +3451,21 @@
         "english": "RC Rate: Maximum rotation rate at full stick deflection.",
         "translation": "Taux RC : Taux de rotation maximal a pleine deviation du manche.",
         "needs_translation": false
+      },
+      "help_table_6_p1": {
+        "english": "Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation": "Taux : Taux de rotation maximal a pleine deviation du manche en degres par seconde.",
+        "needs_translation": false
+      },
+      "help_table_6_p2": {
+        "english": "Shape: Shifts the vertex of the control curve. Up to this point, the signal translation is linear. This defines how far the stick travel remains proportional before the curve becomes progressive.",
+        "translation": "Forme: Déplace le sommet de la courbe de contrôle. Jusqu'à ce point, la conversion du signal est linéaire. Cela définit jusqu'où la course du manche reste proportionnelle avant que la courbe ne devienne progressive.",
+        "needs_translation": false
+      },
+      "help_table_6_p3": {
+        "english": "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation": "Expo : Reduit la sensibilite pres du centre du manche ou des controles fins sont necessaires.",
+        "needs_translation": false
       }
     },
     "mixer": {
