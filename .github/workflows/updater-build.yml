@@ -23,6 +23,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set build metadata
+        shell: bash
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -62,5 +67,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: updater-${{ matrix.os }}
+          name: updater-${{ matrix.os }}-${{ env.SHORT_SHA }}
           path: bin/updater/src/dist/update_radio_gui*
