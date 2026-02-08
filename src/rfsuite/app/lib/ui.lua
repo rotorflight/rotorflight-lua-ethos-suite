@@ -846,6 +846,7 @@ function ui.openMainMenuSub(activesection)
         local cache = tasks.msp.api._fileExistsCache
         local n = 0
         for _ in pairs(cache) do n = n + 1 end
+        if n > 16 then
             tasks.msp.api.clearFileExistsCache()
         end
     end
