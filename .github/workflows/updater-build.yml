@@ -74,5 +74,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rfsuite-updater-${{ env.OS_NAME }}-latest-${{ env.SHORT_SHA }}
+          name: rfsuite-updater-${{ env.OS_NAME }}-${{ env.SHORT_SHA }}
           path: bin/updater/src/dist/update_radio_gui*
