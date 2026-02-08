@@ -187,7 +187,6 @@ local function onHelpMenu()
 
     local helpPath = "app/modules/rates/help.lua"
     local help = assert(loadfile(helpPath))()
-    print("Opening Help for Rate Table: " .. rfsuite.session.activeRateTable)
     rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.activeRateTable])
 
 end
