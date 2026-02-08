@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         # ←—— add/remove locales here
-        lang: [en, de , es, fr, it, nl, pt-br, no, cs]
+        lang: [en, de , es, fr, it, nl, pt-br, no, cs, pl]
 
     steps:
       - name: Checkout code

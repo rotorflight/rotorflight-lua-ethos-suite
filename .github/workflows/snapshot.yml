@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         # keep in sync with pr.yml / push.yml
-        lang: [en, de, es, fr, it, nl, pt-br, no, cs]
+        lang: [en, de, es, fr, it, nl, pt-br, no, cs, pl]
 
     steps:
       - name: Check out repository

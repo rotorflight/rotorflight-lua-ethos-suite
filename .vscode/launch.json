@@ -113,7 +113,8 @@
         "it",
         "pt-br",
         "no",
-        "cs"
+        "cs",
+        "pl"
       ],
       "default": "en"
     }
