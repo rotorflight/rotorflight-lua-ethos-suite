@@ -29,3 +29,13 @@ Compilation requirements:
 Optional build inputs:
 
 - `bin/updater/src/icon.ico` (embedded icon used by `make.cmd`)
+
+## macOS / Linux Notes
+
+- The updater uses `tkinter` for the GUI. Ensure your Python install includes Tk support.
+  - macOS: the python.org installer typically includes Tk.
+  - Linux: install your distro's `python3-tk` package.
+- HID support is optional. If `hid`/`hidapi` is missing, the updater can still work
+  when the radio is already mounted in storage mode.
+- For development runs on macOS/Linux, use:
+  - `bin/updater/src/run_updater.sh`

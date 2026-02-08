@@ -1,0 +1,51 @@
+name: Updater Build (macOS + Linux)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "bin/updater/**"
+      - ".github/workflows/updater-build.yml"
+  pull_request:
+    paths:
+      - "bin/updater/**"
+      - ".github/workflows/updater-build.yml"
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: bin/updater/src/requirements_updater.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r bin/updater/src/requirements_updater.txt pyinstaller
+
+      - name: Generate version info
+        run: python bin/updater/src/gen_version_info.py
+
+      - name: Build updater (macOS/Linux)
+        if: runner.os != 'Windows'
+        working-directory: bin/updater/src
+        run: |
+          python -m PyInstaller --onefile update_radio_gui.py --name update_radio_gui --windowed
+
+      - name: Build updater (Windows)
+        if: runner.os == 'Windows'
+        working-directory: bin/updater/src
+        run: |
+          python -m PyInstaller --onefile --noupx update_radio_gui.py --name update_radio_gui --windowed --version-file version_info.txt --icon icon.ico
