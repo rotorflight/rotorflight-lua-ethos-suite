@@ -453,11 +453,17 @@ function ui.disableNavigationField(x)
     if field then field:enable(false) end
 end
 
-function ui.resetPageState(activesection)
-
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+function ui.cleanupCurrentPage()
+    -- Let the current page release resources.
+    if app.Page then
+        local hook = app.Page.close or app.Page.onClose or app.Page.destroy
+        if type(hook) == "function" then
+            local ok, err = pcall(hook, app.Page)
+            if not ok then
+                utils.log("Page cleanup error: " .. tostring(err), "debug")
+            end
+        end
+    end
 
     if app.Page and app.Page.apidata then
         if app.Page.apidata.formdata then
@@ -473,14 +479,29 @@ function ui.resetPageState(activesection)
         app.Page.apidata = nil
     end
 
-    if tasks.msp then tasks.msp.api.resetApidata() end
+    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
+    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    if app.formNavigationFields then for k in pairs(app.formNavigationFields) do app.formNavigationFields[k] = nil end end
+
+    app.fieldHelpTxt = nil
+    ui._helpCache = {}
+
+    app.Page = nil
+    app.PageTmp = nil
+end
+
+function ui.resetPageState(activesection)
+
+    ui.cleanupCurrentPage()
+
+    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
+
+    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     app.formFieldsOffline = {}
     app.formFieldsBGTask = {}
     app.lastLabel = nil
     app.isOfflinePage = false
-    app.Page = nil
-    app.PageTmp = nil
     app.lastMenu = nil
     app.lastIdx = nil
     app.lastTitle = nil
@@ -490,6 +511,7 @@ function ui.resetPageState(activesection)
     app.triggers.isReady = false
     app.uiState = app.uiStatus.mainMenu
     app.triggers.disableRssiTimeout = false
+    if tasks.msp then tasks.msp.api.resetApidata() end
 
     if activesection then
         if not app.gfx_buttons[activesection] then app.gfx_buttons[activesection] = {} end
@@ -1402,6 +1424,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "start")
 
+    -- Ensure previous page releases resources before loading a new one.
+    ui.cleanupCurrentPage()
 
     app.uiState = app.uiStatus.pages
     app.triggers.isReady = false
