@@ -91,12 +91,32 @@ jobs:
           if-no-files-found: error
 
   build-updater:
-    name: Build updater (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Build updater (${{ matrix.os_name }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - runner: windows-latest
+            os_name: windows
+            arch: x64
+            py_arch: x64
+          - runner: windows-latest
+            os_name: windows
+            arch: x86
+            py_arch: x86
+          - runner: macos-13
+            os_name: macos
+            arch: x64
+          - runner: macos-14
+            os_name: macos
+            arch: arm64
+          - runner: ubuntu-latest
+            os_name: linux
+            arch: x64
+          - runner: ubuntu-24.04-arm64
+            os_name: linux
+            arch: arm64
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -108,8 +128,18 @@ jobs:
           GIT_TAG="${GITHUB_REF_NAME}"
           GIT_VER="${GIT_TAG#snapshot/}"
           echo "GIT_VER=$GIT_VER" >> $GITHUB_ENV
+          echo "OS_NAME=${{ matrix.os_name }}" >> $GITHUB_ENV
+          echo "ARCH_NAME=${{ matrix.arch }}" >> $GITHUB_ENV
 
-      - name: Set up Python
+      - name: Set up Python (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: ${{ matrix.py_arch }}
+
+      - name: Set up Python (macOS/Linux)
+        if: runner.os != 'Windows'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -152,7 +182,7 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          ART_NAME="rfsuite-updater-${GIT_VER}-macos.zip"
+          ART_NAME="rfsuite-updater-${GIT_VER}-${OS_NAME}-${ARCH_NAME}.zip"
           ART_PATH="bin/updater/${ART_NAME}"
           if [ -d "bin/updater/src/dist/update_radio_gui.app" ]; then
             (cd bin/updater/src && zip -q -r "../${ART_NAME}" dist/update_radio_gui.app)
@@ -166,7 +196,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $artName = "rfsuite-updater-$env:GIT_VER-windows.zip"
+          $artName = "rfsuite-updater-$env:GIT_VER-$env:OS_NAME-$env:ARCH_NAME.zip"
           $artPath = "bin\\updater\\$artName"
           Compress-Archive -Path "bin\\updater\\src\\dist\\update_radio_gui.exe" -DestinationPath $artPath -Force
           "ART_NAME=$artName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -175,7 +205,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          ART_NAME="rfsuite-updater-${GIT_VER}-linux.zip"
+          ART_NAME="rfsuite-updater-${GIT_VER}-${OS_NAME}-${ARCH_NAME}.zip"
           ART_PATH="bin/updater/${ART_NAME}"
           (cd bin/updater/src && zip -q -r "../${ART_NAME}" dist/update_radio_gui)
           echo "ART_NAME=${ART_NAME}" >> $GITHUB_ENV
