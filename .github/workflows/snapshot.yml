@@ -147,27 +147,31 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          ART="rfsuite-updater-${GIT_VER}-macos.zip"
+          ART_NAME="rfsuite-updater-${GIT_VER}-macos.zip"
+          ART_PATH="bin/updater/${ART_NAME}"
           if [ -d "bin/updater/src/dist/update_radio_gui.app" ]; then
-            (cd bin/updater/src && zip -q -r "../${ART}" dist/update_radio_gui.app)
+            (cd bin/updater/src && zip -q -r "../${ART_NAME}" dist/update_radio_gui.app)
           else
-            (cd bin/updater/src && zip -q -r "../${ART}" dist/update_radio_gui)
+            (cd bin/updater/src && zip -q -r "../${ART_NAME}" dist/update_radio_gui)
           fi
-          echo "ART=${ART}" >> $GITHUB_ENV
+          echo "ART_NAME=${ART_NAME}" >> $GITHUB_ENV
+          echo "ART_PATH=${ART_PATH}" >> $GITHUB_ENV
 
       - name: Package updater (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $art = "rfsuite-updater-$env:GIT_VER-windows.zip"
-          Compress-Archive -Path "bin\\updater\\src\\dist\\update_radio_gui.exe" -DestinationPath $art -Force
-          "ART=$art" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $artName = "rfsuite-updater-$env:GIT_VER-windows.zip"
+          $artPath = "bin\\updater\\$artName"
+          Compress-Archive -Path "bin\\updater\\src\\dist\\update_radio_gui.exe" -DestinationPath $artPath -Force
+          "ART_NAME=$artName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "ART_PATH=$artPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Upload updater artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ART }}
-          path: ${{ env.ART }}
+          name: ${{ env.ART_NAME }}
+          path: ${{ env.ART_PATH }}
           if-no-files-found: error
 
   create-snapshot:
