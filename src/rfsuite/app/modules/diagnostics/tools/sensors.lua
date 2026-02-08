@@ -36,6 +36,20 @@ local progressLoaderMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local doDiscoverNotify = false
 
+local function openProgressDialog(...)
+    if rfutils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
 local function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b) return a.name:lower() < b.name:lower() end)
     return sensorList
@@ -215,7 +229,7 @@ local function wakeup()
 
     if repairSensors == true then
 
-        progressLoader = form.openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+        progressLoader = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
         progressLoader:closeAllowed(false)
         progressLoaderCounter = 0
         progressLoaderBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
