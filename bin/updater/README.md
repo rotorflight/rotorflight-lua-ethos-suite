@@ -39,3 +39,5 @@ Optional build inputs:
   when the radio is already mounted in storage mode.
 - For development runs on macOS/Linux, use:
   - `bin/updater/src/run_updater.sh`
+- macOS icon: generate `icon.icns` from the Windows `.ico` with:
+  - `python3 bin/updater/src/build_icon_icns.py`
