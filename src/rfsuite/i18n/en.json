@@ -2033,6 +2033,11 @@
       "needs_translation": false,
       "translation": "Configuration"
     },
+    "header_help": {
+      "english": "Help",
+      "needs_translation": false,
+      "translation": "Help"
+    },
     "header_system": {
       "english": "System",
       "needs_translation": false,
@@ -6047,9 +6052,9 @@
           "translation": "Governor State"
         },
         "help_modelAnnouncement": {
-          "english": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+          "english": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
           "needs_translation": false,
-          "translation": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer')."
+          "translation": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer')."
         },
         "loader_style_large": {
           "english": "LARGE",

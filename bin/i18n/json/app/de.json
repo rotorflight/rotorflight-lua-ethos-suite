@@ -9,6 +9,11 @@
     "translation": "System",
     "needs_translation": false
   },
+  "header_help": {
+    "english": "Help",
+    "translation": "Hilfe",
+    "needs_translation": false
+  },
   "btn_ok": {
     "english": "          OK           ",
     "translation": "          OK           ",
@@ -631,8 +636,8 @@
         "needs_translation": false
       },
       "help_modelAnnouncement": {
-        "english": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
-        "translation": "Für die Modellansage wird eine .wav-Datei im Ordner 'sounds' benötigt, die dem Modellnamen entspricht (z. B. 'racer.wav' für das Modell 'racer').",
+        "english": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+        "translation": "Für die Modellansage wird eine .wav-Datei im Ordner 'audio' benötigt, die dem Modellnamen entspricht (z. B. 'racer.wav' für das Modell 'racer').",
         "needs_translation": false
       }
     },

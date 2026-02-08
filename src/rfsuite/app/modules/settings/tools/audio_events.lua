@@ -4,16 +4,9 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local lcd = lcd
 
 local config = {}
 local enableWakeup = false
-
-local function sensorNameMap(sensorList)
-    local nameMap = {}
-    for _, sensor in ipairs(sensorList) do nameMap[sensor.key] = sensor.name end
-    return nameMap
-end
 
 local function setFieldEnabled(field, enabled) if field and field.enable then field:enable(enabled) end end
 
@@ -35,9 +28,6 @@ local function openPage(pageIdx, title, script)
     local app = rfsuite.app
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
-
-    local eventList = rfsuite.tasks.events.telemetry.eventTable
-    local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
 
     local savedEvents = rfsuite.preferences.events or {}
     for k, v in pairs(savedEvents) do config[k] = v end
@@ -161,12 +151,12 @@ local function openPage(pageIdx, title, script)
     local otherPanel = form.addExpansionPanel("@i18n(app.modules.settings.otherSoundSettings)@")
     otherPanel:open(otherEnabled)
 
-    local w, h = lcd.getWindowSize()
+    local w = rfsuite.app.lcdWidth
     local otherModelAnnouncement = otherPanel:addLine("")
 
-    rfsuite.app.ui.fieldHelpButton(otherModelAnnouncement, 0, 13, "@i18n(app.modules.settings.modelAnnouncement)@", "@i18n(app.modules.settings.help_modelAnnouncement)@")
+    rfsuite.app.ui.fieldHelpButton(otherModelAnnouncement, 0, rfsuite.app.radio.linePaddingTop, "@i18n(app.modules.settings.modelAnnouncement)@", "@i18n(app.modules.settings.help_modelAnnouncement)@")
 
-    form.addStaticText(otherModelAnnouncement, {x = 50, y = 10, w = w - 170, h = 35}, "@i18n(app.modules.settings.modelAnnouncement)@")
+    form.addStaticText(otherModelAnnouncement, {x = 50, y = rfsuite.app.radio.linePaddingTop, w = w - 170, h = rfsuite.app.radio.navbuttonHeight}, "@i18n(app.modules.settings.modelAnnouncement)@")
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1

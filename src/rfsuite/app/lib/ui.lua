@@ -1617,7 +1617,7 @@ function ui.openPageHelp(txtData, title)
         message = txtData
     end
 
-    if not title then title = "Help - " .. (app.lastTitle or "") end
+    if not title then title = "@i18n(app.header_help)@ - " .. (app.lastTitle or "") end
 
     form.openDialog({width = app.lcdWidth, title = title, message = message, buttons = {{label = "@i18n(app.btn_close)@", action = function() return true end}}, options = TEXT_LEFT})
 end
