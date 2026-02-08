@@ -111,7 +111,8 @@
         "fr",
         "es",
         "it",
-        "pt-br"
+        "pt-br",
+        "no"
       ],
       "default": "en"
     }
