@@ -107,9 +107,11 @@
       "options": [
         "en",
         "de",
+        "nl",
         "fr",
         "es",
-        "it"
+        "it",
+        "pt-br"
       ],
       "default": "en"
     }
