@@ -25,18 +25,18 @@
       },
       "source_adc": {
         "english": "Battery ADC",
-        "needs_translation": true,
-        "translation": "Battery ADC"
+        "needs_translation": false,
+        "translation": "Batteria ADC"
       },
       "source_esc": {
         "english": "ESC Telemetry",
-        "needs_translation": true,
-        "translation": "ESC Telemetry"
+        "needs_translation": false,
+        "translation": "ESC Telemetria"
       },
       "source_none": {
         "english": "None",
-        "needs_translation": true,
-        "translation": "None"
+        "needs_translation": false,
+        "translation": "Nessuno"
       },
       "vbatfullcellvoltage": {
         "english": "The nominal voltage of a fully charged cell.",
@@ -115,7 +115,7 @@
       "drive_freq": {
         "english": "PWM drive frequency",
         "needs_translation": false,
-        "translation": "PWM drive frequency"
+        "translation": "frequenza PWM"
       },
       "electrical_angle": {
         "english": "Electrical angle for the motor",
@@ -159,7 +159,7 @@
       },
       "tbl_alwaysoff": {
         "english": "Always Off",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Always Off"
       },
       "tbl_alwayson": {
@@ -205,12 +205,12 @@
       "tbl_linear_thr": {
         "english": "Linear Throttle",
         "needs_translation": false,
-        "translation": "Linear Throttle"
+        "translation": "Linear Acceleratore"
       },
       "tbl_rf_gov": {
         "english": "RF Gyro Governor",
         "needs_translation": false,
-        "translation": "RF Gyro Governor"
+        "translation": "RF Gyro Governatore"
       },
       "temperature_protection": {
         "english": "Temperature at which we cut power by 50%",
@@ -262,27 +262,27 @@
       "tbl_hardcutoff": {
         "english": "Hard Cutoff",
         "needs_translation": false,
-        "translation": "Hard Cutoff"
+        "translation": "taglio duro"
       },
       "tbl_heliext": {
         "english": "Heli Ext Governor",
         "needs_translation": false,
-        "translation": "Heli Ext Governor"
+        "translation": "Heli Ext Governatore"
       },
       "tbl_heligov": {
         "english": "Heli Governor",
         "needs_translation": false,
-        "translation": "Heli Governor"
+        "translation": "Heli Governatore"
       },
       "tbl_helistore": {
         "english": "Heli Governor Store",
         "needs_translation": false,
-        "translation": "Heli Governor Store"
+        "translation": "Heli Governatore Store"
       },
       "tbl_normal": {
         "english": "Normal",
         "needs_translation": false,
-        "translation": "Normal"
+        "translation": "Normale"
       },
       "tbl_proportional": {
         "english": "Proportional",
@@ -297,7 +297,7 @@
       "tbl_softcutoff": {
         "english": "Soft Cutoff",
         "needs_translation": false,
-        "translation": "Soft Cutoff"
+        "translation": "taglio morbido"
       }
     },
     "ESC_PARAMETERS_OMP": {
@@ -329,7 +329,7 @@
       "tbl_escgov": {
         "english": "ESC Governor",
         "needs_translation": false,
-        "translation": "ESC Governor"
+        "translation": "ESC Governatore"
       },
       "tbl_extgov": {
         "english": "External Governor",
@@ -481,12 +481,12 @@
       "tbl_heligov": {
         "english": "Heli Governor",
         "needs_translation": false,
-        "translation": "Heli Governor"
+        "translation": "Heli Governatore"
       },
       "tbl_helistore": {
         "english": "Heli Governor (stored)",
         "needs_translation": false,
-        "translation": "Heli Governor (stored)"
+        "translation": "Heli Governatore (stored)"
       },
       "tbl_off": {
         "english": "Off",
@@ -521,7 +521,7 @@
       "tbl_vbargov": {
         "english": "VBar Governor",
         "needs_translation": false,
-        "translation": "VBar Governor"
+        "translation": "VBar Governatore"
       }
     },
     "ESC_PARAMETERS_XDFLY": {
@@ -553,7 +553,7 @@
       "tbl_escgov": {
         "english": "ESC Governor",
         "needs_translation": false,
-        "translation": "ESC Governor"
+        "translation": "ESC Governatore"
       },
       "tbl_extgov": {
         "english": "External Governor",
@@ -695,7 +695,7 @@
       "tbl_autopower": {
         "english": "Auto Power",
         "needs_translation": false,
-        "translation": "Auto Power"
+        "translation": "Auto Potenza"
       },
       "tbl_custom": {
         "english": "Custom (PC Defined)",
@@ -705,7 +705,7 @@
       "tbl_cutoff": {
         "english": "Cutoff",
         "needs_translation": false,
-        "translation": "Cutoff"
+        "translation": "Taglio"
       },
       "tbl_fast": {
         "english": "Fast",
@@ -740,7 +740,7 @@
       "tbl_modeglider": {
         "english": "Aero Glider",
         "needs_translation": false,
-        "translation": "Aero Glider"
+        "translation": "aliante aero"
       },
       "tbl_modeheli": {
         "english": "Heli Governor",
@@ -750,7 +750,7 @@
       "tbl_modestore": {
         "english": "Heli Governor Store",
         "needs_translation": false,
-        "translation": "Heli Governor Store"
+        "translation": "Heli Governatore Store"
       },
       "tbl_normal": {
         "english": "Normal",
@@ -796,142 +796,142 @@
     "ESC_PARAMETERS_ZTW": {
       "tbl_auto": {
         "english": "Auto",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Auto"
       },
       "tbl_blue": {
         "english": "BLUE",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "BLUE"
       },
       "tbl_ccw": {
         "english": "CCW",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "CW"
       },
       "tbl_cyan": {
         "english": "CYAN",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "CYAN"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
-        "needs_translation": true,
-        "translation": "ESC Governor"
+        "needs_translation": false,
+        "translation": "ESC Governatore"
       },
       "tbl_extgov": {
         "english": "External Governor",
-        "needs_translation": true,
-        "translation": "External Governor"
+        "needs_translation": false,
+        "translation": "External Governatore"
       },
       "tbl_fast": {
         "english": "Fast",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Fast"
       },
       "tbl_fmfw": {
         "english": "Fixed Wing",
-        "needs_translation": true,
-        "translation": "Fixed Wing"
+        "needs_translation": false,
+        "translation": "ala fissa"
       },
       "tbl_fmheli": {
         "english": "Helicopter",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Helicopter"
       },
       "tbl_fwgov": {
         "english": "Fixed Wing",
-        "needs_translation": true,
-        "translation": "Fixed Wing"
+        "needs_translation": false,
+        "translation": "ala fissa"
       },
       "tbl_green": {
         "english": "GREEN",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "GREEN"
       },
       "tbl_high": {
         "english": "High",
-        "needs_translation": true,
-        "translation": "High"
+        "needs_translation": false,
+        "translation": "Alto"
       },
       "tbl_jadegreen": {
         "english": "JADE GREEN",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "JADE GREEN"
       },
       "tbl_low": {
         "english": "Low",
-        "needs_translation": true,
-        "translation": "Low"
+        "needs_translation": false,
+        "translation": "Basso"
       },
       "tbl_medium": {
         "english": "Medium",
-        "needs_translation": true,
-        "translation": "Medium"
+        "needs_translation": false,
+        "translation": "Medio"
       },
       "tbl_normal": {
         "english": "Normal",
-        "needs_translation": true,
-        "translation": "Normal"
+        "needs_translation": false,
+        "translation": "Normale"
       },
       "tbl_off": {
         "english": "Off",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Off"
       },
       "tbl_on": {
         "english": "On",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "On"
       },
       "tbl_orange": {
         "english": "ORANGE",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "ORANGE"
       },
       "tbl_pink": {
         "english": "PINK",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "PINK"
       },
       "tbl_purple": {
         "english": "PURPLE",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "PURPLE"
       },
       "tbl_red": {
         "english": "Red",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Red"
       },
       "tbl_reverse": {
         "english": "Reverse",
-        "needs_translation": true,
-        "translation": "Reverse"
+        "needs_translation": false,
+        "translation": "Invert"
       },
       "tbl_slow": {
         "english": "Slow",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Slow"
       },
       "tbl_vslow": {
         "english": "Very Slow",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "Very Slow"
       },
       "tbl_white": {
         "english": "WHITE",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "WHITE"
       },
       "tbl_yellow": {
         "english": "YELLOW",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "YELLOW"
       }
     },
@@ -1076,7 +1076,7 @@
       "tbl_custom": {
         "english": "CUSTOM",
         "needs_translation": false,
-        "translation": "CUSTOM"
+        "translation": "PERSONALIZZATO"
       },
       "tbl_high": {
         "english": "HIGH",
@@ -1147,7 +1147,7 @@
       },
       "tbl_govmode_direct": {
         "english": "DIRECT",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "DIRECT"
       },
       "tbl_govmode_electric": {
@@ -1157,8 +1157,8 @@
       },
       "tbl_govmode_limit": {
         "english": "LIMIT",
-        "needs_translation": true,
-        "translation": "LIMIT"
+        "needs_translation": false,
+        "translation": "LIMITE"
       },
       "tbl_govmode_mode1": {
         "english": "MODE1",
@@ -1192,7 +1192,7 @@
       },
       "tbl_throttle_type_function": {
         "english": "FUNCTION",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "FUNCTION"
       },
       "tbl_throttle_type_normal": {
@@ -1202,7 +1202,7 @@
       },
       "tbl_throttle_type_switch": {
         "english": "SWITCH",
-        "needs_translation": true,
+        "needs_translation": false,
         "translation": "SWITCH"
       }
     },
@@ -1351,30 +1351,30 @@
       },
       "tbl_tail_bidirectional": {
         "english": "Bidirectional",
-        "needs_translation": true,
-        "translation": "Bidirectional"
+        "needs_translation": false,
+        "translation": "bidirezionale"
       },
       "tbl_tail_motororized_tail": {
         "english": "Motorized Tail",
-        "needs_translation": true,
-        "translation": "Motorized Tail"
+        "needs_translation": false,
+        "translation": "Motorized Coda"
       },
       "tbl_tail_variable_pitch": {
         "english": "Variable Pitch",
-        "needs_translation": true,
-        "translation": "Variable Pitch"
+        "needs_translation": false,
+        "translation": "pitch variabile"
       }
     },
     "MIXER_INPUT": {
       "tbl_normal": {
         "english": "Normal",
-        "needs_translation": true,
-        "translation": "Normal"
+        "needs_translation": false,
+        "translation": "Normale"
       },
       "tbl_reversed": {
         "english": "Reversed",
-        "needs_translation": true,
-        "translation": "Reversed"
+        "needs_translation": false,
+        "translation": "Invertito"
       }
     },
     "MOTOR_CONFIG": {
@@ -1430,13 +1430,13 @@
       },
       "tbl_off": {
         "english": "OFF",
-        "needs_translation": true,
-        "translation": "Off"
+        "needs_translation": false,
+        "translation": "OFF"
       },
       "tbl_on": {
         "english": "ON",
-        "needs_translation": true,
-        "translation": "On"
+        "needs_translation": false,
+        "translation": "ON"
       }
     },
     "PID_PROFILE": {
@@ -1453,17 +1453,17 @@
       "bterm_cutoff_0": {
         "english": "B-term cutoff in Hz.",
         "needs_translation": false,
-        "translation": "B-term cutoff in Hz."
+        "translation": "B-term Taglio in Hz."
       },
       "bterm_cutoff_1": {
         "english": "B-term cutoff in Hz.",
         "needs_translation": false,
-        "translation": "B-term cutoff in Hz."
+        "translation": "B-term Taglio in Hz."
       },
       "bterm_cutoff_2": {
         "english": "B-term cutoff in Hz.",
         "needs_translation": false,
-        "translation": "B-term cutoff in Hz."
+        "translation": "B-term Taglio in Hz."
       },
       "cyclic_cross_coupling_cutoff": {
         "english": "Frequency limit for the compensation. Higher value will make the compensation action faster.",
@@ -1483,17 +1483,17 @@
       "dterm_cutoff_0": {
         "english": "D-term cutoff in Hz.",
         "needs_translation": false,
-        "translation": "D-term cutoff in Hz."
+        "translation": "termine D cutoff in Hz."
       },
       "dterm_cutoff_1": {
         "english": "D-term cutoff in Hz.",
         "needs_translation": false,
-        "translation": "D-term cutoff in Hz."
+        "translation": "termine D cutoff in Hz."
       },
       "dterm_cutoff_2": {
         "english": "D-term cutoff in Hz.",
         "needs_translation": false,
-        "translation": "D-term cutoff in Hz."
+        "translation": "termine D cutoff in Hz."
       },
       "error_decay_limit_cyclic": {
         "english": "Maximum bleed-off speed for cyclic I-term.",
@@ -1538,7 +1538,7 @@
       "gyro_cutoff_1": {
         "english": "PID loop overall bandwidth in Hz.",
         "needs_translation": false,
-        "translation": "PID loop overall bandwidth in Hz."
+        "translation": "ciclo PID overall bandwidth in Hz."
       },
       "gyro_cutoff_2": {
         "english": "PID loop overall bandwidth in Hz.",
@@ -2030,17 +2030,17 @@
     },
     "header_configuration": {
       "english": "Configuration",
-      "needs_translation": true,
+      "needs_translation": false,
       "translation": "Configurazione"
     },
     "header_help": {
       "english": "Help",
-      "needs_translation": true,
-      "translation": "Help"
+      "needs_translation": false,
+      "translation": "Aiuto"
     },
     "header_system": {
       "english": "System",
-      "needs_translation": true,
+      "needs_translation": false,
       "translation": "Sistema"
     },
     "menu_section_about": {
@@ -2145,7 +2145,7 @@
         "profile_type_rate": {
           "english": "Rate",
           "needs_translation": false,
-          "translation": "Rate"
+          "translation": "Tasso"
         },
         "source_profile": {
           "english": "Source Profile",
@@ -2183,8 +2183,8 @@
         },
         "half_duplex": {
           "english": "Half Duplex",
-          "needs_translation": true,
-          "translation": "Half Duplex"
+          "needs_translation": false,
+          "translation": "Mezzo Duplex"
         },
         "help_p1": {
           "english": "Configure the motor and speed controller features.",
@@ -2223,8 +2223,8 @@
         },
         "motor_pwm_rate": {
           "english": "Update frequency",
-          "needs_translation": true,
-          "translation": "Update frequency"
+          "needs_translation": false,
+          "translation": "Aggiornamento frequency"
         },
         "name": {
           "english": "ESC/Motors",
@@ -2233,8 +2233,8 @@
         },
         "pin_swap": {
           "english": "Pin Swap",
-          "needs_translation": true,
-          "translation": "Pin Swap"
+          "needs_translation": false,
+          "translation": "Scambio pin"
         },
         "pinion": {
           "english": "Pinion",
@@ -2248,13 +2248,13 @@
         },
         "rpm": {
           "english": "RPM",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "RPM"
         },
         "rpm_sensor_source": {
           "english": "RPM Sensor",
-          "needs_translation": true,
-          "translation": "RPM Sensor"
+          "needs_translation": false,
+          "translation": "RPM Sensore"
         },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",
@@ -2263,33 +2263,33 @@
         },
         "telemetry": {
           "english": "Telemetry",
-          "needs_translation": true,
-          "translation": "Telemetry"
+          "needs_translation": false,
+          "translation": "Telemetria"
         },
         "telemetry_protocol": {
           "english": "Telemetry Protocol",
-          "needs_translation": true,
-          "translation": "Telemetry Protocol"
+          "needs_translation": false,
+          "translation": "Telemetria Protocollo"
         },
         "throttle": {
           "english": "Throttle",
-          "needs_translation": true,
-          "translation": "Throttle"
+          "needs_translation": false,
+          "translation": "Acceleratore"
         },
         "throttle_protocol": {
           "english": "Throttle Protocol",
-          "needs_translation": true,
-          "translation": "Throttle Protocol"
+          "needs_translation": false,
+          "translation": "Acceleratore Protocollo"
         },
         "unsynced": {
           "english": "Unsynced ESC Update",
-          "needs_translation": true,
-          "translation": "Unsynced ESC Update"
+          "needs_translation": false,
+          "translation": "Unsynced ESC Aggiornamento"
         },
         "use_dshot_telemetry": {
           "english": "DShot RPM Telemetry",
-          "needs_translation": true,
-          "translation": "DShot RPM Telemetry"
+          "needs_translation": false,
+          "translation": "DShot RPM Telemetria"
         },
         "voltage_correction": {
           "english": "Voltage Correction",
@@ -2302,8 +2302,8 @@
           "flrtr": {
             "active_freewheel": {
               "english": "Active Freewheeling",
-              "needs_translation": true,
-              "translation": "Active Freewheeling"
+              "needs_translation": false,
+              "translation": "Attivo Freewheeling"
             },
             "advanced": {
               "english": "Advanced",
@@ -2312,8 +2312,8 @@
             },
             "auto_restart_time": {
               "english": "Auto Bailout Time",
-              "needs_translation": true,
-              "translation": "Auto restart time"
+              "needs_translation": false,
+              "translation": "Auto Bailout Ora"
             },
             "basic": {
               "english": "General",
@@ -2357,8 +2357,8 @@
             },
             "esc_mode": {
               "english": "ESC Mode",
-              "needs_translation": true,
-              "translation": "ESC Mode"
+              "needs_translation": false,
+              "translation": "ESC Modo"
             },
             "fan_control": {
               "english": "Cooling Fan Mode",
@@ -2368,7 +2368,7 @@
             "gov": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "gov_i": {
               "english": "Governor I",
@@ -2383,7 +2383,7 @@
             "governor": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "led_color": {
               "english": "LED Color",
@@ -2432,8 +2432,8 @@
             },
             "restart_acc": {
               "english": "Auto Bailout Accel",
-              "needs_translation": true,
-              "translation": "Restart acceleration"
+              "needs_translation": false,
+              "translation": "Auto Salvataggio Accel"
             },
             "soft_start": {
               "english": "Soft Start Time",
@@ -2480,7 +2480,7 @@
             "basic": {
               "english": "Basic",
               "needs_translation": false,
-              "translation": "Basic"
+              "translation": "Base"
             },
             "bec_voltage": {
               "english": "BEC Voltage",
@@ -2520,17 +2520,17 @@
             "gov_i_gain": {
               "english": "I-Gain",
               "needs_translation": false,
-              "translation": "I-Gain"
+              "translation": "I-Guadagno"
             },
             "gov_p_gain": {
               "english": "P-Gain",
               "needs_translation": false,
-              "translation": "P-Gain"
+              "translation": "P-Guadagno"
             },
             "governor": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "limits": {
               "english": "Limits",
@@ -2570,12 +2570,12 @@
             "soft_start": {
               "english": "Soft Start",
               "needs_translation": false,
-              "translation": "Soft Start"
+              "translation": "Morbido Start"
             },
             "startup_power": {
               "english": "Startup Power",
               "needs_translation": false,
-              "translation": "Startup Power"
+              "translation": "Startup Potenza"
             },
             "startup_time": {
               "english": "Startup Time",
@@ -2632,7 +2632,7 @@
             "gov": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "gov_i": {
               "english": "Gov-I",
@@ -2647,7 +2647,7 @@
             "governor": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "hv_bec_voltage": {
               "english": "HV BEC Voltage",
@@ -2692,7 +2692,7 @@
             "startup_power": {
               "english": "Startup Power",
               "needs_translation": false,
-              "translation": "Startup Power"
+              "translation": "Startup Potenza"
             },
             "timing": {
               "english": "Timing",
@@ -2724,7 +2724,7 @@
             "cutoff_handling": {
               "english": "Cutoff Handling",
               "needs_translation": false,
-              "translation": "Cutoff Handling"
+              "translation": "Taglio Handling"
             },
             "esc_mode": {
               "english": "ESC Mode",
@@ -2846,7 +2846,7 @@
             "gov": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "gov_i": {
               "english": "Gov-I",
@@ -2861,7 +2861,7 @@
             "governor": {
               "english": "Governor",
               "needs_translation": false,
-              "translation": "Governor"
+              "translation": "Governatore"
             },
             "hv_bec_voltage": {
               "english": "HV BEC Voltage",
@@ -2906,7 +2906,7 @@
             "startup_power": {
               "english": "Startup Power",
               "needs_translation": false,
-              "translation": "Startup Power"
+              "translation": "Startup Potenza"
             },
             "timing": {
               "english": "Timing",
@@ -2993,12 +2993,12 @@
             "max_start_power": {
               "english": "Max Start Power",
               "needs_translation": false,
-              "translation": "Max Start Power"
+              "translation": "Max Start Potenza"
             },
             "min_start_power": {
               "english": "Min Start Power",
               "needs_translation": false,
-              "translation": "Min Start Power"
+              "translation": "Min Start Potenza"
             },
             "motor_pole_pairs": {
               "english": "Motor Pole Pairs",
@@ -3044,107 +3044,107 @@
           "ztw": {
             "acceleration": {
               "english": "Acceleration",
-              "needs_translation": true,
-              "translation": "Acceleration"
+              "needs_translation": false,
+              "translation": "Accelerazione"
             },
             "advanced": {
               "english": "Advanced",
-              "needs_translation": true,
-              "translation": "Advanced"
+              "needs_translation": false,
+              "translation": "Avanzato"
             },
             "auto_restart_time": {
               "english": "Auto Restart Time",
-              "needs_translation": true,
-              "translation": "Auto Restart Time"
+              "needs_translation": false,
+              "translation": "Auto Riavvio Ora"
             },
             "basic": {
               "english": "Basic",
-              "needs_translation": true,
-              "translation": "Basic"
+              "needs_translation": false,
+              "translation": "Base"
             },
             "brake_force": {
               "english": "Brake Force",
-              "needs_translation": true,
-              "translation": "Brake Force"
+              "needs_translation": false,
+              "translation": "Freno Force"
             },
             "capacity_correction": {
               "english": "Capacity Correction",
-              "needs_translation": true,
-              "translation": "Capacity Correction"
+              "needs_translation": false,
+              "translation": "Capacita Correction"
             },
             "cell_cutoff": {
               "english": "Cell Cutoff",
-              "needs_translation": true,
-              "translation": "Cell Cutoff"
+              "needs_translation": false,
+              "translation": "Cella Cutoff"
             },
             "gov": {
               "english": "Governor",
-              "needs_translation": true,
-              "translation": "Governor"
+              "needs_translation": false,
+              "translation": "Governatore"
             },
             "gov_i": {
               "english": "Gov-I",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Gov-I"
             },
             "gov_p": {
               "english": "Gov-P",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Gov-P"
             },
             "governor": {
               "english": "Governor",
-              "needs_translation": true,
-              "translation": "Governor"
+              "needs_translation": false,
+              "translation": "Governatore"
             },
             "hv_bec_voltage": {
               "english": "HV BEC Voltage",
-              "needs_translation": true,
-              "translation": "HV BEC Voltage"
+              "needs_translation": false,
+              "translation": "HV BEC Tensione"
             },
             "led_color": {
               "english": "LED Color",
-              "needs_translation": true,
-              "translation": "LED Color"
+              "needs_translation": false,
+              "translation": "LED Colore"
             },
             "lv_bec_voltage": {
               "english": "LV BEC Voltage",
-              "needs_translation": true,
-              "translation": "LV BEC Voltage"
+              "needs_translation": false,
+              "translation": "LV BEC Tensione"
             },
             "motor_direction": {
               "english": "Motor Direction",
-              "needs_translation": true,
-              "translation": "Motor Direction"
+              "needs_translation": false,
+              "translation": "Motore Direzione"
             },
             "motor_poles": {
               "english": "Motor Poles",
-              "needs_translation": true,
-              "translation": "Motor Poles"
+              "needs_translation": false,
+              "translation": "Motore Poles"
             },
             "name": {
               "english": "ZTW",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "ZTW"
             },
             "smart_fan": {
               "english": "Smart Fan",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Smart Fan"
             },
             "sr_function": {
               "english": "SR Function",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "SR Function"
             },
             "startup_power": {
               "english": "Startup Power",
-              "needs_translation": true,
-              "translation": "Startup Power"
+              "needs_translation": false,
+              "translation": "Startup Potenza"
             },
             "timing": {
               "english": "Timing",
-              "needs_translation": true,
+              "needs_translation": false,
               "translation": "Timing"
             }
           }
@@ -3279,7 +3279,7 @@
         "arming_disable_flag_5": {
           "english": "Governor",
           "needs_translation": false,
-          "translation": "Governor"
+          "translation": "Governatore"
         },
         "arming_disable_flag_6": {
           "english": "RPM Signal",
@@ -3299,7 +3299,7 @@
         "arming_disable_flag_9": {
           "english": "Boot Grace Time",
           "needs_translation": false,
-          "translation": "Boot Grace Time"
+          "translation": "Boot Grace Ora"
         },
         "arming_flags": {
           "english": "Arming Flags",
@@ -3338,13 +3338,13 @@
         },
         "fbl_date": {
           "english": "Date",
-          "needs_translation": true,
-          "translation": "Date"
+          "needs_translation": false,
+          "translation": "Data"
         },
         "fbl_time": {
           "english": "Time",
-          "needs_translation": true,
-          "translation": "Time"
+          "needs_translation": false,
+          "translation": "Ora"
         },
         "help_p1": {
           "english": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
@@ -3385,138 +3385,138 @@
       "fbusout": {
         "cancel": {
           "english": "CANCEL",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "CANCEL"
         },
         "ch_prefix": {
           "english": "CH",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "CH"
         },
         "channel_page": {
           "english": "Fbus out / CH",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Fbus out / CH"
         },
         "channel_prefix": {
           "english": "CHANNEL ",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "CHANNEL "
         },
         "help_default_p1": {
           "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-          "needs_translation": true,
-          "translation": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port."
+          "needs_translation": false,
+          "translation": "Configura mixaggio avanzato e mappatura canali se SBUS Out e attivo su una porta seriale."
         },
         "help_default_p2": {
           "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos."
         },
         "help_default_p3": {
           "english": "- For mixer rules, use -1000, 1000.",
-          "needs_translation": true,
-          "translation": "- For mixer rules, use -1000, 1000."
+          "needs_translation": false,
+          "translation": "- For Mixer rules, use -1000, 1000."
         },
         "help_default_p4": {
           "english": "- For motors, use 0, 1000.",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "- For motors, use 0, 1000."
         },
         "help_default_p5": {
           "english": "- Or you can customize your own mapping.",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "- Or you can customize your own mapping."
         },
         "help_fields_max": {
           "english": "The maximum pwm value to send",
-          "needs_translation": true,
-          "translation": "The maximum pwm value to send"
+          "needs_translation": false,
+          "translation": "The maximum pwm Valore to send"
         },
         "help_fields_min": {
           "english": "The minimum pwm value to send.",
-          "needs_translation": true,
-          "translation": "The minimum pwm value to send."
+          "needs_translation": false,
+          "translation": "The minimum pwm Valore to send."
         },
         "help_fields_source": {
           "english": "Source id for the mix, counting from 0-15.",
-          "needs_translation": true,
-          "translation": "Source id for the mix, counting from 0-15."
+          "needs_translation": false,
+          "translation": "Sorgente id for the mix, counting from 0-15."
         },
         "max": {
           "english": "Max",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Max"
         },
         "min": {
           "english": "Min",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Min"
         },
         "mixer": {
           "english": "Mixer",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Mixer"
         },
         "motor": {
           "english": "Motor",
-          "needs_translation": true,
-          "translation": "Motor"
+          "needs_translation": false,
+          "translation": "Motore"
         },
         "name": {
           "english": "FBUS Out",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "FBUS Out"
         },
         "ok": {
           "english": "OK",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "OK"
         },
         "receiver": {
           "english": "Receiver",
-          "needs_translation": true,
-          "translation": "Receiver"
+          "needs_translation": false,
+          "translation": "Ricevitore"
         },
         "save_prompt": {
           "english": "Save current page to flight controller?",
-          "needs_translation": true,
-          "translation": "Save current page to flight controller?"
+          "needs_translation": false,
+          "translation": "Salva current page to flight controller?"
         },
         "save_settings": {
           "english": "Save settings",
-          "needs_translation": true,
-          "translation": "Save settings"
+          "needs_translation": false,
+          "translation": "Salva settings"
         },
         "saving": {
           "english": "Saving",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Saving"
         },
         "saving_data": {
           "english": "Saving data...",
-          "needs_translation": true,
-          "translation": "Saving data..."
+          "needs_translation": false,
+          "translation": "Saving Dati..."
         },
         "servo": {
           "english": "Servo",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Servo"
         },
         "source": {
           "english": "Source",
-          "needs_translation": true,
-          "translation": "Source"
+          "needs_translation": false,
+          "translation": "Sorgente"
         },
         "title": {
           "english": "FBUS Output",
-          "needs_translation": true,
-          "translation": "FBUS Output"
+          "needs_translation": false,
+          "translation": "FBUS Uscita"
         },
         "type": {
           "english": "Type",
-          "needs_translation": true,
-          "translation": "Type"
+          "needs_translation": false,
+          "translation": "Tipo"
         }
       },
       "filters": {
@@ -3528,7 +3528,7 @@
         "cutoff": {
           "english": "Cutoff",
           "needs_translation": false,
-          "translation": "Cutoff"
+          "translation": "Taglio"
         },
         "dyn_notch": {
           "english": "Dynamic Filters",
@@ -3578,12 +3578,12 @@
         "max_cutoff": {
           "english": "Max cutoff",
           "needs_translation": false,
-          "translation": "Max cutoff"
+          "translation": "Max Taglio"
         },
         "min_cutoff": {
           "english": "Min cutoff",
           "needs_translation": false,
-          "translation": "Min cutoff"
+          "translation": "Min Taglio"
         },
         "name": {
           "english": "Filters",
@@ -3639,8 +3639,8 @@
       "governor": {
         "auto_timeout": {
           "english": "Autorotation Timeout",
-          "needs_translation": true,
-          "translation": "Autorotation Timeout"
+          "needs_translation": false,
+          "translation": "Autorotazione Timeout"
         },
         "collective": {
           "english": "Collective",
@@ -3694,13 +3694,13 @@
         },
         "menu_curves": {
           "english": "Bypass Curve",
-          "needs_translation": true,
-          "translation": "Curves"
+          "needs_translation": false,
+          "translation": "Bypass Curva"
         },
         "menu_curves_long": {
           "english": "Governor Bypass Curve",
-          "needs_translation": true,
-          "translation": "Governor Bypass Curve"
+          "needs_translation": false,
+          "translation": "Governatore Bypass Curva"
         },
         "menu_filters": {
           "english": "Filters",
@@ -3730,7 +3730,7 @@
         "name": {
           "english": "Governor",
           "needs_translation": false,
-          "translation": "Governor"
+          "translation": "Governatore"
         },
         "ramp_time": {
           "english": "Ramp time",
@@ -3866,22 +3866,22 @@
         "aileron_direction": {
           "english": "Aileron Direction",
           "needs_translation": false,
-          "translation": "Aileron Direction"
+          "translation": "Aileron Direzione"
         },
         "collective_calibration": {
           "english": "Collective Calibration",
-          "needs_translation": true,
-          "translation": "Collective Calibration"
+          "needs_translation": false,
+          "translation": "Collettivo Calibrazione"
         },
         "collective_direction": {
           "english": "Collective Direction",
           "needs_translation": false,
-          "translation": "Collective Direction"
+          "translation": "Collettivo Direzione"
         },
         "collective_pitch_limit": {
           "english": "Collective Pitch Limit",
-          "needs_translation": true,
-          "translation": "Collective Pitch Limit"
+          "needs_translation": false,
+          "translation": "Collettivo Pitch Limite"
         },
         "collective_tilt_correction": {
           "english": "Collective Tilt Correction",
@@ -3890,38 +3890,38 @@
         },
         "collective_tilt_correction_neg": {
           "english": "Collective Tilt Correction -",
-          "needs_translation": true,
-          "translation": "Collective Tilt Correction -"
+          "needs_translation": false,
+          "translation": "Collettivo Tilt Correction -"
         },
         "collective_tilt_correction_pos": {
           "english": "Collective Tilt Correction +",
-          "needs_translation": true,
-          "translation": "Collective Tilt Correction +"
+          "needs_translation": false,
+          "translation": "Collettivo Tilt Correction +"
         },
         "configuration": {
           "english": "Configuration",
-          "needs_translation": true,
-          "translation": "Configuration"
+          "needs_translation": false,
+          "translation": "Configurazione"
         },
         "cyclic_calibration": {
           "english": "Cyclic Calibration",
-          "needs_translation": true,
-          "translation": "Cyclic Calibration"
+          "needs_translation": false,
+          "translation": "Ciclico Calibrazione"
         },
         "cyclic_pitch_limit": {
           "english": "Cyclic Pitch Limit",
-          "needs_translation": true,
-          "translation": "Cyclic Pitch Limit"
+          "needs_translation": false,
+          "translation": "Ciclico Pitch Limite"
         },
         "directions": {
           "english": "Mix Directions",
-          "needs_translation": true,
-          "translation": "Mix Directions"
+          "needs_translation": false,
+          "translation": "Mix Direzioni"
         },
         "elevator_direction": {
           "english": "Elevator Direction",
           "needs_translation": false,
-          "translation": "Elevator Direction"
+          "translation": "Elevator Direzione"
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -3930,8 +3930,8 @@
         },
         "geometry": {
           "english": "Geometry",
-          "needs_translation": true,
-          "translation": "Geometry"
+          "needs_translation": false,
+          "translation": "Geometria"
         },
         "help_p1": {
           "english": "Adust swash plate geometry, phase angles, and limits.",
@@ -3940,8 +3940,8 @@
         },
         "main_rotor_dir": {
           "english": "Rotor Direction",
-          "needs_translation": true,
-          "translation": "Rotor Direction"
+          "needs_translation": false,
+          "translation": "Rotore Direzione"
         },
         "name": {
           "english": "Mixer",
@@ -3950,12 +3950,12 @@
         },
         "settings": {
           "english": "Settings",
-          "needs_translation": true,
-          "translation": "Settings"
+          "needs_translation": false,
+          "translation": "Impostazioni"
         },
         "swash": {
           "english": "Swash",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "Swash"
         },
         "swash_phase": {
@@ -3975,18 +3975,18 @@
         },
         "swash_type": {
           "english": "Swash Type",
-          "needs_translation": true,
-          "translation": "Swash Type"
+          "needs_translation": false,
+          "translation": "Swash Tipo"
         },
         "tail": {
           "english": "Tail",
-          "needs_translation": true,
-          "translation": "Tail"
+          "needs_translation": false,
+          "translation": "Coda"
         },
         "tail_center_offset": {
           "english": "Tail Center Offset",
-          "needs_translation": true,
-          "translation": "Tail Center Offset"
+          "needs_translation": false,
+          "translation": "Coda Centro Offset"
         },
         "tail_motor_idle": {
           "english": "Tail Idle Thr%",
@@ -3995,38 +3995,38 @@
         },
         "tail_rotor_mode": {
           "english": "Tail Mode",
-          "needs_translation": true,
-          "translation": "Tail Mode"
+          "needs_translation": false,
+          "translation": "Coda Mode"
         },
         "trims": {
           "english": "Trims",
-          "needs_translation": true,
-          "translation": "Trims"
+          "needs_translation": false,
+          "translation": "Trim"
         },
         "yaw_calibration": {
           "english": "Yaw Calibration",
-          "needs_translation": true,
-          "translation": "Yaw Calibration"
+          "needs_translation": false,
+          "translation": "Imbardata Calibrazione"
         },
         "yaw_ccw_limit": {
           "english": "Yaw CCW Limit",
-          "needs_translation": true,
-          "translation": "Yaw CCW Limit"
+          "needs_translation": false,
+          "translation": "Imbardata CCW Limite"
         },
         "yaw_center_trim": {
           "english": "Yaw Center Trim",
-          "needs_translation": true,
-          "translation": "Yaw Center Trim"
+          "needs_translation": false,
+          "translation": "Imbardata Centro Trim"
         },
         "yaw_cw_limit": {
           "english": "Yaw CW Limit",
-          "needs_translation": true,
-          "translation": "Yaw CW Limit"
+          "needs_translation": false,
+          "translation": "Imbardata CW Limite"
         },
         "yaw_direction": {
           "english": "Yaw Direction",
           "needs_translation": false,
-          "translation": "Yaw Direction"
+          "translation": "Imbardata Direzione"
         }
       },
       "msp_exp": {
@@ -4055,7 +4055,7 @@
         "checksum_errors": {
           "english": "Checksum errors",
           "needs_translation": false,
-          "translation": "Checksum errors"
+          "translation": "Checksum Errori"
         },
         "help_p1": {
           "english": "This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
@@ -4222,109 +4222,109 @@
         "yaw": {
           "english": "Yaw",
           "needs_translation": false,
-          "translation": "Yaw"
+          "translation": "Imbardata"
         }
       },
       "power": {
         "alert_name": {
           "english": "Alerts",
-          "needs_translation": true,
-          "translation": "Alerts"
+          "needs_translation": false,
+          "translation": "Avvisi"
         },
         "alert_type": {
           "english": "Rx Voltage Alert",
-          "needs_translation": true,
-          "translation": "Rx Voltage Alert"
+          "needs_translation": false,
+          "translation": "Rx Tensione Avviso"
         },
         "battery_capacity": {
           "english": "Battery Capacity",
-          "needs_translation": true,
-          "translation": "Battery Capacity"
+          "needs_translation": false,
+          "translation": "Batteria Capacita"
         },
         "battery_name": {
           "english": "Battery",
-          "needs_translation": true,
-          "translation": "Battery"
+          "needs_translation": false,
+          "translation": "Batteria"
         },
         "bec_voltage_alert": {
           "english": "BEC Alert Value",
-          "needs_translation": true,
-          "translation": "BEC Alert Value"
+          "needs_translation": false,
+          "translation": "BEC Avviso Valore"
         },
         "calcfuel_local": {
           "english": "Calculate Fuel Using",
-          "needs_translation": true,
-          "translation": "Calculate Fuel Using"
+          "needs_translation": false,
+          "translation": "Calcola Carburante Usando"
         },
         "cell_count": {
           "english": "Cell Count",
-          "needs_translation": true,
-          "translation": "Cell Count"
+          "needs_translation": false,
+          "translation": "Cella Conteggio"
         },
         "consumption_warning_percentage": {
           "english": "Consumption Warning %",
-          "needs_translation": true,
-          "translation": "Consumption Warning %"
+          "needs_translation": false,
+          "translation": "Consumption Avviso %"
         },
         "current_meter_source": {
           "english": "Current Source",
-          "needs_translation": true,
-          "translation": "Current Source"
+          "needs_translation": false,
+          "translation": "Corrente Sorgente"
         },
         "full_cell_voltage": {
           "english": "Full Cell Voltage",
-          "needs_translation": true,
-          "translation": "Full Cell Voltage"
+          "needs_translation": false,
+          "translation": "Full Cella Tensione"
         },
         "help_p1": {
           "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-          "needs_translation": true,
-          "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level."
+          "needs_translation": false,
+          "translation": "Le impostazioni batteria configurano il controller per monitorare la tensione e avvisare quando scende."
         },
         "max_cell_voltage": {
           "english": "Max Cell Voltage",
-          "needs_translation": true,
-          "translation": "Max Cell Voltage"
+          "needs_translation": false,
+          "translation": "Max Cella Tensione"
         },
         "min_cell_voltage": {
           "english": "Min Cell Voltage",
-          "needs_translation": true,
-          "translation": "Min Cell Voltage"
+          "needs_translation": false,
+          "translation": "Min Cella Tensione"
         },
         "name": {
           "english": "Power",
-          "needs_translation": true,
-          "translation": "Power"
+          "needs_translation": false,
+          "translation": "Potenza"
         },
         "rx_voltage_alert": {
           "english": "RxBatt Alert Value",
-          "needs_translation": true,
-          "translation": "RxBatt Alert Value"
+          "needs_translation": false,
+          "translation": "RxBatt Avviso Valore"
         },
         "source_name": {
           "english": "Sources",
-          "needs_translation": true,
-          "translation": "Sources"
+          "needs_translation": false,
+          "translation": "Sorgenti"
         },
         "timer": {
           "english": "Flight Time Alarm",
-          "needs_translation": true,
-          "translation": "Flight Time Alarm"
+          "needs_translation": false,
+          "translation": "Allarme tempo volo"
         },
         "voltage_meter_source": {
           "english": "Voltage Source",
-          "needs_translation": true,
-          "translation": "Voltage Source"
+          "needs_translation": false,
+          "translation": "Tensione Sorgente"
         },
         "voltage_multiplier": {
           "english": "Sag Compensation",
-          "needs_translation": true,
-          "translation": "Sag Compensation"
+          "needs_translation": false,
+          "translation": "Caduta Compensazione"
         },
         "warn_cell_voltage": {
           "english": "Warn Cell Voltage",
-          "needs_translation": true,
-          "translation": "Warn Cell Voltage"
+          "needs_translation": false,
+          "translation": "Avviso Cella Tensione"
         }
       },
       "profile_autolevel": {
@@ -4336,7 +4336,7 @@
         "angle_mode": {
           "english": "Angle mode",
           "needs_translation": false,
-          "translation": "Angle mode"
+          "translation": "Angle Modo"
         },
         "gain": {
           "english": "Gain",
@@ -4361,7 +4361,7 @@
         "horizon_mode": {
           "english": "Horizon mode",
           "needs_translation": false,
-          "translation": "Horizon mode"
+          "translation": "Horizon Modo"
         },
         "max": {
           "english": "Max",
@@ -4508,7 +4508,7 @@
         "name": {
           "english": "Governor",
           "needs_translation": false,
-          "translation": "Governor"
+          "translation": "Governatore"
         },
         "p": {
           "english": "P",
@@ -4558,7 +4558,7 @@
         "yaw": {
           "english": "Yaw",
           "needs_translation": false,
-          "translation": "Yaw"
+          "translation": "Imbardata"
         }
       },
       "profile_mainrotor": {
@@ -4575,7 +4575,7 @@
         "cutoff": {
           "english": "Cutoff",
           "needs_translation": false,
-          "translation": "Cutoff"
+          "translation": "Taglio"
         },
         "cyclic_cross_coupling": {
           "english": "Cyclic Cross coupling",
@@ -4622,12 +4622,12 @@
         "bterm_cutoff": {
           "english": "B-term cut-off",
           "needs_translation": false,
-          "translation": "B-term cut-off"
+          "translation": "B-term cut-Off"
         },
         "dterm_cutoff": {
           "english": "D-term cut-off",
           "needs_translation": false,
-          "translation": "D-term cut-off"
+          "translation": "termine D cut-off"
         },
         "help_p1": {
           "english": "PID Bandwidth: Overall bandwidth in HZ used by the PID loop.",
@@ -4724,7 +4724,7 @@
         "iterm_relax": {
           "english": "I-term relax",
           "needs_translation": false,
-          "translation": "I-term relax"
+          "translation": "termine I relax"
         },
         "limit": {
           "english": "Limit",
@@ -4861,7 +4861,7 @@
         "rate": {
           "english": "Rate",
           "needs_translation": false,
-          "translation": "Rate"
+          "translation": "Tasso"
         },
         "time": {
           "english": "Time",
@@ -4940,7 +4940,7 @@
         "cutoff": {
           "english": "Cutoff",
           "needs_translation": false,
-          "translation": "Cutoff"
+          "translation": "Taglio"
         },
         "cw": {
           "english": "CW",
@@ -5000,7 +5000,7 @@
         "precomp_cutoff": {
           "english": "Precomp Cutoff",
           "needs_translation": false,
-          "translation": "Precomp Cutoff"
+          "translation": "Precomp Taglio"
         },
         "yaw_stop_gain": {
           "english": "Yaw stop gain",
@@ -5052,7 +5052,7 @@
         "name": {
           "english": "Radio Config",
           "needs_translation": false,
-          "translation": "Radio Config"
+          "translation": "Config radio"
         },
         "stick": {
           "english": "Stick",
@@ -5062,12 +5062,12 @@
         "throttle": {
           "english": "Throttle",
           "needs_translation": false,
-          "translation": "Throttle"
+          "translation": "Acceleratore"
         },
         "yaw_deadband": {
           "english": "Yaw",
           "needs_translation": false,
-          "translation": "Yaw"
+          "translation": "Imbardata"
         }
       },
       "rates": {
@@ -5193,8 +5193,8 @@
         },
         "help_table_6_p1": {
           "english": "Rate: Maximum rotation rate at full stick deflection in degrees per second.",
-          "needs_translation": true,
-          "translation": "Rate: Maximum rotation rate at full stick deflection in degrees per second."
+          "needs_translation": false,
+          "translation": "Tasso: Maximum rotation rate at full stick deflection in degrees per second."
         },
         "help_table_6_p2": {
           "english": "Shape: Shifts the vertex of the control curve. Up to this point, the signal translation is linear. This defines how far the stick travel remains proportional before the curve becomes progressive.",
@@ -5214,12 +5214,12 @@
         "max_rate": {
           "english": "Max Rate",
           "needs_translation": false,
-          "translation": "Max Rate"
+          "translation": "Max Tasso"
         },
         "name": {
           "english": "Rates",
           "needs_translation": false,
-          "translation": "Rates"
+          "translation": "Tassi"
         },
         "none": {
           "english": "NONE",
@@ -5244,7 +5244,7 @@
         "rate": {
           "english": "Rate",
           "needs_translation": false,
-          "translation": "Rate"
+          "translation": "Tasso"
         },
         "rc_curve": {
           "english": "RC Curve",
@@ -5254,7 +5254,7 @@
         "rc_rate": {
           "english": "RC Rate",
           "needs_translation": false,
-          "translation": "RC Rate"
+          "translation": "RC Tasso"
         },
         "roll": {
           "english": "Roll",
@@ -5263,13 +5263,13 @@
         },
         "rotorflight": {
           "english": "ROTORFLIGHT",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "ROTORFLIGHT"
         },
         "shape": {
           "english": "Shape",
-          "needs_translation": true,
-          "translation": "Shape"
+          "needs_translation": false,
+          "translation": "Forma"
         },
         "superrate": {
           "english": "SuperRate",
@@ -5279,7 +5279,7 @@
         "yaw": {
           "english": "Yaw",
           "needs_translation": false,
-          "translation": "Yaw"
+          "translation": "Imbardata"
         }
       },
       "rates_advanced": {
@@ -5295,8 +5295,8 @@
         },
         "advanced": {
           "english": "Advanced",
-          "needs_translation": true,
-          "translation": "Advanced"
+          "needs_translation": false,
+          "translation": "Avanzato"
         },
         "col": {
           "english": "Col",
@@ -5316,7 +5316,7 @@
         "cutoff": {
           "english": "Cutoff",
           "needs_translation": false,
-          "translation": "Cutoff"
+          "translation": "Taglio"
         },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",
@@ -5366,7 +5366,7 @@
         "name": {
           "english": "Rates",
           "needs_translation": false,
-          "translation": "Rates"
+          "translation": "Tassi"
         },
         "pitch": {
           "english": "Pitch",
@@ -5425,18 +5425,18 @@
         },
         "table": {
           "english": "Rate Table",
-          "needs_translation": true,
-          "translation": "Rate Table"
+          "needs_translation": false,
+          "translation": "Tasso Tabella"
         },
         "yaw": {
           "english": "Yaw",
           "needs_translation": false,
-          "translation": "Yaw"
+          "translation": "Imbardata"
         },
         "yaw_boost": {
           "english": "Yaw boost",
           "needs_translation": false,
-          "translation": "Yaw boost"
+          "translation": "Imbardata boost"
         },
         "yaw_dynamic_ceiling_gain": {
           "english": "Ceiling",
@@ -5640,7 +5640,7 @@
         "title": {
           "english": "SBUS Output",
           "needs_translation": false,
-          "translation": "SBUS Output"
+          "translation": "SBUS Uscita"
         },
         "type": {
           "english": "Type",
@@ -5651,8 +5651,8 @@
       "servos": {
         "bus": {
           "english": "BUS Output",
-          "needs_translation": true,
-          "translation": "BUS Output"
+          "needs_translation": false,
+          "translation": "BUS Uscita"
         },
         "center": {
           "english": "Center",
@@ -5811,8 +5811,8 @@
         },
         "pwm": {
           "english": "PWM Output",
-          "needs_translation": true,
-          "translation": "PWM Output"
+          "needs_translation": false,
+          "translation": "PWM Uscita"
         },
         "rate": {
           "english": "Rate",
@@ -5924,17 +5924,17 @@
         "dashboard": {
           "english": "Dashboard",
           "needs_translation": false,
-          "translation": "Dashboard"
+          "translation": "Pannello"
         },
         "dashboard_loader": {
           "english": "Loader",
-          "needs_translation": true,
-          "translation": "Loader"
+          "needs_translation": false,
+          "translation": "Caricatore"
         },
         "dashboard_loader_loader_style_select": {
           "english": "Theme loader style",
-          "needs_translation": true,
-          "translation": "Theme loader style"
+          "needs_translation": false,
+          "translation": "Stile caricatore tema"
         },
         "dashboard_settings": {
           "english": "Settings",
@@ -6058,18 +6058,18 @@
         },
         "loader_style_large": {
           "english": "LARGE",
-          "needs_translation": true,
-          "translation": "LARGE"
+          "needs_translation": false,
+          "translation": "GRANDE"
         },
         "loader_style_medium": {
           "english": "MEDIUM",
-          "needs_translation": true,
-          "translation": "MEDIUM"
+          "needs_translation": false,
+          "translation": "MEDIO"
         },
         "loader_style_small": {
           "english": "SMALL",
-          "needs_translation": true,
-          "translation": "SMALL"
+          "needs_translation": false,
+          "translation": "PICCOLO"
         },
         "localizations": {
           "english": "Localization",
@@ -6238,18 +6238,18 @@
         },
         "txt_hs_loader": {
           "english": "Progress Loader",
-          "needs_translation": true,
-          "translation": "Progress Loader"
+          "needs_translation": false,
+          "translation": "Caricatore progresso"
         },
         "txt_hs_loader_fastclose": {
           "english": "CLOSE ASAP",
-          "needs_translation": true,
-          "translation": "CLOSE ASAP"
+          "needs_translation": false,
+          "translation": "CHIUDI SUBITO"
         },
         "txt_hs_loader_wait": {
           "english": "CLOSE AT 100%",
-          "needs_translation": true,
-          "translation": "CLOSE AT 100%"
+          "needs_translation": false,
+          "translation": "CHIUDI A 100%"
         },
         "txt_iconsize": {
           "english": "Icon Size",
@@ -6264,7 +6264,7 @@
         "txt_large": {
           "english": "LARGE",
           "needs_translation": false,
-          "translation": "LARGE"
+          "translation": "GRANDE"
         },
         "txt_logging": {
           "english": "Logging",
@@ -6289,12 +6289,12 @@
         "txt_mspdata": {
           "english": "Log msp data",
           "needs_translation": false,
-          "translation": "Log msp data"
+          "translation": "Log dati MSP"
         },
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",
           "needs_translation": false,
-          "translation": "MSP Activity Display"
+          "translation": "Display attivita MSP"
         },
         "txt_objectprofiler": {
           "english": "Log dashboard speed",
@@ -6309,17 +6309,17 @@
         "txt_overlaygrid": {
           "english": "Overlay grid in dashboard",
           "needs_translation": false,
-          "translation": "Overlay grid in dashboard"
+          "translation": "Griglia overlay in dashboard"
         },
         "txt_overlaystats": {
           "english": "Overlay stats in dashboard",
           "needs_translation": false,
-          "translation": "Overlay stats in dashboard"
+          "translation": "Stats overlay in dashboard"
         },
         "txt_overlaystatsadmin": {
           "english": "Overlay stats in admin",
-          "needs_translation": true,
-          "translation": "Overlay stats in admin"
+          "needs_translation": false,
+          "translation": "Statistiche overlay in admin"
         },
         "txt_queuesize": {
           "english": "Log MSP queue size",
@@ -6328,23 +6328,23 @@
         },
         "txt_reload_confirm": {
           "english": "Confirm on reload",
-          "needs_translation": true,
-          "translation": "Confirm on reload"
+          "needs_translation": false,
+          "translation": "Conferma al ricarico"
         },
         "txt_save_armed_warning": {
           "english": "Show disarm-to-save warning",
-          "needs_translation": true,
-          "translation": "Show disarm-to-save warning"
+          "needs_translation": false,
+          "translation": "Mostra avviso disarmare per salvare"
         },
         "txt_save_confirm": {
           "english": "Confirm on save",
-          "needs_translation": true,
-          "translation": "Confirm on save"
+          "needs_translation": false,
+          "translation": "Conferma al salvataggio"
         },
         "txt_small": {
           "english": "SMALL",
           "needs_translation": false,
-          "translation": "SMALL"
+          "translation": "PICCOLO"
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -6391,7 +6391,7 @@
         "name": {
           "english": "Stats",
           "needs_translation": false,
-          "translation": "Stats"
+          "translation": "Statistiche"
         },
         "totalflighttime": {
           "english": "Total Flight Time",
@@ -6495,7 +6495,7 @@
         "yaw_trim": {
           "english": "Yaw. trim %",
           "needs_translation": false,
-          "translation": "Yaw. trim %"
+          "translation": "Imbardata. trim %"
         }
       },
       "validate_sensors": {
@@ -7073,7 +7073,7 @@
     "sensor_bec_current": {
       "english": "BEC Current",
       "needs_translation": false,
-      "translation": "BEC Current"
+      "translation": "BEC Corrente"
     },
     "sensor_bec_temp": {
       "english": "BEC Temperature",
@@ -7083,17 +7083,17 @@
     "sensor_bec_voltage": {
       "english": "BEC Voltage",
       "needs_translation": false,
-      "translation": "BEC Voltage"
+      "translation": "BEC Tensione"
     },
     "sensor_bus_current": {
       "english": "Bus Current",
       "needs_translation": false,
-      "translation": "Bus Current"
+      "translation": "Bus Corrente"
     },
     "sensor_bus_voltage": {
       "english": "Bus Voltage",
       "needs_translation": false,
-      "translation": "Bus Voltage"
+      "translation": "Bus Tensione"
     },
     "sensor_collective_control": {
       "english": "Collective Control",
@@ -7153,12 +7153,12 @@
     "sensor_esc1_bec_current": {
       "english": "ESC1 BEC Current",
       "needs_translation": false,
-      "translation": "ESC1 BEC Current"
+      "translation": "ESC1 BEC Corrente"
     },
     "sensor_esc1_bec_voltage": {
       "english": "ESC1 BEC Voltage",
       "needs_translation": false,
-      "translation": "ESC1 BEC Voltage"
+      "translation": "ESC1 BEC Tensione"
     },
     "sensor_esc1_capacity": {
       "english": "ESC1 Capacity",
@@ -7218,12 +7218,12 @@
     "sensor_esc2_bec_current": {
       "english": "ESC2 BEC Current",
       "needs_translation": false,
-      "translation": "ESC2 BEC Current"
+      "translation": "ESC2 BEC Corrente"
     },
     "sensor_esc2_bec_voltage": {
       "english": "ESC2 BEC Voltage",
       "needs_translation": false,
-      "translation": "ESC2 BEC Voltage"
+      "translation": "ESC2 BEC Tensione"
     },
     "sensor_esc2_capacity": {
       "english": "ESC2 Capacity",
@@ -7403,7 +7403,7 @@
     "sensor_mcu_current": {
       "english": "MCU Current",
       "needs_translation": false,
-      "translation": "MCU Current"
+      "translation": "MCU Corrente"
     },
     "sensor_mcu_temp": {
       "english": "MCU Temperature",
@@ -7413,7 +7413,7 @@
     "sensor_mcu_voltage": {
       "english": "MCU Voltage",
       "needs_translation": false,
-      "translation": "MCU Voltage"
+      "translation": "MCU Tensione"
     },
     "sensor_model_id": {
       "english": "Model ID",
@@ -7423,7 +7423,7 @@
     "sensor_motor_rpm": {
       "english": "Motor RPM",
       "needs_translation": false,
-      "translation": "Motor RPM"
+      "translation": "Motore RPM"
     },
     "sensor_motor_temp": {
       "english": "Motor Temperature",
@@ -7651,7 +7651,7 @@
       "fuel": {
         "english": "Fuel",
         "needs_translation": false,
-        "translation": "Fuel"
+        "translation": "Carburante"
       },
       "fuel_remaining": {
         "english": "Fuel Remaining",
@@ -7661,7 +7661,7 @@
       "governor": {
         "english": "Governor",
         "needs_translation": false,
-        "translation": "Governor"
+        "translation": "Governatore"
       },
       "headspeed": {
         "english": "Headspeed",
@@ -7741,7 +7741,7 @@
       "power": {
         "english": "Power",
         "needs_translation": false,
-        "translation": "Power"
+        "translation": "Potenza"
       },
       "profile": {
         "english": "Profile",
@@ -7796,12 +7796,12 @@
       "throttle": {
         "english": "Throttle",
         "needs_translation": false,
-        "translation": "Throttle"
+        "translation": "Acceleratore"
       },
       "throttle_max": {
         "english": "Throttle Max",
         "needs_translation": false,
-        "translation": "Throttle Max"
+        "translation": "Acceleratore Max"
       },
       "time": {
         "english": "Time",
@@ -7867,8 +7867,8 @@
       },
       "ARMED": {
         "english": "ARMED",
-        "needs_translation": true,
-        "translation": "ARMED"
+        "needs_translation": false,
+        "translation": "ARMATO"
       },
       "AUTOROT": {
         "english": "AUTOROT",

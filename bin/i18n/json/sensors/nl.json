@@ -56,7 +56,7 @@
   },
   "voltage": {
     "english": "Voltage",
-    "translation": "Voltage",
+    "translation": "Spanning",
     "needs_translation": false
   },
   "bec_voltage": {
@@ -106,7 +106,7 @@
   },
   "arming_flags": {
     "english": "Arming Flags",
-    "translation": "Arming Flags",
+    "translation": "Arming Vlaggen",
     "needs_translation": false
   },
   "current": {
@@ -116,7 +116,7 @@
   },
   "throttle_pct": {
     "english": "Throttle %",
-    "translation": "Throttle %",
+    "translation": "Gas %",
     "needs_translation": false
   },
   "consumption": {
@@ -141,7 +141,7 @@
   },
   "armdisableflags": {
     "english": "Arming Disable",
-    "translation": "Arming Disable",
+    "translation": "Arming Uitschak",
     "needs_translation": false
   }
 }

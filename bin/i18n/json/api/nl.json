@@ -248,8 +248,8 @@
     },
     "tbl_alwaysoff": {
       "english": "Always Off",
-      "translation": "Always Off",
-      "needs_translation": true
+      "translation": "Always Uit",
+      "needs_translation": false
     },
     "throttle_min": {
       "english": "Minimum throttle calibration value",
@@ -343,12 +343,12 @@
     },
     "tbl_linear_thr": {
       "english": "Linear Throttle",
-      "translation": "Linear Throttle",
+      "translation": "Linear Gas",
       "needs_translation": false
     },
     "tbl_rf_gov": {
       "english": "RF Gyro Governor",
-      "translation": "RF Gyro Governor",
+      "translation": "RF gyro governor",
       "needs_translation": false
     },
     "buzzer_volume": {
@@ -358,7 +358,7 @@
     },
     "drive_freq": {
       "english": "PWM drive frequency",
-      "translation": "PWM drive frequency",
+      "translation": "PWM frequentie",
       "needs_translation": false
     },
     "tbl_enabled": {
@@ -385,27 +385,27 @@
     },
     "tbl_modestore": {
       "english": "Heli Governor Store",
-      "translation": "Heli Governor Store",
+      "translation": "heli governor store",
       "needs_translation": false
     },
     "tbl_modefree": {
       "english": "Free (Attention!)",
-      "translation": "Free (Attention!)",
+      "translation": "Vrij (Let op!)",
       "needs_translation": false
     },
     "tbl_modeglider": {
       "english": "Aero Glider",
-      "translation": "Aero Glider",
+      "translation": "aero zwever",
       "needs_translation": false
     },
     "tbl_modeext": {
       "english": "Heli Ext Governor",
-      "translation": "Heli Ext Governor",
+      "translation": "heli ext governor",
       "needs_translation": false
     },
     "tbl_modeheli": {
       "english": "Heli Governor",
-      "translation": "Heli Governor",
+      "translation": "heli governor",
       "needs_translation": false
     },
     "tbl_medium": {
@@ -445,7 +445,7 @@
     },
     "tbl_modeair": {
       "english": "Aero Motor",
-      "translation": "Aero Motor",
+      "translation": "aero motor",
       "needs_translation": false
     },
     "tbl_normal": {
@@ -460,17 +460,17 @@
     },
     "tbl_autoextreme": {
       "english": "Auto Extreme",
-      "translation": "Auto Extreme",
+      "translation": "auto extreem",
       "needs_translation": false
     },
     "tbl_autoefficient": {
       "english": "Auto Efficient",
-      "translation": "Auto Efficient",
+      "translation": "auto efficient",
       "needs_translation": false
     },
     "tbl_smooth": {
       "english": "Smooth",
-      "translation": "Smooth",
+      "translation": "Glad",
       "needs_translation": false
     },
     "tbl_fast": {
@@ -480,7 +480,7 @@
     },
     "tbl_custom": {
       "english": "Custom (PC Defined)",
-      "translation": "Custom (PC Defined)",
+      "translation": "custom PC",
       "needs_translation": false
     },
     "tbl_cutoff": {
@@ -490,12 +490,12 @@
     },
     "tbl_autopower": {
       "english": "Auto Power",
-      "translation": "Auto Power",
+      "translation": "Auto Vermogen",
       "needs_translation": false
     },
     "tbl_unused": {
       "english": "*Unused*",
-      "translation": "*Unused*",
+      "translation": "*Ongebruikt*",
       "needs_translation": false
     }
   },
@@ -507,12 +507,12 @@
     },
     "governor_collective_ff_weight": {
       "english": "Collective precompensation weight - how much collective is mixed into the feedforward.",
-      "translation": "Collective precompensation weight - how much collective is mixed into the feedforward.",
+      "translation": "Collectief precompensation weight - how much collective is mixed into the feedforward.",
       "needs_translation": false
     },
     "governor_i_gain": {
       "english": "PID loop I-term gain.",
-      "translation": "PID loop I-term gain.",
+      "translation": "PID lus I term gain.",
       "needs_translation": false
     },
     "governor_cyclic_ff_weight": {
@@ -522,12 +522,12 @@
     },
     "governor_f_gain": {
       "english": "Feedforward gain.",
-      "translation": "Feedforward gain.",
+      "translation": "feedforward gain.",
       "needs_translation": false
     },
     "governor_gain": {
       "english": "Master PID loop gain.",
-      "translation": "Master PID loop gain.",
+      "translation": "Master PID lus gain.",
       "needs_translation": false
     },
     "governor_headspeed": {
@@ -542,12 +542,12 @@
     },
     "governor_d_gain": {
       "english": "PID loop D-term gain.",
-      "translation": "PID loop D-term gain.",
+      "translation": "PID lus D term gain.",
       "needs_translation": false
     },
     "governor_p_gain": {
       "english": "PID loop P-term gain.",
-      "translation": "PID loop P-term gain.",
+      "translation": "PID lus P term gain.",
       "needs_translation": false
     },
     "governor_yaw_ff_weight": {
@@ -801,13 +801,13 @@
   "MIXER_INPUT": {
     "tbl_normal": {
       "english": "Normal",
-      "translation": "Normal",
-      "needs_translation": true
+      "translation": "Normaal",
+      "needs_translation": false
     },
     "tbl_reversed": {
       "english": "Reversed",
-      "translation": "Reversed",
-      "needs_translation": true
+      "translation": "Omgekeerd",
+      "needs_translation": false
     }
   },
   "MIXER_CONFIG": {
@@ -828,18 +828,18 @@
     },
     "tbl_tail_variable_pitch": {
       "english": "Variable Pitch",
-      "translation": "Variable Pitch",
-      "needs_translation": true
+      "translation": "variabele pitch",
+      "needs_translation": false
     },
     "tbl_tail_motororized_tail": {
       "english": "Motorized Tail",
-      "translation": "Motorized Tail",
-      "needs_translation": true
+      "translation": "Motorized Staart",
+      "needs_translation": false
     },
     "tbl_tail_bidirectional": {
       "english": "Bidirectional",
-      "translation": "Bidirectional",
-      "needs_translation": true
+      "translation": "bidirectioneel",
+      "needs_translation": false
     },
     "tbl_cw": {
       "english": "CW",
@@ -945,13 +945,13 @@
     },
     "tbl_on": {
       "english": "ON",
-      "translation": "On",
-      "needs_translation": true
+      "translation": "ON",
+      "needs_translation": false
     },
     "tbl_off": {
       "english": "OFF",
-      "translation": "Off",
-      "needs_translation": true
+      "translation": "OFF",
+      "needs_translation": false
     }
   },
   "ESC_PARAMETERS_HW5": {
@@ -962,7 +962,7 @@
     },
     "tbl_fixedwing": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
+      "translation": "vaste vleugel",
       "needs_translation": false
     },
     "tbl_disabled": {
@@ -977,32 +977,32 @@
     },
     "tbl_heligov": {
       "english": "Heli Governor",
-      "translation": "Heli Governor",
+      "translation": "heli governor",
       "needs_translation": false
     },
     "tbl_softcutoff": {
       "english": "Soft Cutoff",
-      "translation": "Soft Cutoff",
+      "translation": "zachte cutoff",
       "needs_translation": false
     },
     "tbl_proportional": {
       "english": "Proportional",
-      "translation": "Proportional",
+      "translation": "proportioneel",
       "needs_translation": false
     },
     "tbl_heliext": {
       "english": "Heli Ext Governor",
-      "translation": "Heli Ext Governor",
+      "translation": "heli ext governor",
       "needs_translation": false
     },
     "tbl_helistore": {
       "english": "Heli Governor Store",
-      "translation": "Heli Governor Store",
+      "translation": "heli governor store",
       "needs_translation": false
     },
     "tbl_hardcutoff": {
       "english": "Hard Cutoff",
-      "translation": "Hard Cutoff",
+      "translation": "harde cutoff",
       "needs_translation": false
     },
     "tbl_normal": {
@@ -1012,7 +1012,7 @@
     },
     "tbl_autocalculate": {
       "english": "Auto Calculate",
-      "translation": "Auto Calculate",
+      "translation": "Auto Bereken",
       "needs_translation": false
     },
     "tbl_enabled": {
@@ -1073,18 +1073,18 @@
   "BATTERY_CONFIG": {
     "source_none": {
       "english": "None",
-      "translation": "None",
-      "needs_translation": true
+      "translation": "Geen",
+      "needs_translation": false
     },
     "source_adc": {
       "english": "Battery ADC",
-      "translation": "Battery ADC",
-      "needs_translation": true
+      "translation": "Batterij ADC",
+      "needs_translation": false
     },
     "source_esc": {
       "english": "ESC Telemetry",
-      "translation": "ESC Telemetry",
-      "needs_translation": true
+      "translation": "ESC Telemetrie",
+      "needs_translation": false
     },
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
@@ -1274,13 +1274,13 @@
     },
     "tbl_govmode_limit": {
       "english": "LIMIT",
-      "translation": "LIMIT",
-      "needs_translation": true
+      "translation": "LIMIET",
+      "needs_translation": false
     },
     "tbl_govmode_direct": {
       "english": "DIRECT",
       "translation": "DIRECT",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_govmode_electric": {
       "english": "ELECTRIC",
@@ -1300,12 +1300,12 @@
     "tbl_throttle_type_switch": {
       "english": "SWITCH",
       "translation": "SWITCH",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_throttle_type_function": {
       "english": "FUNCTION",
       "translation": "FUNCTION",
-      "needs_translation": true
+      "needs_translation": false
     },
     "governor_idle_throttle": {
       "english": "Idle throttle",
@@ -1418,7 +1418,7 @@
     },
     "dyn_notch_count": {
       "english": "Number of notches to apply.",
-      "translation": "Number of notches to apply.",
+      "translation": "Number of notches to Toepas.",
       "needs_translation": false
     },
     "dyn_notch_q": {
@@ -1453,7 +1453,7 @@
     },
     "tbl_medium": {
       "english": "MEDIUM",
-      "translation": "MEDIUM",
+      "translation": "MIDDEN",
       "needs_translation": false
     },
     "tbl_high": {
@@ -1475,7 +1475,7 @@
     },
     "tbl_low": {
       "english": "Low",
-      "translation": "Low",
+      "translation": "Laag",
       "needs_translation": false
     },
     "tbl_orange": {
@@ -1485,7 +1485,7 @@
     },
     "tbl_fmfw": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
+      "translation": "vaste vleugel",
       "needs_translation": false
     },
     "tbl_ccw": {
@@ -1495,7 +1495,7 @@
     },
     "tbl_medium": {
       "english": "Medium",
-      "translation": "Medium",
+      "translation": "Midden",
       "needs_translation": false
     },
     "tbl_yellow": {
@@ -1515,7 +1515,7 @@
     },
     "tbl_high": {
       "english": "High",
-      "translation": "High",
+      "translation": "Hoog",
       "needs_translation": false
     },
     "tbl_auto": {
@@ -1595,7 +1595,7 @@
     },
     "tbl_fwgov": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
+      "translation": "vaste vleugel",
       "needs_translation": false
     },
     "tbl_on": {
@@ -1608,142 +1608,142 @@
     "tbl_jadegreen": {
       "english": "JADE GREEN",
       "translation": "JADE GREEN",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_off": {
       "english": "Off",
-      "translation": "Off",
-      "needs_translation": true
+      "translation": "Uit",
+      "needs_translation": false
     },
     "tbl_low": {
       "english": "Low",
-      "translation": "Low",
-      "needs_translation": true
+      "translation": "Laag",
+      "needs_translation": false
     },
     "tbl_orange": {
       "english": "ORANGE",
       "translation": "ORANGE",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_fmfw": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
-      "needs_translation": true
+      "translation": "vaste vleugel",
+      "needs_translation": false
     },
     "tbl_ccw": {
       "english": "CCW",
       "translation": "CCW",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_medium": {
       "english": "Medium",
-      "translation": "Medium",
-      "needs_translation": true
+      "translation": "Midden",
+      "needs_translation": false
     },
     "tbl_yellow": {
       "english": "YELLOW",
       "translation": "YELLOW",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_reverse": {
       "english": "Reverse",
-      "translation": "Reverse",
-      "needs_translation": true
+      "translation": "Omkeer",
+      "needs_translation": false
     },
     "tbl_red": {
       "english": "Red",
       "translation": "Red",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_high": {
       "english": "High",
-      "translation": "High",
-      "needs_translation": true
+      "translation": "Hoog",
+      "needs_translation": false
     },
     "tbl_auto": {
       "english": "Auto",
       "translation": "Auto",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_cw": {
       "english": "CW",
       "translation": "CW",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_fmheli": {
       "english": "Helicopter",
       "translation": "Helicopter",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_purple": {
       "english": "PURPLE",
       "translation": "PURPLE",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_green": {
       "english": "GREEN",
       "translation": "GREEN",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_blue": {
       "english": "BLUE",
       "translation": "BLUE",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_slow": {
       "english": "Slow",
       "translation": "Slow",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_normal": {
       "english": "Normal",
-      "translation": "Normal",
-      "needs_translation": true
+      "translation": "Normaal",
+      "needs_translation": false
     },
     "tbl_fast": {
       "english": "Fast",
       "translation": "Fast",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_escgov": {
       "english": "ESC Governor",
       "translation": "ESC Governor",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_white": {
       "english": "WHITE",
       "translation": "WHITE",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_cyan": {
       "english": "CYAN",
       "translation": "CYAN",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_vslow": {
       "english": "Very Slow",
       "translation": "Very Slow",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_extgov": {
       "english": "External Governor",
       "translation": "External Governor",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_pink": {
       "english": "PINK",
       "translation": "PINK",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_fwgov": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
-      "needs_translation": true
+      "translation": "vaste vleugel",
+      "needs_translation": false
     },
     "tbl_on": {
       "english": "On",
-      "translation": "On",
-      "needs_translation": true
+      "translation": "Aan",
+      "needs_translation": false
     }
   },
   "ESC_PARAMETERS_OMP": {
@@ -1759,7 +1759,7 @@
     },
     "tbl_low": {
       "english": "Low",
-      "translation": "Low",
+      "translation": "Laag",
       "needs_translation": false
     },
     "tbl_orange": {
@@ -1769,7 +1769,7 @@
     },
     "tbl_fmfw": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
+      "translation": "vaste vleugel",
       "needs_translation": false
     },
     "tbl_ccw": {
@@ -1779,7 +1779,7 @@
     },
     "tbl_medium": {
       "english": "Medium",
-      "translation": "Medium",
+      "translation": "Midden",
       "needs_translation": false
     },
     "tbl_yellow": {
@@ -1799,7 +1799,7 @@
     },
     "tbl_high": {
       "english": "High",
-      "translation": "High",
+      "translation": "Hoog",
       "needs_translation": false
     },
     "tbl_auto": {
@@ -1879,7 +1879,7 @@
     },
     "tbl_fwgov": {
       "english": "Fixed Wing",
-      "translation": "Fixed Wing",
+      "translation": "vaste vleugel",
       "needs_translation": false
     },
     "tbl_on": {
@@ -1891,7 +1891,7 @@
   "ESC_PARAMETERS_SCORPION": {
     "tbl_airplane": {
       "english": "Airplane mode",
-      "translation": "Airplane mode",
+      "translation": "Airplane Modus",
       "needs_translation": false
     },
     "tbl_cw": {
@@ -1906,12 +1906,12 @@
     },
     "tbl_quad": {
       "english": "Quad mode",
-      "translation": "Quad mode",
+      "translation": "Quad Modus",
       "needs_translation": false
     },
     "tbl_heligov": {
       "english": "Heli Governor",
-      "translation": "Heli Governor",
+      "translation": "heli governor",
       "needs_translation": false
     },
     "tbl_exbus": {
@@ -1921,7 +1921,7 @@
     },
     "tbl_boat": {
       "english": "Boat mode",
-      "translation": "Boat mode",
+      "translation": "Boat Modus",
       "needs_translation": false
     },
     "tbl_unsolicited": {
@@ -1941,7 +1941,7 @@
     },
     "tbl_helistore": {
       "english": "Heli Governor (stored)",
-      "translation": "Heli Governor (stored)",
+      "translation": "heli governor (stored)",
       "needs_translation": false
     },
     "tbl_standard": {

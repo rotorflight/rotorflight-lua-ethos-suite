@@ -431,7 +431,7 @@
   },
   "sensor_accel": {
     "english": "Accel (Hi-Res)",
-    "translation": "Accel (Hi-Res)",
+    "translation": "Acel (Hi-Res)",
     "needs_translation": false
   },
   "sensor_accel_x": {

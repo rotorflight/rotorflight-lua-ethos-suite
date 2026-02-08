@@ -216,12 +216,12 @@
   },
   "sensor_esc1_bec_voltage": {
     "english": "ESC1 BEC Voltage",
-    "translation": "ESC1 BEC Voltage",
+    "translation": "ESC1 BEC Tensione",
     "needs_translation": false
   },
   "sensor_esc1_bec_current": {
     "english": "ESC1 BEC Current",
-    "translation": "ESC1 BEC Current",
+    "translation": "ESC1 BEC Corrente",
     "needs_translation": false
   },
   "sensor_esc1_status": {
@@ -281,12 +281,12 @@
   },
   "sensor_esc2_bec_voltage": {
     "english": "ESC2 BEC Voltage",
-    "translation": "ESC2 BEC Voltage",
+    "translation": "ESC2 BEC Tensione",
     "needs_translation": false
   },
   "sensor_esc2_bec_current": {
     "english": "ESC2 BEC Current",
-    "translation": "ESC2 BEC Current",
+    "translation": "ESC2 BEC Corrente",
     "needs_translation": false
   },
   "sensor_esc2_status": {
@@ -306,17 +306,17 @@
   },
   "sensor_bec_voltage": {
     "english": "BEC Voltage",
-    "translation": "BEC Voltage",
+    "translation": "BEC Tensione",
     "needs_translation": false
   },
   "sensor_bus_voltage": {
     "english": "Bus Voltage",
-    "translation": "Bus Voltage",
+    "translation": "Bus Tensione",
     "needs_translation": false
   },
   "sensor_mcu_voltage": {
     "english": "MCU Voltage",
-    "translation": "MCU Voltage",
+    "translation": "MCU Tensione",
     "needs_translation": false
   },
   "sensor_esc_current": {
@@ -326,17 +326,17 @@
   },
   "sensor_bec_current": {
     "english": "BEC Current",
-    "translation": "BEC Current",
+    "translation": "BEC Corrente",
     "needs_translation": false
   },
   "sensor_bus_current": {
     "english": "Bus Current",
-    "translation": "Bus Current",
+    "translation": "Bus Corrente",
     "needs_translation": false
   },
   "sensor_mcu_current": {
     "english": "MCU Current",
-    "translation": "MCU Current",
+    "translation": "MCU Corrente",
     "needs_translation": false
   },
   "sensor_esc_temp": {
@@ -401,7 +401,7 @@
   },
   "sensor_motor_rpm": {
     "english": "Motor RPM",
-    "translation": "Motor RPM",
+    "translation": "Motore RPM",
     "needs_translation": false
   },
   "sensor_trans_rpm": {

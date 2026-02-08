@@ -2709,7 +2709,7 @@
             "bailout": {
               "english": "Bailout",
               "needs_translation": false,
-              "translation": "Bailout"
+              "translation": "Rettung"
             },
             "basic": {
               "english": "Basic",
@@ -5012,7 +5012,7 @@
         "arming": {
           "english": "Arming",
           "needs_translation": false,
-          "translation": "Arming"
+          "translation": "Scharf"
         },
         "center": {
           "english": "Center",
@@ -5366,7 +5366,7 @@
         "name": {
           "english": "Rates",
           "needs_translation": false,
-          "translation": "Rates"
+          "translation": "Raten"
         },
         "pitch": {
           "english": "Pitch",
@@ -5651,8 +5651,8 @@
       "servos": {
         "bus": {
           "english": "BUS Output",
-          "needs_translation": true,
-          "translation": "BUS Output"
+          "needs_translation": false,
+          "translation": "BUS Ausgang"
         },
         "center": {
           "english": "Center",
@@ -5797,12 +5797,12 @@
         "maximum": {
           "english": "Maximum",
           "needs_translation": false,
-          "translation": "Maximum"
+          "translation": "Max"
         },
         "minimum": {
           "english": "Minimum",
           "needs_translation": false,
-          "translation": "Minimum"
+          "translation": "Min"
         },
         "name": {
           "english": "Servos",
@@ -6294,7 +6294,7 @@
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",
           "needs_translation": false,
-          "translation": "MSP Activity Display"
+          "translation": "MSP Aktivitaet Anzeige"
         },
         "txt_objectprofiler": {
           "english": "Log dashboard speed",
@@ -6309,12 +6309,12 @@
         "txt_overlaygrid": {
           "english": "Overlay grid in dashboard",
           "needs_translation": false,
-          "translation": "Overlay grid in dashboard"
+          "translation": "Overlay Raster im Dashboard"
         },
         "txt_overlaystats": {
           "english": "Overlay stats in dashboard",
           "needs_translation": false,
-          "translation": "Overlay stats in dashboard"
+          "translation": "Overlay Statistik im Dashboard"
         },
         "txt_overlaystatsadmin": {
           "english": "Overlay stats in admin",
@@ -7751,7 +7751,7 @@
       "rates": {
         "english": "Rates",
         "needs_translation": false,
-        "translation": "Rates"
+        "translation": "Raten"
       },
       "reset_flight": {
         "english": "Reset flight",
@@ -7867,8 +7867,8 @@
       },
       "ARMED": {
         "english": "ARMED",
-        "needs_translation": true,
-        "translation": "ARMED"
+        "needs_translation": false,
+        "translation": "SCHARF"
       },
       "AUTOROT": {
         "english": "AUTOROT",

@@ -61,7 +61,7 @@
   },
   "voltage": {
     "english": "Voltage",
-    "translation": "Voltage",
+    "translation": "Spanning",
     "needs_translation": false
   },
   "fuel": {
@@ -86,7 +86,7 @@
   },
   "bec_voltage": {
     "english": "BEC Voltage",
-    "translation": "BEC Voltage",
+    "translation": "BEC Spanning",
     "needs_translation": false
   },
   "esc_temp": {
@@ -116,7 +116,7 @@
   },
   "throttle_max": {
     "english": "Throttle Max",
-    "translation": "Throttle Max",
+    "translation": "Gas Max",
     "needs_translation": false
   },
   "current_max": {
@@ -166,7 +166,7 @@
   },
   "rates": {
     "english": "Rates",
-    "translation": "Rates",
+    "translation": "Raten",
     "needs_translation": false
   },
   "flights": {
@@ -191,7 +191,7 @@
   },
   "throttle": {
     "english": "Throttle",
-    "translation": "Throttle",
+    "translation": "Gas",
     "needs_translation": false
   },
   "flight_time": {

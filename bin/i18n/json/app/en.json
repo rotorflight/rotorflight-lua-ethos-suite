@@ -2765,7 +2765,7 @@
       "title": {
         "english": "FBUS Output",
         "translation": "FBUS Output",
-        "needs_translation": true
+        "needs_translation": false
       },
       "help_fields_source": {
         "english": "Source id for the mix, counting from 0-15.",

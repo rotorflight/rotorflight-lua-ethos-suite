@@ -3510,7 +3510,7 @@
         },
         "title": {
           "english": "FBUS Output",
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "FBUS Output"
         },
         "type": {

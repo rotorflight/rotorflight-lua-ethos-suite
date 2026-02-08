@@ -157,12 +157,12 @@
       },
       "txt_overlaygrid": {
         "english": "Overlay grid in dashboard",
-        "translation": "Overlay grid in dashboard",
+        "translation": "Overlay Raster im Dashboard",
         "needs_translation": false
       },
       "txt_overlaystats": {
         "english": "Overlay stats in dashboard",
-        "translation": "Overlay stats in dashboard",
+        "translation": "Overlay Statistik im Dashboard",
         "needs_translation": false
       },
       "txt_overlaystatsadmin": {
@@ -297,7 +297,7 @@
       },
       "txt_mspstatusdialog": {
         "english": "MSP Activity Display",
-        "translation": "MSP Activity Display",
+        "translation": "MSP Aktivitaet Anzeige",
         "needs_translation": false
       },
       "txt_queuesize": {
@@ -1402,7 +1402,7 @@
           },
           "bailout": {
             "english": "Bailout",
-            "translation": "Bailout",
+            "translation": "Rettung",
             "needs_translation": false
           },
           "limits": {
@@ -1971,7 +1971,7 @@
       },
       "arming": {
         "english": "Arming",
-        "translation": "Arming",
+        "translation": "Scharf",
         "needs_translation": false
       },
       "yaw_deadband": {
@@ -3790,7 +3790,7 @@
       },
       "name": {
         "english": "Rates",
-        "translation": "Rates",
+        "translation": "Raten",
         "needs_translation": false
       },
       "cutoff": {
@@ -3872,8 +3872,8 @@
       },
       "bus": {
         "english": "BUS Output",
-        "translation": "BUS Output",
-        "needs_translation": true
+        "translation": "BUS Ausgang",
+        "needs_translation": false
       },
       "tbl_yes": {
         "english": "YES",
@@ -3917,7 +3917,7 @@
       },
       "maximum": {
         "english": "Maximum",
-        "translation": "Maximum",
+        "translation": "Max",
         "needs_translation": false
       },
       "help_tool_p6": {
@@ -3942,7 +3942,7 @@
       },
       "minimum": {
         "english": "Minimum",
-        "translation": "Minimum",
+        "translation": "Min",
         "needs_translation": false
       },
       "speed": {

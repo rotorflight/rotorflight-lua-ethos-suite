@@ -156,7 +156,7 @@
   },
   "governor": {
     "english": "Governor",
-    "translation": "Governor",
+    "translation": "Gobernador",
     "needs_translation": false
   },
   "profile": {
@@ -211,7 +211,7 @@
   },
   "timer": {
     "english": "Timer",
-    "translation": "Timer",
+    "translation": "Tempor",
     "needs_translation": false
   },
   "rpm": {
