@@ -6031,6 +6031,11 @@
           "needs_translation": false,
           "translation": "Etat du regulateur"
         },
+        "help_modelAnnouncement": {
+          "english": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+          "needs_translation": false,
+          "translation": "L'annonce du modèle nécessite un fichier .wav dans le dossier 'sounds' correspondant au nom du modèle (par ex. 'racer.wav' pour le modèle 'racer')."
+        },
         "loader_style_large": {
           "english": "LARGE",
           "needs_translation": true,
@@ -6056,6 +6061,11 @@
           "needs_translation": false,
           "translation": "Metres"
         },
+        "modelAnnouncement": {
+          "english": "Model announcement",
+          "needs_translation": false,
+          "translation": "Annonce du modèle"
+        },
         "name": {
           "english": "Settings",
           "needs_translation": false,
@@ -6065,6 +6075,11 @@
           "english": "No configurable themes installed on this device",
           "needs_translation": false,
           "translation": "Aucun theme configurable n'est installe sur cet appareil"
+        },
+        "otherSoundSettings": {
+          "english": "Other",
+          "needs_translation": false,
+          "translation": "Autre"
         },
         "pid_profile": {
           "english": "PID Profile",

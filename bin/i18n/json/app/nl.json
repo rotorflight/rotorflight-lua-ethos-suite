@@ -619,6 +619,21 @@
         "english": "Adjustment Value",
         "translation": "Aanpassing waarde",
         "needs_translation": false
+      },
+      "otherSoundSettings": {
+        "english": "Other",
+        "translation": "Overige",
+        "needs_translation": false
+      },
+      "modelAnnouncement": {
+        "english": "Model announcement",
+        "translation": "Model aankondiging",
+        "needs_translation": false
+      },
+      "help_modelAnnouncement": {
+        "english": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+        "translation": "Model aankondiging vereist een .wav bestand in de 'sounds' map dat overeenkomt met de modelnaam (bijv. 'racer.wav' voor model 'racer').",
+        "needs_translation": false
       }
     },
     "telemetry": {

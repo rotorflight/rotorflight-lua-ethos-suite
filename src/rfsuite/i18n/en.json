@@ -6031,6 +6031,11 @@
           "needs_translation": false,
           "translation": "Governor State"
         },
+        "help_modelAnnouncement": {
+          "english": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+          "needs_translation": false,
+          "translation": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer')."
+        },
         "loader_style_large": {
           "english": "LARGE",
           "needs_translation": false,
@@ -6056,6 +6061,11 @@
           "needs_translation": false,
           "translation": "Meters"
         },
+        "modelAnnouncement": {
+          "english": "Model announcement",
+          "needs_translation": false,
+          "translation": "Model announcement"
+        },
         "name": {
           "english": "Settings",
           "needs_translation": false,
@@ -6065,6 +6075,11 @@
           "english": "No configurable themes installed on this device",
           "needs_translation": false,
           "translation": "No configurable themes installed on this device"
+        },
+        "otherSoundSettings": {
+          "english": "Other",
+          "needs_translation": false,
+          "translation": "Other"
         },
         "pid_profile": {
           "english": "PID Profile",

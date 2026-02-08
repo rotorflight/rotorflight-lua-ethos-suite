@@ -619,6 +619,21 @@
         "english": "Adjustment Value",
         "translation": "Valore Regolazione",
         "needs_translation": false
+      },
+      "otherSoundSettings": {
+        "english": "Other",
+        "translation": "Altro",
+        "needs_translation": false
+      },
+      "modelAnnouncement": {
+        "english": "Model announcement",
+        "translation": "Annuncio modello",
+        "needs_translation": false
+      },
+      "help_modelAnnouncement": {
+        "english": "Model announcement requires a .wav file in the 'sounds' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
+        "translation": "L'annuncio del modello richiede un file .wav nella cartella 'sounds' corrispondente al nome del modello (ad es. 'racer.wav' per il modello 'racer').",
+        "needs_translation": false
       }
     },
     "telemetry": {

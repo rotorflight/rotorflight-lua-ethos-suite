@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
 local config = {}
 local enableWakeup = false
@@ -155,6 +156,22 @@ local function openPage(pageIdx, title, script)
     setFieldEnabled(rfsuite.app.formFields[escFields.enable], true)
     setFieldEnabled(rfsuite.app.formFields[becFields.enable], true)
     setFieldEnabled(rfsuite.app.formFields[fuelFields.enable], true)
+
+    local otherEnabled = config.otherSoundCfg == true
+    local otherPanel = form.addExpansionPanel("@i18n(app.modules.settings.otherSoundSettings)@")
+    otherPanel:open(otherEnabled)
+
+    local w, h = lcd.getWindowSize()
+    local otherModelAnnouncement = otherPanel:addLine("")
+
+    rfsuite.app.ui.fieldHelpButton(otherModelAnnouncement, 0, 13, "@i18n(app.modules.settings.modelAnnouncement)@", "@i18n(app.modules.settings.help_modelAnnouncement)@")
+
+    form.addStaticText(otherModelAnnouncement, {x = 50, y = 10, w = w - 170, h = 35}, "@i18n(app.modules.settings.modelAnnouncement)@")
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(otherModelAnnouncement, nil, function() return config.otherModelAnnounce == true end, function(val) config.otherModelAnnounce = val end)
+
 
     rfsuite.app.navButtons.save = true
 end

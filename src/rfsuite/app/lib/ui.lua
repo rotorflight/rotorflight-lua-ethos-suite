@@ -1595,9 +1595,9 @@ function ui.navigationButtons(x, y, w, h)
                         app.Page.onHelpMenu(app.Page)
                     else
                         if help.help[script] then
-                            app.ui.openPageHelp(help.help[script], section)
+                            app.ui.openPageHelp(help.help[script])
                         else
-                            app.ui.openPageHelp(help.help['default'], section)
+                            app.ui.openPageHelp(help.help['default'])
                         end
                     end
                 end
@@ -1609,11 +1609,17 @@ function ui.navigationButtons(x, y, w, h)
     end
 end
 
-function ui.openPageHelp(txtData, section)
+function ui.openPageHelp(txtData, title)
+    local message
+    if type(txtData) == "table" then
+        message = tableConcat(txtData, "\r\n\r\n")
+    else
+        message = txtData
+    end
 
+    if not title then title = "Help - " .. (app.lastTitle or "") end
 
-    local message = tableConcat(txtData, "\r\n\r\n")
-    form.openDialog({width = app.lcdWidth, title = "Help - " .. app.lastTitle, message = message, buttons = {{label = "@i18n(app.btn_close)@", action = function() return true end}}, options = TEXT_LEFT})
+    form.openDialog({width = app.lcdWidth, title = title, message = message, buttons = {{label = "@i18n(app.btn_close)@", action = function() return true end}}, options = TEXT_LEFT})
 end
 
 function ui.injectApiAttributes(formField, f, v)
@@ -2135,6 +2141,16 @@ function ui.adminStatsOverlay()
             drawBlock(key, label, v)
         end
     end
+end
+
+function ui.fieldHelpButton(parent, x, y, title, message)
+    form.addButton(parent, {x = x, y = y, w = 40, h = 30}, {
+        text = "?",
+        options = FONT_S,
+        press = function()
+            ui.openPageHelp(message, title)
+        end
+    })
 end
 
 return ui
