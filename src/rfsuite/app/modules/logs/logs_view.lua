@@ -64,6 +64,20 @@ local zoomLevelToTime = {[1] = 600, [2] = 300, [3] = 120, [4] = 60, [5] = 30}
 local SAMPLE_RATE = 1
 local function secondsToSamples(sec) return math.floor(sec * SAMPLE_RATE) end
 
+local function openProgressDialog(...)
+    if rfutils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
 local function setProgressLoaderMessage(baseMessage)
     if not progressLoader then return end
     progressLoaderBaseMessage = baseMessage
@@ -612,7 +626,7 @@ local function wakeup()
     end
 
     if not progressLoader then
-        progressLoader = form.openProgressDialog("Processing", "Loading log data")
+        progressLoader = openProgressDialog("Processing", "Loading log data")
         progressLoader:closeAllowed(false)
         setProgressLoaderMessage("Loading log data")
         app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage or "Loading log data")
