@@ -1,4 +1,4 @@
-name: Updater Build (macOS + Linux)
+name: RFSuite Updater (macOS + Linux + Windows)
 
 on:
   workflow_dispatch:
