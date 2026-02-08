@@ -49,3 +49,9 @@ jobs:
         working-directory: bin/updater/src
         run: |
           python -m PyInstaller --onefile --noupx update_radio_gui.py --name update_radio_gui --windowed --version-file version_info.txt --icon icon.ico
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-${{ matrix.os }}
+          path: bin/updater/src/dist/update_radio_gui*
