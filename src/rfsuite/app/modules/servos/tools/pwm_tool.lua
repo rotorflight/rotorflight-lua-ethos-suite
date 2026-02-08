@@ -19,6 +19,8 @@ local servoIndex = rfsuite.currentServoIndex - 1
 local isSaving = false
 local enableWakeup = false
 
+local USE_INDEXED = false       -- INDEX code not merged yet - force off for now, but keep functions in place for easier merge when ready
+
 local servoTable
 local servoCount
 local configs = {}
@@ -529,11 +531,11 @@ local function openPage(idx, title, script, extra1)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if USE_INDEXED and rfsuite.utils.apiVersionCompare(">=", "12.09") then
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
     else
         getServoConfigurations(getServoConfigurationsEnd)
-    end    
+    end
 
 end
 
