@@ -23,6 +23,20 @@ local testLoaderBaseMessage
 local testLoaderMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 
+local function openProgressDialog(...)
+    if rfutils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
 local mspQueryStartTime
 local mspQueryTimeCount = 0
 local getMSPCount = 0
@@ -120,7 +134,7 @@ local function startTest(duration)
     startTestLength = duration
     startTestTime = os.clock()
 
-    testLoader = form.openProgressDialog({
+    testLoader = openProgressDialog({
         title = "@i18n(app.modules.msp_speed.testing)@",
         message = "@i18n(app.modules.msp_speed.testing_performance)@",
         close = function()

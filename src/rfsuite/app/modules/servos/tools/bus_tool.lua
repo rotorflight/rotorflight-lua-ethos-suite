@@ -15,15 +15,26 @@ local triggerCenterChange = false
 local currentServoCenter
 local lastSetServoCenter
 local lastServoChangeTime = os.clock()
-local servoIndex = rfsuite.currentServoIndex - 1
+-- UI presents BUS servos as 1..N, but MSP expects absolute servo indices.
+-- PWM servos occupy absolute indices 0..7, BUS starts at absolute index 8.
+-- Therefore: UI(1) -> UI0(0) -> ABS(8)
+local servoIndex = rfsuite.currentServoIndex - 1 -- UI 0-based index (0..N-1)
 local isSaving = false
 local enableWakeup = false
-
-local USE_INDEXED = false       -- INDEX code not merged yet - force off for now, but keep functions in place for easier merge when ready
 
 local servoTable
 local servoCount
 local configs = {}
+local BUS_SERVO_BASE = 8
+
+local function uiIndexToAbsolute(ui0)
+    -- ui0 is 0-based within the BUS page
+    return (ui0 or 0) + BUS_SERVO_BASE
+end
+
+local function currentServoAbsoluteIndex()
+    return uiIndexToAbsolute(servoIndex)
+end
 
 local function servoCenterFocusAllOn(self)
 
@@ -31,7 +42,8 @@ local function servoCenterFocusAllOn(self)
     local count = servoCount or (servoTable and #servoTable) or 0
 
     for i = 0, count - 1 do
-        local message = {command = 193, payload = {i}}
+        -- BUS servos are offset in MSP by BUS_SERVO_BASE
+        local message = {command = 193, payload = {uiIndexToAbsolute(i)}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
         rfsuite.tasks.msp.mspQueue:add(message)
     end
@@ -44,7 +56,8 @@ local function servoCenterFocusAllOff(self)
     local count = servoCount or (servoTable and #servoTable) or 0
 
     for i = 0, count - 1 do
-        local message = {command = 193, payload = {i}}
+        -- BUS servos are offset in MSP by BUS_SERVO_BASE
+        local message = {command = 193, payload = {uiIndexToAbsolute(i)}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
         rfsuite.tasks.msp.mspQueue:add(message)
     end
@@ -53,7 +66,7 @@ local function servoCenterFocusAllOff(self)
 end
 
 local function servoCenterFocusOff(self)
-    local message = {command = 193, payload = {servoIndex}}
+    local message = {command = 193, payload = {currentServoAbsoluteIndex()}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
     rfsuite.tasks.msp.mspQueue:add(message)
     rfsuite.app.triggers.isReady = true
@@ -61,7 +74,7 @@ local function servoCenterFocusOff(self)
 end
 
 local function servoCenterFocusOn(self)
-    local message = {command = 193, payload = {servoIndex}}
+    local message = {command = 193, payload = {currentServoAbsoluteIndex()}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
     rfsuite.tasks.msp.mspQueue:add(message)
     rfsuite.app.triggers.isReady = true
@@ -81,7 +94,7 @@ local function saveServoCenter(self)
     local servoCenter = math.floor(configs[servoIndex]['mid'])
 
     local message = {command = 213, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoAbsoluteIndex())
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
     rfsuite.tasks.msp.mspQueue:add(message)
@@ -112,7 +125,7 @@ local function saveServoSettings(self)
     end
 
     local message = {command = 212, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoAbsoluteIndex())
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
@@ -165,7 +178,7 @@ end
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/tools/pwm.lua", rfsuite.session.servoOverride)
+    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/tools/bus.lua", rfsuite.session.servoOverride)
 
 end
 
@@ -300,10 +313,12 @@ local function getServoConfigurationsIndexed(callback, callbackParam)
 
     -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
     -- Payload must contain exactly 1 byte: the servo index (0-based).
+    local absIndex = currentServoAbsoluteIndex()
+
     local message = {
         command = 125,
-        payload = {servoIndex},
-        uuid = string.format("servo.cfg.%d", servoIndex),
+        payload = {absIndex},
+        uuid = string.format("servo.cfg.bus.%d", absIndex),
         processReply = function(self, buf)
 
             -- Ensure we have a servoCount for any "all servos" operations (override on/off).
@@ -531,11 +546,11 @@ local function openPage(idx, title, script, extra1)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    if USE_INDEXED and rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
     else
         getServoConfigurations(getServoConfigurationsEnd)
-    end
+    end    
 
 end
 

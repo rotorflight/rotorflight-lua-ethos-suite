@@ -3835,14 +3835,9 @@
         "translation": "PWM Output",
         "needs_translation": true
       },
-      "fbus": {
-        "english": "FBUS Output",
-        "translation": "FBUS Output",
-        "needs_translation": true
-      },
-      "sbus": {
-        "english": "SBUS Output",
-        "translation": "SBUS Output",
+      "bus": {
+        "english": "BUS Output",
+        "translation": "BUS Output",
         "needs_translation": true
       },
       "tbl_yes": {

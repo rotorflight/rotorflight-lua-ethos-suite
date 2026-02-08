@@ -149,6 +149,14 @@ local function getApiCore()
     return apiCore
 end
 
+local function openProgressDialog(opts)
+    if utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+        opts.progress = true
+        return form.openWaitDialog(opts)
+    end
+    return form.openProgressDialog(opts)
+end
+
 function ui.progressDisplay(title, message, speed)
 
 
@@ -170,7 +178,9 @@ function ui.progressDisplay(title, message, speed)
     app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressBaseMessage = message
     app.dialogs.progressMspStatusLast = nil
-    app.dialogs.progress = form.openProgressDialog({
+    local useWaitDialog = utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog
+    app.dialogs.progressIsWait = useWaitDialog or false
+    app.dialogs.progress = openProgressDialog({
         title = title,
         message = message,
         close = function() end,
@@ -199,6 +209,16 @@ function ui.progressDisplay(title, message, speed)
             elseif isProcessing then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
             elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then
+                if app.dialogs.progressIsWait then
+                    app.dialogs.progress:close()
+                    ui.clearProgressDialog(app.dialogs.progress)
+                    app.dialogs.progressDisplay = false
+                    app.dialogs.progressCounter = 0
+                    app.triggers.closeProgressLoader = false
+                    app.dialogs.progressSpeed = false
+                    app.triggers.closeProgressLoaderNoisProcessed = false
+                    return
+                end
                 if preferences.general.hs_loader == 0 then mult = mult * 2 end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
@@ -210,6 +230,16 @@ function ui.progressDisplay(title, message, speed)
 
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
+                if app.dialogs.progressIsWait then
+                    app.dialogs.progress:close()
+                    ui.clearProgressDialog(app.dialogs.progress)
+                    app.dialogs.progressDisplay = false
+                    app.dialogs.progressCounter = 0
+                    app.triggers.closeProgressLoader = false
+                    app.dialogs.progressSpeed = false
+                    app.triggers.closeProgressLoaderNoisProcessed = false
+                    return
+                end
                 if preferences.general.hs_loader == 0 then mult = mult * 1.5 end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
@@ -286,7 +316,9 @@ function ui.progressDisplaySave(message)
     local title = "@i18n(app.msg_saving)@"
     app.dialogs.saveBaseMessage = resolvedMessage
 
-    app.dialogs.save = form.openProgressDialog({
+    local useWaitDialog = utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog
+    app.dialogs.saveIsWait = useWaitDialog or false
+    app.dialogs.save = openProgressDialog({
         title = title,
         message = resolvedMessage,
         close = function() end,
@@ -302,6 +334,15 @@ function ui.progressDisplaySave(message)
             if isProcessing then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
             elseif app.triggers.closeSaveFake then
+                if app.dialogs.saveIsWait then
+                    app.triggers.closeSaveFake = false
+                    app.dialogs.saveProgressCounter = 0
+                    app.dialogs.saveDisplay = false
+                    app.dialogs.saveWatchDog = nil
+                    app.dialogs.save:close()
+                    ui.clearProgressDialog(app.dialogs.save)
+                    return
+                end
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then
                     app.triggers.closeSaveFake = false
@@ -313,6 +354,15 @@ function ui.progressDisplaySave(message)
 
                 end
             elseif tasks.msp.mspQueue:isProcessed() then
+                if app.dialogs.saveIsWait then
+                    app.dialogs.save:close()
+                    ui.clearProgressDialog(app.dialogs.save)
+                    app.dialogs.saveDisplay = false
+                    app.dialogs.saveProgressCounter = 0
+                    app.triggers.closeSave = false
+                    app.triggers.isSaving = false
+                    return
+                end
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
                     app.dialogs.save:close()

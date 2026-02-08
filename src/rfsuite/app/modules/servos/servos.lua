@@ -6,17 +6,21 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
 
+local MENU_ID = {
+    PWM = 1,
+    BUS = 2,
+}
+
 local  S_PAGES ={
-        [1] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" },
-        [2] = { name = "@i18n(app.modules.servos.sbus)@", script = "sbus.lua", image = "sbus.png"},    
-        [3] = { name = "@i18n(app.modules.servos.fbus)@", script = "fbus.lua", image = "fbus.png"},
+        [MENU_ID.PWM] = { name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png" }, 
+        [MENU_ID.BUS] = { name = "@i18n(app.modules.servos.bus)@", script = "bus.lua", image = "bus.png"},
     }
 
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 local servosCompatibilityStatus = false
-
+local fieldFocusSet = false
 
 
 local function openPage(pidx, title, script)
@@ -82,7 +86,7 @@ local function openPage(pidx, title, script)
     end
 
     if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
+    if rfsuite.preferences.menulastselected["servos_type"] == nil then rfsuite.preferences.menulastselected["servos_type"] = 1 end
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -112,7 +116,7 @@ local function openPage(pidx, title, script)
             options = FONT_S,
             paint = function() end,
             press = function()
-                rfsuite.preferences.menulastselected["servos"] = pidx
+                rfsuite.preferences.menulastselected["servos_type"] = pidx
                 rfsuite.app.ui.progressDisplay(nil,nil,false)
                 local name = "@i18n(app.modules.servos.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "servos/tools/" .. pvalue.script)
@@ -123,8 +127,6 @@ local function openPage(pidx, title, script)
         rfsuite.app.formFields[pidx]:enable(false)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
-
-        if rfsuite.preferences.menulastselected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
@@ -155,8 +157,6 @@ end
 local function wakeup()
     if not enableWakeup then return end
 
-    if os.clock() - initTime < 0.25 then return end
-
     -- Do MSP calls to get servo info
     -- We keep sub menu buttons disabled until this is delivered
     if rfsuite.tasks  and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
@@ -182,17 +182,36 @@ local function wakeup()
             end)
         end    
 
+        if rfsuite.session.servoBusEnabled == nil then
+            rfsuite.tasks.msp.helpers.servoBusEnabled(function(servoBusEnabled)
+                rfsuite.utils.log("Received servo bus enabled: " .. tostring(servoBusEnabled), "info")
+            end)
+        end
+
     end
 
     -- enable the buttons once we have servo info
-    if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil then
-        for i, v in pairs(rfsuite.app.formFields) do
-            if v.enable then
-                v:enable(true)
-            end    
+    if fieldFocusSet == false and rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil and rfsuite.session.servoBusEnabled  ~= nil then
+
+        -- pwm servos
+        if rfsuite.app.formFields[MENU_ID.PWM] then
+            rfsuite.app.formFields[MENU_ID.PWM]:enable(true)
+            if rfsuite.preferences.menulastselected["servos_type"] == MENU_ID.PWM then
+                rfsuite.app.formFields[MENU_ID.PWM]:focus()
+            end
         end
+
+        -- bus servos
+        if rfsuite.utils.apiVersionCompare(">", "12.08") and rfsuite.app.formFields[MENU_ID.BUS] and rfsuite.session.servoBusEnabled == true then
+            rfsuite.app.formFields[MENU_ID.BUS]:enable(true)
+            if rfsuite.preferences.menulastselected["servos_type"] == MENU_ID.BUS then
+                rfsuite.app.formFields[MENU_ID.BUS]:focus()
+            end
+        end
+
         -- close progress loader
         rfsuite.app.triggers.closeProgressLoader = true
+        fieldFocusSet = true
     end
 
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
@@ -200,7 +219,6 @@ local function wakeup()
         if not currState then rfsuite.app.formNavigationFields['menu']:focus() end
         prevConnectedState = currState
     end
-
 
 
 end
