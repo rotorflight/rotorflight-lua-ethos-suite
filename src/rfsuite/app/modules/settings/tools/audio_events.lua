@@ -152,11 +152,10 @@ local function openPage(pageIdx, title, script)
     otherPanel:open(otherEnabled)
 
     local w = rfsuite.app.lcdWidth
-    local otherModelAnnouncement = otherPanel:addLine("")
-
-    rfsuite.app.ui.fieldHelpButton(otherModelAnnouncement, 0, rfsuite.app.radio.linePaddingTop, "@i18n(app.modules.settings.modelAnnouncement)@", "@i18n(app.modules.settings.help_modelAnnouncement)@")
-
-    form.addStaticText(otherModelAnnouncement, {x = 50, y = rfsuite.app.radio.linePaddingTop, w = w - 170, h = rfsuite.app.radio.navbuttonHeight}, "@i18n(app.modules.settings.modelAnnouncement)@")
+    local otherModelAnnouncement = otherPanel:addLine("@i18n(app.modules.settings.modelAnnouncement)@")
+    if otherModelAnnouncement.help then
+        otherModelAnnouncement:help("@i18n(app.modules.settings.help_modelAnnouncement)@")
+    end
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
@@ -206,4 +205,13 @@ local function event(widget, category, value, x, y)
     end
 end
 
-return {event = event, openPage = openPage, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = false}, API = {}}
+local function onHelpMenu()
+
+    local helpPath = "app/modules/settings/tools/help.lua"
+    local help = assert(loadfile(helpPath))()
+
+    rfsuite.app.ui.openPageHelp(help.help["audio_events"], "@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.audio)@" .. " / " .. "@i18n(app.modules.settings.txt_audio_events)@")
+
+end
+
+return {event = event, openPage = openPage, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu,  onHelpMenu = onHelpMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = true}, API = {}}

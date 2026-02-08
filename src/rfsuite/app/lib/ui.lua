@@ -2289,14 +2289,4 @@ function ui.adminStatsOverlay()
     end
 end
 
-function ui.fieldHelpButton(parent, x, y, title, message)
-    form.addButton(parent, {x = x, y = y, w = 40, h = 30}, {
-        text = "?",
-        options = FONT_S,
-        press = function()
-            ui.openPageHelp(message, title)
-        end
-    })
-end
-
 return ui
