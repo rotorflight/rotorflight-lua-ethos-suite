@@ -6,9 +6,14 @@ Windows updater for the Rotorflight Lua Ethos Suite.
 
 ## Download
 
-Windows executable:
+Latest release assets (Windows/macOS/Linux) are published on the GitHub Releases page:
 
-[RFSuite Updater Download](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/update_radio_gui.exe)
+[RFSuite Updater Releases](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/latest)
+
+Asset names:
+- Windows: `rfsuite-updater-<version>-windows.zip`
+- macOS: `rfsuite-updater-<version>-macos.zip`
+- Linux: `updater-ubuntu-latest` (workflow artifacts; not yet attached to releases)
 
 ## Developer Notes
 
