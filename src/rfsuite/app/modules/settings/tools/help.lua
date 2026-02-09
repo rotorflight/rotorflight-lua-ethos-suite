@@ -9,6 +9,6 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['audio_events'] = {"@i18n(app.modules.settings.help_modelAnnouncement)@"}
+data['help']['audio_events'] = {"@i18n(app.modules.settings.help_audio_events)@"}
 
 return data

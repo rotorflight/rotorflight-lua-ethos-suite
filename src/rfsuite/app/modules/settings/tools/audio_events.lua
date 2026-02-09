@@ -153,14 +153,13 @@ local function openPage(pageIdx, title, script)
 
     local w = rfsuite.app.lcdWidth
     local otherModelAnnouncement = otherPanel:addLine("@i18n(app.modules.settings.modelAnnouncement)@")
-    if otherModelAnnouncement.help then
-        otherModelAnnouncement:help("@i18n(app.modules.settings.help_modelAnnouncement)@")
-    end
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(otherModelAnnouncement, nil, function() return config.otherModelAnnounce == true end, function(val) config.otherModelAnnounce = val end)
-
+    if rfsuite.app.formFields[formFieldCount].help then
+        rfsuite.app.formFields[formFieldCount]:help("@i18n(app.modules.settings.help_modelAnnouncement)@")
+    end
 
     rfsuite.app.navButtons.save = true
 end
