@@ -668,6 +668,17 @@ function ui.openMainMenu()
 
     local header = form.addLine("@i18n(app.header_configuration)@")
 
+    local navX = windowWidth - 110
+    app.formNavigationFields['menu'] = form.addButton(header, {x = navX, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
+        text = "@i18n(app.navigation_menu)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            app.close()
+        end
+    })
+
     for pidx, pvalue in ipairs(Menu) do
 
         app.formFieldsOffline[pidx] = pvalue.offline or false
