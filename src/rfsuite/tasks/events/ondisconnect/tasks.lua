@@ -134,13 +134,6 @@ local function isQueueDone()
 end
 
 function tasks.fire(args)
-    -- Preserve data before session is wiped by tasks.lua.
-    -- The scheduler clears the session immediately after firing this event,
-    -- so we must hold onto the model name to restore it in the wakeup phase.
-    if rfsuite.session.originalModelName then
-        preservedModelName = rfsuite.session.originalModelName
-    end
-
     disconnectSessionToken = disconnectSessionToken + 1
     pendingFire = true
     active = true
@@ -168,11 +161,6 @@ function tasks.wakeup()
     if not tasksLoaded then tasks.findTasks() end
     resetQueueState()
 
-    -- Restore preserved data to the new session so tasks can use it
-    if preservedModelName and not rfsuite.session.originalModelName then
-        rfsuite.session.originalModelName = preservedModelName
-        preservedModelName = nil
-    end
 
     rfsuite.utils.log("Connection [lost]. (ondisconnect hook)", "info")
 
