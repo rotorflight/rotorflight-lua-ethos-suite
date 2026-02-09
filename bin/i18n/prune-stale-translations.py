@@ -89,7 +89,7 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     ap.add_argument("--src", default=str(repo_root / "src"), help="Source root to scan for @i18n(...)@ tags")
-    ap.add_argument("--json-root", default=str(repo_root / "bin" / "i18n" / "json"), help="Root containing i18n json folders")
+    ap.add_argument("--json-root", default=str(repo_root / "bin" / "i18n" / "json"), help="Root containing i18n json files")
     ap.add_argument("--apply", action="store_true", help="Apply removals to en.json files")
     ap.add_argument("--extra-keys", help="Optional file with extra i18n keys (one per line)")
     ap.add_argument("--fail-on-stale", action="store_true", help="Exit with code 1 if stale keys are found")
@@ -117,36 +117,33 @@ def main(argv=None) -> int:
             if line and not line.startswith("#"):
                 used_keys.add(line)
 
-    en_files = sorted(json_root.rglob("en.json"))
-    if not en_files:
-        print(f"WARNING: No en.json files found under {json_root}")
+    en_path = json_root / "en.json"
+    if not en_path.exists():
+        print(f"WARNING: No en.json found at {en_path}")
         return 0
 
     total_removed = 0
     any_stale = False
 
-    for en_path in en_files:
-        rel_dir = en_path.parent.relative_to(json_root)
-        prefix_parts = [] if str(rel_dir) == "." else list(rel_dir.parts)
+    prefix_parts = []
+    try:
+        data = read_json(en_path)
+    except Exception as e:
+        print(f"❌ Failed to parse {en_path}: {e}")
+        return 1
 
-        try:
-            data = read_json(en_path)
-        except Exception as e:
-            print(f"❌ Failed to parse {en_path}: {e}")
-            continue
+    pruned, removed = prune_tree(data, prefix_parts, used_keys)
 
-        pruned, removed = prune_tree(data, prefix_parts, used_keys)
+    if removed:
+        any_stale = True
+        total_removed += len(removed)
+        print(f"\n{en_path}")
+        for key in removed:
+            print(f"  - {key}")
 
-        if removed:
-            any_stale = True
-            total_removed += len(removed)
-            print(f"\n{en_path}")
-            for key in removed:
-                print(f"  - {key}")
-
-            if args.apply:
-                write_json(en_path, pruned)
-                print(f"✔ Pruned {len(removed)} stale entr{'y' if len(removed)==1 else 'ies'}")
+        if args.apply:
+            write_json(en_path, pruned)
+            print(f"✔ Pruned {len(removed)} stale entr{'y' if len(removed)==1 else 'ies'}")
 
     if not any_stale:
         print("No stale en.json entries found.")

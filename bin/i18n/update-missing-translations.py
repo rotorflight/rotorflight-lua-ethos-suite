@@ -1,9 +1,9 @@
-import os
 import json
 import re
 from collections import OrderedDict
+from pathlib import Path
 
-ROOT_DIR = "json"
+ROOT_DIR = Path(__file__).parent / "json"
 
 def read_json(filepath):
     """Load JSON file with support for trailing commas."""
@@ -66,19 +66,13 @@ def build_translation(ref, target, order):
             output[key] = ref_val
     return output
 
-def get_all_dirs(base):
-    """Yield all subdirectories recursively."""
-    for root, dirs, files in os.walk(base):
-        yield root
-
-def process_dir(path):
-    files = [f for f in os.listdir(path) if f.endswith(".json")]
-    if "en.json" not in files:
+def process_root(path: Path):
+    en_path = path / "en.json"
+    if not en_path.exists():
+        print(f"❌ Missing {en_path}")
         return
-
-    en_path = os.path.join(path, "en.json")
     try:
-        en_data = read_json(en_path)
+        en_data = read_json(str(en_path))
     except Exception as e:
         print(f"❌ Failed to parse {en_path}: {e}")
         return
@@ -89,26 +83,24 @@ def process_dir(path):
 
     # Fix en.json if it lacks "needs_translation": "false"
     ensure_needs_translation_false(en_data)
-    write_json(en_path, en_data)
+    write_json(str(en_path), en_data)
 
     # Extract key order for structure
     key_order = extract_key_order(en_data)
 
     # Process other language files
-    for f in files:
-        if f == "en.json":
+    for target_path in sorted(path.glob("*.json")):
+        if target_path.name == "en.json":
             continue
-        target_path = os.path.join(path, f)
         try:
-            if os.path.isfile(target_path):
-                target_data = read_json(target_path)
+            if target_path.is_file():
+                target_data = read_json(str(target_path))
                 new_data = build_translation(en_data, target_data, key_order)
-                write_json(target_path, new_data)
+                write_json(str(target_path), new_data)
                 print(f"✔ Updated: {target_path}")
         except Exception as e:
             print(f"❌ Failed processing {target_path}: {e}")
 
 # 🔁 Run the translation update
 if __name__ == "__main__":
-    for dir_path in get_all_dirs(ROOT_DIR):
-        process_dir(dir_path)
+    process_root(ROOT_DIR)

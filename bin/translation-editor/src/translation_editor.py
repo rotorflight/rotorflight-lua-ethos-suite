@@ -23,7 +23,6 @@ def sound_root():
 class DataStore:
     def __init__(self):
         self.dataset = "i18n"  # or "sound"
-        self.module = ""       # relative dir under i18n_root, "" means root
         self.locale = "en"
         self.rows = []          # list of dicts: {key, english, translation, needs}
         self.filtered_rows = []
@@ -32,9 +31,6 @@ class DataStore:
 
     def set_dataset(self, dataset):
         self.dataset = dataset
-
-    def set_module(self, module):
-        self.module = module
 
     def set_locale(self, locale):
         self.locale = locale
@@ -74,12 +70,6 @@ class TranslationEditor(tk.Tk):
         self.locale_cb.pack(side=tk.LEFT, padx=6)
         self.locale_cb.bind("<<ComboboxSelected>>", self._on_locale_changed)
         self.locale_cb.bind("<Return>", self._on_locale_changed)
-
-        self.module_label = ttk.Label(top, text="Module:")
-        self.module_label.pack(side=tk.LEFT, padx=(12, 0))
-        self.module_cb = ttk.Combobox(top, values=[], state="readonly", width=24)
-        self.module_cb.pack(side=tk.LEFT, padx=6)
-        self.module_cb.bind("<<ComboboxSelected>>", self._on_module_changed)
 
         ttk.Label(top, text="Search:").pack(side=tk.LEFT, padx=(12, 0))
         search_entry = ttk.Entry(top, textvariable=self.search_var, width=28)
@@ -137,7 +127,6 @@ class TranslationEditor(tk.Tk):
 
     def _load_dataset_options(self):
         self._refresh_locale_list()
-        self._refresh_module_list()
 
     def _refresh_locale_list(self):
         if self.store.dataset == "i18n":
@@ -160,55 +149,13 @@ class TranslationEditor(tk.Tk):
             self.locale_cb.set("en")
             self.store.locale = "en"
 
-    def _refresh_module_list(self):
-        if self.store.dataset != "i18n":
-            self.module_cb["values"] = []
-            self.module_cb.set("")
-            self.module_label.configure(state=tk.DISABLED)
-            self.module_cb.configure(state=tk.DISABLED)
-            self.store.module = ""
-            return
-
-        root = i18n_root()
-        modules = []
-        if root.exists():
-            for dirpath in root.rglob("*"):
-                if not dirpath.is_dir():
-                    continue
-                if (dirpath / "en.json").exists():
-                    rel = dirpath.relative_to(root)
-                    mod = "" if str(rel) == "." else str(rel).replace("\\", "/")
-                    modules.append(mod)
-        modules = sorted(modules)
-        if "" not in modules:
-            modules.insert(0, "")
-
-        labels = ["(root)" if m == "" else m for m in modules]
-        self.module_cb["values"] = labels
-        current = "(root)" if self.store.module == "" else self.store.module
-        if current in labels:
-            self.module_cb.set(current)
-        else:
-            self.module_cb.set(labels[0] if labels else "")
-            self.store.module = ""
-
-        self.module_label.configure(state=tk.NORMAL)
-        self.module_cb.configure(state="readonly")
-
     def _on_dataset_changed(self, _evt=None):
         self.store.set_dataset(self.dataset_cb.get())
         self._refresh_locale_list()
-        self._refresh_module_list()
         self._load_data()
 
     def _on_locale_changed(self, _evt=None):
         self.store.set_locale(self.locale_cb.get().strip())
-        self._load_data()
-
-    def _on_module_changed(self, _evt=None):
-        label = self.module_cb.get()
-        module = "" if label == "(root)" else label
-        self.store.set_module(module)
         self._load_data()
 
     def _load_data(self):
@@ -222,14 +169,13 @@ class TranslationEditor(tk.Tk):
 
     def _load_i18n_rows(self):
         root = i18n_root()
-        module_dir = root / self.store.module if self.store.module else root
-        en_path = module_dir / "en.json"
+        en_path = root / "en.json"
         if not en_path.exists():
             messagebox.showerror("Missing en.json", f"Missing {en_path}")
             return []
 
         en_data = self._read_json(en_path)
-        tgt_path = module_dir / f"{self.store.locale}.json"
+        tgt_path = root / f"{self.store.locale}.json"
         tgt_data = self._read_json(tgt_path) if tgt_path.exists() else {}
 
         rows = []
@@ -338,11 +284,6 @@ class TranslationEditor(tk.Tk):
         return t > e + 10
 
     def _update_length_warnings(self):
-        count = 0
-        for row in self.store.rows:
-            if self._length_warning(row.get("english", ""), row.get("translation", "")):
-                count += 1
-
         sel = self.tree.selection()
         if sel:
             row_index = int(sel[0])
@@ -567,11 +508,10 @@ class TranslationEditor(tk.Tk):
 
     def _save_i18n(self):
         root = i18n_root()
-        module_dir = root / self.store.module if self.store.module else root
-        module_dir.mkdir(parents=True, exist_ok=True)
-        out_path = module_dir / f"{self.store.locale}.json"
+        root.mkdir(parents=True, exist_ok=True)
+        out_path = root / f"{self.store.locale}.json"
 
-        en_path = module_dir / "en.json"
+        en_path = root / "en.json"
         if not en_path.exists():
             messagebox.showerror("Missing en.json", f"Missing {en_path}")
             return
