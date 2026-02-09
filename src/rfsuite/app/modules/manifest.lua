@@ -1,0 +1,106 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+-- Explicit menu structure.
+-- Each entry can define:
+--   - title: UI label (i18n string recommended).
+--   - entry: module folder to open directly from the main menu.
+--   - pages: list of module folders (or override tables) to build a submenu.
+--   - id: section identifier used by openMainMenuSub (required for submenu sections).
+--   - image: icon path used on the main menu.
+--   - loaderspeed: show fast loader when opening.
+--   - offline: allow entry when FC is not connected.
+--   - bgtask: allow entry while background task is active.
+--   - newline: start a new header group (UI layout).
+return {
+    sections = {
+        {
+            title = "@i18n(app.modules.pids.name)@",
+            entry = "pids",
+            image = "app/modules/pids/pids.png"
+        },
+        {
+            title = "@i18n(app.modules.rates.name)@",
+            entry = "rates",
+            image = "app/modules/rates/rates.png"
+        },
+        {
+            title = "@i18n(app.modules.profile_governor.name)@",
+            entry = "profile_governor",
+            image = "app/modules/profile_governor/governor.png"
+        },
+        {
+            title = "@i18n(app.modules.profile_tailrotor.name)@",
+            entry = "tailrotor",
+            image = "app/modules/tailrotor/tailrotor.png"
+        },
+        -- A section with pages opens a submenu.
+        {
+            title = "@i18n(app.menu_section_advanced)@",
+            id = "advanced",
+            image = "app/gfx/advanced.png",
+            loaderspeed = true,
+            pages = {
+                "profile_pidcontroller",
+                "profile_pidbandwidth",
+                "profile_autolevel",
+                "profile_mainrotor",
+                "profile_tailrotor",
+                "profile_rescue",
+                "rates_advanced"
+            }
+        },
+        {
+            title = "@i18n(app.menu_section_hardware)@",
+            id = "hardware",
+            image = "app/gfx/hardware.png",
+            loaderspeed = true,
+            pages = {
+                "servos",
+                "mixer",
+                "esc_motors",
+                "accelerometer",
+                "telemetry",
+                "filters",
+                "power",
+                "radio_config",
+                "stats",
+                "governor"
+            }
+        },
+        {
+            title = "@i18n(app.menu_section_tools)@",
+            id = "tools",
+            image = "app/gfx/tools.png",
+            newline = true,
+            pages = {
+                "copyprofiles",
+                "profile_select",
+                "msp_exp"
+            }
+        },
+        -- Single entries open directly from the main menu.
+        {
+            title = "@i18n(app.modules.logs.name)@",
+            entry = "logs",
+            image = "app/modules/logs/gfx/logs.png",
+            loaderspeed = true,
+            offline = true
+        },
+        {
+            title = "@i18n(app.modules.settings.name)@",
+            entry = "settings",
+            image = "app/modules/settings/settings.png",
+            offline = true
+        },
+        {
+            title = "@i18n(app.modules.diagnostics.name)@",
+            entry = "diagnostics",
+            image = "app/modules/diagnostics/diagnostics.png",
+            bgtask = true,
+            offline = true
+        }
+    }
+}

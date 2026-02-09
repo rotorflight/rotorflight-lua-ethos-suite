@@ -662,7 +662,8 @@ function ui.openMainMenu()
     app.gfx_buttons["mainmenu"] = app.gfx_buttons["mainmenu"] or {}
     preferences.menulastselected["mainmenu"] = preferences.menulastselected["mainmenu"] or 1
 
-    local Menu = assert(loadfile("app/modules/sections.lua"))()
+    -- Prefer the already-built menu structure; fallback loads manifest directly.
+    local Menu = (app.MainMenu and app.MainMenu.sections) or (assert(loadfile("app/modules/manifest.lua"))().sections)
 
     local lc, bx, y = 0, 0, 0
 
