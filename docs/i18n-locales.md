@@ -60,7 +60,8 @@ If you want demo links for the new locale:
 
 ## Suggested Workflow
 1. Add/update translation JSON under `bin/i18n/json/<locale>.json`.
-2. Run `bin/i18n/build-single-json.py --only <locale>` to rebuild `src/rfsuite/i18n/<locale>.json`.
+2. Run `bin/i18n/update-max-lengths.py` to refresh per-key `max_length` in `en.json`.
+3. Run `bin/i18n/build-single-json.py --only <locale>` to rebuild `src/rfsuite/i18n/<locale>.json`.
 3. Add `<locale>` to all workflow matrices.
 4. Add `<locale>` to `AVAILABLE_LOCALES` in the updater GUI.
 5. Add or generate sound packs (if used).

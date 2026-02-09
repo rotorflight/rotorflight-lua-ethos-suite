@@ -103,7 +103,9 @@ class TranslationEditor(tk.Tk):
         table_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
 
         columns = ("key", "english", "translation", "needs")
-        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+        style = ttk.Style()
+        style.configure("RFSuite.Treeview", rowheight=28)
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", style="RFSuite.Treeview")
         self.tree.heading("key", text="Key")
         self.tree.heading("english", text="English")
         self.tree.heading("translation", text="Translation")
@@ -208,6 +210,7 @@ class TranslationEditor(tk.Tk):
                     "english": en_val.get("english", ""),
                     "translation": translation or "",
                     "needs": needs,
+                    "max_length": en_val.get("max_length"),
                 })
             elif isinstance(en_val, dict):
                 self._walk_i18n(en_val, tgt_val if isinstance(tgt_val, dict) else {}, full_key, rows)
@@ -282,11 +285,15 @@ class TranslationEditor(tk.Tk):
         self.status.configure(text=f"Rows: {shown}/{total}   Missing: {missing}   {edit_hint}   Toggle: click Needs")
         self._update_length_warnings()
 
-    def _length_warning(self, english, translation):
+    def _length_warning(self, english, translation, max_length=None):
+        if translation is None:
+            translation = ""
         e = len(english or "")
         t = len(translation or "")
         if e == 0:
             return False
+        if isinstance(max_length, int) and max_length > 0:
+            return t > max_length
         return t > (e * 1.15)
 
     def _update_length_warnings(self):
@@ -296,11 +303,17 @@ class TranslationEditor(tk.Tk):
             row = self.store.filtered_rows[row_index]
             english = row.get("english", "")
             translation = row.get("translation", "")
-            if self._length_warning(english, translation):
+            max_len = row.get("max_length")
+            if self._length_warning(english, translation, max_len):
                 diff = len(translation) - len(english)
-                self.warning_label.configure(
-                    text=f"Warning: translation exceeds English by {diff} chars (>15%)"
-                )
+                if isinstance(max_len, int) and max_len > 0:
+                    self.warning_label.configure(
+                        text=f"Warning: translation exceeds max length by {len(translation) - max_len} chars"
+                    )
+                else:
+                    self.warning_label.configure(
+                        text=f"Warning: translation exceeds English by {diff} chars (>15%)"
+                    )
                 self.bell()
             else:
                 self.warning_label.configure(text="")
@@ -320,12 +333,18 @@ class TranslationEditor(tk.Tk):
         row = self.store.filtered_rows[row_index]
         english = row.get("english", "")
         translation = self._editor.get()
-        is_warn = self._length_warning(english, translation)
+        max_len = row.get("max_length")
+        is_warn = self._length_warning(english, translation, max_len)
         if is_warn:
-            diff = len(translation) - len(english)
-            self.warning_label.configure(
-                text=f"Warning: translation exceeds English by {diff} chars (limit +10)"
-            )
+            if isinstance(max_len, int) and max_len > 0:
+                self.warning_label.configure(
+                    text=f"Warning: translation exceeds max length by {len(translation) - max_len} chars"
+                )
+            else:
+                diff = len(translation) - len(english)
+                self.warning_label.configure(
+                    text=f"Warning: translation exceeds English by {diff} chars (>15%)"
+                )
             if not self._live_warn_active:
                 self.bell()
             self._live_warn_active = True
@@ -544,11 +563,16 @@ class TranslationEditor(tk.Tk):
                     else:
                         translation = row.get("translation", "")
                         needs = bool(row.get("needs", True))
-                    out[key] = OrderedDict({
+                    entry = OrderedDict({
                         "english": english,
                         "translation": translation,
                         "needs_translation": needs,
                     })
+                    if self.store.locale == "en":
+                        max_len = en_val.get("max_length")
+                        if isinstance(max_len, int):
+                            entry["max_length"] = max_len
+                    out[key] = entry
                 elif isinstance(en_val, dict):
                     out[key] = rebuild(en_val, full_key)
                 else:
