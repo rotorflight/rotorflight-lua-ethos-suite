@@ -179,6 +179,8 @@ To build and deploy RFSuite locally:
 
 ### Requirements
 
+See `docs/dev-environment.md` for the full developer environment setup guide.
+
 -   Visual Studio Code (VS Code)
     
 -   Python 3
