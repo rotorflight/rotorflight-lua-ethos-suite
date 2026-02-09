@@ -6609,8 +6609,8 @@
           "max_length": 157
         },
         "help_audio_events": {
-          "english": "Here you can configure which system events and telemetry values trigger voice announcements or alerts.",
-          "translation": "Here you can configure which system events and telemetry values trigger voice announcements or alerts.",
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "translation": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts..",
           "needs_translation": false,
           "max_length": 122
         },

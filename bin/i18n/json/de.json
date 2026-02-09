@@ -6609,8 +6609,8 @@
           "max_length": 157
         },
         "help_audio_events": {
-          "english": "Here you can configure which system events and telemetry values trigger voice announcements or alerts.",
-          "translation": "Hier können Sie konfigurieren, welche Systemereignisse und Telemetriewerte eine Sprachansage oder Warnung auslösen sollen.",
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "translation": "Verwenden Sie diesen Abschnitt, um zu konfigurieren, welche Systemereignisse und Telemetriewerte eine Sprachansage oder Warnung auslösen.",
           "needs_translation": false,
           "max_length": 122
         },
