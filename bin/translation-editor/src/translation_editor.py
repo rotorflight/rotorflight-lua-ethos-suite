@@ -60,9 +60,6 @@ class TranslationEditor(tk.Tk):
         self.bind_all("<Control-z>", self._undo_last)
 
     def _build_ui(self):
-        self.warning_label = tk.Label(self, text="", anchor=tk.W, fg="red", bg="#fff1f1")
-        self.warning_label.pack(fill=tk.X, padx=10, pady=(8, 2))
-
         top = ttk.Frame(self)
         top.pack(fill=tk.X, padx=10, pady=6)
 
@@ -103,6 +100,11 @@ class TranslationEditor(tk.Tk):
         ttk.Button(btn_frame, text="Toggle needs", command=self._toggle_needs).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo row", command=self._undo_row).pack(side=tk.RIGHT, padx=4)
 
+        stats = ttk.LabelFrame(self, text="Summary")
+        stats.pack(fill=tk.X, padx=10, pady=(0, 4))
+        self.stats_label = ttk.Label(stats, text="", anchor=tk.W)
+        self.stats_label.pack(side=tk.LEFT, padx=8, pady=4)
+
         hint = ttk.Label(self, text="Tip: click a Translation cell to edit. (For en, edit the English cell.)")
         hint.pack(fill=tk.X, padx=10, pady=(0, 4))
 
@@ -133,7 +135,10 @@ class TranslationEditor(tk.Tk):
         self.tree.configure(yscrollcommand=scroll.set)
 
         self.status = ttk.Label(self, text="", anchor=tk.W)
-        self.status.pack(fill=tk.X, padx=10, pady=(0, 8))
+        self.status.pack(fill=tk.X, padx=10, pady=(0, 2))
+
+        self.warning_label = tk.Label(self, text="", anchor=tk.W, fg="red", bg="#fff1f1")
+        self.warning_label.pack(fill=tk.X, padx=10, pady=(0, 8))
 
         self._editor = None
         self._edit_item = None
@@ -294,12 +299,23 @@ class TranslationEditor(tk.Tk):
 
         total = len(self.store.rows)
         missing = sum(1 for r in self.store.rows if r["needs"])
+        done = total - missing
+        disallowed = sum(
+            1 for r in self.store.rows if self._has_disallowed_non_ascii(r.get("translation", ""))
+        )
+        exceeds = sum(
+            1 for r in self.store.rows
+            if self._length_warning(r.get("english", ""), r.get("translation", ""), r.get("max_length"))
+        )
         shown = len(self.store.filtered_rows)
         if self.store.locale == "en":
             edit_hint = "Edit: click English cell (master)"
         else:
             edit_hint = "Edit: click Translation cell"
         self.status.configure(text=f"Rows: {shown}/{total}   Missing: {missing}   {edit_hint}   Toggle: click Needs")
+        self.stats_label.configure(
+            text=f"Total: {total}  Done: {done}  Missing: {missing}  Exceeds: {exceeds}  Disallowed: {disallowed}"
+        )
         self._update_length_warnings()
 
     def _length_warning(self, english, translation, max_length=None):
