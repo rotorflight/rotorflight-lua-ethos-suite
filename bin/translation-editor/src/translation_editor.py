@@ -801,10 +801,9 @@ class TranslationEditor(tk.Tk):
                         "translation": translation,
                         "needs_translation": needs,
                     })
-                    if self.store.locale == "en":
-                        max_len = en_val.get("max_length")
-                        if isinstance(max_len, int):
-                            entry["max_length"] = max_len
+                    max_len = en_val.get("max_length")
+                    if isinstance(max_len, int):
+                        entry["max_length"] = max_len
                     out[key] = entry
                 elif isinstance(en_val, dict):
                     out[key] = rebuild(en_val, full_key)
