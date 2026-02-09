@@ -30,18 +30,15 @@ local name = rfsuite.session.craftName or "-"
 
 ### Telemetry API
 
-* **Get sensor**: `rfsuite.tasks.telemetry.getSensorSource(id)` returns a sensor object.
-* **Read value**: `:value()` to fetch the latest reading.
-
-or a faster and more efficient:
-
-* **Get sensor**: `rfsuite.tasks.telemetry.getSensor(id)` returns a value of the sensor
+* **Get source**: `rfsuite.tasks.telemetry.getSensorSource(id)` returns a source object (if available).
+* **Read value**: `source:value()` to fetch the latest reading.
+* **Get value directly**: `rfsuite.tasks.telemetry.getSensor(id)` returns `(value, unit, minor)` and can optionally accept `min/max/thresholds` overrides.
 
 
 ```lua
 local rfsuite = require("rfsuite")
 local rpmSensor = rfsuite.tasks.telemetry.getSensorSource("rpm")
-local rpm = rpmSensor:value()
+local rpm = rpmSensor and rpmSensor:value()
 ```
 
 ### MSP API
@@ -177,7 +174,5 @@ return { init = init }
 ```
 
 ## License
-
-This widget framework is licensed under GPLv3. See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.en.html) for details.
 
 This widget framework is licensed under GPLv3. See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.en.html) for details.
