@@ -97,29 +97,9 @@
     }
   },
   "RESCUE_PROFILE": {
-    "rescue_flip_gain": {
-      "english": "Determine how aggressively the heli flips during inverted rescue.",
-      "translation": "Determine how aggressively the heli flips during inverted rescue.",
-      "needs_translation": false
-    },
-    "rescue_level_gain": {
-      "english": "Determine how aggressively the heli levels during rescue.",
-      "translation": "Determine how aggressively the heli levels during rescue.",
-      "needs_translation": false
-    },
     "tbl_off": {
       "english": "OFF",
       "translation": "OFF",
-      "needs_translation": false
-    },
-    "rescue_hover_collective": {
-      "english": "Collective value for hover.",
-      "translation": "Kolektiv value for hover.",
-      "needs_translation": false
-    },
-    "rescue_max_setpoint_rate": {
-      "english": "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
-      "translation": "Limit rescue roll/pitch rate. Larger helicopters may need slower Rotace rates.",
       "needs_translation": false
     },
     "tbl_flip": {
@@ -127,54 +107,14 @@
       "translation": "FLIP",
       "needs_translation": false
     },
-    "rescue_flip_mode": {
-      "english": "If rescue is activated while inverted, flip to upright - or remain inverted.",
-      "translation": "If rescue is activated while inverted, flip to upright - or remain inverted.",
-      "needs_translation": false
-    },
-    "rescue_pull_up_time": {
-      "english": "When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage.",
-      "translation": "When rescue is activated, helicopter will apply pull-up Kolektiv for this Cas period before moving to flip or climb stage.",
-      "needs_translation": false
-    },
     "tbl_noflip": {
       "english": "NO FLIP",
       "translation": "NO FLIP",
       "needs_translation": false
     },
-    "rescue_exit_time": {
-      "english": "This limits rapid application of negative collective if the helicopter has rolled during rescue.",
-      "translation": "This Limity rapid application of negative Kolektiv if the helicopter has rolled during rescue.",
-      "needs_translation": false
-    },
-    "rescue_pull_up_collective": {
-      "english": "Collective value for pull-up climb.",
-      "translation": "Kolektiv value for pull-up climb.",
-      "needs_translation": false
-    },
-    "rescue_max_setpoint_accel": {
-      "english": "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
-      "translation": "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower Zrychleni.",
-      "needs_translation": false
-    },
     "tbl_on": {
       "english": "ON",
       "translation": "ON",
-      "needs_translation": false
-    },
-    "rescue_climb_collective": {
-      "english": "Collective value for rescue climb.",
-      "translation": "Kolektiv value for rescue climb.",
-      "needs_translation": false
-    },
-    "rescue_flip_time": {
-      "english": "If the helicopter is in rescue and is trying to flip to upright and does not within this time, rescue will be aborted.",
-      "translation": "If the helicopter is in rescue and is trying to flip to upright and does not within this Cas, rescue will be aborted.",
-      "needs_translation": false
-    },
-    "rescue_climb_time": {
-      "english": "Length of time the climb collective is applied before switching to hover.",
-      "translation": "Length of Cas the climb Kolektiv is applied before switching to hover.",
       "needs_translation": false
     }
   },
@@ -1034,11 +974,6 @@
     }
   },
   "BATTERY_INI": {
-    "calcfuel_local": {
-      "english": "Calculate Fuel Using",
-      "translation": "Calculate Fuel Using",
-      "needs_translation": false
-    },
     "tbl_off": {
       "english": "Current Sensor",
       "translation": "Current Senzor",
@@ -1315,11 +1250,6 @@
     "governor_auto_throttle": {
       "english": "Auto throttle",
       "translation": "Auto throttle",
-      "needs_translation": false
-    },
-    "governor_fallback_drop": {
-      "english": "Fallback drop",
-      "translation": "Fallback drop",
       "needs_translation": false
     }
   },

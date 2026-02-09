@@ -1,14 +1,4 @@
 {
-  "theme_load_error": {
-    "english": "Your theme did not load correctly. Falling back to default theme.",
-    "translation": "Votre theme ne s'est pas charge correctement. Retour au theme par defaut.",
-    "needs_translation": false
-  },
-  "validate_sensors": {
-    "english": "PLEASE CHECK SENSORS",
-    "translation": "VEUILLEZ VERIFIER LES CAPTEURS",
-    "needs_translation": false
-  },
   "unsupported_resolution": {
     "english": "TO SMALL",
     "translation": "TROP PETIT",
@@ -17,31 +7,6 @@
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
-    "needs_translation": false
-  },
-  "waiting_for_connection": {
-    "english": "CONNECTING",
-    "translation": "CONNECTION",
-    "needs_translation": false
-  },
-  "check_bg_task": {
-    "english": "BG TASK",
-    "translation": "TACHE ARRIERE-PLAN",
-    "needs_translation": false
-  },
-  "check_rf_module_on": {
-    "english": "RF MODULE",
-    "translation": "MODULE RF",
-    "needs_translation": false
-  },
-  "check_discovered_sensors": {
-    "english": "SENSORS",
-    "translation": "CAPTEURS",
-    "needs_translation": false
-  },
-  "no_link": {
-    "english": "NO LINK",
-    "translation": "AUCUNE CONNECTION",
     "needs_translation": false
   },
   "reset_flight": {
@@ -199,11 +164,6 @@
     "translation": "Temps de vol",
     "needs_translation": false
   },
-  "rssi_min": {
-    "english": "RSSI Min",
-    "translation": "RSSI Min",
-    "needs_translation": false
-  },
   "current": {
     "english": "Current",
     "translation": "Courant",
@@ -249,24 +209,9 @@
     "translation": "Temp max E.MCU",
     "needs_translation": false
   },
-  "altitude": {
-    "english": "Altitude",
-    "translation": "Altitude",
-    "needs_translation": false
-  },
   "altitude_max": {
     "english": "Altitude Max",
     "translation": "Altitude Max",
-    "needs_translation": false
-  },
-  "power": {
-    "english": "Power",
-    "translation": "Puissance",
-    "needs_translation": false
-  },
-  "cell_voltage": {
-    "english": "Cell Voltage",
-    "translation": "Tension Cellule",
     "needs_translation": false
   },
   "volts_per_cell": {
@@ -277,11 +222,6 @@
   "warning": {
     "english": "Warning",
     "translation": "Avertissement",
-    "needs_translation": false
-  },
-  "tx_batt": {
-    "english": "TX Battery",
-    "translation": "Batterie Emetteur",
     "needs_translation": false
   },
   "link_max": {

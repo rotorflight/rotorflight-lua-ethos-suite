@@ -97,29 +97,9 @@
     }
   },
   "RESCUE_PROFILE": {
-    "rescue_flip_gain": {
-      "english": "Determine how aggressively the heli flips during inverted rescue.",
-      "translation": "Determiner l'agressivite avec laquelle l'helico se retourne pendant le sauvetage inverse.",
-      "needs_translation": false
-    },
-    "rescue_level_gain": {
-      "english": "Determine how aggressively the heli levels during rescue.",
-      "translation": "Determiner l'agressivite avec laquelle l'helico se met a niveau pendant le sauvetage.",
-      "needs_translation": false
-    },
     "tbl_off": {
       "english": "OFF",
       "translation": "DESACTIVER",
-      "needs_translation": false
-    },
-    "rescue_hover_collective": {
-      "english": "Collective value for hover.",
-      "translation": "Valeur collective pour le vol stationnaire.",
-      "needs_translation": false
-    },
-    "rescue_max_setpoint_rate": {
-      "english": "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
-      "translation": "Limiter le taux de roulis/tangage de sauvetage. Les helicos plus grands peuvent necessiter des taux de rotation plus lents.",
       "needs_translation": false
     },
     "tbl_flip": {
@@ -127,54 +107,14 @@
       "translation": "RENVERSEMENT",
       "needs_translation": false
     },
-    "rescue_flip_mode": {
-      "english": "If rescue is activated while inverted, flip to upright - or remain inverted.",
-      "translation": "Si le sauvetage est active en etant inverse, retourner a l'endroit - ou rester inverse.",
-      "needs_translation": false
-    },
-    "rescue_pull_up_time": {
-      "english": "When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage.",
-      "translation": "Lorsque le sauvetage est active, l'helicoptere appliquera un collectif de redressement pendant cette periode avant de passer a l'etape de retournement ou de montee.",
-      "needs_translation": false
-    },
     "tbl_noflip": {
       "english": "NO FLIP",
       "translation": "PAS DE RENVERSEMENT",
       "needs_translation": false
     },
-    "rescue_exit_time": {
-      "english": "This limits rapid application of negative collective if the helicopter has rolled during rescue.",
-      "translation": "Cela limite l'application rapide du collectif negatif si l'helicoptere a roule pendant le sauvetage.",
-      "needs_translation": false
-    },
-    "rescue_pull_up_collective": {
-      "english": "Collective value for pull-up climb.",
-      "translation": "Valeur collective pour la montee de redressement.",
-      "needs_translation": false
-    },
-    "rescue_max_setpoint_accel": {
-      "english": "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
-      "translation": "Limiter la vitesse a laquelle l'helicoptere accelere dans un roulis/tangage. Les helicos plus grands peuvent necessiter une acceleration plus lente.",
-      "needs_translation": false
-    },
     "tbl_on": {
       "english": "ON",
       "translation": "ACTIVER",
-      "needs_translation": false
-    },
-    "rescue_climb_collective": {
-      "english": "Collective value for rescue climb.",
-      "translation": "Valeur collective pour la montee de sauvetage.",
-      "needs_translation": false
-    },
-    "rescue_flip_time": {
-      "english": "If the helicopter is in rescue and is trying to flip to upright and does not within this time, rescue will be aborted.",
-      "translation": "Si l'helicoptere est en sauvetage et essaie de se retourner a l'endroit et ne le fait pas dans ce delai, le sauvetage sera annule.",
-      "needs_translation": false
-    },
-    "rescue_climb_time": {
-      "english": "Length of time the climb collective is applied before switching to hover.",
-      "translation": "Duree pendant laquelle le collectif de montee est applique avant de passer au vol stationnaire.",
       "needs_translation": false
     }
   },
@@ -1034,11 +974,6 @@
     }
   },
   "BATTERY_INI": {
-    "calcfuel_local": {
-      "english": "Calculate Fuel Using",
-      "translation": "Calcul du carburant utilisé",
-      "needs_translation": false
-    },
     "tbl_off": {
       "english": "Current Sensor",
       "translation": "Capteur courant",
@@ -1315,11 +1250,6 @@
     "governor_auto_throttle": {
       "english": "Auto throttle",
       "translation": "Gaz Auto",
-      "needs_translation": false
-    },
-    "governor_fallback_drop": {
-      "english": "Fallback drop",
-      "translation": "Coupure de secours",
       "needs_translation": false
     }
   },

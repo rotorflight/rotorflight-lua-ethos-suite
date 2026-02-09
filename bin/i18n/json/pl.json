@@ -9,49 +9,9 @@
     "translation": "Laduj",
     "needs_translation": false
   },
-  "image": {
-    "english": "image",
-    "translation": "image",
-    "needs_translation": false
-  },
   "error": {
     "english": "error",
     "translation": "Blad",
-    "needs_translation": false
-  },
-  "save": {
-    "english": "save",
-    "translation": "Zapisz",
-    "needs_translation": false
-  },
-  "ethos": {
-    "english": "ethos",
-    "translation": "ethos",
-    "needs_translation": false
-  },
-  "version": {
-    "english": "version",
-    "translation": "version",
-    "needs_translation": false
-  },
-  "bg_task_disabled": {
-    "english": "bg task disabled",
-    "translation": "bg task disabled",
-    "needs_translation": false
-  },
-  "no_link": {
-    "english": "no link",
-    "translation": "no link",
-    "needs_translation": false
-  },
-  "background_task_disabled": {
-    "english": "background task disabled",
-    "translation": "background task disabled",
-    "needs_translation": false
-  },
-  "no_sensor": {
-    "english": "no sensor",
-    "translation": "no Czujnik",
     "needs_translation": false
   }
 }
