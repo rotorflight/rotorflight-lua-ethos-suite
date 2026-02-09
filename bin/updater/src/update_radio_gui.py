@@ -84,7 +84,7 @@ ETHOS_VID = 0x0483
 ETHOS_PID = 0x5750
 TARGET_NAME = "rfsuite"
 DEFAULT_LOCALE = "en"
-AVAILABLE_LOCALES = ["en", "de", "es", "fr", "it", "nl"]
+AVAILABLE_LOCALES = ["en", "de", "es", "fr", "it", "nl", "pt-br", "no", "cs", "pl"]
 DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
@@ -451,6 +451,36 @@ class RadioInterface:
             except Exception:
                 continue
 
+    def _iter_lsblk_mounts(self):
+        """Yield mount points from lsblk for removable/SD devices (Linux)."""
+        if sys.platform == "darwin":
+            return
+        try:
+            # Use lsblk key=value output for robust parsing.
+            result = subprocess.run(
+                ["lsblk", "-o", "NAME,TRAN,RM,SIZE,MOUNTPOINT", "-P"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode != 0 or not result.stdout:
+                return
+            for line in result.stdout.splitlines():
+                # Parse KEY="VALUE" pairs
+                parts = {}
+                for m in re.finditer(r'(\\w+)=\"(.*?)\"', line):
+                    parts[m.group(1)] = m.group(2)
+                name = parts.get("NAME", "")
+                tran = parts.get("TRAN", "")
+                mountpoint = parts.get("MOUNTPOINT", "")
+                if not mountpoint:
+                    continue
+                # Prefer USB devices or mmc (SD/eMMC) devices
+                if tran == "usb" or name.startswith("mmc"):
+                    yield mountpoint
+        except Exception:
+            return
+
     def scan_for_drives(self):
         """Scan for mounted radio drives."""
         self.drives = {}
@@ -516,6 +546,12 @@ class RadioInterface:
             return None
         else:
             for root in self._iter_mount_roots():
+                for folder in ("scripts", "script"):
+                    scripts = os.path.join(root, folder)
+                    if os.path.isdir(scripts):
+                        return os.path.normpath(scripts)
+            # Linux fallback: inspect lsblk for removable mounts
+            for root in self._iter_lsblk_mounts():
                 for folder in ("scripts", "script"):
                     scripts = os.path.join(root, folder)
                     if os.path.isdir(scripts):

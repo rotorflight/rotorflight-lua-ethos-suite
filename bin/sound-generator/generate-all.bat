@@ -36,6 +36,18 @@ python generate-googleapi.py --only-missing --json json/nl.json --voice nl-NL-St
 REM Italian - Default
 python generate-googleapi.py --only-missing --json json/it.json --voice it-IT-Wavenet-B --base-dir it --variant default --engine google 
 
+REM Portuguese (Brazil) - Default
+python generate-googleapi.py --only-missing --json json/pt-br.json --voice pt-BR-Wavenet-A --base-dir pt-br --variant default --engine google 
+
+REM Norwegian - Default
+python generate-googleapi.py --only-missing --json json/no.json --voice nb-NO-Standard-E --base-dir no --variant default --engine google 
+
+REM Czech - Default
+python generate-googleapi.py --only-missing --json json/cs.json --voice cs-CZ-Wavenet-A --base-dir cs --variant default --engine google 
+
+REM Polish - Default (fallback to Czech voice)
+python generate-googleapi.py --only-missing --json json/pl.json --voice cs-CZ-Wavenet-A --base-dir pl --variant default --engine google 
+
 REM copy just english to the release folder
 xcopy soundpack\en\ ..\..\src\rfsuite\audio\en\ /E /I /Y
 

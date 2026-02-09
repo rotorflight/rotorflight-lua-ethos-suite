@@ -9,6 +9,7 @@
 return {
     { name = "clocksync" },  
     { name = "craftname" },
+    { name = "announceCraftname" },
     { name = "rxmap" },    
     { name = "syncstats" },    
 }

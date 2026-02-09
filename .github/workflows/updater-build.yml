@@ -13,12 +13,32 @@ on:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.os_name }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - runner: windows-latest
+            os_name: windows
+            arch: x64
+            py_arch: x64
+          - runner: windows-latest
+            os_name: windows
+            arch: x86
+            py_arch: x86
+          - runner: macos-15-intel
+            os_name: macos
+            arch: x64
+          - runner: macos-14
+            os_name: macos
+            arch: arm64
+          - runner: ubuntu-latest
+            os_name: linux
+            arch: x64
+          - runner: ubuntu-24.04-arm
+            os_name: linux
+            arch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,15 +47,20 @@ jobs:
         shell: bash
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-          if [ "${{ runner.os }}" = "macOS" ]; then
-            echo "OS_NAME=macos" >> $GITHUB_ENV
-          elif [ "${{ runner.os }}" = "Windows" ]; then
-            echo "OS_NAME=windows" >> $GITHUB_ENV
-          else
-            echo "OS_NAME=linux" >> $GITHUB_ENV
-          fi
+          echo "OS_NAME=${{ matrix.os_name }}" >> $GITHUB_ENV
+          echo "ARCH_NAME=${{ matrix.arch }}" >> $GITHUB_ENV
 
-      - name: Set up Python
+      - name: Set up Python (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          architecture: ${{ matrix.py_arch }}
+          cache: "pip"
+          cache-dependency-path: bin/updater/src/requirements_updater.txt
+
+      - name: Set up Python (macOS/Linux)
+        if: runner.os != 'Windows'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -74,5 +99,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rfsuite-updater-${{ env.OS_NAME }}-${{ env.SHORT_SHA }}
+          name: rfsuite-updater-${{ env.OS_NAME }}-${{ env.ARCH_NAME }}-${{ env.SHORT_SHA }}
           path: bin/updater/src/dist/update_radio_gui*

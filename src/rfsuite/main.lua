@@ -78,7 +78,9 @@ local userpref_defaults = {
         smartfuelrepeats = 1,
         smartfuelhaptic = false,
         adj_v = false,
-        adj_f = false
+        adj_f = false,
+        otherSoundCfg = true,
+        otherModelAnnounce = false
     },
     switches = {},
     developer = {

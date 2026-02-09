@@ -1,0 +1,17 @@
+{
+  "iscompiledcheck": {
+    "english": "true",
+    "translation": "true",
+    "needs_translation": false
+  },
+  "reload": {
+    "english": "reload",
+    "translation": "Laduj",
+    "needs_translation": false
+  },
+  "error": {
+    "english": "error",
+    "translation": "Blad",
+    "needs_translation": false
+  }
+}

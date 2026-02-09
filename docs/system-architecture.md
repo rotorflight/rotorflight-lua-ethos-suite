@@ -4,23 +4,25 @@ This section provides a high-level view of the Rotorflight Lua Ethos Suite (`rfs
 
 ### Directory Structure
 
-* **`main.lua`**: Entry point that initializes the suite, loads configuration, user preferences, session state, tasks, and the application.
-* **`app/`**: Contains the UI application logic (`app.lua`), module definitions (`modules/`), and UI libraries (`lib/ui.lua`, `lib/utils.lua`).
-* **`tasks/`**: Background tasks for handling MSP communication, events, callbacks, and toolbox operations. Core services run in a separate background task.
-* **`widgets/`**: Reusable UI widgets for dashboard elements (e.g., dials, text, preflight displays) and toolbox tools.
-* **`lib/`**: Utility libraries, including INI parsing (`ini.lua`), compilation helpers (`compile.lua`), internationalization (`i18n.lua`), and general utilities (`utils.lua`).
+* **`src/rfsuite/main.lua`**: Entry point that initializes the suite, loads configuration, user preferences, session state, tasks, and the application.
+* **`src/rfsuite/app/`**: UI application logic (`app.lua`), module definitions (`modules/`), and UI libraries (`lib/ui.lua`, `lib/utils.lua`).
+* **`src/rfsuite/tasks/`**: Background tasks and services.
+* **`src/rfsuite/tasks/scheduler/`**: MSP communication, telemetry, sensors, logging, and scheduler plumbing.
+* **`src/rfsuite/tasks/events/`**: Event hooks (connect/disconnect, model change, etc.).
+* **`src/rfsuite/widgets/`**: Reusable UI widgets for dashboard elements and toolbox tools.
+* **`src/rfsuite/lib/`**: Utility libraries (INI, i18n, compilation, general utils).
 
 ### Interaction Flow
 
 1. **Initialization**: `main.lua` sets up `rfsuite.config`, loads or creates user preferences (`rfsuite.preferences`), initializes session variables (`rfsuite.session`), and starts the background task (`rfsuite.tasks`) alongside the UI application (`rfsuite.app`).
 2. **Tasks vs. App**:
 
-   * **Tasks**: Handle low-level MSP protocol interactions, scheduling, parsing, and callbacks. Exposed via the `rfsuite.tasks.msp.api` and `rfsuite.tasks.callback` systems.
-   * **App**: Manages pages and user interaction. Defines `Page` objects that load modules from `app/modules`, render forms, and invoke MSP operations through the API loader.
+   * **Tasks**: Handle MSP interactions, scheduling, parsing, telemetry, and callbacks. Exposed via `rfsuite.tasks.msp.api` and `rfsuite.tasks.callback`.
+   * **App**: Manages pages and user interaction. Loads modules from `app/modules`, builds menus, and invokes MSP operations through the API loader.
 3. **Widgets**: Modules and pages incorporate widgets for consistent UI elements. Widgets are loaded from `widgets/dashboard/objects` and can be configured via module parameters.
 4. **Session & Preferences**:
 
-   * **Preferences**: Stored in an INI file under `rfsuite.userpreferences`, merged with defaults on startup.
+* **Preferences**: Stored in `SCRIPTS:/rfsuite.user/preferences.ini`, merged with defaults on startup.
    * **Session**: Runtime state (e.g., `activeProfile`, `apiVersion`, `flightMode`) tracked in `rfsuite.session` to coordinate between tasks and UI.
 
 ## 2. Module Creation Guide (`rfsuite/app/modules`)
@@ -33,14 +35,14 @@ Each module lives in its own folder under `app/modules/`:
 
 ```
 app/modules/<module_name>/
-  ├─ init.lua       -- Registers the module with the app framework
+  ├─ init.lua       -- Module metadata (title, section, script, icon, order)
   ├─ <module>.lua   -- Core module logic (UI rendering, callbacks)
   ├─ help.lua       -- Help text and documentation for the module
   └─ <icon>.png     -- Icon displayed in navigation
 ```
 
-* **`init.lua`** must call `app.registerModule({ name = "<module_name>", ... })` to make the module available in the UI.
-* **Core Logic** (`<module>.lua`) implements a `Page` subclass with methods:
+* **`init.lua`** returns a table. Modules are discovered by `rfsuite.utils.findModules()` and assembled into menus in `app/modules/init.lua` using `app/modules/sections.lua`.
+* **Core Logic** (`<module>.lua`) implements a `Page` table with methods such as:
 
   * `Page:onEnter()` to initialize form data
   * `Page:onDraw()` to render fields and widgets
@@ -81,16 +83,16 @@ Modules leverage the `app.Page.apidata` object to generate forms and interact wi
 
 ### Integration with MSP Tasks
 
-* Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/scheduled/msp/api` loader to fetch parsed data structures and buffer states.
+* Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/scheduler/msp/api` loader to fetch parsed data structures and buffer states.
 * For custom behavior, modules can invoke `rfsuite.tasks.msp.api.scheduleWakeup()` to schedule periodic reads or writes.
 
-## 3. MSP API Documentation (`rfsuite/tasks/scheduled/msp/api`)
+## 3. MSP API Documentation (`rfsuite/tasks/scheduler/msp/api`)
 
 This section describes the MSP API loader and its capabilities for parsing and interacting with MultiWii Serial Protocol data.
 
 ### API Loader (`api.lua`)
 
-* **Base Directory**: API definitions reside in `tasks/scheduled/msp/api/` and are versioned based on the Ethos firmware version.
+* **Base Directory**: API definitions reside in `tasks/scheduler/msp/api/` and are versioned based on the Ethos firmware version.
 * **File Caching**: `_fileExistsCache` optimizes repeated file-existence checks.
 
 #### Key Functions
