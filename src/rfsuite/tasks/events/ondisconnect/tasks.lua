@@ -1,6 +1,6 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+    Copyright (C) 2025 Rotorflight Project
+    GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -14,18 +14,13 @@ local active = false
 local BASE_PATH = "tasks/events/ondisconnect/tasks/"
 local MANIFEST_PATH = "tasks/events/ondisconnect/manifest.lua"
 
--- Link hysteresis (match onconnect defaults)
-local DISCONNECT_STABLE_SECONDS = 0.8
-
--- Edge state
-local lastTelemetryActive = false
-local linkDownSince = nil
-local linkStableDown = false
-
 -- Completion guard (per disconnect session)
 local disconnectSessionToken = 0
 local firedToken = nil
 local pendingFire = false
+
+-- Data preservation across session reset
+local preservedModelName = nil
 
 -- Sequential index
 local queueIndex = 1
@@ -126,37 +121,23 @@ local function resetQueueState()
     queueIndex = 1
 end
 
-function tasks.resetAllTasks()
+function tasks.reset()
     resetQueueState()
     active = false
     pendingFire = false
     firedToken = nil
+    preservedModelName = nil
 end
 
 local function isQueueDone()
     return (queueIndex or 1) > #tasksQueue
 end
 
--- Called from the core scheduler so this module can edge-detect disconnects.
--- telemetryActive: boolean
--- now: os.clock() timestamp (optional)
-function tasks.updateLinkState(telemetryActive, now)
-    now = now or os.clock()
-
-    if telemetryActive then
-        linkDownSince = nil
-        linkStableDown = false
-        pendingFire = false
-    else
-        if not linkDownSince then linkDownSince = now end
-        if not linkStableDown and (now - linkDownSince) >= DISCONNECT_STABLE_SECONDS then
-            linkStableDown = true
-            disconnectSessionToken = disconnectSessionToken + 1
-            pendingFire = true
-        end
-    end
-
-    lastTelemetryActive = telemetryActive
+function tasks.fire(args)
+    disconnectSessionToken = disconnectSessionToken + 1
+    pendingFire = true
+    active = true
+    rfsuite.utils.log("ondisconnect fired", "debug")
 end
 
 -- Run once when a stable disconnect edge is detected.
@@ -179,6 +160,7 @@ function tasks.wakeup()
 
     if not tasksLoaded then tasks.findTasks() end
     resetQueueState()
+
 
     rfsuite.utils.log("Connection [lost]. (ondisconnect hook)", "info")
 
