@@ -49,17 +49,31 @@ def build_translation(ref, target, order):
 
         if isinstance(ref_val, dict) and "english" in ref_val and "translation" in ref_val:
             if isinstance(tgt_val, dict) and "translation" in tgt_val:
-                output[key] = {
-                    "english": ref_val["english"],
-                    "translation": tgt_val["translation"],
-                    "needs_translation": tgt_val.get("needs_translation", False)
-                }
+                # Preserve existing key order from target to avoid noisy diffs.
+                keys = list(tgt_val.keys())
+                if not keys:
+                    keys = ["english", "translation", "needs_translation"]
+                entry = OrderedDict()
+                for k in keys:
+                    if k == "english":
+                        entry[k] = ref_val["english"]
+                    elif k == "translation":
+                        entry[k] = tgt_val["translation"]
+                    elif k == "needs_translation":
+                        entry[k] = tgt_val.get("needs_translation", False)
+                    else:
+                        entry[k] = tgt_val.get(k)
+                # Ensure required keys exist
+                entry.setdefault("english", ref_val["english"])
+                entry.setdefault("translation", tgt_val["translation"])
+                entry.setdefault("needs_translation", tgt_val.get("needs_translation", False))
+                output[key] = entry
             else:
-                output[key] = {
+                output[key] = OrderedDict({
                     "english": ref_val["english"],
                     "translation": ref_val["english"],
                     "needs_translation": True
-                }
+                })
         elif isinstance(ref_val, dict):
             output[key] = build_translation(ref_val, tgt_val or {}, order.get(key, {"__order": []}))
         else:
