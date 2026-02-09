@@ -75,7 +75,7 @@
     "file": "events/alerts/rates.wav",
     "english": "Rates",
     "translation": "Rates",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/alerts/elapsed.wav",
@@ -105,37 +105,37 @@
     "file": "events/gov/off.wav",
     "english": "Governor - Off",
     "translation": "Governor - Off",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/idle.wav",
     "english": "Governor - Idle",
     "translation": "Governor - Idle",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/spoolup.wav",
     "english": "Governor - Spoolup",
     "translation": "Governor - Spoolup",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/recovery.wav",
     "english": "Governor - Recovery",
     "translation": "Governor - Recovery",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/active.wav",
     "english": "Governor - Active",
     "translation": "Governor - Active",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/thr-off.wav",
     "english": "Governor - Throttle Off",
     "translation": "Governor - Throttle Off",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/lost-hs.wav",
@@ -147,271 +147,271 @@
     "file": "events/gov/autorot.wav",
     "english": "Governor - Auto Rotation",
     "translation": "Governor - Auto Rotation",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/bailout.wav",
     "english": "Governor - Bailout",
     "translation": "Governor - Bailout",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/disabled.wav",
     "english": "Governor - Disabled",
     "translation": "Governor - Disabled",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/disarmed.wav",
     "english": "Governor - Disarmed",
     "translation": "Governor - Disarmed",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/unknown.wav",
     "english": "Governor - Unknown",
     "translation": "Governor - Unknown",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/pitch.wav",
     "english": "Pitch",
     "translation": "Pitch",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/roll.wav",
     "english": "Roll",
     "translation": "Roll",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/yaw.wav",
     "english": "Your",
     "translation": "Your",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rc.wav",
     "english": "RC",
     "translation": "RC",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rate.wav",
     "english": "Rate",
     "translation": "Rate",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/p.wav",
     "english": "P",
     "translation": "P",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/i.wav",
     "english": "I",
     "translation": "I",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/d.wav",
     "english": "D",
     "translation": "D",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/f.wav",
     "english": "F",
     "translation": "F",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/o.wav",
     "english": "O",
     "translation": "O",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gain.wav",
     "english": "Gain",
     "translation": "Gain",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/cw.wav",
     "english": "CW",
     "translation": "CW",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/ccw.wav",
     "english": "CCW",
     "translation": "CCW",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/cyclic.wav",
     "english": "Cyclic",
     "translation": "Cyclic",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/ff.wav",
     "english": "Feed Forward",
     "translation": "Feed Forward",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/collective.wav",
     "english": "Collective",
     "translation": "Collective",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/dyn.wav",
     "english": "Dynamic",
     "translation": "Dynamic",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/decay.wav",
     "english": "Decay",
     "translation": "Decay",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gyro.wav",
     "english": "Gyro",
     "translation": "Gyro",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/cutoff.wav",
     "english": "Cut Off",
     "translation": "Cut Off",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/dterm.wav",
     "english": "d term",
     "translation": "d term",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rescue.wav",
     "english": "Rescue",
     "translation": "Rescue",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/climb.wav",
     "english": "Climb",
     "translation": "Climb",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/hover.wav",
     "english": "Hover",
     "translation": "Hover",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/alt.wav",
     "english": "Altitude",
     "translation": "Altitude",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/angle.wav",
     "english": "Angle",
     "translation": "Angle",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/level.wav",
     "english": "Level",
     "translation": "Level",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/horizon.wav",
     "english": "horizon",
     "translation": "horizon",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/acro.wav",
     "english": "Acro",
     "translation": "Acro",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gov.wav",
     "english": "Governor",
     "translation": "Governor",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/crossc.wav",
     "english": "Cross Coupling",
     "translation": "Cross Coupling",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/acc.wav",
     "english": "Accelerometer",
     "translation": "Accelerometer",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/trim.wav",
     "english": "Trim",
     "translation": "Trim",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/setpoint.wav",
     "english": "Setpoint",
     "translation": "Setpoint",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/precomp.wav",
     "english": "Precomp",
     "translation": "Precomp",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/inertia.wav",
     "english": "Inertia",
     "translation": "Inertia",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/boost.wav",
     "english": "Boost",
     "translation": "Boost",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/filter.wav",
     "english": "Filter",
     "translation": "Filter",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/deadband.wav",
     "english": "Deadband",
     "translation": "Deadband",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/current.wav",
     "english": "Current",
     "translation": "Current",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/esc.wav",
@@ -429,13 +429,13 @@
     "file": "status/alerts/fuel.wav",
     "english": "Fuel",
     "translation": "Fuel",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/headspeed.wav",
     "english": "Head Speed",
     "translation": "Head Speed",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/lowfuel.wav",
@@ -453,24 +453,24 @@
     "file": "status/alerts/lq.wav",
     "english": "Link Quality",
     "translation": "Link Quality",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/remaining.wav",
     "english": "remaining",
     "translation": "remaining",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/timer.wav",
     "english": "timer",
     "translation": "timer",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/voltage.wav",
     "english": "voltage",
     "translation": "voltage",
-    "needs_translation": false
+    "needs_translation": true
   }
 ]
