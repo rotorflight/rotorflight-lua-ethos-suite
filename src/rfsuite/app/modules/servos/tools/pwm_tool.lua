@@ -5,13 +5,8 @@
 
 local rfsuite = require("rfsuite")
 
-local labels = {}
-local fields = {}
-
-local inFocus = false
 local triggerOverRide = false
 local triggerOverRideAll = false
-local triggerCenterChange = false
 local currentServoCenter
 local lastSetServoCenter
 local lastServoChangeTime = os.clock()

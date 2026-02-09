@@ -6,9 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local fields = {}
-local rows = {}
-local cols = {}
-
 local total_bytes = rfsuite.preferences.developer.mspexpbytes
 local fieldMap = {}
 

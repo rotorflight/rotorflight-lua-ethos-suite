@@ -40,7 +40,6 @@ local logFileReadOffset = 0
 local logDataRawReadComplete = false
 local readNextChunk
 local logData = {}
-local maxMinData = {}
 local progressLoader
 local progressLoaderBaseMessage
 local progressLoaderMspStatusLast

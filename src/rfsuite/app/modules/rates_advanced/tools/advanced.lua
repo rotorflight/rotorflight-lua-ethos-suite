@@ -7,8 +7,6 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 
 local activateWakeup = false
-local extraMsgOnSave = nil
-local resetRates = false
 local doFullReload = false
 
 if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end

@@ -14,8 +14,6 @@ local session = rfsuite.session
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
-local triggerOverRide = false
-local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()

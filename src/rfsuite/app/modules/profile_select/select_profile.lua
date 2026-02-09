@@ -5,13 +5,7 @@
 
 local rfsuite = require("rfsuite")
 
-local fcStatus = {}
-local dataflashSummary = {}
 local wakeupScheduler = os.clock()
-local status = {}
-local summary = {}
-local triggerEraseDataFlash = false
-local enableWakeup = false
 local triggerSave = false
 local triggerSaveCounter = false
 local triggerMSPWrite = false

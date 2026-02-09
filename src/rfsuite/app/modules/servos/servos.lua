@@ -19,7 +19,6 @@ local  S_PAGES ={
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
-local servosCompatibilityStatus = false
 local fieldFocusSet = false
 
 

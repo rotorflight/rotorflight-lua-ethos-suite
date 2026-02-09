@@ -11,9 +11,6 @@ local prefs = rfsuite.preferences
 local rfutils = rfsuite.utils
 local session = rfsuite.session
 
-local fields = {}
-local labels = {}
-
 local enableWakeup = false
 
 local w, h = lcd.getWindowSize()

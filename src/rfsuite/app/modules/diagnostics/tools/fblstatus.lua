@@ -11,8 +11,6 @@ local rfutils = rfsuite.utils
 
 local fields = {}
 local labels = {}
-local fcStatus = {}
-local dataflashSummary = {}
 local wakeupScheduler = os.clock()
 local status = {}
 local summary = {}
