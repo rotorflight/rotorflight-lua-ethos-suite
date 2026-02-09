@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
 
-local labels = {}
 local tables = {}
 
 local activateWakeup = false
@@ -63,12 +62,7 @@ local function openPage(idx, title, script)
     rfsuite.app.lastScript = script
     rfsuite.session.lastPage = script
 
-    local maxValue
-    local minValue
-
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-
-    local longPage = false
 
     form.clear()
 
@@ -89,7 +83,6 @@ local function openPage(idx, title, script)
     local w = ((screenWidth * 70 / 100) / numCols)
     local paddingRight = 10
     local positions = {}
-    local positions_r = {}
     local pos
 
     local line = form.addLine("")
@@ -102,26 +95,23 @@ local function openPage(idx, title, script)
 
     rfsuite.session.colWidth = w - paddingRight
 
-    local c = 1
     while loc > 0 do
         local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
 
         positions[loc] = posX - w
-        positions_r[c] = posX - w
 
         lcd.font(FONT_STD)
 
         colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
 
-        local posTxt = positions_r[c] + paddingRight
+        local posTxt = positions[loc] + paddingRight
 
         pos = {x = posTxt, y = posY, w = w, h = h}
-        rfsuite.app.formFields['col_' .. tostring(c)] = form.addStaticText(line, pos, colLabel)
+        rfsuite.app.formFields['col_' .. tostring(numCols - loc + 1)] = form.addStaticText(line, pos, colLabel)
 
         posX = math.floor(posX - w)
 
         loc = loc - 1
-        c = c + 1
     end
 
     local rateRows = {}
@@ -129,17 +119,14 @@ local function openPage(idx, title, script)
 
     for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
         local f = rfsuite.app.Page.apidata.formdata.fields[i]
-        local l = rfsuite.app.Page.apidata.formdata.labels
-        local pageIdx = i
-        local currentField = i
 
         if f.hidden == nil or f.hidden == false then
             posX = positions[f.col]
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-            minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
-            maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
+            local minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
+            local maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
             if f.mult ~= nil then
                 minValue = minValue * f.mult
                 maxValue = maxValue * f.mult
@@ -181,7 +168,15 @@ local function openPage(idx, title, script)
 
 end
 
-local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeRateProfile ~= nil then if rfsuite.app.formFields['title'] then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end end end end
+local function wakeup()
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        if rfsuite.session.activeRateProfile ~= nil then
+            if rfsuite.app.formFields['title'] then
+                rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
+            end
+        end
+    end
+end
 
 local function onHelpMenu()
 
