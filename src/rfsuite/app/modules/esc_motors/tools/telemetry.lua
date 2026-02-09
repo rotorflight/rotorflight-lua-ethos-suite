@@ -46,7 +46,7 @@ local function onNavMenu(self)
 end
 
 local function wakeup() 
-    if enableWakeup == true then end 
+    if not enableWakeup then return end
 
     local protocolValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.PROTOCOL].value
     if protocolValue == nil then
@@ -63,7 +63,7 @@ local function wakeup()
             formFields[FIELDKEY.VOLTAGE_CORRECTION]:enable(false)
             formFields[FIELDKEY.CURRENT_CORRECTION]:enable(false)
             formFields[FIELDKEY.CONSUMPTION_CORRECTION]:enable(false)
-        end    
+        end
     else  -- ENABLED
         formFields[FIELDKEY.HALF_DUPLEX]:enable(true)
         formFields[FIELDKEY.PIN_SWAP]:enable(true)
@@ -71,7 +71,7 @@ local function wakeup()
             formFields[FIELDKEY.VOLTAGE_CORRECTION]:enable(true)
             formFields[FIELDKEY.CURRENT_CORRECTION]:enable(true)
             formFields[FIELDKEY.CONSUMPTION_CORRECTION]:enable(true)
-        end 
+        end
     end
 
         

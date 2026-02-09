@@ -39,7 +39,7 @@ local apidata = {
         },
         fields = {
             [FIELDS.RPM_SENSOR] = {t = "@i18n(app.modules.esc_motors.rpm_sensor_source)@",   api = "FEATURE_CONFIG:enabledFeatures->freq_sensor", type = 1, onChange=rpmSensor},
-            [FIELDS.DSHOT_TELEMETRY] = {t = "@i18n(app.modules.esc_motors.use_dshot_telemetry)@", api = "MOTOR_CONFIG:use_dshot_telemetry", type = 1, onChange=dshotTelemetry},
+            [FIELDS.DSHOT_TELEMETRY] = {t = "@i18n(app.modules.esc_motors.use_dshot_telemetry)@", api = "MOTOR_CONFIG:use_dshot_telemetry", type = 1, onChange=dshotSensor},
             [FIELDS.MAIN_PINION] = {t = "@i18n(app.modules.esc_motors.pinion)@",              api = "MOTOR_CONFIG:main_rotor_gear_ratio_0" , label = 1, inline = 2},
             [FIELDS.MAIN_GEAR] = {t = "@i18n(app.modules.esc_motors.main)@",                api = "MOTOR_CONFIG:main_rotor_gear_ratio_1" , label = 1, inline = 1},
             [FIELDS.TAIL_PINION] = {t = "@i18n(app.modules.esc_motors.rear)@",                api = "MOTOR_CONFIG:tail_rotor_gear_ratio_0", label = 2, inline = 2},
@@ -55,9 +55,7 @@ local function postLoad(self)
 end
 
 local function wakeup() 
-    if enableWakeup == true then 
-
-
+    if enableWakeup == true then
         if rfsuite.tasks.msp.api.apidata.values["MOTOR_CONFIG"].motor_pwm_protocol >=5 and rfsuite.tasks.msp.api.apidata.values["MOTOR_CONFIG"].motor_pwm_protocol <= 8 then
             -- dshot compatable
             formFields[FIELDS.DSHOT_TELEMETRY]:enable(true)
@@ -66,14 +64,7 @@ local function wakeup()
             formFields[FIELDS.DSHOT_TELEMETRY]:enable(false)
         end
 
-        if rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.structure and  rfsuite.tasks.msp.api.apidata.structure["MOTOR_CONFIG"].motor_pwm_protocol then
-            local motorProtocol = rfsuite.tasks.msp.api.apidata.structure["MOTOR_CONFIG"].motor_pwm_protocol
-
-            print("Motor PWM Protocol: " .. tostring(motorProtocol))
-
-        end
-
-
+        -- No additional processing for motor protocol here.
     end 
 end
 

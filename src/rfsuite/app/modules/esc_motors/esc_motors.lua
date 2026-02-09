@@ -6,20 +6,17 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
 
-local  S_PAGES ={
-        [1] = { name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png" },
-        [2] = { name = "@i18n(app.modules.esc_motors.telemetry)@", script = "telemetry.lua", image = "telemetry.png"},    
-        [3] = { name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"},
-        [4] = { name = "@i18n(app.modules.esc_tools.name)@", script = "esc.lua", image = "esc.png" },
-    }
+local S_PAGES = {
+    [1] = {name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png"},
+    [2] = {name = "@i18n(app.modules.esc_motors.telemetry)@", script = "telemetry.lua", image = "telemetry.png"},
+    [3] = {name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"},
+    [4] = {name = "@i18n(app.modules.esc_tools.name)@", script = "esc.lua", image = "esc.png"}
+}
+local pages = S_PAGES
 
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
-local esc_motorsCompatibilityStatus = false
-
-
-
 local function openPage(pidx, title, script)
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
@@ -29,7 +26,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -41,16 +38,8 @@ local function openPage(pidx, title, script)
         rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
-    local w, h = lcd.getWindowSize()
+    local w = lcd.getWindowSize()
     local windowWidth = w
-    local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
-
-    local sc
-    local panel
-
-    local buttonW = 100
-    local x = windowWidth - buttonW - 10
 
     rfsuite.app.ui.fieldHeader("@i18n(app.modules.esc_motors.name)@")
 
@@ -85,8 +74,7 @@ local function openPage(pidx, title, script)
     if rfsuite.app.gfx_buttons["esc_motors"] == nil then rfsuite.app.gfx_buttons["esc_motors"] = {} end
     if rfsuite.preferences.menulastselected["esc_motors"] == nil then rfsuite.preferences.menulastselected["esc_motors"] = 1 end
 
-    local Menu = assert(loadfile("app/modules/" .. script))()
-    local pages = S_PAGES
+    assert(loadfile("app/modules/" .. script))()
     local lc = 0
     local bx = 0
     local y = 0
@@ -128,8 +116,6 @@ local function openPage(pidx, title, script)
                 rfsuite.app.formFields[pidx]:enable(false)
             end
         end
-
-        local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
         if rfsuite.preferences.menulastselected["esc_motors"] == pidx then 
             if rfsuite.app.formFields[pidx] then

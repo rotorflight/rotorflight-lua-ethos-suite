@@ -42,7 +42,7 @@ local function postLoad(self)
 end
 
 local function wakeup() 
-    if enableWakeup == true then end 
+    if not enableWakeup then return end
 
     local protocolValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.PROTOCOL].value
     if protocolValue == nil then
@@ -51,8 +51,7 @@ local function wakeup()
         protocolValue = math.floor(protocolValue)
     end
 
-    local unsyncedValue
-    unsyncedValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.UNSYNCED].value
+    local unsyncedValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.UNSYNCED].value
 
     -- if using things like dshot this comes back as nil - and that mangles the form drop downs so reset it to off
     if unsyncedValue == nil then
