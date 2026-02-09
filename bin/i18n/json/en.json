@@ -6608,6 +6608,12 @@
           "translation": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
           "max_length": 157
         },
+        "help_audio_events": {
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "translation": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts..",
+          "needs_translation": false,
+          "max_length": 137
+        },
         "loader_style_large": {
           "english": "LARGE",
           "needs_translation": false,

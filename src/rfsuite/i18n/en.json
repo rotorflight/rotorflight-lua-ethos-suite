@@ -6602,6 +6602,12 @@
           "needs_translation": false,
           "translation": "Governor State"
         },
+        "help_audio_events": {
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "max_length": 137,
+          "needs_translation": false,
+          "translation": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.."
+        },
         "help_modelAnnouncement": {
           "english": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
           "max_length": 157,

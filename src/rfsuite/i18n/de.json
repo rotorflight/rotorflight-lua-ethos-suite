@@ -74,7 +74,7 @@
       "alert_bec": {
         "english": "BEC",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "BEC"
       },
       "alert_off": {
@@ -238,7 +238,7 @@
       "tbl_escgov": {
         "english": "ESC Governor",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ESC-Governor"
       },
       "tbl_linear_thr": {
@@ -250,7 +250,7 @@
       "tbl_rf_gov": {
         "english": "RF Gyro Governor",
         "max_length": 19,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "RF Gyro-Governor"
       },
       "temperature_protection": {
@@ -282,13 +282,13 @@
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CW"
       },
       "tbl_disabled": {
@@ -324,7 +324,7 @@
       "tbl_heligov": {
         "english": "Heli Governor",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Heli Governor"
       },
       "tbl_helistore": {
@@ -336,13 +336,13 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Normal"
       },
       "tbl_proportional": {
         "english": "Proportional",
         "max_length": 13,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Proportional"
       },
       "tbl_reverse": {
@@ -374,25 +374,25 @@
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 17,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CW"
       },
       "tbl_cyan": {
         "english": "CYAN",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Cyan"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
         "max_length": 15,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ESC-Governor"
       },
       "tbl_extgov": {
@@ -458,7 +458,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Normal"
       },
       "tbl_off": {
@@ -476,13 +476,13 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Orange"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Pink"
       },
       "tbl_purple": {
@@ -544,19 +544,19 @@
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CW"
       },
       "tbl_exbus": {
         "english": "Jeti Exbus",
         "max_length": 10,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Jeti Exbus"
       },
       "tbl_extgov": {
@@ -568,13 +568,13 @@
       "tbl_futsbus": {
         "english": "Futaba SBUS",
         "max_length": 11,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Futaba SBUS"
       },
       "tbl_heligov": {
         "english": "Heli Governor",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Heli Governor"
       },
       "tbl_helistore": {
@@ -604,7 +604,7 @@
       "tbl_standard": {
         "english": "Standard",
         "max_length": 9,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Standard"
       },
       "tbl_unsolicited": {
@@ -616,13 +616,13 @@
       "tbl_vbar": {
         "english": "VBar",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "VBar"
       },
       "tbl_vbargov": {
         "english": "VBar Governor",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "VBar Governor"
       }
     },
@@ -642,25 +642,25 @@
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 17,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CW"
       },
       "tbl_cyan": {
         "english": "CYAN",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Cyan"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
         "max_length": 15,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ESC-Governor"
       },
       "tbl_extgov": {
@@ -726,7 +726,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Normal"
       },
       "tbl_off": {
@@ -744,13 +744,13 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Orange"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Pink"
       },
       "tbl_purple": {
@@ -824,7 +824,7 @@
       "tbl_autonorm": {
         "english": "Auto Normal",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Auto Normal"
       },
       "tbl_autopower": {
@@ -866,7 +866,7 @@
       "tbl_modeext": {
         "english": "Heli Ext Governor",
         "max_length": 19,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Heli ext. Governor"
       },
       "tbl_modef3a": {
@@ -890,7 +890,7 @@
       "tbl_modeheli": {
         "english": "Heli Governor",
         "max_length": 15,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Heli Governor"
       },
       "tbl_modestore": {
@@ -902,7 +902,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Normal"
       },
       "tbl_off": {
@@ -964,25 +964,25 @@
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
         "max_length": 2,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CW"
       },
       "tbl_cyan": {
         "english": "CYAN",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Cyan"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
         "max_length": 15,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ESC-Governor"
       },
       "tbl_extgov": {
@@ -1048,7 +1048,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Normal"
       },
       "tbl_off": {
@@ -1066,13 +1066,13 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Orange"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Pink"
       },
       "tbl_purple": {
@@ -1378,7 +1378,7 @@
       "tbl_govmode_limit": {
         "english": "LIMIT",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "LIMIT"
       },
       "tbl_govmode_mode1": {
@@ -1396,7 +1396,7 @@
       "tbl_govmode_nitro": {
         "english": "NITRO",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "NITRO"
       },
       "tbl_govmode_off": {
@@ -1414,7 +1414,7 @@
       "tbl_govmode_standard": {
         "english": "STANDARD",
         "max_length": 9,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "STANDARD"
       },
       "tbl_throttle_type_function": {
@@ -1426,7 +1426,7 @@
       "tbl_throttle_type_normal": {
         "english": "NORMAL",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "NORMAL"
       },
       "tbl_throttle_type_switch": {
@@ -1598,13 +1598,13 @@
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CCW"
       },
       "tbl_cw": {
         "english": "CW",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "CW"
       },
       "tbl_tail_bidirectional": {
@@ -1630,7 +1630,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 7,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Normal"
       },
       "tbl_reversed": {
@@ -1904,13 +1904,13 @@
       "tbl_rp": {
         "english": "RP",
         "max_length": 2,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "RP"
       },
       "tbl_rpy": {
         "english": "RPY",
         "max_length": 9,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "RPY"
       },
       "trainer_angle_limit": {
@@ -2328,7 +2328,7 @@
       "tbl_flip": {
         "english": "FLIP",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "FLIP"
       },
       "tbl_noflip": {
@@ -2367,13 +2367,13 @@
     "btn_ok": {
       "english": "          OK           ",
       "max_length": 23,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "          OK           "
     },
     "btn_ok_long": {
       "english": "                OK                ",
       "max_length": 34,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "                OK                "
     },
     "check_bg_task": {
@@ -2403,7 +2403,7 @@
     "header_system": {
       "english": "System",
       "max_length": 7,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "System"
     },
     "menu_section_advanced": {
@@ -2415,7 +2415,7 @@
     "menu_section_hardware": {
       "english": "Hardware",
       "max_length": 10,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Hardware"
     },
     "menu_section_tools": {
@@ -2453,7 +2453,7 @@
         "roll": {
           "english": "Roll",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Roll"
         }
       },
@@ -2503,13 +2503,13 @@
         "profile_type_pid": {
           "english": "PID",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "PID"
         },
         "profile_type_rate": {
           "english": "Rate",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Rate"
         },
         "source_profile": {
@@ -2627,13 +2627,13 @@
         "rpm": {
           "english": "RPM",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "RPM"
         },
         "rpm_sensor_source": {
           "english": "RPM Sensor",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "RPM-Sensor"
         },
         "tail_motor_ratio": {
@@ -2781,7 +2781,7 @@
             "governor": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "led_color": {
@@ -2823,7 +2823,7 @@
             "name": {
               "english": "FLYROTOR",
               "max_length": 8,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "FLYROTOR"
             },
             "other": {
@@ -2933,7 +2933,7 @@
             "esc": {
               "english": "ESC",
               "max_length": 3,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "ESC"
             },
             "flight_mode": {
@@ -2957,7 +2957,7 @@
             "governor": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "limits": {
@@ -2975,13 +2975,13 @@
             "motor": {
               "english": "Motor",
               "max_length": 6,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Motor"
             },
             "name": {
               "english": "Hobbywing V5",
               "max_length": 12,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Hobbywing V5"
             },
             "other": {
@@ -3023,7 +3023,7 @@
             "timing": {
               "english": "Timing",
               "max_length": 12,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Timing"
             },
             "volt_cutoff_type": {
@@ -3079,25 +3079,25 @@
             "gov": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "gov_i": {
               "english": "Gov-I",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-I"
             },
             "gov_p": {
               "english": "Gov-P",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-P"
             },
             "governor": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "hv_bec_voltage": {
@@ -3133,7 +3133,7 @@
             "name": {
               "english": "OMP",
               "max_length": 3,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "OMP"
             },
             "smart_fan": {
@@ -3157,7 +3157,7 @@
             "timing": {
               "english": "Timing",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Timing"
             }
           },
@@ -3207,13 +3207,13 @@
             "gov_integral": {
               "english": "Gov Integral",
               "max_length": 13,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov Integral"
             },
             "gov_proportional": {
               "english": "Gov Proportional",
               "max_length": 17,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov Proportional"
             },
             "limits": {
@@ -3255,7 +3255,7 @@
             "name": {
               "english": "Scorpion",
               "max_length": 8,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Scorpion"
             },
             "protection_delay": {
@@ -3329,25 +3329,25 @@
             "gov": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "gov_i": {
               "english": "Gov-I",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-I"
             },
             "gov_p": {
               "english": "Gov-P",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-P"
             },
             "governor": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "hv_bec_voltage": {
@@ -3383,7 +3383,7 @@
             "name": {
               "english": "XDFLY",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "XDFLY"
             },
             "smart_fan": {
@@ -3407,7 +3407,7 @@
             "timing": {
               "english": "Timing",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Timing"
             }
           },
@@ -3457,7 +3457,7 @@
             "esc": {
               "english": "ESC",
               "max_length": 3,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "ESC"
             },
             "esc_mode": {
@@ -3469,13 +3469,13 @@
             "f3c_auto": {
               "english": "F3C Autorotation",
               "max_length": 17,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "F3C-Autorotation"
             },
             "gov_i": {
               "english": "Gov-I",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-I"
             },
             "gov_p": {
@@ -3493,7 +3493,7 @@
             "lv_bec_voltage": {
               "english": "BEC",
               "max_length": 12,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "BEC"
             },
             "main_teeth": {
@@ -3523,7 +3523,7 @@
             "name": {
               "english": "YGE",
               "max_length": 3,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "YGE"
             },
             "other": {
@@ -3559,7 +3559,7 @@
             "timing": {
               "english": "Motor Timing",
               "max_length": 16,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Motortiming"
             }
           },
@@ -3609,25 +3609,25 @@
             "gov": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "gov_i": {
               "english": "Gov-I",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-I"
             },
             "gov_p": {
               "english": "Gov-P",
               "max_length": 5,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Gov-P"
             },
             "governor": {
               "english": "Governor",
               "max_length": 11,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Governor"
             },
             "hv_bec_voltage": {
@@ -3663,7 +3663,7 @@
             "name": {
               "english": "ZTW",
               "max_length": 3,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "ZTW"
             },
             "smart_fan": {
@@ -3687,7 +3687,7 @@
             "timing": {
               "english": "Timing",
               "max_length": 6,
-              "needs_translation": false,
+              "needs_translation": true,
               "translation": "Timing"
             }
           }
@@ -3727,7 +3727,7 @@
         "arming_disable_flag_1": {
           "english": "Fail Safe",
           "max_length": 18,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Fail Safe"
         },
         "arming_disable_flag_10": {
@@ -3751,7 +3751,7 @@
         "arming_disable_flag_13": {
           "english": "CLI",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "CLI"
         },
         "arming_disable_flag_14": {
@@ -3763,13 +3763,13 @@
         "arming_disable_flag_15": {
           "english": "BST",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "BST"
         },
         "arming_disable_flag_16": {
           "english": "MSP",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "MSP"
         },
         "arming_disable_flag_17": {
@@ -3781,7 +3781,7 @@
         "arming_disable_flag_18": {
           "english": "GPS",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "GPS"
         },
         "arming_disable_flag_19": {
@@ -3793,13 +3793,13 @@
         "arming_disable_flag_2": {
           "english": "RX Fail Safe",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "RX Fail Safe"
         },
         "arming_disable_flag_20": {
           "english": "RPM Filter",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "RPM-Filter"
         },
         "arming_disable_flag_21": {
@@ -3811,7 +3811,7 @@
         "arming_disable_flag_22": {
           "english": "DSHOT Bitbang",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "DSHOT Bitbang"
         },
         "arming_disable_flag_23": {
@@ -3841,19 +3841,19 @@
         "arming_disable_flag_4": {
           "english": "Box Fail Safe",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Box Fail Safe"
         },
         "arming_disable_flag_5": {
           "english": "Governor",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Governor"
         },
         "arming_disable_flag_6": {
           "english": "RPM Signal",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "RPM-Signal"
         },
         "arming_disable_flag_7": {
@@ -3877,7 +3877,7 @@
         "arming_flags": {
           "english": "Arming Flags",
           "max_length": 19,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Arming-Flags"
         },
         "cpu_load": {
@@ -3931,19 +3931,19 @@
         "megabyte": {
           "english": "MB",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "MB"
         },
         "name": {
           "english": "FBL Status",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "FBL-Status"
         },
         "ok": {
           "english": "OK",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "OK"
         },
         "real_time_load": {
@@ -4047,13 +4047,13 @@
         "notch_1": {
           "english": "Notch 1",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Notch 1"
         },
         "notch_2": {
           "english": "Notch 2",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Notch 2"
         },
         "notch_c": {
@@ -4065,19 +4065,19 @@
         "notch_max_hz": {
           "english": "Max",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Max"
         },
         "notch_min_hz": {
           "english": "Min",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Min"
         },
         "notch_q": {
           "english": "Notch Q",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Notch Q"
         },
         "rpm_filter": {
@@ -4193,7 +4193,7 @@
         "name": {
           "english": "Governor",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Governor"
         },
         "recovery_time": {
@@ -4249,43 +4249,43 @@
         "ethos_version": {
           "english": "Ethos Version",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Ethos-Version"
         },
         "fc_version": {
           "english": "FC Version",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "FC-Version"
         },
         "msp_transport": {
           "english": "MSP Transport",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "MSP-Transport"
         },
         "msp_version": {
           "english": "MSP Version",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "MSP-Version"
         },
         "name": {
           "english": "Info",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Info"
         },
         "rf_version": {
           "english": "Rotorflight Version",
           "max_length": 22,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Rotorflight-Version"
         },
         "simulation": {
           "english": "Simulation",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Simulation"
         },
         "supported_versions": {
@@ -4297,7 +4297,7 @@
         "version": {
           "english": "Version",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Version"
         }
       },
@@ -4335,7 +4335,7 @@
         "name": {
           "english": "Logs",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Logs"
         }
       },
@@ -4587,31 +4587,31 @@
         "seconds_120": {
           "english": "  120S  ",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "  120S  "
         },
         "seconds_30": {
           "english": "  30S  ",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "  30S  "
         },
         "seconds_300": {
           "english": "  300S  ",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "  300S  "
         },
         "seconds_600": {
           "english": "  600S  ",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "  600S  "
         },
         "start": {
           "english": "Start",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Start"
         },
         "start_prompt": {
@@ -4661,19 +4661,19 @@
         "b": {
           "english": "B",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "B"
         },
         "d": {
           "english": "D",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "D"
         },
         "f": {
           "english": "FF",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "FF"
         },
         "help_p1": {
@@ -4703,25 +4703,25 @@
         "i": {
           "english": "I",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "I"
         },
         "name": {
           "english": "PIDs",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "PIDs"
         },
         "o": {
           "english": "O",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "O"
         },
         "p": {
           "english": "P",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "P"
         },
         "pitch": {
@@ -4733,7 +4733,7 @@
         "roll": {
           "english": "Roll",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Roll"
         },
         "yaw": {
@@ -4869,7 +4869,7 @@
         "acro_trainer": {
           "english": "Acro trainer",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Acro-Trainer"
         },
         "angle_mode": {
@@ -4911,7 +4911,7 @@
         "max": {
           "english": "Max",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Max"
         },
         "name": {
@@ -4943,7 +4943,7 @@
         "d": {
           "english": "D",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "D"
         },
         "disabled_message": {
@@ -4961,7 +4961,7 @@
         "f": {
           "english": "FF",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "FF"
         },
         "fallback_drop": {
@@ -5033,7 +5033,7 @@
         "i": {
           "english": "I",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "I"
         },
         "idle_throttle": {
@@ -5057,13 +5057,13 @@
         "name": {
           "english": "Governor",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Governor"
         },
         "p": {
           "english": "P",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "P"
         },
         "pid_spoolup": {
@@ -5093,7 +5093,7 @@
         "tta_limit": {
           "english": "Limit",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Limit"
         },
         "voltage_comp": {
@@ -5217,19 +5217,19 @@
         "pitch": {
           "english": "P",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "P"
         },
         "roll": {
           "english": "R",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "R"
         },
         "yaw": {
           "english": "Y",
           "max_length": 1,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Y"
         }
       },
@@ -5321,13 +5321,13 @@
         "pitch": {
           "english": "P",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "P"
         },
         "roll": {
           "english": "R",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "R"
         },
         "time": {
@@ -5339,7 +5339,7 @@
         "yaw": {
           "english": "Y",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Y"
         }
       },
@@ -5377,7 +5377,7 @@
         "flip": {
           "english": "Flip",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Flip"
         },
         "flip_upright": {
@@ -5467,7 +5467,7 @@
         "rate": {
           "english": "Rate",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Rate"
         },
         "time": {
@@ -5505,7 +5505,7 @@
         "ok": {
           "english": "OK",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "OK"
         },
         "pid_profile": {
@@ -5543,7 +5543,7 @@
         "ccw": {
           "english": "CCW",
           "max_length": 9,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "CCW"
         },
         "collective_ff_gain": {
@@ -5567,7 +5567,7 @@
         "cw": {
           "english": "CW",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "CW"
         },
         "cyclic_ff_gain": {
@@ -5683,13 +5683,13 @@
         "max_throttle": {
           "english": "Max",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Max"
         },
         "min_throttle": {
           "english": "Min",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Min"
         },
         "name": {
@@ -5721,19 +5721,19 @@
         "acroplus": {
           "english": "Acro+",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Acro+"
         },
         "actual": {
           "english": "ACTUAL",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "ACTUAL"
         },
         "betaflight": {
           "english": "BETAFLIGHT",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "BETAFLIGHT"
         },
         "center_sensitivity": {
@@ -5751,7 +5751,7 @@
         "expo": {
           "english": "Expo",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Expo"
         },
         "help_default_p1": {
@@ -5883,7 +5883,7 @@
         "kiss": {
           "english": "KISS",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "KISS"
         },
         "max_rate": {
@@ -5919,7 +5919,7 @@
         "raceflight": {
           "english": "RACEFLIGHT",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "RACEFLIGHT"
         },
         "rate": {
@@ -5943,13 +5943,13 @@
         "roll": {
           "english": "Roll",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Roll"
         },
         "rotorflight": {
           "english": "ROTORFLIGHT",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "ROTORFLIGHT"
         },
         "shape": {
@@ -6065,7 +6065,7 @@
         "roll": {
           "english": "Roll",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Roll"
         },
         "setpoint_boost_cutoff": {
@@ -6097,7 +6097,7 @@
         "apiversion": {
           "english": "MSP API Version",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "MSP-API-Version"
         },
         "bgtask": {
@@ -6121,19 +6121,19 @@
         "mspsensor": {
           "english": "MSP Sensor",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "MSP-Sensor"
         },
         "name": {
           "english": "Status",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Status"
         },
         "ok": {
           "english": "OK",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "OK"
         },
         "rfmodule": {
@@ -6339,7 +6339,7 @@
         "name": {
           "english": "Servos",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Servos"
         },
         "pwm": {
@@ -6351,7 +6351,7 @@
         "rate": {
           "english": "Rate",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Rate"
         },
         "reverse": {
@@ -6381,7 +6381,7 @@
         "servo_prefix": {
           "english": "SERVO ",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "SERVO "
         },
         "speed": {
@@ -6437,25 +6437,25 @@
         "arming_flags": {
           "english": "Arming Flags",
           "max_length": 21,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Arming-Flags"
         },
         "audio": {
           "english": "Audio",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Audio"
         },
         "celcius": {
           "english": "Celsius",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Celsius"
         },
         "dashboard": {
           "english": "Dashboard",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Dashboard"
         },
         "dashboard_loader_loader_style_select": {
@@ -6527,7 +6527,7 @@
         "fahrenheit": {
           "english": "Fahrenheit",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Fahrenheit"
         },
         "feet": {
@@ -6601,6 +6601,12 @@
           "max_length": 19,
           "needs_translation": false,
           "translation": "Governor-Status"
+        },
+        "help_audio_events": {
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "max_length": 137,
+          "needs_translation": false,
+          "translation": "Verwenden Sie diesen Abschnitt, um zu konfigurieren, welche Systemereignisse und Telemetriewerte eine Sprachansage oder Warnung auslösen."
         },
         "help_modelAnnouncement": {
           "english": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",
@@ -6737,13 +6743,13 @@
         "txt_apiversion": {
           "english": "SIM API Version",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "SIM API Version"
         },
         "txt_audio_events": {
           "english": "Events",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Events"
         },
         "txt_audio_switches": {
@@ -6755,7 +6761,7 @@
         "txt_audio_timer": {
           "english": "Timer",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Timer"
         },
         "txt_battdef": {
@@ -6767,13 +6773,13 @@
         "txt_battdig": {
           "english": "Digital",
           "max_length": 9,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Digital"
         },
         "txt_batttext": {
           "english": "Text",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "Text"
         },
         "txt_batttype": {
@@ -6785,7 +6791,7 @@
         "txt_debug": {
           "english": "DEBUG",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "DEBUG"
         },
         "txt_development": {
@@ -6827,7 +6833,7 @@
         "txt_info": {
           "english": "INFO",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "INFO"
         },
         "txt_large": {
@@ -6935,7 +6941,7 @@
         "txt_text": {
           "english": "TEXT",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "TEXT"
         },
         "voltage": {
@@ -7111,7 +7117,7 @@
         "ok": {
           "english": "OK",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "translation": "OK"
         }
       }
@@ -7227,7 +7233,7 @@
     "navigation_help": {
       "english": "?",
       "max_length": 1,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "?"
     },
     "navigation_menu": {
@@ -7251,13 +7257,13 @@
     "navigation_tools": {
       "english": "*",
       "max_length": 1,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "*"
     },
     "unit_hertz": {
       "english": "Hz",
       "max_length": 2,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Hz"
     }
   },
@@ -7270,7 +7276,7 @@
   "iscompiledcheck": {
     "english": "true",
     "max_length": 4,
-    "needs_translation": false,
+    "needs_translation": true,
     "translation": "true"
   },
   "reload": {
@@ -7319,13 +7325,13 @@
     "armdisableflags": {
       "english": "Arming Disable",
       "max_length": 22,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Arming-Disable"
     },
     "arming_flags": {
       "english": "Arming Flags",
       "max_length": 17,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Arming-Flags"
     },
     "attpitch": {
@@ -7427,7 +7433,7 @@
     "rssi": {
       "english": "RSSI",
       "max_length": 19,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "RSSI"
     },
     "smartconsumption": {
@@ -7459,7 +7465,7 @@
     "group_barometer": {
       "english": "Barometer",
       "max_length": 9,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Barometer"
     },
     "group_battery": {
@@ -7483,7 +7489,7 @@
     "group_debug": {
       "english": "Debug",
       "max_length": 13,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Debug"
     },
     "group_esc1": {
@@ -7501,7 +7507,7 @@
     "group_gps": {
       "english": "GPS",
       "max_length": 3,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "GPS"
     },
     "group_gyro": {
@@ -7525,13 +7531,13 @@
     "group_status": {
       "english": "Status",
       "max_length": 6,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "Status"
     },
     "group_system": {
       "english": "System",
       "max_length": 7,
-      "needs_translation": false,
+      "needs_translation": true,
       "translation": "System"
     },
     "group_temps": {
@@ -7574,7 +7580,7 @@
       "blackbox": {
         "english": "Blackbox",
         "max_length": 10,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Blackbox"
       },
       "consumed_mah": {
@@ -7598,13 +7604,13 @@
       "esc_max_temp": {
         "english": "ESC Temp Max",
         "max_length": 14,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ESC-Temp. Max."
       },
       "esc_temp": {
         "english": "ESC Temp",
         "max_length": 9,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ESC-Temp."
       },
       "flight_duration": {
@@ -7640,7 +7646,7 @@
       "governor": {
         "english": "Governor",
         "max_length": 11,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Governor"
       },
       "headspeed": {
@@ -7664,19 +7670,19 @@
       "loading": {
         "english": "ROTORFLIGHT",
         "max_length": 11,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "ROTORFLIGHT"
       },
       "lq": {
         "english": "LQ",
         "max_length": 2,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "LQ"
       },
       "max": {
         "english": "Max",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Max"
       },
       "max_current": {
@@ -7688,13 +7694,13 @@
       "max_emcu": {
         "english": "Max E.MCU",
         "max_length": 14,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Max. E.MCU"
       },
       "max_tmcu": {
         "english": "Max T.MCU",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Max. T.MCU"
       },
       "max_voltage": {
@@ -7706,7 +7712,7 @@
       "min": {
         "english": "Min",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Min"
       },
       "min_current": {
@@ -7760,19 +7766,19 @@
       "rpm": {
         "english": "RPM",
         "max_length": 16,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "RPM"
       },
       "rpm_max": {
         "english": "RPM Max",
         "max_length": 8,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "RPM Max."
       },
       "rpm_min": {
         "english": "RPM Min",
         "max_length": 8,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "RPM Min."
       },
       "throttle": {
@@ -7796,7 +7802,7 @@
       "timer": {
         "english": "Timer",
         "max_length": 8,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "Timer"
       },
       "total_flight_duration": {
@@ -7870,7 +7876,7 @@
       "DISARMED": {
         "english": "DISARMED",
         "max_length": 9,
-        "needs_translation": false,
+        "needs_translation": true,
         "translation": "DISARMED"
       },
       "IDLE": {
