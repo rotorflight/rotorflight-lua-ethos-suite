@@ -24,8 +24,6 @@ local apidata = {
     }
 }
 
-local foundEsc = false
-local foundEscDone = false
 
 local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 

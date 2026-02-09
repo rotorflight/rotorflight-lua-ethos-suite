@@ -7,14 +7,9 @@ local rfsuite = require("rfsuite")
 
 local folder = "ztw"
 local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
-local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
-local foundEsc = false
-local foundEscDone = false
 
 local apidata = {
     api = {

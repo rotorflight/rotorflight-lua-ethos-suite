@@ -6,9 +6,6 @@
 local rfsuite = require("rfsuite")
 local folder = "ztw"
 local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
-local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
@@ -34,8 +31,6 @@ for i = #apidata.formdata.fields, 1, -1 do
     if activeFields[fieldIndex] == 0 then table.remove(apidata.formdata.fields, i) end
 end
 
-local foundEsc = false
-local foundEscDone = false
 
 local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true

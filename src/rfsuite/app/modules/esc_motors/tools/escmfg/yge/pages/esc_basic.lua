@@ -49,8 +49,6 @@ local function event(widget, category, value, x, y)
 
 end
 
-local foundEsc = false
-local foundEscDone = false
 
 return {apidata = apidata, eepromWrite = false, reboot = false, escinfo = escinfo, svFlags = 0, postLoad = postLoad, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}, onNavMenu = onNavMenu, event = event, pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.yge.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.yge.basic)@", headerLine = rfsuite.escHeaderLineText}
 

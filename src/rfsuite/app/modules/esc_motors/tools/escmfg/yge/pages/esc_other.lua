@@ -7,8 +7,6 @@ local rfsuite = require("rfsuite")
 
 local folder = "yge"
 
-local foundEsc = false
-local foundEscDone = false
 
 local apidata = {
     api = {

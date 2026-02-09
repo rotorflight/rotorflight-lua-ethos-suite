@@ -7,9 +7,6 @@ local rfsuite = require("rfsuite")
 
 local folder = "xdfly"
 local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
-local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
@@ -56,8 +53,6 @@ end
 
 local function wakeup(self) if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then activateWakeup = false end end
 
-local foundEsc = false
-local foundEscDone = false
 
 return {apidata = apidata, eepromWrite = false, reboot = false, escinfo = escinfo, svFlags = 0, postLoad = postLoad, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}, onNavMenu = onNavMenu, event = event, pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.basic)@", headerLine = rfsuite.escHeaderLineText, wakeup = wakeup}
 

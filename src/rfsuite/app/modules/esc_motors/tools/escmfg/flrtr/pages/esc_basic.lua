@@ -7,8 +7,6 @@ local rfsuite = require("rfsuite")
 
 local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
 local apidata = {
@@ -50,8 +48,6 @@ local function event(widget, category, value, x, y)
 
 end
 
-local foundEsc = false
-local foundEscDone = false
 
 return {
     apidata = apidata,

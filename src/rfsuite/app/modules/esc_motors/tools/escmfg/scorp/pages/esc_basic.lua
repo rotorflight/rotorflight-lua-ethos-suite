@@ -7,8 +7,6 @@ local rfsuite = require("rfsuite")
 
 local folder = "scorp"
 
-local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-
 local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_SCORPION"
