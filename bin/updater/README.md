@@ -6,14 +6,32 @@ Windows updater for the Rotorflight Lua Ethos Suite.
 
 ## Download
 
-Latest release assets (Windows/macOS/Linux) are published on the GitHub Releases page:
+Updater binaries are published on GitHub Releases, **but only when**:
+- a release is created, or
+- the updater source is updated and a release is produced
 
-[RFSuite Updater Releases](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/latest)
+This means the exact binary link can change or be missing on older releases. Use the Releases page to pick the matching version:
 
-Asset names:
+```
+https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases
+```
+
+Asset names (when present):
 - Windows: `rfsuite-updater-<version>-windows.zip`
 - macOS: `rfsuite-updater-<version>-macos.zip`
 - Linux: `updater-ubuntu-latest` (workflow artifacts; not yet attached to releases)
+
+If a release does not include updater assets, the binaries were not rebuilt for that tag. In that case, use the most recent release **that includes** the updater artifacts or build locally (see below).
+
+At the time of this guide, the most recent update tool can be found here:
+
+```
+https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/tag/snapshot%2F2.3.0-20260208
+```
+
+If you would like a newer build, download the tool from GitHub Actions artifacts.
+
+Note: The updater is published for Windows, macOS, and Linux.
 
 ## Developer Notes
 

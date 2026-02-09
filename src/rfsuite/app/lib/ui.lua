@@ -668,6 +668,17 @@ function ui.openMainMenu()
 
     local header = form.addLine("@i18n(app.header_configuration)@")
 
+    local navX = windowWidth - 110
+    app.formNavigationFields['menu'] = form.addButton(header, {x = navX, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
+        text = "@i18n(app.navigation_menu)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            app.close()
+        end
+    })
+
     for pidx, pvalue in ipairs(Menu) do
 
         app.formFieldsOffline[pidx] = pvalue.offline or false
@@ -2287,16 +2298,6 @@ function ui.adminStatsOverlay()
             drawBlock(key, label, v)
         end
     end
-end
-
-function ui.fieldHelpButton(parent, x, y, title, message)
-    form.addButton(parent, {x = x, y = y, w = 40, h = 30}, {
-        text = "?",
-        options = FONT_S,
-        press = function()
-            ui.openPageHelp(message, title)
-        end
-    })
 end
 
 return ui

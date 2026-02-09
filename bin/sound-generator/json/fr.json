@@ -207,37 +207,37 @@
     "file": "adjfunctions/p.wav",
     "english": "P",
     "translation": "P",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/i.wav",
     "english": "I",
     "translation": "I",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/d.wav",
     "english": "D",
     "translation": "D",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/f.wav",
     "english": "F",
     "translation": "F",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/o.wav",
     "english": "O",
     "translation": "O",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gain.wav",
     "english": "Gain",
     "translation": "Gain",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/cw.wav",
@@ -321,13 +321,13 @@
     "file": "adjfunctions/alt.wav",
     "english": "Altitude",
     "translation": "Altitude",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/angle.wav",
     "english": "Angle",
     "translation": "Angle",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/level.wav",
@@ -339,13 +339,13 @@
     "file": "adjfunctions/horizon.wav",
     "english": "horizon",
     "translation": "Horizon",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/acro.wav",
     "english": "Acro",
     "translation": "Acro",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gov.wav",
@@ -369,7 +369,7 @@
     "file": "adjfunctions/trim.wav",
     "english": "Trim",
     "translation": "Trim",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/setpoint.wav",

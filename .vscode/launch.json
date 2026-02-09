@@ -81,9 +81,9 @@
     },
     {
       "name": "Set Deployment Language",
-      "type": "node",
+      "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.vscode/set-language.js",
+      "program": "${workspaceFolder}/.vscode/set-language.py",
       "args": [
         "${input:deployLanguage}"
       ],
