@@ -97,9 +97,29 @@
     }
   },
   "RESCUE_PROFILE": {
+    "rescue_flip_gain": {
+      "english": "Determine how aggressively the heli flips during inverted rescue.",
+      "translation": "Bestimmt, wie aggressiv der Heli während der invertierten Rettung flippt.",
+      "needs_translation": false
+    },
+    "rescue_level_gain": {
+      "english": "Determine how aggressively the heli levels during rescue.",
+      "translation": "Bestimmt, wie aggressiv der Heli sich während der Rettung ausrichtet.",
+      "needs_translation": false
+    },
     "tbl_off": {
       "english": "OFF",
       "translation": "AUS",
+      "needs_translation": false
+    },
+    "rescue_hover_collective": {
+      "english": "Collective value for hover.",
+      "translation": "Kollektivwert fuer das Schweben.",
+      "needs_translation": false
+    },
+    "rescue_max_setpoint_rate": {
+      "english": "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
+      "translation": "Begrenzt die Roll-/Nick-Rate waehrend der Rettung. Groessere Helis benoetigen moeglicherweise langsamere Drehgeschwindigkeiten.",
       "needs_translation": false
     },
     "tbl_flip": {
@@ -107,14 +127,54 @@
       "translation": "FLIP",
       "needs_translation": false
     },
+    "rescue_flip_mode": {
+      "english": "If rescue is activated while inverted, flip to upright - or remain inverted.",
+      "translation": "Falls die Rettung im invertierten Zustand aktiviert wird: Aufrichten oder invertiert bleiben.",
+      "needs_translation": false
+    },
+    "rescue_pull_up_time": {
+      "english": "When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage.",
+      "translation": "Wenn die Rettung aktiviert wird, wird fuer diese Dauer kollektives Steigen angewendet, bevor zum Flip- oder Steigstadium uebergegangen wird.",
+      "needs_translation": false
+    },
     "tbl_noflip": {
       "english": "NO FLIP",
       "translation": "KEIN FLIP",
       "needs_translation": false
     },
+    "rescue_exit_time": {
+      "english": "This limits rapid application of negative collective if the helicopter has rolled during rescue.",
+      "translation": "Begrenzt die schnelle Anwendung von negativem Kollektiv, falls der Heli sich während der Rettung gedreht hat.",
+      "needs_translation": false
+    },
+    "rescue_pull_up_collective": {
+      "english": "Collective value for pull-up climb.",
+      "translation": "Kollektivwert fuer das Hochziehen.",
+      "needs_translation": false
+    },
+    "rescue_max_setpoint_accel": {
+      "english": "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
+      "translation": "Begrenzt, wie schnell der Heli in eine Roll-/Nick-Bewegung beschleunigt. Groessere Helis benoetigen moeglicherweise langsamere Beschleunigungswerte.",
+      "needs_translation": false
+    },
     "tbl_on": {
       "english": "ON",
       "translation": "EIN",
+      "needs_translation": false
+    },
+    "rescue_climb_collective": {
+      "english": "Collective value for rescue climb.",
+      "translation": "Kollektivwert fuer den Steigflug waehrend der Rettung.",
+      "needs_translation": false
+    },
+    "rescue_flip_time": {
+      "english": "If the helicopter is in rescue and is trying to flip to upright and does not within this time, rescue will be aborted.",
+      "translation": "Falls der Heli in der Rettung nicht innerhalb dieser Zeit aufrichtet, wird die Rettung abgebrochen.",
+      "needs_translation": false
+    },
+    "rescue_climb_time": {
+      "english": "Length of time the climb collective is applied before switching to hover.",
+      "translation": "Dauer des Steigflugs, bevor in den Schwebezustand gewechselt wird.",
       "needs_translation": false
     }
   },
@@ -974,6 +1034,11 @@
     }
   },
   "BATTERY_INI": {
+    "calcfuel_local": {
+      "english": "Calculate Fuel Using",
+      "translation": "Kraftstoff berechnen mit",
+      "needs_translation": false
+    },
     "tbl_off": {
       "english": "Current Sensor",
       "translation": "Stromsensor",
@@ -1250,6 +1315,11 @@
     "governor_auto_throttle": {
       "english": "Auto throttle",
       "translation": "Automatikgas",
+      "needs_translation": false
+    },
+    "governor_fallback_drop": {
+      "english": "Fallback drop",
+      "translation": "Fallback-Absenkung",
       "needs_translation": false
     }
   },
