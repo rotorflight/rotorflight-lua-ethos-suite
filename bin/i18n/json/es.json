@@ -393,7 +393,7 @@
         "english": "ESC Governor",
         "translation": "Governor ESC",
         "needs_translation": false,
-        "max_length": 15
+        "max_length": 14
       },
       "tbl_extgov": {
         "english": "External Governor",
@@ -575,7 +575,7 @@
         "english": "Heli Governor",
         "translation": "Governor Heli",
         "needs_translation": false,
-        "max_length": 16
+        "max_length": 15
       },
       "tbl_helistore": {
         "english": "Heli Governor (stored)",
