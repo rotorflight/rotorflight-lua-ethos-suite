@@ -195,7 +195,7 @@
     "file": "adjfunctions/rc.wav",
     "english": "RC",
     "translation": "RC",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rate.wav",
@@ -207,31 +207,31 @@
     "file": "adjfunctions/p.wav",
     "english": "P",
     "translation": "P",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/i.wav",
     "english": "I",
     "translation": "I",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/d.wav",
     "english": "D",
     "translation": "D",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/f.wav",
     "english": "F",
     "translation": "F",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/o.wav",
     "english": "O",
     "translation": "O",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gain.wav",
@@ -285,19 +285,19 @@
     "file": "adjfunctions/gyro.wav",
     "english": "Gyro",
     "translation": "Gyro",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/cutoff.wav",
     "english": "Cut Off",
     "translation": "Cut Off",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/dterm.wav",
     "english": "d term",
     "translation": "d term",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rescue.wav",
@@ -315,7 +315,7 @@
     "file": "adjfunctions/hover.wav",
     "english": "Hover",
     "translation": "Hover",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/alt.wav",
@@ -345,13 +345,13 @@
     "file": "adjfunctions/acro.wav",
     "english": "Acro",
     "translation": "Acro",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gov.wav",
     "english": "Governor",
     "translation": "Governor",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/crossc.wav",
@@ -369,13 +369,13 @@
     "file": "adjfunctions/trim.wav",
     "english": "Trim",
     "translation": "Trim",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/setpoint.wav",
     "english": "Setpoint",
     "translation": "Setpoint",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/precomp.wav",
@@ -465,7 +465,7 @@
     "file": "status/alerts/timer.wav",
     "english": "timer",
     "translation": "timer",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/voltage.wav",

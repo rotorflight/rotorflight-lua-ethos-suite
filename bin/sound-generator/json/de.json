@@ -195,43 +195,43 @@
     "file": "adjfunctions/rc.wav",
     "english": "RC",
     "translation": "RC",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rate.wav",
     "english": "Rate",
     "translation": "Rate",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/p.wav",
     "english": "P",
     "translation": "P",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/i.wav",
     "english": "I",
     "translation": "I",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/d.wav",
     "english": "D",
     "translation": "D",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/f.wav",
     "english": "F",
     "translation": "F",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/o.wav",
     "english": "O",
     "translation": "O",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gain.wav",
@@ -243,13 +243,13 @@
     "file": "adjfunctions/cw.wav",
     "english": "CW",
     "translation": "CW",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/ccw.wav",
     "english": "CCW",
     "translation": "CCW",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/cyclic.wav",
@@ -297,7 +297,7 @@
     "file": "adjfunctions/dterm.wav",
     "english": "d term",
     "translation": "D-Term",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rescue.wav",
@@ -333,7 +333,7 @@
     "file": "adjfunctions/level.wav",
     "english": "Level",
     "translation": "Level",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/horizon.wav",
@@ -399,7 +399,7 @@
     "file": "adjfunctions/filter.wav",
     "english": "Filter",
     "translation": "Filter",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/deadband.wav",
@@ -465,7 +465,7 @@
     "file": "status/alerts/timer.wav",
     "english": "timer",
     "translation": "Timer",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/voltage.wav",
