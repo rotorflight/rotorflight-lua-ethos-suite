@@ -1014,9 +1014,13 @@ function ui.fieldSlider(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSliderField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
+        if not (fields and fields[i]) then
+            ui.disableAllFields()
+            ui.disableAllNavigationFields()
+            ui.enableNavigationField('menu')
+            return nil
+        end
+        return app.utils.getFieldValue(fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
