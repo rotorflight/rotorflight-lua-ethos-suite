@@ -6,10 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local enableWakeup = false
-local disableMultiplier
-local becAlert
-local rxBattAlert
-
 local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',

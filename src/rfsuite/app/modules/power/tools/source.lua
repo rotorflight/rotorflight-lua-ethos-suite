@@ -6,11 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local enableWakeup = false
-local disableMultiplier
-local becAlert
-local rxBattAlert
-local formFields = rfsuite.app.formFields
-
 local FIELDS = {
     voltageMeterSource = 1,
     currentMeterSource = 2

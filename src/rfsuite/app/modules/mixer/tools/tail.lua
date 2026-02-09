@@ -20,10 +20,6 @@ local APIDATA = {}
 local FORMDATA = {}
 
 -- store loaded directions here to ensure writeback consistency
-local AIL_DIRECTION
-local ELE_DIRECTION
-local COL_DIRECTION
-
 -- -------------------------------------------------------
 -- -- Form layout
 -- -------------------------------------------------------

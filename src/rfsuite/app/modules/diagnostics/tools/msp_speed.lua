@@ -7,7 +7,6 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 local app = rfsuite.app
 local tasks = rfsuite.tasks
-local prefs = rfsuite.preferences
 local rfutils = rfsuite.utils
 local session = rfsuite.session
 

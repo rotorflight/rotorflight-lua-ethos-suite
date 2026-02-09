@@ -13,7 +13,6 @@ local session = rfsuite.session
 local prefs = rfsuite.preferences
 
 local formFields = app.formFields
-local formLines = app.formLines
 local radio = app.radio
 
 local enableWakeup = false
