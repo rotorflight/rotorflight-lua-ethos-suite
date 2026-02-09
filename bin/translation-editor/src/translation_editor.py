@@ -6,6 +6,8 @@ from pathlib import Path
 from collections import OrderedDict
 
 APP_TITLE = "RF Suite Translation Editor"
+# Allowed non-ASCII characters observed in existing translations.
+ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​–“”")
 
 
 def repo_root():
@@ -82,7 +84,12 @@ class TranslationEditor(tk.Tk):
         search_entry.bind("<KeyRelease>", self._apply_filter)
 
         ttk.Label(top, text="Filter:").pack(side=tk.LEFT, padx=(12, 0))
-        self.filter_cb = ttk.Combobox(top, values=["All", "Needs only", "Done only"], state="readonly", width=12)
+        self.filter_cb = ttk.Combobox(
+            top,
+            values=["All", "Needs only", "Done only", "Disallowed chars", "Exceeds max"],
+            state="readonly",
+            width=14
+        )
         self.filter_cb.pack(side=tk.LEFT, padx=6)
         self.filter_cb.current(0)
         self.filter_cb.bind("<<ComboboxSelected>>", self._apply_filter)
@@ -260,6 +267,16 @@ class TranslationEditor(tk.Tk):
                 continue
             if mode == "Done only" and row["needs"]:
                 continue
+            if mode == "Disallowed chars":
+                translation = row.get("translation", "") or ""
+                if not self._has_disallowed_non_ascii(translation):
+                    continue
+            if mode == "Exceeds max":
+                english = row.get("english", "")
+                translation = row.get("translation", "")
+                max_len = row.get("max_length")
+                if not self._length_warning(english, translation, max_len):
+                    continue
             if text:
                 hay = " ".join([row["key"], row["english"], row["translation"]]).lower()
                 if text not in hay:
@@ -296,6 +313,14 @@ class TranslationEditor(tk.Tk):
             return t > max_length
         return t > (e * 1.15)
 
+    def _has_disallowed_non_ascii(self, text):
+        if text is None:
+            return False
+        for ch in text:
+            if ord(ch) > 127 and ch not in ALLOWED_NON_ASCII:
+                return True
+        return False
+
     def _update_length_warnings(self):
         sel = self.tree.selection()
         if sel:
@@ -314,6 +339,11 @@ class TranslationEditor(tk.Tk):
                     self.warning_label.configure(
                         text=f"Warning: translation exceeds English by {diff} chars (>15%)"
                     )
+                self.bell()
+            elif self._has_disallowed_non_ascii(translation):
+                self.warning_label.configure(
+                    text="Warning: translation contains non-ASCII characters (blocked)"
+                )
                 self.bell()
             else:
                 self.warning_label.configure(text="")
@@ -345,6 +375,13 @@ class TranslationEditor(tk.Tk):
                 self.warning_label.configure(
                     text=f"Warning: translation exceeds English by {diff} chars (>15%)"
                 )
+            if not self._live_warn_active:
+                self.bell()
+            self._live_warn_active = True
+        elif self._has_disallowed_non_ascii(translation):
+            self.warning_label.configure(
+                text="Warning: translation contains non-ASCII characters (blocked)"
+            )
             if not self._live_warn_active:
                 self.bell()
             self._live_warn_active = True
@@ -535,7 +572,21 @@ class TranslationEditor(tk.Tk):
         else:
             self._save_sound()
 
+    def _has_non_ascii(self):
+        for row in self.store.rows:
+            text = row.get("translation", "")
+            if self._has_disallowed_non_ascii(text):
+                return True
+        return False
+
     def _save_i18n(self):
+        # Hard block non-ASCII translations to avoid Ethos issues.
+        if self._has_non_ascii():
+            messagebox.showerror(
+                "Non-ASCII blocked",
+                "Save blocked: translations contain non-ASCII characters."
+            )
+            return
         root = i18n_root()
         root.mkdir(parents=True, exist_ok=True)
         out_path = root / f"{self.store.locale}.json"
@@ -585,6 +636,13 @@ class TranslationEditor(tk.Tk):
         messagebox.showinfo("Saved", f"Saved {out_path}")
 
     def _save_sound(self):
+        # Hard block non-ASCII translations to avoid Ethos issues.
+        if self._has_non_ascii():
+            messagebox.showerror(
+                "Non-ASCII blocked",
+                "Save blocked: translations contain non-ASCII characters."
+            )
+            return
         root = sound_root()
         root.mkdir(parents=True, exist_ok=True)
         out_path = root / f"{self.store.locale}.json"
