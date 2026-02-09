@@ -40,7 +40,12 @@ class TranslationEditor(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(APP_TITLE)
-        self.geometry("1300x720")
+        self.update_idletasks()
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        w = int(sw * 0.85)
+        h = int(sh * 0.85)
+        self.geometry(f"{w}x{h}")
         self.minsize(1200, 650)
 
         self.store = DataStore()
@@ -124,6 +129,7 @@ class TranslationEditor(tk.Tk):
         self._editor = None
         self._edit_item = None
         self._edit_field = None
+        self._live_warn_active = False
 
     def _load_dataset_options(self):
         self._refresh_locale_list()
@@ -281,7 +287,7 @@ class TranslationEditor(tk.Tk):
         t = len(translation or "")
         if e == 0:
             return False
-        return t > e + 10
+        return t > (e * 1.15)
 
     def _update_length_warnings(self):
         sel = self.tree.selection()
@@ -293,7 +299,7 @@ class TranslationEditor(tk.Tk):
             if self._length_warning(english, translation):
                 diff = len(translation) - len(english)
                 self.warning_label.configure(
-                    text=f"Warning: translation exceeds English by {diff} chars (limit +10)"
+                    text=f"Warning: translation exceeds English by {diff} chars (>15%)"
                 )
                 self.bell()
             else:
@@ -312,14 +318,21 @@ class TranslationEditor(tk.Tk):
             return
         row_index = int(item)
         row = self.store.filtered_rows[row_index]
-        max_len = len(row.get("english", "")) + 10
-        if max_len <= 0:
-            return
-        value = self._editor.get()
-        if len(value) > max_len:
-            self._editor.delete(0, tk.END)
-            self._editor.insert(0, value[:max_len])
-            self.bell()
+        english = row.get("english", "")
+        translation = self._editor.get()
+        is_warn = self._length_warning(english, translation)
+        if is_warn:
+            diff = len(translation) - len(english)
+            self.warning_label.configure(
+                text=f"Warning: translation exceeds English by {diff} chars (limit +10)"
+            )
+            if not self._live_warn_active:
+                self.bell()
+            self._live_warn_active = True
+        else:
+            if self._live_warn_active:
+                self.warning_label.configure(text="")
+            self._live_warn_active = False
 
     def _on_click(self, event):
         if self._editor:
@@ -379,6 +392,7 @@ class TranslationEditor(tk.Tk):
         self._editor.focus_set()
         self._edit_item = item
         self._edit_field = field
+        self._live_warn_active = False
         if field == "translation" and self.store.locale != "en":
             self._editor.bind("<KeyRelease>", self._enforce_translation_limit)
         self._editor.bind("<Return>", lambda e: self._commit_edit(item, field))
@@ -425,10 +439,6 @@ class TranslationEditor(tk.Tk):
                 self.store.undo_stack.append((row.get("key"), "english", prev, new_value, None))
         else:
             prev = row.get("translation", "")
-            max_len = len(row.get("english", "")) + 10
-            if max_len > 0 and len(new_value) > max_len:
-                new_value = new_value[:max_len]
-                self.bell()
             row["translation"] = new_value
             if new_value.strip() == "":
                 row["needs"] = True
