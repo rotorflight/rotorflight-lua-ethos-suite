@@ -1316,11 +1316,6 @@
       "english": "Auto throttle",
       "translation": "Acelerador automatico",
       "needs_translation": false
-    },
-    "governor_fallback_drop": {
-      "english": "Fallback drop",
-      "translation": "Caida de respaldo",
-      "needs_translation": false
     }
   },
   "RC_CONFIG": {

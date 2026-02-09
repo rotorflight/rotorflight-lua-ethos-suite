@@ -1135,11 +1135,6 @@
         "needs_translation": false,
         "translation": "Automatikgas"
       },
-      "governor_fallback_drop": {
-        "english": "Fallback drop",
-        "needs_translation": false,
-        "translation": "Fallback-Absenkung"
-      },
       "governor_idle_throttle": {
         "english": "Idle throttle",
         "needs_translation": false,
@@ -1998,31 +1993,6 @@
       "needs_translation": false,
       "translation": "Bitte aktivieren Sie die Hintergrund-Task."
     },
-    "check_discovered_sensors": {
-      "english": "Please check you have discovered all sensors.",
-      "needs_translation": false,
-      "translation": "Bitte stellen Sie sicher, dass alle Sensoren erkannt wurden."
-    },
-    "check_heli_on": {
-      "english": "Please check your heli is powered up and radio connected.",
-      "needs_translation": false,
-      "translation": "Bitte überprüfen Sie, ob Ihr Heli eingeschaltet und der Empfänger verbunden ist."
-    },
-    "check_msp_version": {
-      "english": "Unable to determine MSP version in use.",
-      "needs_translation": false,
-      "translation": "MSP-Version konnte nicht ermittelt werden."
-    },
-    "check_rf_module_on": {
-      "english": "Please check your rf module is turned on.",
-      "needs_translation": false,
-      "translation": "Bitte überprüfen Sie, ob Ihr RF-Modul eingeschaltet ist."
-    },
-    "check_supported_version": {
-      "english": "This version of the Lua script \ncan't be used with the selected model",
-      "needs_translation": false,
-      "translation": "Diese Version des Lua-Skripts\nkann nicht mit dem ausgewählten Modell verwendet werden."
-    },
     "error_timed_out": {
       "english": "Error: timed out",
       "needs_translation": false,
@@ -2043,25 +2013,10 @@
       "needs_translation": false,
       "translation": "System"
     },
-    "menu_section_about": {
-      "english": "About",
-      "needs_translation": false,
-      "translation": "Über"
-    },
     "menu_section_advanced": {
       "english": "Advanced",
       "needs_translation": false,
       "translation": "Erweitert"
-    },
-    "menu_section_developer": {
-      "english": "Developer",
-      "needs_translation": false,
-      "translation": "Entwickler"
-    },
-    "menu_section_flight_tuning": {
-      "english": "Flight Tuning",
-      "needs_translation": false,
-      "translation": "Flugabstimmung"
     },
     "menu_section_hardware": {
       "english": "Hardware",
@@ -2154,11 +2109,6 @@
         }
       },
       "diagnostics": {
-        "help_p1": {
-          "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-          "needs_translation": false,
-          "translation": "Dieses Modul bietet verschiedene Werkzeuge, um Probleme mit Ihrem Flugcontroller oder Ihrer Konfiguration zu diagnostizieren."
-        },
         "name": {
           "english": "Diagnostics",
           "needs_translation": false,
@@ -2364,11 +2314,6 @@
               "english": "Cooling Fan Mode",
               "needs_translation": false,
               "translation": "Lüftersteuerung"
-            },
-            "gov": {
-              "english": "Governor",
-              "needs_translation": false,
-              "translation": "Governor"
             },
             "gov_i": {
               "english": "Governor I",
@@ -2800,11 +2745,6 @@
               "english": "Soft Start Time",
               "needs_translation": false,
               "translation": "Sanftanlauf-Zeit"
-            },
-            "telemetry_protocol": {
-              "english": "Telemetry Protocol",
-              "needs_translation": false,
-              "translation": "Telemetrieprotokoll"
             }
           },
           "xdfly": {
@@ -3346,16 +3286,6 @@
           "needs_translation": false,
           "translation": "Zeit"
         },
-        "help_p1": {
-          "english": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
-          "needs_translation": false,
-          "translation": "Auf dieser Seite können Sie den aktuellen Status Ihres Flugcontrollers anzeigen. Dies kann hilfreich sein, um herauszufinden, warum Ihr Heli nicht schärft."
-        },
-        "help_p2": {
-          "english": "To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'.",
-          "needs_translation": false,
-          "translation": "Um den Dataflash für mehr Speicherplatz für Log-Dateien zu löschen, drücken Sie die mit '*' markierte Schaltfläche im Menü."
-        },
         "megabyte": {
           "english": "MB",
           "needs_translation": false,
@@ -3380,143 +3310,6 @@
           "english": "Unsupported",
           "needs_translation": false,
           "translation": "Nicht unterstützt"
-        }
-      },
-      "fbusout": {
-        "cancel": {
-          "english": "CANCEL",
-          "needs_translation": false,
-          "translation": "ABBRECHEN"
-        },
-        "ch_prefix": {
-          "english": "CH",
-          "needs_translation": false,
-          "translation": "CH"
-        },
-        "channel_page": {
-          "english": "Fbus out / CH",
-          "needs_translation": false,
-          "translation": "Fbus-Ausgang / CH"
-        },
-        "channel_prefix": {
-          "english": "CHANNEL ",
-          "needs_translation": false,
-          "translation": "KANAL "
-        },
-        "help_default_p1": {
-          "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-          "needs_translation": false,
-          "translation": "Erweiterte Misch- und Kanalzuordnung konfigurieren, wenn SBUS-Ausgang auf einem seriellen Port aktiviert ist."
-        },
-        "help_default_p2": {
-          "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-          "needs_translation": false,
-          "translation": "- Für RX-Kanäle oder Servos (Breitband) 1000, 2000 oder 500,1000 für Schmalband-Servos verwenden."
-        },
-        "help_default_p3": {
-          "english": "- For mixer rules, use -1000, 1000.",
-          "needs_translation": false,
-          "translation": "- Für Mischregeln -1000, 1000 verwenden."
-        },
-        "help_default_p4": {
-          "english": "- For motors, use 0, 1000.",
-          "needs_translation": false,
-          "translation": "- Für Motoren 0, 1000 verwenden."
-        },
-        "help_default_p5": {
-          "english": "- Or you can customize your own mapping.",
-          "needs_translation": false,
-          "translation": "- Oder Sie können Ihre eigene Zuordnung anpassen."
-        },
-        "help_fields_max": {
-          "english": "The maximum pwm value to send",
-          "needs_translation": false,
-          "translation": "Der maximale PWM-Wert, der gesendet wird."
-        },
-        "help_fields_min": {
-          "english": "The minimum pwm value to send.",
-          "needs_translation": false,
-          "translation": "Der minimale PWM-Wert, der gesendet wird."
-        },
-        "help_fields_source": {
-          "english": "Source id for the mix, counting from 0-15.",
-          "needs_translation": false,
-          "translation": "Quellen-ID für den Mix, zählt von 0-15."
-        },
-        "max": {
-          "english": "Max",
-          "needs_translation": false,
-          "translation": "Max"
-        },
-        "min": {
-          "english": "Min",
-          "needs_translation": false,
-          "translation": "Min"
-        },
-        "mixer": {
-          "english": "Mixer",
-          "needs_translation": false,
-          "translation": "Mischer"
-        },
-        "motor": {
-          "english": "Motor",
-          "needs_translation": false,
-          "translation": "Motor"
-        },
-        "name": {
-          "english": "FBUS Out",
-          "needs_translation": false,
-          "translation": "FBUS-Ausgang"
-        },
-        "ok": {
-          "english": "OK",
-          "needs_translation": false,
-          "translation": "OK"
-        },
-        "receiver": {
-          "english": "Receiver",
-          "needs_translation": false,
-          "translation": "Empfänger"
-        },
-        "save_prompt": {
-          "english": "Save current page to flight controller?",
-          "needs_translation": false,
-          "translation": "Aktuelle Seite auf dem Flugcontroller speichern?"
-        },
-        "save_settings": {
-          "english": "Save settings",
-          "needs_translation": false,
-          "translation": "Einstellungen speichern"
-        },
-        "saving": {
-          "english": "Saving",
-          "needs_translation": false,
-          "translation": "Speichern"
-        },
-        "saving_data": {
-          "english": "Saving data...",
-          "needs_translation": false,
-          "translation": "Speichere Daten..."
-        },
-        "servo": {
-          "english": "Servo",
-          "needs_translation": false,
-          "translation": "Servo"
-        },
-        "source": {
-          "english": "Source",
-          "needs_translation": false,
-          "translation": "Quelle"
-        },
-        "title": {
-          "english": "FBUS Output",
-          "needs_translation": false,
-          "translation": "FBUS-Ausgang"
-        },
-        "type": {
-          "english": "Type",
-          "needs_translation": false,
-          "translation": "Typ"
         }
       },
       "filters": {
@@ -3642,11 +3435,6 @@
           "needs_translation": false,
           "translation": "Autorotations-Timeout"
         },
-        "collective": {
-          "english": "Collective",
-          "needs_translation": false,
-          "translation": "Kollektiv"
-        },
         "gov_d_filter": {
           "english": "D-Term Cutoff",
           "needs_translation": false,
@@ -3661,11 +3449,6 @@
           "english": "Voltage Filter Cutoff",
           "needs_translation": false,
           "translation": "Spannungsfilter Grenzwert"
-        },
-        "gov_rpm_filter": {
-          "english": "RPM Filter Cutoff",
-          "needs_translation": false,
-          "translation": "RPM-Filter Grenzwert"
         },
         "gov_tta_filter": {
           "english": "TTA Bandwidth",
@@ -3686,11 +3469,6 @@
           "english": "Each parameter is simply a time value in seconds for each governor action.",
           "needs_translation": false,
           "translation": "Jeder Parameter ist einfach ein Zeitwert in Sekunden für jede Regleraktion."
-        },
-        "idle_collective": {
-          "english": "Col->Idle Throttle",
-          "needs_translation": false,
-          "translation": "Kollektiv-Leerlauf"
         },
         "menu_curves": {
           "english": "Bypass Curve",
@@ -3732,11 +3510,6 @@
           "needs_translation": false,
           "translation": "Governor"
         },
-        "ramp_time": {
-          "english": "Ramp time",
-          "needs_translation": false,
-          "translation": "Rampenzeit"
-        },
         "recovery_time": {
           "english": "Recovery time",
           "needs_translation": false,
@@ -3776,11 +3549,6 @@
           "english": "Tracking time",
           "needs_translation": false,
           "translation": "Tracking-Zeit"
-        },
-        "wot_collective": {
-          "english": "Col->Full Throttle",
-          "needs_translation": false,
-          "translation": "Kollektiv-Vollgas"
         }
       },
       "info": {
@@ -3883,11 +3651,6 @@
           "needs_translation": false,
           "translation": "Kollektives Pitch-Limit"
         },
-        "collective_tilt_correction": {
-          "english": "Collective Tilt Correction",
-          "needs_translation": false,
-          "translation": "Kollektive Neigungskorrektur"
-        },
         "collective_tilt_correction_neg": {
           "english": "Collective Tilt Correction -",
           "needs_translation": false,
@@ -3898,11 +3661,6 @@
           "needs_translation": false,
           "translation": "Kollektive Neigungskorrektur +"
         },
-        "configuration": {
-          "english": "Configuration",
-          "needs_translation": false,
-          "translation": "Konfiguration"
-        },
         "cyclic_calibration": {
           "english": "Cyclic Calibration",
           "needs_translation": false,
@@ -3912,11 +3670,6 @@
           "english": "Cyclic Pitch Limit",
           "needs_translation": false,
           "translation": "Zyklisches Pitch-Limit"
-        },
-        "directions": {
-          "english": "Mix Directions",
-          "needs_translation": false,
-          "translation": "Mischrichtungen"
         },
         "elevator_direction": {
           "english": "Elevator Direction",
@@ -3947,11 +3700,6 @@
           "english": "Mixer",
           "needs_translation": false,
           "translation": "Mischer"
-        },
-        "settings": {
-          "english": "Settings",
-          "needs_translation": false,
-          "translation": "Einstellungen"
         },
         "swash": {
           "english": "Swash",
@@ -4056,11 +3804,6 @@
           "english": "Checksum errors",
           "needs_translation": false,
           "translation": "Prüfsummenfehler"
-        },
-        "help_p1": {
-          "english": "This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
-          "needs_translation": false,
-          "translation": "Dieses Tool versucht, die Qualität Ihrer MSP-Datenverbindung zu bestimmen, indem es innerhalb von 30 Sekunden so viele große MSP-Abfragen wie möglich durchführt."
         },
         "max_query_time": {
           "english": "Maximum query time",
@@ -4380,16 +4123,6 @@
           "needs_translation": false,
           "translation": "Automatisches Gas"
         },
-        "autorotation": {
-          "english": "Autorotation",
-          "needs_translation": false,
-          "translation": "Autorotation"
-        },
-        "bypass": {
-          "english": "Bypass",
-          "needs_translation": false,
-          "translation": "Bypass"
-        },
         "col": {
           "english": "Col",
           "needs_translation": false,
@@ -4429,11 +4162,6 @@
           "english": "Fallback Precomp",
           "needs_translation": false,
           "translation": "Fallback-Vorkomp."
-        },
-        "fc_throttle_curve": {
-          "english": "FC Throttle Curve",
-          "needs_translation": false,
-          "translation": "FC-Gaskurve"
         },
         "full_headspeed": {
           "english": "Full headspeed",
@@ -4480,11 +4208,6 @@
           "needs_translation": false,
           "translation": "Heck-Drehmoment-Unterstützung: Für motorisierte Heckrotoren. Verstärkung und Begrenzung der Drehzahlerhöhung beim Gierausgleich durch das Hauptrotordrehmoment."
         },
-        "hs_adjustment": {
-          "english": "Headspeed Adjustment",
-          "needs_translation": false,
-          "translation": "Drehzahlanpassung"
-        },
         "i": {
           "english": "I",
           "needs_translation": false,
@@ -4525,11 +4248,6 @@
           "needs_translation": false,
           "translation": "Vorkompensation"
         },
-        "suspend": {
-          "english": "Suspend",
-          "needs_translation": false,
-          "translation": "Pause"
-        },
         "tail_torque_assist": {
           "english": "Tail Torque Assist",
           "needs_translation": false,
@@ -4544,11 +4262,6 @@
           "english": "Limit",
           "needs_translation": false,
           "translation": "Limit"
-        },
-        "tx_precomp_curve": {
-          "english": "TX Throttle V-Curve",
-          "needs_translation": false,
-          "translation": "TX-Vorkomp.-Kurve"
         },
         "voltage_comp": {
           "english": "Voltage Compensation",
@@ -5288,11 +5001,6 @@
           "needs_translation": false,
           "translation": "Beschl. Grenze"
         },
-        "accel_limit": {
-          "english": "Accel",
-          "needs_translation": false,
-          "translation": "Beschl."
-        },
         "advanced": {
           "english": "Advanced",
           "needs_translation": false,
@@ -5302,21 +5010,6 @@
           "english": "Col",
           "needs_translation": false,
           "translation": "Kol"
-        },
-        "collective_boost": {
-          "english": "Collective boost",
-          "needs_translation": false,
-          "translation": "Kollektiv-Verstärkung"
-        },
-        "collective_dynamics": {
-          "english": "Collective dynamics",
-          "needs_translation": false,
-          "translation": "Kollektiv-Dynamik"
-        },
-        "cutoff": {
-          "english": "Cutoff",
-          "needs_translation": false,
-          "translation": "Grenz."
         },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",
@@ -5338,11 +5031,6 @@
           "needs_translation": false,
           "translation": "Dynamik"
         },
-        "gain": {
-          "english": "Gain",
-          "needs_translation": false,
-          "translation": "Verst."
-        },
         "help_p1": {
           "english": "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
           "needs_translation": false,
@@ -5352,11 +5040,6 @@
           "english": "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
           "needs_translation": false,
           "translation": "Dynamik: Wird unabhängig vom Rate-Typ angewendet. Anpassen, um Heli-Bewegungen weicher zu machen, z. B. für Scale-Helis."
-        },
-        "help_rate_table": {
-          "english": "Please select the rate you would like to use. Saving will apply the choice to the active profile.",
-          "needs_translation": false,
-          "translation": "Bitte wählen Sie die Rates aus, die Sie verwenden möchten. Durch das Speichern wird die Auswahl auf das aktive Profil angewendet."
         },
         "msg_reset_to_defaults": {
           "english": "Rate type changed. Values will be reset to defaults.",
@@ -5372,16 +5055,6 @@
           "english": "Pitch",
           "needs_translation": false,
           "translation": "Nick"
-        },
-        "pitch_boost": {
-          "english": "Pitch boost",
-          "needs_translation": false,
-          "translation": "Nick-Verstärkung"
-        },
-        "pitch_dynamics": {
-          "english": "Pitch dynamics",
-          "needs_translation": false,
-          "translation": "Nick-Dynamik"
         },
         "rate_table": {
           "english": "Rate Table",
@@ -5403,16 +5076,6 @@
           "needs_translation": false,
           "translation": "Roll"
         },
-        "roll_boost": {
-          "english": "Roll boost",
-          "needs_translation": false,
-          "translation": "Roll-Verstärkung"
-        },
-        "roll_dynamics": {
-          "english": "Roll dynamics",
-          "needs_translation": false,
-          "translation": "Roll-Dynamik"
-        },
         "setpoint_boost_cutoff": {
           "english": "Setpoint boost cutoff",
           "needs_translation": false,
@@ -5432,31 +5095,6 @@
           "english": "Yaw",
           "needs_translation": false,
           "translation": "Gier"
-        },
-        "yaw_boost": {
-          "english": "Yaw boost",
-          "needs_translation": false,
-          "translation": "Gier-Verstärkung"
-        },
-        "yaw_dynamic_ceiling_gain": {
-          "english": "Ceiling",
-          "needs_translation": false,
-          "translation": "Dyn. Obergrenze"
-        },
-        "yaw_dynamic_deadband_filter": {
-          "english": "Filter",
-          "needs_translation": false,
-          "translation": "Filter"
-        },
-        "yaw_dynamic_deadband_gain": {
-          "english": "D. Band",
-          "needs_translation": false,
-          "translation": "Dyn. Totband"
-        },
-        "yaw_dynamics": {
-          "english": "Yaw dynamics",
-          "needs_translation": false,
-          "translation": "Gier-Dynamik"
         }
       },
       "rfstatus": {
@@ -5504,148 +5142,6 @@
           "english": "Telemetry Sensors",
           "needs_translation": false,
           "translation": "Telemetrie-Sensoren"
-        },
-        "unknown": {
-          "english": "UNKNOWN",
-          "needs_translation": false,
-          "translation": "UNBEKANNT"
-        }
-      },
-      "sbusout": {
-        "cancel": {
-          "english": "CANCEL",
-          "needs_translation": false,
-          "translation": "ABBRECHEN"
-        },
-        "ch_prefix": {
-          "english": "CH",
-          "needs_translation": false,
-          "translation": "CH"
-        },
-        "channel_page": {
-          "english": "Sbus out / CH",
-          "needs_translation": false,
-          "translation": "SBUS-Ausgang / CH"
-        },
-        "channel_prefix": {
-          "english": "CHANNEL ",
-          "needs_translation": false,
-          "translation": "KANAL "
-        },
-        "help_default_p1": {
-          "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-          "needs_translation": false,
-          "translation": "Erweiterte Misch- und Kanalzuordnung konfigurieren, wenn SBUS-Ausgang auf einem seriellen Port aktiviert ist."
-        },
-        "help_default_p2": {
-          "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-          "needs_translation": false,
-          "translation": "- Für RX-Kanäle oder Servos (Breitband) 1000, 2000 oder 500,1000 für Schmalband-Servos verwenden."
-        },
-        "help_default_p3": {
-          "english": "- For mixer rules, use -1000, 1000.",
-          "needs_translation": false,
-          "translation": "- Für Mischregeln -1000, 1000 verwenden."
-        },
-        "help_default_p4": {
-          "english": "- For motors, use 0, 1000.",
-          "needs_translation": false,
-          "translation": "- Für Motoren 0, 1000 verwenden."
-        },
-        "help_default_p5": {
-          "english": "- Or you can customize your own mapping.",
-          "needs_translation": false,
-          "translation": "- Oder Sie können Ihre eigene Zuordnung anpassen."
-        },
-        "help_fields_max": {
-          "english": "The maximum pwm value to send",
-          "needs_translation": false,
-          "translation": "Der maximale PWM-Wert, der gesendet wird."
-        },
-        "help_fields_min": {
-          "english": "The minimum pwm value to send.",
-          "needs_translation": false,
-          "translation": "Der minimale PWM-Wert, der gesendet wird."
-        },
-        "help_fields_source": {
-          "english": "Source id for the mix, counting from 0-15.",
-          "needs_translation": false,
-          "translation": "Quellen-ID für den Mix, zählt von 0-15."
-        },
-        "max": {
-          "english": "Max",
-          "needs_translation": false,
-          "translation": "Max"
-        },
-        "min": {
-          "english": "Min",
-          "needs_translation": false,
-          "translation": "Min"
-        },
-        "mixer": {
-          "english": "Mixer",
-          "needs_translation": false,
-          "translation": "Mischer"
-        },
-        "motor": {
-          "english": "Motor",
-          "needs_translation": false,
-          "translation": "Motor"
-        },
-        "name": {
-          "english": "SBUS Out",
-          "needs_translation": false,
-          "translation": "SBUS-Ausgang"
-        },
-        "ok": {
-          "english": "OK",
-          "needs_translation": false,
-          "translation": "OK"
-        },
-        "receiver": {
-          "english": "Receiver",
-          "needs_translation": false,
-          "translation": "Empfänger"
-        },
-        "save_prompt": {
-          "english": "Save current page to flight controller?",
-          "needs_translation": false,
-          "translation": "Aktuelle Seite auf dem Flugcontroller speichern?"
-        },
-        "save_settings": {
-          "english": "Save settings",
-          "needs_translation": false,
-          "translation": "Einstellungen speichern"
-        },
-        "saving": {
-          "english": "Saving",
-          "needs_translation": false,
-          "translation": "Speichern"
-        },
-        "saving_data": {
-          "english": "Saving data...",
-          "needs_translation": false,
-          "translation": "Speichere Daten..."
-        },
-        "servo": {
-          "english": "Servo",
-          "needs_translation": false,
-          "translation": "Servo"
-        },
-        "source": {
-          "english": "Source",
-          "needs_translation": false,
-          "translation": "Quelle"
-        },
-        "title": {
-          "english": "SBUS Output",
-          "needs_translation": false,
-          "translation": "SBUS-Ausgang"
-        },
-        "type": {
-          "english": "Type",
-          "needs_translation": false,
-          "translation": "Typ"
         }
       },
       "servos": {
@@ -5824,16 +5320,6 @@
           "needs_translation": false,
           "translation": "Umkehren"
         },
-        "saving": {
-          "english": "Saving",
-          "needs_translation": false,
-          "translation": "Speichern"
-        },
-        "saving_data": {
-          "english": "Saving data...",
-          "needs_translation": false,
-          "translation": "Speichere Daten..."
-        },
         "scale_negative": {
           "english": "Scale Negative",
           "needs_translation": false,
@@ -5906,16 +5392,6 @@
           "needs_translation": false,
           "translation": "Audio"
         },
-        "bec_threshold": {
-          "english": "Threshold (V)",
-          "needs_translation": false,
-          "translation": "Schwellwert (V)"
-        },
-        "bec_voltage": {
-          "english": "BEC Voltage",
-          "needs_translation": false,
-          "translation": "BEC-Spannung"
-        },
         "celcius": {
           "english": "Celsius",
           "needs_translation": false,
@@ -5925,11 +5401,6 @@
           "english": "Dashboard",
           "needs_translation": false,
           "translation": "Dashboard"
-        },
-        "dashboard_loader": {
-          "english": "Loader",
-          "needs_translation": false,
-          "translation": "Ladeanzeige"
         },
         "dashboard_loader_loader_style_select": {
           "english": "Theme loader style",
@@ -6151,11 +5622,6 @@
           "needs_translation": false,
           "translation": "Nach-Timer-Alarmierungsoptionen"
         },
-        "timer_postalert_period": {
-          "english": "Alert Period",
-          "needs_translation": false,
-          "translation": "Alarmierungsperiode"
-        },
         "timer_prealert": {
           "english": "Pre-timer Alert",
           "needs_translation": false,
@@ -6206,21 +5672,6 @@
           "needs_translation": false,
           "translation": "Sender-Batterieoptionen"
         },
-        "txt_compilation": {
-          "english": "Compilation",
-          "needs_translation": false,
-          "translation": "Kompilation"
-        },
-        "txt_console": {
-          "english": "CONSOLE",
-          "needs_translation": false,
-          "translation": "KONSOLE"
-        },
-        "txt_consolefile": {
-          "english": "CONSOLE & FILE",
-          "needs_translation": false,
-          "translation": "KONSOLE & DATEI"
-        },
         "txt_debug": {
           "english": "DEBUG",
           "needs_translation": false,
@@ -6266,20 +5717,10 @@
           "needs_translation": false,
           "translation": "GROSS"
         },
-        "txt_logging": {
-          "english": "Logging",
-          "needs_translation": false,
-          "translation": "Protokollierung"
-        },
         "txt_loglevel": {
           "english": "Log level",
           "needs_translation": false,
           "translation": "Protokollierungsgrad"
-        },
-        "txt_loglocation": {
-          "english": "Log location",
-          "needs_translation": false,
-          "translation": "Protokoll-Speicherort"
         },
         "txt_memusage": {
           "english": "Log memory usage",
@@ -6365,11 +5806,6 @@
           "english": "Voltage",
           "needs_translation": false,
           "translation": "Spannung"
-        },
-        "warning": {
-          "english": "Warning",
-          "needs_translation": false,
-          "translation": "Warnung"
         }
       },
       "stats": {
@@ -6382,11 +5818,6 @@
           "english": "Use this module to update the recorded flight statistics on the flight controller.",
           "needs_translation": false,
           "translation": "Verwenden Sie dieses Modul, um die aufgezeichneten Flugstatistiken am Flugcontroller zu aktualisieren."
-        },
-        "lastflighttime": {
-          "english": "Last Flight Time",
-          "needs_translation": false,
-          "translation": "Letzte Flugdauer"
         },
         "name": {
           "english": "Stats",
@@ -6447,16 +5878,6 @@
           "needs_translation": false,
           "translation": "Mischer-Überschreibung aktivieren"
         },
-        "help_p1": {
-          "english": "Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.",
-          "needs_translation": false,
-          "translation": "Trimmungen verknüpfen: Verwenden Sie dies, um kleine Nivellierungsprobleme in Ihrer Taumelscheibe zu korrigieren. Normalerweise nur notwendig, wenn die Taumelscheibenanlenkungen nicht verstellbar sind."
-        },
-        "help_p2": {
-          "english": "Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
-          "needs_translation": false,
-          "translation": "Motorisiertes Heck: Falls ein motorisiertes Heck verwendet wird, können Sie hier die minimale Leerlaufdrehzahl und den Null-Gierpunkt einstellen."
-        },
         "mixer_override": {
           "english": "Mixer Override",
           "needs_translation": false,
@@ -6471,11 +5892,6 @@
           "english": "Enabling mixer override...",
           "needs_translation": false,
           "translation": "Mischer-Überschreibung wird aktiviert..."
-        },
-        "name": {
-          "english": "Trim",
-          "needs_translation": false,
-          "translation": "Trimmung"
         },
         "pitch_trim": {
           "english": "Pitch trim %",
@@ -6535,16 +5951,6 @@
           "translation": "OK"
         }
       }
-    },
-    "msg_connecting": {
-      "english": "Connecting",
-      "needs_translation": false,
-      "translation": "Verbindung wird hergestellt"
-    },
-    "msg_connecting_to_fbl": {
-      "english": "Connecting to flight controller...",
-      "needs_translation": false,
-      "translation": "Verbindung zum Flugcontroller wird hergestellt..."
     },
     "msg_loaded_task": {
       "english": "Loaded task",
@@ -6667,55 +6073,20 @@
       "translation": "Hz"
     }
   },
-  "background_task_disabled": {
-    "english": "background task disabled",
-    "needs_translation": false,
-    "translation": "Hintergrundtask deaktiviert"
-  },
-  "bg_task_disabled": {
-    "english": "bg task disabled",
-    "needs_translation": false,
-    "translation": "Hintergrundtask deaktiviert"
-  },
   "error": {
     "english": "error",
     "needs_translation": false,
     "translation": "Fehler"
-  },
-  "ethos": {
-    "english": "ethos",
-    "needs_translation": false,
-    "translation": "Ethos"
-  },
-  "image": {
-    "english": "image",
-    "needs_translation": false,
-    "translation": "Bild"
   },
   "iscompiledcheck": {
     "english": "true",
     "needs_translation": false,
     "translation": "true"
   },
-  "no_link": {
-    "english": "no link",
-    "needs_translation": false,
-    "translation": "Keine Verbindung"
-  },
-  "no_sensor": {
-    "english": "no sensor",
-    "needs_translation": false,
-    "translation": "kein Sensor"
-  },
   "reload": {
     "english": "reload",
     "needs_translation": false,
     "translation": "Neu laden"
-  },
-  "save": {
-    "english": "save",
-    "needs_translation": false,
-    "translation": "Speichern"
   },
   "sensors": {
     "accx": {
@@ -6865,11 +6236,6 @@
     }
   },
   "telemetry": {
-    "group_attitude": {
-      "english": "Attitude",
-      "needs_translation": false,
-      "translation": "Lage"
-    },
     "group_barometer": {
       "english": "Barometer",
       "needs_translation": false,
@@ -6915,11 +6281,6 @@
       "needs_translation": false,
       "translation": "Kreisel"
     },
-    "group_load": {
-      "english": "System Load",
-      "needs_translation": false,
-      "translation": "Systemauslastung"
-    },
     "group_profiles": {
       "english": "Profiles",
       "needs_translation": false,
@@ -6945,634 +6306,23 @@
       "needs_translation": false,
       "translation": "Temperaturen"
     },
-    "group_tuning": {
-      "english": "Tuning",
-      "needs_translation": false,
-      "translation": "Einstellung"
-    },
     "group_voltage": {
       "english": "Voltage",
       "needs_translation": false,
       "translation": "Spannung"
-    },
-    "sensor_accel": {
-      "english": "Accel (Hi-Res)",
-      "needs_translation": false,
-      "translation": "Beschleunigung (Hi-Res)"
-    },
-    "sensor_accel_x": {
-      "english": "Accel X",
-      "needs_translation": false,
-      "translation": "Beschleunigung X"
-    },
-    "sensor_accel_y": {
-      "english": "Accel Y",
-      "needs_translation": false,
-      "translation": "Beschleunigung Y"
-    },
-    "sensor_accel_z": {
-      "english": "Accel Z",
-      "needs_translation": false,
-      "translation": "Beschleunigung Z"
-    },
-    "sensor_adjfunc": {
-      "english": "Adjustment Function",
-      "needs_translation": false,
-      "translation": "Einstellungsfunktion"
-    },
-    "sensor_air_temp": {
-      "english": "Air Temperature",
-      "needs_translation": false,
-      "translation": "Lufttemperatur"
-    },
-    "sensor_altitude": {
-      "english": "Altitude",
-      "needs_translation": false,
-      "translation": "Höhe"
-    },
-    "sensor_arming_disable_flags": {
-      "english": "Arming Disable Flags",
-      "needs_translation": false,
-      "translation": "Arming-Disable-Flags"
-    },
-    "sensor_arming_flags": {
-      "english": "Arming Flags",
-      "needs_translation": false,
-      "translation": "Arming-Flags"
-    },
-    "sensor_attitude": {
-      "english": "Attitude (Hi-Res)",
-      "needs_translation": false,
-      "translation": "Lage (Hi-Res)"
-    },
-    "sensor_attitude_pitch": {
-      "english": "Attitude Pitch",
-      "needs_translation": false,
-      "translation": "Lage Nick"
-    },
-    "sensor_attitude_roll": {
-      "english": "Attitude Roll",
-      "needs_translation": false,
-      "translation": "Lage Roll"
-    },
-    "sensor_attitude_yaw": {
-      "english": "Attitude Yaw",
-      "needs_translation": false,
-      "translation": "Lage Gier"
-    },
-    "sensor_battery": {
-      "english": "Battery",
-      "needs_translation": false,
-      "translation": "Akku"
-    },
-    "sensor_battery_cell_count": {
-      "english": "Battery Cell Count",
-      "needs_translation": false,
-      "translation": "Anzahl Akkuzellen"
-    },
-    "sensor_battery_cell_voltage": {
-      "english": "Battery Cell Voltage",
-      "needs_translation": false,
-      "translation": "Akkuzellenspannung"
-    },
-    "sensor_battery_cell_voltages": {
-      "english": "Battery Cell Voltages",
-      "needs_translation": false,
-      "translation": "Akkuzellenspannungen"
-    },
-    "sensor_battery_charge_level": {
-      "english": "Battery Charge Level",
-      "needs_translation": false,
-      "translation": "Akkuladestand"
-    },
-    "sensor_battery_consumption": {
-      "english": "Battery Consumption",
-      "needs_translation": false,
-      "translation": "Akkuverbrauch"
-    },
-    "sensor_battery_current": {
-      "english": "Battery Current",
-      "needs_translation": false,
-      "translation": "Akkustrom"
-    },
-    "sensor_battery_profile": {
-      "english": "Battery Profile",
-      "needs_translation": false,
-      "translation": "Akku-Profil"
-    },
-    "sensor_battery_temp": {
-      "english": "Battery Temperature",
-      "needs_translation": false,
-      "translation": "Akkutemperatur"
-    },
-    "sensor_battery_voltage": {
-      "english": "Battery Voltage",
-      "needs_translation": false,
-      "translation": "Akkuspannung"
-    },
-    "sensor_bec_current": {
-      "english": "BEC Current",
-      "needs_translation": false,
-      "translation": "BEC-Strom"
-    },
-    "sensor_bec_temp": {
-      "english": "BEC Temperature",
-      "needs_translation": false,
-      "translation": "BEC-Temperatur"
-    },
-    "sensor_bec_voltage": {
-      "english": "BEC Voltage",
-      "needs_translation": false,
-      "translation": "BEC-Spannung"
-    },
-    "sensor_bus_current": {
-      "english": "Bus Current",
-      "needs_translation": false,
-      "translation": "Bus-Strom"
-    },
-    "sensor_bus_voltage": {
-      "english": "Bus Voltage",
-      "needs_translation": false,
-      "translation": "Busspannung"
-    },
-    "sensor_collective_control": {
-      "english": "Collective Control",
-      "needs_translation": false,
-      "translation": "Kollektivsteuerung"
-    },
-    "sensor_control": {
-      "english": "Control (Hi-Res)",
-      "needs_translation": false,
-      "translation": "Steuerung (Hi-Res)"
-    },
-    "sensor_cpu_load": {
-      "english": "CPU Load",
-      "needs_translation": false,
-      "translation": "CPU-Auslastung"
-    },
-    "sensor_debug_0": {
-      "english": "Debug 0",
-      "needs_translation": false,
-      "translation": "Debug 0"
-    },
-    "sensor_debug_1": {
-      "english": "Debug 1",
-      "needs_translation": false,
-      "translation": "Debug 1"
-    },
-    "sensor_debug_2": {
-      "english": "Debug 2",
-      "needs_translation": false,
-      "translation": "Debug 2"
-    },
-    "sensor_debug_3": {
-      "english": "Debug 3",
-      "needs_translation": false,
-      "translation": "Debug 3"
-    },
-    "sensor_debug_4": {
-      "english": "Debug 4",
-      "needs_translation": false,
-      "translation": "Debug 4"
-    },
-    "sensor_debug_5": {
-      "english": "Debug 5",
-      "needs_translation": false,
-      "translation": "Debug 5"
-    },
-    "sensor_debug_6": {
-      "english": "Debug 6",
-      "needs_translation": false,
-      "translation": "Debug 6"
-    },
-    "sensor_debug_7": {
-      "english": "Debug 7",
-      "needs_translation": false,
-      "translation": "Debug 7"
-    },
-    "sensor_esc1_bec_current": {
-      "english": "ESC1 BEC Current",
-      "needs_translation": false,
-      "translation": "Regler 1 BEC-Strom"
-    },
-    "sensor_esc1_bec_voltage": {
-      "english": "ESC1 BEC Voltage",
-      "needs_translation": false,
-      "translation": "Regler 1 BEC-Spannung"
-    },
-    "sensor_esc1_capacity": {
-      "english": "ESC1 Capacity",
-      "needs_translation": false,
-      "translation": "Regler 1 Kapazität"
-    },
-    "sensor_esc1_current": {
-      "english": "ESC1 Current",
-      "needs_translation": false,
-      "translation": "Regler 1 Strom"
-    },
-    "sensor_esc1_data": {
-      "english": "ESC1 Data",
-      "needs_translation": false,
-      "translation": "Regler 1 Daten"
-    },
-    "sensor_esc1_erpm": {
-      "english": "ESC1 eRPM",
-      "needs_translation": false,
-      "translation": "Regler 1 eU/min"
-    },
-    "sensor_esc1_model": {
-      "english": "ESC1 Model",
-      "needs_translation": false,
-      "translation": "Regler 1 Modell"
-    },
-    "sensor_esc1_power": {
-      "english": "ESC1 Power",
-      "needs_translation": false,
-      "translation": "Regler 1 Leistung"
-    },
-    "sensor_esc1_status": {
-      "english": "ESC1 Status",
-      "needs_translation": false,
-      "translation": "Regler 1 Status"
-    },
-    "sensor_esc1_temp1": {
-      "english": "ESC1 Temperature 1",
-      "needs_translation": false,
-      "translation": "Regler 1 Temperatur 1"
-    },
-    "sensor_esc1_temp2": {
-      "english": "ESC1 Temperature 2",
-      "needs_translation": false,
-      "translation": "Regler 1 Temperatur 2"
-    },
-    "sensor_esc1_throttle": {
-      "english": "ESC1 Throttle",
-      "needs_translation": false,
-      "translation": "Regler 1 Gas"
-    },
-    "sensor_esc1_voltage": {
-      "english": "ESC1 Voltage",
-      "needs_translation": false,
-      "translation": "Regler 1 Spannung"
-    },
-    "sensor_esc2_bec_current": {
-      "english": "ESC2 BEC Current",
-      "needs_translation": false,
-      "translation": "Regler 2 BEC-Strom"
-    },
-    "sensor_esc2_bec_voltage": {
-      "english": "ESC2 BEC Voltage",
-      "needs_translation": false,
-      "translation": "Regler 2 BEC-Spannung"
-    },
-    "sensor_esc2_capacity": {
-      "english": "ESC2 Capacity",
-      "needs_translation": false,
-      "translation": "Regler 2 Kapazität"
-    },
-    "sensor_esc2_current": {
-      "english": "ESC2 Current",
-      "needs_translation": false,
-      "translation": "Regler 2 Strom"
-    },
-    "sensor_esc2_data": {
-      "english": "ESC2 Data",
-      "needs_translation": false,
-      "translation": "Regler 2 Daten"
-    },
-    "sensor_esc2_erpm": {
-      "english": "ESC2 eRPM",
-      "needs_translation": false,
-      "translation": "Regler 2 eU/min"
-    },
-    "sensor_esc2_model": {
-      "english": "ESC2 Model",
-      "needs_translation": false,
-      "translation": "Regler 2 Modell"
-    },
-    "sensor_esc2_power": {
-      "english": "ESC2 Power",
-      "needs_translation": false,
-      "translation": "Regler 2 Leistung"
-    },
-    "sensor_esc2_status": {
-      "english": "ESC2 Status",
-      "needs_translation": false,
-      "translation": "Regler 2 Status"
-    },
-    "sensor_esc2_temp1": {
-      "english": "ESC2 Temperature 1",
-      "needs_translation": false,
-      "translation": "Regler 2 Temperatur 1"
-    },
-    "sensor_esc2_temp2": {
-      "english": "ESC2 Temperature 2",
-      "needs_translation": false,
-      "translation": "Regler 2 Temperatur 2"
-    },
-    "sensor_esc2_throttle": {
-      "english": "ESC2 Throttle",
-      "needs_translation": false,
-      "translation": "Regler 2 Gas"
-    },
-    "sensor_esc2_voltage": {
-      "english": "ESC2 Voltage",
-      "needs_translation": false,
-      "translation": "Regler 2 Spannung"
-    },
-    "sensor_esc_current": {
-      "english": "ESC Current",
-      "needs_translation": false,
-      "translation": "Reglerstrom"
-    },
-    "sensor_esc_temp": {
-      "english": "ESC Temperature",
-      "needs_translation": false,
-      "translation": "Reglertemperatur"
-    },
-    "sensor_esc_voltage": {
-      "english": "ESC Voltage",
-      "needs_translation": false,
-      "translation": "Reglerspannung"
-    },
-    "sensor_exhaust_temp": {
-      "english": "Exhaust Temperature",
-      "needs_translation": false,
-      "translation": "Abgastemperatur"
-    },
-    "sensor_flight_mode": {
-      "english": "Flight Mode",
-      "needs_translation": false,
-      "translation": "Flugmodus"
-    },
-    "sensor_governor_flags": {
-      "english": "Governor Flags",
-      "needs_translation": false,
-      "translation": "Governor-Flags"
-    },
-    "sensor_governor_state": {
-      "english": "Governor State",
-      "needs_translation": false,
-      "translation": "Governor-Status"
-    },
-    "sensor_gps": {
-      "english": "GPS",
-      "needs_translation": false,
-      "translation": "GPS"
-    },
-    "sensor_gps_altitude": {
-      "english": "GPS Altitude",
-      "needs_translation": false,
-      "translation": "GPS-Höhe"
-    },
-    "sensor_gps_coord": {
-      "english": "GPS Coordinates",
-      "needs_translation": false,
-      "translation": "GPS-Koordinaten"
-    },
-    "sensor_gps_date_time": {
-      "english": "GPS Date/Time",
-      "needs_translation": false,
-      "translation": "GPS-Datum/Zeit"
-    },
-    "sensor_gps_groundspeed": {
-      "english": "GPS Ground Speed",
-      "needs_translation": false,
-      "translation": "GPS-Geschwindigkeit"
-    },
-    "sensor_gps_hdop": {
-      "english": "GPS HDOP",
-      "needs_translation": false,
-      "translation": "GPS-HDOP"
-    },
-    "sensor_gps_heading": {
-      "english": "GPS Heading",
-      "needs_translation": false,
-      "translation": "GPS-Kurs"
-    },
-    "sensor_gps_home_direction": {
-      "english": "GPS Home Direction",
-      "needs_translation": false,
-      "translation": "GPS-Richtung zum Start"
-    },
-    "sensor_gps_home_distance": {
-      "english": "GPS Home Distance",
-      "needs_translation": false,
-      "translation": "GPS-Entfernung zum Start"
-    },
-    "sensor_gps_pdop": {
-      "english": "GPS PDOP",
-      "needs_translation": false,
-      "translation": "GPS-PDOP"
-    },
-    "sensor_gps_sats": {
-      "english": "GPS Satellites",
-      "needs_translation": false,
-      "translation": "GPS-Satelliten"
-    },
-    "sensor_gps_vdop": {
-      "english": "GPS VDOP",
-      "needs_translation": false,
-      "translation": "GPS-VDOP"
-    },
-    "sensor_heading": {
-      "english": "Heading",
-      "needs_translation": false,
-      "translation": "Kurs"
-    },
-    "sensor_headspeed": {
-      "english": "Headspeed",
-      "needs_translation": false,
-      "translation": "Rotordrehzahl"
-    },
-    "sensor_heartbeat": {
-      "english": "Heartbeat",
-      "needs_translation": false,
-      "translation": "Herzschlag"
-    },
-    "sensor_led_profile": {
-      "english": "LED Profile",
-      "needs_translation": false,
-      "translation": "LED-Profil"
-    },
-    "sensor_load": {
-      "english": "Load",
-      "needs_translation": false,
-      "translation": "Auslastung"
-    },
-    "sensor_mcu_current": {
-      "english": "MCU Current",
-      "needs_translation": false,
-      "translation": "MCU-Strom"
-    },
-    "sensor_mcu_temp": {
-      "english": "MCU Temperature",
-      "needs_translation": false,
-      "translation": "MCU-Temperatur"
-    },
-    "sensor_mcu_voltage": {
-      "english": "MCU Voltage",
-      "needs_translation": false,
-      "translation": "MCU-Spannung"
-    },
-    "sensor_model_id": {
-      "english": "Model ID",
-      "needs_translation": false,
-      "translation": "Modell-ID"
-    },
-    "sensor_motor_rpm": {
-      "english": "Motor RPM",
-      "needs_translation": false,
-      "translation": "Motordrehzahl"
-    },
-    "sensor_motor_temp": {
-      "english": "Motor Temperature",
-      "needs_translation": false,
-      "translation": "Motortemperatur"
-    },
-    "sensor_none": {
-      "english": "None",
-      "needs_translation": false,
-      "translation": "Keine"
-    },
-    "sensor_pid_profile": {
-      "english": "PID Profile",
-      "needs_translation": false,
-      "translation": "PID-Profil"
-    },
-    "sensor_pitch_control": {
-      "english": "Pitch Control",
-      "needs_translation": false,
-      "translation": "Nicksteuerung"
-    },
-    "sensor_rates_profile": {
-      "english": "Rates Profile",
-      "needs_translation": false,
-      "translation": "Raten-Profil"
-    },
-    "sensor_rescue_state": {
-      "english": "Rescue State",
-      "needs_translation": false,
-      "translation": "Rettungsstatus"
-    },
-    "sensor_roll_control": {
-      "english": "Roll Control",
-      "needs_translation": false,
-      "translation": "Rollsteuerung"
-    },
-    "sensor_rpm": {
-      "english": "RPM",
-      "needs_translation": false,
-      "translation": "U/min"
-    },
-    "sensor_rt_load": {
-      "english": "Realtime Load",
-      "needs_translation": false,
-      "translation": "Echtzeit-Auslastung"
-    },
-    "sensor_sys_load": {
-      "english": "System Load",
-      "needs_translation": false,
-      "translation": "Systemauslastung"
-    },
-    "sensor_tailspeed": {
-      "english": "Tailspeed",
-      "needs_translation": false,
-      "translation": "Heckrotordrehzahl"
-    },
-    "sensor_temp": {
-      "english": "Temperature",
-      "needs_translation": false,
-      "translation": "Temperatur"
-    },
-    "sensor_throttle_control": {
-      "english": "Throttle Control",
-      "needs_translation": false,
-      "translation": "Gassteuerung"
-    },
-    "sensor_trans_rpm": {
-      "english": "Transmission RPM",
-      "needs_translation": false,
-      "translation": "Getriebedrehzahl"
-    },
-    "sensor_variometer": {
-      "english": "Variometer",
-      "needs_translation": false,
-      "translation": "Variometer"
-    },
-    "sensor_yaw_control": {
-      "english": "Yaw Control",
-      "needs_translation": false,
-      "translation": "Giersteuerung"
     }
-  },
-  "version": {
-    "english": "version",
-    "needs_translation": false,
-    "translation": "Version"
   },
   "widgets": {
     "bbl": {
-      "display": {
-        "english": "Display",
-        "needs_translation": false,
-        "translation": "Anzeige"
-      },
-      "display_free": {
-        "english": "Free",
-        "needs_translation": false,
-        "translation": "Frei"
-      },
-      "display_outof": {
-        "english": "Used/Total",
-        "needs_translation": false,
-        "translation": "Verbraucht/Gesamt"
-      },
-      "display_used": {
-        "english": "Used",
-        "needs_translation": false,
-        "translation": "Verbraucht"
-      },
       "erase_dataflash": {
         "english": "Erase dataflash",
         "needs_translation": false,
         "translation": "Blackbox speicher loeschen"
-      },
-      "erasing": {
-        "english": "Erasing...",
-        "needs_translation": false,
-        "translation": "Lösche..."
       }
     },
     "craftimage": {},
-    "craftname": {
-      "title": {
-        "english": "CRAFT NAME",
-        "needs_translation": false,
-        "translation": "FLUGGERÄT NAME"
-      },
-      "txt_cancel": {
-        "english": "Cancel",
-        "needs_translation": false,
-        "translation": "Abbrechen"
-      },
-      "txt_enter_craft_name": {
-        "english": "Enter Craft Name",
-        "needs_translation": false,
-        "translation": "Fluggerätname eingeben"
-      },
-      "txt_save": {
-        "english": "Save",
-        "needs_translation": false,
-        "translation": "Speichern"
-      }
-    },
+    "craftname": {},
     "dashboard": {
-      "altitude": {
-        "english": "Altitude",
-        "needs_translation": false,
-        "translation": "Höhe"
-      },
       "altitude_max": {
         "english": "Altitude Max",
         "needs_translation": false,
@@ -7587,26 +6337,6 @@
         "english": "Blackbox",
         "needs_translation": false,
         "translation": "Blackbox"
-      },
-      "cell_voltage": {
-        "english": "Cell Voltage",
-        "needs_translation": false,
-        "translation": "Zellenspannung"
-      },
-      "check_bg_task": {
-        "english": "BG TASK",
-        "needs_translation": false,
-        "translation": "HINTERGRUND-TASK"
-      },
-      "check_discovered_sensors": {
-        "english": "SENSORS",
-        "needs_translation": false,
-        "translation": "SENSOREN"
-      },
-      "check_rf_module_on": {
-        "english": "RF MODULE",
-        "needs_translation": false,
-        "translation": "HF-MODUL"
       },
       "consumed_mah": {
         "english": "Consumed mAh",
@@ -7733,16 +6463,6 @@
         "needs_translation": false,
         "translation": "Min. Volt pro Zelle"
       },
-      "no_link": {
-        "english": "NO LINK",
-        "needs_translation": false,
-        "translation": "KEINE VERBINDUNG"
-      },
-      "power": {
-        "english": "Power",
-        "needs_translation": false,
-        "translation": "Leistung"
-      },
       "profile": {
         "english": "Profile",
         "needs_translation": false,
@@ -7783,16 +6503,6 @@
         "needs_translation": false,
         "translation": "RPM Min."
       },
-      "rssi_min": {
-        "english": "RSSI Min",
-        "needs_translation": false,
-        "translation": "RSSI Min."
-      },
-      "theme_load_error": {
-        "english": "Your theme did not load correctly. Falling back to default theme.",
-        "needs_translation": false,
-        "translation": "Ihr Design konnte nicht geladen werden. Das Standard-Design wird stattdessen verwendet."
-      },
       "throttle": {
         "english": "Throttle",
         "needs_translation": false,
@@ -7818,20 +6528,10 @@
         "needs_translation": false,
         "translation": "Modell-Gesamtflugzeit"
       },
-      "tx_batt": {
-        "english": "TX Battery",
-        "needs_translation": false,
-        "translation": "Senderakku"
-      },
       "unsupported_resolution": {
         "english": "TO SMALL",
         "needs_translation": false,
         "translation": "ZU KLEIN"
-      },
-      "validate_sensors": {
-        "english": "PLEASE CHECK SENSORS",
-        "needs_translation": false,
-        "translation": "BENÖTIGTE SENSOREN NICHT VERFÜGBAR"
       },
       "voltage": {
         "english": "Voltage",
@@ -7842,11 +6542,6 @@
         "english": "Volts per cell",
         "needs_translation": false,
         "translation": "Volt pro Zelle"
-      },
-      "waiting_for_connection": {
-        "english": "CONNECTING",
-        "needs_translation": false,
-        "translation": "VERBINDEN"
       },
       "warning": {
         "english": "Warning",

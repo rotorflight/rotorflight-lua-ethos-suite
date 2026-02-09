@@ -1316,11 +1316,6 @@
       "english": "Auto throttle",
       "translation": "Gaz Auto",
       "needs_translation": false
-    },
-    "governor_fallback_drop": {
-      "english": "Fallback drop",
-      "translation": "Coupure de secours",
-      "needs_translation": false
     }
   },
   "RC_CONFIG": {

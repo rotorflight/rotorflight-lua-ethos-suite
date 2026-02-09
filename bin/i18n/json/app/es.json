@@ -54,21 +54,6 @@
     "translation": "Recarga",
     "needs_translation": false
   },
-  "menu_section_developer": {
-    "english": "Developer",
-    "translation": "Desarrollador",
-    "needs_translation": false
-  },
-  "check_msp_version": {
-    "english": "Unable to determine MSP version in use.",
-    "translation": "Imposible determinar la versión MSP en uso.",
-    "needs_translation": false
-  },
-  "menu_section_about": {
-    "english": "About",
-    "translation": "Acerca de",
-    "needs_translation": false
-  },
   "msg_please_disarm_to_save": {
     "english": "Please disarm to save",
     "translation": "Desarme para guardar a fin de asegurar la integridad de los datos.",
@@ -94,11 +79,6 @@
     "translation": "CANCELAR",
     "needs_translation": false
   },
-  "msg_connecting_to_fbl": {
-    "english": "Connecting to flight controller...",
-    "translation": "Conectando al controlador de vuelo...",
-    "needs_translation": false
-  },
   "navigation_help": {
     "english": "?",
     "translation": "?",
@@ -109,11 +89,6 @@
       "name": {
         "english": "Diagnostics",
         "translation": "Diagnóstico",
-        "needs_translation": false
-      },
-      "help_p1": {
-        "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-        "translation": "Este módulo ofrece varias herramientas para diagnosticar problemas con el controlador de vuelo o la configuración.",
         "needs_translation": false
       }
     },
@@ -131,11 +106,6 @@
       "flightcount": {
         "english": "Flight Count",
         "translation": "Nro de Vuelos",
-        "needs_translation": false
-      },
-      "lastflighttime": {
-        "english": "Last Flight Time",
-        "translation": "Tiempo Ultimo Vuelo",
         "needs_translation": false
       },
       "help_p1": {
@@ -240,34 +210,9 @@
         "translation": "Versión API SIM",
         "needs_translation": false
       },
-      "txt_logging": {
-        "english": "Logging",
-        "translation": "Loggeo",
-        "needs_translation": false
-      },
       "txt_objectprofiler": {
         "english": "Log dashboard speed",
         "translation": "Registrar velocidad del panel",
-        "needs_translation": false
-      },
-      "txt_compilation": {
-        "english": "Compilation",
-        "translation": "Compilación",
-        "needs_translation": false
-      },
-      "txt_loglocation": {
-        "english": "Log location",
-        "translation": "Posición Log",
-        "needs_translation": false
-      },
-      "txt_console": {
-        "english": "CONSOLE",
-        "translation": "CONSOLA",
-        "needs_translation": false
-      },
-      "txt_consolefile": {
-        "english": "CONSOLE & FILE",
-        "translation": "CONSOLA y ARCHIVO",
         "needs_translation": false
       },
       "txt_loglevel": {
@@ -358,11 +303,6 @@
       "dashboard_settings": {
         "english": "Settings",
         "translation": "Ajustes",
-        "needs_translation": false
-      },
-      "dashboard_loader": {
-        "english": "Loader",
-        "translation": "Cargador",
         "needs_translation": false
       },
       "loader_style_small": {
@@ -460,11 +400,6 @@
         "translation": "Pies",
         "needs_translation": false
       },
-      "warning": {
-        "english": "Warning",
-        "translation": "Advertencia",
-        "needs_translation": false
-      },
       "governor_state": {
         "english": "Governor State",
         "translation": "Estado del Governor",
@@ -503,16 +438,6 @@
       "esc_threshold": {
         "english": "Threshold (°)",
         "translation": "Umbral (°)",
-        "needs_translation": false
-      },
-      "bec_voltage": {
-        "english": "BEC Voltage",
-        "translation": "Voltaje BEC",
-        "needs_translation": false
-      },
-      "bec_threshold": {
-        "english": "Threshold (V)",
-        "translation": "Umbral (V)",
         "needs_translation": false
       },
       "fuel": {
@@ -598,11 +523,6 @@
       "timer_postalert": {
         "english": "Post-timer Alert",
         "translation": "Alerta Post-timer",
-        "needs_translation": false
-      },
-      "timer_postalert_period": {
-        "english": "Alert Period",
-        "translation": "Período Alerta",
         "needs_translation": false
       },
       "timer_postalert_interval": {
@@ -1198,11 +1118,6 @@
             "translation": "Auto Rescate Acel",
             "needs_translation": false
           },
-          "gov": {
-            "english": "Governor",
-            "translation": "Gobernador",
-            "needs_translation": false
-          },
           "motor_temp_sensor": {
             "english": "Motor Temperture Sensor",
             "translation": "Sensor temp. motor",
@@ -1363,11 +1278,6 @@
           "rotation": {
             "english": "Rotation",
             "translation": "Rotación",
-            "needs_translation": false
-          },
-          "telemetry_protocol": {
-            "english": "Telemetry Protocol",
-            "translation": "Protocolo Telemetría",
             "needs_translation": false
           },
           "name": {
@@ -1686,11 +1596,6 @@
       "max_query_time": {
         "english": "Maximum query time",
         "translation": "Tiempo Máx Consulta",
-        "needs_translation": false
-      },
-      "help_p1": {
-        "english": "This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
-        "translation": "Esta herramienta intenta determinar la calidad de la conexión de datos MSP llevando a cabo tantas consultas MSP grandes como sea posible en 30 segundos.",
         "needs_translation": false
       },
       "retries": {
@@ -2073,16 +1978,6 @@
         "translation": "Asist. Torque Cola",
         "needs_translation": false
       },
-      "fc_throttle_curve": {
-        "english": "FC Throttle Curve",
-        "translation": "Curva Acel. FC",
-        "needs_translation": false
-      },
-      "tx_precomp_curve": {
-        "english": "TX Throttle V-Curve",
-        "translation": "Curva Precomp TX",
-        "needs_translation": false
-      },
       "fallback_precomp": {
         "english": "Fallback Precomp",
         "translation": "Precomp Resp.",
@@ -2098,29 +1993,9 @@
         "translation": "PID Arranque",
         "needs_translation": false
       },
-      "hs_adjustment": {
-        "english": "Headspeed Adjustment",
-        "translation": "Ajuste VR",
-        "needs_translation": false
-      },
       "dyn_min_throttle": {
         "english": "Dyn. Min Throttle",
         "translation": "Min Dinamico",
-        "needs_translation": false
-      },
-      "autorotation": {
-        "english": "Autorotation",
-        "translation": "Autorotacion",
-        "needs_translation": false
-      },
-      "suspend": {
-        "english": "Suspend",
-        "translation": "Suspender",
-        "needs_translation": false
-      },
-      "bypass": {
-        "english": "Bypass",
-        "translation": "Ignorar",
         "needs_translation": false
       },
       "p": {
@@ -2624,280 +2499,6 @@
         "needs_translation": false
       }
     },
-    "sbusout": {
-      "title": {
-        "english": "SBUS Output",
-        "translation": "Salida SBUS",
-        "needs_translation": false
-      },
-      "help_fields_source": {
-        "english": "Source id for the mix, counting from 0-15.",
-        "translation": "ID Fuente para la mezcla , contando desde 0-15.",
-        "needs_translation": false
-      },
-      "help_default_p4": {
-        "english": "- For motors, use 0, 1000.",
-        "translation": "- Para motores, use 0, 1000.",
-        "needs_translation": false
-      },
-      "ch_prefix": {
-        "english": "CH",
-        "translation": "CH",
-        "needs_translation": false
-      },
-      "channel_prefix": {
-        "english": "CHANNEL ",
-        "translation": "CANAL ",
-        "needs_translation": false
-      },
-      "saving": {
-        "english": "Saving",
-        "translation": "Guardando",
-        "needs_translation": false
-      },
-      "name": {
-        "english": "SBUS Out",
-        "translation": "Salida SBUS",
-        "needs_translation": false
-      },
-      "channel_page": {
-        "english": "Sbus out / CH",
-        "translation": "Salida Sbus/CH",
-        "needs_translation": false
-      },
-      "receiver": {
-        "english": "Receiver",
-        "translation": "Receptor",
-        "needs_translation": false
-      },
-      "servo": {
-        "english": "Servo",
-        "translation": "Servo",
-        "needs_translation": false
-      },
-      "type": {
-        "english": "Type",
-        "translation": "Tipo",
-        "needs_translation": false
-      },
-      "saving_data": {
-        "english": "Saving data...",
-        "translation": "Guardando datos...",
-        "needs_translation": false
-      },
-      "help_fields_max": {
-        "english": "The maximum pwm value to send",
-        "translation": "El valor máximo PWM a enviar",
-        "needs_translation": false
-      },
-      "motor": {
-        "english": "Motor",
-        "translation": "Motor",
-        "needs_translation": false
-      },
-      "help_default_p5": {
-        "english": "- Or you can customize your own mapping.",
-        "translation": "- O bien puede personalizar su propio mapeo.",
-        "needs_translation": false
-      },
-      "help_default_p1": {
-        "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-        "translation": "Configure las mezclas avanzadas y el mapeo de canales si utiliza la salida SBUS en un puerto serial.",
-        "needs_translation": false
-      },
-      "max": {
-        "english": "Max",
-        "translation": "Máx",
-        "needs_translation": false
-      },
-      "save_prompt": {
-        "english": "Save current page to flight controller?",
-        "translation": "Guarda esta página en el controlador de vuelo?",
-        "needs_translation": false
-      },
-      "help_fields_min": {
-        "english": "The minimum pwm value to send.",
-        "translation": "El valor mínimo PWM a enviar.",
-        "needs_translation": false
-      },
-      "mixer": {
-        "english": "Mixer",
-        "translation": "Mezclador",
-        "needs_translation": false
-      },
-      "ok": {
-        "english": "OK",
-        "translation": "OK",
-        "needs_translation": false
-      },
-      "cancel": {
-        "english": "CANCEL",
-        "translation": "CANCELAR",
-        "needs_translation": false
-      },
-      "help_default_p2": {
-        "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-        "translation": "- Para canales RX o servos comunes use 1000, 2000; para servos de banda angosta use 500, 1000.",
-        "needs_translation": false
-      },
-      "save_settings": {
-        "english": "Save settings",
-        "translation": "Guardar Config.",
-        "needs_translation": false
-      },
-      "min": {
-        "english": "Min",
-        "translation": "Mín",
-        "needs_translation": false
-      },
-      "help_default_p3": {
-        "english": "- For mixer rules, use -1000, 1000.",
-        "translation": "- Para reglas de mezclador, use -1000, 1000.",
-        "needs_translation": false
-      },
-      "source": {
-        "english": "Source",
-        "translation": "Fuente",
-        "needs_translation": false
-      }
-    },
-    "fbusout": {
-      "title": {
-        "english": "FBUS Output",
-        "translation": "FBUS Salida",
-        "needs_translation": false
-      },
-      "help_fields_source": {
-        "english": "Source id for the mix, counting from 0-15.",
-        "translation": "Fuente id for the mix, counting from 0-15.",
-        "needs_translation": false
-      },
-      "help_default_p4": {
-        "english": "- For motors, use 0, 1000.",
-        "translation": "- For motors, use 0, 1000.",
-        "needs_translation": false
-      },
-      "ch_prefix": {
-        "english": "CH",
-        "translation": "CH",
-        "needs_translation": false
-      },
-      "channel_prefix": {
-        "english": "CHANNEL ",
-        "translation": "CHANNEL ",
-        "needs_translation": false
-      },
-      "saving": {
-        "english": "Saving",
-        "translation": "Saving",
-        "needs_translation": false
-      },
-      "name": {
-        "english": "FBUS Out",
-        "translation": "FBUS Out",
-        "needs_translation": false
-      },
-      "channel_page": {
-        "english": "Fbus out / CH",
-        "translation": "Fbus out / CH",
-        "needs_translation": false
-      },
-      "receiver": {
-        "english": "Receiver",
-        "translation": "Receptor",
-        "needs_translation": false
-      },
-      "servo": {
-        "english": "Servo",
-        "translation": "Servo",
-        "needs_translation": false
-      },
-      "type": {
-        "english": "Type",
-        "translation": "Tipo",
-        "needs_translation": false
-      },
-      "saving_data": {
-        "english": "Saving data...",
-        "translation": "Saving Datos...",
-        "needs_translation": false
-      },
-      "help_fields_max": {
-        "english": "The maximum pwm value to send",
-        "translation": "The maximum pwm Valor to send",
-        "needs_translation": false
-      },
-      "motor": {
-        "english": "Motor",
-        "translation": "Motor",
-        "needs_translation": false
-      },
-      "help_default_p5": {
-        "english": "- Or you can customize your own mapping.",
-        "translation": "- Or you can customize your own mapping.",
-        "needs_translation": false
-      },
-      "help_default_p1": {
-        "english": "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-        "translation": "Configura mezcla avanzada y mapeo de canales si SBUS Out esta activo en un puerto serial.",
-        "needs_translation": false
-      },
-      "max": {
-        "english": "Max",
-        "translation": "Max",
-        "needs_translation": false
-      },
-      "save_prompt": {
-        "english": "Save current page to flight controller?",
-        "translation": "Guardar current page to flight controller?",
-        "needs_translation": false
-      },
-      "help_fields_min": {
-        "english": "The minimum pwm value to send.",
-        "translation": "The minimum pwm Valor to send.",
-        "needs_translation": false
-      },
-      "mixer": {
-        "english": "Mixer",
-        "translation": "Mezclador",
-        "needs_translation": false
-      },
-      "ok": {
-        "english": "OK",
-        "translation": "OK",
-        "needs_translation": false
-      },
-      "cancel": {
-        "english": "CANCEL",
-        "translation": "CANCEL",
-        "needs_translation": false
-      },
-      "help_default_p2": {
-        "english": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-        "translation": "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-        "needs_translation": false
-      },
-      "save_settings": {
-        "english": "Save settings",
-        "translation": "Guardar settings",
-        "needs_translation": false
-      },
-      "min": {
-        "english": "Min",
-        "translation": "Min",
-        "needs_translation": false
-      },
-      "help_default_p3": {
-        "english": "- For mixer rules, use -1000, 1000.",
-        "translation": "- For Mezclador rules, use -1000, 1000.",
-        "needs_translation": false
-      },
-      "source": {
-        "english": "Source",
-        "translation": "Fuente",
-        "needs_translation": false
-      }
-    },
     "profile_rescue": {
       "help_p4": {
         "english": "Hover: How much collective to maintain a steady hover.",
@@ -3051,16 +2652,6 @@
         "translation": "% ajuste Cabeceo",
         "needs_translation": false
       },
-      "name": {
-        "english": "Trim",
-        "translation": "Ajuste",
-        "needs_translation": false
-      },
-      "help_p2": {
-        "english": "Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
-        "translation": "Cola motorizada: Si tiene una cola motorizada, utilice este parámetro para configurar la velocidad mínima de ralentí a la que el heli no gira.",
-        "needs_translation": false
-      },
       "mixer_override": {
         "english": "Mixer Override",
         "translation": "Toma de Mezclador",
@@ -3079,11 +2670,6 @@
       "collective_trim": {
         "english": "Col. trim %",
         "translation": "% ajuste Colectivo",
-        "needs_translation": false
-      },
-      "help_p1": {
-        "english": "Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.",
-        "translation": "Ajuste de enlaces: Se utiliza para corregir pequeños problemas de nivelación en el swashplate. Normalmente se utiliza cuando los brazos del swashplate no son ajustables.",
         "needs_translation": false
       }
     },
@@ -3153,29 +2739,9 @@
         "translation": "Tipo de acelerador",
         "needs_translation": false
       },
-      "collective": {
-        "english": "Collective",
-        "translation": "Colectivo",
-        "needs_translation": false
-      },
-      "idle_collective": {
-        "english": "Col->Idle Throttle",
-        "translation": "Colectivo ralentí",
-        "needs_translation": false
-      },
-      "wot_collective": {
-        "english": "Col->Full Throttle",
-        "translation": "Colectivo máx.",
-        "needs_translation": false
-      },
       "throttle_hold_timeout": {
         "english": "Throttle hold timeout",
         "translation": "Tiempo retención acelerador",
-        "needs_translation": false
-      },
-      "ramp_time": {
-        "english": "Ramp time",
-        "translation": "Tiempo de rampa",
         "needs_translation": false
       },
       "startup_time": {
@@ -3206,11 +2772,6 @@
       "name": {
         "english": "Governor",
         "translation": "Gobernador",
-        "needs_translation": false
-      },
-      "gov_rpm_filter": {
-        "english": "RPM Filter Cutoff",
-        "translation": "Corte Filtro RPM",
         "needs_translation": false
       },
       "gov_pwr_filter": {
@@ -3524,16 +3085,6 @@
         "translation": "Swash",
         "needs_translation": false
       },
-      "configuration": {
-        "english": "Configuration",
-        "translation": "Configuracion",
-        "needs_translation": false
-      },
-      "directions": {
-        "english": "Mix Directions",
-        "translation": "Mezcla Direcciones",
-        "needs_translation": false
-      },
       "geometry": {
         "english": "Geometry",
         "translation": "Geometria",
@@ -3557,11 +3108,6 @@
       "yaw_direction": {
         "english": "Yaw Direction",
         "translation": "Giro Direccion",
-        "needs_translation": false
-      },
-      "settings": {
-        "english": "Settings",
-        "translation": "Ajustes",
         "needs_translation": false
       },
       "trims": {
@@ -3627,11 +3173,6 @@
       "swash_phase": {
         "english": "Phase Angle",
         "translation": "Angulo de Fase",
-        "needs_translation": false
-      },
-      "collective_tilt_correction": {
-        "english": "Collective Tilt Correction",
-        "translation": "Corrección Inclinación Colectivo",
         "needs_translation": false
       },
       "swash_pitch_limit": {
@@ -3713,11 +3254,6 @@
         "translation": "Alabeo",
         "needs_translation": false
       },
-      "yaw_dynamics": {
-        "english": "Yaw dynamics",
-        "translation": "Dinám. de Dirección",
-        "needs_translation": false
-      },
       "pitch": {
         "english": "Pitch",
         "translation": "Cabeceo",
@@ -3731,11 +3267,6 @@
       "setpoint_boost_cutoff": {
         "english": "Setpoint boost cutoff",
         "translation": "Corte Ref.",
-        "needs_translation": false
-      },
-      "yaw_dynamic_deadband_gain": {
-        "english": "D. Band",
-        "translation": "Banda Muerta Rot.",
         "needs_translation": false
       },
       "rates_type": {
@@ -3753,21 +3284,6 @@
         "translation": "Cambió el tipo de tasa. Los valores se cambiaron a los por defecto.",
         "needs_translation": false
       },
-      "yaw_dynamic_ceiling_gain": {
-        "english": "Ceiling",
-        "translation": "Tope Dirección",
-        "needs_translation": false
-      },
-      "yaw_boost": {
-        "english": "Yaw boost",
-        "translation": "Impulso de Dirección",
-        "needs_translation": false
-      },
-      "gain": {
-        "english": "Gain",
-        "translation": "Ganancia",
-        "needs_translation": false
-      },
       "rate_table": {
         "english": "Rate Table",
         "translation": "Tabla de Tasas",
@@ -3783,24 +3299,9 @@
         "translation": "Dirección",
         "needs_translation": false
       },
-      "yaw_dynamic_deadband_filter": {
-        "english": "Filter",
-        "translation": "Filtro Rot.",
-        "needs_translation": false
-      },
       "name": {
         "english": "Rates",
         "translation": "Tasas",
-        "needs_translation": false
-      },
-      "cutoff": {
-        "english": "Cutoff",
-        "translation": "Límite",
-        "needs_translation": false
-      },
-      "help_rate_table": {
-        "english": "Please select the rate you would like to use. Saving will apply the choice to the active profile.",
-        "translation": "Seleccione la tasa que desea utilizar. Al guardar se aplicará la elección al perfil activo.",
         "needs_translation": false
       },
       "help_p1": {
@@ -3808,19 +3309,9 @@
         "translation": "Tipo de Tasas: Seleccione el tipo de tasa con la que prefiere volar. Raceflight y Actual son las mas directas.",
         "needs_translation": false
       },
-      "pitch_boost": {
-        "english": "Pitch boost",
-        "translation": "Impulso de cabeceo",
-        "needs_translation": false
-      },
       "help_p2": {
         "english": "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
         "translation": "Dinámicas: Se aplican independientemente de los tipos de tasas. Normalmente se dejan los valores por defecto, pero pueden ser ajustados para suavizar los movimientos del heli, como es el caso de los modelos a escala.",
-        "needs_translation": false
-      },
-      "accel_limit": {
-        "english": "Accel",
-        "translation": "Acel.",
         "needs_translation": false
       },
       "dyn_deadband_filter": {
@@ -3828,34 +3319,9 @@
         "translation": "Filtro Zona Muerta",
         "needs_translation": false
       },
-      "roll_boost": {
-        "english": "Roll boost",
-        "translation": "Impulso de alabeo",
-        "needs_translation": false
-      },
       "dyn_deadband_gain": {
         "english": "Dynamic deadband gain",
         "translation": "Gan. Zona Muerta",
-        "needs_translation": false
-      },
-      "collective_dynamics": {
-        "english": "Collective dynamics",
-        "translation": "Dinám. de Colectivo",
-        "needs_translation": false
-      },
-      "roll_dynamics": {
-        "english": "Roll dynamics",
-        "translation": "Dinámica de Alabeo",
-        "needs_translation": false
-      },
-      "collective_boost": {
-        "english": "Collective boost",
-        "translation": "Impulso colectivo",
-        "needs_translation": false
-      },
-      "pitch_dynamics": {
-        "english": "Pitch dynamics",
-        "translation": "Dinám. de Cabeceo",
         "needs_translation": false
       },
       "response_time": {
@@ -3965,19 +3431,9 @@
         "translation": "Escala positiva del servo.",
         "needs_translation": false
       },
-      "saving_data": {
-        "english": "Saving data...",
-        "translation": "Guardando datos...",
-        "needs_translation": false
-      },
       "cyc_left": {
         "english": "CYC.LEFT",
         "translation": "CICL. IZQ",
-        "needs_translation": false
-      },
-      "saving": {
-        "english": "Saving",
-        "translation": "Guardando",
         "needs_translation": false
       },
       "name": {
@@ -4271,11 +3727,6 @@
         "translation": "OK",
         "needs_translation": false
       },
-      "unknown": {
-        "english": "UNKNOWN",
-        "translation": "DESCONOCIDO",
-        "needs_translation": false
-      },
       "mspsensor": {
         "english": "MSP Sensor",
         "translation": "Sensor MSP",
@@ -4423,11 +3874,6 @@
         "translation": "Carga Tiempo-Real",
         "needs_translation": false
       },
-      "help_p2": {
-        "english": "To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'.",
-        "translation": "Para borrar la flash de datos y guardar nuevos LOGs, oprima el botón del menú marcado con '*'.",
-        "needs_translation": false
-      },
       "arming_disable_flag_2": {
         "english": "RX Fail Safe",
         "translation": "Pérdida RX",
@@ -4446,11 +3892,6 @@
       "arming_disable_flag_18": {
         "english": "GPS",
         "translation": "GPS",
-        "needs_translation": false
-      },
-      "help_p1": {
-        "english": "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
-        "translation": "Utilice esta página para ver el estado del controlador de vuelo. Puede ser útil para determinar la razón por la que el heli no se puede armar.",
         "needs_translation": false
       },
       "arming_flags": {
@@ -4572,19 +4013,9 @@
     "translation": "Guarda",
     "needs_translation": false
   },
-  "menu_section_flight_tuning": {
-    "english": "Flight Tuning",
-    "translation": "Ajustes de Vuelo",
-    "needs_translation": false
-  },
   "error_timed_out": {
     "english": "Error: timed out",
     "translation": "Error: tiempo agotado",
-    "needs_translation": false
-  },
-  "check_rf_module_on": {
-    "english": "Please check your rf module is turned on.",
-    "translation": "Verifique que el módulo RF esté encendido.",
     "needs_translation": false
   },
   "msg_saving": {
@@ -4617,11 +4048,6 @@
     "translation": "Herramientas",
     "needs_translation": false
   },
-  "msg_connecting": {
-    "english": "Connecting",
-    "translation": "Conectando",
-    "needs_translation": false
-  },
   "msg_save_current_page": {
     "english": "Save current page to flight controller?",
     "translation": "Guarda esta página en el controlador de vuelo?",
@@ -4632,19 +4058,9 @@
     "translation": "                OK                ",
     "needs_translation": false
   },
-  "check_discovered_sensors": {
-    "english": "Please check you have discovered all sensors.",
-    "translation": "Verifique que ha descubierto todos los sensores.",
-    "needs_translation": false
-  },
   "msg_loading": {
     "english": "Loading...",
     "translation": "Cargando...",
-    "needs_translation": false
-  },
-  "check_heli_on": {
-    "english": "Please check your heli is powered up and radio connected.",
-    "translation": "Verifique que el helicóptero esté encendido y el radio conectado.",
     "needs_translation": false
   },
   "check_bg_task": {
@@ -4655,11 +4071,6 @@
   "navigation_tools": {
     "english": "*",
     "translation": "*",
-    "needs_translation": false
-  },
-  "check_supported_version": {
-    "english": "This version of the Lua script \ncan't be used with the selected model",
-    "translation": "Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado",
     "needs_translation": false
   },
   "msg_waiting_for_connection": {

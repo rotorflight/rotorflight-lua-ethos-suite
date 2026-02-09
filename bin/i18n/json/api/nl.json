@@ -1316,11 +1316,6 @@
       "english": "Auto throttle",
       "translation": "Automatische throttle",
       "needs_translation": false
-    },
-    "governor_fallback_drop": {
-      "english": "Fallback drop",
-      "translation": "Terugvalverlaging",
-      "needs_translation": false
     }
   },
   "RC_CONFIG": {

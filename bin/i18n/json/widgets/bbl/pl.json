@@ -3,30 +3,5 @@
     "english": "Erase dataflash",
     "translation": "Erase dataflash",
     "needs_translation": false
-  },
-  "erasing": {
-    "english": "Erasing...",
-    "translation": "Erasing...",
-    "needs_translation": false
-  },
-  "display": {
-    "english": "Display",
-    "translation": "Display",
-    "needs_translation": false
-  },
-  "display_free": {
-    "english": "Free",
-    "translation": "Free",
-    "needs_translation": false
-  },
-  "display_used": {
-    "english": "Used",
-    "translation": "Uzyte",
-    "needs_translation": false
-  },
-  "display_outof": {
-    "english": "Used/Total",
-    "translation": "Uzyte/Razem",
-    "needs_translation": false
   }
 }

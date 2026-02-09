@@ -1,14 +1,4 @@
 {
-  "theme_load_error": {
-    "english": "Your theme did not load correctly. Falling back to default theme.",
-    "translation": "Your Tema did not load correctly. Falling Tilbake to default Tema.",
-    "needs_translation": false
-  },
-  "validate_sensors": {
-    "english": "PLEASE CHECK SENSORS",
-    "translation": "PLEASE CHECK SENSORER",
-    "needs_translation": false
-  },
   "unsupported_resolution": {
     "english": "TO SMALL",
     "translation": "TO SMALL",
@@ -17,31 +7,6 @@
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
-    "needs_translation": false
-  },
-  "waiting_for_connection": {
-    "english": "CONNECTING",
-    "translation": "CONNECTING",
-    "needs_translation": false
-  },
-  "check_bg_task": {
-    "english": "BG TASK",
-    "translation": "BG TASK",
-    "needs_translation": false
-  },
-  "check_rf_module_on": {
-    "english": "RF MODULE",
-    "translation": "RF MODULE",
-    "needs_translation": false
-  },
-  "check_discovered_sensors": {
-    "english": "SENSORS",
-    "translation": "SENSORER",
-    "needs_translation": false
-  },
-  "no_link": {
-    "english": "NO LINK",
-    "translation": "NO LINK",
     "needs_translation": false
   },
   "reset_flight": {
@@ -199,11 +164,6 @@
     "translation": "Flight Tid",
     "needs_translation": false
   },
-  "rssi_min": {
-    "english": "RSSI Min",
-    "translation": "RSSI Min",
-    "needs_translation": false
-  },
   "current": {
     "english": "Current",
     "translation": "Current",
@@ -249,24 +209,9 @@
     "translation": "Maks E.MCU",
     "needs_translation": false
   },
-  "altitude": {
-    "english": "Altitude",
-    "translation": "Altitude",
-    "needs_translation": false
-  },
   "altitude_max": {
     "english": "Altitude Max",
     "translation": "Altitude Maks",
-    "needs_translation": false
-  },
-  "power": {
-    "english": "Power",
-    "translation": "Power",
-    "needs_translation": false
-  },
-  "cell_voltage": {
-    "english": "Cell Voltage",
-    "translation": "Cell Voltage",
     "needs_translation": false
   },
   "volts_per_cell": {
@@ -277,11 +222,6 @@
   "warning": {
     "english": "Warning",
     "translation": "Varsel",
-    "needs_translation": false
-  },
-  "tx_batt": {
-    "english": "TX Battery",
-    "translation": "TX Battery",
     "needs_translation": false
   },
   "link_max": {

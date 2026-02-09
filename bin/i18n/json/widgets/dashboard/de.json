@@ -1,14 +1,4 @@
 {
-  "theme_load_error": {
-    "english": "Your theme did not load correctly. Falling back to default theme.",
-    "translation": "Ihr Design konnte nicht geladen werden. Das Standard-Design wird stattdessen verwendet.",
-    "needs_translation": false
-  },
-  "validate_sensors": {
-    "english": "PLEASE CHECK SENSORS",
-    "translation": "BENÖTIGTE SENSOREN NICHT VERFÜGBAR",
-    "needs_translation": false
-  },
   "unsupported_resolution": {
     "english": "TO SMALL",
     "translation": "ZU KLEIN",
@@ -17,31 +7,6 @@
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
-    "needs_translation": false
-  },
-  "waiting_for_connection": {
-    "english": "CONNECTING",
-    "translation": "VERBINDEN",
-    "needs_translation": false
-  },
-  "check_bg_task": {
-    "english": "BG TASK",
-    "translation": "HINTERGRUND-TASK",
-    "needs_translation": false
-  },
-  "check_rf_module_on": {
-    "english": "RF MODULE",
-    "translation": "HF-MODUL",
-    "needs_translation": false
-  },
-  "check_discovered_sensors": {
-    "english": "SENSORS",
-    "translation": "SENSOREN",
-    "needs_translation": false
-  },
-  "no_link": {
-    "english": "NO LINK",
-    "translation": "KEINE VERBINDUNG",
     "needs_translation": false
   },
   "reset_flight": {
@@ -199,11 +164,6 @@
     "translation": "Flugzeit",
     "needs_translation": false
   },
-  "rssi_min": {
-    "english": "RSSI Min",
-    "translation": "RSSI Min.",
-    "needs_translation": false
-  },
   "current": {
     "english": "Current",
     "translation": "Strom",
@@ -249,24 +209,9 @@
     "translation": "Max. E.MCU",
     "needs_translation": false
   },
-  "altitude": {
-    "english": "Altitude",
-    "translation": "Höhe",
-    "needs_translation": false
-  },
   "altitude_max": {
     "english": "Altitude Max",
     "translation": "Höhe Max.",
-    "needs_translation": false
-  },
-  "power": {
-    "english": "Power",
-    "translation": "Leistung",
-    "needs_translation": false
-  },
-  "cell_voltage": {
-    "english": "Cell Voltage",
-    "translation": "Zellenspannung",
     "needs_translation": false
   },
   "volts_per_cell": {
@@ -277,11 +222,6 @@
   "warning": {
     "english": "Warning",
     "translation": "Warnung",
-    "needs_translation": false
-  },
-  "tx_batt": {
-    "english": "TX Battery",
-    "translation": "Senderakku",
     "needs_translation": false
   },
   "link_max": {
