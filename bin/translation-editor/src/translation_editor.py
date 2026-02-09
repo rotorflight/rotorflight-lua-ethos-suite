@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 import json
+import os
+import shutil
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkinter import filedialog
+from datetime import datetime
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
+from zipfile import ZipFile, ZIP_DEFLATED
 from pathlib import Path
 from collections import OrderedDict
 
@@ -9,17 +16,35 @@ APP_TITLE = "RF Suite Translation Editor"
 # Allowed non-ASCII characters observed in existing translations.
 ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​–“”")
 
+REPO_OWNER = "rotorflight"
+REPO_NAME = "rotorflight-lua-ethos-suite"
+REPO_BRANCH = "master"
+API_BASE = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
+DATA_ROOT = Path.home() / ".rfsuite-translation-editor"
+I18N_REL = Path("bin/i18n/json")
+SOUND_REL = Path("bin/sound-generator/json")
+
 
 def repo_root():
     return Path(__file__).resolve().parents[3]
 
 
+def data_root():
+    return DATA_ROOT
+
+
 def i18n_root():
-    return repo_root() / "bin" / "i18n" / "json"
+    data_path = data_root() / I18N_REL
+    if data_path.exists():
+        return data_path
+    return repo_root() / I18N_REL
 
 
 def sound_root():
-    return repo_root() / "bin" / "sound-generator" / "json"
+    data_path = data_root() / SOUND_REL
+    if data_path.exists():
+        return data_path
+    return repo_root() / SOUND_REL
 
 
 class DataStore:
@@ -56,6 +81,7 @@ class TranslationEditor(tk.Tk):
 
         self._build_ui()
         self._load_dataset_options()
+        self._ensure_data()
         self._load_data()
         self.bind_all("<Control-z>", self._undo_last)
 
@@ -94,6 +120,9 @@ class TranslationEditor(tk.Tk):
         btn_frame = ttk.Frame(top)
         btn_frame.pack(side=tk.RIGHT)
         ttk.Button(btn_frame, text="Save", command=self._save).pack(side=tk.RIGHT, padx=4)
+        ttk.Button(btn_frame, text="Export", command=self._export).pack(side=tk.RIGHT, padx=4)
+        ttk.Button(btn_frame, text="Reset", command=self._reset).pack(side=tk.RIGHT, padx=4)
+        ttk.Button(btn_frame, text="Sync", command=self._sync).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Reload", command=self._load_data).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo", command=self._undo_last).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Edit translation", command=self._edit_selected).pack(side=tk.RIGHT, padx=4)
@@ -104,6 +133,10 @@ class TranslationEditor(tk.Tk):
         stats.pack(fill=tk.X, padx=10, pady=(0, 4))
         self.stats_label = ttk.Label(stats, text="", anchor=tk.W)
         self.stats_label.pack(side=tk.LEFT, padx=8, pady=4)
+
+        data_path = data_root()
+        self.data_label = ttk.Label(self, text=f"Data: {data_path}", anchor=tk.W)
+        self.data_label.pack(fill=tk.X, padx=10, pady=(0, 4))
 
         hint = ttk.Label(self, text="Tip: click a Translation cell to edit. (For en, edit the English cell.)")
         hint.pack(fill=tk.X, padx=10, pady=(0, 4))
@@ -587,6 +620,139 @@ class TranslationEditor(tk.Tk):
             self._save_i18n()
         else:
             self._save_sound()
+
+    def _sync(self):
+        if not messagebox.askyesno(
+            "Sync",
+            "Sync will download the latest JSON files from GitHub and overwrite local data. Continue?"
+        ):
+            return
+        working = None
+        try:
+            working = self._show_working("Syncing... Please wait.")
+            self._download_folder(I18N_REL)
+            self._download_folder(SOUND_REL)
+        except Exception as e:
+            if working:
+                working.destroy()
+            messagebox.showerror("Sync failed", str(e))
+            return
+        if working:
+            working.destroy()
+        self._load_dataset_options()
+        self._load_data()
+        messagebox.showinfo("Sync complete", f"Synced data into {data_root()}")
+
+    def _reset(self):
+        if not messagebox.askyesno("Reset", "Reset local data by re-downloading from the repo?"):
+            return
+        base = data_root()
+        if base.exists():
+            try:
+                shutil.rmtree(base)
+            except Exception as e:
+                messagebox.showerror("Reset failed", str(e))
+                return
+        self._sync()
+
+    def _export(self):
+        if self.store.dataset == "i18n":
+            src_root = i18n_root()
+        else:
+            src_root = sound_root()
+
+        locale = self.store.locale
+        src_file = src_root / f"{locale}.json"
+        if not src_file.exists():
+            messagebox.showerror("Export failed", f"Missing {src_file}")
+            return
+
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_name = f"rfsuite-{self.store.dataset}-{locale}-{ts}.zip"
+        out_path = filedialog.asksaveasfilename(
+            title="Export translations",
+            defaultextension=".zip",
+            initialfile=default_name,
+            filetypes=[("ZIP files", "*.zip")]
+        )
+        if not out_path:
+            return
+
+        try:
+            with ZipFile(out_path, "w", ZIP_DEFLATED) as zf:
+                arcname = str(Path(self.store.dataset) / f"{locale}.json")
+                zf.write(src_file, arcname)
+                info = (
+                    f"Dataset: {self.store.dataset}\n"
+                    f"Locale: {locale}\n"
+                    f"Source: {src_file}\n"
+                    f"Exported: {ts}\n"
+                    f"Repo: https://github.com/{REPO_OWNER}/{REPO_NAME}\n"
+                )
+                zf.writestr("README.txt", info)
+        except Exception as e:
+            messagebox.showerror("Export failed", str(e))
+            return
+
+        messagebox.showinfo("Export complete", f"Exported to {out_path}")
+
+    def _download_folder(self, rel_path: Path):
+        url = f"{API_BASE}/{rel_path.as_posix()}?ref={REPO_BRANCH}"
+        req = Request(url, headers={"Accept": "application/vnd.github+json"})
+        try:
+            with urlopen(req) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+        except HTTPError as e:
+            raise RuntimeError(f"HTTP error {e.code} for {url}") from e
+        except URLError as e:
+            raise RuntimeError(f"Network error for {url}") from e
+
+        if not isinstance(data, list):
+            raise RuntimeError(f"Unexpected response for {url}")
+
+        out_dir = data_root() / rel_path
+        out_dir.mkdir(parents=True, exist_ok=True)
+        for item in data:
+            if item.get("type") != "file":
+                continue
+            name = item.get("name", "")
+            if not name.endswith(".json"):
+                continue
+            download_url = item.get("download_url")
+            if not download_url:
+                continue
+            target = out_dir / name
+            try:
+                with urlopen(download_url) as resp:
+                    target.write_bytes(resp.read())
+            except Exception as e:
+                raise RuntimeError(f"Failed downloading {download_url}: {e}") from e
+
+    def _show_working(self, text):
+        win = tk.Toplevel(self)
+        win.title("Working")
+        win.geometry("320x90")
+        win.resizable(False, False)
+        win.transient(self)
+        win.grab_set()
+        win.lift()
+        lbl = ttk.Label(win, text=text, anchor=tk.W)
+        lbl.pack(fill=tk.X, padx=12, pady=10)
+        bar = ttk.Progressbar(win, mode="indeterminate")
+        bar.pack(fill=tk.X, padx=12, pady=(0, 12))
+        bar.start(10)
+        win.update()
+        return win
+
+    def _ensure_data(self):
+        if (data_root() / I18N_REL / "en.json").exists():
+            return
+        if not messagebox.askyesno(
+            "Initial sync required",
+            "No local data found. Download translation files from GitHub now?"
+        ):
+            return
+        self._sync()
 
     def _has_non_ascii(self):
         for row in self.store.rows:
