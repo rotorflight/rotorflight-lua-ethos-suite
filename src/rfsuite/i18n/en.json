@@ -391,7 +391,7 @@
       },
       "tbl_escgov": {
         "english": "ESC Governor",
-        "max_length": 15,
+        "max_length": 14,
         "needs_translation": false,
         "translation": "ESC Governor"
       },
@@ -573,7 +573,7 @@
       },
       "tbl_heligov": {
         "english": "Heli Governor",
-        "max_length": 16,
+        "max_length": 15,
         "needs_translation": false,
         "translation": "Heli Governor"
       },
