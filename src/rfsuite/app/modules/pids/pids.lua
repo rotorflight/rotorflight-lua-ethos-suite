@@ -67,8 +67,6 @@ local function openPage(idx, title, script)
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-    local longPage = false
-
     form.clear()
 
     rfsuite.app.ui.fieldHeader(title)
@@ -85,7 +83,6 @@ local function openPage(idx, title, script)
     local w = ((screenWidth * 70 / 100) / numCols)
     local paddingRight = 20
     local positions = {}
-    local positions_r = {}
     local pos
 
     local line = form.addLine("")
@@ -94,16 +91,13 @@ local function openPage(idx, title, script)
     local posX = screenWidth - paddingRight
     local posY = paddingTop
 
-    local c = 1
     while loc > 0 do
         local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
         pos = {x = posX, y = posY, w = w, h = h}
         form.addStaticText(line, pos, colLabel)
         positions[loc] = posX - w + paddingRight
-        positions_r[c] = posX - w + paddingRight
         posX = math.floor(posX - w)
         loc = loc - 1
-        c = c + 1
     end
 
     local pidRows = {}
@@ -111,19 +105,17 @@ local function openPage(idx, title, script)
 
     for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
         local f = rfsuite.app.Page.apidata.formdata.fields[i]
-        local l = rfsuite.app.Page.apidata.formdata.labels
-        local pageIdx = i
-        local currentField = i
-
         posX = positions[f.col]
 
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
             if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
-                ui.disableAllFields()
-                ui.disableAllNavigationFields()
-                ui.enableNavigationField('menu')
+                if rfsuite.app.ui then
+                    rfsuite.app.ui.disableAllFields()
+                    rfsuite.app.ui.disableAllNavigationFields()
+                    rfsuite.app.ui.enableNavigationField('menu')
+                end
                 return nil
             end
             return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
@@ -137,6 +129,15 @@ local function openPage(idx, title, script)
 
 end
 
-local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile) end end end
+local function wakeup()
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        if rfsuite.session.activeProfile ~= nil then
+            local titleField = rfsuite.app.formFields['title']
+            if titleField then
+                titleField:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
+            end
+        end
+    end
+end
 
 return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, API = {}}
