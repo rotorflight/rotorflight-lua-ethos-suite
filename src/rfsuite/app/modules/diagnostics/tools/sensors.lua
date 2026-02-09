@@ -33,7 +33,6 @@ local progressLoader
 local progressLoaderCounter = 0
 local progressLoaderBaseMessage
 local progressLoaderMspStatusLast
-local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local doDiscoverNotify = false
 
 local function openProgressDialog(...)

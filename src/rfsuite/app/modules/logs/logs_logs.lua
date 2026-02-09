@@ -213,7 +213,7 @@ local function event(widget, category, value, x, y)
     return false
 end
 
-local function wakeup() if enableWakeup == true then end end
+local function wakeup() end
 
 local function onNavMenu() app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_dir.lua") end
 

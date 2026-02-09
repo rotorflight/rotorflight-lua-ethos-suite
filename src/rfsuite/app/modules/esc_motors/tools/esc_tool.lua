@@ -20,8 +20,6 @@ local powercycleLoaderCounter = 0
 local powercycleLoaderRateLimit = 2
 local showPowerCycleLoaderFinished = false
 local powercycleLoaderBaseMessage
-local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
-
 local findTimeoutClock = os.clock()
 local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 

@@ -5,7 +5,6 @@
 
 local MSP_API = "ESC_PARAMETERS_ZTW"
 local toolName = "@i18n(app.modules.esc_tools.mfg.ztw.name)@"
-local moduleName = "ztw"
 
 local function getPageValue(page, index) return page[index] end
 

@@ -5,7 +5,6 @@
 
 local rfsuite = require("rfsuite")
 local folder = "flrtr"
-local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
 
 local apidata = {
     api = {

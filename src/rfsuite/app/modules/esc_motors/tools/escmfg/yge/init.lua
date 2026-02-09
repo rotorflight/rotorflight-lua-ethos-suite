@@ -4,7 +4,6 @@
 ]] --
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
-local moduleName = "RF2YGE"
 
 local mspHeaderBytes = 2
 

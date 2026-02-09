@@ -21,8 +21,6 @@ local startTestLength = 0
 local testLoader = nil
 local testLoaderBaseMessage
 local testLoaderMspStatusLast
-local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
-
 local function openProgressDialog(...)
     if rfutils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
         local arg1 = select(1, ...)
