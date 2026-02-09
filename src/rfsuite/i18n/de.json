@@ -6603,10 +6603,10 @@
           "translation": "Governor-Status"
         },
         "help_audio_events": {
-          "english": "Here you can configure which system events and telemetry values trigger voice announcements or alerts.",
-          "max_length": 122,
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "max_length": 137,
           "needs_translation": false,
-          "translation": "Hier können Sie konfigurieren, welche Systemereignisse und Telemetriewerte eine Sprachansage oder Warnung auslösen sollen."
+          "translation": "Verwenden Sie diesen Abschnitt, um zu konfigurieren, welche Systemereignisse und Telemetriewerte eine Sprachansage oder Warnung auslösen."
         },
         "help_modelAnnouncement": {
           "english": "Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').",

@@ -6603,8 +6603,8 @@
           "translation": "Estado del Governor"
         },
         "help_audio_events": {
-          "english": "Here you can configure which system events and telemetry values trigger voice announcements or alerts.",
-          "max_length": 122,
+          "english": "Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.",
+          "max_length": 137,
           "needs_translation": true,
           "translation": "Here you can configure which system events and telemetry values trigger voice announcements or alerts."
         },
