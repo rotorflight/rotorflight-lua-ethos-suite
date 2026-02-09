@@ -6,22 +6,116 @@
 local rfsuite = require("rfsuite")
 
 local pages = {}
-local sections = loadfile("app/modules/sections.lua")()
+-- Manifest is the single source of truth for menu structure.
+local manifest = loadfile("app/modules/manifest.lua")()
+local sections = {}
+local missingModules = {}
 
-if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
+-- Load a module's init.lua to retrieve script/title/order/etc.
+-- Returns a table with `folder` set, or nil on error.
+local function loadModuleConfig(folder)
+    local init_path = "app/modules/" .. folder .. "/init.lua"
+    local func, err = loadfile(init_path)
+    if not func then
+        rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
+        missingModules[#missingModules + 1] = folder
+        return nil
+    end
 
-local function findSectionIndex(sectionTitle)
-    for index, section in ipairs(sections) do if section.id == sectionTitle then return index end end
-    return nil
+    local mconfig = func()
+    if type(mconfig) ~= "table" or not mconfig.script then
+        rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
+        missingModules[#missingModules + 1] = folder
+        return nil
+    end
+
+    mconfig.folder = folder
+    return mconfig
 end
 
-for _, module in ipairs(rfsuite.app.moduleList) do
-    local sectionIndex = findSectionIndex(module.section)
-    if sectionIndex then
-        pages[#pages + 1] = {title = module.title, section = sectionIndex, script = module.script, order = module.order or 0, image = module.image, folder = module.folder, ethosversion = module.ethosversion, mspversion = module.mspversion, apiform = module.apiform, offline = module.offline or false}
-    else
-        rfsuite.utils.log("Warning: Section '" .. module.section .. "' not found for module '" .. module.title .. "'", "debug")
+-- Fill in missing keys from src without overriding explicit manifest values.
+-- This lets the manifest stay minimal: when a module's init.lua changes (title,
+-- script, offline flags, etc.), the main menu inherits those updates unless the
+-- manifest intentionally overrides them. Only change this if you want the
+-- manifest to become the authoritative source for those fields.
+local function applyDefaults(dest, src, keys)
+    for _, k in ipairs(keys) do
+        if dest[k] == nil and src[k] ~= nil then dest[k] = src[k] end
     end
+end
+
+-- Build `sections` (main menu entries) and `pages` (submenu items) from manifest.
+for sidx, section in ipairs(manifest.sections or {}) do
+    local out = {}
+    for k, v in pairs(section) do
+        if k ~= "entry" and k ~= "pages" then out[k] = v end
+    end
+
+    if section.entry then
+        -- `entry` points to a module that opens directly from the main menu.
+        local mod = loadModuleConfig(section.entry)
+        if mod then
+            applyDefaults(out, mod, {
+                "title",
+                "script",
+                "offline",
+                "bgtask",
+                "loaderspeed",
+                "ethosversion",
+                "mspversion",
+                "apiform",
+                "disable",
+                "developer"
+            })
+            out.module = out.module or section.entry
+            if out.image == nil and mod.image then
+                -- Normalize image to absolute app/modules path for main menu icons.
+                out.image = "app/modules/" .. section.entry .. "/" .. mod.image
+            end
+        end
+    end
+
+    sections[#sections + 1] = out
+
+    if section.pages then
+        -- `pages` defines submenu items; each entry maps to a module folder.
+        for _, pageSpec in ipairs(section.pages) do
+            local folder = nil
+            local overrides = nil
+
+            if type(pageSpec) == "string" then
+                folder = pageSpec
+            elseif type(pageSpec) == "table" then
+                -- Allow overrides (e.g. order, title) alongside folder/module name.
+                folder = pageSpec.folder or pageSpec.module or pageSpec[1]
+                overrides = pageSpec
+            end
+
+            if folder then
+                local mod = loadModuleConfig(folder)
+                if mod then
+                    -- Start with module config, then apply any manifest overrides.
+                    local page = {}
+                    for k, v in pairs(mod) do page[k] = v end
+                    page.folder = folder
+                    page.section = sidx
+
+                    if overrides then
+                        for k, v in pairs(overrides) do
+                            if k ~= "folder" and k ~= "module" then page[k] = v end
+                        end
+                    end
+
+                    pages[#pages + 1] = page
+                end
+            end
+        end
+    end
+end
+
+if #missingModules > 0 then
+    -- Keep this as a single log line to avoid spam on low-memory radios.
+    rfsuite.utils.log("Manifest modules missing or invalid: " .. table.concat(missingModules, ", "), "info")
 end
 
 local function sortPagesBySectionAndOrder(pages)

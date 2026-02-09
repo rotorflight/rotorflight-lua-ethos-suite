@@ -48,7 +48,7 @@ Notes:
 - `pywin32` and the HID DLL step are Windows-specific.
 - If you work outside Windows, you can skip Windows-only dependencies unless you need the updater GUI or HID support.
 
-### 1) i18n build
+### 1) i18n sync
 Used in CI and when updating translations:
 
 ```bash

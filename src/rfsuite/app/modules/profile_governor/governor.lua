@@ -92,7 +92,11 @@ local function openPage(pidx, title, script)
     end
 
     if rfsuite.app.gfx_buttons["profile_governor"] == nil then rfsuite.app.gfx_buttons["profile_governor"] = {} end
-    if rfsuite.preferences.menulastselected["profile_governor"] == nil then rfsuite.preferences.menulastselected["profile_governor"] = 1 end
+    local lastSelected = tonumber(rfsuite.preferences.menulastselected["profile_governor"]) or 1
+    if lastSelected < 1 then lastSelected = 1 end
+    if lastSelected > #S_PAGES then lastSelected = #S_PAGES end
+    rfsuite.preferences.menulastselected["profile_governor"] = lastSelected
+    rfsuite.app._profile_governor_focused = false
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -133,8 +137,6 @@ local function openPage(pidx, title, script)
         rfsuite.app.formFields[pidx]:enable(false)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
-
-        if rfsuite.preferences.menulastselected["profile_governor"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
@@ -181,10 +183,19 @@ local function wakeup()
                 v:enable(true)
             end    
         end
+
+        if not rfsuite.app._profile_governor_focused then
+            rfsuite.app._profile_governor_focused = true
+            local idx = tonumber(rfsuite.preferences.menulastselected["profile_governor"]) or 1
+            local btn = rfsuite.app.formFields and rfsuite.app.formFields[idx] or nil
+            if btn and btn.focus then btn:focus() end
+        end
+
         -- close progress loader
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
+    
 
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 

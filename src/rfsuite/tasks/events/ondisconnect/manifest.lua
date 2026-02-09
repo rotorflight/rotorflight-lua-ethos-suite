@@ -4,6 +4,5 @@
 ]] --
 
 return {
-    -- not used yet
-    --{ name = "scriptname" },  
+    -- { name = "task" },
 }
