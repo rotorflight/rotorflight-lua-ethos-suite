@@ -939,6 +939,16 @@ function ui.fieldBoolean(i,lf)
     if f.disable then formFields[i]:enable(false) end
 end
 
+function ui.fieldBooleanInverted(i, lf)
+    local page = app.Page
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
+    local f = fields and fields[i] or nil
+    local prevSubtype = f and f.subtype or nil
+    if f then f.subtype = 1 end
+    ui.fieldBoolean(i, lf)
+    if f then f.subtype = prevSubtype end
+end
+
 function ui.fieldChoice(i,lf)
     local page = app.Page
     local fields = page and page.apidata and page.apidata.formdata.fields or lf
@@ -1028,17 +1038,17 @@ function ui.fieldSlider(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSliderField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        if not (page.fields and page.fields[i]) then
+        if not (fields and fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
             return nil
         end
-        return app.utils.getFieldValue(page.fields[i])
+        return app.utils.getFieldValue(fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -1602,6 +1612,22 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     app.formLineCnt = 0
 
+    if not ui._fieldHandlers then
+        ui._fieldHandlers = {
+            [0] = ui.fieldStaticText,
+            [1] = ui.fieldChoice,
+            [2] = ui.fieldNumber,
+            [3] = ui.fieldText,
+            [4] = ui.fieldBoolean,
+            [5] = ui.fieldBooleanInverted or ui.fieldBoolean,
+            [6] = ui.fieldSlider,
+            [7] = ui.fieldSource,
+            [8] = ui.fieldSwitch,
+            [9] = ui.fieldSensor,
+            [10] = ui.fieldColor
+        }
+    end
+
     if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
@@ -1612,31 +1638,9 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
             if field.hidden ~= true and valid then
                 app.ui.fieldLabel(field, i, label)
-                if field.type == 0 then
-                    app.ui.fieldStaticText(i)
-                elseif field.table or field.type == 1 then
-                    app.ui.fieldChoice(i)
-                elseif field.type == 2 then
-                    app.ui.fieldNumber(i)
-                elseif field.type == 3 then
-                    app.ui.fieldText(i)
-                elseif field.type == 4 then
-                    app.ui.fieldBoolean(i)
-                elseif field.type == 5 then
-                    app.ui.fieldBooleanInverted(i)
-                elseif field.type == 6 then
-                    app.ui.fieldSlider(i)
-                elseif field.type == 7 then
-                    app.ui.fieldSource(i)
-                elseif field.type == 8 then
-                    app.ui.fieldSwitch(i)
-                elseif field.type == 9 then
-                    app.ui.fieldSensor(i)
-                elseif field.type == 10 then
-                    app.ui.fieldColor(i)
-                else
-                    app.ui.fieldNumber(i)
-                end
+                local fieldType = field.table and 1 or field.type
+                local handler = ui._fieldHandlers[fieldType] or ui.fieldNumber
+                handler(i)
             else
                 app.formFields[i] = {}
             end
