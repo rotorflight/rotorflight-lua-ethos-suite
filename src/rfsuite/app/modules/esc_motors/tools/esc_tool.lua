@@ -37,6 +37,20 @@ local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
+local function openProgressDialog(...)
+    if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
 
 -- Update the model/version header without creating overlapping widgets.
 -- Ethos keeps old widgets; re-adding at the same position can overlay text (e.g. "UNKNOWN" over the real value).
@@ -355,7 +369,7 @@ local function wakeup()
             showPowerCycleLoaderInProgress = true
             rfsuite.app.audio.playEscPowerCycle = true
             rfsuite.app.triggers.disableRssiTimeout = true
-            powercycleLoader = form.openProgressDialog("@i18n(app.modules.esc_tools.searching)@", "@i18n(app.modules.esc_tools.please_powercycle)@")
+            powercycleLoader = openProgressDialog("@i18n(app.modules.esc_tools.searching)@", "@i18n(app.modules.esc_tools.please_powercycle)@")
             powercycleLoader:value(0)
             powercycleLoader:closeAllowed(false)
             powercycleLoaderBaseMessage = "@i18n(app.modules.esc_tools.please_powercycle)@"

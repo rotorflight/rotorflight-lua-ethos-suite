@@ -6,8 +6,8 @@
   },
   "ARMED": {
     "english": "ARMED",
-    "translation": "ARMED",
-    "needs_translation": true
+    "translation": "GEWAPEND",
+    "needs_translation": false
   },
   "IDLE": {
     "english": "IDLE",

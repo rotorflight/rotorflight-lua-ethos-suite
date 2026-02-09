@@ -84,7 +84,7 @@ ETHOS_VID = 0x0483
 ETHOS_PID = 0x5750
 TARGET_NAME = "rfsuite"
 DEFAULT_LOCALE = "en"
-AVAILABLE_LOCALES = ["en", "de", "es", "fr", "it", "nl"]
+AVAILABLE_LOCALES = ["en", "de", "es", "fr", "it", "nl", "pt-br", "no", "cs", "pl"]
 DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
@@ -100,7 +100,15 @@ def _get_app_dir():
 
 
 APP_DIR = _get_app_dir()
-WORK_DIR = APP_DIR / "rfsuite_updater_work"
+def _get_work_dir():
+    # Keep runtime files out of the current working directory on macOS/Linux.
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "rfsuite-updater"
+    if sys.platform.startswith("linux"):
+        return Path.home() / ".local" / "share" / "rfsuite-updater"
+    return APP_DIR / "rfsuite_updater_work"
+
+WORK_DIR = _get_work_dir()
 try:
     WORK_DIR.mkdir(parents=True, exist_ok=True)
 except Exception:
@@ -374,9 +382,14 @@ USB_MODE_DEBUG = 0x68    # Start debug mode
 class RadioInterface:
     """Interface to communicate with Ethos radio via USB HID."""
     
-    def __init__(self):
+    def __init__(self, log_cb=None):
         self.device = None
         self.drives = {}
+        self.log_cb = log_cb
+
+    def _log(self, message):
+        if self.log_cb:
+            self.log_cb(message)
     
     def connect(self):
         """Connect to the Ethos radio."""
@@ -386,7 +399,7 @@ class RadioInterface:
         
         try:
             if HID_MODULE_PATH:
-                self.log(f"HID module: {HID_MODULE_PATH}")
+                self._log(f"HID module: {HID_MODULE_PATH}")
             # Try to open the HID device
             self.device = hid.device()
             self.device.open(ETHOS_VID, ETHOS_PID)
@@ -416,6 +429,58 @@ class RadioInterface:
         except Exception as e:
             raise RuntimeError(f"Failed to switch to storage mode: {e}")
     
+    def _iter_mount_roots(self):
+        """Yield potential mount roots on Unix-like systems."""
+        for base in ["/Volumes", "/media", "/mnt", "/run/media"]:
+            if not os.path.isdir(base):
+                continue
+            try:
+                for entry in os.scandir(base):
+                    if not entry.is_dir():
+                        continue
+                    # Common layout on Linux: /run/media/<user>/<label>
+                    if base in ("/run/media", "/media"):
+                        try:
+                            for sub in os.scandir(entry.path):
+                                if sub.is_dir():
+                                    yield sub.path
+                        except Exception:
+                            continue
+                    # Direct mount under base (macOS /Volumes, some /mnt)
+                    yield entry.path
+            except Exception:
+                continue
+
+    def _iter_lsblk_mounts(self):
+        """Yield mount points from lsblk for removable/SD devices (Linux)."""
+        if sys.platform == "darwin":
+            return
+        try:
+            # Use lsblk key=value output for robust parsing.
+            result = subprocess.run(
+                ["lsblk", "-o", "NAME,TRAN,RM,SIZE,MOUNTPOINT", "-P"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode != 0 or not result.stdout:
+                return
+            for line in result.stdout.splitlines():
+                # Parse KEY="VALUE" pairs
+                parts = {}
+                for m in re.finditer(r'(\\w+)=\"(.*?)\"', line):
+                    parts[m.group(1)] = m.group(2)
+                name = parts.get("NAME", "")
+                tran = parts.get("TRAN", "")
+                mountpoint = parts.get("MOUNTPOINT", "")
+                if not mountpoint:
+                    continue
+                # Prefer USB devices or mmc (SD/eMMC) devices
+                if tran == "usb" or name.startswith("mmc"):
+                    yield mountpoint
+        except Exception:
+            return
+
     def scan_for_drives(self):
         """Scan for mounted radio drives."""
         self.drives = {}
@@ -440,18 +505,11 @@ class RadioInterface:
                     continue
         else:
             # Unix-like systems
-            for base in ["/Volumes", "/media", "/mnt"]:
-                if not os.path.isdir(base):
-                    continue
-                try:
-                    for entry in os.listdir(base):
-                        root = os.path.join(base, entry)
-                        for key in ('flash', 'sdcard', 'radio'):
-                            marker = os.path.join(root, key + ".cpuid")
-                            if os.path.exists(marker):
-                                self.drives[key] = root
-                except Exception:
-                    continue
+            for root in self._iter_mount_roots():
+                for key in ('flash', 'sdcard', 'radio'):
+                    marker = os.path.join(root, key + ".cpuid")
+                    if os.path.exists(marker):
+                        self.drives[key] = root
         
         return self.drives
     
@@ -487,18 +545,17 @@ class RadioInterface:
                     continue
             return None
         else:
-            for base in ["/Volumes", "/media", "/mnt"]:
-                if not os.path.isdir(base):
-                    continue
-                try:
-                    for entry in os.listdir(base):
-                        root = os.path.join(base, entry)
-                        for folder in ("scripts", "script"):
-                            scripts = os.path.join(root, folder)
-                            if os.path.isdir(scripts):
-                                return os.path.normpath(scripts)
-                except Exception:
-                    continue
+            for root in self._iter_mount_roots():
+                for folder in ("scripts", "script"):
+                    scripts = os.path.join(root, folder)
+                    if os.path.isdir(scripts):
+                        return os.path.normpath(scripts)
+            # Linux fallback: inspect lsblk for removable mounts
+            for root in self._iter_lsblk_mounts():
+                for folder in ("scripts", "script"):
+                    scripts = os.path.join(root, folder)
+                    if os.path.isdir(scripts):
+                        return os.path.normpath(scripts)
             return None
 
 
@@ -511,7 +568,6 @@ class UpdaterGUI:
         self.root.geometry("800x800")
         self.root.resizable(False, False)
         
-        self.radio = RadioInterface()
         self.update_thread = None
         self.is_updating = False
         self.selected_version = tk.StringVar(value=VERSION_RELEASE)
@@ -519,6 +575,7 @@ class UpdaterGUI:
         self.chkdsk_attempted = False
         
         self.setup_ui()
+        self.radio = RadioInterface(self.log)
     
     def setup_ui(self):
         """Setup the user interface."""
@@ -1983,7 +2040,7 @@ def main():
         root.protocol("WM_DELETE_WINDOW", on_close)
         root.mainloop()
     except Exception:
-        error_log = Path(__file__).resolve().parent / "updater_error.log"
+        error_log = WORK_DIR / "updater_error.log"
         with open(error_log, "w", encoding="utf-8") as f:
             f.write(traceback.format_exc())
         try:

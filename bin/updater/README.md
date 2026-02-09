@@ -6,9 +6,14 @@ Windows updater for the Rotorflight Lua Ethos Suite.
 
 ## Download
 
-Windows executable:
+Latest release assets (Windows/macOS/Linux) are published on the GitHub Releases page:
 
-[RFSuite Updater Download](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/update_radio_gui.exe)
+[RFSuite Updater Releases](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/latest)
+
+Asset names:
+- Windows: `rfsuite-updater-<version>-windows.zip`
+- macOS: `rfsuite-updater-<version>-macos.zip`
+- Linux: `updater-ubuntu-latest` (workflow artifacts; not yet attached to releases)
 
 ## Developer Notes
 
@@ -29,3 +34,15 @@ Compilation requirements:
 Optional build inputs:
 
 - `bin/updater/src/icon.ico` (embedded icon used by `make.cmd`)
+
+## macOS / Linux Notes
+
+- The updater uses `tkinter` for the GUI. Ensure your Python install includes Tk support.
+  - macOS: the python.org installer typically includes Tk.
+  - Linux: install your distro's `python3-tk` package.
+- HID support is optional. If `hid`/`hidapi` is missing, the updater can still work
+  when the radio is already mounted in storage mode.
+- For development runs on macOS/Linux, use:
+  - `bin/updater/src/run_updater.sh`
+- macOS icon: generate `icon.icns` from the Windows `.ico` with:
+  - `python3 bin/updater/src/build_icon_icns.py`

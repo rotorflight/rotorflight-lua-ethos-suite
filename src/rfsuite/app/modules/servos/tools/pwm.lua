@@ -14,6 +14,8 @@ local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 
+local pwmServoCount 
+local busServoOffset = 18
 
 local function writeEeprom()
 
@@ -24,7 +26,22 @@ end
 
 local function buildServoTable()
 
-    for i = 1, rfsuite.session.servoCount do
+    -- calculate servo count based on bus enabled or not
+    if rfsuite.session.servoBusEnabled == nil or rfsuite.session.servoBusEnabled == false then
+        pwmServoCount = rfsuite.session.servoCount
+    else    
+        if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            if system.getVersion().simulation == true then
+                pwmServoCount = rfsuite.session.servoCount
+            else
+                pwmServoCount = rfsuite.session.servoCount - busServoOffset
+            end
+        else
+            pwmServoCount = rfsuite.session.servoCount
+        end
+    end
+
+    for i = 1, pwmServoCount do
         servoTable[i] = {}
         servoTable[i] = {}
         servoTable[i]['title'] = "@i18n(app.modules.servos.servo_prefix)@" .. i
@@ -32,7 +49,7 @@ local function buildServoTable()
         servoTable[i]['disabled'] = true
     end
 
-    for i = 1, rfsuite.session.servoCount do
+    for i = 1, pwmServoCount do
 
         servoTable[i]['disabled'] = false
 
@@ -100,6 +117,8 @@ local function swashMixerType()
 end
 
 local function openPage(pidx, title, script)
+
+    buildServoTable()
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -211,11 +230,10 @@ local function openPage(pidx, title, script)
                     rfsuite.preferences.menulastselected["pwm"] = pidx
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
+
                     rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/pwm_tool.lua", servoTable)
                 end
             })
-
-            if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
             if rfsuite.preferences.menulastselected["pwm"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
@@ -236,63 +254,6 @@ local function openPage(pidx, title, script)
     return
 end
 
-local function getServoCount(callback, callbackParam)
-    local message = {
-        command = 120,
-        processReply = function(self, buf)
-            local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-            rfsuite.session.servoCountNew = servoCount
-
-            if callback then callback(callbackParam) end
-        end,
-
-        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function openPageInit(pidx, title, script)
-
-    if rfsuite.session.servoCount ~= nil then
-        buildServoTable()
-        openPage(pidx, title, script)
-    else
-        local message = {
-            command = 120,
-            processReply = function(self, buf)
-                if #buf >= 10 then
-                    local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-                    rfsuite.session.servoCount = servoCount
-                end
-            end,
-            simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-        }
-        rfsuite.tasks.msp.mspQueue:add(message)
-
-        local message = {
-            command = 192,
-            processReply = function(self, buf)
-                if #buf >= 10 then
-
-                    for i = 0, rfsuite.session.servoCount do
-                        buf.offset = i
-                        local servoOverride = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                        if servoOverride == 0 then
-                            rfsuite.utils.log("Servo override: true", "debug")
-                            rfsuite.session.servoOverride = true
-                        end
-                    end
-                end
-                if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
-            end,
-            simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
-        }
-        rfsuite.tasks.msp.mspQueue:add(message)
-
-    end
-end
 
 local function event(widget, category, value, x, y) end
 
@@ -362,38 +323,42 @@ local function wakeup()
         end
     end
 
-    local now = os.clock()
-    if ((now - lastServoCountTime) >= 2) and rfsuite.tasks.msp.mspQueue:isProcessed() then
-        lastServoCountTime = now
-
-        getServoCount()
-
-        if rfsuite.session.servoCountNew ~= nil then if rfsuite.session.servoCountNew ~= rfsuite.session.servoCount then rfsuite.app.triggers.triggerReloadNoPrompt = true end end
-
-    end
-
 end
 
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
 
-    for i = 0, #servoTable do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            local message = {command = 196, payload = {}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+            rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        for i = 0, #servoTable do
+            local message = {command = 193, payload = {i}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+            rfsuite.tasks.msp.mspQueue:add(message)
+        end
+    end    
+
+
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    for i = 0, #servoTable do
-        local message = {command = 193, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.tasks.msp.mspQueue:add(message)
-    end
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            local message = {command = 196, payload = {}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+            rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        for i = 0, #servoTable do
+            local message = {command = 193, payload = {i}}
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+            rfsuite.tasks.msp.mspQueue:add(message)
+        end
+    end    
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -414,4 +379,4 @@ local function onNavMenu(self)
 end
 
 
-return {event = event, openPage = openPageInit, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}, onReloadMenu = onReloadMenu, API = {}}
+return {event = event, openPage = openPage, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = true, help = true}, onReloadMenu = onReloadMenu, API = {}}

@@ -1,0 +1,17 @@
+{
+  "iscompiledcheck": {
+    "english": "true",
+    "translation": "true",
+    "needs_translation": false
+  },
+  "reload": {
+    "english": "reload",
+    "translation": "Last inn",
+    "needs_translation": false
+  },
+  "error": {
+    "english": "error",
+    "translation": "Feil",
+    "needs_translation": false
+  }
+}

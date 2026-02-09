@@ -19,6 +19,8 @@ local servoIndex = rfsuite.currentServoIndex - 1
 local isSaving = false
 local enableWakeup = false
 
+local USE_INDEXED = false       -- INDEX code not merged yet - force off for now, but keep functions in place for easier merge when ready
+
 local servoTable
 local servoCount
 local configs = {}
@@ -26,8 +28,9 @@ local configs = {}
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
+    local count = servoCount or (servoTable and #servoTable) or 0
 
-    for i = 0, #configs do
+    for i = 0, count - 1 do
         local message = {command = 193, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
         rfsuite.tasks.msp.mspQueue:add(message)
@@ -38,7 +41,9 @@ end
 
 local function servoCenterFocusAllOff(self)
 
-    for i = 0, #configs do
+    local count = servoCount or (servoTable and #servoTable) or 0
+
+    for i = 0, count - 1 do
         local message = {command = 193, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
         rfsuite.tasks.msp.mspQueue:add(message)
@@ -290,6 +295,59 @@ local function getServoConfigurations(callback, callbackParam)
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
+
+local function getServoConfigurationsIndexed(callback, callbackParam)
+
+    -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
+    -- Payload must contain exactly 1 byte: the servo index (0-based).
+    local message = {
+        command = 125,
+        payload = {servoIndex},
+        uuid = string.format("servo.cfg.%d", servoIndex),
+        processReply = function(self, buf)
+
+            -- Ensure we have a servoCount for any "all servos" operations (override on/off).
+            if not servoCount then
+                servoCount = rfsuite.session.servoCount or (servoTable and #servoTable) or 0
+                rfsuite.session.servoCount = servoCount
+            end
+
+            local config = configs[servoIndex] or {}
+            config.name = servoTable[servoIndex + 1]['title']
+            config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
+            config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
+            config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
+
+            if config.flags == 1 or config.flags == 3 then
+                config.reverse = 1
+            else
+                config.reverse = 0
+            end
+
+            if config.flags == 2 or config.flags == 3 then
+                config.geometry = 1
+            else
+                config.geometry = 0
+            end
+
+            configs[servoIndex] = config
+
+            if callback then callback(callbackParam) end
+        end,
+
+        -- 8x U16 fields (16 bytes). Values: mid=1500, min=1000, max=2000, rneg=1000, rpos=1000, rate=100, speed=0, flags=0
+        simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
+    }
+
+    rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+
 local function getServoConfigurationsEnd(callbackParam)
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -333,7 +391,7 @@ local function openPage(idx, title, script, extra1)
     if rfsuite.app.Page.pageTitle ~= nil then
         rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
     else
-        rfsuite.app.ui.fieldHeader(title .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
+        rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
     end
 
     if rfsuite.app.Page.headerLine ~= nil then
@@ -473,7 +531,11 @@ local function openPage(idx, title, script, extra1)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    getServoConfigurations(getServoConfigurationsEnd)
+    if USE_INDEXED and rfsuite.utils.apiVersionCompare(">=", "12.09") then
+        getServoConfigurationsIndexed(getServoConfigurationsEnd)
+    else
+        getServoConfigurations(getServoConfigurationsEnd)
+    end
 
 end
 
