@@ -641,7 +641,6 @@ end
 function elrs.wakeup()
 
     if not rfsuite.session.isConnected then return end
-    if rfsuite.tasks and rfsuite.tasks.onconnect and rfsuite.tasks.onconnect.active and rfsuite.tasks.onconnect.active() then return end
 
     rebuildRelevantSidSet()
 
