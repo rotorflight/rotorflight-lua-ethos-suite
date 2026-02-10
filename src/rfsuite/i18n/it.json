@@ -963,13 +963,13 @@
       },
       "tbl_ccw": {
         "english": "CCW",
-        "max_length": 3,
+        "max_length": 11,
         "needs_translation": false,
         "translation": "ccw"
       },
       "tbl_cw": {
         "english": "CW",
-        "max_length": 2,
+        "max_length": 7,
         "needs_translation": false,
         "translation": "cw"
       },
@@ -1005,7 +1005,7 @@
       },
       "tbl_fmheli": {
         "english": "Helicopter",
-        "max_length": 10,
+        "max_length": 11,
         "needs_translation": false,
         "translation": "Elicottero"
       },
@@ -1065,7 +1065,7 @@
       },
       "tbl_orange": {
         "english": "ORANGE",
-        "max_length": 6,
+        "max_length": 7,
         "needs_translation": false,
         "translation": "ORANGE"
       },
@@ -1077,13 +1077,13 @@
       },
       "tbl_purple": {
         "english": "PURPLE",
-        "max_length": 6,
+        "max_length": 7,
         "needs_translation": false,
         "translation": "Viola"
       },
       "tbl_red": {
         "english": "Red",
-        "max_length": 3,
+        "max_length": 4,
         "needs_translation": false,
         "translation": "Red"
       },
@@ -1107,13 +1107,13 @@
       },
       "tbl_white": {
         "english": "WHITE",
-        "max_length": 5,
+        "max_length": 6,
         "needs_translation": false,
         "translation": "WHITE"
       },
       "tbl_yellow": {
         "english": "YELLOW",
-        "max_length": 6,
+        "max_length": 8,
         "needs_translation": false,
         "translation": "Giallo"
       }
@@ -1365,7 +1365,7 @@
       },
       "tbl_govmode_direct": {
         "english": "DIRECT",
-        "max_length": 6,
+        "max_length": 7,
         "needs_translation": false,
         "translation": "DIRECT"
       },
@@ -1703,13 +1703,13 @@
       },
       "tbl_off": {
         "english": "OFF",
-        "max_length": 3,
+        "max_length": 7,
         "needs_translation": false,
         "translation": "OFF"
       },
       "tbl_on": {
         "english": "ON",
-        "max_length": 3,
+        "max_length": 9,
         "needs_translation": false,
         "translation": "ON"
       }
@@ -2744,7 +2744,7 @@
             },
             "drive_freq": {
               "english": "Drive Frequency",
-              "max_length": 16,
+              "max_length": 19,
               "needs_translation": false,
               "translation": "Frequenza Drive"
             },
@@ -7275,7 +7275,7 @@
   },
   "iscompiledcheck": {
     "english": "true",
-    "max_length": 4,
+    "max_length": 9,
     "needs_translation": false,
     "translation": "vero"
   },

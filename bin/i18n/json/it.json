@@ -965,13 +965,13 @@
         "english": "CCW",
         "translation": "ccw",
         "needs_translation": false,
-        "max_length": 3
+        "max_length": 11
       },
       "tbl_cw": {
         "english": "CW",
         "translation": "cw",
         "needs_translation": false,
-        "max_length": 2
+        "max_length": 7
       },
       "tbl_cyan": {
         "english": "CYAN",
@@ -1007,7 +1007,7 @@
         "english": "Helicopter",
         "translation": "Elicottero",
         "needs_translation": false,
-        "max_length": 10
+        "max_length": 11
       },
       "tbl_fwgov": {
         "english": "Fixed Wing",
@@ -1067,7 +1067,7 @@
         "english": "ORANGE",
         "translation": "ORANGE",
         "needs_translation": false,
-        "max_length": 6
+        "max_length": 7
       },
       "tbl_pink": {
         "english": "PINK",
@@ -1079,13 +1079,13 @@
         "english": "PURPLE",
         "translation": "Viola",
         "needs_translation": false,
-        "max_length": 6
+        "max_length": 7
       },
       "tbl_red": {
         "english": "Red",
         "translation": "Red",
         "needs_translation": false,
-        "max_length": 3
+        "max_length": 4
       },
       "tbl_reverse": {
         "english": "Reverse",
@@ -1109,13 +1109,13 @@
         "english": "WHITE",
         "translation": "WHITE",
         "needs_translation": false,
-        "max_length": 5
+        "max_length": 6
       },
       "tbl_yellow": {
         "english": "YELLOW",
         "translation": "Giallo",
         "needs_translation": false,
-        "max_length": 6
+        "max_length": 8
       }
     },
     "ESC_SENSOR_CONFIG": {
@@ -1367,7 +1367,7 @@
         "english": "DIRECT",
         "translation": "DIRECT",
         "needs_translation": false,
-        "max_length": 6
+        "max_length": 7
       },
       "tbl_govmode_electric": {
         "english": "ELECTRIC",
@@ -1705,13 +1705,13 @@
         "english": "OFF",
         "translation": "OFF",
         "needs_translation": false,
-        "max_length": 3
+        "max_length": 7
       },
       "tbl_on": {
         "english": "ON",
         "translation": "ON",
         "needs_translation": false,
-        "max_length": 3
+        "max_length": 9
       }
     },
     "PID_PROFILE": {
@@ -2746,7 +2746,7 @@
               "english": "Drive Frequency",
               "translation": "Frequenza Drive",
               "needs_translation": false,
-              "max_length": 16
+              "max_length": 19
             },
             "electrical_angle": {
               "english": "Electrical Angle",
@@ -7277,7 +7277,7 @@
     "english": "true",
     "translation": "vero",
     "needs_translation": false,
-    "max_length": 4
+    "max_length": 9
   },
   "reload": {
     "english": "reload",
