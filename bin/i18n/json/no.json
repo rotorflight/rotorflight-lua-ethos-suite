@@ -191,7 +191,7 @@
         "english": "Always Off",
         "translation": "Always Off",
         "needs_translation": true,
-        "max_length": 14
+        "max_length": 15
       },
       "tbl_alwayson": {
         "english": "Always On",
@@ -965,7 +965,7 @@
         "english": "CCW",
         "translation": "CCW",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 12
       },
       "tbl_cw": {
         "english": "CW",
@@ -1085,7 +1085,7 @@
         "english": "Red",
         "translation": "Red",
         "needs_translation": true,
-        "max_length": 4
+        "max_length": 5
       },
       "tbl_reverse": {
         "english": "Reverse",
@@ -2524,7 +2524,7 @@
           "english": "Diagnostics",
           "translation": "Diagnostikk",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 13
         }
       },
       "esc_motors": {
@@ -2746,7 +2746,7 @@
               "english": "Drive Frequency",
               "translation": "Drive Frequency",
               "needs_translation": true,
-              "max_length": 19
+              "max_length": 20
             },
             "electrical_angle": {
               "english": "Electrical Angle",
@@ -6558,7 +6558,7 @@
           "english": "Every 25%",
           "translation": "Hver 25%",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 12
         },
         "fuel_callout_5": {
           "english": "50% and 5%",
@@ -6570,7 +6570,7 @@
           "english": "Every 50%",
           "translation": "Hver 50%",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 12
         },
         "fuel_callout_default": {
           "english": "Default (Only at 10%)",

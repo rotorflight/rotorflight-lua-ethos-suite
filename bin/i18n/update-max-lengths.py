@@ -66,15 +66,15 @@ def update_max_lengths(node, locales, path_parts):
 
 
 def update_max_lengths_all_locales(locales, en_data):
-    # Walk master (en) keys and apply max_length to every locale file.
+    # Walk master (en) keys and apply en's max_length to every locale file.
     def walk(node, path_parts):
         if not isinstance(node, dict):
             return
         for key, val in node.items():
             if is_translation_block(val):
                 parts = path_parts + [key]
-                max_len = compute_max_length(locales, parts)
-                if max_len <= 0:
+                max_len = val.get("max_length")
+                if not isinstance(max_len, int) or max_len <= 0:
                     continue
                 for _, data in locales.items():
                     tgt = get_node_by_path(data, parts)
