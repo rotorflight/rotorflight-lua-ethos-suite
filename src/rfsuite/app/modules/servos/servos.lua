@@ -20,6 +20,56 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 local fieldFocusSet = false
+local chainInFlight = false
+
+local function requestServoInfoChain()
+    if chainInFlight then return end
+    if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers) then return end
+
+    local msp = rfsuite.tasks.msp
+    local session = rfsuite.session
+
+    if session.servoCount == nil then
+        chainInFlight = true
+        msp.helpers.servoCount(function(servoCount)
+            rfsuite.utils.log("Received servo count: " .. tostring(servoCount), "info")
+            chainInFlight = false
+            requestServoInfoChain()
+        end)
+        return
+    end
+
+    if session.servoOverride == nil then
+        chainInFlight = true
+        msp.helpers.servoOverride(function(servoOverride)
+            rfsuite.utils.log("Received servo override: " .. tostring(servoOverride), "info")
+            chainInFlight = false
+            requestServoInfoChain()
+        end)
+        return
+    end
+
+    if session.tailMode == nil or session.swashMode == nil then
+        chainInFlight = true
+        msp.helpers.mixerConfig(function(tailMode, swashMode)
+            rfsuite.utils.log("Received tail mode: " .. tostring(tailMode), "info")
+            rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
+            chainInFlight = false
+            requestServoInfoChain()
+        end)
+        return
+    end
+
+    if session.servoBusEnabled == nil then
+        chainInFlight = true
+        msp.helpers.servoBusEnabled(function(servoBusEnabled)
+            rfsuite.utils.log("Received servo bus enabled: " .. tostring(servoBusEnabled), "info")
+            chainInFlight = false
+            requestServoInfoChain()
+        end)
+        return
+    end
+end
 
 
 local function openPage(opts)
@@ -162,36 +212,7 @@ local function wakeup()
 
     -- Do MSP calls to get servo info
     -- We keep sub menu buttons disabled until this is delivered
-    if rfsuite.tasks  and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
-
-        local msp = rfsuite.tasks.msp
-
-        if rfsuite.session.servoCount == nil then
-            msp.helpers.servoCount(function(servoCount)
-                rfsuite.utils.log("Received servo count: " .. tostring(servoCount), "info")
-            end)
-        end
-
-        if rfsuite.session.servoOverride == nil then
-            msp.helpers.servoOverride(function(servoOverride)
-                rfsuite.utils.log("Received servo override: " .. tostring(servoOverride), "info")
-            end)
-        end
-
-        if rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil then
-            rfsuite.tasks.msp.helpers.mixerConfig(function(tailMode, swashMode)
-                rfsuite.utils.log("Received tail mode: " .. tostring(tailMode), "info")
-                rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
-            end)
-        end    
-
-        if rfsuite.session.servoBusEnabled == nil then
-            rfsuite.tasks.msp.helpers.servoBusEnabled(function(servoBusEnabled)
-                rfsuite.utils.log("Received servo bus enabled: " .. tostring(servoBusEnabled), "info")
-            end)
-        end
-
-    end
+    requestServoInfoChain()
 
     -- enable the buttons once we have servo info
     if fieldFocusSet == false and rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil and rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil and rfsuite.session.servoBusEnabled  ~= nil then

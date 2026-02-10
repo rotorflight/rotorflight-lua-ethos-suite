@@ -72,7 +72,7 @@ function helpers.servoOverride(callback)
 end
 
 
-function helpers.servoBusEnabled()
+function helpers.servoBusEnabled(callback)
 
     local FBUS_FUNCTIONMASK = 524288
     local SBUS_FUNCTIONMASK = 262144
@@ -89,27 +89,33 @@ function helpers.servoBusEnabled()
         return false
     end
 
-    local message = {
-        command = 54,
-        processReply = function(self, buf)
-            local data = {}
+    local session = rfsuite.session
+    if (session.servoBusEnabled == nil) then
+        local message = {
+            command = 54,
+            processReply = function(self, buf)
+                local data = {}
 
-            buf.offset = 1
-            for i = 1, 6 do
-                data[i] = {}
-                data[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                data[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
-                data[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                data[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                data[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-            end
+                buf.offset = 1
+                for i = 1, 6 do
+                    data[i] = {}
+                    data[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                    data[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
+                    data[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                    data[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                    data[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                    data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                end
 
-            rfsuite.session.servoBusEnabled  = processSerialConfig(data)
-        end,
-        simulatorResponse = {20 , 1  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 0  , 0  , 0  , 8  , 0  , 5  , 4  , 0  , 5  , 1  , 0  , 4  , 0  , 0  , 5  , 4  , 0  , 5  , 2  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 3  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 4  , 64 , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 5  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  }
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
+                session.servoBusEnabled  = processSerialConfig(data)
+                if callback then callback(session.servoBusEnabled) end
+            end,
+            simulatorResponse = {20 , 1  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 0  , 0  , 0  , 8  , 0  , 5  , 4  , 0  , 5  , 1  , 0  , 4  , 0  , 0  , 5  , 4  , 0  , 5  , 2  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 3  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 4  , 64 , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 5  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  }
+        }
+        rfsuite.tasks.msp.mspQueue:add(message)
+    else
+        if callback then callback(session.servoBusEnabled) end
+    end
 end
 
 function helpers.mixerConfig(callback)
