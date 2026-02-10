@@ -43,6 +43,9 @@ end
 
 local function postLoad(self)
     enableWakeup = true
+    for i, field in ipairs(rfsuite.app.formFields) do
+        if field and field.enable then field:enable(false) end
+    end
 end
 
 local function postSave(self)
@@ -65,6 +68,8 @@ local function wakeup(self)
             end)
         end
     else 
+        local modeField = rfsuite.app.formFields and rfsuite.app.formFields[1]
+        if modeField and modeField.enable then modeField:enable(true) end
         setGovernorMode(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end    
