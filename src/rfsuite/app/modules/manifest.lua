@@ -11,6 +11,8 @@
 --   - id: section identifier used by openMainMenuSub (required for submenu sections).
 --   - image: icon path used on the main menu.
 --   - loaderspeed: loader speed multiplier (float) or alias ("FAST", "DEFAULT", "SLOW").
+--   - script_by_mspversion: list of {op, version, script} overrides for MSP API.
+--   - script_default: fallback script if no version rule matches.
 --   - offline: allow entry when FC is not connected.
 --   - bgtask: allow entry while background task is active.
 --   - newline: start a new header group (UI layout).
@@ -29,7 +31,8 @@ return {
         {
             title = "@i18n(app.modules.profile_governor.name)@",
             entry = "profile_governor",
-            image = "app/modules/profile_governor/governor.png"
+            image = "app/modules/profile_governor/governor.png",
+            script_by_mspversion = { {">=", "12.09", "governor.lua"}, {"<", "12.09", "governor_legacy.lua"} }
         },
         {
             title = "@i18n(app.modules.profile_tailrotor.name)@",
@@ -67,7 +70,7 @@ return {
                 "power",
                 "radio_config",
                 "stats",
-                "governor"
+                {"governor", script_by_mspversion = { {">=", "12.09", "governor.lua"}, {"<", "12.09", "governor_legacy.lua"} }}
             }
         },
         {
