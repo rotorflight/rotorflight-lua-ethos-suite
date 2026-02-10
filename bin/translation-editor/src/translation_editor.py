@@ -16,6 +16,10 @@ APP_TITLE = "RF Suite Translation Editor"
 # Allowed non-ASCII characters observed in existing translations.
 ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​–“”")
 HEBREW_RANGE = (0x0590, 0x05FF)  # Hebrew block (letters + niqqud + punctuation)
+CJK_UNIFIED = (0x4E00, 0x9FFF)
+CJK_EXT_A = (0x3400, 0x4DBF)
+CJK_PUNCT = (0x3000, 0x303F)
+FULLWIDTH = (0xFF00, 0xFFEF)
 
 REPO_OWNER = "rotorflight"
 REPO_NAME = "rotorflight-lua-ethos-suite"
@@ -372,6 +376,13 @@ class TranslationEditor(tk.Tk):
                 return True
             # Common RTL marks
             if code in (0x200F, 0x200E, 0x202A, 0x202B, 0x202C):
+                return True
+        if self.store.locale.startswith("zh"):
+            code = ord(ch)
+            if (CJK_UNIFIED[0] <= code <= CJK_UNIFIED[1]
+                or CJK_EXT_A[0] <= code <= CJK_EXT_A[1]
+                or CJK_PUNCT[0] <= code <= CJK_PUNCT[1]
+                or FULLWIDTH[0] <= code <= FULLWIDTH[1]):
                 return True
         return False
 
