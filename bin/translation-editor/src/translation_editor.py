@@ -15,6 +15,7 @@ from collections import OrderedDict
 APP_TITLE = "RF Suite Translation Editor"
 # Allowed non-ASCII characters observed in existing translations.
 ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​–“”")
+HEBREW_RANGE = (0x0590, 0x05FF)  # Hebrew block (letters + niqqud + punctuation)
 
 REPO_OWNER = "rotorflight"
 REPO_NAME = "rotorflight-lua-ethos-suite"
@@ -362,11 +363,23 @@ class TranslationEditor(tk.Tk):
             return t > max_length
         return t > (e * 1.15)
 
+    def _is_allowed_non_ascii(self, ch):
+        if ch in ALLOWED_NON_ASCII:
+            return True
+        if self.store.locale == "he":
+            code = ord(ch)
+            if HEBREW_RANGE[0] <= code <= HEBREW_RANGE[1]:
+                return True
+            # Common RTL marks
+            if code in (0x200F, 0x200E, 0x202A, 0x202B, 0x202C):
+                return True
+        return False
+
     def _has_disallowed_non_ascii(self, text):
         if text is None:
             return False
         for ch in text:
-            if ord(ch) > 127 and ch not in ALLOWED_NON_ASCII:
+            if ord(ch) > 127 and not self._is_allowed_non_ascii(ch):
                 return True
         return False
 
