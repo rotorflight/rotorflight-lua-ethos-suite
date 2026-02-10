@@ -44,38 +44,40 @@ function app.create()
 
     if not app.initialized then
 
+        -- Initialize app state
         app.sensors = {}
         app.formFields = {}
         app.formLines = {}
         app.formNavigationFields = {}
         app.PageTmp = {}
         app.Page = {}
-        app.saveTS = 0
-        app.lastPage = nil
-        app.lastSection = nil
-        app.lastIdx = nil
-        app.lastTitle = nil
-        app.lastScript = nil
-        app.gfx_buttons = {}
-        app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
-        app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
-        app.uiState = app.uiStatus.init
-        app.pageState = app.pageStatus.display
-        app.lastLabel = nil
-        app.NewRateTable = nil
-        app.RateTable = nil
-        app.fieldHelpTxt = nil
         app.radio = {}
         app.sensor = {}
+        app.gfx_buttons = {}        
+
+        app.saveTS = 0 -- timestamp of last save trigger
+        app.lastPage = nil -- last opened page id
+        app.lastSection = nil -- last opened menu section id
+        app.lastIdx = nil -- last selected button index
+        app.lastTitle = nil -- last page title string
+        app.lastScript = nil -- last page script path
+        app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
+        app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
+        app.uiState = app.uiStatus.init -- current UI state machine
+        app.pageState = app.pageStatus.display -- current page state machine
+        app.lastLabel = nil -- last focused label id (for help text)
+        app.NewRateTable = nil -- staging rates table during edit
+        app.RateTable = nil -- active rates table
+        app.fieldHelpTxt = nil -- active help text for focused field
         app.init = nil
-        app.guiIsRunning = false
-        app.adjfunctions = nil
-        app.profileCheckScheduler = os.clock()
-        app.offlineMode = false
-        app.isOfflinePage = false
-        app.uiState = app.uiStatus.init
-        app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
-        app.escPowerCycleLoader = false
+        app.guiIsRunning = false  -- flag to indicate if the app is active (for event handling)
+        app.adjfunctions = nil -- assigned adjust functions (if any)
+        app.profileCheckScheduler = os.clock() -- last profile check time
+        app.offlineMode = false -- app-wide offline flag
+        app.isOfflinePage = false -- current page does not require FC link
+        app.uiState = app.uiStatus.init -- reset UI state (redundant safety)
+        app.lcdWidth, app.lcdHeight = lcd.getWindowSize() -- cached screen size
+        app.escPowerCycleLoader = false -- ESC power-cycle loader flag
 
         app.audio = {}
         app.audio.playTimeout = false
@@ -88,12 +90,12 @@ function app.create()
 
         app.dialogs = {}
         app.dialogs.progress = false
-        app.dialogs.progressDisplay = false
-        app.dialogs.progressWatchDog = nil
-        app.dialogs.progressCounter = 0
-        app.dialogs.progressSpeed = nil
-        app.dialogs.progressRateLimit = os.clock()
-        app.dialogs.progressRate = 0.25
+        app.dialogs.progressDisplay = false -- loader active
+        app.dialogs.progressWatchDog = nil -- timeout watchdog start
+        app.dialogs.progressCounter = 0 -- loader progress value
+        app.dialogs.progressSpeed = nil -- loader speed multiplier
+        app.dialogs.progressRateLimit = os.clock() -- throttle loader updates
+        app.dialogs.progressRate = 0.25 -- loader update rate (s)
 
         app.dialogs.progressESC = false
         app.dialogs.progressDisplayEsc = false
@@ -103,11 +105,11 @@ function app.create()
         app.dialogs.progressESCRate = 2.5
 
         app.dialogs.save = false
-        app.dialogs.saveDisplay = false
-        app.dialogs.saveWatchDog = nil
-        app.dialogs.saveProgressCounter = 0
-        app.dialogs.saveRateLimit = os.clock()
-        app.dialogs.saveRate = 0.25
+        app.dialogs.saveDisplay = false -- save dialog active
+        app.dialogs.saveWatchDog = nil -- save timeout watchdog
+        app.dialogs.saveProgressCounter = 0 -- save progress value
+        app.dialogs.saveRateLimit = os.clock() -- throttle save updates
+        app.dialogs.saveRate = 0.25 -- save update rate (s)
 
         app.dialogs.nolinkDisplay = false
 
@@ -115,33 +117,34 @@ function app.create()
         app.dialogs.badversionDisplay = false
 
         app.triggers = {}
-        app.triggers.exitAPP = false
-        app.triggers.noRFMsg = false
-        app.triggers.triggerSave = false
-        app.triggers.triggerSaveNoProgress = false
-        app.triggers.triggerReload = false
-        app.triggers.triggerReloadFull = false
-        app.triggers.triggerReloadNoPrompt = false
-        app.triggers.reloadFull = false
-        app.triggers.isReady = false
-        app.triggers.isSaving = false
-        app.triggers.isSavingFake = false
-        app.triggers.saveFailed = false
-        app.triggers.profileswitchLast = nil
-        app.triggers.rateswitchLast = nil
-        app.triggers.closeSave = false
-        app.triggers.closeSaveFake = false
-        app.triggers.badMspVersion = false
-        app.triggers.badMspVersionDisplay = false
-        app.triggers.closeProgressLoader = false
-        app.triggers.closeProgressLoaderNoisProcessed = false
-        app.triggers.disableRssiTimeout = false
-        app.triggers.timeIsSet = false
-        app.triggers.invalidConnectionSetup = false
-        app.triggers.wasConnected = false
-        app.triggers.isArmed = false
-        app.triggers.showSaveArmedWarning = false
+        app.triggers.exitAPP = false -- request app exit
+        app.triggers.noRFMsg = false -- show no RF message
+        app.triggers.triggerSave = false -- start save workflow
+        app.triggers.triggerSaveNoProgress = false -- save without progress dialog
+        app.triggers.triggerReload = false -- reload current page
+        app.triggers.triggerReloadFull = false -- reload with full reset
+        app.triggers.triggerReloadNoPrompt = false -- reload without prompt
+        app.triggers.reloadFull = false -- force full reload
+        app.triggers.isReady = false -- page ready to interact
+        app.triggers.isSaving = false -- save in progress
+        app.triggers.isSavingFake = false -- fake save progress
+        app.triggers.saveFailed = false -- save failed flag
+        app.triggers.profileswitchLast = nil -- last profile switch id
+        app.triggers.rateswitchLast = nil -- last rate switch id
+        app.triggers.closeSave = false -- close save dialog
+        app.triggers.closeSaveFake = false -- close fake save dialog
+        app.triggers.badMspVersion = false -- bad MSP version detected
+        app.triggers.badMspVersionDisplay = false -- show bad MSP dialog
+        app.triggers.closeProgressLoader = false -- close loader dialog
+        app.triggers.closeProgressLoaderNoisProcessed = false -- close loader when queue not processed
+        app.triggers.disableRssiTimeout = false -- disable RSSI timeout
+        app.triggers.timeIsSet = false -- time sync flag
+        app.triggers.invalidConnectionSetup = false -- invalid connection state
+        app.triggers.wasConnected = false -- last connection state
+        app.triggers.isArmed = false -- model armed flag
+        app.triggers.showSaveArmedWarning = false -- warn when saving armed
 
+        -- default speeds for loaders (multipliers of default animation speed)
         app.loaderSpeed = {
             DEFAULT = 1.0,
             FAST = 2.0,
