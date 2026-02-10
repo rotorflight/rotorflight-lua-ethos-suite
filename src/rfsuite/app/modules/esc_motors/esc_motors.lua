@@ -102,7 +102,7 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["esc_motors"] = pidx
-                rfsuite.app.ui.progressDisplay(nil,nil,false)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.esc_motors.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "esc_motors/tools/" .. pvalue.script)
             end

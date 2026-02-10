@@ -112,7 +112,7 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["power"] = pidx
-                rfsuite.app.ui.progressDisplay(nil,nil,false)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.power.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "power/tools/" .. pvalue.script)
             end

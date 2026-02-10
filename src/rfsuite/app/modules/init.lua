@@ -11,6 +11,18 @@ local manifest = loadfile("app/modules/manifest.lua")()
 local sections = {}
 local missingModules = {}
 
+local function resolveLoaderSpeed(value)
+    if value == nil then return nil end
+    if type(value) == "number" then return value end
+    if type(value) == "string" then
+        local speeds = rfsuite.app and rfsuite.app.loaderSpeed
+        if speeds and speeds[value] then return speeds[value] end
+        local num = tonumber(value)
+        if num ~= nil then return num end
+    end
+    return nil
+end
+
 -- Load a module's init.lua to retrieve script/title/order/etc.
 -- Returns a table with `folder` set, or nil on error.
 local function loadModuleConfig(folder)
@@ -75,6 +87,7 @@ for sidx, section in ipairs(manifest.sections or {}) do
         end
     end
 
+    out.loaderspeed = resolveLoaderSpeed(out.loaderspeed)
     sections[#sections + 1] = out
 
     if section.pages then
@@ -106,6 +119,7 @@ for sidx, section in ipairs(manifest.sections or {}) do
                         end
                     end
 
+                    page.loaderspeed = resolveLoaderSpeed(page.loaderspeed)
                     pages[#pages + 1] = page
                 end
             end

@@ -116,7 +116,7 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["servos_type"] = pidx
-                rfsuite.app.ui.progressDisplay(nil,nil,false)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.servos.name)@" .. " / " .. pvalue.name
                 rfsuite.app.ui.openPage(pidx, name, "servos/tools/" .. pvalue.script)
             end

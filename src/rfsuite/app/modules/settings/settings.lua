@@ -57,7 +57,7 @@ local function openPage(pidx, title, script)
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then
                 rfsuite.app.Page.onNavMenu(rfsuite.app.Page)
             else
-                rfsuite.app.ui.progressDisplay(nil, nil, true)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
             end
             rfsuite.app.ui.openMainMenu()
         end
@@ -124,7 +124,7 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["settings"] = pidx
-                rfsuite.app.ui.progressDisplay(nil, nil, true)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
             end
         })

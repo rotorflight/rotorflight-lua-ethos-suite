@@ -165,11 +165,11 @@ function ui.progressDisplay(title, message, speed)
     title = title or "@i18n(app.msg_loading)@"
     message = message or "@i18n(app.msg_loading_from_fbl)@"
 
-    if speed then
-        app.dialogs.progressSpeed = true
-    else
-        app.dialogs.progressSpeed = false
+    local speedMult = tonumber(speed)
+    if speedMult == nil then
+        speedMult = (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
     end
+    app.dialogs.progressSpeed = speedMult
 
     local reachedTimeout = false
 
@@ -189,16 +189,7 @@ function ui.progressDisplay(title, message, speed)
 
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
-            local mult = 1
-            if app.dialogs.progressSpeed then 
-                if speed and (type(speed) == "number" or type(speed) == "float") then
-                    mult = speed
-                elseif type(speed) == "boolean" and speed == true then
-                    mult = 2
-                else
-                    mult = 1.5 
-                end
-            end
+            local mult = app.dialogs.progressSpeed or 1.0
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
             local apiV = tostring(session.apiVersion)
@@ -215,7 +206,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
                     return
                 end
@@ -227,7 +218,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-
+                    app.dialogs.progressSpeed = nil
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
                 if app.dialogs.progressIsWait then
@@ -236,7 +227,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
                     return
                 end
@@ -248,7 +239,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
 
                 end
@@ -264,7 +255,7 @@ function ui.progressDisplay(title, message, speed)
                 app.Page = app.PageTmp
                 app.PageTmp = nil
                 app.dialogs.progressCounter = 0
-                app.dialogs.progressSpeed = false
+                app.dialogs.progressSpeed = nil
                 app.dialogs.progressDisplay = false
 
                 ui.disableAllFields()
@@ -280,7 +271,7 @@ function ui.progressDisplay(title, message, speed)
                     ui.clearProgressDialog(app.dialogs.progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
 
                 end
             end
@@ -707,8 +698,7 @@ function ui.openMainMenu()
             paint = function() end,
             press = function()
                 preferences.menulastselected["mainmenu"] = pidx
-                local speed = false
-                if pvalue.loaderspeed then speed = true end
+                local speed = tonumber(pvalue.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                 app.ui.progressDisplay(nil, nil, speed)
                 if pvalue.module then
                     app.isOfflinePage = true
@@ -821,8 +811,7 @@ function ui.openMainMenuSub(activesection)
                             paint = function() end,
                             press = function()
                                 preferences.menulastselected[activesection] = pidx
-                                local speed = false
-                                if page.loaderspeed or section.loaderspeed then speed = true end
+                                local speed = tonumber(page.loaderspeed or section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                                 app.ui.progressDisplay(nil, nil, speed)
                                 app.isOfflinePage = offline
                                 app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)

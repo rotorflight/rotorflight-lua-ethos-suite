@@ -83,7 +83,7 @@ local function openPage(pidx, title, script)
                 press = function()
 
                     rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx
-                    rfsuite.app.ui.progressDisplay(nil, nil, true)
+                    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
                     local configure = theme.configure
                     local source = theme.source
                     local folder = theme.folder
@@ -138,7 +138,7 @@ local function event(widget, category, value, x, y)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
+    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
     rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.dashboard)@", "settings/tools/dashboard.lua")
     return true
 end

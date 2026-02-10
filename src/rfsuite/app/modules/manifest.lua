@@ -10,7 +10,7 @@
 --   - pages: list of module folders (or override tables) to build a submenu.
 --   - id: section identifier used by openMainMenuSub (required for submenu sections).
 --   - image: icon path used on the main menu.
---   - loaderspeed: show fast loader when opening.
+--   - loaderspeed: loader speed multiplier (float) or alias ("FAST", "DEFAULT", "SLOW").
 --   - offline: allow entry when FC is not connected.
 --   - bgtask: allow entry while background task is active.
 --   - newline: start a new header group (UI layout).
@@ -41,7 +41,7 @@ return {
             title = "@i18n(app.menu_section_advanced)@",
             id = "advanced",
             image = "app/gfx/advanced.png",
-            loaderspeed = true,
+            loaderspeed = "FAST",
             pages = {
                 "profile_pidcontroller",
                 "profile_pidbandwidth",
@@ -56,7 +56,7 @@ return {
             title = "@i18n(app.menu_section_hardware)@",
             id = "hardware",
             image = "app/gfx/hardware.png",
-            loaderspeed = true,
+            loaderspeed = "FAST",
             pages = {
                 "servos",
                 "mixer",
@@ -86,7 +86,7 @@ return {
             title = "@i18n(app.modules.logs.name)@",
             entry = "logs",
             image = "app/modules/logs/gfx/logs.png",
-            loaderspeed = true,
+            loaderspeed = "FAST",
             offline = true
         },
         {

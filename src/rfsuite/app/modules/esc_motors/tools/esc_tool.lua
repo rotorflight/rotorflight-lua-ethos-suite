@@ -253,7 +253,7 @@ local function openPage(pidx, title, script)
                 paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["esctool"] = pidx
-                    rfsuite.app.ui.progressDisplay(nil,nil,false)
+                    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
 
                     rfsuite.app.ui.openPage(pidx, title, "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script)
 

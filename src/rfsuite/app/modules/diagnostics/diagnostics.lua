@@ -131,7 +131,7 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["diagnostics"] = pidx
-                app.ui.progressDisplay(nil, nil, true)
+                app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
                 app.ui.openPage(pidx, "@i18n(app.modules.diagnostics.name)@" .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
             end
         })

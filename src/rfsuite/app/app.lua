@@ -91,7 +91,7 @@ function app.create()
         app.dialogs.progressDisplay = false
         app.dialogs.progressWatchDog = nil
         app.dialogs.progressCounter = 0
-        app.dialogs.progressSpeed = false
+        app.dialogs.progressSpeed = nil
         app.dialogs.progressRateLimit = os.clock()
         app.dialogs.progressRate = 0.25
 
@@ -141,6 +141,12 @@ function app.create()
         app.triggers.wasConnected = false
         app.triggers.isArmed = false
         app.triggers.showSaveArmedWarning = false
+
+        app.loaderSpeed = {
+            DEFAULT = 1.0,
+            FAST = 2.0,
+            SLOW = 0.75
+        }
 
         app.tasks = assert(compile("app/tasks.lua"))()
 

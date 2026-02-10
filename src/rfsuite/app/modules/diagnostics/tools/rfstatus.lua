@@ -185,7 +185,7 @@ local function event(widget, category, value, x, y)
 end
 
 local function onNavMenu()
-    app.ui.progressDisplay(nil, nil, true)
+    app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
     app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
 end
 
