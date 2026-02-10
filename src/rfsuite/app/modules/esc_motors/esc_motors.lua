@@ -17,7 +17,11 @@ local pages = S_PAGES
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -104,7 +108,7 @@ local function openPage(pidx, title, script)
                 rfsuite.preferences.menulastselected["esc_motors"] = pidx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.esc_motors.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "esc_motors/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = name, script = "esc_motors/tools/" .. pvalue.script})
             end
         })
 

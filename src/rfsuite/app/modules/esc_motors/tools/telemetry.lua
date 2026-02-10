@@ -42,7 +42,7 @@ local function postLoad(self)
 end
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage(pidx, title, "esc_motors/esc_motors.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/esc_motors.lua"})
 end
 
 local function wakeup() 

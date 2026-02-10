@@ -15,7 +15,11 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -24,7 +28,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -110,7 +114,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["settings_dashboard"] = pidx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-                rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = pvalue.folder, script = "settings/tools/" .. pvalue.script})
             end
         })
 
@@ -135,14 +139,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/settings.lua")
+        rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/settings.lua"})
         return true
     end
 end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/settings.lua")
+    rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/settings.lua"})
     return true
 end
 

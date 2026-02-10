@@ -238,7 +238,7 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-    rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
 
 end
 

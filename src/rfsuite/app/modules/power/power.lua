@@ -18,7 +18,11 @@ local prevConnectedState = nil
 local initTime = os.clock()
 
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -27,7 +31,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -114,7 +118,7 @@ local function openPage(pidx, title, script)
                 rfsuite.preferences.menulastselected["power"] = pidx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.power.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "power/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = name, script = "power/tools/" .. pvalue.script})
             end
         })
 

@@ -17,7 +17,11 @@ local initTime = os.clock()
 local governorDisabledMsg = false
 local app = rfsuite.app
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -26,7 +30,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -129,7 +133,7 @@ local function openPage(pidx, title, script)
                 rfsuite.preferences.menulastselected["profile_governor"] = pidx
                 rfsuite.app.ui.progressDisplay()
                 local name = "@i18n(app.modules.governor.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "profile_governor/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = name, script = "profile_governor/tools/" .. pvalue.script})
             end
         })
 

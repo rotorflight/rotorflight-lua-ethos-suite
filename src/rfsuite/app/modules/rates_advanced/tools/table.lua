@@ -115,7 +115,7 @@ end
 
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage(pidx, title, "rates_advanced/rates_advanced.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "rates_advanced/rates_advanced.lua"})
 end
 
 local function postEepromWrite(self) if resetRates == true then doFullReload = true end end

@@ -13,14 +13,18 @@ local S_PAGES = {
     {name = "@i18n(app.modules.fblstatus.name)@", script = "fblstatus.lua", image = "fblstatus.png", bgtask = true, offline = true}, {name = "@i18n(app.modules.info.name)@", script = "info.lua", image = "info.png", bgtask = true, offline = true}
 }
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     app.triggers.isReady = false
     app.uiState = app.uiStatus.mainMenu
 
     form.clear()
 
-    app.lastIdx = idx
+    app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
 
@@ -132,7 +136,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["diagnostics"] = pidx
                 app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-                app.ui.openPage(pidx, "@i18n(app.modules.diagnostics.name)@" .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
+                app.ui.openPage({idx = pidx, title = "@i18n(app.modules.diagnostics.name)@" .. " / " .. pvalue.name, script = "diagnostics/tools/" .. pvalue.script})
             end
         })
 

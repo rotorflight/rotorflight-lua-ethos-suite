@@ -53,7 +53,11 @@ local function getDestinationPidProfile(self)
     return destPidProfile
 end
 
-local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false

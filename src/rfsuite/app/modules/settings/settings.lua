@@ -11,7 +11,11 @@ local S_PAGES = {
     {name = "@i18n(app.modules.settings.txt_development)@", script = "development.lua", image = "development.png"}
 }
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -20,7 +24,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -125,7 +129,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["settings"] = pidx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-                rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = pvalue.folder, script = "settings/tools/" .. pvalue.script})
             end
         })
 

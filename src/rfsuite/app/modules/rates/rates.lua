@@ -53,7 +53,11 @@ local function rightAlignText(width, text)
     end
 end
 
-local function openPage(idx, title, script)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
 

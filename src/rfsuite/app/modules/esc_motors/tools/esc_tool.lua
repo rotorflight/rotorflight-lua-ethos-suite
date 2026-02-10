@@ -120,7 +120,11 @@ local function updatePowercycleLoaderMessage()
     end
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
@@ -158,7 +162,7 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, paint = function() end, press = function() rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_motors/tools/esc.lua") end})
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, paint = function() end, press = function() rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.esc_tools.name)@", script = "esc_motors/tools/esc.lua"}) end})
     rfsuite.app.formNavigationFields['menu']:focus()
 
     rfsuite.app.formNavigationFields['refresh'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
@@ -255,7 +259,7 @@ local function openPage(pidx, title, script)
                     rfsuite.preferences.menulastselected["esctool"] = pidx
                     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
 
-                    rfsuite.app.ui.openPage(pidx, title, "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script)
+                    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script})
 
                 end
             })
@@ -376,7 +380,7 @@ local function event(widget, category, value, x, y)
             powercycleLoaderBaseMessage = nil
             rfsuite.app.ui.clearProgressDialog(powercycleLoader)
         end
-        rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_motors/tools/esc.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.esc_tools.name)@", script = "esc_motors/tools/esc.lua"})
         return true
     end
 

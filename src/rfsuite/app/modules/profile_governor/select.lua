@@ -9,10 +9,14 @@ local pidxLegacy
 local titleLegacy
 
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
     else    
         pidxLegacy = pidx
         titleLegacy = title
@@ -30,7 +34,7 @@ local function wakeup()
     end
 
     if rfsuite.utils.apiVersionCompare("<", "12.09") and rfsuite.session.governorMode ~= nil then
-        rfsuite.app.ui.openPage(pidxLegacy, titleLegacy, "profile_governor/governor_legacy.lua")
+        rfsuite.app.ui.openPage({idx = pidxLegacy, title = titleLegacy, script = "profile_governor/governor_legacy.lua"})
     end
 
 end

@@ -478,7 +478,14 @@ local function findAverage(numbers)
     return average
 end
 
-local function openPage(pidx, title, script, logfile, displaymode, dirname)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    local logfile = opts.logfile
+    local displaymode = opts.displaymode
+    local dirname = opts.dirname
 
     tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -487,7 +494,7 @@ local function openPage(pidx, title, script, logfile, displaymode, dirname)
 
     form.clear()
 
-    app.lastIdx = idx
+    app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
 
@@ -567,7 +574,7 @@ end
 
 local function event(event, category, value, x, y)
     if value == 35 then
-        app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_logs.lua")
+        app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_logs.lua"})
         return true
     end
     return false
@@ -734,7 +741,7 @@ end
 
 local function onNavMenu(self)
     app.ui.progressDisplay()
-    app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_logs.lua")
+    app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_logs.lua"})
 end
 
 return {event = event, openPage = openPage, wakeup = wakeup, paint = paint, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

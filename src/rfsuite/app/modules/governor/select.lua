@@ -5,14 +5,18 @@
 
 local rfsuite = require("rfsuite")
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
 
-        rfsuite.app.ui.openPage(pidx, title, "governor/governor.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "governor/governor.lua"})
     else
 
-        rfsuite.app.ui.openPage(pidx, title, "governor/governor_legacy.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "governor/governor_legacy.lua"})
     end
 
 end

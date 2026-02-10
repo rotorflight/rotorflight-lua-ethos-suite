@@ -221,7 +221,11 @@ local function openSpeedTestDialog()
     form.openDialog({title = "@i18n(app.modules.msp_speed.start)@", message = "@i18n(app.modules.msp_speed.start_prompt)@", buttons = buttons, options = TEXT_LEFT})
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
     app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
@@ -239,7 +243,7 @@ local function openPage(pidx, title, script)
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
-    app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, press = function() app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua") end})
+    app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, press = function() app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"}) end})
     app.formNavigationFields['menu']:focus()
 
     app.formNavigationFields['tool'] = form.addButton(line, {x = x - buttonWs, y = app.radio.linePaddingTop, w = buttonWs, h = app.radio.navbuttonHeight}, {text = "*", icon = nil, options = FONT_S, press = function() openSpeedTestDialog() end})
@@ -311,7 +315,7 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+        app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
         return true
     end
 end

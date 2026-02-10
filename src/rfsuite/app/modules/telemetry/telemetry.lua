@@ -176,7 +176,11 @@ local function alertIfTooManySensors()
     form.openDialog({width = nil, title = "@i18n(app.modules.telemetry.name)@", message = "@i18n(app.modules.telemetry.no_more_than_40)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
     form.clear()
 
     rfsuite.app.lastIdx = pidx

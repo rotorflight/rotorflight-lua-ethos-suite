@@ -702,7 +702,7 @@ function ui.openMainMenu()
                 app.ui.progressDisplay(nil, nil, speed)
                 if pvalue.module then
                     app.isOfflinePage = true
-                    app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
+                    app.ui.openPage({idx = pidx, title = pvalue.title, script = pvalue.module .. "/" .. pvalue.script})
                 else
                     app.ui.openMainMenuSub(pvalue.id)
                 end
@@ -814,7 +814,7 @@ function ui.openMainMenuSub(activesection)
                                 local speed = tonumber(page.loaderspeed or section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                                 app.ui.progressDisplay(nil, nil, speed)
                                 app.isOfflinePage = offline
-                                app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
+                                app.ui.openPage({idx = pidx, title = page.title, script = page.folder .. "/" .. page.script})
                             end
                         })
 
@@ -1373,7 +1373,7 @@ function ui.fieldHeader(title)
     app.ui.navigationButtons(w - 5, radio.linePaddingTop, buttonW, buttonH)
 end
 
-function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+function ui.openPageRefresh(opts)
     app.triggers.isReady = false
 end
 
@@ -1398,7 +1398,18 @@ local function getHelpData(section)
 end
 
 
-function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+function ui.openPage(opts)
+
+    if type(opts) ~= "table" then
+        error("ui.openPage expects a table")
+    end
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    if not script then
+        error("ui.openPage requires opts.script")
+    end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "start")
 
@@ -1423,7 +1434,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
-        app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+        app.Page.openPage(opts)
         collectgarbage('collect')
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return

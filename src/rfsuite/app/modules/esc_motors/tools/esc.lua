@@ -38,7 +38,11 @@ local function findMFG()
     return mfgsList
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
@@ -76,7 +80,7 @@ local function openPage(pidx, title, script)
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
-            rfsuite.app.ui.openPage(pidx, title, "esc_motors/esc_motors.lua")
+            rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/esc_motors.lua"})
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
@@ -142,7 +146,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["escmain"] = pidx
                 rfsuite.app.ui.progressDisplay(nil,nil,0.5)
-                rfsuite.app.ui.openPage(pidx, pvalue.folder, "esc_motors/tools/esc_tool.lua")
+                rfsuite.app.ui.openPage({idx = pidx, title = pvalue.folder, script = "esc_motors/tools/esc_tool.lua"})
             end
         })
 

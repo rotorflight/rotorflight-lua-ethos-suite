@@ -173,7 +173,7 @@ end
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/tools/bus.lua", rfsuite.session.servoOverride)
+    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = rfsuite.app.lastTitle, script = "servos/tools/bus.lua", servoOverride = rfsuite.session.servoOverride})
 
 end
 
@@ -364,12 +364,17 @@ local function getServoConfigurationsEnd(callbackParam)
     enableWakeup = true
 end
 
-local function openPage(idx, title, script, extra1)
+local function openPage(opts)
 
     local app = rfsuite.app
 
-    if extra1 ~= nil then
-        servoTable = extra1
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    local servoTableIn = opts.servoTable
+
+    if servoTableIn ~= nil then
+        servoTable = servoTableIn
         rfsuite.servoTableLast = servoTable
     else
         if rfsuite.servoTableLast ~= nil then servoTable = rfsuite.servoTableLast end
@@ -552,7 +557,7 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.servos.name)@", "servos/servos.lua", rfsuite.session.servoOverride)
+        rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.servos.name)@", script = "servos/servos.lua", servoOverride = rfsuite.session.servoOverride})
         return true
     end
 

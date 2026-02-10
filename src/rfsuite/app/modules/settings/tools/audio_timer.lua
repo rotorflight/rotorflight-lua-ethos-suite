@@ -8,7 +8,11 @@ local enableWakeup = false
 
 local config = {}
 
-local function openPage(pageIdx, title, script)
+local function openPage(opts)
+
+    local pageIdx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = true
     if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
@@ -137,14 +141,14 @@ end
 
 local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/tools/audio.lua")
+        rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/tools/audio.lua"})
         return true
     end
 end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/tools/audio.lua")
+    rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/tools/audio.lua"})
 end
 
 return {event = event, openPage = openPage, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = false}, API = {}}

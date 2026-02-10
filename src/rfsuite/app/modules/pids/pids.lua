@@ -53,7 +53,11 @@ local function postLoad(self)
     activateWakeup = true
 end
 
-local function openPage(idx, title, script)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false

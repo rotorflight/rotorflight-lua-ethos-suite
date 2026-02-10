@@ -10,7 +10,15 @@ local enableWakeup = false
 local prevConnectedState = nil
 local page
 
-local function openPage(idx, title, script, source, folder, themeScript)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    local source = opts.source
+    local folder = opts.folder
+    local themeScript = opts.themeScript
+    local pageIdx = idx
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
@@ -51,7 +59,7 @@ local function openPage(idx, title, script, source, folder, themeScript)
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
-            rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.dashboard)@", "settings/tools/dashboard_settings.lua")
+            rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.dashboard)@", script = "settings/tools/dashboard_settings.lua"})
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
@@ -89,7 +97,7 @@ local function openPage(idx, title, script, source, folder, themeScript)
     enableWakeup = true
 
     if page.configure then
-        page.configure(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+        page.configure({idx = idx, title = title, script = script, source = source, folder = folder, themeScript = themeScript})
         rfsuite.utils.reportMemoryUsage(title)
         rfsuite.app.triggers.closeProgressLoader = true
         return
@@ -100,7 +108,7 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.dashboard)@", "settings/tools/dashboard.lua")
+        rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.dashboard)@", script = "settings/tools/dashboard.lua"})
         return true
     end
 
@@ -110,7 +118,7 @@ end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.dashboard)@", "settings/tools/dashboard.lua")
+    rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.dashboard)@", script = "settings/tools/dashboard.lua"})
     return true
 end
 

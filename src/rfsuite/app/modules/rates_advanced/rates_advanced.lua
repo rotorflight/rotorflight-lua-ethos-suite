@@ -16,7 +16,11 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -25,7 +29,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -112,7 +116,7 @@ local function openPage(pidx, title, script)
                 rfsuite.preferences.menulastselected["rates_advanced"] = pidx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.rates_advanced.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "rates_advanced/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = name, script = "rates_advanced/tools/" .. pvalue.script})
             end
         })
 

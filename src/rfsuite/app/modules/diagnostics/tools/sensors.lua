@@ -52,7 +52,11 @@ end
 
 local sensorList = sortSensorListByName(tasks.telemetry.listSensors())
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = false
     app.triggers.closeProgressLoader = true
 
@@ -290,14 +294,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+        app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
         return true
     end
 end
 
 local function onNavMenu()
     app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
 end
 
 return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

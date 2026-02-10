@@ -22,7 +22,11 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -31,7 +35,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    app.lastIdx = idx
+    app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
 
@@ -122,7 +126,7 @@ local function openPage(pidx, title, script)
                 prefs.menulastselected["governor"] = pidx
                 app.ui.progressDisplay()
                 local name = "@i18n(app.modules.governor.name)@" .. " / " .. pvalue.name
-                app.ui.openPage(pidx, name, "governor/tools/" .. pvalue.script)
+                app.ui.openPage({idx = pidx, title = name, script = "governor/tools/" .. pvalue.script})
             end
         })
 

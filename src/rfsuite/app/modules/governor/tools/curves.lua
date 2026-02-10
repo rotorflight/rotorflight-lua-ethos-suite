@@ -112,7 +112,11 @@ local function loadData()
 end
 
 
-local function openPage(idx, title, script)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     app.uiState = app.uiStatus.pages
     app.triggers.isReady = false
@@ -227,14 +231,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage(pidx, title, "governor/governor.lua")
+        app.ui.openPage({idx = pidx, title = title, script = "governor/governor.lua"})
         return true
     end
 end
 
 local function onNavMenu()
     app.ui.progressDisplay()
-    app.ui.openPage(pidx, title, "governor/governor.lua")
+    app.ui.openPage({idx = pidx, title = title, script = "governor/governor.lua"})
     return true
 end
 

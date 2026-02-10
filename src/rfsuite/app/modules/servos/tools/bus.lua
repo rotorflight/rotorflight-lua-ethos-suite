@@ -100,7 +100,11 @@ local function swashMixerType()
     return txt
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     buildServoTable()
 
@@ -111,7 +115,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -215,7 +219,7 @@ local function openPage(pidx, title, script)
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
 
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/bus_tool.lua", servoTable)
+                    rfsuite.app.ui.openPage({idx = pidx, title = pvalue.title, script = "servos/tools/bus_tool.lua", servoTable = servoTable})
                 end
             })
 
@@ -358,7 +362,7 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-     rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.servos.name)@", "servos/servos.lua")
+     rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.servos.name)@", script = "servos/servos.lua"})
 
 end
 

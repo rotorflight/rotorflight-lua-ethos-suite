@@ -30,14 +30,14 @@ local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage(pidx, folder, "esc_motors/tools/esc_tool.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = folder, script = "esc_motors/tools/esc_tool.lua"})
 end
 
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end
-        rfsuite.app.ui.openPage(pidx, folder, "esc_motors/tools/esc_tool.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = folder, script = "esc_motors/tools/esc_tool.lua"})
         return true
     end
 
