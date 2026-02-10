@@ -32,7 +32,10 @@ return {
             title = "@i18n(app.modules.profile_governor.name)@",
             entry = "profile_governor",
             image = "app/modules/profile_governor/governor.png",
-            script_by_mspversion = { {">=", "12.09", "governor.lua"}, {"<", "12.09", "governor_legacy.lua"} }
+            script_by_mspversion = {
+                {">=", "12.09", "governor.lua", loaderspeed = "FAST"},
+                {"<", "12.09", "governor_legacy.lua", loaderspeed = "SLOW"}
+            }
         },
         {
             title = "@i18n(app.modules.profile_tailrotor.name)@",
@@ -70,7 +73,10 @@ return {
                 "power",
                 "radio_config",
                 "stats",
-                {"governor", script_by_mspversion = { {">=", "12.09", "governor.lua"}, {"<", "12.09", "governor_legacy.lua"} }}
+                {"governor", script_by_mspversion = {
+                    {">=", "12.09", "governor.lua", loaderspeed = "FAST"},
+                    {"<", "12.09", "governor_legacy.lua", loaderspeed = "SLOW"}
+                }}
             }
         },
         {
