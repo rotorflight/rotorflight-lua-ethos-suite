@@ -431,8 +431,8 @@ local function openPage(opts)
     if configs[servoIndex]['mid'] ~= nil then
 
         local idx = 2
-        local minValue = 50
-        local maxValue = 2250
+        local minValue = 1000
+        local maxValue = 2000
         local defaultValue = 1500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
@@ -446,9 +446,9 @@ local function openPage(opts)
 
     if configs[servoIndex]['min'] ~= nil then
         local idx = 3
-        local minValue = -1000
-        local maxValue = 1000
-        local defaultValue = -700
+        local minValue = 1000     -- we must always be lower than the max value, and less than the mid value
+        local maxValue = 2000     -- we must always be higher than the min value and higher than the mid value
+        local defaultValue = 1000
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
@@ -461,9 +461,9 @@ local function openPage(opts)
 
     if configs[servoIndex]['max'] ~= nil then
         local idx = 4
-        local minValue = -1000
-        local maxValue = 1000
-        local defaultValue = 700
+        local minValue = 1000   -- we must always be higher than the min value and higher than the mid value
+        local maxValue = 2000   -- we must always be lower than the max value and less than the mid value
+        local defaultValue = 1000
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
