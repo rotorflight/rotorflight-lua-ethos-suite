@@ -34,6 +34,7 @@ local rfsuite = require("rfsuite")
 
 local rep = string.rep
 local tostring = tostring
+local tonumber = tonumber
 
 local render = {}
 
@@ -98,18 +99,20 @@ function render.wakeup(box)
 
     local value
     if rfsuite.session and rfsuite.session.modelPreferences then
-        value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
-        lastValue = value
+        value = tonumber(rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount"))
+        if value ~= nil then
+            lastValue = value
+        end
     else
-        value = lastValue or 0
+        value = tonumber(lastValue) or 0
     end
 
     local displayValue
 
     local telemetryActive = rfsuite.session and rfsuite.session.isConnected
-    if type(value) == "number" and telemetryActive then box._lastValidFlightCount = value end
+    if value ~= nil and telemetryActive then box._lastValidFlightCount = value end
 
-    if type(value) == "number" then
+    if value ~= nil then
         displayValue = tostring(value)
     elseif box._lastValidFlightCount ~= nil then
         displayValue = tostring(box._lastValidFlightCount)

@@ -98,8 +98,8 @@ function sync.wakeup()
 
         if totalflighttimeRemote > totalflighttimeLocal or flightcountRemote > flightcountLocal then
             -- remote is higher, update local
-            rfsuite.ini.setvalue(prefs, "general", "totalflighttime", tostring(totalflighttimeRemote))
-            rfsuite.ini.setvalue(prefs, "general", "flightcount", tostring(flightcountRemote))
+            rfsuite.ini.setvalue(prefs, "general", "totalflighttime", totalflighttimeRemote)
+            rfsuite.ini.setvalue(prefs, "general", "flightcount", flightcountRemote)
             rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, prefs)
 
             rfsuite.utils.log("Updated radio flight stats from FBL", "info")

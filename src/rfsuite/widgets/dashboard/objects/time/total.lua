@@ -33,6 +33,7 @@ local rfsuite = require("rfsuite")
 
 local floor = math.floor
 local format = string.format
+local tonumber = tonumber
 
 local render = {}
 
@@ -97,14 +98,16 @@ function render.wakeup(box)
 
     local value
     if rfsuite.session and rfsuite.session.modelPreferences then
-        value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
-        lastValue = value
+        value = tonumber(rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime"))
+        if value ~= nil then
+            lastValue = value
+        end
     else
-        value = lastValue or 0
+        value = tonumber(lastValue) or 0
     end
 
     local displayValue
-    local haveNumber = (type(value) == "number" and value > 0)
+    local haveNumber = (value ~= nil and value > 0)
 
     if haveNumber then
         local hours = floor(value / 3600)
