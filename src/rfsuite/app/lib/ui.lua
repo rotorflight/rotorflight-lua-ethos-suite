@@ -2035,6 +2035,14 @@ function ui.saveSettings()
     local log = utils.log
 
     if app.pageState == app.pageStatus.saving then return end
+    if not (app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields and app.Page.apidata.api) then
+        log("saveSettings called without valid apidata; skipping.", "info")
+        app.pageState = app.pageStatus.display
+        app.triggers.isSaving = false
+        app.triggers.closeSaveFake = true
+        app.triggers.saveFailed = true
+        return
+    end
 
     app.pageState = app.pageStatus.saving
     app.saveTS = osClock()
