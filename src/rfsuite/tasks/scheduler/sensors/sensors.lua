@@ -89,10 +89,12 @@ function sensors.wakeup()
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
 
+
+        
+        loadedSensorModule.module.wakeup()
+
         local cycleFlip = schedulerTick % 2
         if cycleFlip == 0 then
-            loadedSensorModule.module.wakeup()
-        else
             if rfsuite.session and rfsuite.session.isConnected then
 
                 if msp and msp.wakeup then msp.wakeup() end

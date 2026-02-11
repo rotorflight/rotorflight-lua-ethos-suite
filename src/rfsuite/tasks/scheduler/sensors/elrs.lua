@@ -11,6 +11,7 @@ local os_clock = os.clock
 local math_floor = math.floor
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor
+local string_format = string.format
 
 local elrs = {}
 
@@ -45,7 +46,10 @@ elrs.publishBudgetPerFrame = 50  -- If everything works this should never be rea
 local META_UID = {
     [0xEE01] = true, 
     [0xEE02] = true,
-    [0xEE03] = true
+    [0xEE03] = true,
+    [0xEE04] = true,
+    [0xEE05] = true,
+    [0xEE06] = true
 }
 
 elrs.strictUntilConfig = false
@@ -561,6 +565,27 @@ elrs.telemetryFrameSkip = 0
 elrs.telemetryFrameCount = 0
 elrs._lastFrameMs = nil
 elrs._haveFrameId = false
+elrs.publishOverflowCount = 0
+elrs.wakeupBudgetBreakCount = 0
+elrs.parseBreakCount = 0
+elrs.diagLogCooldownSeconds = 2.0
+elrs.wakeupBudgetLogEvery = 25
+
+local lastDiagLogAt = {
+    publish_overflow = 0,
+    wakeup_budget = 0,
+    parse_break = 0
+}
+
+local function logDiag(kind, msg, level)
+    local utils = rfsuite.utils
+    if not utils or type(utils.log) ~= "function" then return end
+    local now = os_clock()
+    local last = lastDiagLogAt[kind] or 0
+    if now - last < (elrs.diagLogCooldownSeconds or 2.0) then return end
+    lastDiagLogAt[kind] = now
+    utils.log(msg, level or "debug")
+end
 
 function elrs.crossfirePop()
 
@@ -606,6 +631,7 @@ function elrs.crossfirePop()
             elrs._lastFrameMs = tnow
 
             local published = 0
+            local publishOverflowed = false
             while ptr < #data do
 
                 sid, ptr = decU16(data, ptr)
@@ -614,23 +640,45 @@ function elrs.crossfirePop()
 
                     local prev = ptr
                     local ok, v, np = pcall(sensor.dec, data, ptr)
-                    if not ok then break end
+                    if not ok then
+                        elrs.parseBreakCount = elrs.parseBreakCount + 1
+                        logDiag("parse_break", string_format("[elrs] telemetry parse break: sid=0x%04X decode error", sid), "info")
+                        break
+                    end
                     ptr = np or prev
-                    if ptr <= prev then break end
+                    if ptr <= prev then
+                        elrs.parseBreakCount = elrs.parseBreakCount + 1
+                        logDiag("parse_break", string_format("[elrs] telemetry parse break: sid=0x%04X decoder made no progress", sid), "info")
+                        break
+                    end
 
                     if v then
                         if published < (elrs.publishBudgetPerFrame or 40) then
                             setTelemetryValue(sid, 0, 0, v, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
                             published = published + 1
+                        elseif not publishOverflowed then
+                            publishOverflowed = true
+                            elrs.publishOverflowCount = elrs.publishOverflowCount + 1
+                            logDiag("publish_overflow", string_format("[elrs] telemetry publish overflow: frameId=%d sid=0x%04X budget=%d", elrs.telemetryFrameId, sid, elrs.publishBudgetPerFrame or 40), "info")
                         end
                     end
                 else
+                    elrs.parseBreakCount = elrs.parseBreakCount + 1
+                    logDiag("parse_break", string_format("[elrs] telemetry parse break: unknown sid=0x%04X", sid), "info")
                     break
                 end
             end
 
             setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
             setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647)
+
+            --[[
+            These are for debug only, not intended to be added as official telemetry sensors
+             setTelemetryValue(0xEE04, 0, 0, elrs.publishOverflowCount, UNIT_RAW, 0, "Publish Overflow", 0, 2147483647)
+             setTelemetryValue(0xEE05, 0, 0, elrs.wakeupBudgetBreakCount, UNIT_RAW, 0, "Wakeup Break", 0, 2147483647)
+             setTelemetryValue(0xEE06, 0, 0, elrs.parseBreakCount, UNIT_RAW, 0, "Parse Break", 0, 2147483647)
+            ]]--
+
             return true
         end
 
@@ -645,11 +693,30 @@ function elrs.wakeup()
     rebuildRelevantSidSet()
 
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        local budget = (elrs.popBudgetSeconds or (config and config.elrsPopBudgetSeconds) or 0.25)
+        local budget = (elrs.popBudgetSeconds or (config and config.elrsPopBudgetSeconds) or 0.2)
         local deadline = (budget and budget > 0) and (os_clock() + budget) or nil
+        local pops = 0
         while elrs.crossfirePop() do
-            if deadline and os_clock() >= deadline then break end
+            pops = pops + 1
+            if deadline and os_clock() >= deadline then
+                elrs.wakeupBudgetBreakCount = elrs.wakeupBudgetBreakCount + 1
+                local logEvery = tonumber(elrs.wakeupBudgetLogEvery) or 25
+                if elrs.wakeupBudgetBreakCount == 1 or (logEvery > 0 and (elrs.wakeupBudgetBreakCount % logEvery) == 0) then
+                    logDiag(
+                        "wakeup_budget",
+                        string_format(
+                            "[elrs] wakeup budget break: budget=%.3fs frames=%d count=%d",
+                            budget,
+                            pops,
+                            elrs.wakeupBudgetBreakCount
+                        ),
+                        "info"
+                    )
+                end
+                break
+            end
         end
+        setTelemetryValue(0xEE05, 0, 0, elrs.wakeupBudgetBreakCount, UNIT_RAW, 0, "Wakeup Break", 0, 2147483647)
         refreshStaleSensors()
     else
         resetSensors()
@@ -672,7 +739,10 @@ function elrs.reset()
     elrs.telemetryFrameSkip = 0
     elrs.telemetryFrameCount = 0
     elrs._lastFrameMs = nil
-    elrs._haveFrameId = false    
+    elrs._haveFrameId = false
+    elrs.publishOverflowCount = 0
+    elrs.wakeupBudgetBreakCount = 0
+    elrs.parseBreakCount = 0
 end
 
 return elrs
