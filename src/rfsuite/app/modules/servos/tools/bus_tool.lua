@@ -431,8 +431,8 @@ local function openPage(opts)
     if configs[servoIndex]['mid'] ~= nil then
 
         local idx = 2
-        local minValue = 1000
-        local maxValue = 2000
+        local minValue = 1000  -- we must always be higher than the min value and higher than the mid value
+        local maxValue = 2000  -- we must always be lower than the max value and less than the mid value
         local defaultValue = 1500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
