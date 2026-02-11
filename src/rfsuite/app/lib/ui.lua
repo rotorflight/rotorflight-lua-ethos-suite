@@ -2047,6 +2047,7 @@ function ui.saveSettings()
 
     local totalRequests = #apiList
     local completedRequests = 0
+    local enqueueFailures = 0
 
     app.Page.apidata.apiState.isProcessing = true
 
@@ -2068,9 +2069,15 @@ function ui.saveSettings()
 
             if completedRequests == totalRequests then
                 log("All API requests have been completed!", "debug")
-                if app.Page.postSave then app.Page.postSave(app.Page) end
                 app.Page.apidata.apiState.isProcessing = false
-                app.utils.settingsSaved()
+                if enqueueFailures > 0 or app.triggers.saveFailed then
+                    app.pageState = app.pageStatus.display
+                    app.triggers.closeSaveFake = true
+                    app.triggers.isSaving = false
+                else
+                    if app.Page.postSave then app.Page.postSave(app.Page) end
+                    app.utils.settingsSaved()
+                end
             end
         end)
 
@@ -2121,10 +2128,24 @@ function ui.saveSettings()
             end
         end
 
+        local ok, reason
         if payload then
-            API.write(payload)
+            ok, reason = API.write(payload)
         else
-            API.write()
+            ok, reason = API.write()
+        end
+
+        if not ok then
+            enqueueFailures = enqueueFailures + 1
+            completedRequests = completedRequests + 1
+            app.triggers.saveFailed = true
+            log("API " .. apiNAME .. " enqueue rejected: " .. tostring(reason), "info")
+            if completedRequests == totalRequests then
+                app.Page.apidata.apiState.isProcessing = false
+                app.pageState = app.pageStatus.display
+                app.triggers.closeSaveFake = true
+                app.triggers.isSaving = false
+            end
         end
 
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
