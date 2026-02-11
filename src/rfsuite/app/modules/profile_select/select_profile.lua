@@ -16,15 +16,20 @@ local function postLoad(self) rfsuite.app.triggers.closeProgressLoader = true en
 
 local function postRead(self) end
 
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
 local function setPidProfile(profileIndex)
     local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, string.format("profile.pid.%d", profileIndex))
 end
 
 local function setRateProfile(profileIndex)
     profileIndex = profileIndex + 128
     local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, string.format("profile.rate.%d", profileIndex))
 end
 
 local function onSaveMenu()
@@ -70,8 +75,20 @@ local function wakeup()
 
         local profileIndex = rfsuite.app.Page.apidata.formdata.fields[1].value
         local rateIndex = rfsuite.app.Page.apidata.formdata.fields[2].value
-        setRateProfile(rateIndex)
-        setPidProfile(profileIndex)
+        local okRate, reasonRate = setRateProfile(rateIndex)
+        if not okRate then
+            rfsuite.utils.log("Rate profile enqueue rejected: " .. tostring(reasonRate), "info")
+            rfsuite.app.triggers.closeSaveFake = true
+            rfsuite.app.triggers.isSaving = false
+            return
+        end
+
+        local okPid, reasonPid = setPidProfile(profileIndex)
+        if not okPid then
+            rfsuite.utils.log("PID profile enqueue rejected: " .. tostring(reasonPid), "info")
+            rfsuite.app.triggers.closeSaveFake = true
+            rfsuite.app.triggers.isSaving = false
+        end
     end
 
 end

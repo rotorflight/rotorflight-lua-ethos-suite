@@ -24,10 +24,14 @@ end
 local function saveToEeprom()
     local mspEepromWrite = {
         command = 250, 
+        uuid = "eeprom.syncstats.postconnect",
         simulatorResponse = {}, 
         processReply = function() rfsuite.utils.log("EEPROM write command sent","info") end
     }
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    local ok, reason = rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    if not ok then
+        rfsuite.utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
+    end
 end
 
 local function toNumber(v, dflt)

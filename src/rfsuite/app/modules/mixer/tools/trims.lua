@@ -23,6 +23,11 @@ local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
 local clear2send = true
 
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
 local apidata = {
     api = {[1] = "MIXER_CONFIG"},
     formdata = {
@@ -49,7 +54,7 @@ local function mixerOn(self)
         local message = {command = 191, payload = {i}}
 
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.tasks.msp.mspQueue:add(message)
+        queueDirect(message, string.format("mixer.override.%d.on", i))
 
         if rfsuite.preferences.developer.logmsp then
             local logData = "mixerOn: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
@@ -69,7 +74,7 @@ local function mixerOff(self)
     for i = 1, 4 do
         local message = {command = 191, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2501)
-        rfsuite.tasks.msp.mspQueue:add(message)
+        queueDirect(message, string.format("mixer.override.%d.off", i))
 
         if rfsuite.preferences.developer.logmsp then
             local logData = "mixerOff: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"

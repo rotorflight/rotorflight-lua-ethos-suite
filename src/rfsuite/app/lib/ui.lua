@@ -2157,14 +2157,21 @@ end
 function ui.rebootFc()
 
     app.pageState = app.pageStatus.rebooting
-    tasks.msp.mspQueue:add({
+    local ok, reason = tasks.msp.mspQueue:add({
         command = 68,
+        uuid = "ui.reboot",
         processReply = function(self, buf)
             app.utils.invalidatePages()
             utils.onReboot()
         end,
         simulatorResponse = {}
     })
+    if not ok then
+        utils.log("Reboot enqueue rejected: " .. tostring(reason), "info")
+        app.pageState = app.pageStatus.display
+        app.triggers.closeSaveFake = true
+        app.triggers.isSaving = false
+    end
 end
 
 function ui.adminStatsOverlay()

@@ -31,10 +31,14 @@ end
 local function saveToEeprom()
     local mspEepromWrite = {
         command = 250, 
+        uuid = "eeprom.syncstats.timer",
         simulatorResponse = {}, 
         processReply = function() utils.log("EEPROM write command sent","info") end
     }
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    local ok, reason = rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    if not ok then
+        utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
+    end
 end
 
 local function writeStats()

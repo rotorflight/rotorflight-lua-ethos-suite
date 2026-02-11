@@ -20,6 +20,11 @@ local servoTable
 local servoCount
 local configs = {}
 
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
@@ -28,7 +33,7 @@ local function servoCenterFocusAllOn(self)
     for i = 0, count - 1 do
         local message = {command = 193, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.tasks.msp.mspQueue:add(message)
+        queueDirect(message, string.format("servo.override.%d.on", i))
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -41,7 +46,7 @@ local function servoCenterFocusAllOff(self)
     for i = 0, count - 1 do
         local message = {command = 193, payload = {i}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.tasks.msp.mspQueue:add(message)
+        queueDirect(message, string.format("servo.override.%d.off", i))
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -50,7 +55,7 @@ end
 local function servoCenterFocusOff(self)
     local message = {command = 193, payload = {servoIndex}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-    rfsuite.tasks.msp.mspQueue:add(message)
+    queueDirect(message, string.format("servo.override.%d.off", servoIndex))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -58,7 +63,7 @@ end
 local function servoCenterFocusOn(self)
     local message = {command = 193, payload = {servoIndex}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-    rfsuite.tasks.msp.mspQueue:add(message)
+    queueDirect(message, string.format("servo.override.%d.on", servoIndex))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -67,7 +72,7 @@ end
 local function writeEeprom()
 
     local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    return queueDirect(mspEepromWrite, "servo.pwmtool.eeprom")
 
 end
 
@@ -79,7 +84,7 @@ local function saveServoCenter(self)
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, string.format("servo.%d.center", servoIndex))
 
 end
 
@@ -117,11 +122,13 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    local ok, reason = queueDirect(message, string.format("servo.%d.config", servoIndex))
+    if not ok then return false, reason end
 
     if rfsuite.session.servoOverride == true then
         writeEeprom()
     end
+    return true, "queued"
 
 end
 
@@ -192,13 +199,18 @@ local function wakeup(self)
             end
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
-                    lastSetServoCenter = currentServoCenter
-                    lastServoChangeTime = now
+                    local ok, reason
                     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-                        self.saveServoCenter(self)
+                        ok, reason = self.saveServoCenter(self)
                     else
-                        self.saveServoSettings(self)
-                    end    
+                        ok, reason = self.saveServoSettings(self)
+                    end
+                    if ok then
+                        lastSetServoCenter = currentServoCenter
+                        lastServoChangeTime = now
+                    elseif reason then
+                        rfsuite.utils.log("Servo trim enqueue rejected: " .. tostring(reason), "debug")
+                    end
                 end
             end
 
@@ -287,7 +299,7 @@ local function getServoConfigurations(callback, callbackParam)
 
         simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "servo.cfg.bulk")
 end
 
 
@@ -339,7 +351,7 @@ local function getServoConfigurationsIndexed(callback, callbackParam)
         simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
     }
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message)
 end
 
 

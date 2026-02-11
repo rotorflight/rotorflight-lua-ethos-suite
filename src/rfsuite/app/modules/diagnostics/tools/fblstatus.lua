@@ -28,6 +28,11 @@ local x = w - 15
 
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
 
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return tasks.msp.mspQueue:add(message)
+end
+
 local apidata = {
     api = {[1] = nil},
     formdata = {
@@ -79,7 +84,7 @@ local function getFblTime()
         simulatorResponse = getSimulatorTimeResponse()
     }
 
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.time")
 end
 
 local function getStatus()
@@ -101,7 +106,7 @@ local function getStatus()
         simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
     }
 
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.status")
 end
 
 local function getDataflashSummary()
@@ -119,7 +124,7 @@ local function getDataflashSummary()
         end,
         simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
     }
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.dataflash")
 end
 
 local function eraseDataflash()
@@ -138,7 +143,7 @@ local function eraseDataflash()
         end,
         simulatorResponse = {}
     }
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.erase")
 end
 
 local function postLoad(self)
