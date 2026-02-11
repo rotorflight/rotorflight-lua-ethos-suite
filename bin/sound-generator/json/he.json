@@ -2,73 +2,73 @@
   {
     "file": "app/timeout.wav",
     "english": "Timed out",
-    "translation": "Timed out",
+    "translation": "פג הזמן",
     "needs_translation": false
   },
   {
     "file": "app/powercycleesc.wav",
     "english": "Please power cycle the speed controller",
-    "translation": "Please power cycle the speed controller",
+    "translation": "נא לבצע Power Cycle לבקר המהירות",
     "needs_translation": false
   },
   {
     "file": "app/soverideen.wav",
     "english": "Servo overide - enabled",
-    "translation": "Servo overide - enabled",
+    "translation": "Override לסרוו - מופעל",
     "needs_translation": false
   },
   {
     "file": "app/soveridedis.wav",
     "english": "Servo overide - disabled",
-    "translation": "Servo overide - disabled",
+    "translation": "Override לסרוו - מנוטרל",
     "needs_translation": false
   },
   {
     "file": "app/eraseflash.wav",
     "english": "Erasing Data Flash",
-    "translation": "Erasing Data Flash",
+    "translation": "מוחק Data Flash",
     "needs_translation": false
   },
   {
     "file": "app/moverideen.wav",
     "english": "Mixer overide - enabled",
-    "translation": "Mixer overide - enabled",
+    "translation": "Override למיקסר - מופעל",
     "needs_translation": false
   },
   {
     "file": "app/moveridedis.wav",
     "english": "Mixer overide - disabled",
-    "translation": "Mixer overide - disabled",
+    "translation": "Override למיקסר - מנוטרל",
     "needs_translation": false
   },
   {
     "file": "events/alerts/lowvoltage.wav",
     "english": "Low Voltage",
-    "translation": "Low Voltage",
+    "translation": "מתח נמוך",
     "needs_translation": false
   },
   {
     "file": "events/alerts/lowfuel.wav",
     "english": "Low Fuel",
-    "translation": "Low Fuel",
+    "translation": "דלק נמוך",
     "needs_translation": false
   },
   {
     "file": "events/alerts/armed.wav",
     "english": "Armed",
-    "translation": "Armed",
+    "translation": "מזויין",
     "needs_translation": false
   },
   {
     "file": "events/alerts/disarmed.wav",
     "english": "Disarmed",
-    "translation": "Disarmed",
+    "translation": "מפורק",
     "needs_translation": false
   },
   {
     "file": "events/alerts/profile.wav",
     "english": "Profile",
-    "translation": "Profile",
+    "translation": "פרופיל",
     "needs_translation": false
   },
   {
@@ -80,115 +80,115 @@
   {
     "file": "events/alerts/elapsed.wav",
     "english": "Timer Elapsed",
-    "translation": "Timer Elapsed",
+    "translation": "הטיימר הסתיים",
     "needs_translation": false
   },
   {
     "file": "events/alerts/becvolt.wav",
     "english": "BEC Voltage Warning",
-    "translation": "BEC Voltage Warning",
+    "translation": "אזהרת מתח BEC",
     "needs_translation": false
   },
   {
     "file": "events/alerts/esctemp.wav",
     "english": "ESC Temperature Warning",
-    "translation": "ESC Temperature Warning",
+    "translation": "אזהרת טמפרטורת ESC",
     "needs_translation": false
   },
   {
     "file": "events/alerts/rxvolt.wav",
     "english": "RX Batt Voltage Warning",
-    "translation": "RX Batt Voltage Warning",
+    "translation": "אזהרת מתח סוללת Rx",
     "needs_translation": false
   },
   {
     "file": "events/gov/off.wav",
     "english": "Governor - Off",
-    "translation": "Governor - Off",
+    "translation": "מושל - כבוי",
     "needs_translation": false
   },
   {
     "file": "events/gov/idle.wav",
     "english": "Governor - Idle",
-    "translation": "Governor - Idle",
+    "translation": "מושל - סרק",
     "needs_translation": false
   },
   {
     "file": "events/gov/spoolup.wav",
     "english": "Governor - Spoolup",
-    "translation": "Governor - Spoolup",
+    "translation": "מושל - ספול-אפ",
     "needs_translation": false
   },
   {
     "file": "events/gov/recovery.wav",
     "english": "Governor - Recovery",
-    "translation": "Governor - Recovery",
+    "translation": "מושל - התאוששות",
     "needs_translation": false
   },
   {
     "file": "events/gov/active.wav",
     "english": "Governor - Active",
-    "translation": "Governor - Active",
+    "translation": "מושל - פעיל",
     "needs_translation": false
   },
   {
     "file": "events/gov/thr-off.wav",
     "english": "Governor - Throttle Off",
-    "translation": "Governor - Throttle Off",
+    "translation": "מושל - מצערת כבויה",
     "needs_translation": false
   },
   {
     "file": "events/gov/lost-hs.wav",
     "english": "Governor - Lost Headspeed",
-    "translation": "Governor - Lost Headspeed",
+    "translation": "מושל - איבוד מהירות ראש",
     "needs_translation": false
   },
   {
     "file": "events/gov/autorot.wav",
     "english": "Governor - Auto Rotation",
-    "translation": "Governor - Auto Rotation",
+    "translation": "מושל - אוטורוטציה",
     "needs_translation": false
   },
   {
     "file": "events/gov/bailout.wav",
     "english": "Governor - Bailout",
-    "translation": "Governor - Bailout",
+    "translation": "מושל - ביילאאוט",
     "needs_translation": false
   },
   {
     "file": "events/gov/disabled.wav",
     "english": "Governor - Disabled",
-    "translation": "Governor - Disabled",
+    "translation": "מושל - מנוטרל",
     "needs_translation": false
   },
   {
     "file": "events/gov/disarmed.wav",
     "english": "Governor - Disarmed",
-    "translation": "Governor - Disarmed",
+    "translation": "מושל - מפורק",
     "needs_translation": false
   },
   {
     "file": "events/gov/unknown.wav",
     "english": "Governor - Unknown",
-    "translation": "Governor - Unknown",
+    "translation": "מושל - לא ידוע",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/pitch.wav",
     "english": "Pitch",
-    "translation": "Pitch",
+    "translation": "פיץ'",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/roll.wav",
     "english": "Roll",
-    "translation": "Roll",
+    "translation": "רול",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/yaw.wav",
     "english": "Your",
-    "translation": "Yaw",
+    "translation": "יאו",
     "needs_translation": false
   },
   {
@@ -236,7 +236,7 @@
   {
     "file": "adjfunctions/gain.wav",
     "english": "Gain",
-    "translation": "Gain",
+    "translation": "הגבר",
     "needs_translation": false
   },
   {
@@ -266,61 +266,61 @@
   {
     "file": "adjfunctions/collective.wav",
     "english": "Collective",
-    "translation": "Collective",
+    "translation": "קולקטיב",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/dyn.wav",
     "english": "Dynamic",
-    "translation": "Dynamic",
+    "translation": "דינמי",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/decay.wav",
     "english": "Decay",
-    "translation": "Decay",
+    "translation": "דעיכה",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/gyro.wav",
     "english": "Gyro",
-    "translation": "Gyro",
+    "translation": "ג'יירו",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/cutoff.wav",
     "english": "Cut Off",
-    "translation": "Cut Off",
+    "translation": "חיתוך",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/dterm.wav",
     "english": "d term",
-    "translation": "d term",
+    "translation": "D-term",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/rescue.wav",
     "english": "Rescue",
-    "translation": "Rescue",
+    "translation": "חילוץ",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/climb.wav",
     "english": "Climb",
-    "translation": "Climb",
+    "translation": "טיפוס",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/hover.wav",
     "english": "Hover",
-    "translation": "Hover",
+    "translation": "ריחוף",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/alt.wav",
     "english": "Altitude",
-    "translation": "Altitude",
+    "translation": "גובה",
     "needs_translation": false
   },
   {
@@ -332,13 +332,13 @@
   {
     "file": "adjfunctions/level.wav",
     "english": "Level",
-    "translation": "Level",
+    "translation": "יישור",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/horizon.wav",
     "english": "horizon",
-    "translation": "horizon",
+    "translation": "Horizon",
     "needs_translation": false
   },
   {
@@ -350,25 +350,25 @@
   {
     "file": "adjfunctions/gov.wav",
     "english": "Governor",
-    "translation": "Governor",
+    "translation": "מושל",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/crossc.wav",
     "english": "Cross Coupling",
-    "translation": "Cross Coupling",
+    "translation": "צימוד צולב",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/acc.wav",
     "english": "Accelerometer",
-    "translation": "Accelerometer",
+    "translation": "אקסלרומטר",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/trim.wav",
     "english": "Trim",
-    "translation": "Trim",
+    "translation": "טרים",
     "needs_translation": false
   },
   {
@@ -380,13 +380,13 @@
   {
     "file": "adjfunctions/precomp.wav",
     "english": "Precomp",
-    "translation": "Precomp",
+    "translation": "קדם-פיצוי",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/inertia.wav",
     "english": "Inertia",
-    "translation": "Inertia",
+    "translation": "אינרציה",
     "needs_translation": false
   },
   {
@@ -398,79 +398,79 @@
   {
     "file": "adjfunctions/filter.wav",
     "english": "Filter",
-    "translation": "Filter",
+    "translation": "מסנן",
     "needs_translation": false
   },
   {
     "file": "adjfunctions/deadband.wav",
     "english": "Deadband",
-    "translation": "Deadband",
+    "translation": "דדבנד",
     "needs_translation": false
   },
   {
     "file": "status/alerts/current.wav",
     "english": "Current",
-    "translation": "Current",
+    "translation": "זרם",
     "needs_translation": false
   },
   {
     "file": "status/alerts/esc.wav",
     "english": "Esc Temperature",
-    "translation": "Esc Temperature",
+    "translation": "טמפרטורת ESC",
     "needs_translation": false
   },
   {
     "file": "status/alerts/mcu.wav",
     "english": "MCU Temperature",
-    "translation": "MCU Temperature",
+    "translation": "טמפרטורת MCU",
     "needs_translation": false
   },
   {
     "file": "status/alerts/fuel.wav",
     "english": "Fuel",
-    "translation": "Fuel",
+    "translation": "דלק",
     "needs_translation": false
   },
   {
     "file": "status/alerts/headspeed.wav",
     "english": "Head Speed",
-    "translation": "Head Speed",
+    "translation": "מהירות ראש",
     "needs_translation": false
   },
   {
     "file": "status/alerts/lowfuel.wav",
     "english": "Low Fuel",
-    "translation": "Low Fuel",
+    "translation": "דלק נמוך",
     "needs_translation": false
   },
   {
     "file": "status/alerts/lowvoltage.wav",
     "english": "Low Voltage",
-    "translation": "Low Voltage",
+    "translation": "מתח נמוך",
     "needs_translation": false
   },
   {
     "file": "status/alerts/lq.wav",
     "english": "Link Quality",
-    "translation": "Link Quality",
+    "translation": "איכות קישור",
     "needs_translation": false
   },
   {
     "file": "status/alerts/remaining.wav",
     "english": "remaining",
-    "translation": "remaining",
+    "translation": "נותר",
     "needs_translation": false
   },
   {
     "file": "status/alerts/timer.wav",
     "english": "timer",
-    "translation": "timer",
+    "translation": "טיימר",
     "needs_translation": false
   },
   {
     "file": "status/alerts/voltage.wav",
     "english": "voltage",
-    "translation": "voltage",
+    "translation": "מתח",
     "needs_translation": false
   }
 ]
