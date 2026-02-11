@@ -86,6 +86,30 @@ Modules leverage the `app.Page.apidata` object to generate forms and interact wi
 * Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/scheduler/msp/api` loader to fetch parsed data structures and buffer states.
 * For custom behavior, modules can invoke `rfsuite.tasks.msp.api.scheduleWakeup()` to schedule periodic reads or writes.
 
+### MSP Queue Backpressure and Tuning
+
+The MSP queue (`tasks/scheduler/msp/mspQueue.lua`) exposes enqueue outcomes so callers can react to congestion and duplicates:
+
+* Return shape from `mspQueue:add(...)`: `ok, reason, qid, pending`
+* Common `reason` values:
+  * `"queued"`: accepted
+  * `"queued_busy"`: accepted, but queue is above warning threshold
+  * `"duplicate"`: dropped due to UUID dedupe
+  * `"busy"`: dropped by hard cap (`maxQueueDepth > 0`)
+
+Operational guidance:
+
+* Use stable UUIDs for periodic/retriggerable MSP operations.
+* On `"duplicate"` / `"busy"`, callers should back off and retry later.
+* For direct queue writes (outside API wrappers), avoid mutating "last sent" state unless enqueue succeeds.
+
+Queue pacing and throughput tuning live in:
+
+* `tasks/scheduler/msp/msp.lua`: `interMessageDelay`, `busyWarningThreshold`, `maxQueueDepth`, `busyStatusCooldown`
+* `tasks/scheduler/msp/protocols.lua`: protocol-specific `mspIntervalOveride`
+
+Tune in small steps and monitor retries/timeouts before reducing delays further.
+
 ## 3. MSP API Documentation (`rfsuite/tasks/scheduler/msp/api`)
 
 This section describes the MSP API loader and its capabilities for parsing and interacting with MultiWii Serial Protocol data.
