@@ -15,12 +15,9 @@ local lastServoChangeTime = os.clock()
 -- Indexing model (12.09+):
 -- - UI selection is 1-based and converted to local 0-based `servoIndex`.
 -- - Read requests (MSP 125) use legacy absolute servo index space with base index 8.
--- - Write/override requests (MSP 212/213/193) use active-output index space with dynamic base:
---     writeBase = totalServoCount - BUS_OUTPUT_COUNT
---   This allows targets with different PWM counts (for example 4, 5, 6...) to map correctly.
--- Example with totalServoCount=22 and BUS_OUTPUT_COUNT=18:
--- - writeBase = 4
--- - UI BUS servo 10 -> ui0=9 -> writeIndex=13
+-- - Write/override requests (MSP 212/213/193) use the same index space in this tool.
+-- Example:
+-- - UI BUS servo 10 -> ui0=9 -> index=17
 
 local servoIndex = rfsuite.currentServoIndex - 1 -- UI 0-based index (0..N-1)
 local isSaving = false
@@ -29,18 +26,12 @@ local enableWakeup = false
 local servoTable
 local servoCount
 local configs = {}
-local BUS_OUTPUT_COUNT = 18       -- Number of BUS outputs reserved by RF in 12.09+
+local BUS_OUTPUT_COUNT = 18
 local MSP125_READ_BASE_INDEX = 8  -- Base index expected by MSP 125 read-index namespace
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
     return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function busWriteBase()
-    -- Tool access requires session vars, so write base can be derived directly.
-    -- Dynamic base: if total outputs are 22 and BUS is 18, BUS write base is 4.
-    return rfsuite.session.servoCount - BUS_OUTPUT_COUNT
 end
 
 local function uiIndexToReadIndex(ui0)
@@ -50,9 +41,13 @@ local function uiIndexToReadIndex(ui0)
 end
 
 local function uiIndexToWriteIndex(ui0)
-    -- Write path (MSP 212/213/193): active-output namespace.
-    -- ui0 is BUS-local index; base depends on total servo outputs.
-    return (ui0 or 0) + busWriteBase()
+    -- Write path intentionally matches read path.
+    return uiIndexToReadIndex(ui0)
+end
+
+local function uiIndexToConfigWriteIndex(ui0)
+    -- MSP 212 uses active-output index space on 12.09 BUS targets.
+    return (ui0 or 0) + (rfsuite.session.servoCount - BUS_OUTPUT_COUNT)
 end
 
 local function currentServoReadIndex()
@@ -96,7 +91,6 @@ local function servoCenterFocusOn(self)
     queueDirect(message, string.format("servo.bus.override.%d.on", currentServoWriteIndex()))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
-    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function writeEeprom()
@@ -109,12 +103,14 @@ end
 local function saveServoCenter(self)
 
     local servoCenter = math.floor(configs[servoIndex]['mid'])
+    local writeIndex = currentServoWriteIndex()
+    rfsuite.utils.log(string.format("BUS save center: ui=%d read=%d write=%d mid=%d", servoIndex, currentServoReadIndex(), writeIndex, servoCenter), "info")
 
     local message = {command = 213, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoWriteIndex())
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
-    return queueDirect(message, string.format("servo.bus.%d.center", currentServoWriteIndex()))
+    return queueDirect(message, string.format("servo.bus.%d.center", writeIndex))
 
 end
 
@@ -141,8 +137,9 @@ local function saveServoSettings(self)
         servoFlags = 3
     end
 
+    local configWriteIndex = uiIndexToConfigWriteIndex(servoIndex)
     local message = {command = 212, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoWriteIndex())
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, configWriteIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
@@ -152,7 +149,7 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", currentServoWriteIndex()))
+    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", configWriteIndex))
     if not ok then return false, reason end
 
     if rfsuite.session.servoOverride == true then
@@ -201,6 +198,16 @@ local function onNavMenu(self)
 
 end
 
+local function setServoConfigFieldsEnabled(enabled)
+    if not rfsuite.app.formFields then return end
+    for _, idx in ipairs({3, 4, 5, 6, 7, 8, 9, 10}) do
+        local field = rfsuite.app.formFields[idx]
+        if field and field.enable then field:enable(enabled) end
+    end
+    local saveField = rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields['save']
+    if saveField and saveField.enable then saveField:enable(enabled) end
+end
+
 local function wakeup(self)
 
     if enableWakeup == true then
@@ -246,15 +253,7 @@ local function wakeup(self)
             rfsuite.app.Page.servoCenterFocusAllOn(self)
             rfsuite.session.servoOverride = true
 
-            rfsuite.app.formFields[3]:enable(false)
-            rfsuite.app.formFields[4]:enable(false)
-            rfsuite.app.formFields[5]:enable(false)
-            rfsuite.app.formFields[6]:enable(false)
-            rfsuite.app.formFields[7]:enable(false)
-            rfsuite.app.formFields[8]:enable(false)
-            rfsuite.app.formFields[9]:enable(false)
-            rfsuite.app.formFields[10]:enable(false)
-            rfsuite.app.formNavigationFields['save']:enable(false)
+            setServoConfigFieldsEnabled(false)
 
         else
 
@@ -263,15 +262,7 @@ local function wakeup(self)
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.session.servoOverride = false
 
-            rfsuite.app.formFields[3]:enable(true)
-            rfsuite.app.formFields[4]:enable(true)
-            rfsuite.app.formFields[5]:enable(true)
-            rfsuite.app.formFields[6]:enable(true)
-            rfsuite.app.formFields[7]:enable(true)
-            rfsuite.app.formFields[8]:enable(true)
-            rfsuite.app.formFields[9]:enable(true)
-            rfsuite.app.formFields[10]:enable(true)
-            rfsuite.app.formNavigationFields['save']:enable(true)
+            setServoConfigFieldsEnabled(true)
         end
     end
 
