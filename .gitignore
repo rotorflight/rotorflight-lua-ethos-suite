@@ -15,3 +15,4 @@ bin/updater/src/dist_embed
 bin/updater/src/build
 /bin/updater/src/rfsuite_updater_work
 /bin/updater/rfsuite_updater_work
+.vscode/settings.json

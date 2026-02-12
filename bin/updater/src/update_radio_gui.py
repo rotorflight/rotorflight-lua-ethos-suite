@@ -90,7 +90,7 @@ DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
 COPY_SETTLE_SECONDS = 0.03
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "1.0.1"
+UPDATER_VERSION = "1.0.2"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
@@ -289,20 +289,35 @@ def _i18n_resolve_key(tree, dotted):
             return None
         node = node[part]
     if isinstance(node, dict):
+        reverse_flag = node.get("reverse_text") if isinstance(node.get("reverse_text"), bool) else None
         if "translation" in node and isinstance(node["translation"], (str, int, float)):
-            return str(node["translation"])
+            return str(node["translation"]), reverse_flag
         if "english" in node and isinstance(node["english"], (str, int, float)):
-            return str(node["english"])
+            return str(node["english"]), reverse_flag
         return None
     if node is None:
         return None
-    return str(node)
+    return str(node), None
 
 def _i18n_sanitize_for_insertion(s):
     s = s.replace("\r\n", "\n").replace("\r", "\n")
     s = s.replace("\n", r"\n")
     s = s.replace('"', r'\"')
     return s
+
+def _i18n_reverse_text_for_hebrew_display(s):
+    normalized = s.replace("\r\n", "\n").replace("\r", "\n")
+    return "\n".join(line[::-1] for line in normalized.split("\n"))
+
+def _i18n_contains_hebrew_chars(s):
+    return re.search(r"[\u0590-\u05FF]", s) is not None
+
+def _i18n_should_reverse_text(text, reverse_flag):
+    if reverse_flag is True:
+        return True
+    if reverse_flag is False:
+        return False
+    return _i18n_contains_hebrew_chars(text)
 
 def _i18n_replace_tags_in_text(text, translations, stats):
     def _sub(m):
@@ -314,9 +329,12 @@ def _i18n_replace_tags_in_text(text, translations, stats):
             stats.setdefault("unresolved", {}).setdefault(key, 0)
             stats["unresolved"][key] += 1
             return m.group(0)
-        resolved = _i18n_apply_transform_pipeline(str(resolved), basic_mod, chain, stats)
-        resolved = _i18n_sanitize_for_insertion(resolved)
-        return resolved
+        resolved_text, reverse_flag = resolved
+        resolved_text = _i18n_apply_transform_pipeline(str(resolved_text), basic_mod, chain, stats)
+        if _i18n_should_reverse_text(resolved_text, reverse_flag):
+            resolved_text = _i18n_reverse_text_for_hebrew_display(resolved_text)
+        resolved_text = _i18n_sanitize_for_insertion(resolved_text)
+        return resolved_text
     new_text, n = TAG_RE.subn(_sub, text)
     return new_text, n
 

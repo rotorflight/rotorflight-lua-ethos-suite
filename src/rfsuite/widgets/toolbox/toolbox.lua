@@ -70,7 +70,7 @@ function toolbox.paint(widget)
     if not widget.object then return end
 
     local isCompiledCheck = "@i18n(iscompiledcheck)@"
-    if isCompiledCheck ~= "true" then
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         screenError("i18n not compiled", true, 0.6)
         return
     end
@@ -168,7 +168,7 @@ function toolbox.wakeup(widget)
     end
 
     local isCompiledCheck = "@i18n(iscompiledcheck1)@"
-    if isCompiledCheck ~= "true" then
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         lcd.invalidate()
         return
     end
