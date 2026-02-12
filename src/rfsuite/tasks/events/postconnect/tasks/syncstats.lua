@@ -57,6 +57,7 @@ function sync.wakeup()
 
     -- we dont support this feature on older firmwares
     if rfsuite.utils.apiVersionCompare("<", "12.09") then
+        rfsuite.utils.log("Skip stats sync as your firmware version is below 12.09", "info")
         isComplete = true
         return
     end
