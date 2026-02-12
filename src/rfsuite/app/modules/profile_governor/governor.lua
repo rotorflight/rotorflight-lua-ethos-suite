@@ -14,7 +14,6 @@ local S_PAGES = {
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
-local governorDisabledMsg = false
 local app = rfsuite.app
 
 local function openPage(opts)
@@ -57,15 +56,6 @@ local function openPage(opts)
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.ui.fieldHeader("@i18n(app.modules.governor.name)@")
-
-    if rfsuite.session.governorMode == 0 then
-        if governorDisabledMsg == false then
-            governorDisabledMsg = true
-
-            rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.profile_governor.disabled_message)@")
-
-        end
-    end
 
     local buttonW
     local buttonH
@@ -180,15 +170,16 @@ local function wakeup()
     end
 
 
-    -- enable the buttons once we have servo info
+    -- update button enabled state once governor mode is known
     if rfsuite.session.governorMode ~= nil then
+        local buttonsEnabled = rfsuite.session.governorMode ~= 0
         for i, v in pairs(rfsuite.app.formFields) do
             if v.enable then
-                v:enable(true)
+                v:enable(buttonsEnabled)
             end    
         end
 
-        if not rfsuite.app._profile_governor_focused then
+        if buttonsEnabled and not rfsuite.app._profile_governor_focused then
             rfsuite.app._profile_governor_focused = true
             local idx = tonumber(rfsuite.preferences.menulastselected["profile_governor"]) or 1
             local btn = rfsuite.app.formFields and rfsuite.app.formFields[idx] or nil

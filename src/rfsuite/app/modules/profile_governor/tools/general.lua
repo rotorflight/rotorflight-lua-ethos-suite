@@ -65,9 +65,7 @@ local function wakeup()
                 rfsuite.app.formNavigationFields['save']:enable(false)
 
                 rfsuite.app.formNavigationFields['reload']:enable(false)
-
-                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.profile_governor.disabled_message)@")
-
+    
             end
         end
 
