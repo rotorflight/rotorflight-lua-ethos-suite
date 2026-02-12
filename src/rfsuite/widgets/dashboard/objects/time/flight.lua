@@ -100,6 +100,7 @@ function render.wakeup(box)
 
     if not telemetryActive and not inPostflight then
         box._lastDisplayValue = nil
+        lastValue = 0
     end
 
     local value
