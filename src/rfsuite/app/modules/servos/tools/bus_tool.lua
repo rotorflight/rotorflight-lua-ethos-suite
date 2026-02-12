@@ -23,8 +23,6 @@ local configs = {}
 local BUS_SERVO_COUNT = 18
 local BUS_READ_OFFSET = 8
 
-rfsuite.utils.log("Servo Count: " .. tostring(rfsuite.session.servoCount), "info")
-
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
     return rfsuite.tasks.msp.mspQueue:add(message)
@@ -225,20 +223,10 @@ local function wakeup(self)
             currentServoCenter = configs[servoIndex]['mid']
 
             local now = os.clock()
-            local settleTime
-            if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-                settleTime = 0.1
-            else
-                settleTime = 0.85
-            end
+            local settleTime = 0.1
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
-                    local ok, reason
-                    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-                        ok, reason = self.saveServoCenter(self)
-                    else
-                        ok, reason = self.saveServoSettings(self)
-                    end
+                    local ok, reason = self.saveServoCenter(self)
                     if ok then
                         lastSetServoCenter = currentServoCenter
                         lastServoChangeTime = now
@@ -290,52 +278,6 @@ local function wakeup(self)
     end
 
 end
-
-local function getServoConfigurations(callback, callbackParam)
-    local message = {
-        command = 120,
-        processReply = function(self, buf)
-            servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-            rfsuite.session.servoCount = servoCount
-
-            rfsuite.utils.log("Servo count " .. tostring(servoCount), "info")
-            for i = 0, servoCount - 1 do
-                local config = {}
-
-                config.name = servoTable[servoIndex + 1]['title']
-                config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
-                config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
-                config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
-
-                if config.flags == 1 or config.flags == 3 then
-                    config.reverse = 1
-                else
-                    config.reverse = 0
-                end
-
-                if config.flags == 2 or config.flags == 3 then
-                    config.geometry = 1
-                else
-                    config.geometry = 0
-                end
-
-                configs[i] = config
-
-            end
-            callback(callbackParam)
-        end,
-
-        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-    }
-    return queueDirect(message, "servo.bus.cfg.bulk")
-end
-
 
 local function getServoConfigurationsIndexed(callback, callbackParam)
 
@@ -565,11 +507,7 @@ local function openPage(opts)
         end
     end    
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-        getServoConfigurationsIndexed(getServoConfigurationsEnd)
-    else
-        getServoConfigurations(getServoConfigurationsEnd)
-    end    
+    getServoConfigurationsIndexed(getServoConfigurationsEnd)
 
 end
 
