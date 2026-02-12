@@ -275,8 +275,8 @@ def load_translations(path: Path) -> dict:
 def resolve_key(tree: dict, dotted: str):
     """
     Walk dotted path. If the leaf is a dict like
-    { english: "...", translation: "...", reverse_text: true/false },
-    prefer 'translation', fall back to 'english'. Otherwise cast to str.
+    { english: "...", translation: "..." }, prefer 'translation',
+    fall back to 'english'. Otherwise cast to str.
     """
     node = tree
     for part in dotted.split('.'):
@@ -286,12 +286,11 @@ def resolve_key(tree: dict, dotted: str):
 
     # Leaf handling
     if isinstance(node, dict):
-        reverse_flag = node.get('reverse_text') if isinstance(node.get('reverse_text'), bool) else None
         # common schema: english/translation/needs_translation
         if 'translation' in node and isinstance(node['translation'], (str, int, float)):
-            return str(node['translation']), reverse_flag
+            return str(node['translation'])
         if 'english' in node and isinstance(node['english'], (str, int, float)):
-            return str(node['english']), reverse_flag
+            return str(node['english'])
         # if dict but not the expected shape, refuse
         return None
 
@@ -299,7 +298,7 @@ def resolve_key(tree: dict, dotted: str):
         return None
 
     # Primitive leaf
-    return str(node), None
+    return str(node)
 
 def apply_modifier(s: str, mod: str | None):
     if not mod:
@@ -325,22 +324,18 @@ def _sanitize_for_insertion(s: str) -> str:
     s = s.replace('"', r'\"')
     return s
 
+def _is_hebrew_lang(lang: str | None) -> bool:
+    if not lang:
+        return False
+    normalized = lang.strip().lower().replace('_', '-')
+    return normalized == 'he' or normalized.startswith('he-')
+
 def _reverse_text_for_hebrew_display(s: str) -> str:
     # Reverse each logical line to compensate for environments that render RTL text backwards.
     normalized = s.replace("\r\n", "\n").replace("\r", "\n")
     return "\n".join(line[::-1] for line in normalized.split("\n"))
 
-def _contains_hebrew_chars(s: str) -> bool:
-    return _re.search(r'[\u0590-\u05FF]', s) is not None
-
-def _should_reverse_text(text: str, reverse_flag: bool | None) -> bool:
-    if reverse_flag is True:
-        return True
-    if reverse_flag is False:
-        return False
-    return _contains_hebrew_chars(text)
-
-def replace_tags_in_text(text: str, translations: dict, stats: dict):
+def replace_tags_in_text(text: str, translations: dict, stats: dict, reverse_for_hebrew=False):
     def _sub(m: re.Match):
         key = m.group(1).strip()
         basic_mod = m.group(2)  # upper|lower
@@ -351,21 +346,21 @@ def replace_tags_in_text(text: str, translations: dict, stats: dict):
             stats.setdefault('unresolved', {}).setdefault(key, 0)
             stats['unresolved'][key] += 1
             return m.group(0)  # leave tag untouched
-        resolved_text, reverse_flag = resolved
+
         # apply pipeline then sanitize for insertion into code
-        resolved_text = apply_transform_pipeline(str(resolved_text), basic_mod, chain, stats)
-        if _should_reverse_text(resolved_text, reverse_flag):
-            resolved_text = _reverse_text_for_hebrew_display(resolved_text)
-        resolved_text = _sanitize_for_insertion(resolved_text)
-        return resolved_text
+        resolved = apply_transform_pipeline(str(resolved), basic_mod, chain, stats)
+        if reverse_for_hebrew:
+            resolved = _reverse_text_for_hebrew_display(resolved)
+        resolved = _sanitize_for_insertion(resolved)
+        return resolved
 
     new_text, n = TAG_RE.subn(_sub, text)
     return new_text, n
 
-def process_file(path: Path, translations: dict, dry_run=False):
+def process_file(path: Path, translations: dict, dry_run=False, reverse_for_hebrew=False):
     before = path.read_text(encoding='utf-8')
     stats = {}
-    new_text, n = replace_tags_in_text(before, translations, stats)
+    new_text, n = replace_tags_in_text(before, translations, stats, reverse_for_hebrew=reverse_for_hebrew)
 
     if n == 0:
         return 0, stats.get('unresolved', {})
@@ -412,6 +407,7 @@ def main():
     ap.add_argument('--list-transforms', action='store_true', help='List available transforms and exit')
     ap.add_argument('--json', required=True, help='Path to en.json')
     ap.add_argument('--root', required=True, help='Root of codebase to scan')
+    ap.add_argument('--lang', help='Language code, e.g. en, fr, he (defaults to JSON filename stem)')
     ap.add_argument('--dry-run', action='store_true', help='Do not write changes')
     args = ap.parse_args()
 
@@ -421,12 +417,23 @@ def main():
 
     translations = load_translations(Path(args.json))
     root = Path(args.root)
+    lang = (args.lang or Path(args.json).stem).strip().lower()
+    reverse_for_hebrew = _is_hebrew_lang(lang)
+
+    if reverse_for_hebrew:
+        print("[i18n] Hebrew language detected — reversing resolved strings for display compatibility.")
+
     total_files_changed = 0
     total_replacements = 0
     unresolved_agg = {}
 
     for f in iter_source_files(root):
-        replaced, unresolved = process_file(f, translations, dry_run=args.dry_run)
+        replaced, unresolved = process_file(
+            f,
+            translations,
+            dry_run=args.dry_run,
+            reverse_for_hebrew=reverse_for_hebrew,
+        )
         if replaced:
             total_files_changed += 1
             total_replacements += replaced
