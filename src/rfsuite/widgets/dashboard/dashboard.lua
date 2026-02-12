@@ -1530,7 +1530,11 @@ function dashboard.resetFlightModeAsk()
         {
             label = "@i18n(app.btn_ok)@",
             action = function()
-                tasks.events.flightmode.reset()
+                if tasks and tasks.events and tasks.events.flightmode and type(tasks.events.flightmode.reset) == "function" then
+                    tasks.events.flightmode.reset()
+                end
+                rfsuite.flightmode.current = "preflight"
+                dashboard.flightmode = "preflight"
                 lcd.invalidate()
                 return true
             end
