@@ -175,7 +175,7 @@ class TranslationEditor(tk.Tk):
         table_frame = ttk.Frame(self)
         table_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
 
-        columns = ("key", "english", "translation", "needs")
+        columns = ("key", "english", "translation", "needs", "reverse")
         style = ttk.Style()
         style.configure("RFSuite.Treeview", rowheight=28)
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", style="RFSuite.Treeview")
@@ -183,11 +183,13 @@ class TranslationEditor(tk.Tk):
         self.tree.heading("english", text="English")
         self.tree.heading("translation", text="Translation")
         self.tree.heading("needs", text="Needs")
+        self.tree.heading("reverse", text="Reverse")
 
         self.tree.column("key", width=280, anchor=tk.W)
         self.tree.column("english", width=360, anchor=tk.W)
         self.tree.column("translation", width=360, anchor=tk.W)
         self.tree.column("needs", width=80, anchor=tk.CENTER)
+        self.tree.column("reverse", width=90, anchor=tk.CENTER)
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.bind("<Button-1>", self._on_click)
@@ -208,6 +210,7 @@ class TranslationEditor(tk.Tk):
         self._edit_item = None
         self._edit_field = None
         self._live_warn_active = False
+        self._update_reverse_column_visibility()
 
     def _load_dataset_options(self):
         self._refresh_locale_list()
@@ -232,6 +235,7 @@ class TranslationEditor(tk.Tk):
         else:
             self.locale_cb.set("en")
             self.store.locale = "en"
+        self._update_reverse_column_visibility()
 
     def _on_dataset_changed(self, _evt=None):
         self.store.set_dataset(self.dataset_cb.get())
@@ -250,6 +254,7 @@ class TranslationEditor(tk.Tk):
         self.store.original_by_key = {r["key"]: r.copy() for r in self.store.rows}
         self.store.undo_stack = []
         self._apply_filter()
+        self._update_reverse_column_visibility()
 
     def _load_i18n_rows(self):
         root = i18n_root()
@@ -277,15 +282,18 @@ class TranslationEditor(tk.Tk):
             if isinstance(en_val, dict) and "english" in en_val and "translation" in en_val:
                 translation = ""
                 needs = True
+                reverse_text = None
                 if isinstance(tgt_val, dict):
                     translation = tgt_val.get("translation", "")
                     needs = bool(tgt_val.get("needs_translation", translation == ""))
+                    reverse_text = tgt_val.get("reverse_text")
 
                 rows.append({
                     "key": full_key,
                     "english": en_val.get("english", ""),
                     "translation": translation or "",
                     "needs": needs,
+                    "reverse_text": reverse_text,
                     "max_length": en_val.get("max_length"),
                 })
             elif isinstance(en_val, dict):
@@ -359,7 +367,19 @@ class TranslationEditor(tk.Tk):
         self.tree.delete(*self.tree.get_children())
         for idx, row in enumerate(self.store.filtered_rows):
             needs_text = "[x]" if row["needs"] else "[ ]"
-            self.tree.insert("", tk.END, iid=str(idx), values=(row["key"], row["english"], row["translation"], needs_text))
+            reverse_text = ""
+            if self._use_reverse_column():
+                reverse_val = row.get("reverse_text")
+                if reverse_val is True:
+                    reverse_text = "[x]"
+                elif reverse_val is False:
+                    reverse_text = "[ ]"
+            self.tree.insert(
+                "",
+                tk.END,
+                iid=str(idx),
+                values=(row["key"], row["english"], row["translation"], needs_text, reverse_text),
+            )
 
         total = len(self.store.rows)
         missing = sum(1 for r in self.store.rows if r["needs"])
@@ -381,6 +401,19 @@ class TranslationEditor(tk.Tk):
             text=f"Total: {total}  Done: {done}  Missing: {missing}  Exceeds: {exceeds}  Disallowed: {disallowed}"
         )
         self._update_length_warnings()
+
+    def _use_reverse_column(self):
+        return self.store.dataset == "i18n" and self.store.locale == "he"
+
+    def _update_reverse_column_visibility(self):
+        if not hasattr(self, "tree"):
+            return
+        if self._use_reverse_column():
+            self.tree.heading("reverse", text="Reverse")
+            self.tree.column("reverse", width=90, minwidth=60, stretch=False)
+        else:
+            self.tree.heading("reverse", text="")
+            self.tree.column("reverse", width=0, minwidth=0, stretch=False)
 
     def _length_warning(self, english, translation, max_length=None):
         if translation is None:
@@ -507,6 +540,15 @@ class TranslationEditor(tk.Tk):
             row_index = int(item)
             row = self.store.filtered_rows[row_index]
             row["needs"] = not row["needs"]
+            self._render_rows()
+            return
+        if col == "#5" and self._use_reverse_column():
+            row_index = int(item)
+            row = self.store.filtered_rows[row_index]
+            prev = row.get("reverse_text")
+            new_val = False if prev is True else True
+            row["reverse_text"] = new_val
+            self.store.undo_stack.append((row.get("key"), "reverse_text", prev, new_val, None))
             self._render_rows()
 
     def _on_double_click(self, event):
@@ -638,6 +680,8 @@ class TranslationEditor(tk.Tk):
                     row["translation"] = prev
                 elif field == "needs":
                     row["needs"] = prev
+                elif field == "reverse_text":
+                    row["reverse_text"] = prev
                 break
         self._apply_filter()
 
@@ -658,6 +702,7 @@ class TranslationEditor(tk.Tk):
         self.store.undo_stack.append((key, "english", row.get("english", ""), original.get("english", ""), None))
         self.store.undo_stack.append((key, "translation", row.get("translation", ""), original.get("translation", ""), None))
         self.store.undo_stack.append((key, "needs", row.get("needs", False), original.get("needs", False), None))
+        self.store.undo_stack.append((key, "reverse_text", row.get("reverse_text"), original.get("reverse_text"), None))
         row.update(original)
         for base_row in self.store.rows:
             if base_row.get("key") == key:
@@ -830,6 +875,7 @@ class TranslationEditor(tk.Tk):
 
         en_data = self._read_json(en_path)
         row_map = {r["key"]: r for r in self.store.rows}
+        tgt_existing = self._read_json(out_path) if out_path.exists() else {}
 
         def rebuild(node, prefix):
             if not isinstance(node, dict):
@@ -851,6 +897,22 @@ class TranslationEditor(tk.Tk):
                         "translation": translation,
                         "needs_translation": needs,
                     })
+                    if self.store.locale != "en":
+                        row_reverse = row.get("reverse_text")
+                        if row_reverse is not None:
+                            entry["reverse_text"] = bool(row_reverse)
+                        else:
+                            existing_val = None
+                            if isinstance(tgt_existing, dict):
+                                existing_val = tgt_existing
+                                for part in full_key.split("."):
+                                    if isinstance(existing_val, dict) and part in existing_val:
+                                        existing_val = existing_val[part]
+                                    else:
+                                        existing_val = None
+                                        break
+                            if isinstance(existing_val, dict) and "reverse_text" in existing_val:
+                                entry["reverse_text"] = existing_val.get("reverse_text")
                     max_len = en_val.get("max_length")
                     if isinstance(max_len, int):
                         entry["max_length"] = max_len
