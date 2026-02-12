@@ -90,7 +90,7 @@ DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
 COPY_SETTLE_SECONDS = 0.03
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "1.0.1"
+UPDATER_VERSION = "1.0.2"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
