@@ -273,7 +273,7 @@ local function init()
     end
 
     local isCompiledCheck = "@i18n(iscompiledcheck)@"
-    if isCompiledCheck ~= "true" then
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         system.registerSystemTool(unsupported_i18n())
     else
         register_main_tool()
