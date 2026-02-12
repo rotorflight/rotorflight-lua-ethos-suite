@@ -139,8 +139,6 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         lastPush[appId] = os_clock()
     end
 end
-
-local lastWakeupTime = 0
 function smart.wakeup()
 
     if not rfsuite.session.isConnected then return end

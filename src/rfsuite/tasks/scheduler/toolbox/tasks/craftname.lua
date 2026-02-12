@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local arg = {...}
-local config = arg[1]
 
 local craftname = {}
 

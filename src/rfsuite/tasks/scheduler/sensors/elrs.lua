@@ -37,8 +37,6 @@ sensors['uid'] = {}
 sensors['lastvalue'] = {}
 sensors['lasttime'] = {}
 
-local rssiSensor = nil
-
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
 
 elrs.publishBudgetPerFrame = 50  -- If everything works this should never be reached.  we use it as a safeguard.

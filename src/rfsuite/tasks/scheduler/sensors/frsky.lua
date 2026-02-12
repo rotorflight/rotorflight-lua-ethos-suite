@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local arg = {...}
-local config = arg[1]
 local os_clock = os.clock
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor

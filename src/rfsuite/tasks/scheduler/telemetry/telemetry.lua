@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local arg = {...}
-local config = arg[1]
 
 local simSensors = rfsuite.utils.simSensors
 local round = rfsuite.utils.round
@@ -24,7 +23,6 @@ local t_pairs = pairs
 local t_ipairs = ipairs
 local t_type = type
 local isSim = sys_getVersion().simulation == true
-local math_floor = math.floor
 
 local protocol, crsfSOURCE
 

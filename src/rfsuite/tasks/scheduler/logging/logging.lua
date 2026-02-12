@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local arg = { ... }
-local config = arg[1]
 
 -- Localise hot globals to reduce global/table lookups
 local os_clock = os.clock
