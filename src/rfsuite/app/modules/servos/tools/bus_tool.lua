@@ -21,58 +21,6 @@ local servoTable
 local servoCount
 local configs = {}
 local BUS_SERVO_BASE = 8
-local SERVO_RANGE_MIN = 1000
-local SERVO_RANGE_MAX = 2000
-
-local function clampRange(value, lower, upper)
-    if lower > upper then lower = upper end
-    if value < lower then return lower end
-    if value > upper then return upper end
-    return value
-end
-
-local function clampServoValue(kind, value)
-    local currentMin = configs[servoIndex]['min'] or SERVO_RANGE_MIN
-    local currentMid = configs[servoIndex]['mid'] or math.floor((SERVO_RANGE_MIN + SERVO_RANGE_MAX) / 2)
-    local currentMax = configs[servoIndex]['max'] or SERVO_RANGE_MAX
-
-    if kind == "mid" then
-        local lower = math.max(SERVO_RANGE_MIN, currentMin + 1)
-        local upper = math.min(SERVO_RANGE_MAX, currentMax - 1)
-        return clampRange(value, lower, upper)
-    elseif kind == "min" then
-        local upper = math.min(SERVO_RANGE_MAX, currentMid - 1, currentMax - 1)
-        if upper < SERVO_RANGE_MIN then upper = SERVO_RANGE_MIN end
-        return clampRange(value, SERVO_RANGE_MIN, upper)
-    elseif kind == "max" then
-        local lower = math.max(SERVO_RANGE_MIN, currentMid + 1, currentMin + 1)
-        if lower > SERVO_RANGE_MAX then lower = SERVO_RANGE_MAX end
-        return clampRange(value, lower, SERVO_RANGE_MAX)
-    end
-
-    return clampRange(value, SERVO_RANGE_MIN, SERVO_RANGE_MAX)
-end
-
-local function updateServoFieldLimits(fields)
-    if not fields then return end
-
-    local currentMin = configs[servoIndex]['min'] or SERVO_RANGE_MIN
-    local currentMid = configs[servoIndex]['mid'] or math.floor((SERVO_RANGE_MIN + SERVO_RANGE_MAX) / 2)
-    local currentMax = configs[servoIndex]['max'] or SERVO_RANGE_MAX
-
-    if fields.mid then
-        fields.mid:minimum(math.max(SERVO_RANGE_MIN, currentMin + 1))
-        fields.mid:maximum(math.min(SERVO_RANGE_MAX, currentMax - 1))
-    end
-    if fields.min then
-        fields.min:minimum(SERVO_RANGE_MIN)
-        fields.min:maximum(math.min(SERVO_RANGE_MAX, currentMid - 1, currentMax - 1))
-    end
-    if fields.max then
-        fields.max:minimum(math.max(SERVO_RANGE_MIN, currentMid + 1, currentMin + 1))
-        fields.max:maximum(SERVO_RANGE_MAX)
-    end
-end
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
@@ -480,23 +428,17 @@ local function openPage(opts)
 
     if rfsuite.session.servoOverride == true then rfsuite.app.formNavigationFields['save']:enable(false) end
 
-    local servoConstraintFields = {}
-
     if configs[servoIndex]['mid'] ~= nil then
 
         local idx = 2
-        local minValue = SERVO_RANGE_MIN  -- we must always be higher than the min value and higher than the mid value
-        local maxValue = SERVO_RANGE_MAX  -- we must always be lower than the max value and less than the mid value
+        local minValue = 50
+        local maxValue = 2250
         local defaultValue = 1500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
 
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.center)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value)
-            configs[servoIndex]['mid'] = clampServoValue("mid", value)
-            updateServoFieldLimits(servoConstraintFields)
-        end)
-        servoConstraintFields.mid = rfsuite.app.formFields[idx]
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value) configs[servoIndex]['mid'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -504,17 +446,13 @@ local function openPage(opts)
 
     if configs[servoIndex]['min'] ~= nil then
         local idx = 3
-        local minValue = SERVO_RANGE_MIN     -- we must always be lower than the max value, and less than the mid value
-        local maxValue = SERVO_RANGE_MAX     -- we must always be higher than the min value and higher than the mid value
-        local defaultValue = 1000
+        local minValue = -1000
+        local maxValue = 1000
+        local defaultValue = -700
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value)
-            configs[servoIndex]['min'] = clampServoValue("min", value)
-            updateServoFieldLimits(servoConstraintFields)
-        end)
-        servoConstraintFields.min = rfsuite.app.formFields[idx]
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value) configs[servoIndex]['min'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -523,24 +461,18 @@ local function openPage(opts)
 
     if configs[servoIndex]['max'] ~= nil then
         local idx = 4
-        local minValue = SERVO_RANGE_MIN   -- we must always be higher than the min value and higher than the mid value
-        local maxValue = SERVO_RANGE_MAX   -- we must always be lower than the max value and less than the mid value
-        local defaultValue = 1000
+        local minValue = -1000
+        local maxValue = 1000
+        local defaultValue = 700
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value)
-            configs[servoIndex]['max'] = clampServoValue("max", value)
-            updateServoFieldLimits(servoConstraintFields)
-        end)
-        servoConstraintFields.max = rfsuite.app.formFields[idx]
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value) configs[servoIndex]['max'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
-
-    updateServoFieldLimits(servoConstraintFields)
 
     if configs[servoIndex]['scaleNeg'] ~= nil then
         local idx = 5
