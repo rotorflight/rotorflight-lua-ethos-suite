@@ -40,7 +40,25 @@ def ensure_needs_translation_false(data):
             else:
                 ensure_needs_translation_false(val)
 
-def build_translation(ref, target, order):
+def _contains_hebrew_chars(s: str) -> bool:
+    return re.search(r"[\u0590-\u05FF]", s) is not None
+
+def _should_add_reverse_text(locale: str) -> bool:
+    return True
+
+def _maybe_set_reverse_text(entry: OrderedDict, locale: str):
+    if not _should_add_reverse_text(locale):
+        return
+    if "reverse_text" in entry:
+        return
+    locale_norm = locale.strip().lower().replace("_", "-")
+    translation = entry.get("translation")
+    if locale_norm == "he" and isinstance(translation, str):
+        entry["reverse_text"] = _contains_hebrew_chars(translation)
+        return
+    entry["reverse_text"] = False
+
+def build_translation(ref, target, order, locale: str):
     """Rebuild translation preserving structure and key order."""
     output = OrderedDict()
     for key in order.get("__order", []):
@@ -67,20 +85,29 @@ def build_translation(ref, target, order):
                 entry.setdefault("english", ref_val["english"])
                 entry.setdefault("translation", tgt_val["translation"])
                 entry.setdefault("needs_translation", tgt_val.get("needs_translation", False))
+                _maybe_set_reverse_text(entry, locale)
                 output[key] = entry
             else:
-                output[key] = OrderedDict({
+                entry = OrderedDict({
                     "english": ref_val["english"],
                     "translation": ref_val["english"],
                     "needs_translation": True
                 })
+                _maybe_set_reverse_text(entry, locale)
+                output[key] = entry
         elif isinstance(ref_val, dict):
-            output[key] = build_translation(ref_val, tgt_val or {}, order.get(key, {"__order": []}))
+            output[key] = build_translation(ref_val, tgt_val or {}, order.get(key, {"__order": []}), locale)
         else:
             output[key] = ref_val
     return output
 
-def process_root(path: Path):
+def _parse_args():
+    import argparse
+    ap = argparse.ArgumentParser(description="Update i18n JSON files and preserve translation structure.")
+    ap.add_argument("--only", nargs="*", help="Limit to specific locales (e.g. --only he)")
+    return ap.parse_args()
+
+def process_root(path: Path, only_locales=None):
     en_path = path / "en.json"
     if not en_path.exists():
         print(f"❌ Missing {en_path}")
@@ -106,10 +133,12 @@ def process_root(path: Path):
     for target_path in sorted(path.glob("*.json")):
         if target_path.name == "en.json":
             continue
+        if only_locales and target_path.stem not in only_locales:
+            continue
         try:
             if target_path.is_file():
                 target_data = read_json(str(target_path))
-                new_data = build_translation(en_data, target_data, key_order)
+                new_data = build_translation(en_data, target_data, key_order, target_path.stem)
                 write_json(str(target_path), new_data)
                 print(f"✔ Updated: {target_path}")
         except Exception as e:
@@ -117,4 +146,5 @@ def process_root(path: Path):
 
 # 🔁 Run the translation update
 if __name__ == "__main__":
-    process_root(ROOT_DIR)
+    args = _parse_args()
+    process_root(ROOT_DIR, set(args.only or []))

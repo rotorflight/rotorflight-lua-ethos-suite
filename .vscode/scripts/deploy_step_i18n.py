@@ -43,7 +43,7 @@ def main():
 
     print(f"[I18N] Resolving @i18n(...)@ tags (lang={lang})…")
     subprocess.run(
-        [sys.executable, resolver, "--json", json_path, "--root", out_dir, "--lang", lang],
+        [sys.executable, resolver, "--json", json_path, "--root", out_dir],
         check=True,
     )
     return 0
