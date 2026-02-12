@@ -400,11 +400,8 @@ local function openPage(opts)
 
     form.clear()
 
-    if rfsuite.app.Page.pageTitle ~= nil then
-        rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
-    else
-        rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
-    end
+
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.pwm)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
 
     if rfsuite.app.Page.headerLine ~= nil then
         local headerLine = form.addLine("")

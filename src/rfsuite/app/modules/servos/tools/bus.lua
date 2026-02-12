@@ -136,7 +136,7 @@ local function openPage(opts)
     local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@")
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@ / @i18n(app.modules.servos.bus)@ ")
 
     local buttonW
     local buttonH

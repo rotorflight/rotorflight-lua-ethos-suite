@@ -415,11 +415,9 @@ local function openPage(opts)
 
     form.clear()
 
-    if rfsuite.app.Page.pageTitle ~= nil then
-        rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
-    else
-        rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
-    end
+
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.bus)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
+
 
     if rfsuite.app.Page.headerLine ~= nil then
         local headerLine = form.addLine("")
@@ -431,8 +429,8 @@ local function openPage(opts)
     if configs[servoIndex]['mid'] ~= nil then
 
         local idx = 2
-        local minValue = 50
-        local maxValue = 2250
+        local minValue = 1000
+        local maxValue = 2000
         local defaultValue = 1500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
@@ -446,9 +444,9 @@ local function openPage(opts)
 
     if configs[servoIndex]['min'] ~= nil then
         local idx = 3
-        local minValue = -1000
-        local maxValue = 1000
-        local defaultValue = -700
+        local minValue = 1000
+        local maxValue = 2000
+        local defaultValue = 1000
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
@@ -461,9 +459,9 @@ local function openPage(opts)
 
     if configs[servoIndex]['max'] ~= nil then
         local idx = 4
-        local minValue = -1000
-        local maxValue = 1000
-        local defaultValue = 700
+        local minValue = 1000
+        local maxValue = 2000
+        local defaultValue = 2000
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
@@ -504,6 +502,7 @@ local function openPage(opts)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
+    --[[
     if configs[servoIndex]['rate'] ~= nil then
         local idx = 7
         local minValue = 50
@@ -518,6 +517,7 @@ local function openPage(opts)
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
+    ]]
 
     if configs[servoIndex]['speed'] ~= nil then
         local idx = 8
@@ -546,17 +546,20 @@ local function openPage(opts)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    if configs[servoIndex]['flags'] ~= nil then
-        local idx = 10
-        local minValue = 0
-        local maxValue = 1000
-        local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
-        local tableIdxInc = -1
-        local value
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
-        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value) configs[servoIndex]['geometry'] = value end)
-        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
-    end
+
+    if servoIndex <= 7 then
+        if configs[servoIndex]['flags'] ~= nil then
+            local idx = 10
+            local minValue = 0
+            local maxValue = 1000
+            local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
+            local tableIdxInc = -1
+            local value
+            rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
+            rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value) configs[servoIndex]['geometry'] = value end)
+            if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        end
+    end    
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
