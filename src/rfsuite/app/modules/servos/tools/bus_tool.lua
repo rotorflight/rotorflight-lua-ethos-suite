@@ -66,28 +66,18 @@ end
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
-    local count = servoCount or (servoTable and #servoTable) or 0
-
-    for i = 0, count - 1 do
-        local writeIndex = uiIndexToWriteIndex(i)
-        local message = {command = 193, payload = {writeIndex}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        queueDirect(message, string.format("servo.bus.override.%d.on", writeIndex))
-    end
+    local message = {command = 196, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+    queueDirect(message, "servo.bus.override.all.on")
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    local count = servoCount or (servoTable and #servoTable) or 0
-
-    for i = 0, count - 1 do
-        local writeIndex = uiIndexToWriteIndex(i)
-        local message = {command = 193, payload = {writeIndex}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        queueDirect(message, string.format("servo.bus.override.%d.off", writeIndex))
-    end
+    local message = {command = 196, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+    queueDirect(message, "servo.bus.override.all.off")
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
