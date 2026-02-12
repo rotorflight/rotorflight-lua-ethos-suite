@@ -14,6 +14,8 @@ local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 
 local busServoCount = 16    -- how many bus servos we display
+-- Index translation for BUS read/write MSP commands is handled in `bus_tool.lua`.
+-- This page only controls BUS servo list UI and navigation.
 
 local function writeEeprom()
 

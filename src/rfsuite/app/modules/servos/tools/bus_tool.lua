@@ -10,9 +10,18 @@ local triggerOverRideAll = false
 local currentServoCenter
 local lastSetServoCenter
 local lastServoChangeTime = os.clock()
--- UI presents BUS servos as 1..N, but MSP expects absolute servo indices.
--- PWM servos occupy absolute indices 0..7, BUS starts at absolute index 8.
--- Therefore: UI(1) -> UI0(0) -> ABS(8)
+
+
+-- Indexing model (12.09+):
+-- - UI selection is 1-based and converted to local 0-based `servoIndex`.
+-- - Read requests (MSP 125) use legacy absolute servo index space with base index 8.
+-- - Write/override requests (MSP 212/213/193) use active-output index space with dynamic base:
+--     writeBase = totalServoCount - BUS_OUTPUT_COUNT
+--   This allows targets with different PWM counts (for example 4, 5, 6...) to map correctly.
+-- Example with totalServoCount=22 and BUS_OUTPUT_COUNT=18:
+-- - writeBase = 4
+-- - UI BUS servo 10 -> ui0=9 -> writeIndex=13
+
 local servoIndex = rfsuite.currentServoIndex - 1 -- UI 0-based index (0..N-1)
 local isSaving = false
 local enableWakeup = false
@@ -20,8 +29,8 @@ local enableWakeup = false
 local servoTable
 local servoCount
 local configs = {}
-local BUS_SERVO_COUNT = 18
-local BUS_READ_OFFSET = 8
+local BUS_OUTPUT_COUNT = 18       -- Number of BUS outputs reserved by RF in 12.09+
+local MSP125_READ_BASE_INDEX = 8  -- Base index expected by MSP 125 read-index namespace
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
@@ -29,21 +38,20 @@ local function queueDirect(message, uuid)
 end
 
 local function busWriteBase()
-    local total = rfsuite.session.servoCount or servoCount
-    if type(total) == "number" and total >= BUS_SERVO_COUNT then
-        return total - BUS_SERVO_COUNT
-    end
-    -- Fallback for older/unknown layouts.
-    return BUS_READ_OFFSET
+    -- Tool access requires session vars, so write base can be derived directly.
+    -- Dynamic base: if total outputs are 22 and BUS is 18, BUS write base is 4.
+    return rfsuite.session.servoCount - BUS_OUTPUT_COUNT
 end
 
 local function uiIndexToReadIndex(ui0)
-    -- MSP_GET_SERVO_CONFIG(125) currently aligns with legacy absolute servo index space.
-    return (ui0 or 0) + BUS_READ_OFFSET
+    -- Read path (MSP 125): legacy absolute namespace.
+    -- ui0=0 -> 8, ui0=9 -> 17
+    return (ui0 or 0) + MSP125_READ_BASE_INDEX
 end
 
 local function uiIndexToWriteIndex(ui0)
-    -- MSP_SET_SERVO_CONFIG(212/213) and per-servo override(193) align to active-output index space.
+    -- Write path (MSP 212/213/193): active-output namespace.
+    -- ui0 is BUS-local index; base depends on total servo outputs.
     return (ui0 or 0) + busWriteBase()
 end
 
@@ -281,8 +289,8 @@ end
 
 local function getServoConfigurationsIndexed(callback, callbackParam)
 
-    -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
-    -- Payload must contain exactly 1 byte: the servo index (0-based).
+    -- MSP_GET_SERVO_CONFIG (125) reads one servo by read-index namespace (legacy absolute).
+    -- This intentionally differs from write-index namespace used by 212/213/193.
     local absIndex = currentServoReadIndex()
 
     local message = {
