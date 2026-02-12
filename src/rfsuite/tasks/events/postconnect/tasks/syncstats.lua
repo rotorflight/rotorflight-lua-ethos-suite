@@ -104,7 +104,6 @@ function sync.wakeup()
             rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, prefs)
 
             rfsuite.utils.log("Updated radio flight stats from FBL", "info")
-            rfsuite.utils.log("Updated radio flight stats from FBL", "console")
 
             isComplete = true
 
@@ -123,7 +122,6 @@ function sync.wakeup()
 
             API.setCompleteHandler(function()
                 rfsuite.utils.log("Updated FBL flight stats from radio", "info")
-                rfsuite.utils.log("Updated FBL flight stats from radio", "console")
                 saveToEeprom()
                 isComplete = true
             end)
