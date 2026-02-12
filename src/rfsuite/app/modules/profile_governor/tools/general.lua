@@ -8,21 +8,10 @@ local rfsuite = require("rfsuite")
 local activateWakeup = false
 local governorDisabledMsg = false
 
-local FIELD_FULL_HEADSPEED = 1
-local FIELD_MIN_THROTTLE = 2
-local FIELD_MAX_THROTTLE = 3
-local FIELD_FALLBACK_DROP = 4
-local FIELD_GAIN = 5
-local FIELD_P_GAIN = 6
-local FIELD_I_GAIN = 7
-local FIELD_D_GAIN = 8
 local FIELD_F_GAIN = 9
 local FIELD_YAW_WEIGHT = 10
 local FIELD_CYCLIC_WEIGHT = 11
 local FIELD_COLLECTIVE_WEIGHT = 12
-local FIELD_TTA_GAIN = 13
-local FIELD_TTA_LIMIT = 14
-
 local function decodeGovernorFlags(flags)
     local governor_flags_bitmap = {{field = "fc_throttle_curve"}, {field = "tx_precomp_curve"}, {field = "fallback_precomp"}, {field = "voltage_comp"}, {field = "pid_spoolup"}, {field = "hs_adjustment"}, {field = "dyn_min_throttle"}, {field = "autorotation"}, {field = "suspend"}, {field = "bypass"}}
 
@@ -76,9 +65,7 @@ local function wakeup()
                 rfsuite.app.formNavigationFields['save']:enable(false)
 
                 rfsuite.app.formNavigationFields['reload']:enable(false)
-
-                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.profile_governor.disabled_message)@")
-
+    
             end
         end
 
@@ -105,14 +92,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
         return true
     end
 end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
     return true
 end
 

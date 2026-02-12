@@ -103,7 +103,7 @@ local function write()
         end
     end
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function setValue(fieldName, value)

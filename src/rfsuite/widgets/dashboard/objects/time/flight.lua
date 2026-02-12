@@ -94,9 +94,18 @@ end
 
 function render.wakeup(box)
 
+    local session = rfsuite.session
+    local telemetryActive = session and session.telemetryState and session.isConnected
+    local inPostflight = (rfsuite.flightmode and rfsuite.flightmode.current == "postflight")
+
+    if not telemetryActive and not inPostflight then
+        box._lastDisplayValue = nil
+        lastValue = 0
+    end
+
     local value
-    if rfsuite.session and rfsuite.session.modelPreferences then
-        value = rfsuite.session.timer and rfsuite.session.timer.live or 0
+    if telemetryActive and session and session.modelPreferences then
+        value = session.timer and session.timer.live or 0
         lastValue = value
     else
         value = lastValue or 0

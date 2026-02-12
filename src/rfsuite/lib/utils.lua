@@ -11,6 +11,12 @@ local arg = {...}
 local config = arg[1]
 
 function utils.session()
+    
+     if rfsuite.session.originalModelName and model.name then
+        rfsuite.utils.log("Restoring model name to: " .. rfsuite.session.originalModelName, "info")
+        model.name(rfsuite.session.originalModelName)
+    end
+
     rfsuite.session = {
 
         escDetails = nil,
@@ -76,8 +82,11 @@ function utils.session()
         modelPreferences = nil,
         modelPreferencesFile = nil,
 
+        originalModelName = nil,
+
         clockSet = nil,
         resetMSP = nil
+        
     }
 
 end

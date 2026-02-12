@@ -39,7 +39,7 @@ local manifest = {
   [11] = { name = "logger",       connected = false, interval = 0.28, script = "scheduler/logger/logger.lua",              linkrequired = false, simulatoronly = false, spreadschedule = true  },
 
   -- Sensor polling; runs frequently to keep data fresh
-  [12] = { name = "sensors",      connected = true,  interval = 0.23, script = "scheduler/sensors/sensors.lua",            linkrequired = true,  simulatoronly = false, spreadschedule = false },
+  [12] = { name = "sensors",      connected = true,  interval = 0.18, script = "scheduler/sensors/sensors.lua",            linkrequired = true,  simulatoronly = false, spreadschedule = false },
 
   -- Timer service; must tick faster than 0.5s for accuracy
   [13] = { name = "timer",        connected = true,  interval = 0.25, script = "scheduler/timer/timer.lua",                linkrequired = true,  simulatoronly = false, spreadschedule = false },

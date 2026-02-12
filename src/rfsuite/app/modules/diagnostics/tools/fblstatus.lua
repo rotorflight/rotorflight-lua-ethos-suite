@@ -11,8 +11,6 @@ local rfutils = rfsuite.utils
 
 local fields = {}
 local labels = {}
-local fcStatus = {}
-local dataflashSummary = {}
 local wakeupScheduler = os.clock()
 local status = {}
 local summary = {}
@@ -29,6 +27,11 @@ local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
+
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return tasks.msp.mspQueue:add(message)
+end
 
 local apidata = {
     api = {[1] = nil},
@@ -81,7 +84,7 @@ local function getFblTime()
         simulatorResponse = getSimulatorTimeResponse()
     }
 
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.time")
 end
 
 local function getStatus()
@@ -103,7 +106,7 @@ local function getStatus()
         simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
     }
 
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.status")
 end
 
 local function getDataflashSummary()
@@ -121,7 +124,7 @@ local function getDataflashSummary()
         end,
         simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
     }
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.dataflash")
 end
 
 local function eraseDataflash()
@@ -140,7 +143,7 @@ local function eraseDataflash()
         end,
         simulatorResponse = {}
     }
-    tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.erase")
 end
 
 local function postLoad(self)
@@ -249,14 +252,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+        app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
         return true
     end
 end
 
 local function onNavMenu()
-    app.ui.progressDisplay(nil, nil, true)
-    app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
+    app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
 end
 
 return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = true, help = false}, API = {}}

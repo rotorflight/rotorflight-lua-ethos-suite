@@ -11,7 +11,6 @@ local math_max = math.max
 local math_min = math.min
 local math_ceil = math.ceil
 local math_floor = math.floor
-local table_insert = table.insert
 local tostring = tostring
 local type = type
 local pcall = pcall

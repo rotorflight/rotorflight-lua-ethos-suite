@@ -14,6 +14,11 @@ fields[#fields + 1] = {t = "@i18n(app.modules.copyprofiles.dest_profile)@", valu
 
 local doSave = false
 
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
 local function onSaveMenu()
 
     if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
@@ -53,7 +58,11 @@ local function getDestinationPidProfile(self)
     return destPidProfile
 end
 
-local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
@@ -119,11 +128,19 @@ local function wakeup()
 
         if payload[2] == payload[3] then
             rfsuite.utils.log("Source and destination profiles are the same. No need to copy.", "info")
+            rfsuite.app.triggers.closeSaveFake = true
+            rfsuite.app.triggers.isSaving = false
             doSave = false
+            return
         end
 
         local message = {command = 183, payload = payload, processReply = function(self, buf) rfsuite.app.triggers.closeProgressLoader = true end, simulatorResponse = {}}
-        rfsuite.tasks.msp.mspQueue:add(message)
+        local ok, reason = queueDirect(message, string.format("copyprofiles.%d.%d.%d", payload[1], payload[2], payload[3]))
+        if not ok then
+            rfsuite.utils.log("Copy profiles enqueue rejected: " .. tostring(reason), "info")
+            rfsuite.app.triggers.closeSaveFake = true
+            rfsuite.app.triggers.isSaving = false
+        end
 
         doSave = false
     end

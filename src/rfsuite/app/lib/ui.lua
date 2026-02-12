@@ -28,6 +28,32 @@ local apiCore
 
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 
+local function resolveScriptFromRules(rules)
+    if type(rules) ~= "table" then return nil end
+    for _, rule in ipairs(rules) do
+        local op = rule.op or rule[1]
+        local ver = rule.ver or rule[2]
+        local script = rule.script or rule[3]
+        if op and ver and script and utils.apiVersionCompare(op, ver) then
+            return script, rule.loaderspeed
+        end
+    end
+    return nil
+end
+
+local function resolvePageScript(page, section)
+    local rules = page.script_by_mspversion or page.scriptByMspVersion
+    if not rules and section then
+        rules = section.script_by_mspversion or section.scriptByMspVersion
+    end
+    if rules then
+        local chosen, speed = resolveScriptFromRules(rules)
+        if chosen then return chosen, speed end
+        if page.script_default then return page.script_default, page.loaderspeed end
+    end
+    return page.script, page.loaderspeed
+end
+
 local function getMspStatusExtras()
     local m = tasks and tasks.msp
     if not m then return nil end
@@ -165,11 +191,11 @@ function ui.progressDisplay(title, message, speed)
     title = title or "@i18n(app.msg_loading)@"
     message = message or "@i18n(app.msg_loading_from_fbl)@"
 
-    if speed then
-        app.dialogs.progressSpeed = true
-    else
-        app.dialogs.progressSpeed = false
+    local speedMult = tonumber(speed)
+    if speedMult == nil then
+        speedMult = (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
     end
+    app.dialogs.progressSpeed = speedMult
 
     local reachedTimeout = false
 
@@ -189,16 +215,7 @@ function ui.progressDisplay(title, message, speed)
 
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
-            local mult = 1
-            if app.dialogs.progressSpeed then 
-                if speed and (type(speed) == "number" or type(speed) == "float") then
-                    mult = speed
-                elseif type(speed) == "boolean" and speed == true then
-                    mult = 2
-                else
-                    mult = 1.5 
-                end
-            end
+            local mult = app.dialogs.progressSpeed or 1.0
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
             local apiV = tostring(session.apiVersion)
@@ -215,7 +232,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
                     return
                 end
@@ -227,7 +244,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-
+                    app.dialogs.progressSpeed = nil
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
                 if app.dialogs.progressIsWait then
@@ -236,7 +253,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
                     return
                 end
@@ -248,7 +265,7 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
 
                 end
@@ -264,7 +281,7 @@ function ui.progressDisplay(title, message, speed)
                 app.Page = app.PageTmp
                 app.PageTmp = nil
                 app.dialogs.progressCounter = 0
-                app.dialogs.progressSpeed = false
+                app.dialogs.progressSpeed = nil
                 app.dialogs.progressDisplay = false
 
                 ui.disableAllFields()
@@ -280,7 +297,7 @@ function ui.progressDisplay(title, message, speed)
                     ui.clearProgressDialog(app.dialogs.progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
-                    app.dialogs.progressSpeed = false
+                    app.dialogs.progressSpeed = nil
 
                 end
             end
@@ -662,11 +679,23 @@ function ui.openMainMenu()
     app.gfx_buttons["mainmenu"] = app.gfx_buttons["mainmenu"] or {}
     preferences.menulastselected["mainmenu"] = preferences.menulastselected["mainmenu"] or 1
 
-    local Menu = assert(loadfile("app/modules/sections.lua"))()
+    -- Prefer the already-built menu structure; fallback loads manifest directly.
+    local Menu = (app.MainMenu and app.MainMenu.sections) or (assert(loadfile("app/modules/manifest.lua"))().sections)
 
     local lc, bx, y = 0, 0, 0
 
     local header = form.addLine("@i18n(app.header_configuration)@")
+
+    local navX = windowWidth - 110
+    app.formNavigationFields['menu'] = form.addButton(header, {x = navX, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
+        text = "@i18n(app.navigation_menu)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            app.close()
+        end
+    })
 
     for pidx, pvalue in ipairs(Menu) do
 
@@ -695,13 +724,17 @@ function ui.openMainMenu()
             paint = function() end,
             press = function()
                 preferences.menulastselected["mainmenu"] = pidx
-                local speed = false
-                if pvalue.loaderspeed then speed = true end
-                app.ui.progressDisplay(nil, nil, speed)
+                local speed = tonumber(pvalue.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                 if pvalue.module then
                     app.isOfflinePage = true
-                    app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
+                    local script, speedOverride = resolvePageScript(pvalue)
+                    if speedOverride ~= nil then
+                        speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
+                    end
+                    app.ui.progressDisplay(nil, nil, speed)
+                    app.ui.openPage({idx = pidx, title = pvalue.title, script = pvalue.module .. "/" .. script})
                 else
+                    app.ui.progressDisplay(nil, nil, speed)
                     app.ui.openMainMenuSub(pvalue.id)
                 end
             end
@@ -809,11 +842,14 @@ function ui.openMainMenuSub(activesection)
                             paint = function() end,
                             press = function()
                                 preferences.menulastselected[activesection] = pidx
-                                local speed = false
-                                if page.loaderspeed or section.loaderspeed then speed = true end
-                                app.ui.progressDisplay(nil, nil, speed)
+                                local speed = tonumber(page.loaderspeed or section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                                 app.isOfflinePage = offline
-                                app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
+                                local script, speedOverride = resolvePageScript(page, section)
+                                if speedOverride ~= nil then
+                                    speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
+                                end
+                                app.ui.progressDisplay(nil, nil, speed)
+                                app.ui.openPage({idx = pidx, title = page.title, script = page.folder .. "/" .. script})
                             end
                         })
 
@@ -865,48 +901,58 @@ function ui.getLabel(id, page)
     return nil
 end
 
-function ui.fieldBoolean(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-    local radioText = app.radio.text
-
-    if not f then
+function ui._guardField(fields, i)
+    if not (fields and fields[i]) then
         ui.disableAllFields()
         ui.disableAllNavigationFields()
         ui.enableNavigationField('menu')
-        return
+        return nil
     end
+    return fields[i]
+end
 
-    local invert = (f.subtype == 1)
-
-    local posText, posField
+function ui._prepareFieldLine(f, radioText)
+    local formLines = app.formLines
+    local posField
 
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
         local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
+        posField = p.posField
+        form.addStaticText(formLines[app.formLineCnt], p.posText, f.t)
     else
+        if radioText == 2 and f.t2 then f.t = f.t2 end
         if f.t then
-            if radioText == 2 and f.t2 then f.t = f.t2 end
             if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
         end
         app.formLineCnt = app.formLineCnt + 1
         formLines[app.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
+    return posField
+end
+
+function ui.fieldBoolean(i,lf)
+    local page = app.Page
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
+    local f = ui._guardField(fields, i)
+    local formLines = app.formLines
+    local formFields = app.formFields
+    local radioText = app.radio.text
+
+    if not f then return end
+
+    local invert = (f.subtype == 1)
+
+    local posField = ui._prepareFieldLine(f, radioText)
+
     local function decode()
-        if not fields or not fields[i] then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        local v = (fields[i].value == 1) and 1 or 0
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        local v = (active.value == 1) and 1 or 0
         if invert then v = (v == 1) and 0 or 1 end
         return (v == 1)
     end
@@ -927,6 +973,16 @@ function ui.fieldBoolean(i,lf)
     if f.disable then formFields[i]:enable(false) end
 end
 
+function ui.fieldBooleanInverted(i, lf)
+    local page = app.Page
+    local fields = page and page.apidata and page.apidata.formdata.fields or lf
+    local f = fields and fields[i] or nil
+    local prevSubtype = f and f.subtype or nil
+    if f then f.subtype = 1 end
+    ui.fieldBoolean(i, lf)
+    if f then f.subtype = prevSubtype end
+end
+
 function ui.fieldChoice(i,lf)
     local page = app.Page
     local fields = page and page.apidata and page.apidata.formdata.fields or lf
@@ -935,22 +991,7 @@ function ui.fieldChoice(i,lf)
     local formFields = app.formFields
     local radioText = app.radio.text
 
-    local posText, posField
-
-    if f.inline and f.inline >= 1 and f.label then
-        if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if radioText == 2 and f.t2 then f.t = f.t2 end
-            if f.label then f.t = "        " .. f.t end
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f, radioText)
 
     local tbldata = f.table and app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
     if f.tableEthos then
@@ -959,13 +1000,9 @@ function ui.fieldChoice(i,lf)
 
 
     formFields[i] = form.addChoiceField(formLines[app.formLineCnt], posField, tbldata, function()
-        if not fields or not fields[i] then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(fields[i])
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        return app.utils.getFieldValue(active)
     end, function(value)
         if f.postEdit then f.postEdit(page, value) end
         if f.onChange then f.onChange(page, value) end
@@ -982,22 +1019,7 @@ function ui.fieldSlider(i,lf)
     local formLines = app.formLines
     local formFields = app.formFields
 
-    local posField, posText
-
-    if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f)
 
     if f.offset then
         if f.min then f.min = f.min + f.offset end
@@ -1016,17 +1038,17 @@ function ui.fieldSlider(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSliderField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        if not (page.fields and page.fields[i]) then
+        if not (fields and fields[i]) then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
             return nil
         end
-        return app.utils.getFieldValue(page.fields[i])
+        return app.utils.getFieldValue(fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.fields[i], value)
+        f.value = app.utils.saveFieldValue(fields[i], value)
     end)
 
     local currentField = formFields[i]
@@ -1051,22 +1073,7 @@ function ui.fieldNumber(i,lf)
     local formLines = app.formLines
     local formFields = app.formFields
 
-    local posField, posText
-
-    if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f)
 
     if f.offset then
         if f.min then f.min = f.min + f.offset end
@@ -1085,13 +1092,9 @@ function ui.fieldNumber(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addNumberField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        return app.utils.getFieldValue(active)
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
@@ -1137,22 +1140,7 @@ function ui.fieldSource(i,lf)
     local formLines = app.formLines
     local formFields = app.formFields
 
-    local posField, posText
-
-    if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f)
 
     if f.offset then
         if f.min then f.min = f.min + f.offset end
@@ -1171,13 +1159,9 @@ function ui.fieldSource(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSourceField(formLines[app.formLineCnt], posField, function()
-        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        return app.utils.getFieldValue(active)
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
@@ -1199,22 +1183,7 @@ function ui.fieldSensor(i,lf)
     local formLines = app.formLines
     local formFields = app.formFields
 
-    local posField, posText
-
-    if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f)
 
     if f.offset then
         if f.min then f.min = f.min + f.offset end
@@ -1233,13 +1202,9 @@ function ui.fieldSensor(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSensorField(formLines[app.formLineCnt], posField, function()
-        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        return app.utils.getFieldValue(active)
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
@@ -1261,22 +1226,7 @@ function ui.fieldColor(i,lf)
     local formLines = app.formLines
     local formFields = app.formFields
 
-    local posField, posText
-
-    if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f)
 
     if f.offset then
         if f.min then f.min = f.min + f.offset end
@@ -1295,12 +1245,9 @@ function ui.fieldColor(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addColorField(formLines[app.formLineCnt], posField, function()
-        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-        end
-        local color = page.apidata.formdata.fields[i]
+        local active = ui._guardField(fields, i)
+        if not active then return COLOR_BLACK end
+        local color = active
         if type(color) ~= "number" then
             return COLOR_BLACK
         else
@@ -1327,22 +1274,7 @@ function ui.fieldSwitch(i,lf)
     local formLines = app.formLines
     local formFields = app.formFields
 
-    local posField, posText
-
-    if f.inline and f.inline >= 1 and f.label then
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f)
 
     if f.offset then
         if f.min then f.min = f.min + f.offset end
@@ -1361,13 +1293,9 @@ function ui.fieldSwitch(i,lf)
     maxValue = maxValue or 0
 
     formFields[i] = form.addSwitchField(formLines[app.formLineCnt], posField, function()
-        if not (page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(page.apidata.formdata.fields[i])
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        return app.utils.getFieldValue(active)
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
@@ -1390,26 +1318,10 @@ function ui.fieldStaticText(i,lf)
     local formFields = app.formFields
     local radioText = app.radio.text
 
-    local posText, posField
-
-    if f.inline and f.inline >= 1 and f.label then
-        if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if radioText == 2 and f.t2 then f.t = f.t2 end
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
-
-    formFields[i] = form.addStaticText(formLines[app.formLineCnt], posField, app.utils.getFieldValue(fields[i]))
+    local posField = ui._prepareFieldLine(f, radioText)
+    local active = ui._guardField(fields, i)
+    if not active then return end
+    formFields[i] = form.addStaticText(formLines[app.formLineCnt], posField, app.utils.getFieldValue(active))
 
     local currentField = formFields[i]
     if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
@@ -1426,33 +1338,12 @@ function ui.fieldText(i,lf)
     local formFields = app.formFields
     local radioText = app.radio.text
 
-    local posText, posField
-
-    if f.inline and f.inline >= 1 and f.label then
-        if radioText == 2 and f.t2 then f.t = f.t2 end
-        local p = app.utils.getInlinePositions(f)
-        posText, posField = p.posText, p.posField
-        form.addStaticText(formLines[app.formLineCnt], posText, f.t)
-    else
-        if radioText == 2 and f.t2 then f.t = f.t2 end
-        if f.t then
-            if f.label then f.t = "        " .. f.t end
-        else
-            f.t = ""
-        end
-        app.formLineCnt = app.formLineCnt + 1
-        formLines[app.formLineCnt] = form.addLine(f.t)
-        posField = f.position or nil
-    end
+    local posField = ui._prepareFieldLine(f, radioText)
 
     formFields[i] = form.addTextField(formLines[app.formLineCnt], posField, function()
-        if not fields or not fields[i] then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(fields[i])
+        local active = ui._guardField(fields, i)
+        if not active then return nil end
+        return app.utils.getFieldValue(active)
     end, function(value)
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
@@ -1517,7 +1408,7 @@ function ui.fieldHeader(title)
     app.ui.navigationButtons(w - 5, radio.linePaddingTop, buttonW, buttonH)
 end
 
-function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+function ui.openPageRefresh(opts)
     app.triggers.isReady = false
 end
 
@@ -1542,7 +1433,18 @@ local function getHelpData(section)
 end
 
 
-function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+function ui.openPage(opts)
+
+    if type(opts) ~= "table" then
+        error("ui.openPage expects a table")
+    end
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    if not script then
+        error("ui.openPage requires opts.script")
+    end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "start")
 
@@ -1567,7 +1469,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
-        app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+        app.Page.openPage(opts)
         collectgarbage('collect')
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
@@ -1590,6 +1492,22 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     app.formLineCnt = 0
 
+    if not ui._fieldHandlers then
+        ui._fieldHandlers = {
+            [0] = ui.fieldStaticText,
+            [1] = ui.fieldChoice,
+            [2] = ui.fieldNumber,
+            [3] = ui.fieldText,
+            [4] = ui.fieldBoolean,
+            [5] = ui.fieldBooleanInverted or ui.fieldBoolean,
+            [6] = ui.fieldSlider,
+            [7] = ui.fieldSource,
+            [8] = ui.fieldSwitch,
+            [9] = ui.fieldSensor,
+            [10] = ui.fieldColor
+        }
+    end
+
     if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
@@ -1600,31 +1518,9 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
             if field.hidden ~= true and valid then
                 app.ui.fieldLabel(field, i, label)
-                if field.type == 0 then
-                    app.ui.fieldStaticText(i)
-                elseif field.table or field.type == 1 then
-                    app.ui.fieldChoice(i)
-                elseif field.type == 2 then
-                    app.ui.fieldNumber(i)
-                elseif field.type == 3 then
-                    app.ui.fieldText(i)
-                elseif field.type == 4 then
-                    app.ui.fieldBoolean(i)
-                elseif field.type == 5 then
-                    app.ui.fieldBooleanInverted(i)
-                elseif field.type == 6 then
-                    app.ui.fieldSlider(i)
-                elseif field.type == 7 then
-                    app.ui.fieldSource(i)
-                elseif field.type == 8 then
-                    app.ui.fieldSwitch(i)
-                elseif field.type == 9 then
-                    app.ui.fieldSensor(i)
-                elseif field.type == 10 then
-                    app.ui.fieldColor(i)
-                else
-                    app.ui.fieldNumber(i)
-                end
+                local fieldType = field.table and 1 or field.type
+                local handler = ui._fieldHandlers[fieldType] or ui.fieldNumber
+                handler(i)
             else
                 app.formFields[i] = {}
             end
@@ -2139,6 +2035,14 @@ function ui.saveSettings()
     local log = utils.log
 
     if app.pageState == app.pageStatus.saving then return end
+    if not (app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields and app.Page.apidata.api) then
+        log("saveSettings called without valid apidata; skipping.", "info")
+        app.pageState = app.pageStatus.display
+        app.triggers.isSaving = false
+        app.triggers.closeSaveFake = true
+        app.triggers.saveFailed = true
+        return
+    end
 
     app.pageState = app.pageStatus.saving
     app.saveTS = osClock()
@@ -2151,6 +2055,7 @@ function ui.saveSettings()
 
     local totalRequests = #apiList
     local completedRequests = 0
+    local enqueueFailures = 0
 
     app.Page.apidata.apiState.isProcessing = true
 
@@ -2172,9 +2077,15 @@ function ui.saveSettings()
 
             if completedRequests == totalRequests then
                 log("All API requests have been completed!", "debug")
-                if app.Page.postSave then app.Page.postSave(app.Page) end
                 app.Page.apidata.apiState.isProcessing = false
-                app.utils.settingsSaved()
+                if enqueueFailures > 0 or app.triggers.saveFailed then
+                    app.pageState = app.pageStatus.display
+                    app.triggers.closeSaveFake = true
+                    app.triggers.isSaving = false
+                else
+                    if app.Page.postSave then app.Page.postSave(app.Page) end
+                    app.utils.settingsSaved()
+                end
             end
         end)
 
@@ -2225,10 +2136,24 @@ function ui.saveSettings()
             end
         end
 
+        local ok, reason
         if payload then
-            API.write(payload)
+            ok, reason = API.write(payload)
         else
-            API.write()
+            ok, reason = API.write()
+        end
+
+        if not ok then
+            enqueueFailures = enqueueFailures + 1
+            completedRequests = completedRequests + 1
+            app.triggers.saveFailed = true
+            log("API " .. apiNAME .. " enqueue rejected: " .. tostring(reason), "info")
+            if completedRequests == totalRequests then
+                app.Page.apidata.apiState.isProcessing = false
+                app.pageState = app.pageStatus.display
+                app.triggers.closeSaveFake = true
+                app.triggers.isSaving = false
+            end
         end
 
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
@@ -2240,14 +2165,21 @@ end
 function ui.rebootFc()
 
     app.pageState = app.pageStatus.rebooting
-    tasks.msp.mspQueue:add({
+    local ok, reason = tasks.msp.mspQueue:add({
         command = 68,
+        uuid = "ui.reboot",
         processReply = function(self, buf)
             app.utils.invalidatePages()
             utils.onReboot()
         end,
         simulatorResponse = {}
     })
+    if not ok then
+        utils.log("Reboot enqueue rejected: " .. tostring(reason), "info")
+        app.pageState = app.pageStatus.display
+        app.triggers.closeSaveFake = true
+        app.triggers.isSaving = false
+    end
 end
 
 function ui.adminStatsOverlay()
@@ -2287,16 +2219,6 @@ function ui.adminStatsOverlay()
             drawBlock(key, label, v)
         end
     end
-end
-
-function ui.fieldHelpButton(parent, x, y, title, message)
-    form.addButton(parent, {x = x, y = y, w = 40, h = 30}, {
-        text = "?",
-        options = FONT_S,
-        press = function()
-            ui.openPageHelp(message, title)
-        end
-    })
 end
 
 return ui

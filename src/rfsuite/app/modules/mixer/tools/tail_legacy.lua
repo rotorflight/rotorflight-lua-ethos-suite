@@ -23,7 +23,7 @@ local apidata = {
 
 local function onNavMenu(self)
 
-    rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
 
 end
 

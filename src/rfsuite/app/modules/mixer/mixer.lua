@@ -87,7 +87,11 @@ local function getMixerCompatibilityStatus()
 
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -96,7 +100,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -150,7 +154,11 @@ local function openPage(pidx, title, script)
     end
 
     if rfsuite.app.gfx_buttons["mixer"] == nil then rfsuite.app.gfx_buttons["mixer"] = {} end
-    if rfsuite.preferences.menulastselected["mixer"] == nil then rfsuite.preferences.menulastselected["mixer"] = 1 end
+    local lastSelected = tonumber(rfsuite.preferences.menulastselected["mixer"]) or 1
+    if lastSelected < 1 then lastSelected = 1 end
+    if lastSelected > #S_PAGES then lastSelected = #S_PAGES end
+    rfsuite.preferences.menulastselected["mixer"] = lastSelected
+    rfsuite.app._mixer_focused = false
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -181,9 +189,9 @@ local function openPage(pidx, title, script)
             paint = function() end,
             press = function()
                 rfsuite.preferences.menulastselected["mixer"] = pidx
-                rfsuite.app.ui.progressDisplay(nil,nil,false)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                 local name = "@i18n(app.modules.mixer.name)@" .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "mixer/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage({idx = pidx, title = name, script = "mixer/tools/" .. pvalue.script})
             end
         })
 
@@ -192,7 +200,6 @@ local function openPage(pidx, title, script)
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
 
-        if rfsuite.preferences.menulastselected["mixer"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
@@ -274,6 +281,13 @@ local function wakeup()
             if v.enable then
                 v:enable(true)
             end    
+        end
+
+        if not rfsuite.app._mixer_focused then
+            rfsuite.app._mixer_focused = true
+            local idx = tonumber(rfsuite.preferences.menulastselected["mixer"]) or 1
+            local btn = rfsuite.app.formFields and rfsuite.app.formFields[idx] or nil
+            if btn and btn.focus then btn:focus() end
         end
         -- close progress loader
         rfsuite.app.triggers.closeProgressLoader = true

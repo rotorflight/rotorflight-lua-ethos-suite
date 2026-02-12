@@ -10,7 +10,11 @@ local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/mod
 
 local enableWakeup = false
 
-local function openPage(idx, title, script)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
     rfsuite.app.activeLogDir = nil
     if not rfsuite.utils.ethosVersionAtLeast() then return end
 
@@ -81,7 +85,7 @@ local function openPage(idx, title, script)
                     rfsuite.app.ui.progressDisplay()
                     rfsuite.app.activeLogDir = item.foldername
                     rfsuite.utils.log("Opening logs for: " .. item.foldername, "info")
-                    rfsuite.app.ui.openPage(i, "Logs", "logs/logs_logs.lua")
+                    rfsuite.app.ui.openPage({idx = i, title = "Logs", script = "logs/logs_logs.lua"})
                 end
             })
 

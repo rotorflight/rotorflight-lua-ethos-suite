@@ -3,12 +3,9 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
-local rfsuite = require("rfsuite")
-
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@"
-local moduleName = "FLRTR"
 
 local function getUInt(page, vals)
     local v = 0

@@ -47,6 +47,8 @@ python generate-googleapi.py --only-missing --json json/cs.json --voice cs-CZ-Wa
 
 REM Polish - Default (fallback to Czech voice)
 python generate-googleapi.py --only-missing --json json/pl.json --voice cs-CZ-Wavenet-A --base-dir pl --variant default --engine google 
+REM Chinese (Simplified)
+python generate-googleapi.py --only-missing --json json/zh-cn.json --voice cmn-CN-Wavenet-A --base-dir zh-cn --variant default --engine google 
 
 REM copy just english to the release folder
 xcopy soundpack\en\ ..\..\src\rfsuite\audio\en\ /E /I /Y

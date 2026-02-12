@@ -3,8 +3,8 @@
 This document highlights the touch points and workflow used to add or update locales (e.g., `pt-br`, `no`) in this repo.
 
 ## Quick Checklist
-1. Add i18n source files under `bin/i18n/json/` for the new locale.
-2. Build/verify merged locale JSON into `src/rfsuite/i18n/<locale>.json`.
+1. Add i18n source file under `bin/i18n/json/<locale>.json`.
+2. Build/verify locale JSON into `src/rfsuite/i18n/<locale>.json`.
 3. Add locale to workflow matrices so per-locale ZIPs are built.
 4. Add locale to the updater GUI locale list.
 5. Add sound pack sources and generated audio (if applicable).
@@ -12,19 +12,14 @@ This document highlights the touch points and workflow used to add or update loc
 
 ## Touch Points (By Area)
 ### 1) i18n Source Files (authoritative inputs)
-These are the raw translation sources that get merged:
+Single-file locale sources (authoritative inputs):
 - `bin/i18n/json/<locale>.json`
-- `bin/i18n/json/app/<locale>.json`
-- `bin/i18n/json/api/<locale>.json`
-- `bin/i18n/json/widgets/<locale>.json`
-- `bin/i18n/json/telemetry/<locale>.json`
-- `bin/i18n/json/sensors/<locale>.json`
 
-### 2) Merged Locale JSON (generated output)
+### 2) Locale JSON (generated output)
 Build or update:
 - `src/rfsuite/i18n/<locale>.json`
 
-Built by:
+Built by (sync/copy):
 - `bin/i18n/build-single-json.py --only <locale>`
 
 ### 3) CI/Workflows (per-locale builds)
@@ -64,8 +59,9 @@ If you want demo links for the new locale:
 - `demo/readme.md`
 
 ## Suggested Workflow
-1. Add/update translation JSON under `bin/i18n/json/**/<locale>.json`.
-2. Run `bin/i18n/build-single-json.py --only <locale>` to rebuild `src/rfsuite/i18n/<locale>.json`.
+1. Add/update translation JSON under `bin/i18n/json/<locale>.json`.
+2. Run `bin/i18n/update-max-lengths.py` to refresh per-key `max_length` in `en.json`.
+3. Run `bin/i18n/build-single-json.py --only <locale>` to rebuild `src/rfsuite/i18n/<locale>.json`.
 3. Add `<locale>` to all workflow matrices.
 4. Add `<locale>` to `AVAILABLE_LOCALES` in the updater GUI.
 5. Add or generate sound packs (if used).

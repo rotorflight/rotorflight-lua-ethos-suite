@@ -58,12 +58,6 @@ local function wakeup()
 
         -- If governor is disabled in firmware, lock the page and show the hint once.
         if not govEnabled then
-            if not governorDisabledMsg then
-                governorDisabledMsg = true
-                if rfsuite.app.formLines then
-                    rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.profile_governor.disabled_message)@")
-                end
-            end
             if rfsuite.app.formFields then
                 rfsuite.app.formFields[FIELD_FALLBACK_PRECOMP]:enable(false)
                 rfsuite.app.formFields[FIELD_PID_SPOOLUP]:enable(false)
@@ -88,14 +82,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
         return true
     end
 end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
     return true
 end
 

@@ -7,11 +7,12 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 local system = system
 
+local pages = {}
+
 local function findMFG()
     local mfgsList = {}
 
-    local mfgdir = "app/modules/esc_motors/tools/escmfg/"
-    local mfgs_path = mfgdir
+    local mfgs_path = "app/modules/esc_motors/tools/escmfg/"
 
     for _, v in pairs(system.listFiles(mfgs_path)) do
 
@@ -37,7 +38,11 @@ local function findMFG()
     return mfgsList
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
@@ -47,7 +52,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -57,20 +62,14 @@ local function openPage(pidx, title, script)
         rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
-    local w, h = lcd.getWindowSize()
-    local windowWidth = w
-    local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
-
-    local sc
-    local panel
+    local windowWidth = lcd.getWindowSize()
 
     form.addLine(title)
 
-    local buttonW = 100
-    local x = windowWidth - buttonW - 10
+    local navButtonW = 100
+    local x = windowWidth - navButtonW - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = navButtonW, h = rfsuite.app.radio.navbuttonHeight}, {
         text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
@@ -81,7 +80,7 @@ local function openPage(pidx, title, script)
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
-            rfsuite.app.ui.openPage(pidx, title, "esc_motors/esc_motors.lua")
+            rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/esc_motors.lua"})
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
@@ -117,8 +116,8 @@ local function openPage(pidx, title, script)
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
-    local ESCMenu = assert(loadfile("app/modules/" .. script))()
-    local pages = findMFG()
+    assert(loadfile("app/modules/" .. script))()
+    pages = findMFG()
     local lc = 0
     local bx = 0
     local y = 0
@@ -147,7 +146,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["escmain"] = pidx
                 rfsuite.app.ui.progressDisplay(nil,nil,0.5)
-                rfsuite.app.ui.openPage(pidx, pvalue.folder, "esc_motors/tools/esc_tool.lua")
+                rfsuite.app.ui.openPage({idx = pidx, title = pvalue.folder, script = "esc_motors/tools/esc_tool.lua"})
             end
         })
 

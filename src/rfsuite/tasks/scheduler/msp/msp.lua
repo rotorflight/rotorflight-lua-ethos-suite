@@ -49,10 +49,13 @@ msp.mspQueue = mspQueue
 mspQueue.maxRetries   = msp.protocol.maxRetries
 mspQueue.loopInterval = 0                -- Queue processing rate
 mspQueue.copyOnAdd    = true             -- Clone messages on enqueue
-mspQueue.interMessageDelay = 0.1         -- Delay between messages
+mspQueue.interMessageDelay = 0.05         -- Delay between messages
 mspQueue.timeout      = msp.protocol.mspQueueTimeout or 2.0
 mspQueue.drainAfterReplyMss = 0.05         -- No drain delay after reply
 mspQueue.drainMaxPolls = 5                 -- Max polls to wait during drain
+mspQueue.busyWarningThreshold = msp.protocol.mspQueueBusyWarning or 8 -- Soft pressure signal only
+mspQueue.maxQueueDepth = msp.protocol.mspQueueMaxDepth or 0            -- Hard cap (0 = disabled)
+mspQueue.busyStatusCooldown = msp.protocol.mspQueueBusyStatusCooldown or 0.35
 
 -- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()

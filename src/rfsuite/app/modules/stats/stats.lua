@@ -6,8 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local enableWakeup = false
-local syncStatsToFBLStart = false
-
 local FBL_STATS = {} -- holder for fbl stats to sync
 
 local apidata = {

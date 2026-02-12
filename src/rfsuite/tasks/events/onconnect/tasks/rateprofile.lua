@@ -16,12 +16,10 @@ function rateprofile.wakeup()
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
       -- we use rotorflight rates for 12.09 and above
       rfsuite.config.defaultRateProfile = 6
-      rfsuite.utils.log("Default Rate Profile: ROTORFLIGHT", "info")
       rfsuite.utils.log("Default Rate Profile: ROTORFLIGHT", "console")
     else
       -- we use actual rates for below 12.09
       rfsuite.config.defaultRateProfile = 4 
-      rfsuite.utils.log("Default Rate Profile: ACTUAL", "info")
       rfsuite.utils.log("Default Rate Profile: ACTUAL", "console")
     end  
 

@@ -104,7 +104,7 @@ local function read()
         getErrorHandler = handlers.getErrorHandler,
         mspData = nil
     }
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -133,7 +133,7 @@ local function write(suppliedPayload)
         getErrorHandler = handlers.getErrorHandler
     }
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

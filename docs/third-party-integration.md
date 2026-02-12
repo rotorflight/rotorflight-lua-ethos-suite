@@ -57,6 +57,15 @@ API.read()
 ```
 
 * **Queue check**: `rfsuite.tasks.msp.mspQueue:isProcessed()` to ensure no backlog.
+* **Enqueue result**: MSP API `read()` / `write()` return queue status from `mspQueue:add(...)`:
+  * `true, "queued", qid, pending`
+  * `true, "queued_busy", qid, pending` (advisory pressure signal; request still queued)
+  * `false, "duplicate", nil, pending`
+  * `false, "busy", nil, pending` (only when hard cap is enabled)
+* **Backoff guidance**:
+  * Always set a stable UUID for periodic/retriggerable requests.
+  * Treat `duplicate` / `busy` as explicit "back off and retry later".
+  * For direct queue usage (outside API wrappers), check `ok, reason` and avoid advancing state when enqueue fails.
 
 ### Utilities
 

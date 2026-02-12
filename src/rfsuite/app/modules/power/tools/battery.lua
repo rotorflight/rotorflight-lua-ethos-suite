@@ -6,10 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local enableWakeup = false
-local disableMultiplier
-local becAlert
-local rxBattAlert
-
 local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',
@@ -53,14 +49,14 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "power/power.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "power/power.lua"})
         return true
     end
 end
 
 local function onNavMenu(self)
 
-    rfsuite.app.ui.openPage(pidx, title, "power/power.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "power/power.lua"})
 
 end
 

@@ -22,7 +22,11 @@ local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     tasks.msp.protocol.mspIntervalOveride = nil
 
@@ -31,7 +35,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    app.lastIdx = idx
+    app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
 
@@ -85,7 +89,11 @@ local function openPage(pidx, title, script)
     end
 
     if app.gfx_buttons["governor"] == nil then app.gfx_buttons["governor"] = {} end
-    if prefs.menulastselected["governor"] == nil then prefs.menulastselected["governor"] = 1 end
+    local lastSelected = tonumber(prefs.menulastselected["governor"]) or 1
+    if lastSelected < 1 then lastSelected = 1 end
+    if lastSelected > #S_PAGES then lastSelected = #S_PAGES end
+    prefs.menulastselected["governor"] = lastSelected
+    app._governor_focused = false
 
     local Menu = assert(loadfile("app/modules/" .. script))()
     local pages = S_PAGES
@@ -118,7 +126,7 @@ local function openPage(pidx, title, script)
                 prefs.menulastselected["governor"] = pidx
                 app.ui.progressDisplay()
                 local name = "@i18n(app.modules.governor.name)@" .. " / " .. pvalue.name
-                app.ui.openPage(pidx, name, "governor/tools/" .. pvalue.script)
+                app.ui.openPage({idx = pidx, title = name, script = "governor/tools/" .. pvalue.script})
             end
         })
 
@@ -127,7 +135,6 @@ local function openPage(pidx, title, script)
 
         local currState = (session.isConnected and session.mcu_id) and true or false
 
-        if prefs.menulastselected["governor"] == pidx then app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
@@ -173,6 +180,13 @@ local function wakeup()
             if v.enable then
                 v:enable(true)
             end    
+        end
+
+        if not app._governor_focused then
+            app._governor_focused = true
+            local idx = tonumber(prefs.menulastselected["governor"]) or 1
+            local btn = app.formFields and app.formFields[idx] or nil
+            if btn and btn.focus then btn:focus() end
         end
         -- close progress loader
         app.triggers.closeProgressLoader = true

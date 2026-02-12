@@ -7,14 +7,9 @@ local rfsuite = require("rfsuite")
 
 local folder = "xdfly"
 local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
-local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
-local foundEsc = false
-local foundEscDone = false
 
 local apidata = {
     api = {
@@ -44,14 +39,14 @@ end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage(pidx, folder, "esc_motors/tools/esc_tool.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = folder, script = "esc_motors/tools/esc_tool.lua"})
 end
 
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end
-        rfsuite.app.ui.openPage(pidx, folder, "esc_motors/tools/esc_tool.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = folder, script = "esc_motors/tools/esc_tool.lua"})
         return true
     end
 

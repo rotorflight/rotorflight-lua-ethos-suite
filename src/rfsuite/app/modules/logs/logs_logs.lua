@@ -14,8 +14,6 @@ local session = rfsuite.session
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
-local triggerOverRide = false
-local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
@@ -40,7 +38,12 @@ local function format_date(iso_date)
     return os.date("%d %B %Y", os.time {year = tonumber(y), month = tonumber(m), day = tonumber(d)})
 end
 
-local function openPage(pidx, title, script, displaymode)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    local displaymode = opts.displaymode
 
     if not rfutils.ethosVersionAtLeast() then return end
 
@@ -71,7 +74,7 @@ local function openPage(pidx, title, script, displaymode)
 
     form.clear()
 
-    app.lastIdx = idx
+    app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
 
@@ -185,7 +188,7 @@ local function openPage(pidx, title, script, displaymode)
                     press = function()
                         prefs.menulastselected["logs_logs"] = tostring(idx) .. "_" .. tostring(pidx)
                         app.ui.progressDisplay()
-                        app.ui.openPage(pidx, "Logs", "logs/logs_view.lua", page)
+                        app.ui.openPage({idx = pidx, title = "Logs", script = "logs/logs_view.lua", logfile = page})
                     end
                 })
 
@@ -207,14 +210,14 @@ end
 
 local function event(widget, category, value, x, y)
     if value == 35 then
-        app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_dir.lua")
+        app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_dir.lua"})
         return true
     end
     return false
 end
 
-local function wakeup() if enableWakeup == true then end end
+local function wakeup() end
 
-local function onNavMenu() app.ui.openPage(app.lastIdx, app.lastTitle, "logs/logs_dir.lua") end
+local function onNavMenu() app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_dir.lua"}) end
 
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

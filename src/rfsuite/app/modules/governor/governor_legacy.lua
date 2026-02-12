@@ -5,6 +5,9 @@
 
 local rfsuite = require("rfsuite")
 
+local enableWakeup = false
+local session = rfsuite.session
+
 local apidata = {
     api = {
         [1] = 'GOVERNOR_CONFIG'
@@ -29,7 +32,7 @@ local function enableFields() for i, _ in ipairs(rfsuite.app.formFields) do if t
 
 local function setGovernorMode(self)
     local currentIndex = math.floor(rfsuite.app.Page.apidata.formdata.fields[1].value)
-    rfsuite.session.governorMode = currentIndex
+    session.governorMode = currentIndex
     rfsuite.utils.log("Governor mode set to: " .. currentIndex, "info")
     if currentIndex == 0 then
         disableFields()
@@ -39,18 +42,39 @@ local function setGovernorMode(self)
 end
 
 local function postLoad(self)
-    setGovernorMode(self)
-    rfsuite.app.triggers.closeProgressLoader = true
+    enableWakeup = true
+    for i, field in ipairs(rfsuite.app.formFields) do
+        if field and field.enable then field:enable(false) end
+    end
 end
 
 local function postSave(self)
 
-    if rfsuite.session.governorMode ~= rfsuite.app.Page.apidata.formdata.fields[1].value then
-        rfsuite.session.governorMode = rfsuite.app.Page.apidata.formdata.fields[1].value
-        rfsuite.utils.log("Governor mode: " .. rfsuite.session.governorMode, "info")
+    if session.governorMode ~= rfsuite.app.Page.apidata.formdata.fields[1].value then
+        session.governorMode = rfsuite.app.Page.apidata.formdata.fields[1].value
+        rfsuite.utils.log("Governor mode: " .. session.governorMode, "info")
     end
     return payload
 end
 
+local function wakeup(self)
+    if not enableWakeup then return end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, labels = labels, setGovernorMode = setGovernorMode, fields = fields, postLoad = postLoad, postSave = postSave}
+
+    if session.governorMode == nil then
+        if tasks and tasks.msp and tasks.msp.helpers then
+            tasks.msp.helpers.governorMode(function(governorMode)
+                utils.log("Received governor mode: " .. tostring(governorMode), "info")
+            end)
+        end
+    else 
+        local modeField = rfsuite.app.formFields and rfsuite.app.formFields[1]
+        if modeField and modeField.enable then modeField:enable(true) end
+        setGovernorMode(self)
+        rfsuite.app.triggers.closeProgressLoader = true
+    end    
+
+end
+
+
+return {apidata = apidata, reboot = true, eepromWrite = true, labels = labels, setGovernorMode = setGovernorMode, fields = fields, postLoad = postLoad, postSave = postSave, wakeup = wakeup}

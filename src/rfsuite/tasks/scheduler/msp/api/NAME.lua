@@ -121,7 +121,7 @@ local function read()
         timeout = MSP_API_MSG_TIMEOUT
     }
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -132,7 +132,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

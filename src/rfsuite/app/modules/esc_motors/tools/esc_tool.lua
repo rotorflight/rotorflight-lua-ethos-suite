@@ -6,10 +6,7 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
 
-local pages = {}
-
 local mspSignature
-local mspHeaderBytes
 local mspBytes
 local simulatorResponse
 local escDetails = {}
@@ -23,13 +20,6 @@ local powercycleLoaderCounter = 0
 local powercycleLoaderRateLimit = 2
 local showPowerCycleLoaderFinished = false
 local powercycleLoaderBaseMessage
-local powercycleLoaderMspStatusLast
-local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
-
-local modelField
-local versionField
-local firmwareField
-
 local findTimeoutClock = os.clock()
 local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 
@@ -130,7 +120,11 @@ local function updatePowercycleLoaderMessage()
     end
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
@@ -144,13 +138,11 @@ local function openPage(pidx, title, script)
 
         local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
         mspSignature = API.mspSignature
-        mspHeaderBytes = API.mspHeaderBytes
         simulatorResponse = API.simulatorResponse or {0}
         mspBytes = #simulatorResponse
     else
 
         mspSignature = ESC.mspSignature
-        mspHeaderBytes = ESC.mspHeaderBytes
         simulatorResponse = ESC.simulatorResponse
         mspBytes = ESC.mspBytes
     end
@@ -160,7 +152,6 @@ local function openPage(pidx, title, script)
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     local windowWidth = rfsuite.app.lcdWidth
-    local windowHeight = rfsuite.app.lcdHeight
 
     local y = rfsuite.app.radio.linePaddingTop
 
@@ -171,7 +162,7 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, paint = function() end, press = function() rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_motors/tools/esc.lua") end})
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, paint = function() end, press = function() rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.esc_tools.name)@", script = "esc_motors/tools/esc.lua"}) end})
     rfsuite.app.formNavigationFields['menu']:focus()
 
     rfsuite.app.formNavigationFields['refresh'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
@@ -181,10 +172,13 @@ local function openPage(pidx, title, script)
         paint = function() end,
         press = function()
             rfsuite.app.Page = nil
-            local foundESC = false
-            local foundESCupdateTag = false
-            local showPowerCycleLoader = false
-            local showPowerCycleLoaderInProgress = false
+            foundESC = false
+            foundESCupdateTag = false
+            showPowerCycleLoader = false
+            showPowerCycleLoaderInProgress = false
+            showPowerCycleLoaderFinished = false
+            powercycleLoaderCounter = 0
+            powercycleLoaderBaseMessage = nil
             rfsuite.app.triggers.triggerReloadFull = true
         end
     })
@@ -263,9 +257,9 @@ local function openPage(pidx, title, script)
                 paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["esctool"] = pidx
-                    rfsuite.app.ui.progressDisplay(nil,nil,false)
+                    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
 
-                    rfsuite.app.ui.openPage(pidx, title, "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script)
+                    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script})
 
                 end
             })
@@ -315,7 +309,6 @@ local function wakeup()
             showPowerCycleLoaderFinished = true
             rfsuite.app.triggers.isReady = true
             powercycleLoaderBaseMessage = nil
-            powercycleLoaderMspStatusLast = nil
         end
 
         rfsuite.app.triggers.closeProgressLoader = true
@@ -353,13 +346,12 @@ local function wakeup()
                 rfsuite.app.triggers.disableRssiTimeout = false
                 showPowerCycleLoader = false
                 rfsuite.app.audio.playTimeout = true
-                showPowerCycleLoaderFinished = true
-                rfsuite.app.triggers.isReady = false
-                powercycleLoaderBaseMessage = nil
-                powercycleLoaderMspStatusLast = nil
-            end
-
+            showPowerCycleLoaderFinished = true
+            rfsuite.app.triggers.isReady = false
+            powercycleLoaderBaseMessage = nil
         end
+
+    end
     else
         rfsuite.app.escPowerCycleLoader = false
     end
@@ -373,7 +365,6 @@ local function wakeup()
             powercycleLoader:value(0)
             powercycleLoader:closeAllowed(false)
             powercycleLoaderBaseMessage = "@i18n(app.modules.esc_tools.please_powercycle)@"
-            powercycleLoaderMspStatusLast = nil
             updatePowercycleLoaderMessage()
             rfsuite.app.ui.registerProgressDialog(powercycleLoader, powercycleLoaderBaseMessage)
         end
@@ -387,10 +378,9 @@ local function event(widget, category, value, x, y)
         if powercycleLoader then
             powercycleLoader:close()
             powercycleLoaderBaseMessage = nil
-            powercycleLoaderMspStatusLast = nil
             rfsuite.app.ui.clearProgressDialog(powercycleLoader)
         end
-        rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.esc_tools.name)@", "esc_motors/tools/esc.lua")
+        rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.esc_tools.name)@", script = "esc_motors/tools/esc.lua"})
         return true
     end
 

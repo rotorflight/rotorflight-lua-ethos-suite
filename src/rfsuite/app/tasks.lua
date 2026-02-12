@@ -279,12 +279,12 @@ local function performReloadActions()
     if app.triggers.reload then
         app.triggers.reload = false
         app.ui.progressDisplay()
-        app.ui.openPageRefresh(app.lastIdx, app.lastTitle, app.lastScript)
+        app.ui.openPageRefresh({idx = app.lastIdx, title = app.lastTitle, script = app.lastScript})
     end
     if app.triggers.reloadFull then
         app.triggers.reloadFull = false
         app.ui.progressDisplay()
-        app.ui.openPage(app.lastIdx, app.lastTitle, app.lastScript)
+        app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = app.lastScript})
     end
 end
 

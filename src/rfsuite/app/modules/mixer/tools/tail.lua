@@ -20,10 +20,6 @@ local APIDATA = {}
 local FORMDATA = {}
 
 -- store loaded directions here to ensure writeback consistency
-local AIL_DIRECTION
-local ELE_DIRECTION
-local COL_DIRECTION
-
 -- -------------------------------------------------------
 -- -- Form layout
 -- -------------------------------------------------------
@@ -372,7 +368,11 @@ end
 -- -------------------------------------------------------
 -- -- Page interface functions
 -- -------------------------------------------------------
-local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     local app = rfsuite.app
     local formLines = app.formLines
@@ -466,7 +466,7 @@ end
 
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
+    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
 end
 
 local function onSaveMenu()

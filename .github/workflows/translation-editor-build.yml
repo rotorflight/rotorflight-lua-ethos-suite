@@ -1,0 +1,68 @@
+name: Translation Editor Build (macOS + Linux + Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "bin/translation-editor/src/translation_editor.py"
+      - ".github/workflows/translation-editor-build.yml"
+  pull_request:
+    paths:
+      - "bin/translation-editor/src/translation_editor.py"
+      - ".github/workflows/translation-editor-build.yml"
+
+jobs:
+  build:
+    name: Build (${{ matrix.os_name }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            os_name: windows
+            arch: x64
+          - runner: macos-15-intel
+            os_name: macos
+            arch: x64
+          - runner: macos-14
+            os_name: macos
+            arch: arm64
+          - runner: ubuntu-latest
+            os_name: linux
+            arch: x64
+          - runner: ubuntu-24.04-arm
+            os_name: linux
+            arch: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set build metadata
+        shell: bash
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+          echo "OS_NAME=${{ matrix.os_name }}" >> $GITHUB_ENV
+          echo "ARCH_NAME=${{ matrix.arch }}" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+
+      - name: Build translation editor
+        working-directory: bin/translation-editor/src
+        run: |
+          python -m PyInstaller --onefile --noupx translation_editor.py --name translation_editor --windowed
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rfsuite-translation-editor-${{ env.OS_NAME }}-${{ env.ARCH_NAME }}-${{ env.SHORT_SHA }}
+          path: bin/translation-editor/src/dist/translation_editor*
