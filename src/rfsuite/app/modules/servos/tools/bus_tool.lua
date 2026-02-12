@@ -20,20 +20,41 @@ local enableWakeup = false
 local servoTable
 local servoCount
 local configs = {}
-local BUS_SERVO_BASE = 8
+local BUS_SERVO_COUNT = 18
+local BUS_READ_OFFSET = 8
+
+rfsuite.utils.log("Servo Count: " .. tostring(rfsuite.session.servoCount), "info")
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
-local function uiIndexToAbsolute(ui0)
-    -- ui0 is 0-based within the BUS page
-    return (ui0 or 0) + BUS_SERVO_BASE
+local function busWriteBase()
+    local total = rfsuite.session.servoCount or servoCount
+    if type(total) == "number" and total >= BUS_SERVO_COUNT then
+        return total - BUS_SERVO_COUNT
+    end
+    -- Fallback for older/unknown layouts.
+    return BUS_READ_OFFSET
 end
 
-local function currentServoAbsoluteIndex()
-    return uiIndexToAbsolute(servoIndex)
+local function uiIndexToReadIndex(ui0)
+    -- MSP_GET_SERVO_CONFIG(125) currently aligns with legacy absolute servo index space.
+    return (ui0 or 0) + BUS_READ_OFFSET
+end
+
+local function uiIndexToWriteIndex(ui0)
+    -- MSP_SET_SERVO_CONFIG(212/213) and per-servo override(193) align to active-output index space.
+    return (ui0 or 0) + busWriteBase()
+end
+
+local function currentServoReadIndex()
+    return uiIndexToReadIndex(servoIndex)
+end
+
+local function currentServoWriteIndex()
+    return uiIndexToWriteIndex(servoIndex)
 end
 
 local function servoCenterFocusAllOn(self)
@@ -42,10 +63,10 @@ local function servoCenterFocusAllOn(self)
     local count = servoCount or (servoTable and #servoTable) or 0
 
     for i = 0, count - 1 do
-        -- BUS servos are offset in MSP by BUS_SERVO_BASE
-        local message = {command = 193, payload = {uiIndexToAbsolute(i)}}
+        local writeIndex = uiIndexToWriteIndex(i)
+        local message = {command = 193, payload = {writeIndex}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        queueDirect(message, string.format("servo.bus.override.%d.on", uiIndexToAbsolute(i)))
+        queueDirect(message, string.format("servo.bus.override.%d.on", writeIndex))
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -56,27 +77,27 @@ local function servoCenterFocusAllOff(self)
     local count = servoCount or (servoTable and #servoTable) or 0
 
     for i = 0, count - 1 do
-        -- BUS servos are offset in MSP by BUS_SERVO_BASE
-        local message = {command = 193, payload = {uiIndexToAbsolute(i)}}
+        local writeIndex = uiIndexToWriteIndex(i)
+        local message = {command = 193, payload = {writeIndex}}
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        queueDirect(message, string.format("servo.bus.override.%d.off", uiIndexToAbsolute(i)))
+        queueDirect(message, string.format("servo.bus.override.%d.off", writeIndex))
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOff(self)
-    local message = {command = 193, payload = {currentServoAbsoluteIndex()}}
+    local message = {command = 193, payload = {currentServoWriteIndex()}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-    queueDirect(message, string.format("servo.bus.override.%d.off", currentServoAbsoluteIndex()))
+    queueDirect(message, string.format("servo.bus.override.%d.off", currentServoWriteIndex()))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOn(self)
-    local message = {command = 193, payload = {currentServoAbsoluteIndex()}}
+    local message = {command = 193, payload = {currentServoWriteIndex()}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-    queueDirect(message, string.format("servo.bus.override.%d.on", currentServoAbsoluteIndex()))
+    queueDirect(message, string.format("servo.bus.override.%d.on", currentServoWriteIndex()))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -94,10 +115,10 @@ local function saveServoCenter(self)
     local servoCenter = math.floor(configs[servoIndex]['mid'])
 
     local message = {command = 213, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoAbsoluteIndex())
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoWriteIndex())
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
-    return queueDirect(message, string.format("servo.bus.%d.center", currentServoAbsoluteIndex()))
+    return queueDirect(message, string.format("servo.bus.%d.center", currentServoWriteIndex()))
 
 end
 
@@ -125,7 +146,7 @@ local function saveServoSettings(self)
     end
 
     local message = {command = 212, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoAbsoluteIndex())
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoWriteIndex())
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
@@ -135,7 +156,7 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", currentServoAbsoluteIndex()))
+    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", currentServoWriteIndex()))
     if not ok then return false, reason end
 
     if rfsuite.session.servoOverride == true then
@@ -320,7 +341,7 @@ local function getServoConfigurationsIndexed(callback, callbackParam)
 
     -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
     -- Payload must contain exactly 1 byte: the servo index (0-based).
-    local absIndex = currentServoAbsoluteIndex()
+    local absIndex = currentServoReadIndex()
 
     local message = {
         command = 125,
@@ -444,9 +465,9 @@ local function openPage(opts)
 
     if configs[servoIndex]['min'] ~= nil then
         local idx = 3
-        local minValue = 1000
-        local maxValue = 2000
-        local defaultValue = 1000
+        local minValue = -500
+        local maxValue = -1
+        local defaultValue = -500
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
@@ -459,9 +480,9 @@ local function openPage(opts)
 
     if configs[servoIndex]['max'] ~= nil then
         local idx = 4
-        local minValue = 1000
-        local maxValue = 2000
-        local defaultValue = 2000
+        local minValue = 1
+        local maxValue = 500
+        local defaultValue = 500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
@@ -501,23 +522,6 @@ local function openPage(opts)
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
-
-    --[[
-    if configs[servoIndex]['rate'] ~= nil then
-        local idx = 7
-        local minValue = 50
-        local maxValue = 5000
-        local defaultValue = 333
-        local suffix = "@i18n(app.unit_hertz)@"
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoRate']['t']
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.rate)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['rate'] end, function(value) configs[servoIndex]['rate'] = value end)
-        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
-        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
-        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
-    end
-    ]]
 
     if configs[servoIndex]['speed'] ~= nil then
         local idx = 8
