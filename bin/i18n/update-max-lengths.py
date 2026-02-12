@@ -40,29 +40,28 @@ def get_node_by_path(root, path_parts):
     return node
 
 
-def compute_max_length(locales, path_parts):
+def compute_max_length(data, path_parts):
     max_len = 0
-    for _, data in locales.items():
-        node = get_node_by_path(data, path_parts)
-        if is_translation_block(node):
-            text = node.get("translation", "")
-            if text is None:
-                text = ""
-            max_len = max(max_len, len(text))
+    node = get_node_by_path(data, path_parts)
+    if is_translation_block(node):
+        text = node.get("translation", "")
+        if text is None:
+            text = ""
+        max_len = max(max_len, len(text))
     return max_len
 
 
-def update_max_lengths(node, locales, path_parts):
+def update_max_lengths(node, data, path_parts):
     if not isinstance(node, dict):
         return
     for key, val in node.items():
         if is_translation_block(val):
             parts = path_parts + [key]
-            max_len = compute_max_length(locales, parts)
+            max_len = compute_max_length(data, parts)
             if max_len > 0:
                 val["max_length"] = max_len
         elif isinstance(val, dict):
-            update_max_lengths(val, locales, path_parts + [key])
+            update_max_lengths(val, data, path_parts + [key])
 
 
 def update_max_lengths_all_locales(locales, en_data):
@@ -97,7 +96,7 @@ def main():
         print("❌ en.json is not an object")
         return 1
 
-    update_max_lengths(en_data, locales, [])
+    update_max_lengths(en_data, en_data, [])
     update_max_lengths_all_locales(locales, en_data)
     # Write all locales, preserving en as master
     for locale, data in locales.items():
