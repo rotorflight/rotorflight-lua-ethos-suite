@@ -30,8 +30,34 @@ I18N_REL = Path("bin/i18n/json")
 SOUND_REL = Path("bin/sound-generator/json")
 
 
+def _candidate_roots():
+    seen = set()
+    roots = []
+    for start in (Path(__file__).resolve().parent, Path.cwd().resolve()):
+        for root in (start, *start.parents):
+            key = str(root)
+            if key in seen:
+                continue
+            seen.add(key)
+            roots.append(root)
+    return roots
+
+
+def _find_repo_root():
+    for root in _candidate_roots():
+        if (root / I18N_REL / "en.json").exists():
+            return root
+    file_path = Path(__file__).resolve()
+    if len(file_path.parents) > 3:
+        return file_path.parents[3]
+    return Path.cwd().resolve()
+
+
+REPO_ROOT = _find_repo_root()
+
+
 def repo_root():
-    return Path(__file__).resolve().parents[3]
+    return REPO_ROOT
 
 
 def data_root():
