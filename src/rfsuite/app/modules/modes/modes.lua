@@ -67,8 +67,35 @@ end
 local AUX_OPTIONS_TBL = buildChoiceTable(AUX_OPTIONS, 0)
 local MODE_LOGIC_OPTIONS_TBL = buildChoiceTable(MODE_LOGIC_OPTIONS, -1)
 
+-- Forward declaration: used by helpers defined before the function body.
+local buildModesFromRaw
+
+local function removeRangeSlot(slot)
+    if not slot then return end
+
+    state.modeRanges[slot] = {
+        id = 0,
+        auxChannelIndex = 0,
+        range = {start = 900, ["end"] = 900}
+    }
+    state.modeRangesExtra[slot] = {
+        id = 0,
+        modeLogic = 0,
+        linkedTo = 0
+    }
+
+    state.dirty = true
+    buildModesFromRaw()
+    state.needsRender = true
+end
+
 local function addModeRangeLine(rangeIndex, modeRange)
     local app = rfsuite.app
+    local slot = modeRange.slot
+    local rawRange = slot and state.modeRanges[slot] or nil
+    local rawExtra = slot and state.modeRangesExtra[slot] or nil
+    if not rawRange or not rawExtra or not rawRange.range then return end
+
     local width = app.lcdWidth
     local h = app.radio.navbuttonHeight
     local y = app.radio.linePaddingTop
@@ -76,11 +103,13 @@ local function addModeRangeLine(rangeIndex, modeRange)
     local rightPadding = 8
     local gap = 8
 
+    local wDel = math.max(24, math.floor(width * 0.08))
     local wLogic = math.floor(width * 0.17)
-    local wAux = math.floor(width * 0.22)
-    local wNum = math.floor(width * 0.17)
+    local wAux = math.floor(width * 0.20)
+    local wNum = math.floor(width * 0.15)
 
-    local xEnd = width - rightPadding - wNum
+    local xDel = width - rightPadding - wDel
+    local xEnd = xDel - gap - wNum
     local xStart = xEnd - gap - wNum
     local xAux = xStart - gap - wAux
     local xLogic = xAux - gap - wLogic
@@ -91,11 +120,10 @@ local function addModeRangeLine(rangeIndex, modeRange)
         line,
         {x = xAux, y = y, w = wAux, h = h},
         AUX_OPTIONS_TBL,
-        function() return clamp((modeRange.auxChannelIndex or 0) + 1, 1, #AUX_OPTIONS) end,
+        function() return clamp((rawRange.auxChannelIndex or 0) + 1, 1, #AUX_OPTIONS) end,
         function(value)
-            modeRange.auxChannelIndex = clamp((value or 1) - 1, 0, #AUX_OPTIONS - 1)
+            rawRange.auxChannelIndex = clamp((value or 1) - 1, 0, #AUX_OPTIONS - 1)
             state.dirty = true
-            state.needsRender = true
         end
     )
 
@@ -104,13 +132,12 @@ local function addModeRangeLine(rangeIndex, modeRange)
         {x = xStart, y = y, w = wNum, h = h},
         RANGE_MIN,
         RANGE_MAX,
-        function() return modeRange.range.start end,
+        function() return rawRange.range.start end,
         function(value)
             local adjusted = clamp(math.floor(value / RANGE_STEP) * RANGE_STEP, RANGE_MIN, RANGE_MAX)
-            modeRange.range.start = adjusted
-            if modeRange.range["end"] < adjusted then modeRange.range["end"] = adjusted end
+            rawRange.range.start = adjusted
+            if rawRange.range["end"] < adjusted then rawRange.range["end"] = adjusted end
             state.dirty = true
-            state.needsRender = true
         end
     )
 
@@ -119,13 +146,12 @@ local function addModeRangeLine(rangeIndex, modeRange)
         {x = xEnd, y = y, w = wNum, h = h},
         RANGE_MIN,
         RANGE_MAX,
-        function() return modeRange.range["end"] end,
+        function() return rawRange.range["end"] end,
         function(value)
             local adjusted = clamp(math.floor(value / RANGE_STEP) * RANGE_STEP, RANGE_MIN, RANGE_MAX)
-            modeRange.range["end"] = adjusted
-            if modeRange.range.start > adjusted then modeRange.range.start = adjusted end
+            rawRange.range["end"] = adjusted
+            if rawRange.range.start > adjusted then rawRange.range.start = adjusted end
             state.dirty = true
-            state.needsRender = true
         end
     )
 
@@ -133,11 +159,10 @@ local function addModeRangeLine(rangeIndex, modeRange)
         line,
         {x = xLogic, y = y, w = wLogic, h = h},
         MODE_LOGIC_OPTIONS_TBL,
-        function() return clamp((modeRange.modeLogic or 0) + 1, 1, #MODE_LOGIC_OPTIONS) end,
+        function() return clamp(rawExtra.modeLogic or 0, 0, #MODE_LOGIC_OPTIONS - 1) end,
         function(value)
-            modeRange.modeLogic = clamp((value or 1) - 1, 0, 1)
+            rawExtra.modeLogic = clamp(value or 0, 0, 1)
             state.dirty = true
-            state.needsRender = true
         end
     )
 
@@ -146,11 +171,23 @@ local function addModeRangeLine(rangeIndex, modeRange)
     if startField and startField.step then startField:step(RANGE_STEP) end
     if endField and endField.step then endField:step(RANGE_STEP) end
 
-    if logicField and logicField.enable then logicField:enable(rangeIndex > 1) end
+    -- Allow editing logic on every row (including the first),
+    -- matching Rotorflight Configurator behavior.
+    if logicField and logicField.enable then logicField:enable(true) end
     if auxField and auxField.enable then auxField:enable(true) end
+
+    form.addButton(line, {x = xDel, y = y, w = wDel, h = h}, {
+        text = "X",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            removeRangeSlot(modeRange.slot)
+        end
+    })
 end
 
-local function buildModesFromRaw()
+buildModesFromRaw = function()
     state.modes = {}
     local idToModeIndex = {}
 
@@ -352,30 +389,6 @@ local function addRangeToSelectedMode()
     state.needsRender = true
 end
 
-local function removeLastRangeFromSelectedMode()
-    local mode = getSelectedMode()
-    if not mode or #mode.ranges == 0 then return end
-
-    local lastRange = mode.ranges[#mode.ranges]
-    local slot = lastRange.slot
-    if not slot then return end
-
-    state.modeRanges[slot] = {
-        id = 0,
-        auxChannelIndex = 0,
-        range = {start = 900, ["end"] = 900}
-    }
-    state.modeRangesExtra[slot] = {
-        id = 0,
-        modeLogic = 0,
-        linkedTo = 0
-    }
-
-    state.dirty = true
-    buildModesFromRaw()
-    state.needsRender = true
-end
-
 local function render()
     local app = rfsuite.app
     form.clear()
@@ -431,23 +444,13 @@ local function render()
     if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
 
     local actionLine = form.addLine("")
-    local addBtn = form.addButton(actionLine, {x = width - rightPadding - (buttonW * 2) - 8, y = y, w = buttonW, h = buttonH}, {
+    local addBtn = form.addButton(actionLine, {x = width - rightPadding - buttonW, y = y, w = buttonW, h = buttonH}, {
         text = "Add",
         icon = nil,
         options = FONT_S,
         paint = function() end,
         press = function() addRangeToSelectedMode() end
     })
-
-    local delBtn = form.addButton(actionLine, {x = width - rightPadding - buttonW, y = y, w = buttonW, h = buttonH}, {
-        text = "Delete",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function() removeLastRangeFromSelectedMode() end
-    })
-
-    if delBtn and delBtn.enable then delBtn:enable(#ranges > 0) end
     if addBtn and addBtn.enable then addBtn:enable(true) end
 
     if #ranges == 0 then
