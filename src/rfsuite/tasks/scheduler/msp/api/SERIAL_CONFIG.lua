@@ -10,17 +10,29 @@ local API_NAME = "SERIAL_CONFIG"
 local MSP_API_CMD_READ = 54
 local MSP_API_CMD_WRITE = 55
 local MSP_REBUILD_ON_WRITE = true
+local MAX_SERIAL_PORTS = 12
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
-}
--- LuaFormatter on
+local MSP_API_STRUCTURE_READ_DATA = {}
+for i = 1, MAX_SERIAL_PORTS do
+    local mandatory = (i == 1)
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_identifier",        type = "U8",  apiVersion = 12.06, simResponse = {i - 1}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_function_mask",     type = "U32", apiVersion = 12.06, simResponse = {0, 0, 0, 0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_msp_baud_index",    type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_gps_baud_index",    type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_telem_baud_index",  type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_blackbox_baud_index", type = "U8", apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
+end
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "identifier",           type = "U8"  },
+    { field = "function_mask",        type = "U32" },
+    { field = "msp_baud_index",       type = "U8"  },
+    { field = "gps_baud_index",       type = "U8"  },
+    { field = "telem_baud_index",     type = "U8"  },
+    { field = "blackbox_baud_index",  type = "U8"  },
+}
 
 local mspData = nil
 local mspWriteComplete = false

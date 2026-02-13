@@ -13,14 +13,20 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "motor_1", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_2", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_3", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_4", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_5", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_6", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_7", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_8", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 local mspData = nil
 local mspWriteComplete = false

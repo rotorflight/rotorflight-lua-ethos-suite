@@ -13,14 +13,34 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "osd_flags",       type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "video_system",    type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "units",           type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "rssi_alarm",      type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "cap_alarm",       type = "U16", apiVersion = 12.06, simResponse = {0, 0}, mandatory = false },
+    { field = "legacy_timer_lo", type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "legacy_timer_hi", type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "alt_alarm",       type = "U16", apiVersion = 12.06, simResponse = {0, 0}, mandatory = false },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "addr",              type = "U8"  }, -- 255 for general settings
+    { field = "video_system",      type = "U8"  },
+    { field = "units",             type = "U8"  },
+    { field = "rssi_alarm",        type = "U8"  },
+    { field = "cap_alarm",         type = "U16" },
+    { field = "legacy_timer",      type = "U16" },
+    { field = "alt_alarm",         type = "U16" },
+    { field = "enabled_warnings_16", type = "U16" },
+    { field = "enabled_warnings_32", type = "U32" },
+    { field = "osd_profile_index", type = "U8"  },
+    { field = "overlay_radio_mode",type = "U8"  },
+    { field = "camera_frame_width",type = "U8"  },
+    { field = "camera_frame_height",type = "U8" },
+}
 
 local mspData = nil
 local mspWriteComplete = false
@@ -72,9 +92,6 @@ end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then return false, "write_not_supported" end
-    if suppliedPayload == nil and #MSP_API_STRUCTURE_WRITE == 0 then
-        return false, "write_not_implemented"
-    end
     local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}

@@ -13,14 +13,26 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "angle",                    type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "initial_altitude_m",       type = "U16", apiVersion = 12.06, simResponse = {100, 0} },
+    { field = "descent_distance_m",       type = "U16", apiVersion = 12.06, simResponse = {100, 0} },
+    { field = "rescue_groundspeed",       type = "U16", apiVersion = 12.06, simResponse = {200, 0} },
+    { field = "throttle_min",             type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "throttle_max",             type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "throttle_hover",           type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "sanity_checks",            type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "min_sats",                 type = "U8",  apiVersion = 12.06, simResponse = {6} },
+    { field = "ascend_rate",              type = "U16", apiVersion = 12.43, simResponse = {0, 0} },
+    { field = "descend_rate",             type = "U16", apiVersion = 12.43, simResponse = {0, 0} },
+    { field = "allow_arming_without_fix", type = "U8",  apiVersion = 12.43, simResponse = {0} },
+    { field = "altitude_mode",            type = "U8",  apiVersion = 12.43, simResponse = {0} },
+    { field = "min_rescue_dth",           type = "U16", apiVersion = 12.44, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 local mspData = nil
 local mspWriteComplete = false

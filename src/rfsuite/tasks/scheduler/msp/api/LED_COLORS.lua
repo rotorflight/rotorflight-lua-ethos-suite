@@ -10,17 +10,18 @@ local API_NAME = "LED_COLORS"
 local MSP_API_CMD_READ = 46
 local MSP_API_CMD_WRITE = 47
 local MSP_REBUILD_ON_WRITE = true
+local LED_CONFIGURABLE_COLOR_COUNT = 16
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
-}
--- LuaFormatter on
+local MSP_API_STRUCTURE_READ_DATA = {}
+for i = 1, LED_CONFIGURABLE_COLOR_COUNT do
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_h", type = "U16", apiVersion = 12.06, simResponse = {0, 0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_s", type = "U8",  apiVersion = 12.06, simResponse = {0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_v", type = "U8",  apiVersion = 12.06, simResponse = {0} }
+end
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 local mspData = nil
 local mspWriteComplete = false

@@ -10,17 +10,24 @@ local API_NAME = "BUS_SERVO_CONFIG"
 local MSP_API_CMD_READ = 152
 local MSP_API_CMD_WRITE = 153
 local MSP_REBUILD_ON_WRITE = true
+local BUS_SERVO_CHANNELS = 18
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
-}
--- LuaFormatter on
+local MSP_API_STRUCTURE_READ_DATA = {}
+for i = 1, BUS_SERVO_CHANNELS do
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = {
+        field = "source_type_" .. i,
+        type = "U8",
+        apiVersion = 12.06,
+        simResponse = {0}
+    }
+end
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "index",       type = "U8" },
+    { field = "source_type", type = "U8" },
+}
 
 local mspData = nil
 local mspWriteComplete = false

@@ -10,17 +10,25 @@ local API_NAME = "RPM_FILTER_V2"
 local MSP_API_CMD_READ = 154
 local MSP_API_CMD_WRITE = 155
 local MSP_REBUILD_ON_WRITE = true
+local RPM_FILTER_NOTCH_COUNT = 16
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
-}
--- LuaFormatter on
+local MSP_API_STRUCTURE_READ_DATA = {}
+for i = 1, RPM_FILTER_NOTCH_COUNT do
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "notch_source_" .. i, type = "U8", apiVersion = 12.06, simResponse = {0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "notch_center_" .. i, type = "U16", apiVersion = 12.06, simResponse = {0, 0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "notch_q_" .. i,      type = "U8", apiVersion = 12.06, simResponse = {0} }
+end
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "axis", type = "U8" },
+}
+for i = 1, RPM_FILTER_NOTCH_COUNT do
+    MSP_API_STRUCTURE_WRITE[#MSP_API_STRUCTURE_WRITE + 1] = { field = "notch_source_" .. i, type = "U8" }
+    MSP_API_STRUCTURE_WRITE[#MSP_API_STRUCTURE_WRITE + 1] = { field = "notch_center_" .. i, type = "U16" }
+    MSP_API_STRUCTURE_WRITE[#MSP_API_STRUCTURE_WRITE + 1] = { field = "notch_q_" .. i,      type = "U8" }
+end
 
 local mspData = nil
 local mspWriteComplete = false
@@ -64,9 +72,12 @@ local function errorHandlerStatic(self, buf)
     end
 end
 
-local function read()
+local function read(axis)
     if MSP_API_CMD_READ == nil then return false, "read_not_supported" end
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
+    local readAxis = tonumber(axis)
+    if readAxis == nil then readAxis = tonumber(payloadData.axis) end
+    if readAxis == nil then readAxis = 0 end
+    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, payload = {readAxis}, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 

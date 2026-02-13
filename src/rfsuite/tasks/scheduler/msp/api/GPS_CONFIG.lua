@@ -13,14 +13,18 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "provider",                 type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "sbas_mode",                type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "auto_config",              type = "U8", apiVersion = 12.06, simResponse = {1} },
+    { field = "auto_baud",                type = "U8", apiVersion = 12.06, simResponse = {1} },
+    { field = "set_home_point_once",      type = "U8", apiVersion = 12.43, simResponse = {0} },
+    { field = "ublox_use_galileo",        type = "U8", apiVersion = 12.43, simResponse = {0} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 local mspData = nil
 local mspWriteComplete = false

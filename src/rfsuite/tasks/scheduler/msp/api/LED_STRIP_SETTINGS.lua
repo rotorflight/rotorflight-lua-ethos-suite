@@ -13,14 +13,25 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "ledstrip_beacon_armed_only",   type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_beacon_color",        type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_beacon_percent",      type = "U8",  apiVersion = 12.06, simResponse = {50} },
+    { field = "ledstrip_beacon_period_ms",    type = "U16", apiVersion = 12.06, simResponse = {232, 3} },
+    { field = "ledstrip_blink_period_ms",     type = "U16", apiVersion = 12.06, simResponse = {232, 3} },
+    { field = "ledstrip_brightness",          type = "U8",  apiVersion = 12.06, simResponse = {100} },
+    { field = "ledstrip_fade_rate",           type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_flicker_rate",        type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_grb_rgb",             type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_profile",             type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_race_color",          type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_visual_beeper",       type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "ledstrip_visual_beeper_color", type = "U8",  apiVersion = 12.06, simResponse = {0} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 local mspData = nil
 local mspWriteComplete = false

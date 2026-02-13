@@ -13,14 +13,42 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "meter_count",   type = "U8",  apiVersion = 12.06, simResponse = {4} },
+    { field = "frame_length_1", type = "U8", apiVersion = 12.06, simResponse = {7} },
+    { field = "meter_id_1",    type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "meter_type_1",  type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "scale_1",       type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "divider_1",     type = "U16", apiVersion = 12.06, simResponse = {1, 0} },
+    { field = "divmul_1",      type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "frame_length_2", type = "U8", apiVersion = 12.06, simResponse = {7} },
+    { field = "meter_id_2",    type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "meter_type_2",  type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "scale_2",       type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "divider_2",     type = "U16", apiVersion = 12.06, simResponse = {1, 0} },
+    { field = "divmul_2",      type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "frame_length_3", type = "U8", apiVersion = 12.06, simResponse = {7} },
+    { field = "meter_id_3",    type = "U8",  apiVersion = 12.06, simResponse = {2} },
+    { field = "meter_type_3",  type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "scale_3",       type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "divider_3",     type = "U16", apiVersion = 12.06, simResponse = {1, 0} },
+    { field = "divmul_3",      type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "frame_length_4", type = "U8", apiVersion = 12.06, simResponse = {7} },
+    { field = "meter_id_4",    type = "U8",  apiVersion = 12.06, simResponse = {3} },
+    { field = "meter_type_4",  type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "scale_4",       type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "divider_4",     type = "U16", apiVersion = 12.06, simResponse = {1, 0} },
+    { field = "divmul_4",      type = "U8",  apiVersion = 12.06, simResponse = {1} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "meter_id", type = "U8"  },
+    { field = "scale",    type = "U16" },
+    { field = "divider",  type = "U16" },
+    { field = "divmul",   type = "U8"  },
+}
 
 local mspData = nil
 local mspWriteComplete = false

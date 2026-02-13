@@ -13,14 +13,38 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "device_type",      type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "band",             type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "channel",          type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "power",            type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "pit_mode",         type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "freq",             type = "U16", apiVersion = 12.06, simResponse = {108, 22} },
+    { field = "device_ready",     type = "U8",  apiVersion = 12.06, simResponse = {1} },
+    { field = "low_power_disarm", type = "U8",  apiVersion = 12.06, simResponse = {0} },
+    { field = "pit_mode_freq",    type = "U16", apiVersion = 12.42, simResponse = {0, 0} },
+    { field = "vtxtable_available", type = "U8", apiVersion = 12.42, simResponse = {1} },
+    { field = "vtxtable_bands",   type = "U8",  apiVersion = 12.42, simResponse = {5} },
+    { field = "vtxtable_channels",type = "U8",  apiVersion = 12.42, simResponse = {8} },
+    { field = "vtxtable_power_levels", type = "U8", apiVersion = 12.42, simResponse = {5} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "freq_or_bandchan",  type = "U16" },
+    { field = "power",             type = "U8"  },
+    { field = "pit_mode",          type = "U8"  },
+    { field = "low_power_disarm",  type = "U8"  },
+    { field = "pit_mode_freq",     type = "U16" },
+    { field = "band",              type = "U8"  },
+    { field = "channel",           type = "U8"  },
+    { field = "freq",              type = "U16" },
+    { field = "vtxtable_bands",    type = "U8"  },
+    { field = "vtxtable_channels", type = "U8"  },
+    { field = "vtxtable_power_levels", type = "U8" },
+    { field = "vtxtable_clear",    type = "U8"  },
+}
 
 local mspData = nil
 local mspWriteComplete = false

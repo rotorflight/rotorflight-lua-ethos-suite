@@ -13,14 +13,57 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "band",           type = "U8",  apiVersion = 12.06, simResponse = {1}, mandatory = false },
+    { field = "name_length",    type = "U8",  apiVersion = 12.06, simResponse = {8}, mandatory = false },
+    { field = "name_1",         type = "U8",  apiVersion = 12.06, simResponse = {65}, mandatory = false },
+    { field = "name_2",         type = "U8",  apiVersion = 12.06, simResponse = {66}, mandatory = false },
+    { field = "name_3",         type = "U8",  apiVersion = 12.06, simResponse = {67}, mandatory = false },
+    { field = "name_4",         type = "U8",  apiVersion = 12.06, simResponse = {68}, mandatory = false },
+    { field = "name_5",         type = "U8",  apiVersion = 12.06, simResponse = {69}, mandatory = false },
+    { field = "name_6",         type = "U8",  apiVersion = 12.06, simResponse = {70}, mandatory = false },
+    { field = "name_7",         type = "U8",  apiVersion = 12.06, simResponse = {71}, mandatory = false },
+    { field = "name_8",         type = "U8",  apiVersion = 12.06, simResponse = {72}, mandatory = false },
+    { field = "band_letter",    type = "U8",  apiVersion = 12.06, simResponse = {65}, mandatory = false },
+    { field = "is_factory_band",type = "U8",  apiVersion = 12.06, simResponse = {1}, mandatory = false },
+    { field = "channel_count",  type = "U8",  apiVersion = 12.06, simResponse = {8}, mandatory = false },
+    { field = "freq_1",         type = "U16", apiVersion = 12.06, simResponse = {100, 22}, mandatory = false },
+    { field = "freq_2",         type = "U16", apiVersion = 12.06, simResponse = {120, 22}, mandatory = false },
+    { field = "freq_3",         type = "U16", apiVersion = 12.06, simResponse = {140, 22}, mandatory = false },
+    { field = "freq_4",         type = "U16", apiVersion = 12.06, simResponse = {160, 22}, mandatory = false },
+    { field = "freq_5",         type = "U16", apiVersion = 12.06, simResponse = {180, 22}, mandatory = false },
+    { field = "freq_6",         type = "U16", apiVersion = 12.06, simResponse = {200, 22}, mandatory = false },
+    { field = "freq_7",         type = "U16", apiVersion = 12.06, simResponse = {220, 22}, mandatory = false },
+    { field = "freq_8",         type = "U16", apiVersion = 12.06, simResponse = {240, 22}, mandatory = false },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+-- LuaFormatter off
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "band",            type = "U8"  },
+    { field = "name_length",     type = "U8"  },
+    { field = "name_1",          type = "U8"  },
+    { field = "name_2",          type = "U8"  },
+    { field = "name_3",          type = "U8"  },
+    { field = "name_4",          type = "U8"  },
+    { field = "name_5",          type = "U8"  },
+    { field = "name_6",          type = "U8"  },
+    { field = "name_7",          type = "U8"  },
+    { field = "name_8",          type = "U8"  },
+    { field = "band_letter",     type = "U8"  },
+    { field = "is_factory_band", type = "U8"  },
+    { field = "channel_count",   type = "U8"  },
+    { field = "freq_1",          type = "U16" },
+    { field = "freq_2",          type = "U16" },
+    { field = "freq_3",          type = "U16" },
+    { field = "freq_4",          type = "U16" },
+    { field = "freq_5",          type = "U16" },
+    { field = "freq_6",          type = "U16" },
+    { field = "freq_7",          type = "U16" },
+    { field = "freq_8",          type = "U16" },
+}
+-- LuaFormatter on
 
 local mspData = nil
 local mspWriteComplete = false
@@ -64,9 +107,12 @@ local function errorHandlerStatic(self, buf)
     end
 end
 
-local function read()
+local function read(band)
     if MSP_API_CMD_READ == nil then return false, "read_not_supported" end
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
+    local readBand = tonumber(band)
+    if readBand == nil then readBand = tonumber(payloadData.band) end
+    if readBand == nil then readBand = 1 end
+    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, payload = {readBand}, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 

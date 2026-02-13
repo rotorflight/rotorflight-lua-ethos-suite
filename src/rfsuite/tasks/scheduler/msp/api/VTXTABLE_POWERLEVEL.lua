@@ -13,14 +13,25 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    -- TODO: map real fields from firmware msp.c
-    -- This stub keeps API discoverable without sending implicit zeroed writes.
+    { field = "power_level",  type = "U8",  apiVersion = 12.06, simResponse = {1}, mandatory = false },
+    { field = "power_value",  type = "U16", apiVersion = 12.06, simResponse = {25, 0}, mandatory = false },
+    { field = "label_length", type = "U8",  apiVersion = 12.06, simResponse = {3}, mandatory = false },
+    { field = "label_1",      type = "U8",  apiVersion = 12.06, simResponse = {50}, mandatory = false },
+    { field = "label_2",      type = "U8",  apiVersion = 12.06, simResponse = {53}, mandatory = false },
+    { field = "label_3",      type = "U8",  apiVersion = 12.06, simResponse = {77}, mandatory = false },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
+local MSP_API_STRUCTURE_WRITE = {
+    { field = "power_level",  type = "U8"  },
+    { field = "power_value",  type = "U16" },
+    { field = "label_length", type = "U8"  },
+    { field = "label_1",      type = "U8"  },
+    { field = "label_2",      type = "U8"  },
+    { field = "label_3",      type = "U8"  },
+}
 
 local mspData = nil
 local mspWriteComplete = false
@@ -64,9 +75,12 @@ local function errorHandlerStatic(self, buf)
     end
 end
 
-local function read()
+local function read(powerLevel)
     if MSP_API_CMD_READ == nil then return false, "read_not_supported" end
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
+    local readPower = tonumber(powerLevel)
+    if readPower == nil then readPower = tonumber(payloadData.power_level) end
+    if readPower == nil then readPower = 1 end
+    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, payload = {readPower}, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
