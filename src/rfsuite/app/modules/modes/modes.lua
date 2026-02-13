@@ -25,7 +25,9 @@ local state = {
     dirty = false,
     loadError = nil,
     saveError = nil,
-    needsRender = false
+    needsRender = false,
+    liveRangeFields = {},
+    channelSources = {}
 }
 
 local function queueDirect(message, uuid)
@@ -43,6 +45,57 @@ local function toS8Byte(value)
     local v = clamp(math.floor(value + 0.5), -128, 127)
     if v < 0 then return v + 256 end
     return v
+end
+
+local function channelRawToUs(value)
+    if value == nil then return nil end
+
+    -- Ethos channel sources are typically -1024..1024.
+    if value >= -1200 and value <= 1200 then
+        return clamp(math.floor(1500 + (value * 500 / 1024) + 0.5), RANGE_MIN, RANGE_MAX)
+    end
+
+    -- Fallback if a source already reports pulse width style values.
+    if value >= 700 and value <= 2300 then
+        return clamp(math.floor(value + 0.5), RANGE_MIN, RANGE_MAX)
+    end
+
+    return nil
+end
+
+local function auxIndexToMember(auxIndex)
+    local idx = clamp(auxIndex or 0, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
+    local rx = rfsuite.session and rfsuite.session.rx
+    local map = rx and rx.map or nil
+
+    if map then
+        if idx == 0 and map.aux1 ~= nil then return map.aux1 end
+        if idx == 1 and map.aux2 ~= nil then return map.aux2 end
+        if idx == 2 and map.aux3 ~= nil then return map.aux3 end
+    end
+
+    local base = 5
+    if map and map.aux1 ~= nil then base = map.aux1 end
+    return base + idx
+end
+
+local function getChannelSource(member)
+    local src = state.channelSources[member]
+    if src == nil then
+        src = system.getSource({category = CATEGORY_CHANNEL, member = member, options = 0})
+        state.channelSources[member] = src or false
+    end
+    if src == false then return nil end
+    return src
+end
+
+local function getAuxPulseUs(auxIndex)
+    local member = auxIndexToMember(auxIndex)
+    local src = getChannelSource(member)
+    if not src then return nil end
+    local raw = src:value()
+    if raw == nil or type(raw) ~= "number" then return nil end
+    return channelRawToUs(raw)
 end
 
 local function buildAuxOptions()
@@ -101,23 +154,34 @@ local function addModeRangeLine(rangeIndex, modeRange)
     local y = app.radio.linePaddingTop
 
     local rightPadding = 8
-    local gap = 8
+    local gap = 6
 
+    -- Line 1: range label + live pulse only
+    local wLive = math.floor(width * 0.34)
+    local xLive = width - rightPadding - wLive
+
+    -- Keep the two rows visually grouped: no separator after header row,
+    -- separator after controls row.
+    local lineTop = form.addLine("Range " .. tostring(rangeIndex), nil, false)
+    local liveText = form.addStaticText(lineTop, {x = xLive, y = y, w = wLive, h = h}, "--")
+    if liveText and liveText.value then state.liveRangeFields[slot] = liveText end
+
+    -- Line 2: all controls (AUX + logic + start/end + delete)
     local wDel = math.max(24, math.floor(width * 0.08))
-    local wLogic = math.floor(width * 0.17)
-    local wAux = math.floor(width * 0.20)
-    local wNum = math.floor(width * 0.15)
+    local wAux = math.floor(width * 0.23)
+    local wLogic = math.floor(width * 0.14)
+    local wNum = math.floor(width * 0.17)
 
     local xDel = width - rightPadding - wDel
     local xEnd = xDel - gap - wNum
     local xStart = xEnd - gap - wNum
-    local xAux = xStart - gap - wAux
-    local xLogic = xAux - gap - wLogic
+    local xLogic = xStart - gap - wLogic
+    local xAux = xLogic - gap - wAux
 
-    local line = form.addLine("Range " .. tostring(rangeIndex))
+    local lineBottom = form.addLine(" ", nil, true)
 
     local auxField = form.addChoiceField(
-        line,
+        lineBottom,
         {x = xAux, y = y, w = wAux, h = h},
         AUX_OPTIONS_TBL,
         function() return clamp((rawRange.auxChannelIndex or 0) + 1, 1, #AUX_OPTIONS) end,
@@ -127,8 +191,19 @@ local function addModeRangeLine(rangeIndex, modeRange)
         end
     )
 
+    local logicField = form.addChoiceField(
+        lineBottom,
+        {x = xLogic, y = y, w = wLogic, h = h},
+        MODE_LOGIC_OPTIONS_TBL,
+        function() return clamp(rawExtra.modeLogic or 0, 0, #MODE_LOGIC_OPTIONS - 1) end,
+        function(value)
+            rawExtra.modeLogic = clamp(value or 0, 0, 1)
+            state.dirty = true
+        end
+    )
+
     local startField = form.addNumberField(
-        line,
+        lineBottom,
         {x = xStart, y = y, w = wNum, h = h},
         RANGE_MIN,
         RANGE_MAX,
@@ -142,7 +217,7 @@ local function addModeRangeLine(rangeIndex, modeRange)
     )
 
     local endField = form.addNumberField(
-        line,
+        lineBottom,
         {x = xEnd, y = y, w = wNum, h = h},
         RANGE_MIN,
         RANGE_MAX,
@@ -155,28 +230,15 @@ local function addModeRangeLine(rangeIndex, modeRange)
         end
     )
 
-    local logicField = form.addChoiceField(
-        line,
-        {x = xLogic, y = y, w = wLogic, h = h},
-        MODE_LOGIC_OPTIONS_TBL,
-        function() return clamp(rawExtra.modeLogic or 0, 0, #MODE_LOGIC_OPTIONS - 1) end,
-        function(value)
-            rawExtra.modeLogic = clamp(value or 0, 0, 1)
-            state.dirty = true
-        end
-    )
-
     if startField and startField.suffix then startField:suffix("us") end
     if endField and endField.suffix then endField:suffix("us") end
     if startField and startField.step then startField:step(RANGE_STEP) end
     if endField and endField.step then endField:step(RANGE_STEP) end
 
-    -- Allow editing logic on every row (including the first),
-    -- matching Rotorflight Configurator behavior.
     if logicField and logicField.enable then logicField:enable(true) end
     if auxField and auxField.enable then auxField:enable(true) end
 
-    form.addButton(line, {x = xDel, y = y, w = wDel, h = h}, {
+    form.addButton(lineBottom, {x = xDel, y = y, w = wDel, h = h}, {
         text = "X",
         icon = nil,
         options = FONT_S,
@@ -391,6 +453,7 @@ end
 
 local function render()
     local app = rfsuite.app
+    state.liveRangeFields = {}
     form.clear()
     app.ui.fieldHeader(state.title)
 
@@ -470,6 +533,29 @@ local function render()
     end
 
     for i = 1, #ranges do addModeRangeLine(i, ranges[i]) end
+end
+
+local function updateLiveRangeFields()
+    if not state.liveRangeFields then return end
+
+    for slot, field in pairs(state.liveRangeFields) do
+        if field and field.value then
+            local range = state.modeRanges[slot]
+            if range and range.range then
+                local us = getAuxPulseUs(range.auxChannelIndex or 0)
+                if us then
+                    local inRange = us >= (range.range.start or RANGE_MIN) and us <= (range.range["end"] or RANGE_MAX)
+                    local txt = tostring(us) .. "us"
+                    if inRange then txt = txt .. " *" end
+                    field:value(txt)
+                else
+                    field:value("--")
+                end
+            else
+                field:value("--")
+            end
+        end
+    end
 end
 
 local function queueSetModeRange(slotIndex, done, failed)
@@ -587,6 +673,7 @@ local function wakeup()
     end
     if not state.loaded or state.loading then return end
     if state.saving then return end
+    updateLiveRangeFields()
 end
 
 local function openPage(opts)
