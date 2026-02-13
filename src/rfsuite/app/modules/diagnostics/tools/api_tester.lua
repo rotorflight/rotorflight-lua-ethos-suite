@@ -9,7 +9,9 @@ local system = system
 local app = rfsuite.app
 local tasks = rfsuite.tasks
 
-local pageTitle = "@i18n(app.modules.diagnostics.name)@ / API Tester"
+local function i18n(key) return "@i18n(app.modules.api_tester." .. key .. ")@" end
+
+local pageTitle = "@i18n(app.modules.diagnostics.name)@ / " .. i18n("name")
 local apiDir = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
 local MAX_LINE_CHARS = 90
 local lastOpenOpts = nil
@@ -21,8 +23,8 @@ local state = {
     apiNames = {},
     apiChoices = {},
     selected = 1,
-    status = "Idle",
-    rows = {{label = "Info", value = "Choose an API and press Test"}},
+    status = i18n("status_idle"),
+    rows = {{label = i18n("label_info"), value = i18n("msg_choose_api")}},
     fieldCount = 0,
     pendingRebuild = false,
     autoOpenResults = false
@@ -47,12 +49,12 @@ local function getDisplayRows()
         local label = truncateText(row.label or "")
         local value = truncateText(row.value or "")
         if label:match("%S") or value:match("%S") then
-            if not label:match("%S") then label = "Value" end
+            if not label:match("%S") then label = i18n("label_value") end
             if not value:match("%S") then value = "-" end
             rowsOut[#rowsOut + 1] = {label = label, value = value}
         end
     end
-    if #rowsOut == 0 then rowsOut[1] = {label = "Info", value = "No data"} end
+    if #rowsOut == 0 then rowsOut[1] = {label = i18n("label_info"), value = i18n("msg_no_data")} end
     return rowsOut
 end
 
@@ -87,7 +89,7 @@ local function buildApiList()
     end
 
     if #state.apiChoices == 0 then
-        state.apiChoices = {{"<no api files found>", 1}}
+        state.apiChoices = {{i18n("choice_no_api_files"), 1}}
         state.selected = 1
     elseif state.selected < 1 or state.selected > #state.apiChoices then
         state.selected = 1
@@ -108,7 +110,7 @@ local function parseReadResult(api)
     local rowsOut = {}
 
     if not parsed then
-        rowsOut[#rowsOut + 1] = {label = "Info", value = "No parsed result"}
+        rowsOut[#rowsOut + 1] = {label = i18n("label_info"), value = i18n("msg_no_parsed_result")}
         state.rows = rowsOut
         state.fieldCount = 0
         return
@@ -122,7 +124,7 @@ local function parseReadResult(api)
         rowsOut[#rowsOut + 1] = {label = key, value = toValueString(parsed[key])}
     end
 
-    if #rowsOut == 0 then rowsOut[1] = {label = "Info", value = "Read completed (0 fields)"} end
+    if #rowsOut == 0 then rowsOut[1] = {label = i18n("label_info"), value = i18n("msg_read_completed_zero")} end
     state.rows = rowsOut
     state.fieldCount = #keys
 end
@@ -135,36 +137,36 @@ end
 local function runTest()
     local apiName = selectedApiName()
     if not apiName then
-        state.rows = {{label = "Info", value = "No API selected"}}
-        setStatus("No API selected")
+        state.rows = {{label = i18n("label_info"), value = i18n("msg_no_api_selected")}}
+        setStatus(i18n("msg_no_api_selected"))
         return
     end
 
     local api = tasks.msp.api.load(apiName)
     if not api then
-        state.rows = {{label = "Error", value = "Unable to load API: " .. apiName}}
-        setStatus("Load failed")
+        state.rows = {{label = i18n("label_error"), value = i18n("msg_unable_to_load") .. ": " .. apiName}}
+        setStatus(i18n("status_load_failed"))
         return
     end
 
-    state.rows = {{label = "Status", value = "Waiting for response..."}}
+    state.rows = {{label = i18n("label_status"), value = i18n("msg_waiting_response")}}
     state.fieldCount = 0
-    setStatus("Reading " .. apiName .. "...")
+    setStatus(i18n("status_reading") .. " " .. apiName .. "...")
 
     api.setCompleteHandler(function()
         parseReadResult(api)
-        setStatus("OK: " .. tostring(state.fieldCount) .. " fields")
+        setStatus(i18n("status_ok") .. ": " .. tostring(state.fieldCount) .. " " .. i18n("label_fields"))
         state.autoOpenResults = true
         state.pendingRebuild = true
     end)
 
     api.setErrorHandler(function(_, err)
         state.rows = {
-            {label = "Status", value = "Read failed"},
-            {label = "Error", value = tostring(err or "read_error")}
+            {label = i18n("label_status"), value = i18n("msg_read_failed")},
+            {label = i18n("label_error"), value = tostring(err or "read_error")}
         }
         state.fieldCount = 0
-        setStatus("Error")
+        setStatus(i18n("label_error"))
         state.autoOpenResults = true
         state.pendingRebuild = true
     end)
@@ -172,11 +174,11 @@ local function runTest()
     local ok, reason = api.read()
     if ok == false then
         state.rows = {
-            {label = "Status", value = "Read failed"},
-            {label = "Error", value = tostring(reason or "read_not_supported")}
+            {label = i18n("label_status"), value = i18n("msg_read_failed")},
+            {label = i18n("label_error"), value = tostring(reason or "read_not_supported")}
         }
         state.fieldCount = 0
-        setStatus("Error")
+        setStatus(i18n("label_error"))
         state.autoOpenResults = true
         state.pendingRebuild = true
     end
@@ -195,7 +197,7 @@ local function openPage(opts)
 
     local w = lcd.getWindowSize()
 
-    line.api = form.addLine("API")
+    line.api = form.addLine(i18n("label_api"))
     local rowY = app.radio.linePaddingTop
     local testW = 80
     local gap = 6
@@ -209,16 +211,16 @@ local function openPage(opts)
     end)
 
     fields.test = form.addButton(line.api, {x = choiceW + gap, y = rowY, w = testW, h = app.radio.navbuttonHeight}, {
-        text = "Test",
+        text = i18n("btn_test"),
         icon = nil,
         options = FONT_S,
         press = runTest
     })
 
-    line.status = form.addLine("Status")
+    line.status = form.addLine(i18n("label_status"))
     fields.status = form.addStaticText(line.status, nil, state.status)
 
-    resultsPanel = form.addExpansionPanel("Read Result")
+    resultsPanel = form.addExpansionPanel(i18n("panel_read_result"))
     resultsPanel:open(state.autoOpenResults)
     state.autoOpenResults = false
 

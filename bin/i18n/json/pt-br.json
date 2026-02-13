@@ -3118,6 +3118,162 @@
           "reverse_text": false
         }
       },
+      "api_tester": {
+        "btn_test": {
+          "english": "Test",
+          "translation": "Test",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "choice_no_api_files": {
+          "english": "<no api files found>",
+          "translation": "<no api files found>",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "label_api": {
+          "english": "API",
+          "translation": "API",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "label_error": {
+          "english": "Error",
+          "translation": "Error",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "label_fields": {
+          "english": "fields",
+          "translation": "fields",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "label_info": {
+          "english": "Info",
+          "translation": "Info",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "label_status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "label_value": {
+          "english": "Value",
+          "translation": "Value",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "msg_choose_api": {
+          "english": "Choose an API and press Test",
+          "translation": "Choose an API and press Test",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "msg_no_api_selected": {
+          "english": "No API selected",
+          "translation": "No API selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "msg_no_data": {
+          "english": "No data",
+          "translation": "No data",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "msg_no_parsed_result": {
+          "english": "No parsed result",
+          "translation": "No parsed result",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "msg_read_completed_zero": {
+          "english": "Read completed (0 fields)",
+          "translation": "Read completed (0 fields)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
+        "msg_read_failed": {
+          "english": "Read failed",
+          "translation": "Read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "msg_unable_to_load": {
+          "english": "Unable to load API",
+          "translation": "Unable to load API",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "msg_waiting_response": {
+          "english": "Waiting for response...",
+          "translation": "Waiting for response...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "name": {
+          "english": "API Tester",
+          "translation": "API Tester",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "panel_read_result": {
+          "english": "Read Result",
+          "translation": "Read Result",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "status_idle": {
+          "english": "Idle",
+          "translation": "Idle",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "status_load_failed": {
+          "english": "Load failed",
+          "translation": "Load failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "status_ok": {
+          "english": "OK",
+          "translation": "OK",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 2
+        },
+        "status_reading": {
+          "english": "Reading",
+          "translation": "Reading",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        }
+      },
       "esc_motors": {
         "consumption_correction": {
           "english": "Consumption Correction",
