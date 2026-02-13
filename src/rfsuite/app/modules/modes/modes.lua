@@ -439,8 +439,19 @@ local function render()
 
     local selectedMode = getSelectedMode()
     local ranges = selectedMode and selectedMode.ranges or {}
-    form.addLine("Active ranges: " .. tostring(#ranges) .. " / " .. tostring(#state.modeRanges))
-    if state.dirty then form.addLine("Unsaved changes") end
+    local infoLine = form.addLine("Active ranges: " .. tostring(#ranges) .. " / " .. tostring(#state.modeRanges))
+    if state.dirty then
+        local statusW = math.floor(width * 0.32)
+        local statusX = width - rightPadding - statusW
+        local statusBtn = form.addButton(infoLine, {x = statusX, y = y, w = statusW, h = h}, {
+            text = "Unsaved changes",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function() end
+        })
+        if statusBtn and statusBtn.enable then statusBtn:enable(false) end
+    end
     if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
 
     local actionLine = form.addLine("")
