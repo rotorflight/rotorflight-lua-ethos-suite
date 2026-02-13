@@ -10,6 +10,7 @@ local AUX_CHANNEL_COUNT_FALLBACK = 20
 local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5
+local RANGE_SNAP_DELTA_US = 100
 
 local state = {
     title = "Modes",
@@ -46,6 +47,10 @@ local function toS8Byte(value)
     local v = clamp(math.floor(value + 0.5), -128, 127)
     if v < 0 then return v + 256 end
     return v
+end
+
+local function quantizeUs(value)
+    return clamp(math.floor((value + (RANGE_STEP / 2)) / RANGE_STEP) * RANGE_STEP, RANGE_MIN, RANGE_MAX)
 end
 
 local function channelRawToUs(value)
@@ -158,15 +163,86 @@ local function addModeRangeLine(rangeIndex, modeRange)
     local rightPadding = 8
     local gap = 6
 
-    -- Line 1: range label + live pulse only
-    local wLive = math.floor(width * 0.34)
-    local xLive = width - rightPadding - wLive
+    -- Line 1: range label + live pulse + Set action
+    local wSet = math.max(34, math.floor(width * 0.14))
+    local wLive = math.floor(width * 0.24)
+    local xSet = width - rightPadding - wSet
+    local xLive = xSet - gap - wLive
 
     -- Keep the two rows visually grouped: no separator after header row,
     -- separator after controls row.
     local lineTop = form.addLine("Range " .. tostring(rangeIndex), nil, false)
     local liveText = form.addStaticText(lineTop, {x = xLive, y = y, w = wLive, h = h}, "--")
     if liveText and liveText.value then state.liveRangeFields[slot] = liveText end
+
+    form.addButton(lineTop, {x = xSet, y = y, w = wSet, h = h}, {
+        text = "Set",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if state.autoDetectSlots[slot] then
+                local buttons = {{label = "OK", action = function() return true end}}
+                form.openDialog({
+                    width = nil,
+                    title = "Modes",
+                    message = "Auto-detect is active for this row. Toggle to lock AUX first.",
+                    buttons = buttons,
+                    wakeup = function() end,
+                    paint = function() end,
+                    options = TEXT_LEFT
+                })
+                return
+            end
+
+            local us = getAuxPulseUs(rawRange.auxChannelIndex or 0)
+            if not us then
+                local buttons = {{label = "OK", action = function() return true end}}
+                form.openDialog({
+                    width = nil,
+                    title = "Modes",
+                    message = "Live channel value unavailable.",
+                    buttons = buttons,
+                    wakeup = function() end,
+                    paint = function() end,
+                    options = TEXT_LEFT
+                })
+                return
+            end
+
+            local targetStart = quantizeUs(us - RANGE_SNAP_DELTA_US)
+            local targetEnd = quantizeUs(us + RANGE_SNAP_DELTA_US)
+            if targetStart > targetEnd then
+                local mid = quantizeUs(us)
+                targetStart = mid
+                targetEnd = mid
+            end
+
+            local buttons = {
+                {
+                    label = "@i18n(app.btn_ok_long)@",
+                    action = function()
+                        rawRange.range.start = targetStart
+                        rawRange.range["end"] = targetEnd
+                        state.dirty = true
+                        state.needsRender = true
+                        return true
+                    end
+                },
+                {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+            }
+
+            form.openDialog({
+                width = nil,
+                title = "Set Range",
+                message = "Use current value " .. tostring(us) .. "us?\n\nMin: " .. tostring(targetStart) .. "us\nMax: " .. tostring(targetEnd) .. "us",
+                buttons = buttons,
+                wakeup = function() end,
+                paint = function() end,
+                options = TEXT_LEFT
+            })
+        end
+    })
 
     -- Line 2: all controls (AUX + logic + start/end + delete)
     local wDel = math.max(24, math.floor(width * 0.08))
