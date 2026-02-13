@@ -27,7 +27,8 @@ local state = {
     saveError = nil,
     needsRender = false,
     liveRangeFields = {},
-    channelSources = {}
+    channelSources = {},
+    autoDetectSlots = {}
 }
 
 local function queueDirect(message, uuid)
@@ -99,7 +100,7 @@ local function getAuxPulseUs(auxIndex)
 end
 
 local function buildAuxOptions()
-    local options = {}
+    local options = {"AUTO"}
     for i = 1, AUX_CHANNEL_COUNT_FALLBACK do
         options[#options + 1] = "AUX " .. tostring(i)
     end
@@ -136,6 +137,7 @@ local function removeRangeSlot(slot)
         modeLogic = 0,
         linkedTo = 0
     }
+    state.autoDetectSlots[slot] = nil
 
     state.dirty = true
     buildModesFromRaw()
@@ -184,9 +186,17 @@ local function addModeRangeLine(rangeIndex, modeRange)
         lineBottom,
         {x = xAux, y = y, w = wAux, h = h},
         AUX_OPTIONS_TBL,
-        function() return clamp((rawRange.auxChannelIndex or 0) + 1, 1, #AUX_OPTIONS) end,
+        function()
+            if state.autoDetectSlots[slot] then return 1 end
+            return clamp((rawRange.auxChannelIndex or 0) + 2, 2, #AUX_OPTIONS)
+        end,
         function(value)
-            rawRange.auxChannelIndex = clamp((value or 1) - 1, 0, #AUX_OPTIONS - 1)
+            if value == 1 then
+                state.autoDetectSlots[slot] = {baseline = nil}
+            else
+                state.autoDetectSlots[slot] = nil
+                rawRange.auxChannelIndex = clamp((value or 2) - 2, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
+            end
             state.dirty = true
         end
     )
@@ -398,9 +408,18 @@ local function startLoad()
     state.loaded = false
     state.loadError = nil
     state.saveError = nil
+    state.autoDetectSlots = {}
+    state.channelSources = {}
     state.needsRender = true
     rfsuite.app.ui.progressDisplay("Modes", "Loading mode configuration")
     readBoxIds()
+end
+
+local function hasActiveAutoDetect()
+    for _, v in pairs(state.autoDetectSlots) do
+        if v ~= nil then return true end
+    end
+    return false
 end
 
 local function getSelectedMode()
@@ -515,6 +534,7 @@ local function render()
         })
         if statusBtn and statusBtn.enable then statusBtn:enable(false) end
     end
+    if hasActiveAutoDetect() then form.addLine("Auto-detect active: toggle desired AUX channel") end
     if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
 
     local actionLine = form.addLine("")
@@ -542,14 +562,49 @@ local function updateLiveRangeFields()
         if field and field.value then
             local range = state.modeRanges[slot]
             if range and range.range then
-                local us = getAuxPulseUs(range.auxChannelIndex or 0)
-                if us then
-                    local inRange = us >= (range.range.start or RANGE_MIN) and us <= (range.range["end"] or RANGE_MAX)
-                    local txt = tostring(us) .. "us"
-                    if inRange then txt = txt .. " *" end
-                    field:value(txt)
+                local autoState = state.autoDetectSlots[slot]
+                if autoState then
+                    local bestIdx = nil
+                    local bestDelta = 0
+                    local bestUs = nil
+
+                    for auxIdx = 0, AUX_CHANNEL_COUNT_FALLBACK - 1 do
+                        local us = getAuxPulseUs(auxIdx)
+                        if us then
+                            if not autoState.baseline then autoState.baseline = {} end
+                            if autoState.baseline[auxIdx] == nil then
+                                autoState.baseline[auxIdx] = us
+                            else
+                                local delta = math.abs(us - autoState.baseline[auxIdx])
+                                if delta > bestDelta then
+                                    bestDelta = delta
+                                    bestIdx = auxIdx
+                                    bestUs = us
+                                end
+                            end
+                        end
+                    end
+
+                    -- Detect a deliberate toggle and lock AUX channel.
+                    if bestIdx ~= nil and bestDelta >= 120 then
+                        range.auxChannelIndex = bestIdx
+                        state.autoDetectSlots[slot] = nil
+                        state.dirty = true
+                        state.needsRender = true
+                        field:value("AUX " .. tostring(bestIdx + 1) .. ": " .. tostring(bestUs or 0) .. "us")
+                    else
+                        field:value("AUTO...")
+                    end
                 else
-                    field:value("--")
+                    local us = getAuxPulseUs(range.auxChannelIndex or 0)
+                    if us then
+                        local inRange = us >= (range.range.start or RANGE_MIN) and us <= (range.range["end"] or RANGE_MAX)
+                        local txt = tostring(us) .. "us"
+                        if inRange then txt = txt .. " *" end
+                        field:value(txt)
+                    else
+                        field:value("--")
+                    end
                 end
             else
                 field:value("--")
@@ -635,6 +690,20 @@ end
 local function onSaveMenu()
     if state.loading or state.saving or not state.loaded then return end
     if not state.dirty then return end
+
+    if hasActiveAutoDetect() then
+        local buttons = {{label = "OK", action = function() return true end}}
+        form.openDialog({
+            width = nil,
+            title = "Modes",
+            message = "Auto-detect is active. Toggle the desired AUX channel first.",
+            buttons = buttons,
+            wakeup = function() end,
+            paint = function() end,
+            options = TEXT_LEFT
+        })
+        return
+    end
 
     if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
         saveAllRanges()
