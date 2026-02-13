@@ -1,0 +1,602 @@
+--[[
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+local MODE_LOGIC_OPTIONS = {"OR", "AND"}
+local AUX_CHANNEL_COUNT_FALLBACK = 20
+local RANGE_MIN = 875
+local RANGE_MAX = 2125
+local RANGE_STEP = 5
+
+local state = {
+    title = "Modes",
+    modeNames = {},
+    modeIds = {},
+    modeRanges = {},
+    modeRangesExtra = {},
+    modes = {},
+    selectedModeIndex = 1,
+    loaded = false,
+    loading = false,
+    saving = false,
+    dirty = false,
+    loadError = nil,
+    saveError = nil,
+    needsRender = false
+}
+
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+local function clamp(value, minValue, maxValue)
+    if value < minValue then return minValue end
+    if value > maxValue then return maxValue end
+    return value
+end
+
+local function toS8Byte(value)
+    local v = clamp(math.floor(value + 0.5), -128, 127)
+    if v < 0 then return v + 256 end
+    return v
+end
+
+local function buildAuxOptions()
+    local options = {}
+    for i = 1, AUX_CHANNEL_COUNT_FALLBACK do
+        options[#options + 1] = "AUX " .. tostring(i)
+    end
+    return options
+end
+
+local AUX_OPTIONS = buildAuxOptions()
+
+local function buildChoiceTable(values, inc)
+    local out = {}
+    inc = inc or 0
+    for i = 1, #values do
+        out[i] = {values[i], i + inc}
+    end
+    return out
+end
+
+local AUX_OPTIONS_TBL = buildChoiceTable(AUX_OPTIONS, 0)
+local MODE_LOGIC_OPTIONS_TBL = buildChoiceTable(MODE_LOGIC_OPTIONS, -1)
+
+local function addModeRangeLine(rangeIndex, modeRange)
+    local app = rfsuite.app
+    local width = app.lcdWidth
+    local h = app.radio.navbuttonHeight
+    local y = app.radio.linePaddingTop
+
+    local rightPadding = 8
+    local gap = 8
+
+    local wLogic = math.floor(width * 0.17)
+    local wAux = math.floor(width * 0.22)
+    local wNum = math.floor(width * 0.17)
+
+    local xEnd = width - rightPadding - wNum
+    local xStart = xEnd - gap - wNum
+    local xAux = xStart - gap - wAux
+    local xLogic = xAux - gap - wLogic
+
+    local line = form.addLine("Range " .. tostring(rangeIndex))
+
+    local auxField = form.addChoiceField(
+        line,
+        {x = xAux, y = y, w = wAux, h = h},
+        AUX_OPTIONS_TBL,
+        function() return clamp((modeRange.auxChannelIndex or 0) + 1, 1, #AUX_OPTIONS) end,
+        function(value)
+            modeRange.auxChannelIndex = clamp((value or 1) - 1, 0, #AUX_OPTIONS - 1)
+            state.dirty = true
+            state.needsRender = true
+        end
+    )
+
+    local startField = form.addNumberField(
+        line,
+        {x = xStart, y = y, w = wNum, h = h},
+        RANGE_MIN,
+        RANGE_MAX,
+        function() return modeRange.range.start end,
+        function(value)
+            local adjusted = clamp(math.floor(value / RANGE_STEP) * RANGE_STEP, RANGE_MIN, RANGE_MAX)
+            modeRange.range.start = adjusted
+            if modeRange.range["end"] < adjusted then modeRange.range["end"] = adjusted end
+            state.dirty = true
+            state.needsRender = true
+        end
+    )
+
+    local endField = form.addNumberField(
+        line,
+        {x = xEnd, y = y, w = wNum, h = h},
+        RANGE_MIN,
+        RANGE_MAX,
+        function() return modeRange.range["end"] end,
+        function(value)
+            local adjusted = clamp(math.floor(value / RANGE_STEP) * RANGE_STEP, RANGE_MIN, RANGE_MAX)
+            modeRange.range["end"] = adjusted
+            if modeRange.range.start > adjusted then modeRange.range.start = adjusted end
+            state.dirty = true
+            state.needsRender = true
+        end
+    )
+
+    local logicField = form.addChoiceField(
+        line,
+        {x = xLogic, y = y, w = wLogic, h = h},
+        MODE_LOGIC_OPTIONS_TBL,
+        function() return clamp((modeRange.modeLogic or 0) + 1, 1, #MODE_LOGIC_OPTIONS) end,
+        function(value)
+            modeRange.modeLogic = clamp((value or 1) - 1, 0, 1)
+            state.dirty = true
+            state.needsRender = true
+        end
+    )
+
+    if startField and startField.suffix then startField:suffix("us") end
+    if endField and endField.suffix then endField:suffix("us") end
+    if startField and startField.step then startField:step(RANGE_STEP) end
+    if endField and endField.step then endField:step(RANGE_STEP) end
+
+    if logicField and logicField.enable then logicField:enable(rangeIndex > 1) end
+    if auxField and auxField.enable then auxField:enable(true) end
+end
+
+local function buildModesFromRaw()
+    state.modes = {}
+    local idToModeIndex = {}
+
+    local count = math.max(#state.modeIds, #state.modeNames)
+    if count == 0 and #state.modeRanges > 0 then
+        -- Last-resort fallback: derive list from mode ids found in mode ranges.
+        local seen = {}
+        for i = 1, #state.modeRanges do
+            local id = state.modeRanges[i] and state.modeRanges[i].id
+            if id and id > 0 and not seen[id] then
+                seen[id] = true
+                state.modeIds[#state.modeIds + 1] = id
+            end
+        end
+        table.sort(state.modeIds)
+        count = #state.modeIds
+    end
+
+    for i = 1, count do
+        local id = state.modeIds[i]
+        if id == nil then id = i - 1 end
+        local name = state.modeNames[i]
+        if not name or name == "" then name = "Mode " .. tostring(id) end
+
+        state.modes[i] = {
+            id = id,
+            name = name,
+            ranges = {}
+        }
+        idToModeIndex[id] = i
+    end
+
+    for slot = 1, #state.modeRanges do
+        local range = state.modeRanges[slot]
+        local extra = state.modeRangesExtra[slot] or {id = 0, modeLogic = 0, linkedTo = 0}
+        local modeIndex = idToModeIndex[range.id]
+
+        if modeIndex and (extra.linkedTo or 0) == 0 and range.range and (range.range.start or 0) < (range.range["end"] or 0) then
+            state.modes[modeIndex].ranges[#state.modes[modeIndex].ranges + 1] = {
+                slot = slot,
+                auxChannelIndex = range.auxChannelIndex or 0,
+                range = {
+                    start = clamp(range.range.start or RANGE_MIN, RANGE_MIN, RANGE_MAX),
+                    ["end"] = clamp(range.range["end"] or RANGE_MAX, RANGE_MIN, RANGE_MAX)
+                },
+                modeLogic = extra.modeLogic or 0
+            }
+        end
+    end
+
+    state.selectedModeIndex = clamp(state.selectedModeIndex, 1, math.max(#state.modes, 1))
+end
+
+local function setLoadError(reason)
+    state.loading = false
+    state.loaded = false
+    state.loadError = reason or "Load failed"
+    state.needsRender = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function readModeRangesExtra()
+    local API = rfsuite.tasks.msp.api.load("MODE_RANGES_EXTRA")
+    if not API then
+        setLoadError("MODE_RANGES_EXTRA API unavailable")
+        return
+    end
+
+    API.setCompleteHandler(function()
+        state.modeRangesExtra = API.readValue("mode_ranges_extra") or {}
+        state.loading = false
+        state.loaded = true
+        state.dirty = false
+        state.loadError = nil
+        buildModesFromRaw()
+        state.needsRender = true
+        rfsuite.app.triggers.closeProgressLoader = true
+    end)
+
+    API.setErrorHandler(function()
+        setLoadError("Failed reading mode range extras")
+    end)
+
+    API.read()
+end
+
+local function readModeRanges()
+    local API = rfsuite.tasks.msp.api.load("MODE_RANGES")
+    if not API then
+        setLoadError("MODE_RANGES API unavailable")
+        return
+    end
+
+    API.setCompleteHandler(function()
+        state.modeRanges = API.readValue("mode_ranges") or {}
+        readModeRangesExtra()
+    end)
+
+    API.setErrorHandler(function()
+        setLoadError("Failed reading mode ranges")
+    end)
+
+    API.read()
+end
+
+local function readBoxNames()
+    local API = rfsuite.tasks.msp.api.load("BOXNAMES")
+    if not API then
+        setLoadError("BOXNAMES API unavailable")
+        return
+    end
+
+    API.setCompleteHandler(function()
+        state.modeNames = API.readValue("box_names") or {}
+        readModeRanges()
+    end)
+
+    API.setErrorHandler(function()
+        setLoadError("Failed reading mode names")
+    end)
+
+    API.read()
+end
+
+local function readBoxIds()
+    local API = rfsuite.tasks.msp.api.load("BOXIDS")
+    if not API then
+        setLoadError("BOXIDS API unavailable")
+        return
+    end
+
+    API.setCompleteHandler(function()
+        state.modeIds = API.readValue("box_ids") or {}
+        readBoxNames()
+    end)
+
+    API.setErrorHandler(function()
+        setLoadError("Failed reading mode IDs")
+    end)
+
+    API.read()
+end
+
+local function startLoad()
+    state.loading = true
+    state.loaded = false
+    state.loadError = nil
+    state.saveError = nil
+    state.needsRender = true
+    rfsuite.app.ui.progressDisplay("Modes", "Loading mode configuration")
+    readBoxIds()
+end
+
+local function getSelectedMode()
+    if #state.modes == 0 then return nil end
+    return state.modes[state.selectedModeIndex]
+end
+
+local function addRangeToSelectedMode()
+    local mode = getSelectedMode()
+    if not mode then return end
+
+    local freeSlot = nil
+    for i = 1, #state.modeRanges do
+        local range = state.modeRanges[i]
+        if (range.id or 0) == 0 and range.range and (range.range.start or 0) >= (range.range["end"] or 0) then
+            freeSlot = i
+            break
+        end
+    end
+
+    if not freeSlot then
+        local buttons = {{label = "OK", action = function() return true end}}
+        form.openDialog({
+            width = nil,
+            title = "Modes",
+            message = "No free mode slots remain. Delete an existing range first.",
+            buttons = buttons,
+            wakeup = function() end,
+            paint = function() end,
+            options = TEXT_LEFT
+        })
+        return
+    end
+
+    state.modeRanges[freeSlot] = {
+        id = mode.id,
+        auxChannelIndex = 0,
+        range = {start = 1300, ["end"] = 1700}
+    }
+    state.modeRangesExtra[freeSlot] = {
+        id = mode.id,
+        modeLogic = (#mode.ranges > 0) and 0 or 0,
+        linkedTo = 0
+    }
+
+    state.dirty = true
+    buildModesFromRaw()
+    state.needsRender = true
+end
+
+local function removeLastRangeFromSelectedMode()
+    local mode = getSelectedMode()
+    if not mode or #mode.ranges == 0 then return end
+
+    local lastRange = mode.ranges[#mode.ranges]
+    local slot = lastRange.slot
+    if not slot then return end
+
+    state.modeRanges[slot] = {
+        id = 0,
+        auxChannelIndex = 0,
+        range = {start = 900, ["end"] = 900}
+    }
+    state.modeRangesExtra[slot] = {
+        id = 0,
+        modeLogic = 0,
+        linkedTo = 0
+    }
+
+    state.dirty = true
+    buildModesFromRaw()
+    state.needsRender = true
+end
+
+local function render()
+    local app = rfsuite.app
+    form.clear()
+    app.ui.fieldHeader(state.title)
+
+    if state.loading then
+        form.addLine("Loading mode data...")
+        return
+    end
+
+    if state.loadError then
+        form.addLine("Load error: " .. tostring(state.loadError))
+        return
+    end
+
+    if #state.modes == 0 then
+        form.addLine("No modes reported by FC.")
+        return
+    end
+
+    local width = app.lcdWidth
+    local h = app.radio.navbuttonHeight
+    local y = app.radio.linePaddingTop
+    local rightPadding = 8
+    local buttonW = math.floor(width * 0.24)
+    local buttonH = h
+
+    local modeOptions = {}
+    for i = 1, #state.modes do
+        modeOptions[#modeOptions + 1] = state.modes[i].name
+    end
+    local modeOptionsTbl = buildChoiceTable(modeOptions, 0)
+
+    local modeLine = form.addLine("Mode")
+    local modeChoice = form.addChoiceField(
+        modeLine,
+        {x = width - rightPadding - math.floor(width * 0.5), y = y, w = math.floor(width * 0.5), h = h},
+        modeOptionsTbl,
+        function() return state.selectedModeIndex end,
+        function(value)
+            state.selectedModeIndex = clamp(value or 1, 1, #state.modes)
+            buildModesFromRaw()
+            state.needsRender = true
+        end
+    )
+    if modeChoice and modeChoice.values then modeChoice:values(modeOptionsTbl) end
+    if modeChoice and modeChoice.enable then modeChoice:enable(true) end
+
+    local selectedMode = getSelectedMode()
+    local ranges = selectedMode and selectedMode.ranges or {}
+    form.addLine("Active ranges: " .. tostring(#ranges) .. " / " .. tostring(#state.modeRanges))
+    if state.dirty then form.addLine("Unsaved changes") end
+    if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
+
+    local actionLine = form.addLine("")
+    local addBtn = form.addButton(actionLine, {x = width - rightPadding - (buttonW * 2) - 8, y = y, w = buttonW, h = buttonH}, {
+        text = "Add",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function() addRangeToSelectedMode() end
+    })
+
+    local delBtn = form.addButton(actionLine, {x = width - rightPadding - buttonW, y = y, w = buttonW, h = buttonH}, {
+        text = "Delete",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function() removeLastRangeFromSelectedMode() end
+    })
+
+    if delBtn and delBtn.enable then delBtn:enable(#ranges > 0) end
+    if addBtn and addBtn.enable then addBtn:enable(true) end
+
+    if #ranges == 0 then
+        form.addLine("No ranges configured for this mode.")
+        return
+    end
+
+    for i = 1, #ranges do addModeRangeLine(i, ranges[i]) end
+end
+
+local function queueSetModeRange(slotIndex, done, failed)
+    local range = state.modeRanges[slotIndex] or {id = 0, auxChannelIndex = 0, range = {start = 900, ["end"] = 900}}
+    local extra = state.modeRangesExtra[slotIndex] or {id = 0, modeLogic = 0, linkedTo = 0}
+
+    local startStep = clamp((range.range.start - 1500) / 5, -125, 125)
+    local endStep = clamp((range.range["end"] - 1500) / 5, -125, 125)
+    local payload = {
+        slotIndex - 1,
+        clamp(range.id or 0, 0, 255),
+        clamp(range.auxChannelIndex or 0, 0, 255),
+        toS8Byte(startStep),
+        toS8Byte(endStep),
+        clamp(extra.modeLogic or 0, 0, 1),
+        clamp(extra.linkedTo or 0, 0, 255)
+    }
+
+    local message = {
+        command = 35,
+        payload = payload,
+        processReply = function() if done then done() end end,
+        errorHandler = function() if failed then failed("SET_MODE_RANGE failed at slot " .. tostring(slotIndex)) end end,
+        simulatorResponse = {}
+    }
+    local ok, reason = queueDirect(message, string.format("modes.slot.%d", slotIndex))
+    if not ok and failed then failed(reason or "queue_rejected") end
+end
+
+local function queueEepromWrite(done, failed)
+    local message = {
+        command = 250,
+        processReply = function() if done then done() end end,
+        errorHandler = function() if failed then failed("EEPROM write failed") end end,
+        simulatorResponse = {}
+    }
+    local ok, reason = queueDirect(message, "modes.eeprom")
+    if not ok and failed then failed(reason or "queue_rejected") end
+end
+
+local function saveAllRanges()
+    state.saving = true
+    state.saveError = nil
+    rfsuite.app.ui.progressDisplay("Modes", "Saving mode configuration")
+
+    local slot = 1
+    local total = #state.modeRanges
+
+    local function failed(reason)
+        state.saving = false
+        state.saveError = reason or "Save failed"
+        state.needsRender = true
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
+
+    local function writeNext()
+        if slot > total then
+            queueEepromWrite(function()
+                state.saving = false
+                state.dirty = false
+                state.saveError = nil
+                state.needsRender = true
+                rfsuite.app.triggers.closeProgressLoader = true
+            end, failed)
+            return
+        end
+
+        queueSetModeRange(slot, function()
+            slot = slot + 1
+            writeNext()
+        end, failed)
+    end
+
+    writeNext()
+end
+
+local function onSaveMenu()
+    if state.loading or state.saving or not state.loaded then return end
+    if not state.dirty then return end
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        saveAllRanges()
+        return
+    end
+
+    local buttons = {
+        {label = "@i18n(app.btn_ok_long)@", action = function() saveAllRanges(); return true end},
+        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+    }
+    form.openDialog({
+        width = nil,
+        title = "@i18n(app.msg_save_settings)@",
+        message = "@i18n(app.msg_save_current_page)@",
+        buttons = buttons,
+        wakeup = function() end,
+        paint = function() end,
+        options = TEXT_LEFT
+    })
+end
+
+local function onReloadMenu()
+    if state.saving then return end
+    startLoad()
+end
+
+local function onNavMenu()
+    rfsuite.app.ui.openMainMenuSub("advanced")
+    return true
+end
+
+local function wakeup()
+    if state.needsRender then
+        render()
+        state.needsRender = false
+    end
+    if not state.loaded or state.loading then return end
+    if state.saving then return end
+end
+
+local function openPage(opts)
+    local idx = opts.idx
+    state.title = opts.title or "Modes"
+
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = state.title
+    rfsuite.app.lastScript = opts.script
+    rfsuite.session.lastPage = opts.script
+
+    startLoad()
+    state.needsRender = true
+end
+
+return {
+    title = "Modes",
+    openPage = openPage,
+    wakeup = wakeup,
+    onSaveMenu = onSaveMenu,
+    onReloadMenu = onReloadMenu,
+    onNavMenu = onNavMenu,
+    eepromWrite = false,
+    reboot = false,
+    navButtons = {menu = true, save = true, reload = true, tool = false, help = true},
+    API = {}
+}

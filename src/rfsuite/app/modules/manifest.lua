@@ -55,7 +55,8 @@ return {
                 "profile_mainrotor",
                 "profile_tailrotor",
                 "profile_rescue",
-                "rates_advanced"
+                "rates_advanced",
+                "modes"
             }
         },
         {
