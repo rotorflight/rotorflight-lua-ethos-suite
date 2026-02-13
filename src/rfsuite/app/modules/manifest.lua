@@ -56,7 +56,8 @@ return {
                 "profile_tailrotor",
                 "profile_rescue",
                 "rates_advanced",
-                "modes"
+                "modes",
+                "adjustments"
             }
         },
         {

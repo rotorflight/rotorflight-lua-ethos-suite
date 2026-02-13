@@ -293,16 +293,34 @@ function utils.round(num, places)
     end
 end
 
-function utils.joinTableItems(tbl, delimiter)
-    if not tbl or #tbl == 0 then return "" end
+function utils.joinTableItems(tbl, delimiter, maxItems)
+    if type(tbl) ~= "table" then
+        if tbl == nil then return "" end
+        return tostring(tbl)
+    end
 
     delimiter = delimiter or ""
-    local sIdx = tbl[0] and 0 or 1
+    local sIdx = (tbl[0] ~= nil) and 0 or 1
+    local hardLimit = maxItems or 2048
 
-    local padded = {}
-    for i = sIdx, #tbl do padded[i] = tostring(tbl[i]) .. string.rep(" ", math.max(0, 3 - #tostring(tbl[i]))) end
+    local parts = {}
+    local i = sIdx
+    local count = 0
+    while count < hardLimit do
+        local v = tbl[i]
+        if v == nil then break end
+        parts[#parts + 1] = tostring(v)
+        i = i + 1
+        count = count + 1
+    end
 
-    return table.concat(padded, delimiter, sIdx, #tbl)
+    local joined = table.concat(parts, delimiter)
+    local truncated = tbl[i] ~= nil
+
+    if maxItems ~= nil then
+        return joined, count, truncated
+    end
+    return joined
 end
 
 function utils.log(msg, level) 
@@ -431,10 +449,21 @@ end
 
 
 function utils.logMsp(cmd, rwState, buf, err)
-    if rfsuite.preferences.developer.logmsp then
-        local payload = rfsuite.utils.joinTableItems(buf, ", ")
-        rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
-        if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    if dev and dev.logmsp then
+        local function emit()
+            local payload, shown, truncated = rfsuite.utils.joinTableItems(buf, ", ", 96)
+            if truncated then payload = payload .. " ... (" .. tostring(shown) .. "+ items)" end
+            rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
+            if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
+        end
+
+        local callback = rfsuite.tasks and rfsuite.tasks.callback
+        if callback and callback.now then
+            callback.now(emit)
+        else
+            emit()
+        end
     end
 end
 
