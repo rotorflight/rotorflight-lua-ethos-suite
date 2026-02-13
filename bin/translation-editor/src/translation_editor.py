@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
-import os
 import shutil
+import ssl
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import filedialog
@@ -13,13 +13,6 @@ from pathlib import Path
 from collections import OrderedDict
 
 APP_TITLE = "RF Suite Translation Editor"
-# Allowed non-ASCII characters observed in existing translations.
-ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​–“”")
-HEBREW_RANGE = (0x0590, 0x05FF)  # Hebrew block (letters + niqqud + punctuation)
-CJK_UNIFIED = (0x4E00, 0x9FFF)
-CJK_EXT_A = (0x3400, 0x4DBF)
-CJK_PUNCT = (0x3000, 0x303F)
-FULLWIDTH = (0xFF00, 0xFFEF)
 
 REPO_OWNER = "rotorflight"
 REPO_NAME = "rotorflight-lua-ethos-suite"
@@ -28,7 +21,6 @@ API_BASE = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
 DATA_ROOT = Path.home() / ".rfsuite-translation-editor"
 I18N_REL = Path("bin/i18n/json")
 SOUND_REL = Path("bin/sound-generator/json")
-
 
 def _candidate_roots():
     seen = set()
@@ -76,6 +68,14 @@ def sound_root():
     if data_path.exists():
         return data_path
     return repo_root() / SOUND_REL
+
+
+def _https_context():
+    return ssl._create_unverified_context()
+
+
+def _safe_urlopen(req_or_url, timeout=30):
+    return urlopen(req_or_url, timeout=timeout, context=_https_context())
 
 
 class DataStore:
@@ -140,7 +140,7 @@ class TranslationEditor(tk.Tk):
         ttk.Label(top, text="Filter:").pack(side=tk.LEFT, padx=(12, 0))
         self.filter_cb = ttk.Combobox(
             top,
-            values=["All", "Needs only", "Done only", "Disallowed chars", "Exceeds max"],
+            values=["All", "Needs only", "Done only", "Exceeds max"],
             state="readonly",
             width=14
         )
@@ -157,7 +157,6 @@ class TranslationEditor(tk.Tk):
         ttk.Button(btn_frame, text="Reload", command=self._load_data).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo", command=self._undo_last).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Edit translation", command=self._edit_selected).pack(side=tk.RIGHT, padx=4)
-        ttk.Button(btn_frame, text="Toggle needs", command=self._toggle_needs).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo row", command=self._undo_row).pack(side=tk.RIGHT, padx=4)
 
         stats = ttk.LabelFrame(self, text="Summary")
@@ -344,10 +343,6 @@ class TranslationEditor(tk.Tk):
                 continue
             if mode == "Done only" and row["needs"]:
                 continue
-            if mode == "Disallowed chars":
-                translation = row.get("translation", "") or ""
-                if not self._has_disallowed_non_ascii(translation):
-                    continue
             if mode == "Exceeds max":
                 english = row.get("english", "")
                 translation = row.get("translation", "")
@@ -384,9 +379,6 @@ class TranslationEditor(tk.Tk):
         total = len(self.store.rows)
         missing = sum(1 for r in self.store.rows if r["needs"])
         done = total - missing
-        disallowed = sum(
-            1 for r in self.store.rows if self._has_disallowed_non_ascii(r.get("translation", ""))
-        )
         exceeds = sum(
             1 for r in self.store.rows
             if self._length_warning(r.get("english", ""), r.get("translation", ""), r.get("max_length"))
@@ -398,7 +390,7 @@ class TranslationEditor(tk.Tk):
             edit_hint = "Edit: click Translation cell"
         self.status.configure(text=f"Rows: {shown}/{total}   Missing: {missing}   {edit_hint}   Toggle: click Needs")
         self.stats_label.configure(
-            text=f"Total: {total}  Done: {done}  Missing: {missing}  Exceeds: {exceeds}  Disallowed: {disallowed}"
+            text=f"Total: {total}  Done: {done}  Missing: {missing}  Exceeds: {exceeds}"
         )
         self._update_length_warnings()
 
@@ -426,33 +418,6 @@ class TranslationEditor(tk.Tk):
             return t > max_length
         return t > (e * 1.15)
 
-    def _is_allowed_non_ascii(self, ch):
-        if ch in ALLOWED_NON_ASCII:
-            return True
-        if self.store.locale == "he":
-            code = ord(ch)
-            if HEBREW_RANGE[0] <= code <= HEBREW_RANGE[1]:
-                return True
-            # Common RTL marks
-            if code in (0x200F, 0x200E, 0x202A, 0x202B, 0x202C):
-                return True
-        if self.store.locale.startswith("zh"):
-            code = ord(ch)
-            if (CJK_UNIFIED[0] <= code <= CJK_UNIFIED[1]
-                or CJK_EXT_A[0] <= code <= CJK_EXT_A[1]
-                or CJK_PUNCT[0] <= code <= CJK_PUNCT[1]
-                or FULLWIDTH[0] <= code <= FULLWIDTH[1]):
-                return True
-        return False
-
-    def _has_disallowed_non_ascii(self, text):
-        if text is None:
-            return False
-        for ch in text:
-            if ord(ch) > 127 and not self._is_allowed_non_ascii(ch):
-                return True
-        return False
-
     def _update_length_warnings(self):
         sel = self.tree.selection()
         if sel:
@@ -471,11 +436,6 @@ class TranslationEditor(tk.Tk):
                     self.warning_label.configure(
                         text=f"Warning: translation exceeds English by {diff} chars (>15%)"
                     )
-                self.bell()
-            elif self._has_disallowed_non_ascii(translation):
-                self.warning_label.configure(
-                    text="Warning: translation contains non-ASCII characters (blocked)"
-                )
                 self.bell()
             else:
                 self.warning_label.configure(text="")
@@ -507,13 +467,6 @@ class TranslationEditor(tk.Tk):
                 self.warning_label.configure(
                     text=f"Warning: translation exceeds English by {diff} chars (>15%)"
                 )
-            if not self._live_warn_active:
-                self.bell()
-            self._live_warn_active = True
-        elif self._has_disallowed_non_ascii(translation):
-            self.warning_label.configure(
-                text="Warning: translation contains non-ASCII characters (blocked)"
-            )
             if not self._live_warn_active:
                 self.bell()
             self._live_warn_active = True
@@ -793,14 +746,21 @@ class TranslationEditor(tk.Tk):
 
     def _download_folder(self, rel_path: Path):
         url = f"{API_BASE}/{rel_path.as_posix()}?ref={REPO_BRANCH}"
-        req = Request(url, headers={"Accept": "application/vnd.github+json"})
+        req = Request(
+            url,
+            headers={
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "rfsuite-translation-editor",
+            },
+        )
         try:
-            with urlopen(req) as resp:
+            with _safe_urlopen(req) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except HTTPError as e:
             raise RuntimeError(f"HTTP error {e.code} for {url}") from e
         except URLError as e:
-            raise RuntimeError(f"Network error for {url}") from e
+            reason = getattr(e, "reason", e)
+            raise RuntimeError(f"Network error for {url}: {reason}") from e
 
         if not isinstance(data, list):
             raise RuntimeError(f"Unexpected response for {url}")
@@ -818,8 +778,17 @@ class TranslationEditor(tk.Tk):
                 continue
             target = out_dir / name
             try:
-                with urlopen(download_url) as resp:
+                file_req = Request(
+                    download_url,
+                    headers={"User-Agent": "rfsuite-translation-editor"},
+                )
+                with _safe_urlopen(file_req) as resp:
                     target.write_bytes(resp.read())
+            except HTTPError as e:
+                raise RuntimeError(f"HTTP error {e.code} downloading {download_url}") from e
+            except URLError as e:
+                reason = getattr(e, "reason", e)
+                raise RuntimeError(f"Network error downloading {download_url}: {reason}") from e
             except Exception as e:
                 raise RuntimeError(f"Failed downloading {download_url}: {e}") from e
 
@@ -849,21 +818,7 @@ class TranslationEditor(tk.Tk):
             return
         self._sync()
 
-    def _has_non_ascii(self):
-        for row in self.store.rows:
-            text = row.get("translation", "")
-            if self._has_disallowed_non_ascii(text):
-                return True
-        return False
-
     def _save_i18n(self):
-        # Hard block non-ASCII translations to avoid Ethos issues.
-        if self._has_non_ascii():
-            messagebox.showerror(
-                "Non-ASCII blocked",
-                "Save blocked: translations contain non-ASCII characters."
-            )
-            return
         root = i18n_root()
         root.mkdir(parents=True, exist_ok=True)
         out_path = root / f"{self.store.locale}.json"
@@ -929,13 +884,6 @@ class TranslationEditor(tk.Tk):
         messagebox.showinfo("Saved", f"Saved {out_path}")
 
     def _save_sound(self):
-        # Hard block non-ASCII translations to avoid Ethos issues.
-        if self._has_non_ascii():
-            messagebox.showerror(
-                "Non-ASCII blocked",
-                "Save blocked: translations contain non-ASCII characters."
-            )
-            return
         root = sound_root()
         root.mkdir(parents=True, exist_ok=True)
         out_path = root / f"{self.store.locale}.json"

@@ -10,9 +10,15 @@ local triggerOverRideAll = false
 local currentServoCenter
 local lastSetServoCenter
 local lastServoChangeTime = os.clock()
--- UI presents BUS servos as 1..N, but MSP expects absolute servo indices.
--- PWM servos occupy absolute indices 0..7, BUS starts at absolute index 8.
--- Therefore: UI(1) -> UI0(0) -> ABS(8)
+
+
+-- Indexing model (12.09+):
+-- - UI selection is 1-based and converted to local 0-based `servoIndex`.
+-- - Read requests (MSP 125) use legacy absolute servo index space with base index 8.
+-- - Write/override requests (MSP 212/213/193) use the same index space in this tool.
+-- Example:
+-- - UI BUS servo 10 -> ui0=9 -> index=17
+
 local servoIndex = rfsuite.currentServoIndex - 1 -- UI 0-based index (0..N-1)
 local isSaving = false
 local enableWakeup = false
@@ -20,117 +26,70 @@ local enableWakeup = false
 local servoTable
 local servoCount
 local configs = {}
-local BUS_SERVO_BASE = 8
-local SERVO_RANGE_MIN = 1000
-local SERVO_RANGE_MAX = 2000
-
-local function clampRange(value, lower, upper)
-    if lower > upper then lower = upper end
-    if value < lower then return lower end
-    if value > upper then return upper end
-    return value
-end
-
-local function clampServoValue(kind, value)
-    local currentMin = configs[servoIndex]['min'] or SERVO_RANGE_MIN
-    local currentMid = configs[servoIndex]['mid'] or math.floor((SERVO_RANGE_MIN + SERVO_RANGE_MAX) / 2)
-    local currentMax = configs[servoIndex]['max'] or SERVO_RANGE_MAX
-
-    if kind == "mid" then
-        local lower = math.max(SERVO_RANGE_MIN, currentMin + 1)
-        local upper = math.min(SERVO_RANGE_MAX, currentMax - 1)
-        return clampRange(value, lower, upper)
-    elseif kind == "min" then
-        local upper = math.min(SERVO_RANGE_MAX, currentMid - 1, currentMax - 1)
-        if upper < SERVO_RANGE_MIN then upper = SERVO_RANGE_MIN end
-        return clampRange(value, SERVO_RANGE_MIN, upper)
-    elseif kind == "max" then
-        local lower = math.max(SERVO_RANGE_MIN, currentMid + 1, currentMin + 1)
-        if lower > SERVO_RANGE_MAX then lower = SERVO_RANGE_MAX end
-        return clampRange(value, lower, SERVO_RANGE_MAX)
-    end
-
-    return clampRange(value, SERVO_RANGE_MIN, SERVO_RANGE_MAX)
-end
-
-local function updateServoFieldLimits(fields)
-    if not fields then return end
-
-    local currentMin = configs[servoIndex]['min'] or SERVO_RANGE_MIN
-    local currentMid = configs[servoIndex]['mid'] or math.floor((SERVO_RANGE_MIN + SERVO_RANGE_MAX) / 2)
-    local currentMax = configs[servoIndex]['max'] or SERVO_RANGE_MAX
-
-    if fields.mid then
-        fields.mid:minimum(math.max(SERVO_RANGE_MIN, currentMin + 1))
-        fields.mid:maximum(math.min(SERVO_RANGE_MAX, currentMax - 1))
-    end
-    if fields.min then
-        fields.min:minimum(SERVO_RANGE_MIN)
-        fields.min:maximum(math.min(SERVO_RANGE_MAX, currentMid - 1, currentMax - 1))
-    end
-    if fields.max then
-        fields.max:minimum(math.max(SERVO_RANGE_MIN, currentMid + 1, currentMin + 1))
-        fields.max:maximum(SERVO_RANGE_MAX)
-    end
-end
+local BUS_OUTPUT_COUNT = 18
+local MSP125_READ_BASE_INDEX = 8  -- Base index expected by MSP 125 read-index namespace
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
-local function uiIndexToAbsolute(ui0)
-    -- ui0 is 0-based within the BUS page
-    return (ui0 or 0) + BUS_SERVO_BASE
+local function uiIndexToReadIndex(ui0)
+    -- Read path (MSP 125): legacy absolute namespace.
+    -- ui0=0 -> 8, ui0=9 -> 17
+    return (ui0 or 0) + MSP125_READ_BASE_INDEX
 end
 
-local function currentServoAbsoluteIndex()
-    return uiIndexToAbsolute(servoIndex)
+local function uiIndexToWriteIndex(ui0)
+    -- Write path intentionally matches read path.
+    return uiIndexToReadIndex(ui0)
+end
+
+local function uiIndexToConfigWriteIndex(ui0)
+    -- MSP 212 uses active-output index space on 12.09 BUS targets.
+    return (ui0 or 0) + (rfsuite.session.servoCount - BUS_OUTPUT_COUNT)
+end
+
+local function currentServoReadIndex()
+    return uiIndexToReadIndex(servoIndex)
+end
+
+local function currentServoWriteIndex()
+    return uiIndexToWriteIndex(servoIndex)
 end
 
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
-    local count = servoCount or (servoTable and #servoTable) or 0
-
-    for i = 0, count - 1 do
-        -- BUS servos are offset in MSP by BUS_SERVO_BASE
-        local message = {command = 193, payload = {uiIndexToAbsolute(i)}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        queueDirect(message, string.format("servo.bus.override.%d.on", uiIndexToAbsolute(i)))
-    end
+    local message = {command = 196, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+    queueDirect(message, "servo.bus.override.all.on")
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    local count = servoCount or (servoTable and #servoTable) or 0
-
-    for i = 0, count - 1 do
-        -- BUS servos are offset in MSP by BUS_SERVO_BASE
-        local message = {command = 193, payload = {uiIndexToAbsolute(i)}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-        queueDirect(message, string.format("servo.bus.override.%d.off", uiIndexToAbsolute(i)))
-    end
+    local message = {command = 196, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+    queueDirect(message, "servo.bus.override.all.off")
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOff(self)
-    local message = {command = 193, payload = {currentServoAbsoluteIndex()}}
+    local message = {command = 193, payload = {currentServoWriteIndex()}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-    queueDirect(message, string.format("servo.bus.override.%d.off", currentServoAbsoluteIndex()))
+    queueDirect(message, string.format("servo.bus.override.%d.off", currentServoWriteIndex()))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOn(self)
-    local message = {command = 193, payload = {currentServoAbsoluteIndex()}}
+    local message = {command = 193, payload = {currentServoWriteIndex()}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-    queueDirect(message, string.format("servo.bus.override.%d.on", currentServoAbsoluteIndex()))
+    queueDirect(message, string.format("servo.bus.override.%d.on", currentServoWriteIndex()))
     rfsuite.app.triggers.isReady = true
-    rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
@@ -144,12 +103,14 @@ end
 local function saveServoCenter(self)
 
     local servoCenter = math.floor(configs[servoIndex]['mid'])
+    local writeIndex = currentServoWriteIndex()
+    rfsuite.utils.log(string.format("BUS save center: ui=%d read=%d write=%d mid=%d", servoIndex, currentServoReadIndex(), writeIndex, servoCenter), "debug")
 
     local message = {command = 213, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoAbsoluteIndex())
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
-    return queueDirect(message, string.format("servo.bus.%d.center", currentServoAbsoluteIndex()))
+    return queueDirect(message, string.format("servo.bus.%d.center", writeIndex))
 
 end
 
@@ -176,8 +137,9 @@ local function saveServoSettings(self)
         servoFlags = 3
     end
 
+    local configWriteIndex = uiIndexToConfigWriteIndex(servoIndex)
     local message = {command = 212, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, currentServoAbsoluteIndex())
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, configWriteIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
@@ -187,7 +149,7 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", currentServoAbsoluteIndex()))
+    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", configWriteIndex))
     if not ok then return false, reason end
 
     if rfsuite.session.servoOverride == true then
@@ -236,6 +198,16 @@ local function onNavMenu(self)
 
 end
 
+local function setServoConfigFieldsEnabled(enabled)
+    if not rfsuite.app.formFields then return end
+    for _, idx in ipairs({3, 4, 5, 6, 7, 8, 9, 10}) do
+        local field = rfsuite.app.formFields[idx]
+        if field and field.enable then field:enable(enabled) end
+    end
+    local saveField = rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields['save']
+    if saveField and saveField.enable then saveField:enable(enabled) end
+end
+
 local function wakeup(self)
 
     if enableWakeup == true then
@@ -256,20 +228,10 @@ local function wakeup(self)
             currentServoCenter = configs[servoIndex]['mid']
 
             local now = os.clock()
-            local settleTime
-            if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-                settleTime = 0.1
-            else
-                settleTime = 0.85
-            end
+            local settleTime = 0.05 -- seconds
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
-                    local ok, reason
-                    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-                        ok, reason = self.saveServoCenter(self)
-                    else
-                        ok, reason = self.saveServoSettings(self)
-                    end
+                    local ok, reason = self.saveServoCenter(self)
                     if ok then
                         lastSetServoCenter = currentServoCenter
                         lastServoChangeTime = now
@@ -291,15 +253,7 @@ local function wakeup(self)
             rfsuite.app.Page.servoCenterFocusAllOn(self)
             rfsuite.session.servoOverride = true
 
-            rfsuite.app.formFields[3]:enable(false)
-            rfsuite.app.formFields[4]:enable(false)
-            rfsuite.app.formFields[5]:enable(false)
-            rfsuite.app.formFields[6]:enable(false)
-            rfsuite.app.formFields[7]:enable(false)
-            rfsuite.app.formFields[8]:enable(false)
-            rfsuite.app.formFields[9]:enable(false)
-            rfsuite.app.formFields[10]:enable(false)
-            rfsuite.app.formNavigationFields['save']:enable(false)
+            setServoConfigFieldsEnabled(false)
 
         else
 
@@ -308,71 +262,17 @@ local function wakeup(self)
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.session.servoOverride = false
 
-            rfsuite.app.formFields[3]:enable(true)
-            rfsuite.app.formFields[4]:enable(true)
-            rfsuite.app.formFields[5]:enable(true)
-            rfsuite.app.formFields[6]:enable(true)
-            rfsuite.app.formFields[7]:enable(true)
-            rfsuite.app.formFields[8]:enable(true)
-            rfsuite.app.formFields[9]:enable(true)
-            rfsuite.app.formFields[10]:enable(true)
-            rfsuite.app.formNavigationFields['save']:enable(true)
+            setServoConfigFieldsEnabled(true)
         end
     end
 
 end
 
-local function getServoConfigurations(callback, callbackParam)
-    local message = {
-        command = 120,
-        processReply = function(self, buf)
-            servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-            rfsuite.session.servoCount = servoCount
-
-            rfsuite.utils.log("Servo count " .. tostring(servoCount), "info")
-            for i = 0, servoCount - 1 do
-                local config = {}
-
-                config.name = servoTable[servoIndex + 1]['title']
-                config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
-                config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
-                config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
-
-                if config.flags == 1 or config.flags == 3 then
-                    config.reverse = 1
-                else
-                    config.reverse = 0
-                end
-
-                if config.flags == 2 or config.flags == 3 then
-                    config.geometry = 1
-                else
-                    config.geometry = 0
-                end
-
-                configs[i] = config
-
-            end
-            callback(callbackParam)
-        end,
-
-        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-    }
-    return queueDirect(message, "servo.bus.cfg.bulk")
-end
-
-
 local function getServoConfigurationsIndexed(callback, callbackParam)
 
-    -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
-    -- Payload must contain exactly 1 byte: the servo index (0-based).
-    local absIndex = currentServoAbsoluteIndex()
+    -- MSP_GET_SERVO_CONFIG (125) reads one servo by read-index namespace (legacy absolute).
+    -- This intentionally differs from write-index namespace used by 212/213/193.
+    local absIndex = currentServoReadIndex()
 
     local message = {
         command = 125,
@@ -467,11 +367,9 @@ local function openPage(opts)
 
     form.clear()
 
-    if rfsuite.app.Page.pageTitle ~= nil then
-        rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
-    else
-        rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
-    end
+
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.bus)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
+
 
     if rfsuite.app.Page.headerLine ~= nil then
         local headerLine = form.addLine("")
@@ -480,23 +378,17 @@ local function openPage(opts)
 
     if rfsuite.session.servoOverride == true then rfsuite.app.formNavigationFields['save']:enable(false) end
 
-    local servoConstraintFields = {}
-
     if configs[servoIndex]['mid'] ~= nil then
 
         local idx = 2
-        local minValue = SERVO_RANGE_MIN  -- we must always be higher than the min value and higher than the mid value
-        local maxValue = SERVO_RANGE_MAX  -- we must always be lower than the max value and less than the mid value
+        local minValue = 1000
+        local maxValue = 2000
         local defaultValue = 1500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
 
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.center)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value)
-            configs[servoIndex]['mid'] = clampServoValue("mid", value)
-            updateServoFieldLimits(servoConstraintFields)
-        end)
-        servoConstraintFields.mid = rfsuite.app.formFields[idx]
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value) configs[servoIndex]['mid'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -504,17 +396,13 @@ local function openPage(opts)
 
     if configs[servoIndex]['min'] ~= nil then
         local idx = 3
-        local minValue = SERVO_RANGE_MIN     -- we must always be lower than the max value, and less than the mid value
-        local maxValue = SERVO_RANGE_MAX     -- we must always be higher than the min value and higher than the mid value
-        local defaultValue = 1000
+        local minValue = -500
+        local maxValue = -1
+        local defaultValue = -500
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value)
-            configs[servoIndex]['min'] = clampServoValue("min", value)
-            updateServoFieldLimits(servoConstraintFields)
-        end)
-        servoConstraintFields.min = rfsuite.app.formFields[idx]
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value) configs[servoIndex]['min'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -523,24 +411,18 @@ local function openPage(opts)
 
     if configs[servoIndex]['max'] ~= nil then
         local idx = 4
-        local minValue = SERVO_RANGE_MIN   -- we must always be higher than the min value and higher than the mid value
-        local maxValue = SERVO_RANGE_MAX   -- we must always be lower than the max value and less than the mid value
-        local defaultValue = 1000
+        local minValue = 1
+        local maxValue = 500
+        local defaultValue = 500
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value)
-            configs[servoIndex]['max'] = clampServoValue("max", value)
-            updateServoFieldLimits(servoConstraintFields)
-        end)
-        servoConstraintFields.max = rfsuite.app.formFields[idx]
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value) configs[servoIndex]['max'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
-
-    updateServoFieldLimits(servoConstraintFields)
 
     if configs[servoIndex]['scaleNeg'] ~= nil then
         local idx = 5
@@ -566,21 +448,6 @@ local function openPage(opts)
         local helpTxt = rfsuite.app.fieldHelpTxt['servoScalePos']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_positive)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scalePos'] end, function(value) configs[servoIndex]['scalePos'] = value end)
-        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
-        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
-        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
-    end
-
-    if configs[servoIndex]['rate'] ~= nil then
-        local idx = 7
-        local minValue = 50
-        local maxValue = 5000
-        local defaultValue = 333
-        local suffix = "@i18n(app.unit_hertz)@"
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoRate']['t']
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.rate)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['rate'] end, function(value) configs[servoIndex]['rate'] = value end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -614,23 +481,22 @@ local function openPage(opts)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    if configs[servoIndex]['flags'] ~= nil then
-        local idx = 10
-        local minValue = 0
-        local maxValue = 1000
-        local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
-        local tableIdxInc = -1
-        local value
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
-        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value) configs[servoIndex]['geometry'] = value end)
-        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
-    end
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-        getServoConfigurationsIndexed(getServoConfigurationsEnd)
-    else
-        getServoConfigurations(getServoConfigurationsEnd)
+    if servoIndex <= 7 then
+        if configs[servoIndex]['flags'] ~= nil then
+            local idx = 10
+            local minValue = 0
+            local maxValue = 1000
+            local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
+            local tableIdxInc = -1
+            local value
+            rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
+            rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value) configs[servoIndex]['geometry'] = value end)
+            if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        end
     end    
+
+    getServoConfigurationsIndexed(getServoConfigurationsEnd)
 
 end
 
