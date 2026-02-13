@@ -18,8 +18,19 @@ ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​
 HEBREW_RANGE = (0x0590, 0x05FF)  # Hebrew block (letters + niqqud + punctuation)
 CJK_UNIFIED = (0x4E00, 0x9FFF)
 CJK_EXT_A = (0x3400, 0x4DBF)
+CJK_EXT_B = (0x20000, 0x2A6DF)
+CJK_EXT_C = (0x2A700, 0x2B73F)
+CJK_EXT_D = (0x2B740, 0x2B81F)
+CJK_EXT_E = (0x2B820, 0x2CEAF)
+CJK_EXT_F = (0x2CEB0, 0x2EBEF)
+CJK_EXT_I = (0x2EBF0, 0x2EE5F)
+CJK_COMPAT = (0xF900, 0xFAFF)
+CJK_COMPAT_SUP = (0x2F800, 0x2FA1F)
 CJK_PUNCT = (0x3000, 0x303F)
 FULLWIDTH = (0xFF00, 0xFFEF)
+BOPOMOFO = (0x3100, 0x312F)
+BOPOMOFO_EXT = (0x31A0, 0x31BF)
+GENERAL_PUNCT = (0x2000, 0x206F)
 
 REPO_OWNER = "rotorflight"
 REPO_NAME = "rotorflight-lua-ethos-suite"
@@ -157,7 +168,6 @@ class TranslationEditor(tk.Tk):
         ttk.Button(btn_frame, text="Reload", command=self._load_data).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo", command=self._undo_last).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Edit translation", command=self._edit_selected).pack(side=tk.RIGHT, padx=4)
-        ttk.Button(btn_frame, text="Toggle needs", command=self._toggle_needs).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo row", command=self._undo_row).pack(side=tk.RIGHT, padx=4)
 
         stats = ttk.LabelFrame(self, text="Summary")
@@ -429,19 +439,33 @@ class TranslationEditor(tk.Tk):
     def _is_allowed_non_ascii(self, ch):
         if ch in ALLOWED_NON_ASCII:
             return True
-        if self.store.locale == "he":
+        locale = (self.store.locale or "").lower()
+        if locale == "he":
             code = ord(ch)
             if HEBREW_RANGE[0] <= code <= HEBREW_RANGE[1]:
                 return True
             # Common RTL marks
             if code in (0x200F, 0x200E, 0x202A, 0x202B, 0x202C):
                 return True
-        if self.store.locale.startswith("zh"):
+        if locale.startswith("zh"):
+            # Chinese locales allow Han ideographs (including extension blocks),
+            # Chinese punctuation/fullwidth forms, and Bopomofo usage.
             code = ord(ch)
             if (CJK_UNIFIED[0] <= code <= CJK_UNIFIED[1]
                 or CJK_EXT_A[0] <= code <= CJK_EXT_A[1]
+                or CJK_EXT_B[0] <= code <= CJK_EXT_B[1]
+                or CJK_EXT_C[0] <= code <= CJK_EXT_C[1]
+                or CJK_EXT_D[0] <= code <= CJK_EXT_D[1]
+                or CJK_EXT_E[0] <= code <= CJK_EXT_E[1]
+                or CJK_EXT_F[0] <= code <= CJK_EXT_F[1]
+                or CJK_EXT_I[0] <= code <= CJK_EXT_I[1]
+                or CJK_COMPAT[0] <= code <= CJK_COMPAT[1]
+                or CJK_COMPAT_SUP[0] <= code <= CJK_COMPAT_SUP[1]
                 or CJK_PUNCT[0] <= code <= CJK_PUNCT[1]
-                or FULLWIDTH[0] <= code <= FULLWIDTH[1]):
+                or FULLWIDTH[0] <= code <= FULLWIDTH[1]
+                or BOPOMOFO[0] <= code <= BOPOMOFO[1]
+                or BOPOMOFO_EXT[0] <= code <= BOPOMOFO_EXT[1]
+                or GENERAL_PUNCT[0] <= code <= GENERAL_PUNCT[1]):
                 return True
         return False
 
@@ -474,7 +498,7 @@ class TranslationEditor(tk.Tk):
                 self.bell()
             elif self._has_disallowed_non_ascii(translation):
                 self.warning_label.configure(
-                    text="Warning: translation contains non-ASCII characters (blocked)"
+                    text="Warning: translation contains disallowed non-ASCII characters"
                 )
                 self.bell()
             else:
@@ -512,7 +536,7 @@ class TranslationEditor(tk.Tk):
             self._live_warn_active = True
         elif self._has_disallowed_non_ascii(translation):
             self.warning_label.configure(
-                text="Warning: translation contains non-ASCII characters (blocked)"
+                text="Warning: translation contains disallowed non-ASCII characters"
             )
             if not self._live_warn_active:
                 self.bell()
