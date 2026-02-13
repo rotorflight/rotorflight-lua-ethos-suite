@@ -9,9 +9,32 @@ local system = system
 local app = rfsuite.app
 local tasks = rfsuite.tasks
 
-local function i18n(key) return "@i18n(app.modules.api_tester." .. key .. ")@" end
+local T = {
+    NAME = "@i18n(app.modules.api_tester.name)@",
+    STATUS_IDLE = "@i18n(app.modules.api_tester.status_idle)@",
+    LABEL_INFO = "@i18n(app.modules.api_tester.label_info)@",
+    LABEL_VALUE = "@i18n(app.modules.api_tester.label_value)@",
+    LABEL_ERROR = "@i18n(app.modules.api_tester.label_error)@",
+    LABEL_FIELDS = "@i18n(app.modules.api_tester.label_fields)@",
+    LABEL_STATUS = "@i18n(app.modules.api_tester.label_status)@",
+    LABEL_API = "@i18n(app.modules.api_tester.label_api)@",
+    BTN_TEST = "@i18n(app.modules.api_tester.btn_test)@",
+    PANEL_READ_RESULT = "@i18n(app.modules.api_tester.panel_read_result)@",
+    MSG_CHOOSE_API = "@i18n(app.modules.api_tester.msg_choose_api)@",
+    MSG_NO_DATA = "@i18n(app.modules.api_tester.msg_no_data)@",
+    MSG_NO_API_SELECTED = "@i18n(app.modules.api_tester.msg_no_api_selected)@",
+    MSG_NO_PARSED_RESULT = "@i18n(app.modules.api_tester.msg_no_parsed_result)@",
+    MSG_READ_COMPLETED_ZERO = "@i18n(app.modules.api_tester.msg_read_completed_zero)@",
+    MSG_UNABLE_TO_LOAD = "@i18n(app.modules.api_tester.msg_unable_to_load)@",
+    MSG_WAITING_RESPONSE = "@i18n(app.modules.api_tester.msg_waiting_response)@",
+    MSG_READ_FAILED = "@i18n(app.modules.api_tester.msg_read_failed)@",
+    STATUS_LOAD_FAILED = "@i18n(app.modules.api_tester.status_load_failed)@",
+    STATUS_READING = "@i18n(app.modules.api_tester.status_reading)@",
+    STATUS_OK = "@i18n(app.modules.api_tester.status_ok)@",
+    CHOICE_NO_API_FILES = "@i18n(app.modules.api_tester.choice_no_api_files)@"
+}
 
-local pageTitle = "@i18n(app.modules.diagnostics.name)@ / " .. i18n("name")
+local pageTitle = "@i18n(app.modules.diagnostics.name)@ / " .. T.NAME
 local apiDir = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
 local MAX_LINE_CHARS = 90
 local lastOpenOpts = nil
@@ -23,8 +46,8 @@ local state = {
     apiNames = {},
     apiChoices = {},
     selected = 1,
-    status = i18n("status_idle"),
-    rows = {{label = i18n("label_info"), value = i18n("msg_choose_api")}},
+    status = T.STATUS_IDLE,
+    rows = {{label = T.LABEL_INFO, value = T.MSG_CHOOSE_API}},
     fieldCount = 0,
     pendingRebuild = false,
     autoOpenResults = false
@@ -49,12 +72,12 @@ local function getDisplayRows()
         local label = truncateText(row.label or "")
         local value = truncateText(row.value or "")
         if label:match("%S") or value:match("%S") then
-            if not label:match("%S") then label = i18n("label_value") end
+            if not label:match("%S") then label = T.LABEL_VALUE end
             if not value:match("%S") then value = "-" end
             rowsOut[#rowsOut + 1] = {label = label, value = value}
         end
     end
-    if #rowsOut == 0 then rowsOut[1] = {label = i18n("label_info"), value = i18n("msg_no_data")} end
+    if #rowsOut == 0 then rowsOut[1] = {label = T.LABEL_INFO, value = T.MSG_NO_DATA} end
     return rowsOut
 end
 
@@ -89,7 +112,7 @@ local function buildApiList()
     end
 
     if #state.apiChoices == 0 then
-        state.apiChoices = {{i18n("choice_no_api_files"), 1}}
+        state.apiChoices = {{T.CHOICE_NO_API_FILES, 1}}
         state.selected = 1
     elseif state.selected < 1 or state.selected > #state.apiChoices then
         state.selected = 1
@@ -110,7 +133,7 @@ local function parseReadResult(api)
     local rowsOut = {}
 
     if not parsed then
-        rowsOut[#rowsOut + 1] = {label = i18n("label_info"), value = i18n("msg_no_parsed_result")}
+        rowsOut[#rowsOut + 1] = {label = T.LABEL_INFO, value = T.MSG_NO_PARSED_RESULT}
         state.rows = rowsOut
         state.fieldCount = 0
         return
@@ -124,7 +147,7 @@ local function parseReadResult(api)
         rowsOut[#rowsOut + 1] = {label = key, value = toValueString(parsed[key])}
     end
 
-    if #rowsOut == 0 then rowsOut[1] = {label = i18n("label_info"), value = i18n("msg_read_completed_zero")} end
+    if #rowsOut == 0 then rowsOut[1] = {label = T.LABEL_INFO, value = T.MSG_READ_COMPLETED_ZERO} end
     state.rows = rowsOut
     state.fieldCount = #keys
 end
@@ -137,36 +160,36 @@ end
 local function runTest()
     local apiName = selectedApiName()
     if not apiName then
-        state.rows = {{label = i18n("label_info"), value = i18n("msg_no_api_selected")}}
-        setStatus(i18n("msg_no_api_selected"))
+        state.rows = {{label = T.LABEL_INFO, value = T.MSG_NO_API_SELECTED}}
+        setStatus(T.MSG_NO_API_SELECTED)
         return
     end
 
     local api = tasks.msp.api.load(apiName)
     if not api then
-        state.rows = {{label = i18n("label_error"), value = i18n("msg_unable_to_load") .. ": " .. apiName}}
-        setStatus(i18n("status_load_failed"))
+        state.rows = {{label = T.LABEL_ERROR, value = T.MSG_UNABLE_TO_LOAD .. ": " .. apiName}}
+        setStatus(T.STATUS_LOAD_FAILED)
         return
     end
 
-    state.rows = {{label = i18n("label_status"), value = i18n("msg_waiting_response")}}
+    state.rows = {{label = T.LABEL_STATUS, value = T.MSG_WAITING_RESPONSE}}
     state.fieldCount = 0
-    setStatus(i18n("status_reading") .. " " .. apiName .. "...")
+    setStatus(T.STATUS_READING .. " " .. apiName .. "...")
 
     api.setCompleteHandler(function()
         parseReadResult(api)
-        setStatus(i18n("status_ok") .. ": " .. tostring(state.fieldCount) .. " " .. i18n("label_fields"))
+        setStatus(T.STATUS_OK .. ": " .. tostring(state.fieldCount) .. " " .. T.LABEL_FIELDS)
         state.autoOpenResults = true
         state.pendingRebuild = true
     end)
 
     api.setErrorHandler(function(_, err)
         state.rows = {
-            {label = i18n("label_status"), value = i18n("msg_read_failed")},
-            {label = i18n("label_error"), value = tostring(err or "read_error")}
+            {label = T.LABEL_STATUS, value = T.MSG_READ_FAILED},
+            {label = T.LABEL_ERROR, value = tostring(err or "read_error")}
         }
         state.fieldCount = 0
-        setStatus(i18n("label_error"))
+        setStatus(T.LABEL_ERROR)
         state.autoOpenResults = true
         state.pendingRebuild = true
     end)
@@ -174,11 +197,11 @@ local function runTest()
     local ok, reason = api.read()
     if ok == false then
         state.rows = {
-            {label = i18n("label_status"), value = i18n("msg_read_failed")},
-            {label = i18n("label_error"), value = tostring(reason or "read_not_supported")}
+            {label = T.LABEL_STATUS, value = T.MSG_READ_FAILED},
+            {label = T.LABEL_ERROR, value = tostring(reason or "read_not_supported")}
         }
         state.fieldCount = 0
-        setStatus(i18n("label_error"))
+        setStatus(T.LABEL_ERROR)
         state.autoOpenResults = true
         state.pendingRebuild = true
     end
@@ -197,7 +220,7 @@ local function openPage(opts)
 
     local w = lcd.getWindowSize()
 
-    line.api = form.addLine(i18n("label_api"))
+    line.api = form.addLine(T.LABEL_API)
     local rowY = app.radio.linePaddingTop
     local testW = 80
     local gap = 6
@@ -211,16 +234,16 @@ local function openPage(opts)
     end)
 
     fields.test = form.addButton(line.api, {x = choiceW + gap, y = rowY, w = testW, h = app.radio.navbuttonHeight}, {
-        text = i18n("btn_test"),
+        text = T.BTN_TEST,
         icon = nil,
         options = FONT_S,
         press = runTest
     })
 
-    line.status = form.addLine(i18n("label_status"))
+    line.status = form.addLine(T.LABEL_STATUS)
     fields.status = form.addStaticText(line.status, nil, state.status)
 
-    resultsPanel = form.addExpansionPanel(i18n("panel_read_result"))
+    resultsPanel = form.addExpansionPanel(T.PANEL_READ_RESULT)
     resultsPanel:open(state.autoOpenResults)
     state.autoOpenResults = false
 
