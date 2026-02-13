@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
-import os
 import shutil
+import ssl
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import filedialog
@@ -39,7 +39,6 @@ API_BASE = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
 DATA_ROOT = Path.home() / ".rfsuite-translation-editor"
 I18N_REL = Path("bin/i18n/json")
 SOUND_REL = Path("bin/sound-generator/json")
-
 
 def _candidate_roots():
     seen = set()
@@ -87,6 +86,14 @@ def sound_root():
     if data_path.exists():
         return data_path
     return repo_root() / SOUND_REL
+
+
+def _https_context():
+    return ssl._create_unverified_context()
+
+
+def _safe_urlopen(req_or_url, timeout=30):
+    return urlopen(req_or_url, timeout=timeout, context=_https_context())
 
 
 class DataStore:
@@ -817,14 +824,21 @@ class TranslationEditor(tk.Tk):
 
     def _download_folder(self, rel_path: Path):
         url = f"{API_BASE}/{rel_path.as_posix()}?ref={REPO_BRANCH}"
-        req = Request(url, headers={"Accept": "application/vnd.github+json"})
+        req = Request(
+            url,
+            headers={
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "rfsuite-translation-editor",
+            },
+        )
         try:
-            with urlopen(req) as resp:
+            with _safe_urlopen(req) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except HTTPError as e:
             raise RuntimeError(f"HTTP error {e.code} for {url}") from e
         except URLError as e:
-            raise RuntimeError(f"Network error for {url}") from e
+            reason = getattr(e, "reason", e)
+            raise RuntimeError(f"Network error for {url}: {reason}") from e
 
         if not isinstance(data, list):
             raise RuntimeError(f"Unexpected response for {url}")
@@ -842,8 +856,17 @@ class TranslationEditor(tk.Tk):
                 continue
             target = out_dir / name
             try:
-                with urlopen(download_url) as resp:
+                file_req = Request(
+                    download_url,
+                    headers={"User-Agent": "rfsuite-translation-editor"},
+                )
+                with _safe_urlopen(file_req) as resp:
                     target.write_bytes(resp.read())
+            except HTTPError as e:
+                raise RuntimeError(f"HTTP error {e.code} downloading {download_url}") from e
+            except URLError as e:
+                reason = getattr(e, "reason", e)
+                raise RuntimeError(f"Network error downloading {download_url}: {reason}") from e
             except Exception as e:
                 raise RuntimeError(f"Failed downloading {download_url}: {e}") from e
 
