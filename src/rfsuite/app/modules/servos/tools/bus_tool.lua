@@ -104,7 +104,7 @@ local function saveServoCenter(self)
 
     local servoCenter = math.floor(configs[servoIndex]['mid'])
     local writeIndex = currentServoWriteIndex()
-    rfsuite.utils.log(string.format("BUS save center: ui=%d read=%d write=%d mid=%d", servoIndex, currentServoReadIndex(), writeIndex, servoCenter), "info")
+    rfsuite.utils.log(string.format("BUS save center: ui=%d read=%d write=%d mid=%d", servoIndex, currentServoReadIndex(), writeIndex, servoCenter), "debug")
 
     local message = {command = 213, payload = {}}
     rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
@@ -228,7 +228,7 @@ local function wakeup(self)
             currentServoCenter = configs[servoIndex]['mid']
 
             local now = os.clock()
-            local settleTime = 0.1
+            local settleTime = 0.05 -- seconds
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
                     local ok, reason = self.saveServoCenter(self)

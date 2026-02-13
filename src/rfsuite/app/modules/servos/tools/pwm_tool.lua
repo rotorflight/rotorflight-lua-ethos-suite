@@ -193,7 +193,7 @@ local function wakeup(self)
             local now = os.clock()
             local settleTime
             if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-                settleTime = 0.1
+                settleTime = 0.05
             else
                 settleTime = 0.85
             end
