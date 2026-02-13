@@ -73,6 +73,7 @@ return {
                 "power",
                 "radio_config",
                 "stats",
+                "failsafe",
                 {"governor", script_by_mspversion = {
                     {">=", "12.09", "governor.lua", loaderspeed = "FAST"},
                     {"<", "12.09", "governor_legacy.lua", loaderspeed = "SLOW"}

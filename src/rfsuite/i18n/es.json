@@ -2733,6 +2733,43 @@
         "reverse_text": false,
         "translation": "ENCENDIDO"
       }
+    },
+    "RXFAIL_CONFIG": {
+      "channel_mode": {
+        "english": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
+        "max_length": 72,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Select how each channel behaves when signal is lost: Auto, Hold, or Set."
+      },
+      "channel_value": {
+        "english": "Channel value used only when mode is Set.",
+        "max_length": 41,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Channel value used only when mode is Set."
+      },
+      "tbl_auto": {
+        "english": "Auto",
+        "max_length": 4,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Auto"
+      },
+      "tbl_hold": {
+        "english": "Hold",
+        "max_length": 4,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Hold"
+      },
+      "tbl_set": {
+        "english": "Set",
+        "max_length": 3,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Set"
+      }
     }
   },
   "app": {
@@ -4322,6 +4359,148 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "DESCONOCIDO"
+        }
+      },
+      "failsafe": {
+        "aux1": {
+          "english": "AUX 1",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 1"
+        },
+        "aux10": {
+          "english": "AUX 10",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 10"
+        },
+        "aux11": {
+          "english": "AUX 11",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 11"
+        },
+        "aux12": {
+          "english": "AUX 12",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 12"
+        },
+        "aux13": {
+          "english": "AUX 13",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 13"
+        },
+        "aux2": {
+          "english": "AUX 2",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 2"
+        },
+        "aux3": {
+          "english": "AUX 3",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 3"
+        },
+        "aux4": {
+          "english": "AUX 4",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 4"
+        },
+        "aux5": {
+          "english": "AUX 5",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 5"
+        },
+        "aux6": {
+          "english": "AUX 6",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 6"
+        },
+        "aux7": {
+          "english": "AUX 7",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 7"
+        },
+        "aux8": {
+          "english": "AUX 8",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 8"
+        },
+        "aux9": {
+          "english": "AUX 9",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "AUX 9"
+        },
+        "collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Collective"
+        },
+        "help_p1": {
+          "english": "Configure the failsafe settings for loss of RC signal.",
+          "max_length": 54,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Configure the failsafe settings for loss of RC signal."
+        },
+        "name": {
+          "english": "Failsafe",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Failsafe"
+        },
+        "pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Pitch"
+        },
+        "roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Roll"
+        },
+        "throttle": {
+          "english": "Throttle",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Throttle"
+        },
+        "yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Yaw"
         }
       },
       "fblstatus": {

@@ -2136,6 +2136,38 @@
         "max_length": 46
       }
     },
+    "RXFAIL_CONFIG": {
+      "channel_mode": {
+        "english": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
+        "needs_translation": false,
+        "translation": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
+        "max_length": 72
+      },
+      "channel_value": {
+        "english": "Channel value used only when mode is Set.",
+        "needs_translation": false,
+        "translation": "Channel value used only when mode is Set.",
+        "max_length": 41
+      },
+      "tbl_auto": {
+        "english": "Auto",
+        "needs_translation": false,
+        "translation": "Auto",
+        "max_length": 4
+      },
+      "tbl_hold": {
+        "english": "Hold",
+        "needs_translation": false,
+        "translation": "Hold",
+        "max_length": 4
+      },
+      "tbl_set": {
+        "english": "Set",
+        "needs_translation": false,
+        "translation": "Set",
+        "max_length": 3
+      }
+    },
     "RC_TUNING": {
       "accel_limit_1": {
         "english": "Maximum acceleration of the craft in response to a stick movement.",
@@ -2425,6 +2457,128 @@
       "max_length": 5
     },
     "modules": {
+      "failsafe": {
+        "aux1": {
+          "english": "AUX 1",
+          "needs_translation": false,
+          "translation": "AUX 1",
+          "max_length": 5
+        },
+        "aux10": {
+          "english": "AUX 10",
+          "needs_translation": false,
+          "translation": "AUX 10",
+          "max_length": 6
+        },
+        "aux11": {
+          "english": "AUX 11",
+          "needs_translation": false,
+          "translation": "AUX 11",
+          "max_length": 6
+        },
+        "aux12": {
+          "english": "AUX 12",
+          "needs_translation": false,
+          "translation": "AUX 12",
+          "max_length": 6
+        },
+        "aux13": {
+          "english": "AUX 13",
+          "needs_translation": false,
+          "translation": "AUX 13",
+          "max_length": 6
+        },
+        "aux2": {
+          "english": "AUX 2",
+          "needs_translation": false,
+          "translation": "AUX 2",
+          "max_length": 5
+        },
+        "aux3": {
+          "english": "AUX 3",
+          "needs_translation": false,
+          "translation": "AUX 3",
+          "max_length": 5
+        },
+        "aux4": {
+          "english": "AUX 4",
+          "needs_translation": false,
+          "translation": "AUX 4",
+          "max_length": 5
+        },
+        "aux5": {
+          "english": "AUX 5",
+          "needs_translation": false,
+          "translation": "AUX 5",
+          "max_length": 5
+        },
+        "aux6": {
+          "english": "AUX 6",
+          "needs_translation": false,
+          "translation": "AUX 6",
+          "max_length": 5
+        },
+        "aux7": {
+          "english": "AUX 7",
+          "needs_translation": false,
+          "translation": "AUX 7",
+          "max_length": 5
+        },
+        "aux8": {
+          "english": "AUX 8",
+          "needs_translation": false,
+          "translation": "AUX 8",
+          "max_length": 5
+        },
+        "aux9": {
+          "english": "AUX 9",
+          "needs_translation": false,
+          "translation": "AUX 9",
+          "max_length": 5
+        },
+        "collective": {
+          "english": "Collective",
+          "needs_translation": false,
+          "translation": "Collective",
+          "max_length": 10
+        },
+        "help_p1": {
+          "english": "Configure the failsafe settings for loss of RC signal.",
+          "needs_translation": false,
+          "translation": "Configure the failsafe settings for loss of RC signal.",
+          "max_length": 54
+        },
+        "name": {
+          "english": "Failsafe",
+          "needs_translation": false,
+          "translation": "Failsafe",
+          "max_length": 8
+        },
+        "pitch": {
+          "english": "Pitch",
+          "needs_translation": false,
+          "translation": "Pitch",
+          "max_length": 5
+        },
+        "roll": {
+          "english": "Roll",
+          "needs_translation": false,
+          "translation": "Roll",
+          "max_length": 4
+        },
+        "throttle": {
+          "english": "Throttle",
+          "needs_translation": false,
+          "translation": "Throttle",
+          "max_length": 8
+        },
+        "yaw": {
+          "english": "Yaw",
+          "needs_translation": false,
+          "translation": "Yaw",
+          "max_length": 3
+        }
+      },
       "accelerometer": {
         "help_p1": {
           "english": "The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
