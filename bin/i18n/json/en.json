@@ -2457,6 +2457,290 @@
       "max_length": 5
     },
     "modules": {
+      "adjustments": {
+        "active_ranges": {
+          "english": "Active ranges:",
+          "needs_translation": false,
+          "translation": "Active ranges:",
+          "max_length": 14
+        },
+        "adjust_range": {
+          "english": "Adjust Range",
+          "needs_translation": false,
+          "translation": "Adjust Range",
+          "max_length": 12
+        },
+        "always_fixed_1500_confirm": {
+          "english": "Always mode uses fixed 1500us. Set Min/Max to 1500us?",
+          "needs_translation": false,
+          "translation": "Always mode uses fixed 1500us. Set Min/Max to 1500us?",
+          "max_length": 53
+        },
+        "auto_detect_active_toggle": {
+          "english": "Auto-detect active: toggle desired AUX channel",
+          "needs_translation": false,
+          "translation": "Auto-detect active: toggle desired AUX channel",
+          "max_length": 46
+        },
+        "channel_always": {
+          "english": "Always",
+          "needs_translation": false,
+          "translation": "Always",
+          "max_length": 6
+        },
+        "channel_auto": {
+          "english": "AUTO",
+          "needs_translation": false,
+          "translation": "AUTO",
+          "max_length": 4
+        },
+        "channel_auto_detecting": {
+          "english": "AUTO...",
+          "needs_translation": false,
+          "translation": "AUTO...",
+          "max_length": 7
+        },
+        "channel_aux_prefix": {
+          "english": "AUX ",
+          "needs_translation": false,
+          "translation": "AUX ",
+          "max_length": 4
+        },
+        "confirm_use_current": {
+          "english": "Use current value",
+          "needs_translation": false,
+          "translation": "Use current value",
+          "max_length": 17
+        },
+        "current_output": {
+          "english": "Current Output",
+          "needs_translation": false,
+          "translation": "Current Output",
+          "max_length": 14
+        },
+        "decrease_range": {
+          "english": "Decrease Range",
+          "needs_translation": false,
+          "translation": "Decrease Range",
+          "max_length": 14
+        },
+        "editing_disabled_reload_back": {
+          "english": "Editing is disabled. Use Reload or Back.",
+          "needs_translation": false,
+          "translation": "Editing is disabled. Use Reload or Back.",
+          "max_length": 40
+        },
+        "enable_channel": {
+          "english": "Enable Channel",
+          "needs_translation": false,
+          "translation": "Enable Channel",
+          "max_length": 14
+        },
+        "enable_range": {
+          "english": "Enable Range",
+          "needs_translation": false,
+          "translation": "Enable Range",
+          "max_length": 12
+        },
+        "function": {
+          "english": "Function",
+          "needs_translation": false,
+          "translation": "Function",
+          "max_length": 8
+        },
+        "function_label": {
+          "english": "Function",
+          "needs_translation": false,
+          "translation": "Function",
+          "max_length": 8
+        },
+        "increase_range": {
+          "english": "Increase Range",
+          "needs_translation": false,
+          "translation": "Increase Range",
+          "max_length": 14
+        },
+        "info_default_slots": {
+          "english": "No ranges returned by FC. Showing default slot list.",
+          "needs_translation": false,
+          "translation": "No ranges returned by FC. Showing default slot list.",
+          "max_length": 52
+        },
+        "info_legacy_load": {
+          "english": "Loaded using legacy adjustment range read.",
+          "needs_translation": false,
+          "translation": "Loaded using legacy adjustment range read.",
+          "max_length": 42
+        },
+        "load_error": {
+          "english": "Load error:",
+          "needs_translation": false,
+          "translation": "Load error:",
+          "max_length": 11
+        },
+        "loading_ranges": {
+          "english": "Loading adjustment ranges",
+          "needs_translation": false,
+          "translation": "Loading adjustment ranges",
+          "max_length": 25
+        },
+        "loading_ranges_detail": {
+          "english": "Loading adjustment ranges...",
+          "needs_translation": false,
+          "translation": "Loading adjustment ranges...",
+          "max_length": 28
+        },
+        "max_label": {
+          "english": "Max",
+          "needs_translation": false,
+          "translation": "Max",
+          "max_length": 3
+        },
+        "min_label": {
+          "english": "Min",
+          "needs_translation": false,
+          "translation": "Min",
+          "max_length": 3
+        },
+        "msg_auto_detect_lock_first": {
+          "english": "Auto-detect is active for this row. Toggle to lock AUX first.",
+          "needs_translation": false,
+          "translation": "Auto-detect is active for this row. Toggle to lock AUX first.",
+          "max_length": 61
+        },
+        "msg_auto_detect_lock_save": {
+          "english": "Auto-detect is active. Toggle the desired AUX channel first.",
+          "needs_translation": false,
+          "translation": "Auto-detect is active. Toggle the desired AUX channel first.",
+          "max_length": 60
+        },
+        "msg_live_channel_unavailable": {
+          "english": "Live channel value unavailable.",
+          "needs_translation": false,
+          "translation": "Live channel value unavailable.",
+          "max_length": 31
+        },
+        "msg_no_free_slots": {
+          "english": "No free adjustment slots remain.",
+          "needs_translation": false,
+          "translation": "No free adjustment slots remain.",
+          "max_length": 32
+        },
+        "name": {
+          "english": "Adjustments",
+          "needs_translation": false,
+          "translation": "Adjustments",
+          "max_length": 11
+        },
+        "no_ranges_reported": {
+          "english": "No adjustment ranges reported by FC.",
+          "needs_translation": false,
+          "translation": "No adjustment ranges reported by FC.",
+          "max_length": 36
+        },
+        "range": {
+          "english": "Range",
+          "needs_translation": false,
+          "translation": "Range",
+          "max_length": 5
+        },
+        "read_timeout": {
+          "english": "Adjustment read timed out.",
+          "needs_translation": false,
+          "translation": "Adjustment read timed out.",
+          "max_length": 26
+        },
+        "save_error": {
+          "english": "Save error:",
+          "needs_translation": false,
+          "translation": "Save error:",
+          "max_length": 11
+        },
+        "saving_changed_ranges": {
+          "english": "Saving changed ranges",
+          "needs_translation": false,
+          "translation": "Saving changed ranges",
+          "max_length": 21
+        },
+        "set": {
+          "english": "Set",
+          "needs_translation": false,
+          "translation": "Set",
+          "max_length": 3
+        },
+        "set_adjust_range": {
+          "english": "Set Adjust Range",
+          "needs_translation": false,
+          "translation": "Set Adjust Range",
+          "max_length": 16
+        },
+        "set_decrease_range": {
+          "english": "Set Decrease Range",
+          "needs_translation": false,
+          "translation": "Set Decrease Range",
+          "max_length": 18
+        },
+        "set_enable_range": {
+          "english": "Set Enable Range",
+          "needs_translation": false,
+          "translation": "Set Enable Range",
+          "max_length": 16
+        },
+        "set_increase_range": {
+          "english": "Set Increase Range",
+          "needs_translation": false,
+          "translation": "Set Increase Range",
+          "max_length": 18
+        },
+        "step_size": {
+          "english": "Step Size",
+          "needs_translation": false,
+          "translation": "Step Size",
+          "max_length": 9
+        },
+        "type": {
+          "english": "Type",
+          "needs_translation": false,
+          "translation": "Type",
+          "max_length": 4
+        },
+        "type_mapped": {
+          "english": "MAPPED",
+          "needs_translation": false,
+          "translation": "MAPPED",
+          "max_length": 6
+        },
+        "type_off": {
+          "english": "OFF",
+          "needs_translation": false,
+          "translation": "OFF",
+          "max_length": 3
+        },
+        "type_stepped": {
+          "english": "STEPPED",
+          "needs_translation": false,
+          "translation": "STEPPED",
+          "max_length": 7
+        },
+        "unsaved_changes": {
+          "english": "Unsaved changes",
+          "needs_translation": false,
+          "translation": "Unsaved changes",
+          "max_length": 15
+        },
+        "value_channel": {
+          "english": "Value Channel",
+          "needs_translation": false,
+          "translation": "Value Channel",
+          "max_length": 13
+        },
+        "value_range": {
+          "english": "Value Range",
+          "needs_translation": false,
+          "translation": "Value Range",
+          "max_length": 11
+        }
+      },
       "failsafe": {
         "aux1": {
           "english": "AUX 1",

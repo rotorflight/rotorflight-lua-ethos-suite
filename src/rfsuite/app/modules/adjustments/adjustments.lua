@@ -5,7 +5,12 @@
 
 local rfsuite = require("rfsuite")
 
-local ADJUST_TYPE_OPTIONS = {"OFF", "MAPPED", "STEPPED"}
+local ADJUST_TYPE_OPTIONS = {
+    "@i18n(app.modules.adjustments.type_off)@",
+    "@i18n(app.modules.adjustments.type_mapped)@",
+    "@i18n(app.modules.adjustments.type_stepped)@"
+}
+local MODULE_TITLE = "@i18n(app.modules.adjustments.name)@"
 local ALWAYS_ON_CHANNEL = 255
 local AUX_CHANNEL_COUNT_FALLBACK = 20
 
@@ -106,7 +111,7 @@ local ADJUST_FUNCTIONS = {
 }
 
 local state = {
-    title = "Adjustments",
+    title = MODULE_TITLE,
     adjustmentRanges = {},
     selectedRangeIndex = 1,
     loaded = false,
@@ -273,7 +278,7 @@ local function buildFunctionOptions(currentId)
     end
 
     if currentId ~= nil and byId[currentId] == nil then
-        local fallback = {id = currentId, name = "Function " .. tostring(currentId), min = -32768, max = 32767}
+        local fallback = {id = currentId, name = "@i18n(app.modules.adjustments.function_label)@ " .. tostring(currentId), min = -32768, max = 32767}
         entries[#entries + 1] = {name = fallback.name, id = fallback.id}
         byId[currentId] = fallback
     end
@@ -326,13 +331,13 @@ local function hasAssignedFunction(adjRange)
 end
 
 local function buildRangeSlotLabel(slotIndex, adjRange)
-    local label = "Range " .. tostring(slotIndex)
+    local label = "@i18n(app.modules.adjustments.range)@ " .. tostring(slotIndex)
     if not hasAssignedFunction(adjRange) then return label end
 
     local fnId = math.floor(adjRange.adjFunction or 0)
 
     local fn = getFunctionById(fnId)
-    local fnName = fn and fn.name or ("Function " .. tostring(fnId))
+    local fnName = fn and fn.name or ("@i18n(app.modules.adjustments.function_label)@ " .. tostring(fnId))
     return label .. " - " .. fnName
 end
 
@@ -353,10 +358,10 @@ end
 
 local function buildAuxOptions(includeAuto, includeAlways)
     local options = {}
-    if includeAuto then options[#options + 1] = "AUTO" end
-    if includeAlways then options[#options + 1] = "Always" end
+    if includeAuto then options[#options + 1] = "@i18n(app.modules.adjustments.channel_auto)@" end
+    if includeAlways then options[#options + 1] = "@i18n(app.modules.adjustments.channel_always)@" end
     for i = 1, AUX_CHANNEL_COUNT_FALLBACK do
-        options[#options + 1] = "AUX " .. tostring(i)
+        options[#options + 1] = "@i18n(app.modules.adjustments.channel_aux_prefix)@" .. tostring(i)
     end
     return options
 end
@@ -691,7 +696,7 @@ local function readAdjustmentRanges()
             state.dirty = false
             state.dirtySlots = {}
             state.loadError = nil
-            state.infoMessage = messageOverride or (usedDefaultFallback and "No ranges returned by FC. Showing default slot list." or nil)
+            state.infoMessage = messageOverride or (usedDefaultFallback and "@i18n(app.modules.adjustments.info_default_slots)@" or nil)
             state.needsRender = true
             rfsuite.app.triggers.closeProgressLoader = true
         end
@@ -732,7 +737,7 @@ local function readAdjustmentRanges()
     end, function()
         -- Older FC builds may not support per-slot get. Fall back to legacy bulk read.
         readAdjustmentRangesBulk(function(ranges)
-            finalizeWithRanges(ranges, "Loaded using legacy adjustment range read.")
+            finalizeWithRanges(ranges, "@i18n(app.modules.adjustments.info_legacy_load)@")
         end, function()
             finalizeFallbackLocked()
         end)
@@ -741,11 +746,11 @@ end
 
 local function addRangeSlot()
     if #state.adjustmentRanges >= ADJUSTMENT_RANGE_MAX then
-        local buttons = {{label = "OK", action = function() return true end}}
+        local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}
         form.openDialog({
             width = nil,
-            title = "Adjustment Functions",
-            message = "No free adjustment slots remain.",
+            title = MODULE_TITLE,
+            message = "@i18n(app.modules.adjustments.msg_no_free_slots)@",
             buttons = buttons,
             wakeup = function() end,
             paint = function() end,
@@ -772,7 +777,7 @@ local function startLoad()
     state.autoDetectAdjSlots = {}
     state.dirtySlots = {}
     state.needsRender = true
-    rfsuite.app.ui.progressDisplay("Adjustment Functions", "Loading adjustment ranges")
+    rfsuite.app.ui.progressDisplay(MODULE_TITLE, "@i18n(app.modules.adjustments.loading_ranges)@")
     readAdjustmentRanges()
 end
 
@@ -827,7 +832,7 @@ local function setFunctionForRange(adjRange, fnId)
 end
 
 local function showInfoDialog(title, message)
-    local buttons = {{label = "OK", action = function() return true end}}
+    local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}
     form.openDialog({
         width = nil,
         title = title,
@@ -884,13 +889,13 @@ end
 
 local function getChannelUsForRangeSet(channelIndex, autoTable, slot)
     if autoTable and autoTable[slot] then
-        showInfoDialog("Adjustment Functions", "Auto-detect is active for this row. Toggle to lock AUX first.")
+        showInfoDialog(MODULE_TITLE, "@i18n(app.modules.adjustments.msg_auto_detect_lock_first)@")
         return nil
     end
 
     local us = getAuxPulseUs(channelIndex or 0)
     if not us then
-        showInfoDialog("Adjustment Functions", "Live channel value unavailable.")
+        showInfoDialog(MODULE_TITLE, "@i18n(app.modules.adjustments.msg_live_channel_unavailable)@")
         return nil
     end
     return us
@@ -905,11 +910,18 @@ local function applyRangeSetFromChannel(title, rangeTable, us, slotIndex)
         targetEnd = mid
     end
 
-    confirmRangeSet(title, "Use current value " .. tostring(us) .. "us?\n\nMin: " .. tostring(targetStart) .. "us\nMax: " .. tostring(targetEnd) .. "us", function()
-        rangeTable.start = targetStart
-        rangeTable["end"] = targetEnd
-        markDirty(slotIndex)
-    end)
+    confirmRangeSet(
+        title,
+        "@i18n(app.modules.adjustments.confirm_use_current)@ "
+            .. tostring(us) .. "us?\n\n"
+            .. "@i18n(app.modules.adjustments.min_label)@: " .. tostring(targetStart) .. "us\n"
+            .. "@i18n(app.modules.adjustments.max_label)@: " .. tostring(targetEnd) .. "us",
+        function()
+            rangeTable.start = targetStart
+            rangeTable["end"] = targetEnd
+            markDirty(slotIndex)
+        end
+    )
 end
 
 local function syncEnableControls(adjRange)
@@ -1011,10 +1023,10 @@ local function updateLiveFields()
             syncEnableControls(adjRange)
             enaUs = us
         else
-            if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("AUTO...") end
+            if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("@i18n(app.modules.adjustments.channel_auto_detecting)@") end
         end
     elseif adjRange.enaChannel == ALWAYS_ON_CHANNEL then
-        if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("Always") end
+        if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("@i18n(app.modules.adjustments.channel_always)@") end
         enaUs = 1500
     else
         enaUs = getAuxPulseUs(adjRange.enaChannel or 0)
@@ -1037,7 +1049,7 @@ local function updateLiveFields()
             markDirty(slot)
             adjUs = us
         else
-            if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("AUTO...") end
+            if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("@i18n(app.modules.adjustments.channel_auto_detecting)@") end
         end
     else
         adjUs = getAuxPulseUs(adjRange.adjChannel or 0)
@@ -1070,23 +1082,23 @@ local function render()
     app.ui.fieldHeader(state.title)
 
     if state.loading then
-        form.addLine("Loading adjustment ranges...")
+        form.addLine("@i18n(app.modules.adjustments.loading_ranges_detail)@")
         return
     end
 
     if state.loadError then
-        form.addLine("Load error: " .. tostring(state.loadError))
+        form.addLine("@i18n(app.modules.adjustments.load_error)@ " .. tostring(state.loadError))
         return
     end
 
     if state.readFallbackLocked then
-        form.addLine("Adjustment read timed out.")
-        form.addLine("Editing is disabled. Use Reload or Back.")
+        form.addLine("@i18n(app.modules.adjustments.read_timeout)@")
+        form.addLine("@i18n(app.modules.adjustments.editing_disabled_reload_back)@")
         return
     end
 
     if #state.adjustmentRanges == 0 then
-        form.addLine("No adjustment ranges reported by FC.")
+        form.addLine("@i18n(app.modules.adjustments.no_ranges_reported)@")
         return
     end
 
@@ -1112,12 +1124,12 @@ local function render()
     end
 
     local activeCount = countActiveRanges()
-    local infoLine = form.addLine("Active ranges: " .. tostring(activeCount) .. " / " .. tostring(#state.adjustmentRanges))
+    local infoLine = form.addLine("@i18n(app.modules.adjustments.active_ranges)@ " .. tostring(activeCount) .. " / " .. tostring(#state.adjustmentRanges))
     if state.dirty then
         local statusW = math.floor(width * 0.32)
         local statusX = width - rightPadding - statusW
         local statusBtn = form.addButton(infoLine, {x = statusX, y = y, w = statusW, h = h}, {
-            text = "Unsaved changes",
+            text = "@i18n(app.modules.adjustments.unsaved_changes)@",
             icon = nil,
             options = FONT_S,
             paint = function() end,
@@ -1126,13 +1138,13 @@ local function render()
         if statusBtn and statusBtn.enable then statusBtn:enable(false) end
     end
 
-    if hasActiveAutoDetect() then form.addLine("Auto-detect active: toggle desired AUX channel") end
-    if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
+    if hasActiveAutoDetect() then form.addLine("@i18n(app.modules.adjustments.auto_detect_active_toggle)@") end
+    if state.saveError then form.addLine("@i18n(app.modules.adjustments.save_error)@ " .. tostring(state.saveError)) end
     if state.infoMessage then form.addLine(state.infoMessage) end
 
     local slotOptionsTbl = buildRangeSlotOptions()
 
-    local slotLine = form.addLine("Range")
+    local slotLine = form.addLine("@i18n(app.modules.adjustments.range)@")
     local slotChoice = form.addChoiceField(
         slotLine,
         {x = xChoice, y = y, w = wRightColumn, h = h},
@@ -1154,7 +1166,7 @@ local function render()
     buildFunctionOptions(adjRange.adjFunction)
     local adjType = getAdjustmentType(adjRange)
 
-    local typeLine = form.addLine("Type", nil, true)
+    local typeLine = form.addLine("@i18n(app.modules.adjustments.type)@", nil, true)
     local typeChoice = form.addChoiceField(
         typeLine,
         {x = xChoice, y = y, w = wRightColumn, h = h},
@@ -1183,7 +1195,7 @@ local function render()
     local enaSetBtn
     local enaStart
     local enaEnd
-    local enaChannelLine = form.addLine("Enable Channel", nil, false)
+    local enaChannelLine = form.addLine("@i18n(app.modules.adjustments.enable_channel)@", nil, false)
     local enaChoice = form.addChoiceField(
         enaChannelLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -1215,13 +1227,13 @@ local function render()
     local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
     if enaLive and enaLive.value then state.liveFields.ena = enaLive end
     enaSetBtn = form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "Set",
+        text = "@i18n(app.modules.adjustments.set)@",
         icon = nil,
         options = FONT_S,
         paint = function() end,
         press = function()
             if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
-                confirmRangeSet("Set Enable Range", "Always mode uses fixed 1500us.\n\nSet Min/Max to 1500us?", function()
+                confirmRangeSet("@i18n(app.modules.adjustments.set_enable_range)@", "@i18n(app.modules.adjustments.always_fixed_1500_confirm)@", function()
                     adjRange.enaRange.start = 1500
                     adjRange.enaRange["end"] = 1500
                     markDirty()
@@ -1230,12 +1242,12 @@ local function render()
             end
             local us = getChannelUsForRangeSet(adjRange.enaChannel, state.autoDetectEnaSlots, state.selectedRangeIndex)
             if not us then return end
-            applyRangeSetFromChannel("Set Enable Range", adjRange.enaRange, us)
+            applyRangeSetFromChannel("@i18n(app.modules.adjustments.set_enable_range)@", adjRange.enaRange, us)
         end
     })
     state.liveFields.enaSetBtn = enaSetBtn
 
-    local enaRangeLine = form.addLine("Enable Range", nil, true)
+    local enaRangeLine = form.addLine("@i18n(app.modules.adjustments.enable_range)@", nil, true)
     enaStart = form.addNumberField(
         enaRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
@@ -1266,7 +1278,7 @@ local function render()
     if enaEnd and enaEnd.suffix then enaEnd:suffix("us") end
     syncEnableControls(adjRange)
 
-    local adjChannelLine = form.addLine("Value Channel", nil, false)
+    local adjChannelLine = form.addLine("@i18n(app.modules.adjustments.value_channel)@", nil, false)
     local adjChoice = form.addChoiceField(
         adjChannelLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -1292,7 +1304,7 @@ local function render()
     if adjLive and adjLive.value then state.liveFields.adj = adjLive end
 
     if adjType == 2 then
-        local stepLine = form.addLine("Step Size", nil, false)
+        local stepLine = form.addLine("@i18n(app.modules.adjustments.step_size)@", nil, false)
         local stepField = form.addNumberField(
             stepLine,
             {x = xEnd, y = y, w = wNum, h = h},
@@ -1307,7 +1319,7 @@ local function render()
         if stepField and stepField.enable then stepField:enable(true) end
     end
 
-    local range1Label = adjType == 2 and "Decrease Range" or "Adjust Range"
+    local range1Label = adjType == 2 and "@i18n(app.modules.adjustments.decrease_range)@" or "@i18n(app.modules.adjustments.adjust_range)@"
     local range1Line = form.addLine(range1Label, nil, adjType ~= 2)
     local range1Start = form.addNumberField(
         range1Line,
@@ -1336,20 +1348,20 @@ local function render()
     if range1Start and range1Start.suffix then range1Start:suffix("us") end
     if range1End and range1End.suffix then range1End:suffix("us") end
     form.addButton(range1Line, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "Set",
+        text = "@i18n(app.modules.adjustments.set)@",
         icon = nil,
         options = FONT_S,
         paint = function() end,
         press = function()
             local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
             if not us then return end
-            local title = (adjType == 2) and "Set Decrease Range" or "Set Adjust Range"
+            local title = (adjType == 2) and "@i18n(app.modules.adjustments.set_decrease_range)@" or "@i18n(app.modules.adjustments.set_adjust_range)@"
             applyRangeSetFromChannel(title, adjRange.adjRange1, us)
         end
     })
 
     if adjType == 2 then
-        local range2Line = form.addLine("Increase Range", nil, true)
+        local range2Line = form.addLine("@i18n(app.modules.adjustments.increase_range)@", nil, true)
         local range2Start = form.addNumberField(
             range2Line,
             {x = xStart, y = y, w = wNum, h = h},
@@ -1377,19 +1389,19 @@ local function render()
         if range2Start and range2Start.suffix then range2Start:suffix("us") end
         if range2End and range2End.suffix then range2End:suffix("us") end
         form.addButton(range2Line, {x = xSet, y = y, w = wSet, h = h}, {
-            text = "Set",
+            text = "@i18n(app.modules.adjustments.set)@",
             icon = nil,
             options = FONT_S,
             paint = function() end,
             press = function()
                 local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
                 if not us then return end
-                applyRangeSetFromChannel("Set Increase Range", adjRange.adjRange2, us)
+                applyRangeSetFromChannel("@i18n(app.modules.adjustments.set_increase_range)@", adjRange.adjRange2, us)
             end
         })
     end
 
-    local functionLine = form.addLine("Function", nil, false)
+    local functionLine = form.addLine("@i18n(app.modules.adjustments.function)@", nil, false)
     local functionChoice = form.addChoiceField(
         functionLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -1420,7 +1432,7 @@ local function render()
     local valueMin = valueCfg and valueCfg.min or -32768
     local valueMax = valueCfg and valueCfg.max or 32767
 
-    local valRangeLine = form.addLine("Value Range", nil, true)
+    local valRangeLine = form.addLine("@i18n(app.modules.adjustments.value_range)@", nil, true)
     local valStart = form.addNumberField(
         valRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
@@ -1456,7 +1468,7 @@ local function render()
         if valEnd and valEnd.enable then valEnd:enable(false) end
     end
 
-    local previewLine = form.addLine("Current Output")
+    local previewLine = form.addLine("@i18n(app.modules.adjustments.current_output)@")
     local preview = form.addStaticText(previewLine, {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h}, "-")
     if preview and preview.value then state.liveFields.preview = preview end
 
@@ -1534,7 +1546,7 @@ local function saveAllRanges()
 
     state.saving = true
     state.infoMessage = nil
-    rfsuite.app.ui.progressDisplay("Adjustment Functions", "Saving " .. tostring(total) .. " changed range(s)")
+    rfsuite.app.ui.progressDisplay(MODULE_TITLE, "@i18n(app.modules.adjustments.saving_changed_ranges)@")
 
     local slotPos = 1
 
@@ -1575,11 +1587,11 @@ local function onSaveMenu()
     if not state.dirty then return end
 
     if hasActiveAutoDetect() then
-        local buttons = {{label = "OK", action = function() return true end}}
+        local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}
         form.openDialog({
             width = nil,
-            title = "Adjustment Functions",
-            message = "Auto-detect is active. Toggle the desired AUX channel first.",
+            title = MODULE_TITLE,
+            message = "@i18n(app.modules.adjustments.msg_auto_detect_lock_save)@",
             buttons = buttons,
             wakeup = function() end,
             paint = function() end,
@@ -1635,7 +1647,7 @@ end
 
 local function openPage(opts)
     local idx = opts.idx
-    state.title = opts.title or "Adjustment Functions"
+    state.title = opts.title or MODULE_TITLE
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = state.title
@@ -1647,7 +1659,7 @@ local function openPage(opts)
 end
 
 return {
-    title = "Adjustment Functions",
+    title = MODULE_TITLE,
     openPage = openPage,
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
