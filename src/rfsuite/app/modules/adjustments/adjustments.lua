@@ -697,6 +697,18 @@ local function syncEnableControls(adjRange)
     end
 end
 
+local function syncValueControls(adjRange)
+    if not adjRange then return end
+
+    local live = state.liveFields
+    local mapped = (getAdjustmentType(adjRange) == 1)
+
+    if live.valStart and live.valStart.value then live.valStart:value(adjRange.adjMin) end
+    if live.valEnd and live.valEnd.value then live.valEnd:value(adjRange.adjMax) end
+    if live.valStart and live.valStart.enable then live.valStart:enable(mapped) end
+    if live.valEnd and live.valEnd.enable then live.valEnd:enable(mapped) end
+end
+
 local function isWithin(value, rangeTable)
     if value == nil or rangeTable == nil then return false end
     return value >= (rangeTable.start or RANGE_MIN) and value <= (rangeTable["end"] or RANGE_MAX)
@@ -912,12 +924,18 @@ local function render()
         ADJUST_TYPE_OPTIONS_TBL,
         function() return getAdjustmentType(adjRange) end,
         function(value)
-            setPendingFocus("typeChoice")
+            local prevType = getAdjustmentType(adjRange)
             setTypeForRange(adjRange, value)
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
             state.dirty = true
-            state.needsRender = true
+            local newType = getAdjustmentType(adjRange)
+            if prevType == 2 or newType == 2 then
+                setPendingFocus("typeChoice")
+                state.needsRender = true
+            else
+                syncValueControls(adjRange)
+            end
         end
     )
     registerFocus("typeChoice", typeChoice)
@@ -1049,18 +1067,6 @@ local function render()
     if adjChoice and adjChoice.enable then adjChoice:enable(true) end
     local adjLive = form.addStaticText(adjChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
     if adjLive and adjLive.value then state.liveFields.adj = adjLive end
-    form.addButton(adjChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "Set",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
-            if not us then return end
-            local title = (adjType == 2) and "Set Decrease Range" or "Set Adjust Range"
-            applyRangeSetFromChannel(title, adjRange.adjRange1, us)
-        end
-    })
 
     if adjType == 2 then
         local stepLine = form.addLine("Step Size", nil, false)
@@ -1175,13 +1181,19 @@ local function render()
         state.functionOptions,
         function() return getFunctionChoiceIndex(adjRange.adjFunction or 0) end,
         function(value)
-            setPendingFocus("functionChoice")
+            local prevType = getAdjustmentType(adjRange)
             local fnId = state.functionOptionIds[value or 1] or 0
             setFunctionForRange(adjRange, fnId)
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
             state.dirty = true
-            state.needsRender = true
+            local newType = getAdjustmentType(adjRange)
+            if prevType == 2 or newType == 2 then
+                setPendingFocus("functionChoice")
+                state.needsRender = true
+            else
+                syncValueControls(adjRange)
+            end
         end
     )
     registerFocus("functionChoice", functionChoice)
@@ -1221,6 +1233,8 @@ local function render()
     )
     registerFocus("valStart", valStart)
     registerFocus("valEnd", valEnd)
+    state.liveFields.valStart = valStart
+    state.liveFields.valEnd = valEnd
     if adjType ~= 1 then
         if valStart and valStart.enable then valStart:enable(false) end
         if valEnd and valEnd.enable then valEnd:enable(false) end
