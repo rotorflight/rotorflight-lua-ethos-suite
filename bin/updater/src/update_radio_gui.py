@@ -152,13 +152,26 @@ def _cleanup_work_dir():
 
 
 def _clear_cache_dir():
+    cache_dir = WORK_DIR / CACHE_DIRNAME
+    if not cache_dir.exists():
+        return True, None
+    if not cache_dir.is_dir():
+        return False, f"Cache path is not a directory: {cache_dir}"
+
+    def _on_rm_error(func, path, exc_info):
+        # Retry delete after clearing readonly bits (common on Windows).
+        try:
+            os.chmod(path, 0o700)
+            func(path)
+            return
+        except Exception:
+            raise exc_info[1]
+
     try:
-        cache_dir = WORK_DIR / CACHE_DIRNAME
-        if cache_dir.is_dir():
-            shutil.rmtree(cache_dir)
-        return True
-    except Exception:
-        return False
+        shutil.rmtree(cache_dir, onerror=_on_rm_error)
+        return True, None
+    except Exception as e:
+        return False, f"{type(e).__name__}: {e}"
 
 # Version types
 VERSION_RELEASE = "release"
@@ -1091,13 +1104,13 @@ class UpdaterGUI:
         )
         if not confirmed:
             return
-        ok = _clear_cache_dir()
+        ok, err = _clear_cache_dir()
         if ok:
             self.log("Cache deleted by user.")
             messagebox.showinfo("Delete Cache", "Updater cache deleted.")
         else:
-            self.log("⚠ Failed to delete cache.")
-            messagebox.showerror("Delete Cache", "Failed to delete cache.")
+            self.log(f"⚠ Failed to delete cache: {err}")
+            messagebox.showerror("Delete Cache", f"Failed to delete cache:\n{err}")
     
     def set_status(self, message):
         """Update the status label."""
