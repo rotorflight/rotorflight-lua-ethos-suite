@@ -117,6 +117,7 @@ local state = {
     saveError = nil,
     infoMessage = nil,
     needsRender = false,
+    pendingFocusKey = nil,
     channelSources = {},
     liveFields = {},
     autoDetectEnaSlots = {},
@@ -125,6 +126,19 @@ local state = {
     functionOptions = {},
     functionOptionIds = {}
 }
+
+local function setPendingFocus(key)
+    state.pendingFocusKey = key
+end
+
+local function restorePendingFocus(focusTargets)
+    local key = state.pendingFocusKey
+    if not key then return end
+    state.pendingFocusKey = nil
+
+    local target = focusTargets and focusTargets[key] or nil
+    if target and target.focus then target:focus() end
+end
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
@@ -817,6 +831,11 @@ local function render()
     local y = app.radio.linePaddingTop
     local rightPadding = 8
     local gap = 6
+    local focusTargets = {}
+    local function registerFocus(key, field)
+        if key and field then focusTargets[key] = field end
+        return field
+    end
 
     local activeCount = countActiveRanges()
     local infoLine = form.addLine("Active ranges: " .. tostring(activeCount) .. " / " .. tostring(#state.adjustmentRanges))
@@ -858,10 +877,12 @@ local function render()
         slotOptionsTbl,
         function() return state.selectedRangeIndex end,
         function(value)
+            setPendingFocus("slotChoice")
             state.selectedRangeIndex = clamp(value or 1, 1, #state.adjustmentRanges)
             state.needsRender = true
         end
     )
+    registerFocus("slotChoice", slotChoice)
     if slotChoice and slotChoice.values then slotChoice:values(slotOptionsTbl) end
 
     local adjRange = getSelectedRange()
@@ -870,13 +891,14 @@ local function render()
     buildFunctionOptions(adjRange.adjFunction)
     local adjType = getAdjustmentType(adjRange)
 
-    local typeLine = form.addLine("Type", nil, false)
+    local typeLine = form.addLine("Type", nil, true)
     local typeChoice = form.addChoiceField(
         typeLine,
         {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h},
         ADJUST_TYPE_OPTIONS_TBL,
         function() return getAdjustmentType(adjRange) end,
         function(value)
+            setPendingFocus("typeChoice")
             setTypeForRange(adjRange, value)
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
@@ -884,26 +906,9 @@ local function render()
             state.needsRender = true
         end
     )
+    registerFocus("typeChoice", typeChoice)
     if typeChoice and typeChoice.values then typeChoice:values(ADJUST_TYPE_OPTIONS_TBL) end
     if typeChoice and typeChoice.enable then typeChoice:enable(true) end
-
-    local functionLine = form.addLine("Function", nil, true)
-    local functionChoice = form.addChoiceField(
-        functionLine,
-        {x = width - rightPadding - math.floor(width * 0.60), y = y, w = math.floor(width * 0.60), h = h},
-        state.functionOptions,
-        function() return getFunctionChoiceIndex(adjRange.adjFunction or 0) end,
-        function(value)
-            local fnId = state.functionOptionIds[value or 1] or 0
-            setFunctionForRange(adjRange, fnId)
-            adjRange = sanitizeAdjustmentRange(adjRange)
-            state.adjustmentRanges[state.selectedRangeIndex] = adjRange
-            state.dirty = true
-            state.needsRender = true
-        end
-    )
-    if functionChoice and functionChoice.values then functionChoice:values(state.functionOptions) end
-    if functionChoice and functionChoice.enable then functionChoice:enable(true) end
 
     local wSet = math.max(34, math.floor(width * 0.14))
     local wLive = math.floor(width * 0.18)
@@ -927,6 +932,7 @@ local function render()
             return clamp((adjRange.enaChannel or 0) + 3, 3, #ENA_CHANNEL_OPTIONS)
         end,
         function(value)
+            setPendingFocus("enaChoice")
             if value == 1 then
                 state.autoDetectEnaSlots[state.selectedRangeIndex] = {baseline = nil}
             elseif value == 2 then
@@ -942,6 +948,7 @@ local function render()
             state.needsRender = true
         end
     )
+    registerFocus("enaChoice", enaChoice)
     if enaChoice and enaChoice.values then enaChoice:values(ENA_CHANNEL_OPTIONS_TBL) end
     if enaChoice and enaChoice.enable then enaChoice:enable(true) end
     local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
@@ -1014,6 +1021,7 @@ local function render()
             return clamp((adjRange.adjChannel or 0) + 2, 2, #ADJ_CHANNEL_OPTIONS)
         end,
         function(value)
+            local wasAuto = state.autoDetectAdjSlots[state.selectedRangeIndex] ~= nil
             if value == 1 then
                 state.autoDetectAdjSlots[state.selectedRangeIndex] = {baseline = nil}
             else
@@ -1021,9 +1029,13 @@ local function render()
                 adjRange.adjChannel = clamp((value or 2) - 2, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
             state.dirty = true
-            state.needsRender = true
+            if value == 1 or wasAuto then
+                setPendingFocus("adjChoice")
+                state.needsRender = true
+            end
         end
     )
+    registerFocus("adjChoice", adjChoice)
     if adjChoice and adjChoice.values then adjChoice:values(ADJ_CHANNEL_OPTIONS_TBL) end
     if adjChoice and adjChoice.enable then adjChoice:enable(true) end
     local adjLive = form.addStaticText(adjChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
@@ -1040,42 +1052,6 @@ local function render()
             applyRangeSetFromChannel(title, adjRange.adjRange1, us)
         end
     })
-
-    local valueCfg = getFunctionById(adjRange.adjFunction)
-    local valueMin = valueCfg and valueCfg.min or -32768
-    local valueMax = valueCfg and valueCfg.max or 32767
-
-    local valRangeLine = form.addLine("Value Range", nil, false)
-    local valStart = form.addNumberField(
-        valRangeLine,
-        {x = xStart, y = y, w = wNum, h = h},
-        valueMin,
-        valueMax,
-        function() return adjRange.adjMin end,
-        function(value)
-            local adjusted = clamp(math.floor(value), valueMin, valueMax)
-            adjRange.adjMin = adjusted
-            if adjRange.adjMax < adjusted then adjRange.adjMax = adjusted end
-            state.dirty = true
-        end
-    )
-    local valEnd = form.addNumberField(
-        valRangeLine,
-        {x = xEnd, y = y, w = wNum, h = h},
-        valueMin,
-        valueMax,
-        function() return adjRange.adjMax end,
-        function(value)
-            local adjusted = clamp(math.floor(value), valueMin, valueMax)
-            adjRange.adjMax = adjusted
-            if adjRange.adjMin > adjusted then adjRange.adjMin = adjusted end
-            state.dirty = true
-        end
-    )
-    if adjType ~= 1 then
-        if valStart and valStart.enable then valStart:enable(false) end
-        if valEnd and valEnd.enable then valEnd:enable(false) end
-    end
 
     if adjType == 2 then
         local stepLine = form.addLine("Step Size", nil, false)
@@ -1183,9 +1159,69 @@ local function render()
         })
     end
 
+    local functionLine = form.addLine("Function", nil, false)
+    local functionChoice = form.addChoiceField(
+        functionLine,
+        {x = width - rightPadding - math.floor(width * 0.60), y = y, w = math.floor(width * 0.60), h = h},
+        state.functionOptions,
+        function() return getFunctionChoiceIndex(adjRange.adjFunction or 0) end,
+        function(value)
+            setPendingFocus("functionChoice")
+            local fnId = state.functionOptionIds[value or 1] or 0
+            setFunctionForRange(adjRange, fnId)
+            adjRange = sanitizeAdjustmentRange(adjRange)
+            state.adjustmentRanges[state.selectedRangeIndex] = adjRange
+            state.dirty = true
+            state.needsRender = true
+        end
+    )
+    registerFocus("functionChoice", functionChoice)
+    if functionChoice and functionChoice.values then functionChoice:values(state.functionOptions) end
+    if functionChoice and functionChoice.enable then functionChoice:enable(true) end
+
+    local valueCfg = getFunctionById(adjRange.adjFunction)
+    local valueMin = valueCfg and valueCfg.min or -32768
+    local valueMax = valueCfg and valueCfg.max or 32767
+
+    local valRangeLine = form.addLine("Value Range", nil, true)
+    local valStart = form.addNumberField(
+        valRangeLine,
+        {x = xStart, y = y, w = wNum, h = h},
+        valueMin,
+        valueMax,
+        function() return adjRange.adjMin end,
+        function(value)
+            local adjusted = clamp(math.floor(value), valueMin, valueMax)
+            adjRange.adjMin = adjusted
+            if adjRange.adjMax < adjusted then adjRange.adjMax = adjusted end
+            state.dirty = true
+        end
+    )
+    local valEnd = form.addNumberField(
+        valRangeLine,
+        {x = xEnd, y = y, w = wNum, h = h},
+        valueMin,
+        valueMax,
+        function() return adjRange.adjMax end,
+        function(value)
+            local adjusted = clamp(math.floor(value), valueMin, valueMax)
+            adjRange.adjMax = adjusted
+            if adjRange.adjMin > adjusted then adjRange.adjMin = adjusted end
+            state.dirty = true
+        end
+    )
+    registerFocus("valStart", valStart)
+    registerFocus("valEnd", valEnd)
+    if adjType ~= 1 then
+        if valStart and valStart.enable then valStart:enable(false) end
+        if valEnd and valEnd.enable then valEnd:enable(false) end
+    end
+
     local previewLine = form.addLine("Current Output")
     local preview = form.addStaticText(previewLine, {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h}, "-")
     if preview and preview.value then state.liveFields.preview = preview end
+
+    restorePendingFocus(focusTargets)
 end
 
 local function queueSetAdjustmentRange(slotIndex, done, failed)
