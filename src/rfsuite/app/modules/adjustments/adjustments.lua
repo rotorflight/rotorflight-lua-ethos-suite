@@ -319,6 +319,31 @@ local function buildChoiceTable(values, inc)
     return out
 end
 
+local function buildRangeSlotLabel(slotIndex, adjRange)
+    local label = "Range " .. tostring(slotIndex)
+    local fnId = adjRange and math.floor(adjRange.adjFunction or 0) or 0
+    if fnId <= 0 then return label end
+
+    local fn = getFunctionById(fnId)
+    local fnName = fn and fn.name or ("Function " .. tostring(fnId))
+    return label .. " - " .. fnName
+end
+
+local function buildRangeSlotOptions()
+    local values = {}
+    for i = 1, #state.adjustmentRanges do
+        values[#values + 1] = buildRangeSlotLabel(i, state.adjustmentRanges[i])
+    end
+    return buildChoiceTable(values, 0)
+end
+
+local function refreshRangeSlotOptions()
+    local slotChoice = state.liveFields and state.liveFields.slotChoice
+    if slotChoice and slotChoice.values then
+        slotChoice:values(buildRangeSlotOptions())
+    end
+end
+
 local function buildAuxOptions(includeAuto, includeAlways)
     local options = {}
     if includeAuto then options[#options + 1] = "AUTO" end
@@ -953,11 +978,7 @@ local function render()
     if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
     if state.infoMessage then form.addLine(state.infoMessage) end
 
-    local slotOptions = {}
-    for i = 1, #state.adjustmentRanges do
-        slotOptions[#slotOptions + 1] = "Range " .. tostring(i)
-    end
-    local slotOptionsTbl = buildChoiceTable(slotOptions, 0)
+    local slotOptionsTbl = buildRangeSlotOptions()
 
     local slotLine = form.addLine("Range")
     local slotChoice = form.addChoiceField(
@@ -972,6 +993,7 @@ local function render()
         end
     )
     registerFocus("slotChoice", slotChoice)
+    state.liveFields.slotChoice = slotChoice
     if slotChoice and slotChoice.values then slotChoice:values(slotOptionsTbl) end
 
     local adjRange = getSelectedRange()
@@ -992,6 +1014,7 @@ local function render()
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
             markDirty()
+            refreshRangeSlotOptions()
             local newType = getAdjustmentType(adjRange)
             if prevType == 2 or newType == 2 then
                 setPendingFocus("typeChoice")
@@ -1227,6 +1250,7 @@ local function render()
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
             markDirty()
+            refreshRangeSlotOptions()
             local newType = getAdjustmentType(adjRange)
             if prevType == 2 or newType == 2 then
                 setPendingFocus("functionChoice")
