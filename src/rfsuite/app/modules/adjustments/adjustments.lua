@@ -678,8 +678,23 @@ local function applyRangeSetFromChannel(title, rangeTable, us)
         rangeTable.start = targetStart
         rangeTable["end"] = targetEnd
         state.dirty = true
-        state.needsRender = true
     end)
+end
+
+local function syncEnableControls(adjRange)
+    if not adjRange then return end
+
+    local isAlways = (adjRange.enaChannel == ALWAYS_ON_CHANNEL)
+    local live = state.liveFields
+
+    if live.enaStart and live.enaStart.enable then live.enaStart:enable(not isAlways) end
+    if live.enaEnd and live.enaEnd.enable then live.enaEnd:enable(not isAlways) end
+    if live.enaSetBtn and live.enaSetBtn.enable then live.enaSetBtn:enable(not isAlways) end
+
+    if isAlways then
+        if live.enaStart and live.enaStart.value then live.enaStart:value(1500) end
+        if live.enaEnd and live.enaEnd.value then live.enaEnd:value(1500) end
+    end
 end
 
 local function isWithin(value, rangeTable)
@@ -750,7 +765,7 @@ local function updateLiveFields()
             adjRange.enaChannel = idx
             state.autoDetectEnaSlots[slot] = nil
             state.dirty = true
-            state.needsRender = true
+            syncEnableControls(adjRange)
             enaUs = us
         else
             if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("AUTO...") end
@@ -777,7 +792,6 @@ local function updateLiveFields()
             adjRange.adjChannel = idx
             state.autoDetectAdjSlots[slot] = nil
             state.dirty = true
-            state.needsRender = true
             adjUs = us
         else
             if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("AUTO...") end
@@ -921,6 +935,9 @@ local function render()
     local xEnd = xSet - gap - wNum
     local xStart = xEnd - gap - wNum
 
+    local enaSetBtn
+    local enaStart
+    local enaEnd
     local enaChannelLine = form.addLine("Enable Channel", nil, false)
     local enaChoice = form.addChoiceField(
         enaChannelLine,
@@ -932,7 +949,6 @@ local function render()
             return clamp((adjRange.enaChannel or 0) + 3, 3, #ENA_CHANNEL_OPTIONS)
         end,
         function(value)
-            setPendingFocus("enaChoice")
             if value == 1 then
                 state.autoDetectEnaSlots[state.selectedRangeIndex] = {baseline = nil}
             elseif value == 2 then
@@ -945,7 +961,7 @@ local function render()
                 adjRange.enaChannel = clamp((value or 3) - 3, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
             state.dirty = true
-            state.needsRender = true
+            syncEnableControls(adjRange)
         end
     )
     registerFocus("enaChoice", enaChoice)
@@ -953,7 +969,7 @@ local function render()
     if enaChoice and enaChoice.enable then enaChoice:enable(true) end
     local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
     if enaLive and enaLive.value then state.liveFields.ena = enaLive end
-    local enaSetBtn = form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
+    enaSetBtn = form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
         text = "Set",
         icon = nil,
         options = FONT_S,
@@ -964,7 +980,6 @@ local function render()
                     adjRange.enaRange.start = 1500
                     adjRange.enaRange["end"] = 1500
                     state.dirty = true
-                    state.needsRender = true
                 end)
                 return
             end
@@ -973,9 +988,10 @@ local function render()
             applyRangeSetFromChannel("Set Enable Range", adjRange.enaRange, us)
         end
     })
+    state.liveFields.enaSetBtn = enaSetBtn
 
     local enaRangeLine = form.addLine("Enable Range", nil, true)
-    local enaStart = form.addNumberField(
+    enaStart = form.addNumberField(
         enaRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
         RANGE_MIN,
@@ -988,7 +1004,8 @@ local function render()
             state.dirty = true
         end
     )
-    local enaEnd = form.addNumberField(
+    state.liveFields.enaStart = enaStart
+    enaEnd = form.addNumberField(
         enaRangeLine,
         {x = xEnd, y = y, w = wNum, h = h},
         RANGE_MIN,
@@ -1001,15 +1018,12 @@ local function render()
             state.dirty = true
         end
     )
+    state.liveFields.enaEnd = enaEnd
     if enaStart and enaStart.step then enaStart:step(RANGE_STEP) end
     if enaEnd and enaEnd.step then enaEnd:step(RANGE_STEP) end
     if enaStart and enaStart.suffix then enaStart:suffix("us") end
     if enaEnd and enaEnd.suffix then enaEnd:suffix("us") end
-    if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
-        if enaStart and enaStart.enable then enaStart:enable(false) end
-        if enaEnd and enaEnd.enable then enaEnd:enable(false) end
-        if enaSetBtn and enaSetBtn.enable then enaSetBtn:enable(false) end
-    end
+    syncEnableControls(adjRange)
 
     local adjChannelLine = form.addLine("Value Channel", nil, false)
     local adjChoice = form.addChoiceField(
@@ -1021,7 +1035,6 @@ local function render()
             return clamp((adjRange.adjChannel or 0) + 2, 2, #ADJ_CHANNEL_OPTIONS)
         end,
         function(value)
-            local wasAuto = state.autoDetectAdjSlots[state.selectedRangeIndex] ~= nil
             if value == 1 then
                 state.autoDetectAdjSlots[state.selectedRangeIndex] = {baseline = nil}
             else
@@ -1029,10 +1042,6 @@ local function render()
                 adjRange.adjChannel = clamp((value or 2) - 2, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
             state.dirty = true
-            if value == 1 or wasAuto then
-                setPendingFocus("adjChoice")
-                state.needsRender = true
-            end
         end
     )
     registerFocus("adjChoice", adjChoice)
@@ -1388,7 +1397,6 @@ local function openPage(opts)
 
     buildFunctionOptions(nil)
     startLoad()
-    state.needsRender = true
 end
 
 return {
