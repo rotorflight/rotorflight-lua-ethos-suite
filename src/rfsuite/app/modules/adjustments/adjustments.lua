@@ -927,6 +927,7 @@ local function render()
     local xChoice = xLive - gap - wChoice
     local xEnd = xSet - gap - wNum
     local xStart = xEnd - gap - wNum
+    local wRightColumn = (width - rightPadding) - xChoice
     local focusTargets = {}
     local function registerFocus(key, field)
         if key and field then focusTargets[key] = field end
@@ -959,17 +960,9 @@ local function render()
     local slotOptionsTbl = buildChoiceTable(slotOptions, 0)
 
     local slotLine = form.addLine("Range")
-    local addBtn = form.addButton(slotLine, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "Add",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function() addRangeSlot() end
-    })
-    if addBtn and addBtn.enable then addBtn:enable(true) end
     local slotChoice = form.addChoiceField(
         slotLine,
-        {x = xChoice, y = y, w = wChoice, h = h},
+        {x = xChoice, y = y, w = wRightColumn, h = h},
         slotOptionsTbl,
         function() return state.selectedRangeIndex end,
         function(value)
@@ -990,7 +983,7 @@ local function render()
     local typeLine = form.addLine("Type", nil, true)
     local typeChoice = form.addChoiceField(
         typeLine,
-        {x = xChoice, y = y, w = wChoice, h = h},
+        {x = xChoice, y = y, w = wRightColumn, h = h},
         ADJUST_TYPE_OPTIONS_TBL,
         function() return getAdjustmentType(adjRange) end,
         function(value)
