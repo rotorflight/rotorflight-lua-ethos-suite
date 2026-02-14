@@ -10,7 +10,7 @@ local AUX_CHANNEL_COUNT_FALLBACK = 20
 local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5
-local RANGE_SNAP_DELTA_US = 100
+local RANGE_SNAP_DELTA_US = 50
 
 local state = {
     title = "Modes",
