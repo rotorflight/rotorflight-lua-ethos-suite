@@ -37,36 +37,79 @@ def needs_copy_with_md5(srcf, dstf):
         return True
     if ss.st_size != ds.st_size:
         return True
-    if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
-        return True
+    if abs(ss.st_mtime - ds.st_mtime) <= TS_SLACK:
+        return False
     try:
         return file_md5(srcf) != file_md5(dstf)
     except Exception:
         return True
 
 
-def copy_tree_update_only(src, dest):
+def _remove_empty_dirs(root):
+    if not os.path.isdir(root):
+        return
+    for dp, dns, fs in os.walk(root, topdown=False):
+        if dns or fs:
+            continue
+        try:
+            os.rmdir(dp)
+        except Exception:
+            pass
+
+
+def copy_tree_update_only(src, dest, delete_stale=True):
     os.makedirs(dest, exist_ok=True)
 
-    files = []
+    src_files = {}
     for r, _, fs in os.walk(src):
         for f in fs:
             s = os.path.join(r, f)
             rel = os.path.relpath(s, src)
-            d = os.path.join(dest, rel)
-            files.append((s, d))
+            src_files[rel] = s
 
-    if not files:
+    if not src_files:
         print("[AUDIO] No files to copy.")
         return
 
-    bar = tqdm(total=len(files), desc="Copying soundpack")
-    for s, d in files:
+    dst_files = {}
+    if os.path.isdir(dest):
+        for r, _, fs in os.walk(dest):
+            for f in fs:
+                d = os.path.join(r, f)
+                rel = os.path.relpath(d, dest)
+                dst_files[rel] = d
+
+    to_copy = []
+    bar_verify = tqdm(total=len(src_files), desc="Verifying soundpack")
+    for rel, s in src_files.items():
+        d = os.path.join(dest, rel)
         os.makedirs(os.path.dirname(d), exist_ok=True)
         if needs_copy_with_md5(s, d):
+            to_copy.append((s, d))
+        bar_verify.update(1)
+    bar_verify.close()
+
+    if to_copy:
+        bar_copy = tqdm(total=len(to_copy), desc="Updating soundpack")
+        for s, d in to_copy:
             shutil.copy2(s, d)
-        bar.update(1)
-    bar.close()
+            bar_copy.update(1)
+        bar_copy.close()
+
+    if delete_stale and dst_files:
+        stale = [rel for rel in dst_files.keys() if rel not in src_files]
+        if stale:
+            bar_del = tqdm(total=len(stale), desc="Deleting stale audio")
+            for rel in stale:
+                try:
+                    os.remove(os.path.join(dest, rel))
+                except FileNotFoundError:
+                    pass
+                except Exception as e:
+                    print(f"[AUDIO][WARN] Could not remove stale file {rel}: {e}")
+                bar_del.update(1)
+            bar_del.close()
+            _remove_empty_dirs(dest)
 
 
 def main():

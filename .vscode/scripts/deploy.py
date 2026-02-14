@@ -608,6 +608,114 @@ def safe_full_copy(srcall, out_dir):
     shutil.copytree(srcall, out_dir, dirs_exist_ok=True, copy_function=copy_verbose)
     pbar.close()
 
+
+def _needs_copy_with_md5(srcf, dstf, ts_slack=2.0):
+    try:
+        ss = os.stat(srcf)
+    except FileNotFoundError:
+        return False
+    if not os.path.exists(dstf):
+        return True
+    try:
+        ds = os.stat(dstf)
+    except FileNotFoundError:
+        return True
+
+    if ss.st_size != ds.st_size:
+        return True
+
+    # Fast path: same size and near-identical timestamps are considered unchanged.
+    # If timestamps drift (e.g. post-step rewrites), fall back to MD5 before copying.
+    if abs(ss.st_mtime - ds.st_mtime) <= ts_slack:
+        return False
+    try:
+        return file_md5(srcf) != file_md5(dstf)
+    except Exception:
+        return True
+
+
+def _remove_empty_dirs(root):
+    if not os.path.isdir(root):
+        return
+    for dp, dns, fs in os.walk(root, topdown=False):
+        if dns or fs:
+            continue
+        try:
+            os.rmdir(dp)
+        except Exception:
+            pass
+
+
+def mirror_copy(src_dir, dst_dir, delete_stale=True, ts_slack=2.0):
+    """
+    Incremental mirror copy similar to:
+      rsync -avh src/ dst/ --delete
+    """
+    os.makedirs(dst_dir, exist_ok=True)
+
+    src_files = {}
+    for r, _, files in os.walk(src_dir):
+        for f in files:
+            srcf = os.path.join(r, f)
+            rel = os.path.relpath(srcf, src_dir)
+            src_files[rel] = srcf
+
+    dst_files = {}
+    if os.path.isdir(dst_dir):
+        for r, _, files in os.walk(dst_dir):
+            for f in files:
+                dstf = os.path.join(r, f)
+                rel = os.path.relpath(dstf, dst_dir)
+                dst_files[rel] = dstf
+
+    to_copy = []
+    if src_files:
+        bar_verify = tqdm(total=len(src_files), desc="Verifying (MD5)")
+        for rel, srcf in src_files.items():
+            dstf = os.path.join(dst_dir, rel)
+            os.makedirs(os.path.dirname(dstf), exist_ok=True)
+            if _needs_copy_with_md5(srcf, dstf, ts_slack=ts_slack):
+                to_copy.append((rel, srcf, dstf))
+            bar_verify.update(1)
+        bar_verify.close()
+
+    if to_copy:
+        bar_update = tqdm(total=len(to_copy), desc="Updating files")
+        for rel, srcf, dstf in to_copy:
+            if DEPLOY_TO_RADIO:
+                throttled_copyfile(srcf, dstf)
+                flush_fs()
+                time.sleep(0.05)
+            else:
+                shutil.copy2(srcf, dstf)
+            if not rel.replace(os.sep, "/").endswith("tasks/logger/init.lua"):
+                print(f"Copy {rel}")
+            bar_update.update(1)
+        bar_update.close()
+
+    removed = 0
+    if delete_stale and dst_files:
+        stale = [rel for rel in dst_files.keys() if rel not in src_files]
+        if stale:
+            bar_delete = tqdm(total=len(stale), desc="Deleting stale")
+            for rel in stale:
+                p = os.path.join(dst_dir, rel)
+                try:
+                    os.remove(p)
+                    removed += 1
+                except FileNotFoundError:
+                    pass
+                except Exception as e:
+                    print(f"[WARN] Failed to delete stale file {rel}: {e}")
+                bar_delete.update(1)
+            bar_delete.close()
+            _remove_empty_dirs(dst_dir)
+
+    if not to_copy and removed == 0:
+        print("Fast deploy: nothing to update.")
+    elif removed:
+        print(f"Removed {removed} stale file(s).")
+
 # --- config: derive repo root and load deploy.json ----------------------------
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -916,7 +1024,7 @@ def copy_verbose(src, dst):
         throttled_copyfile(src, dst)
         flush_fs()
     else:
-        shutil.copy(src, dst)
+        shutil.copy2(src, dst)
 
 
 def count_files(dirpath, ext=None):
@@ -1012,65 +1120,7 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
         return stage_root, staged_out_dir
 
     def _fast_copy_from_stage(stage_dir: str, dest_dir: str):
-        # Compare stage_dir -> dest_dir and copy only changed files.
-        TS_SLACK = 2.0
-        files_all = []
-        for r, _, files in os.walk(stage_dir):
-            for f in files:
-                srcf = os.path.join(r, f)
-                rel = os.path.relpath(srcf, stage_dir)
-                dstf = os.path.join(dest_dir, rel)
-                files_all.append((srcf, dstf, rel))
-
-        def needs_copy_with_md5(srcf, dstf):
-            try:
-                ss = os.stat(srcf)
-            except FileNotFoundError:
-                return False
-            if not os.path.exists(dstf):
-                return True
-            try:
-                ds = os.stat(dstf)
-            except FileNotFoundError:
-                return True
-
-            if ss.st_size != ds.st_size:
-                return True
-            if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
-                return True
-            try:
-                return file_md5(srcf) != file_md5(dstf)
-            except Exception:
-                return True
-
-        to_copy = []
-        if files_all:
-            bar_verify = tqdm(total=len(files_all), desc="Verifying (MD5)")
-            for srcf, dstf, rel in files_all:
-                os.makedirs(os.path.dirname(dstf), exist_ok=True)
-                if needs_copy_with_md5(srcf, dstf):
-                    to_copy.append((srcf, dstf, rel))
-                bar_verify.update(1)
-            bar_verify.close()
-
-        copied = 0
-        if to_copy:
-            bar_update = tqdm(total=len(to_copy), desc="Updating files")
-            for srcf, dstf, rel in to_copy:
-                if DEPLOY_TO_RADIO:
-                    throttled_copyfile(srcf, dstf)
-                    flush_fs()
-                    time.sleep(0.05)
-                else:
-                    shutil.copy(srcf, dstf)
-                if not rel.replace(os.sep, "/").endswith("tasks/logger/init.lua"):
-                    print(f"Copy {rel}")
-                copied += 1
-                bar_update.update(1)
-            bar_update.close()
-
-        if not copied:
-            print("Fast deploy: nothing to update.")
+        mirror_copy(stage_dir, dest_dir, delete_stale=True)
 
     for i, t in enumerate(targets, 1):
         dest = t['dest']; sim = t.get('simulator')
@@ -1162,85 +1212,16 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
 
         elif fileext == 'fast':
             scr = repo_src
-
-            if os.path.isdir(out_dir):
-                removed = 0
-                for r, _, files in os.walk(out_dir):
-                    for f in files:
-                        if f.endswith('.luac'):
-                            try:
-                                os.remove(os.path.join(r, f))
-                                removed += 1
-                            except Exception as e:
-                                print(f"[WARN] Failed to delete {f}: {e}")
-                if removed:
-                    print(f"Fast deploy cleanup: removed {removed} stale .luac file(s).")
-
-            TS_SLACK = 2.0
-
-            files_all = []
-            for r, _, files in os.walk(scr):
-                for f in files:
-                    srcf = os.path.join(r, f)
-                    rel  = os.path.relpath(srcf, scr)
-                    dstf = os.path.join(out_dir, rel)
-                    files_all.append((srcf, dstf, rel))
-
-            def needs_copy_with_md5(srcf, dstf):
-                try:
-                    ss = os.stat(srcf)
-                except FileNotFoundError:
-                    return False
-                if not os.path.exists(dstf):
-                    return True
-                try:
-                    ds = os.stat(dstf)
-                except FileNotFoundError:
-                    return True
-
-                if ss.st_size != ds.st_size:
-                    return True
-                if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
-                    return True
-                try:
-                    return file_md5(srcf) != file_md5(dstf)
-                except Exception:
-                    return True
-
-            to_copy = []
-            if files_all:
-                bar_verify = tqdm(total=len(files_all), desc="Verifying (MD5)")
-                for srcf, dstf, rel in files_all:
-                    os.makedirs(os.path.dirname(dstf), exist_ok=True)
-                    if needs_copy_with_md5(srcf, dstf):
-                        to_copy.append((srcf, dstf, rel))
-                    bar_verify.update(1)
-                bar_verify.close()
-
-            copied = 0
-            if to_copy:
-                bar_update = tqdm(total=len(to_copy), desc="Updating files")
-                for srcf, dstf, rel in to_copy:
-                    if DEPLOY_TO_RADIO:
-                        throttled_copyfile(srcf, dstf)
-                        flush_fs()
-                        time.sleep(0.05)
-                    else:
-                        shutil.copy(srcf, dstf)
-                    if not rel.replace(os.sep, "/").endswith("tasks/logger/init.lua"):
-                        print(f"Copy {rel}")
-                    copied += 1
-                    bar_update.update(1)
-                bar_update.close()
+            mirror_copy(scr, out_dir, delete_stale=True)
 
             run_steps(steps, out_dir, lang)
 
-            if not copied:
-                print("Fast deploy: nothing to update.")
-
         else:
             srcall = repo_src
-            safe_full_copy(srcall, out_dir)
+            if DEPLOY_TO_RADIO:
+                safe_full_copy(srcall, out_dir)
+            else:
+                mirror_copy(srcall, out_dir, delete_stale=True)
             run_steps(steps, out_dir, lang)
             flush_fs()
             time.sleep(2)
