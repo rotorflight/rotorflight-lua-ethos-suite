@@ -156,6 +156,32 @@ local function quantizeUs(value)
     return clamp(math.floor((value + (RANGE_STEP / 2)) / RANGE_STEP) * RANGE_STEP, RANGE_MIN, RANGE_MAX)
 end
 
+local function setUsRangeStart(rangeTable, value)
+    local adjusted = quantizeUs(value)
+    local currentEnd = quantizeUs((rangeTable and rangeTable["end"]) or RANGE_MAX)
+
+    if adjusted <= currentEnd then
+        rangeTable.start = adjusted
+        rangeTable["end"] = currentEnd
+    else
+        rangeTable.start = currentEnd
+        rangeTable["end"] = adjusted
+    end
+end
+
+local function setUsRangeEnd(rangeTable, value)
+    local adjusted = quantizeUs(value)
+    local currentStart = quantizeUs((rangeTable and rangeTable.start) or RANGE_MIN)
+
+    if adjusted >= currentStart then
+        rangeTable.start = currentStart
+        rangeTable["end"] = adjusted
+    else
+        rangeTable.start = adjusted
+        rangeTable["end"] = currentStart
+    end
+end
+
 local function toS8Byte(value)
     local v = clamp(math.floor(value + 0.5), -128, 127)
     if v < 0 then return v + 256 end
@@ -1051,9 +1077,7 @@ local function render()
         RANGE_MAX,
         function() return adjRange.enaRange.start end,
         function(value)
-            local adjusted = quantizeUs(value)
-            adjRange.enaRange.start = adjusted
-            if adjRange.enaRange["end"] < adjusted then adjRange.enaRange["end"] = adjusted end
+            setUsRangeStart(adjRange.enaRange, value)
             markDirty()
         end
     )
@@ -1065,9 +1089,7 @@ local function render()
         RANGE_MAX,
         function() return adjRange.enaRange["end"] end,
         function(value)
-            local adjusted = quantizeUs(value)
-            adjRange.enaRange["end"] = adjusted
-            if adjRange.enaRange.start > adjusted then adjRange.enaRange.start = adjusted end
+            setUsRangeEnd(adjRange.enaRange, value)
             markDirty()
         end
     )
@@ -1128,9 +1150,7 @@ local function render()
         RANGE_MAX,
         function() return adjRange.adjRange1.start end,
         function(value)
-            local adjusted = quantizeUs(value)
-            adjRange.adjRange1.start = adjusted
-            if adjRange.adjRange1["end"] < adjusted then adjRange.adjRange1["end"] = adjusted end
+            setUsRangeStart(adjRange.adjRange1, value)
             markDirty()
         end
     )
@@ -1141,9 +1161,7 @@ local function render()
         RANGE_MAX,
         function() return adjRange.adjRange1["end"] end,
         function(value)
-            local adjusted = quantizeUs(value)
-            adjRange.adjRange1["end"] = adjusted
-            if adjRange.adjRange1.start > adjusted then adjRange.adjRange1.start = adjusted end
+            setUsRangeEnd(adjRange.adjRange1, value)
             markDirty()
         end
     )
@@ -1173,9 +1191,7 @@ local function render()
             RANGE_MAX,
             function() return adjRange.adjRange2.start end,
             function(value)
-                local adjusted = quantizeUs(value)
-                adjRange.adjRange2.start = adjusted
-                if adjRange.adjRange2["end"] < adjusted then adjRange.adjRange2["end"] = adjusted end
+                setUsRangeStart(adjRange.adjRange2, value)
                 markDirty()
             end
         )
@@ -1186,9 +1202,7 @@ local function render()
             RANGE_MAX,
             function() return adjRange.adjRange2["end"] end,
             function(value)
-                local adjusted = quantizeUs(value)
-                adjRange.adjRange2["end"] = adjusted
-                if adjRange.adjRange2.start > adjusted then adjRange.adjRange2.start = adjusted end
+                setUsRangeEnd(adjRange.adjRange2, value)
                 markDirty()
             end
         )
