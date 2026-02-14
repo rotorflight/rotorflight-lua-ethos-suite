@@ -10,7 +10,7 @@ local API_NAME = "ADJUSTMENT_RANGES"
 local MSP_API_CMD_READ = 52
 local MSP_MIN_BYTES = 0
 local ADJUSTMENT_RANGE_BYTES = 14
-local ADJUSTMENT_RANGE_MAX = 64
+local ADJUSTMENT_RANGE_MAX = 42
 
 local mspData = nil
 local handlers = core.createHandlers()

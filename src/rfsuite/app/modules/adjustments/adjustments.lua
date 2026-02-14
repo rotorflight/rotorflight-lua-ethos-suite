@@ -17,7 +17,7 @@ local AUTODETECT_DELTA_US = 120
 
 local ADJ_STEP_MIN = 0
 local ADJ_STEP_MAX = 255
-local ADJUSTMENT_RANGE_MAX = 64
+local ADJUSTMENT_RANGE_MAX = 42
 local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
 
 local ADJUST_FUNCTIONS = {
@@ -320,10 +320,16 @@ local function buildChoiceTable(values, inc)
     return out
 end
 
+local function hasAssignedFunction(adjRange)
+    if type(adjRange) ~= "table" then return false end
+    return math.floor(adjRange.adjFunction or 0) > 0
+end
+
 local function buildRangeSlotLabel(slotIndex, adjRange)
     local label = "Range " .. tostring(slotIndex)
-    local fnId = adjRange and math.floor(adjRange.adjFunction or 0) or 0
-    if fnId <= 0 then return label end
+    if not hasAssignedFunction(adjRange) then return label end
+
+    local fnId = math.floor(adjRange.adjFunction or 0)
 
     local fn = getFunctionById(fnId)
     local fnName = fn and fn.name or ("Function " .. tostring(fnId))
@@ -531,7 +537,7 @@ end
 local function countActiveRanges()
     local used = 0
     for i = 1, #state.adjustmentRanges do
-        if (state.adjustmentRanges[i].adjFunction or 0) > 0 then used = used + 1 end
+        if hasAssignedFunction(state.adjustmentRanges[i]) then used = used + 1 end
     end
     return used
 end
@@ -544,15 +550,132 @@ local function setLoadError(reason)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
-local function readAdjustmentRanges()
+local function parseAdjustmentRangeRecord(buf)
+    if type(buf) ~= "table" then return nil end
+    buf.offset = 1
+
+    local adjFunction = rfsuite.tasks.msp.mspHelper.readU8(buf)
+    if adjFunction == nil then return nil end
+
+    local enaChannel = rfsuite.tasks.msp.mspHelper.readU8(buf)
+    local enaStartStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
+    local enaEndStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
+    local adjChannel = rfsuite.tasks.msp.mspHelper.readU8(buf)
+    local adjRange1StartStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
+    local adjRange1EndStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
+    local adjRange2StartStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
+    local adjRange2EndStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
+    local adjMin = rfsuite.tasks.msp.mspHelper.readS16(buf)
+    local adjMax = rfsuite.tasks.msp.mspHelper.readS16(buf)
+    local adjStep = rfsuite.tasks.msp.mspHelper.readU8(buf)
+
+    if enaChannel == nil or enaStartStep == nil or enaEndStep == nil or adjChannel == nil or adjRange1StartStep == nil or
+        adjRange1EndStep == nil or adjRange2StartStep == nil or adjRange2EndStep == nil or adjMin == nil or adjMax == nil or adjStep == nil then
+        return nil
+    end
+
+    return {
+        adjFunction = adjFunction,
+        enaChannel = enaChannel,
+        enaRange = {
+            start = 1500 + (enaStartStep * 5),
+            ["end"] = 1500 + (enaEndStep * 5)
+        },
+        adjChannel = adjChannel,
+        adjRange1 = {
+            start = 1500 + (adjRange1StartStep * 5),
+            ["end"] = 1500 + (adjRange1EndStep * 5)
+        },
+        adjRange2 = {
+            start = 1500 + (adjRange2StartStep * 5),
+            ["end"] = 1500 + (adjRange2EndStep * 5)
+        },
+        adjMin = adjMin,
+        adjMax = adjMax,
+        adjStep = adjStep
+    }
+end
+
+local function readAdjustmentRangesBySlot(onComplete, onError)
+    local slotIndex = 1
+    local ranges = {}
+    local finished = false
+
+    local function fail(reason)
+        if finished then return end
+        finished = true
+        if onError then onError(reason or "GET_ADJUSTMENT_RANGE failed") end
+    end
+
+    local function complete()
+        if finished then return end
+        finished = true
+        if onComplete then onComplete(ranges) end
+    end
+
+    local function readNext()
+        if slotIndex > ADJUSTMENT_RANGE_MAX then
+            complete()
+            return
+        end
+
+        local message = {
+            command = 156,
+            payload = {slotIndex - 1},
+            processReply = function(_, buf)
+                local parsed = parseAdjustmentRangeRecord(buf)
+                if not parsed then
+                    fail("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex))
+                    return
+                end
+
+                ranges[slotIndex] = parsed
+                slotIndex = slotIndex + 1
+
+                local callback = rfsuite.tasks and rfsuite.tasks.callback
+                if callback and callback.now then
+                    callback.now(readNext)
+                else
+                    readNext()
+                end
+            end,
+            errorHandler = function()
+                fail("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex))
+            end,
+            simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0}
+        }
+
+        local ok, reason = queueDirect(message, string.format("adjustments.get.%d", slotIndex))
+        if not ok then
+            fail(reason or "queue_rejected")
+        end
+    end
+
+    readNext()
+end
+
+local function readAdjustmentRangesBulk(onComplete, onError)
     local API = rfsuite.tasks.msp.api.load("ADJUSTMENT_RANGES")
     if not API then
-        setLoadError("ADJUSTMENT_RANGES API unavailable")
+        if onError then onError("ADJUSTMENT_RANGES API unavailable") end
         return
     end
 
     API.setCompleteHandler(function()
         local ranges = limitAdjustmentRanges(API.readValue("adjustment_ranges"))
+        if onComplete then onComplete(ranges) end
+    end)
+
+    API.setErrorHandler(function()
+        if onError then onError("ADJUSTMENT_RANGES read failed") end
+    end)
+
+    API.read()
+end
+
+local function readAdjustmentRanges()
+    local function finalizeWithRanges(rawRanges, messageOverride)
+        local ranges = limitAdjustmentRanges(rawRanges)
         local usedDefaultFallback = false
         if #ranges == 0 then
             ranges = buildDefaultAdjustmentRanges(ADJUSTMENT_RANGE_DEFAULT_COUNT)
@@ -568,7 +691,7 @@ local function readAdjustmentRanges()
             state.dirty = false
             state.dirtySlots = {}
             state.loadError = nil
-            state.infoMessage = usedDefaultFallback and "No ranges returned by FC. Showing default slot list." or nil
+            state.infoMessage = messageOverride or (usedDefaultFallback and "No ranges returned by FC. Showing default slot list." or nil)
             state.needsRender = true
             rfsuite.app.triggers.closeProgressLoader = true
         end
@@ -579,11 +702,9 @@ local function readAdjustmentRanges()
         else
             finalizeLoad()
         end
-    end)
+    end
 
-    API.setErrorHandler(function()
-        -- Some FC builds may NACK this read when no adjustments exist yet.
-        -- Seed a local default list so users can create entries.
+    local function finalizeFallbackLocked()
         local function finalizeFallback()
             state.adjustmentRanges = buildDefaultAdjustmentRanges(ADJUSTMENT_RANGE_DEFAULT_COUNT)
             state.selectedRangeIndex = 1
@@ -604,9 +725,18 @@ local function readAdjustmentRanges()
         else
             finalizeFallback()
         end
-    end)
+    end
 
-    API.read()
+    readAdjustmentRangesBySlot(function(ranges)
+        finalizeWithRanges(ranges)
+    end, function()
+        -- Older FC builds may not support per-slot get. Fall back to legacy bulk read.
+        readAdjustmentRangesBulk(function(ranges)
+            finalizeWithRanges(ranges, "Loaded using legacy adjustment range read.")
+        end, function()
+            finalizeFallbackLocked()
+        end)
+    end)
 end
 
 local function addRangeSlot()
@@ -766,7 +896,7 @@ local function getChannelUsForRangeSet(channelIndex, autoTable, slot)
     return us
 end
 
-local function applyRangeSetFromChannel(title, rangeTable, us)
+local function applyRangeSetFromChannel(title, rangeTable, us, slotIndex)
     local targetStart = quantizeUs(us - RANGE_SNAP_DELTA_US)
     local targetEnd = quantizeUs(us + RANGE_SNAP_DELTA_US)
     if targetStart > targetEnd then
@@ -778,7 +908,7 @@ local function applyRangeSetFromChannel(title, rangeTable, us)
     confirmRangeSet(title, "Use current value " .. tostring(us) .. "us?\n\nMin: " .. tostring(targetStart) .. "us\nMax: " .. tostring(targetEnd) .. "us", function()
         rangeTable.start = targetStart
         rangeTable["end"] = targetEnd
-        markDirty()
+        markDirty(slotIndex)
     end)
 end
 
