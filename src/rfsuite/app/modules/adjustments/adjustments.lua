@@ -946,7 +946,7 @@ local function render()
     if enaChoice and enaChoice.enable then enaChoice:enable(true) end
     local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
     if enaLive and enaLive.value then state.liveFields.ena = enaLive end
-    form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
+    local enaSetBtn = form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
         text = "Set",
         icon = nil,
         options = FONT_S,
@@ -998,6 +998,11 @@ local function render()
     if enaEnd and enaEnd.step then enaEnd:step(RANGE_STEP) end
     if enaStart and enaStart.suffix then enaStart:suffix("us") end
     if enaEnd and enaEnd.suffix then enaEnd:suffix("us") end
+    if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
+        if enaStart and enaStart.enable then enaStart:enable(false) end
+        if enaEnd and enaEnd.enable then enaEnd:enable(false) end
+        if enaSetBtn and enaSetBtn.enable then enaSetBtn:enable(false) end
+    end
 
     local adjChannelLine = form.addLine("Value Channel", nil, false)
     local adjChoice = form.addChoiceField(
