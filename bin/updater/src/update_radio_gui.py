@@ -1425,6 +1425,20 @@ class UpdaterGUI:
             self.check_disk_button.config(state=tk.NORMAL)
             self.exit_button.config(state=tk.NORMAL)
 
+    def _set_update_controls_running(self, running):
+        if running:
+            self.update_button.config(state=tk.DISABLED)
+            self.cancel_button.config(state=tk.NORMAL)
+            self.clear_cache_button.config(state=tk.DISABLED)
+            self.check_disk_button.config(state=tk.DISABLED)
+            self.exit_button.config(state=tk.DISABLED)
+        else:
+            self.update_button.config(state=tk.NORMAL)
+            self.cancel_button.config(state=tk.DISABLED)
+            self.clear_cache_button.config(state=tk.NORMAL)
+            self.check_disk_button.config(state=tk.NORMAL)
+            self.exit_button.config(state=tk.NORMAL)
+
     def _start_segment_pulse(self):
         if self.segment_pulse_after_id is not None:
             return
@@ -2152,8 +2166,7 @@ class UpdaterGUI:
         
         _ensure_work_dir()
         self.is_updating = True
-        self.update_button.config(state=tk.DISABLED)
-        self.cancel_button.config(state=tk.NORMAL)
+        self._set_update_controls_running(True)
         self.reset_steps()
         self.update_progress(0, "Starting...")
         
@@ -2167,8 +2180,7 @@ class UpdaterGUI:
         self.set_status("Update cancelled")
         self._stop_segment_pulse()
         self.update_progress(0, "")
-        self.update_button.config(state=tk.NORMAL)
-        self.cancel_button.config(state=tk.DISABLED)
+        self._set_update_controls_running(False)
     
     def update_process(self):
         """Main update process (runs in background thread)."""
@@ -2528,8 +2540,7 @@ class UpdaterGUI:
         finally:
             self.is_updating = False
             self._stop_segment_pulse()
-            self.update_button.config(state=tk.NORMAL)
-            self.cancel_button.config(state=tk.DISABLED)
+            self._set_update_controls_running(False)
             
             # Disconnect from radio
             try:
