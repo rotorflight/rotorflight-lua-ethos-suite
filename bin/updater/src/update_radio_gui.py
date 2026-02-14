@@ -117,6 +117,7 @@ try:
 except Exception:
     WORK_DIR = Path(tempfile.gettempdir()) / "rfsuite_updater_work"
     WORK_DIR.mkdir(parents=True, exist_ok=True)
+UPDATER_SETTINGS_FILE = str(WORK_DIR / "updater_settings.json")
 
 UPDATER_LOCK_FILE = str(WORK_DIR / "rfsuite_updater.lock")
 
@@ -621,9 +622,51 @@ class UpdaterGUI:
         self.selected_version = tk.StringVar(value=VERSION_RELEASE)
         self.selected_locale = tk.StringVar(value=DEFAULT_LOCALE)
         self.chkdsk_attempted = False
+        self.settings_path = UPDATER_SETTINGS_FILE
+        self._load_user_settings()
         
         self.setup_ui()
+        self._bind_settings_autosave()
         self.radio = RadioInterface(self.log)
+
+    def _load_user_settings(self):
+        """Load saved updater selections (version + locale)."""
+        try:
+            if not os.path.isfile(self.settings_path):
+                return
+            with open(self.settings_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                return
+
+            version = str(data.get("version", "")).strip()
+            locale = str(data.get("locale", "")).strip()
+
+            if version in (VERSION_RELEASE, VERSION_SNAPSHOT, VERSION_MASTER):
+                self.selected_version.set(version)
+            if locale in AVAILABLE_LOCALES:
+                self.selected_locale.set(locale)
+        except Exception:
+            # Keep defaults on malformed/unreadable settings.
+            return
+
+    def _save_user_settings(self, *_):
+        """Persist current updater selections."""
+        try:
+            _ensure_work_dir()
+            data = {
+                "version": self.selected_version.get(),
+                "locale": self.selected_locale.get(),
+            }
+            with open(self.settings_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            if hasattr(self, "log_text"):
+                self.log(f"⚠ Could not save updater settings: {e}")
+
+    def _bind_settings_autosave(self):
+        self.selected_version.trace_add("write", self._save_user_settings)
+        self.selected_locale.trace_add("write", self._save_user_settings)
     
     def setup_ui(self):
         """Setup the user interface."""
