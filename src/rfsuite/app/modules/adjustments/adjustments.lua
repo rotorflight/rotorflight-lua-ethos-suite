@@ -736,12 +736,12 @@ local function syncValueControls(adjRange)
     if not adjRange then return end
 
     local live = state.liveFields
-    local mapped = (getAdjustmentType(adjRange) == 1)
+    local enabled = ((adjRange.adjFunction or 0) > 0)
 
     if live.valStart and live.valStart.value then live.valStart:value(adjRange.adjMin) end
     if live.valEnd and live.valEnd.value then live.valEnd:value(adjRange.adjMax) end
-    if live.valStart and live.valStart.enable then live.valStart:enable(mapped) end
-    if live.valEnd and live.valEnd.enable then live.valEnd:enable(mapped) end
+    if live.valStart and live.valStart.enable then live.valStart:enable(enabled) end
+    if live.valEnd and live.valEnd.enable then live.valEnd:enable(enabled) end
 end
 
 local function isWithin(value, rangeTable)
@@ -1270,7 +1270,7 @@ local function render()
     registerFocus("valEnd", valEnd)
     state.liveFields.valStart = valStart
     state.liveFields.valEnd = valEnd
-    if adjType ~= 1 then
+    if adjType == 0 then
         if valStart and valStart.enable then valStart:enable(false) end
         if valEnd and valEnd.enable then valEnd:enable(false) end
     end
