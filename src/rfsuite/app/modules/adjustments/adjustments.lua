@@ -12,6 +12,8 @@ local AUX_CHANNEL_COUNT_FALLBACK = 20
 local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5
+local RANGE_SNAP_DELTA_US = 50
+local AUTODETECT_DELTA_US = 120
 
 local ADJ_STEP_MIN = 0
 local ADJ_STEP_MAX = 255
@@ -20,87 +22,87 @@ local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
 
 local ADJUST_FUNCTIONS = {
     {id = 0, name = "None", min = 0, max = 100},
-    {id = 1, name = "RateProfile", min = 1, max = 6},
-    {id = 2, name = "PIDProfile", min = 1, max = 6},
-    {id = 3, name = "LEDProfile", min = 1, max = 4},
-    {id = 4, name = "OSDProfile", min = 1, max = 3},
-    {id = 5, name = "PitchRate", min = 0, max = 255},
-    {id = 6, name = "RollRate", min = 0, max = 255},
-    {id = 7, name = "YawRate", min = 0, max = 255},
-    {id = 8, name = "PitchRCRate", min = 0, max = 255},
-    {id = 9, name = "RollRCRate", min = 0, max = 255},
-    {id = 10, name = "YawRCRate", min = 0, max = 255},
-    {id = 11, name = "PitchRCExpo", min = 0, max = 100},
-    {id = 12, name = "RollRCExpo", min = 0, max = 100},
-    {id = 13, name = "YawRCExpo", min = 0, max = 100},
-    {id = 14, name = "PitchP", min = 0, max = 250},
-    {id = 15, name = "PitchI", min = 0, max = 250},
-    {id = 16, name = "PitchD", min = 0, max = 250},
-    {id = 17, name = "PitchF", min = 0, max = 250},
-    {id = 18, name = "RollP", min = 0, max = 250},
-    {id = 19, name = "RollI", min = 0, max = 250},
-    {id = 20, name = "RollD", min = 0, max = 250},
-    {id = 21, name = "RollF", min = 0, max = 250},
-    {id = 22, name = "YawP", min = 0, max = 250},
-    {id = 23, name = "YawI", min = 0, max = 250},
-    {id = 24, name = "YawD", min = 0, max = 250},
-    {id = 25, name = "YawF", min = 0, max = 250},
-    {id = 26, name = "YawCWStopGain", min = 25, max = 250},
-    {id = 27, name = "YawCCWStopGain", min = 25, max = 250},
-    {id = 28, name = "YawCyclicFF", min = 0, max = 250},
-    {id = 29, name = "YawCollectiveFF", min = 0, max = 250},
-    {id = 30, name = "YawCollectiveDyn", min = -125, max = 125, maxApi = "12.07"},
-    {id = 31, name = "YawCollectiveDecay", min = 1, max = 250, maxApi = "12.07"},
-    {id = 32, name = "PitchCollectiveFF", min = 0, max = 250},
-    {id = 33, name = "PitchGyroCutoff", min = 0, max = 250},
-    {id = 34, name = "RollGyroCutoff", min = 0, max = 250},
-    {id = 35, name = "YawGyroCutoff", min = 0, max = 250},
-    {id = 36, name = "PitchDtermCutoff", min = 0, max = 250},
-    {id = 37, name = "RollDtermCutoff", min = 0, max = 250},
-    {id = 38, name = "YawDtermCutoff", min = 0, max = 250},
-    {id = 39, name = "RescueClimbCollective", min = 0, max = 1000},
-    {id = 40, name = "RescueHoverCollective", min = 0, max = 1000},
-    {id = 41, name = "RescueHoverAltitude", min = 0, max = 2500},
-    {id = 42, name = "RescueAltP", min = 0, max = 250},
-    {id = 43, name = "RescueAltI", min = 0, max = 250},
-    {id = 44, name = "RescueAltD", min = 0, max = 250},
-    {id = 45, name = "AngleLevelGain", min = 0, max = 200},
-    {id = 46, name = "HorizonLevelGain", min = 0, max = 200},
-    {id = 47, name = "AcroTrainerGain", min = 25, max = 255},
-    {id = 48, name = "GovernorGain", min = 0, max = 250},
-    {id = 49, name = "GovernorP", min = 0, max = 250},
-    {id = 50, name = "GovernorI", min = 0, max = 250},
-    {id = 51, name = "GovernorD", min = 0, max = 250},
-    {id = 52, name = "GovernorF", min = 0, max = 250},
-    {id = 53, name = "GovernorTTA", min = 0, max = 250},
-    {id = 54, name = "GovernorCyclicFF", min = 0, max = 250},
-    {id = 55, name = "GovernorCollectiveFF", min = 0, max = 250},
-    {id = 56, name = "PitchB", min = 0, max = 250},
-    {id = 57, name = "RollB", min = 0, max = 250},
-    {id = 58, name = "YawB", min = 0, max = 250},
-    {id = 59, name = "PitchO", min = 0, max = 250},
-    {id = 60, name = "RollO", min = 0, max = 250},
-    {id = 61, name = "CrossCouplingGain", min = 0, max = 250},
-    {id = 62, name = "CrossCouplingRatio", min = 0, max = 250},
-    {id = 63, name = "CrossCouplingCutoff", min = 0, max = 250},
-    {id = 64, name = "AccTrimPitch", min = -300, max = 300},
-    {id = 65, name = "AccTrimRoll", min = -300, max = 300},
-    {id = 66, name = "YawInertiaPrecompGain", min = 0, max = 250, minApi = "12.08"},
-    {id = 67, name = "YawInertiaPrecompCutoff", min = 0, max = 250, minApi = "12.08"},
-    {id = 68, name = "PitchSetpointBoostGain", min = 0, max = 255, minApi = "12.08"},
-    {id = 69, name = "RollSetpointBoostGain", min = 0, max = 255, minApi = "12.08"},
-    {id = 70, name = "YawSetpointBoostGain", min = 0, max = 255, minApi = "12.08"},
-    {id = 71, name = "CollectiveSetpointBoostGain", min = 0, max = 255, minApi = "12.08"},
-    {id = 72, name = "YawDynCeilingGain", min = 0, max = 250, minApi = "12.08"},
-    {id = 73, name = "YawDynDeadbandGain", min = 0, max = 250, minApi = "12.08"},
-    {id = 74, name = "YawDynDeadbandFilter", min = 0, max = 250, minApi = "12.08"},
-    {id = 75, name = "YawPrecompCutoff", min = 0, max = 250, minApi = "12.08"},
-    {id = 76, name = "GovIdleThrottle", min = 0, max = 250, minApi = "12.09"},
-    {id = 77, name = "GovAutoThrottle", min = 0, max = 250, minApi = "12.09"},
-    {id = 78, name = "GovMaxThrottle", min = 0, max = 100, minApi = "12.09"},
-    {id = 79, name = "GovMinThrottle", min = 0, max = 100, minApi = "12.09"},
-    {id = 80, name = "GovHeadspeed", min = 0, max = 10000, minApi = "12.09"},
-    {id = 81, name = "GovYawFF", min = 0, max = 250, minApi = "12.09"}
+    {id = 1, name = "Rate Profile", min = 1, max = 6},
+    {id = 2, name = "PID Profile", min = 1, max = 6},
+    {id = 3, name = "LED Profile", min = 1, max = 4},
+    {id = 4, name = "OSD Profile", min = 1, max = 3},
+    {id = 5, name = "Pitch Rate", min = 0, max = 255},
+    {id = 6, name = "Roll Rate", min = 0, max = 255},
+    {id = 7, name = "Yaw Rate", min = 0, max = 255},
+    {id = 8, name = "Pitch RC Rate", min = 0, max = 255},
+    {id = 9, name = "Roll RC Rate", min = 0, max = 255},
+    {id = 10, name = "Yaw RC Rate", min = 0, max = 255},
+    {id = 11, name = "Pitch RC Expo", min = 0, max = 100},
+    {id = 12, name = "Roll RC Expo", min = 0, max = 100},
+    {id = 13, name = "Yaw RC Expo", min = 0, max = 100},
+    {id = 14, name = "Pitch P", min = 0, max = 250},
+    {id = 15, name = "Pitch I", min = 0, max = 250},
+    {id = 16, name = "Pitch D", min = 0, max = 250},
+    {id = 17, name = "Pitch F", min = 0, max = 250},
+    {id = 18, name = "Roll P", min = 0, max = 250},
+    {id = 19, name = "Roll I", min = 0, max = 250},
+    {id = 20, name = "Roll D", min = 0, max = 250},
+    {id = 21, name = "Roll F", min = 0, max = 250},
+    {id = 22, name = "Yaw P", min = 0, max = 250},
+    {id = 23, name = "Yaw I", min = 0, max = 250},
+    {id = 24, name = "Yaw D", min = 0, max = 250},
+    {id = 25, name = "Yaw F", min = 0, max = 250},
+    {id = 26, name = "Yaw CW Stop Gain", min = 25, max = 250},
+    {id = 27, name = "Yaw CCW Stop Gain", min = 25, max = 250},
+    {id = 28, name = "Yaw Cyclic FF", min = 0, max = 250},
+    {id = 29, name = "Yaw Collective FF", min = 0, max = 250},
+    {id = 30, name = "Yaw Collective Dyn", min = -125, max = 125, maxApi = "12.07"},
+    {id = 31, name = "Yaw Collective Decay", min = 1, max = 250, maxApi = "12.07"},
+    {id = 32, name = "Pitch Collective FF", min = 0, max = 250},
+    {id = 33, name = "Pitch Gyro Cutoff", min = 0, max = 250},
+    {id = 34, name = "Roll Gyro Cutoff", min = 0, max = 250},
+    {id = 35, name = "Yaw Gyro Cutoff", min = 0, max = 250},
+    {id = 36, name = "Pitch Dterm Cutoff", min = 0, max = 250},
+    {id = 37, name = "Roll Dterm Cutoff", min = 0, max = 250},
+    {id = 38, name = "Yaw Dterm Cutoff", min = 0, max = 250},
+    {id = 39, name = "Rescue Climb Collective", min = 0, max = 1000},
+    {id = 40, name = "Rescue Hover Collective", min = 0, max = 1000},
+    {id = 41, name = "Rescue Hover Altitude", min = 0, max = 2500},
+    {id = 42, name = "Rescue Alt P", min = 0, max = 250},
+    {id = 43, name = "Rescue Alt I", min = 0, max = 250},
+    {id = 44, name = "Rescue Alt D", min = 0, max = 250},
+    {id = 45, name = "Angle Level Gain", min = 0, max = 200},
+    {id = 46, name = "Horizon Level Gain", min = 0, max = 200},
+    {id = 47, name = "Acro Trainer Gain", min = 25, max = 255},
+    {id = 48, name = "Governor Gain", min = 0, max = 250},
+    {id = 49, name = "Governor P", min = 0, max = 250},
+    {id = 50, name = "Governor I", min = 0, max = 250},
+    {id = 51, name = "Governor D", min = 0, max = 250},
+    {id = 52, name = "Governor F", min = 0, max = 250},
+    {id = 53, name = "Governor TTA", min = 0, max = 250},
+    {id = 54, name = "Governor Cyclic FF", min = 0, max = 250},
+    {id = 55, name = "Governor Collective FF", min = 0, max = 250},
+    {id = 56, name = "Pitch B", min = 0, max = 250},
+    {id = 57, name = "Roll B", min = 0, max = 250},
+    {id = 58, name = "Yaw B", min = 0, max = 250},
+    {id = 59, name = "Pitch O", min = 0, max = 250},
+    {id = 60, name = "Roll O", min = 0, max = 250},
+    {id = 61, name = "Cross Coupling Gain", min = 0, max = 250},
+    {id = 62, name = "Cross Coupling Ratio", min = 0, max = 250},
+    {id = 63, name = "Cross Coupling Cutoff", min = 0, max = 250},
+    {id = 64, name = "Acc Trim Pitch", min = -300, max = 300},
+    {id = 65, name = "Acc Trim Roll", min = -300, max = 300},
+    {id = 66, name = "Yaw Inertia Precomp Gain", min = 0, max = 250, minApi = "12.08"},
+    {id = 67, name = "Yaw Inertia Precomp Cutoff", min = 0, max = 250, minApi = "12.08"},
+    {id = 68, name = "Pitch Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
+    {id = 69, name = "Roll Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
+    {id = 70, name = "Yaw Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
+    {id = 71, name = "Collective Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
+    {id = 72, name = "Yaw Dyn Ceiling Gain", min = 0, max = 250, minApi = "12.08"},
+    {id = 73, name = "Yaw Dyn Deadband Gain", min = 0, max = 250, minApi = "12.08"},
+    {id = 74, name = "Yaw Dyn Deadband Filter", min = 0, max = 250, minApi = "12.08"},
+    {id = 75, name = "Yaw Precomp Cutoff", min = 0, max = 250, minApi = "12.08"},
+    {id = 76, name = "Gov Idle Throttle", min = 0, max = 250, minApi = "12.09"},
+    {id = 77, name = "Gov Auto Throttle", min = 0, max = 250, minApi = "12.09"},
+    {id = 78, name = "Gov Max Throttle", min = 0, max = 100, minApi = "12.09"},
+    {id = 79, name = "Gov Min Throttle", min = 0, max = 100, minApi = "12.09"},
+    {id = 80, name = "Gov Headspeed", min = 0, max = 10000, minApi = "12.09"},
+    {id = 81, name = "Gov Yaw FF", min = 0, max = 250, minApi = "12.09"}
 }
 
 local state = {
@@ -117,6 +119,7 @@ local state = {
     needsRender = false,
     channelSources = {},
     liveFields = {},
+    autoDetectEnaSlots = {},
     autoDetectAdjSlots = {},
     functionById = {},
     functionOptions = {},
@@ -200,6 +203,9 @@ local function getAuxPulseUs(auxIndex)
 end
 
 local function hasActiveAutoDetect()
+    for _, v in pairs(state.autoDetectEnaSlots) do
+        if v ~= nil then return true end
+    end
     for _, v in pairs(state.autoDetectAdjSlots) do
         if v ~= nil then return true end
     end
@@ -284,7 +290,7 @@ end
 
 local ADJUST_TYPE_OPTIONS_TBL = buildChoiceTable(ADJUST_TYPE_OPTIONS, -1)
 local ADJ_CHANNEL_OPTIONS = buildAuxOptions(true, false)
-local ENA_CHANNEL_OPTIONS = buildAuxOptions(false, true)
+local ENA_CHANNEL_OPTIONS = buildAuxOptions(true, true)
 local ADJ_CHANNEL_OPTIONS_TBL = buildChoiceTable(ADJ_CHANNEL_OPTIONS, 0)
 local ENA_CHANNEL_OPTIONS_TBL = buildChoiceTable(ENA_CHANNEL_OPTIONS, 0)
 
@@ -518,6 +524,7 @@ local function startLoad()
     state.saveError = nil
     state.infoMessage = nil
     state.channelSources = {}
+    state.autoDetectEnaSlots = {}
     state.autoDetectAdjSlots = {}
     state.needsRender = true
     rfsuite.app.ui.progressDisplay("Adjustment Functions", "Loading adjustment ranges")
@@ -572,6 +579,93 @@ local function setFunctionForRange(adjRange, fnId)
     end
 
     if adjRange.adjMin > adjRange.adjMax then adjRange.adjMax = adjRange.adjMin end
+end
+
+local function showInfoDialog(title, message)
+    local buttons = {{label = "OK", action = function() return true end}}
+    form.openDialog({
+        width = nil,
+        title = title,
+        message = message,
+        buttons = buttons,
+        wakeup = function() end,
+        paint = function() end,
+        options = TEXT_LEFT
+    })
+end
+
+local function confirmRangeSet(title, message, onConfirm)
+    local buttons = {
+        {label = "@i18n(app.btn_ok_long)@", action = function() if onConfirm then onConfirm() end; return true end},
+        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+    }
+
+    form.openDialog({
+        width = nil,
+        title = title,
+        message = message,
+        buttons = buttons,
+        wakeup = function() end,
+        paint = function() end,
+        options = TEXT_LEFT
+    })
+end
+
+local function detectAutoAuxChannel(autoState)
+    local bestIdx = nil
+    local bestDelta = 0
+    local bestUs = nil
+
+    for auxIdx = 0, AUX_CHANNEL_COUNT_FALLBACK - 1 do
+        local us = getAuxPulseUs(auxIdx)
+        if us then
+            if not autoState.baseline then autoState.baseline = {} end
+            if autoState.baseline[auxIdx] == nil then
+                autoState.baseline[auxIdx] = us
+            else
+                local delta = math.abs(us - autoState.baseline[auxIdx])
+                if delta > bestDelta then
+                    bestDelta = delta
+                    bestIdx = auxIdx
+                    bestUs = us
+                end
+            end
+        end
+    end
+
+    if bestIdx ~= nil and bestDelta >= AUTODETECT_DELTA_US then return bestIdx, bestUs end
+    return nil, nil
+end
+
+local function getChannelUsForRangeSet(channelIndex, autoTable, slot)
+    if autoTable and autoTable[slot] then
+        showInfoDialog("Adjustment Functions", "Auto-detect is active for this row. Toggle to lock AUX first.")
+        return nil
+    end
+
+    local us = getAuxPulseUs(channelIndex or 0)
+    if not us then
+        showInfoDialog("Adjustment Functions", "Live channel value unavailable.")
+        return nil
+    end
+    return us
+end
+
+local function applyRangeSetFromChannel(title, rangeTable, us)
+    local targetStart = quantizeUs(us - RANGE_SNAP_DELTA_US)
+    local targetEnd = quantizeUs(us + RANGE_SNAP_DELTA_US)
+    if targetStart > targetEnd then
+        local mid = quantizeUs(us)
+        targetStart = mid
+        targetEnd = mid
+    end
+
+    confirmRangeSet(title, "Use current value " .. tostring(us) .. "us?\n\nMin: " .. tostring(targetStart) .. "us\nMax: " .. tostring(targetEnd) .. "us", function()
+        rangeTable.start = targetStart
+        rangeTable["end"] = targetEnd
+        state.dirty = true
+        state.needsRender = true
+    end)
 end
 
 local function isWithin(value, rangeTable)
@@ -634,8 +728,20 @@ local function updateLiveFields()
 
     local slot = state.selectedRangeIndex
 
-    local enaUs
-    if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
+    local enaUs = nil
+    local enaAutoState = state.autoDetectEnaSlots[slot]
+    if enaAutoState then
+        local idx, us = detectAutoAuxChannel(enaAutoState)
+        if idx ~= nil then
+            adjRange.enaChannel = idx
+            state.autoDetectEnaSlots[slot] = nil
+            state.dirty = true
+            state.needsRender = true
+            enaUs = us
+        else
+            if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("AUTO...") end
+        end
+    elseif adjRange.enaChannel == ALWAYS_ON_CHANNEL then
         if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("Always") end
         enaUs = 1500
     else
@@ -652,33 +758,13 @@ local function updateLiveFields()
     local adjUs = nil
     local autoState = state.autoDetectAdjSlots[slot]
     if autoState then
-        local bestIdx = nil
-        local bestDelta = 0
-        local bestUs = nil
-
-        for auxIdx = 0, AUX_CHANNEL_COUNT_FALLBACK - 1 do
-            local us = getAuxPulseUs(auxIdx)
-            if us then
-                if not autoState.baseline then autoState.baseline = {} end
-                if autoState.baseline[auxIdx] == nil then
-                    autoState.baseline[auxIdx] = us
-                else
-                    local delta = math.abs(us - autoState.baseline[auxIdx])
-                    if delta > bestDelta then
-                        bestDelta = delta
-                        bestIdx = auxIdx
-                        bestUs = us
-                    end
-                end
-            end
-        end
-
-        if bestIdx ~= nil and bestDelta >= 120 then
-            adjRange.adjChannel = bestIdx
+        local idx, us = detectAutoAuxChannel(autoState)
+        if idx ~= nil then
+            adjRange.adjChannel = idx
             state.autoDetectAdjSlots[slot] = nil
             state.dirty = true
             state.needsRender = true
-            adjUs = bestUs
+            adjUs = us
         else
             if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("AUTO...") end
         end
@@ -782,8 +868,9 @@ local function render()
     if not adjRange then return end
 
     buildFunctionOptions(adjRange.adjFunction)
+    local adjType = getAdjustmentType(adjRange)
 
-    local typeLine = form.addLine("Type")
+    local typeLine = form.addLine("Type", nil, false)
     local typeChoice = form.addChoiceField(
         typeLine,
         {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h},
@@ -797,9 +884,10 @@ local function render()
             state.needsRender = true
         end
     )
+    if typeChoice and typeChoice.values then typeChoice:values(ADJUST_TYPE_OPTIONS_TBL) end
     if typeChoice and typeChoice.enable then typeChoice:enable(true) end
 
-    local functionLine = form.addLine("Function")
+    local functionLine = form.addLine("Function", nil, true)
     local functionChoice = form.addChoiceField(
         functionLine,
         {x = width - rightPadding - math.floor(width * 0.60), y = y, w = math.floor(width * 0.60), h = h},
@@ -817,41 +905,69 @@ local function render()
     if functionChoice and functionChoice.values then functionChoice:values(state.functionOptions) end
     if functionChoice and functionChoice.enable then functionChoice:enable(true) end
 
-    local wLive = math.floor(width * 0.24)
-    local wChoice = math.floor(width * 0.34)
-    local xLive = width - rightPadding - wLive
+    local wSet = math.max(34, math.floor(width * 0.14))
+    local wLive = math.floor(width * 0.18)
+    local wChoice = math.floor(width * 0.30)
+    local xSet = width - rightPadding - wSet
+    local xLive = xSet - gap - wLive
     local xChoice = xLive - gap - wChoice
 
-    local enaChannelLine = form.addLine("Enable channel")
+    local wNum = math.floor(width * 0.16)
+    local xEnd = xSet - gap - wNum
+    local xStart = xEnd - gap - wNum
+
+    local enaChannelLine = form.addLine("Enable Channel", nil, false)
     local enaChoice = form.addChoiceField(
         enaChannelLine,
         {x = xChoice, y = y, w = wChoice, h = h},
         ENA_CHANNEL_OPTIONS_TBL,
         function()
-            if adjRange.enaChannel == ALWAYS_ON_CHANNEL then return 1 end
-            return clamp((adjRange.enaChannel or 0) + 2, 2, #ENA_CHANNEL_OPTIONS)
+            if state.autoDetectEnaSlots[state.selectedRangeIndex] then return 1 end
+            if adjRange.enaChannel == ALWAYS_ON_CHANNEL then return 2 end
+            return clamp((adjRange.enaChannel or 0) + 3, 3, #ENA_CHANNEL_OPTIONS)
         end,
         function(value)
             if value == 1 then
+                state.autoDetectEnaSlots[state.selectedRangeIndex] = {baseline = nil}
+            elseif value == 2 then
+                state.autoDetectEnaSlots[state.selectedRangeIndex] = nil
                 adjRange.enaChannel = ALWAYS_ON_CHANNEL
                 adjRange.enaRange.start = 1500
                 adjRange.enaRange["end"] = 1500
             else
-                adjRange.enaChannel = clamp((value or 2) - 2, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
+                state.autoDetectEnaSlots[state.selectedRangeIndex] = nil
+                adjRange.enaChannel = clamp((value or 3) - 3, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
             state.dirty = true
             state.needsRender = true
         end
     )
+    if enaChoice and enaChoice.values then enaChoice:values(ENA_CHANNEL_OPTIONS_TBL) end
     if enaChoice and enaChoice.enable then enaChoice:enable(true) end
     local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
     if enaLive and enaLive.value then state.liveFields.ena = enaLive end
+    form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
+        text = "Set",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
+                confirmRangeSet("Set Enable Range", "Always mode uses fixed 1500us.\n\nSet Min/Max to 1500us?", function()
+                    adjRange.enaRange.start = 1500
+                    adjRange.enaRange["end"] = 1500
+                    state.dirty = true
+                    state.needsRender = true
+                end)
+                return
+            end
+            local us = getChannelUsForRangeSet(adjRange.enaChannel, state.autoDetectEnaSlots, state.selectedRangeIndex)
+            if not us then return end
+            applyRangeSetFromChannel("Set Enable Range", adjRange.enaRange, us)
+        end
+    })
 
-    local wNum = math.floor(width * 0.22)
-    local xEnd = width - rightPadding - wNum
-    local xStart = xEnd - gap - wNum
-
-    local enaRangeLine = form.addLine("Enable range")
+    local enaRangeLine = form.addLine("Enable Range", nil, true)
     local enaStart = form.addNumberField(
         enaRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
@@ -883,7 +999,7 @@ local function render()
     if enaStart and enaStart.suffix then enaStart:suffix("us") end
     if enaEnd and enaEnd.suffix then enaEnd:suffix("us") end
 
-    local adjChannelLine = form.addLine("Adjust channel")
+    local adjChannelLine = form.addLine("Value Channel", nil, false)
     local adjChoice = form.addChoiceField(
         adjChannelLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -900,17 +1016,31 @@ local function render()
                 adjRange.adjChannel = clamp((value or 2) - 2, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
             state.dirty = true
+            state.needsRender = true
         end
     )
+    if adjChoice and adjChoice.values then adjChoice:values(ADJ_CHANNEL_OPTIONS_TBL) end
     if adjChoice and adjChoice.enable then adjChoice:enable(true) end
     local adjLive = form.addStaticText(adjChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
     if adjLive and adjLive.value then state.liveFields.adj = adjLive end
+    form.addButton(adjChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
+        text = "Set",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
+            if not us then return end
+            local title = (adjType == 2) and "Set Decrease Range" or "Set Adjust Range"
+            applyRangeSetFromChannel(title, adjRange.adjRange1, us)
+        end
+    })
 
     local valueCfg = getFunctionById(adjRange.adjFunction)
     local valueMin = valueCfg and valueCfg.min or -32768
     local valueMax = valueCfg and valueCfg.max or 32767
 
-    local valRangeLine = form.addLine("Value range")
+    local valRangeLine = form.addLine("Value Range", nil, false)
     local valStart = form.addNumberField(
         valRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
@@ -937,14 +1067,13 @@ local function render()
             state.dirty = true
         end
     )
-    local adjType = getAdjustmentType(adjRange)
     if adjType ~= 1 then
         if valStart and valStart.enable then valStart:enable(false) end
         if valEnd and valEnd.enable then valEnd:enable(false) end
     end
 
     if adjType == 2 then
-        local stepLine = form.addLine("Step size")
+        local stepLine = form.addLine("Step Size", nil, false)
         local stepField = form.addNumberField(
             stepLine,
             {x = xEnd, y = y, w = wNum, h = h},
@@ -959,8 +1088,8 @@ local function render()
         if stepField and stepField.enable then stepField:enable(true) end
     end
 
-    local range1Label = adjType == 2 and "Decrease range" or "Adjust range"
-    local range1Line = form.addLine(range1Label)
+    local range1Label = adjType == 2 and "Decrease Range" or "Adjust Range"
+    local range1Line = form.addLine(range1Label, nil, adjType ~= 2)
     local range1Start = form.addNumberField(
         range1Line,
         {x = xStart, y = y, w = wNum, h = h},
@@ -991,9 +1120,21 @@ local function render()
     if range1End and range1End.step then range1End:step(RANGE_STEP) end
     if range1Start and range1Start.suffix then range1Start:suffix("us") end
     if range1End and range1End.suffix then range1End:suffix("us") end
+    form.addButton(range1Line, {x = xSet, y = y, w = wSet, h = h}, {
+        text = "Set",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
+            if not us then return end
+            local title = (adjType == 2) and "Set Decrease Range" or "Set Adjust Range"
+            applyRangeSetFromChannel(title, adjRange.adjRange1, us)
+        end
+    })
 
     if adjType == 2 then
-        local range2Line = form.addLine("Increase range")
+        local range2Line = form.addLine("Increase Range", nil, true)
         local range2Start = form.addNumberField(
             range2Line,
             {x = xStart, y = y, w = wNum, h = h},
@@ -1024,9 +1165,20 @@ local function render()
         if range2End and range2End.step then range2End:step(RANGE_STEP) end
         if range2Start and range2Start.suffix then range2Start:suffix("us") end
         if range2End and range2End.suffix then range2End:suffix("us") end
+        form.addButton(range2Line, {x = xSet, y = y, w = wSet, h = h}, {
+            text = "Set",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
+                if not us then return end
+                applyRangeSetFromChannel("Set Increase Range", adjRange.adjRange2, us)
+            end
+        })
     end
 
-    local previewLine = form.addLine("Current output")
+    local previewLine = form.addLine("Current Output")
     local preview = form.addStaticText(previewLine, {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h}, "-")
     if preview and preview.value then state.liveFields.preview = preview end
 end
