@@ -69,11 +69,22 @@ API.read()
 
 ### Utilities
 
-* **Logging**: `rfsuite.utils.log(message, level)` where `level` is `"info"`, `"warn"`, or `"error"`.
+* **Logging**: `rfsuite.utils.log(message, level)` where `level` is `"info"` or `"debug"`.
+* **Pause logging**: `rfsuite.utils.logPause()` temporarily suppresses logger writes.
+* **Resume logging**: `rfsuite.utils.logResume()` re-enables logging.
+* **Nested safety**: pause/resume is depth-counted; each `logPause()` must be matched by a `logResume()`.
+* **Implementation detail**: pause state is owned by the scheduler logger task (`tasks/scheduler/logger/logger.lua`), while `utils` provides the public API.
 
 ```lua
 local rfsuite = require("rfsuite")
 rfsuite.utils.log("Headspeed: " .. rpm, "info")
+```
+
+```lua
+-- Suppress log traffic in a CPU-heavy block
+rfsuite.utils.logPause()
+-- ...heavy work...
+rfsuite.utils.logResume()
 ```
 
 ## Example Widget

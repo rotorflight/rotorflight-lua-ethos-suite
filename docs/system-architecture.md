@@ -25,6 +25,14 @@ This section provides a high-level view of the Rotorflight Lua Ethos Suite (`rfs
 * **Preferences**: Stored in `SCRIPTS:/rfsuite.user/preferences.ini`, merged with defaults on startup.
    * **Session**: Runtime state (e.g., `activeProfile`, `apiVersion`, `flightMode`) tracked in `rfsuite.session` to coordinate between tasks and UI.
 
+### Logging Control
+
+* Logging is routed via `rfsuite.utils.log(...)` into the scheduler logger task (`tasks/scheduler/logger/logger.lua`).
+* Runtime log suppression is available through:
+  * `rfsuite.utils.logPause()`
+  * `rfsuite.utils.logResume()`
+* Pause/resume uses a depth counter in the logger task, so nested pause scopes are supported.
+
 ## 2. Module Creation Guide (`rfsuite/app/modules`)
 
 This section details how to add a new application module that leverages the API data system for form generation.

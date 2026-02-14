@@ -323,8 +323,34 @@ function utils.joinTableItems(tbl, delimiter, maxItems)
     return joined
 end
 
-function utils.log(msg, level) 
-    if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end 
+function utils.logPause()
+    local logger = rfsuite.tasks and rfsuite.tasks.logger
+    if logger and logger.pause then
+        return logger.pause()
+    end
+    return 0
+end
+
+function utils.logResume()
+    local logger = rfsuite.tasks and rfsuite.tasks.logger
+    if logger and logger.resume then
+        return logger.resume()
+    end
+    return true
+end
+
+function utils.log(msg, level)
+    local logger = rfsuite.tasks and rfsuite.tasks.logger
+    if not logger then return false end
+
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    local mode = dev and dev.loglevel or "off"
+    local route = level or "debug"
+
+    if mode == "off" then return false end
+    if mode ~= "debug" and route == "debug" then return false end
+
+    return logger.add(msg, route)
 end
 
 function utils.print_r(node, maxDepth, currentDepth)
@@ -495,7 +521,7 @@ function utils.reportMemoryUsage(location, phase)
 
             utils._memProfile[location] = nil
         else
-            utils.log(string.format("[%s] Profiling 'end' without a 'start'", location), "warn")
+            utils.log(string.format("[%s] Profiling 'end' without a 'start'", location), "info")
         end
         return
     end

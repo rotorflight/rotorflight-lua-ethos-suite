@@ -63,7 +63,6 @@ local logs = {
         print_interval = system:getVersion().simulation and 0.025 or 0.5,
         disk_write_interval = 5.0,
         max_line_length = 200,
-        min_print_level = "info",
         log_file = "log.txt",
         prefix = "",
         -- New knobs (safe defaults):
@@ -73,13 +72,6 @@ local logs = {
         disk_drain_budget_seconds = 0.003, -- time budget for draining qDisk when log_to_file is false
     }
 }
-
-local LEVEL = { debug = 0, info = 1, error = 2, off = 3 }
-
--- We keep this as a function so changing config.min_print_level at runtime works.
-local function getMinLevel(cfg)
-    return LEVEL[cfg.min_print_level] or LEVEL.info
-end
 
 local qConsole = Ring(50)
 local qDisk = Ring(200) -- a little bigger so we can batch more effectively
@@ -153,18 +145,9 @@ local function getPrefix(cfg)
     return rawp or ""
 end
 
-function logs.log(message, level)
+function logs.log(message)
     local cfg = logs.config
     if not cfg.enabled then return end
-
-    local minlvl = getMinLevel(cfg)
-    if minlvl == LEVEL.off then return end
-
-    local devLevelStr = cfg.min_print_level or "info"
-    if devLevelStr == "off" then return end
-
-    local lvl = LEVEL[level or "info"]
-    if not lvl or lvl < minlvl then return end
 
     -- Hard cap (prevents pathological memory churn)
     local maxlen = cfg.max_line_length * 10
@@ -174,42 +157,25 @@ function logs.log(message, level)
     
     -- Capture prefix (timestamp) at creation time for accuracy
     local pfx = getPrefix(cfg)
-    local e = { msg = message, lvl = lvl, pfx = pfx }
-
-    -- ROUTING RULES
-    -- info  : show info/error on console
-    -- debug : show info on console, log debug/error to disk
-    if devLevelStr == "info" then
-        if lvl >= LEVEL.info and lvl < LEVEL.off then
-            qConsole:push(e)
-        end
-        return
-    end
-
-    if devLevelStr == "debug" then
-        if lvl == LEVEL.info then
-            qConsole:push(e)
-            qDisk:push(e)
-        elseif lvl == LEVEL.debug or lvl == LEVEL.error then
-            qDisk:push(e)
-        end
-    end
+    local e = { msg = message, pfx = pfx }
+    qConsole:push(e)
+    if cfg.log_to_file then qDisk:push(e) end
 end
 
-function logs.add(message, level)
-    if level == "connect" then
+function logs.add(message, route)
+    if route == "connect" then
         local cfg = logs.config
         local pfx = getPrefix(cfg)
-        local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
+        local e = { msg = message, pfx = pfx }
         qConnect:push(e)
         qConnectView:push(e)
-    elseif level == "console" then
+    elseif route == "console" then
         local cfg = logs.config
         local pfx = getPrefix(cfg)
-        local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
+        local e = { msg = message, pfx = pfx }
         qConsole:push(e)
     else
-        logs.log(message, level)
+        logs.log(message)
     end
 end
 
@@ -319,7 +285,6 @@ end
 function logs.process()
     local cfg = logs.config
     if not cfg.enabled then return end
-    if getMinLevel(cfg) == LEVEL.off then return end
 
     local now = os_clock()
     drain_console(now, cfg)
@@ -371,7 +336,6 @@ end
 function logs.process_connect()
     local cfg = logs.config
     if not cfg.enabled then return end
-    if getMinLevel(cfg) == LEVEL.off then return end
 
     local now = os_clock()
     drain_connect(now, cfg)
