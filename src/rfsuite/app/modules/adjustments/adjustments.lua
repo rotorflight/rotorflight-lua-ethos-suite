@@ -106,7 +106,7 @@ local ADJUST_FUNCTIONS = {
 }
 
 local state = {
-    title = "Adjustment Functions",
+    title = "Adjustments",
     adjustmentRanges = {},
     selectedRangeIndex = 1,
     loaded = false,
@@ -124,7 +124,8 @@ local state = {
     autoDetectAdjSlots = {},
     functionById = {},
     functionOptions = {},
-    functionOptionIds = {}
+    functionOptionIds = {},
+    dirtySlots = {}
 }
 
 local function setPendingFocus(key)
@@ -433,6 +434,37 @@ local function getSelectedRange()
     return ensureRangeStructure(adjRange)
 end
 
+local function markDirty(slotIndex)
+    state.dirty = true
+    local idx = slotIndex or state.selectedRangeIndex
+    if idx == nil then return end
+    idx = clamp(math.floor(idx), 1, math.max(#state.adjustmentRanges, 1))
+    state.dirtySlots[idx] = true
+end
+
+local function getChangedSlots()
+    local changedSlots = {}
+    for slotIndex, isDirty in pairs(state.dirtySlots or {}) do
+        if isDirty == true then
+            local idx = tonumber(slotIndex)
+            if idx and idx >= 1 and idx <= #state.adjustmentRanges then
+                changedSlots[#changedSlots + 1] = idx
+            end
+        end
+    end
+    table.sort(changedSlots)
+    return changedSlots
+end
+
+local function updateSaveButtonState()
+    local nav = rfsuite.app and rfsuite.app.formNavigationFields
+    local saveField = nav and nav["save"] or nil
+    if not saveField or not saveField.enable then return end
+
+    local canSave = state.loaded and (not state.loading) and (not state.saving) and state.dirty
+    saveField:enable(canSave)
+end
+
 local function countActiveRanges()
     local used = 0
     for i = 1, #state.adjustmentRanges do
@@ -470,6 +502,7 @@ local function readAdjustmentRanges()
             state.loading = false
             state.loaded = true
             state.dirty = false
+            state.dirtySlots = {}
             state.loadError = nil
             state.infoMessage = usedDefaultFallback and "No ranges returned by FC. Showing default slot list." or nil
             state.needsRender = true
@@ -493,6 +526,7 @@ local function readAdjustmentRanges()
             state.loading = false
             state.loaded = true
             state.dirty = false
+            state.dirtySlots = {}
             state.loadError = nil
             state.infoMessage = "Adjustment read failed. Showing default slot list."
             state.needsRender = true
@@ -527,7 +561,7 @@ local function addRangeSlot()
 
     state.adjustmentRanges[#state.adjustmentRanges + 1] = newDefaultAdjustmentRange()
     state.selectedRangeIndex = #state.adjustmentRanges
-    state.dirty = true
+    markDirty(state.selectedRangeIndex)
     state.needsRender = true
 end
 
@@ -540,6 +574,7 @@ local function startLoad()
     state.channelSources = {}
     state.autoDetectEnaSlots = {}
     state.autoDetectAdjSlots = {}
+    state.dirtySlots = {}
     state.needsRender = true
     rfsuite.app.ui.progressDisplay("Adjustment Functions", "Loading adjustment ranges")
     readAdjustmentRanges()
@@ -677,7 +712,7 @@ local function applyRangeSetFromChannel(title, rangeTable, us)
     confirmRangeSet(title, "Use current value " .. tostring(us) .. "us?\n\nMin: " .. tostring(targetStart) .. "us\nMax: " .. tostring(targetEnd) .. "us", function()
         rangeTable.start = targetStart
         rangeTable["end"] = targetEnd
-        state.dirty = true
+        markDirty()
     end)
 end
 
@@ -776,7 +811,7 @@ local function updateLiveFields()
         if idx ~= nil then
             adjRange.enaChannel = idx
             state.autoDetectEnaSlots[slot] = nil
-            state.dirty = true
+            markDirty(slot)
             syncEnableControls(adjRange)
             enaUs = us
         else
@@ -803,7 +838,7 @@ local function updateLiveFields()
         if idx ~= nil then
             adjRange.adjChannel = idx
             state.autoDetectAdjSlots[slot] = nil
-            state.dirty = true
+            markDirty(slot)
             adjUs = us
         else
             if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("AUTO...") end
@@ -928,7 +963,7 @@ local function render()
             setTypeForRange(adjRange, value)
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
-            state.dirty = true
+            markDirty()
             local newType = getAdjustmentType(adjRange)
             if prevType == 2 or newType == 2 then
                 setPendingFocus("typeChoice")
@@ -978,7 +1013,7 @@ local function render()
                 state.autoDetectEnaSlots[state.selectedRangeIndex] = nil
                 adjRange.enaChannel = clamp((value or 3) - 3, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
-            state.dirty = true
+            markDirty()
             syncEnableControls(adjRange)
         end
     )
@@ -997,7 +1032,7 @@ local function render()
                 confirmRangeSet("Set Enable Range", "Always mode uses fixed 1500us.\n\nSet Min/Max to 1500us?", function()
                     adjRange.enaRange.start = 1500
                     adjRange.enaRange["end"] = 1500
-                    state.dirty = true
+                    markDirty()
                 end)
                 return
             end
@@ -1019,7 +1054,7 @@ local function render()
             local adjusted = quantizeUs(value)
             adjRange.enaRange.start = adjusted
             if adjRange.enaRange["end"] < adjusted then adjRange.enaRange["end"] = adjusted end
-            state.dirty = true
+            markDirty()
         end
     )
     state.liveFields.enaStart = enaStart
@@ -1033,7 +1068,7 @@ local function render()
             local adjusted = quantizeUs(value)
             adjRange.enaRange["end"] = adjusted
             if adjRange.enaRange.start > adjusted then adjRange.enaRange.start = adjusted end
-            state.dirty = true
+            markDirty()
         end
     )
     state.liveFields.enaEnd = enaEnd
@@ -1059,7 +1094,7 @@ local function render()
                 state.autoDetectAdjSlots[state.selectedRangeIndex] = nil
                 adjRange.adjChannel = clamp((value or 2) - 2, 0, AUX_CHANNEL_COUNT_FALLBACK - 1)
             end
-            state.dirty = true
+            markDirty()
         end
     )
     registerFocus("adjChoice", adjChoice)
@@ -1078,7 +1113,7 @@ local function render()
             function() return adjRange.adjStep end,
             function(value)
                 adjRange.adjStep = clamp(math.floor(value), ADJ_STEP_MIN, ADJ_STEP_MAX)
-                state.dirty = true
+                markDirty()
             end
         )
         if stepField and stepField.enable then stepField:enable(true) end
@@ -1096,7 +1131,7 @@ local function render()
             local adjusted = quantizeUs(value)
             adjRange.adjRange1.start = adjusted
             if adjRange.adjRange1["end"] < adjusted then adjRange.adjRange1["end"] = adjusted end
-            state.dirty = true
+            markDirty()
         end
     )
     local range1End = form.addNumberField(
@@ -1109,7 +1144,7 @@ local function render()
             local adjusted = quantizeUs(value)
             adjRange.adjRange1["end"] = adjusted
             if adjRange.adjRange1.start > adjusted then adjRange.adjRange1.start = adjusted end
-            state.dirty = true
+            markDirty()
         end
     )
     if range1Start and range1Start.step then range1Start:step(RANGE_STEP) end
@@ -1141,7 +1176,7 @@ local function render()
                 local adjusted = quantizeUs(value)
                 adjRange.adjRange2.start = adjusted
                 if adjRange.adjRange2["end"] < adjusted then adjRange.adjRange2["end"] = adjusted end
-                state.dirty = true
+                markDirty()
             end
         )
         local range2End = form.addNumberField(
@@ -1154,7 +1189,7 @@ local function render()
                 local adjusted = quantizeUs(value)
                 adjRange.adjRange2["end"] = adjusted
                 if adjRange.adjRange2.start > adjusted then adjRange.adjRange2.start = adjusted end
-                state.dirty = true
+                markDirty()
             end
         )
         if range2Start and range2Start.step then range2Start:step(RANGE_STEP) end
@@ -1186,7 +1221,7 @@ local function render()
             setFunctionForRange(adjRange, fnId)
             adjRange = sanitizeAdjustmentRange(adjRange)
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
-            state.dirty = true
+            markDirty()
             local newType = getAdjustmentType(adjRange)
             if prevType == 2 or newType == 2 then
                 setPendingFocus("functionChoice")
@@ -1215,7 +1250,7 @@ local function render()
             local adjusted = clamp(math.floor(value), valueMin, valueMax)
             adjRange.adjMin = adjusted
             if adjRange.adjMax < adjusted then adjRange.adjMax = adjusted end
-            state.dirty = true
+            markDirty()
         end
     )
     local valEnd = form.addNumberField(
@@ -1228,7 +1263,7 @@ local function render()
             local adjusted = clamp(math.floor(value), valueMin, valueMax)
             adjRange.adjMax = adjusted
             if adjRange.adjMin > adjusted then adjRange.adjMin = adjusted end
-            state.dirty = true
+            markDirty()
         end
     )
     registerFocus("valStart", valStart)
@@ -1304,12 +1339,23 @@ local function queueEepromWrite(done, failed)
 end
 
 local function saveAllRanges()
-    state.saving = true
     state.saveError = nil
-    rfsuite.app.ui.progressDisplay("Adjustment Functions", "Saving adjustment ranges")
+    local changedSlots = getChangedSlots()
+    local total = #changedSlots
 
-    local slot = 1
-    local total = #state.adjustmentRanges
+    if total == 0 then
+        state.dirty = false
+        state.dirtySlots = {}
+        state.infoMessage = "No changed ranges to save."
+        state.needsRender = true
+        return
+    end
+
+    state.saving = true
+    state.infoMessage = nil
+    rfsuite.app.ui.progressDisplay("Adjustment Functions", "Saving " .. tostring(total) .. " changed range(s)")
+
+    local slotPos = 1
 
     local function failed(reason)
         state.saving = false
@@ -1319,19 +1365,22 @@ local function saveAllRanges()
     end
 
     local function writeNext()
-        if slot > total then
+        if slotPos > total then
             queueEepromWrite(function()
                 state.saving = false
                 state.dirty = false
+                state.dirtySlots = {}
                 state.saveError = nil
+                state.infoMessage = "Saved " .. tostring(total) .. " changed range(s)."
                 state.needsRender = true
                 rfsuite.app.triggers.closeProgressLoader = true
             end, failed)
             return
         end
 
-        queueSetAdjustmentRange(slot, function()
-            slot = slot + 1
+        local slotIndex = changedSlots[slotPos]
+        queueSetAdjustmentRange(slotIndex, function()
+            slotPos = slotPos + 1
             writeNext()
         end, failed)
     end
@@ -1393,6 +1442,8 @@ local function wakeup()
         render()
         state.needsRender = false
     end
+
+    updateSaveButtonState()
 
     if not state.loaded or state.loading then return end
     if state.saving then return end
