@@ -964,7 +964,7 @@ function tasks.load(name, meta)
 
     -- Load a task module and register it in the scheduler lists.
     if not meta then
-        utils.log("[scheduler] No manifest entry for task '" .. tostring(name) .. "'", "info")
+        utils.log("[scheduler] No manifest entry for task '" .. tostring(name) .. "'", "warn")
         return false
     end
     if not name or name == "" then
@@ -1042,10 +1042,10 @@ function tasks.reload(name)
             end
         end
         if not scheduled and meta and (tonumber(meta.interval or 1) or 1) >= 0 then
-            utils.log(string_format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "info")
+            utils.log(string_format("[scheduler] Reloaded '%s' but it was NOT scheduled; check meta.interval, link/connected flags, or wakeup loop conditions.", name), "warn")
         end
     else
-        utils.log(string_format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "info")
+        utils.log(string_format("[scheduler] Reload of '%s' failed; see earlier compile/init logs.", name), "warn")
     end
 
     return ok
