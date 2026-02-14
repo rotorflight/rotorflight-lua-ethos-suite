@@ -918,6 +918,15 @@ local function render()
     local y = app.radio.linePaddingTop
     local rightPadding = 8
     local gap = 6
+    local wSet = math.max(42, math.floor(width * 0.14))
+    local wLive = math.floor(width * 0.18)
+    local wChoice = math.max(96, math.floor(width * 0.22))
+    local wNum = math.floor(width * 0.16)
+    local xSet = width - rightPadding - wSet
+    local xLive = xSet - gap - wLive
+    local xChoice = xLive - gap - wChoice
+    local xEnd = xSet - gap - wNum
+    local xStart = xEnd - gap - wNum
     local focusTargets = {}
     local function registerFocus(key, field)
         if key and field then focusTargets[key] = field end
@@ -950,7 +959,7 @@ local function render()
     local slotOptionsTbl = buildChoiceTable(slotOptions, 0)
 
     local slotLine = form.addLine("Range")
-    local addBtn = form.addButton(slotLine, {x = width - rightPadding - math.floor(width * 0.16), y = y, w = math.floor(width * 0.16), h = h}, {
+    local addBtn = form.addButton(slotLine, {x = xSet, y = y, w = wSet, h = h}, {
         text = "Add",
         icon = nil,
         options = FONT_S,
@@ -960,7 +969,7 @@ local function render()
     if addBtn and addBtn.enable then addBtn:enable(true) end
     local slotChoice = form.addChoiceField(
         slotLine,
-        {x = width - rightPadding - math.floor(width * 0.62), y = y, w = math.floor(width * 0.42), h = h},
+        {x = xChoice, y = y, w = wChoice, h = h},
         slotOptionsTbl,
         function() return state.selectedRangeIndex end,
         function(value)
@@ -981,7 +990,7 @@ local function render()
     local typeLine = form.addLine("Type", nil, true)
     local typeChoice = form.addChoiceField(
         typeLine,
-        {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h},
+        {x = xChoice, y = y, w = wChoice, h = h},
         ADJUST_TYPE_OPTIONS_TBL,
         function() return getAdjustmentType(adjRange) end,
         function(value)
@@ -1002,17 +1011,6 @@ local function render()
     registerFocus("typeChoice", typeChoice)
     if typeChoice and typeChoice.values then typeChoice:values(ADJUST_TYPE_OPTIONS_TBL) end
     if typeChoice and typeChoice.enable then typeChoice:enable(true) end
-
-    local wSet = math.max(34, math.floor(width * 0.14))
-    local wLive = math.floor(width * 0.18)
-    local wChoice = math.floor(width * 0.30)
-    local xSet = width - rightPadding - wSet
-    local xLive = xSet - gap - wLive
-    local xChoice = xLive - gap - wChoice
-
-    local wNum = math.floor(width * 0.16)
-    local xEnd = xSet - gap - wNum
-    local xStart = xEnd - gap - wNum
 
     local enaSetBtn
     local enaStart
@@ -1226,7 +1224,7 @@ local function render()
     local functionLine = form.addLine("Function", nil, false)
     local functionChoice = form.addChoiceField(
         functionLine,
-        {x = width - rightPadding - math.floor(width * 0.60), y = y, w = math.floor(width * 0.60), h = h},
+        {x = xChoice, y = y, w = wChoice, h = h},
         state.functionOptions,
         function() return getFunctionChoiceIndex(adjRange.adjFunction or 0) end,
         function(value)
@@ -1360,7 +1358,7 @@ local function saveAllRanges()
     if total == 0 then
         state.dirty = false
         state.dirtySlots = {}
-        state.infoMessage = "No changed ranges to save."
+        state.infoMessage = nil
         state.needsRender = true
         return
     end
@@ -1385,7 +1383,7 @@ local function saveAllRanges()
                 state.dirty = false
                 state.dirtySlots = {}
                 state.saveError = nil
-                state.infoMessage = "Saved " .. tostring(total) .. " changed range(s)."
+                state.infoMessage = nil
                 state.needsRender = true
                 rfsuite.app.triggers.closeProgressLoader = true
             end, failed)
