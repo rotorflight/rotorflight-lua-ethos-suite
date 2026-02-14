@@ -131,7 +131,10 @@ local state = {
     functionById = {},
     functionOptions = {},
     functionOptionIds = {},
-    dirtySlots = {}
+    dirtySlots = {},
+    loadedSlots = {},
+    pendingSlotLoads = {},
+    supportsAdjustmentFunctions = nil
 }
 
 local function setPendingFocus(key)
@@ -601,62 +604,96 @@ local function parseAdjustmentRangeRecord(buf)
     }
 end
 
-local function readAdjustmentRangesBySlot(onComplete, onError)
-    local slotIndex = 1
-    local ranges = {}
-    local finished = false
+local function readAdjustmentRangeSlot(slotIndex, onComplete, onError)
+    slotIndex = clamp(math.floor(slotIndex or 1), 1, ADJUSTMENT_RANGE_MAX)
 
-    local function fail(reason)
-        if finished then return end
-        finished = true
-        if onError then onError(reason or "GET_ADJUSTMENT_RANGE failed") end
+    local message = {
+        command = 156,
+        payload = {slotIndex - 1},
+        processReply = function(_, buf)
+            local parsed = parseAdjustmentRangeRecord(buf)
+            if not parsed then
+                if onError then onError("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex)) end
+                return
+            end
+            if onComplete then onComplete(parsed) end
+        end,
+        errorHandler = function()
+            if onError then onError("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end
+        end,
+        simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0}
+    }
+
+    local ok, reason = queueDirect(message, string.format("adjustments.get.%d", slotIndex))
+    if not ok and onError then onError(reason or "queue_rejected") end
+end
+
+local function requestSlotLoad(slotIndex, onComplete, onError)
+    slotIndex = clamp(math.floor(slotIndex or 1), 1, math.max(#state.adjustmentRanges, 1))
+
+    if state.loadedSlots[slotIndex] then
+        if onComplete then onComplete(state.adjustmentRanges[slotIndex]) end
+        return
     end
 
-    local function complete()
-        if finished then return end
-        finished = true
-        if onComplete then onComplete(ranges) end
+    if state.pendingSlotLoads[slotIndex] then return end
+    state.pendingSlotLoads[slotIndex] = true
+
+    local function clearPending()
+        state.pendingSlotLoads[slotIndex] = nil
     end
 
-    local function readNext()
-        if slotIndex > ADJUSTMENT_RANGE_MAX then
-            complete()
-            return
+    readAdjustmentRangeSlot(slotIndex, function(parsed)
+        clearPending()
+        if not state.dirtySlots[slotIndex] then
+            state.adjustmentRanges[slotIndex] = sanitizeAdjustmentRange(parsed)
         end
+        state.loadedSlots[slotIndex] = true
+        if onComplete then onComplete(state.adjustmentRanges[slotIndex]) end
+    end, function(reason)
+        clearPending()
+        if onError then onError(reason) end
+    end)
+end
 
-        local message = {
-            command = 156,
-            payload = {slotIndex - 1},
-            processReply = function(_, buf)
-                local parsed = parseAdjustmentRangeRecord(buf)
-                if not parsed then
-                    fail("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex))
-                    return
-                end
-
-                ranges[slotIndex] = parsed
-                slotIndex = slotIndex + 1
-
-                local callback = rfsuite.tasks and rfsuite.tasks.callback
-                if callback and callback.now then
-                    callback.now(readNext)
-                else
-                    readNext()
-                end
-            end,
-            errorHandler = function()
-                fail("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex))
-            end,
-            simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0}
-        }
-
-        local ok, reason = queueDirect(message, string.format("adjustments.get.%d", slotIndex))
-        if not ok then
-            fail(reason or "queue_rejected")
-        end
+local function readAdjustmentFunctions(onComplete, onError)
+    if state.supportsAdjustmentFunctions == false then
+        if onError then onError("ADJUSTMENT_FUNCTIONS unsupported") end
+        return
     end
 
-    readNext()
+    local API = rfsuite.tasks.msp.api.load("ADJUSTMENT_FUNCTIONS")
+    if not API then
+        state.supportsAdjustmentFunctions = false
+        if onError then onError("ADJUSTMENT_FUNCTIONS API unavailable") end
+        return
+    end
+
+    API.setCompleteHandler(function()
+        state.supportsAdjustmentFunctions = true
+        local values = API.readValue("adjustment_functions") or {}
+        if onComplete then onComplete(values) end
+    end)
+
+    API.setErrorHandler(function()
+        state.supportsAdjustmentFunctions = false
+        if onError then onError("ADJUSTMENT_FUNCTIONS read failed") end
+    end)
+
+    API.read()
+end
+
+local function applyAdjustmentFunctions(functions)
+    if type(functions) ~= "table" then return end
+    local maxSlots = math.min(#state.adjustmentRanges, ADJUSTMENT_RANGE_MAX)
+    for slotIndex = 1, maxSlots do
+        local fnId = functions[slotIndex]
+        if fnId ~= nil and not state.dirtySlots[slotIndex] then
+            local adjRange = ensureRangeStructure(state.adjustmentRanges[slotIndex] or newDefaultAdjustmentRange())
+            adjRange.adjFunction = clamp(math.floor(fnId), 0, 255)
+            state.adjustmentRanges[slotIndex] = adjRange
+        end
+    end
 end
 
 local function readAdjustmentRangesBulk(onComplete, onError)
@@ -695,6 +732,11 @@ local function readAdjustmentRanges()
             state.readFallbackLocked = false
             state.dirty = false
             state.dirtySlots = {}
+            state.loadedSlots = {}
+            state.pendingSlotLoads = {}
+            for i = 1, #state.adjustmentRanges do
+                state.loadedSlots[i] = true
+            end
             state.loadError = nil
             state.infoMessage = messageOverride or (usedDefaultFallback and "@i18n(app.modules.adjustments.info_default_slots)@" or nil)
             state.needsRender = true
@@ -718,6 +760,8 @@ local function readAdjustmentRanges()
             state.readFallbackLocked = true
             state.dirty = false
             state.dirtySlots = {}
+            state.loadedSlots = {}
+            state.pendingSlotLoads = {}
             state.loadError = nil
             state.infoMessage = nil
             state.needsRender = true
@@ -732,8 +776,32 @@ local function readAdjustmentRanges()
         end
     end
 
-    readAdjustmentRangesBySlot(function(ranges)
-        finalizeWithRanges(ranges)
+    state.adjustmentRanges = buildDefaultAdjustmentRanges(ADJUSTMENT_RANGE_DEFAULT_COUNT)
+    state.selectedRangeIndex = clamp(state.selectedRangeIndex, 1, math.max(#state.adjustmentRanges, 1))
+    state.loadedSlots = {}
+    state.pendingSlotLoads = {}
+
+    local function finalizeInitialLoad()
+        state.loading = false
+        state.loaded = true
+        state.readFallbackLocked = false
+        state.dirty = false
+        state.dirtySlots = {}
+        state.loadError = nil
+        state.infoMessage = nil
+        state.needsRender = true
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
+
+    requestSlotLoad(state.selectedRangeIndex, function()
+        -- Optional acceleration path: prefill slot labels by function-id only.
+        -- If firmware does not support this command, continue normally.
+        readAdjustmentFunctions(function(functions)
+            applyAdjustmentFunctions(functions)
+            finalizeInitialLoad()
+        end, function()
+            finalizeInitialLoad()
+        end)
     end, function()
         -- Older FC builds may not support per-slot get. Fall back to legacy bulk read.
         readAdjustmentRangesBulk(function(ranges)
@@ -761,6 +829,8 @@ local function addRangeSlot()
 
     state.adjustmentRanges[#state.adjustmentRanges + 1] = newDefaultAdjustmentRange()
     state.selectedRangeIndex = #state.adjustmentRanges
+    state.loadedSlots[state.selectedRangeIndex] = true
+    state.pendingSlotLoads[state.selectedRangeIndex] = nil
     markDirty(state.selectedRangeIndex)
     state.needsRender = true
 end
@@ -776,6 +846,8 @@ local function startLoad()
     state.autoDetectEnaSlots = {}
     state.autoDetectAdjSlots = {}
     state.dirtySlots = {}
+    state.loadedSlots = {}
+    state.pendingSlotLoads = {}
     state.needsRender = true
     rfsuite.app.ui.progressDisplay(MODULE_TITLE, "@i18n(app.modules.adjustments.loading_ranges)@")
     readAdjustmentRanges()
@@ -1153,6 +1225,12 @@ local function render()
         function(value)
             setPendingFocus("slotChoice")
             state.selectedRangeIndex = clamp(value or 1, 1, #state.adjustmentRanges)
+            requestSlotLoad(state.selectedRangeIndex, function()
+                state.needsRender = true
+            end, function(reason)
+                state.infoMessage = reason or "@i18n(app.modules.adjustments.load_error)@"
+                state.needsRender = true
+            end)
             state.needsRender = true
         end
     )
