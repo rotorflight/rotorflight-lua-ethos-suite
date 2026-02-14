@@ -1242,12 +1242,29 @@ class UpdaterGUI:
         files = {}
         if not os.path.isdir(root_dir):
             return files
-        for root, _, names in os.walk(root_dir):
+        for root, dirs, names in os.walk(root_dir):
+            dirs[:] = [d for d in dirs if not self._is_ignored_path(os.path.join(root, d), root_dir)]
             for name in names:
                 full = os.path.join(root, name)
+                if self._is_ignored_path(full, root_dir):
+                    continue
                 rel = os.path.relpath(full, root_dir)
                 files[rel] = full
         return files
+
+    def _is_ignored_path(self, path, root_dir):
+        rel = os.path.relpath(path, root_dir)
+        rel_norm = rel.replace("\\", "/")
+        parts = [p for p in rel_norm.split("/") if p and p != "."]
+        for part in parts:
+            if part in ("__pycache__", "._pycache__"):
+                return True
+            if part.startswith("._"):
+                return True
+        base = os.path.basename(path)
+        if base.endswith((".pyc", ".pyo")):
+            return True
+        return False
 
     def _remove_empty_dirs(self, root_dir):
         if not os.path.isdir(root_dir):
@@ -1709,7 +1726,20 @@ class UpdaterGUI:
                 continue
             os.makedirs(os.path.dirname(dst_path), exist_ok=True)
             if os.path.isdir(src_path):
-                shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+                def _ignore_ephemeral(_dir, names):
+                    ignored = []
+                    for n in names:
+                        if n in ("__pycache__", "._pycache__"):
+                            ignored.append(n)
+                            continue
+                        if n.startswith("._"):
+                            ignored.append(n)
+                            continue
+                        if n.endswith((".pyc", ".pyo")):
+                            ignored.append(n)
+                    return ignored
+
+                shutil.copytree(src_path, dst_path, dirs_exist_ok=True, ignore=_ignore_ephemeral)
             else:
                 shutil.copy2(src_path, dst_path)
 
