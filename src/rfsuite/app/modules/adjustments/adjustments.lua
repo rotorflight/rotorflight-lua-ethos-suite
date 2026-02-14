@@ -112,6 +112,7 @@ local state = {
     loaded = false,
     loading = false,
     saving = false,
+    readFallbackLocked = false,
     dirty = false,
     loadError = nil,
     saveError = nil,
@@ -512,8 +513,19 @@ local function updateSaveButtonState()
     local saveField = nav and nav["save"] or nil
     if not saveField or not saveField.enable then return end
 
-    local canSave = state.loaded and (not state.loading) and (not state.saving) and state.dirty
+    local canSave = state.loaded and (not state.loading) and (not state.saving) and (not state.readFallbackLocked) and state.dirty
     saveField:enable(canSave)
+end
+
+local function syncNavButtonsForState()
+    local page = rfsuite.app and rfsuite.app.Page
+    if not page then return end
+
+    if state.readFallbackLocked then
+        page.navButtons = {menu = true, save = false, reload = true, tool = false, help = false}
+    else
+        page.navButtons = {menu = true, save = true, reload = true, tool = false, help = true}
+    end
 end
 
 local function countActiveRanges()
@@ -552,6 +564,7 @@ local function readAdjustmentRanges()
             state.selectedRangeIndex = clamp(state.selectedRangeIndex, 1, math.max(#state.adjustmentRanges, 1))
             state.loading = false
             state.loaded = true
+            state.readFallbackLocked = false
             state.dirty = false
             state.dirtySlots = {}
             state.loadError = nil
@@ -576,10 +589,11 @@ local function readAdjustmentRanges()
             state.selectedRangeIndex = 1
             state.loading = false
             state.loaded = true
+            state.readFallbackLocked = true
             state.dirty = false
             state.dirtySlots = {}
             state.loadError = nil
-            state.infoMessage = "Adjustment read failed. Showing default slot list."
+            state.infoMessage = nil
             state.needsRender = true
             rfsuite.app.triggers.closeProgressLoader = true
         end
@@ -619,6 +633,7 @@ end
 local function startLoad()
     state.loading = true
     state.loaded = false
+    state.readFallbackLocked = false
     state.loadError = nil
     state.saveError = nil
     state.infoMessage = nil
@@ -919,6 +934,7 @@ local function render()
     local app = rfsuite.app
 
     state.liveFields = {}
+    syncNavButtonsForState()
 
     form.clear()
     app.ui.fieldHeader(state.title)
@@ -930,6 +946,12 @@ local function render()
 
     if state.loadError then
         form.addLine("Load error: " .. tostring(state.loadError))
+        return
+    end
+
+    if state.readFallbackLocked then
+        form.addLine("Adjustment read timed out.")
+        form.addLine("Editing is disabled. Use Reload or Back.")
         return
     end
 
@@ -1419,6 +1441,7 @@ end
 
 local function onSaveMenu()
     if state.loading or state.saving or not state.loaded then return end
+    if state.readFallbackLocked then return end
     if not state.dirty then return end
 
     if hasActiveAutoDetect() then
