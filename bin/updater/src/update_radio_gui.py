@@ -93,7 +93,7 @@ COPY_SETTLE_SECONDS = 0.03
 TS_SLACK_SECONDS = 2.0
 CACHE_DIRNAME = "cache"
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "1.0.4"
+UPDATER_VERSION = "1.0.5"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
@@ -1188,11 +1188,11 @@ class UpdaterGUI:
             if not drive:
                 raise RuntimeError(f"Could not determine drive letter for: {scripts_dir}")
             # /x forces dismount and implies /f.
-            return [ "chkdsk", drive, "/f", "/x" ], f"{drive}\\"
+            return [ "chkdsk", drive, "/f", "/x" ], f"{drive}\\", None
 
         if sys.platform == "darwin":
             volume_root = os.path.abspath(os.path.join(scripts_dir, os.pardir))
-            return ["diskutil", "repairVolume", volume_root], volume_root
+            return ["diskutil", "repairVolume", volume_root], volume_root, None
 
         # Linux/Unix fallback: fsck auto-repair on backing device if discoverable.
         source = None
@@ -1221,7 +1221,8 @@ class UpdaterGUI:
             raise RuntimeError(f"Resolved source is not a block device: {source}")
 
         target_desc = f"{source} ({mountpoint or 'unknown mount'})"
-        return ["fsck", "-y", source], target_desc
+        pre_cmd = ["umount", mountpoint] if mountpoint else None
+        return ["fsck", "-y", source], target_desc, pre_cmd
 
     def _check_disk_worker(self, scripts_dir):
         def _run_disk_cmd(cmd, timeout=1800):
@@ -1245,8 +1246,13 @@ class UpdaterGUI:
 
         try:
             self.root.after(0, lambda: self._set_disk_phase(current="Prepare", status="Preparing disk check...", text="Resolving disk-check command..."))
-            cmd, target_desc = self._check_disk_command_for_scripts(scripts_dir)
+            cmd, target_desc, pre_cmd = self._check_disk_command_for_scripts(scripts_dir)
             self.log(f"Disk check target: {target_desc}")
+            if pre_cmd:
+                self.log("Unmounting volume before fsck...")
+                pre = _run_disk_cmd(pre_cmd, timeout=120)
+                if pre.returncode != 0:
+                    raise RuntimeError(f"Unmount failed for {target_desc}. Please close any apps using the drive and retry.")
             self.root.after(0, lambda: self._set_disk_phase(done="Prepare", current="Scan", status="Running disk check...", text=f"Checking {target_desc}..."))
             result = _run_disk_cmd(cmd)
             self.root.after(0, lambda: self._set_disk_phase(done="Scan", current="Finalize", status="Finalizing disk check...", text="Collecting results..."))
@@ -1593,44 +1599,126 @@ class UpdaterGUI:
     
     def attempt_chkdsk(self, path):
         """Attempt to repair a corrupt filesystem, then prompt user to retry."""
-        if sys.platform != 'win32':
-            return False
         if self.chkdsk_attempted:
             return False
-        drive, _ = os.path.splitdrive(path)
-        if not drive:
-            return False
-        
+
         self.chkdsk_attempted = True
-        self.log(f"Detected filesystem error. Running chkdsk {drive} /f ...")
-        try:
-            result = subprocess.run(
-                ["chkdsk", drive, "/f"],
-                capture_output=True,
-                text=True,
-                timeout=300
-            )
-            if result.stdout:
-                for line in result.stdout.strip().splitlines()[:8]:
-                    self.log(f"  [chkdsk] {line}")
-            if result.stderr:
-                for line in result.stderr.strip().splitlines()[:8]:
-                    self.log(f"  [chkdsk] {line}")
-        except Exception as e:
-            self.log(f"  [chkdsk] Failed to run: {e}")
-        
-        if 'tk' in sys.modules:
+        if sys.platform == 'win32':
+            drive, _ = os.path.splitdrive(path)
+            if not drive:
+                return False
+            self.log(f"Detected filesystem error. Running chkdsk {drive} /f ...")
             try:
-                root = tk.Tk()
-                root.withdraw()
-                messagebox.showinfo(
-                    "Filesystem Repair",
-                    f"CHKDSK was run on {drive}. Please click Update again to retry."
+                result = subprocess.run(
+                    ["chkdsk", drive, "/f"],
+                    capture_output=True,
+                    text=True,
+                    timeout=300
                 )
-                root.destroy()
+                if result.stdout:
+                    for line in result.stdout.strip().splitlines()[:8]:
+                        self.log(f"  [chkdsk] {line}")
+                if result.stderr:
+                    for line in result.stderr.strip().splitlines()[:8]:
+                        self.log(f"  [chkdsk] {line}")
+            except Exception as e:
+                self.log(f"  [chkdsk] Failed to run: {e}")
+
+            if 'tk' in sys.modules:
+                try:
+                    root = tk.Tk()
+                    root.withdraw()
+                    messagebox.showinfo(
+                        "Filesystem Repair",
+                        f"CHKDSK was run on {drive}. Please click Update again to retry."
+                    )
+                    root.destroy()
+                except Exception:
+                    pass
+            return True
+
+        if sys.platform.startswith("linux"):
+            scripts_dir = self._find_scripts_dir_for_maintenance()
+            if not scripts_dir:
+                self.log("  [fsck] Could not locate mounted scripts directory.")
+                return False
+
+            source = None
+            mountpoint = None
+            try:
+                res = subprocess.run(
+                    ["findmnt", "-no", "SOURCE,TARGET", "--target", scripts_dir],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    check=False,
+                )
+                line = (res.stdout or "").strip()
+                if line:
+                    parts = line.split()
+                    if parts:
+                        source = parts[0]
+                    if len(parts) > 1:
+                        mountpoint = parts[1]
             except Exception:
                 pass
-        return True
+
+            if not source or not source.startswith("/dev/"):
+                self.log(f"  [fsck] Could not resolve block device for scripts dir: {scripts_dir}")
+                return False
+
+            self.log(f"Detected filesystem error. Running fsck -y on {source} ...")
+            try:
+                if mountpoint:
+                    self.log(f"  [fsck] Unmounting {mountpoint} first...")
+                    um = subprocess.run(
+                        ["umount", mountpoint],
+                        capture_output=True,
+                        text=True,
+                        timeout=120,
+                        check=False,
+                    )
+                    if um.stdout:
+                        for line in um.stdout.strip().splitlines()[:8]:
+                            self.log(f"  [umount] {line}")
+                    if um.stderr:
+                        for line in um.stderr.strip().splitlines()[:8]:
+                            self.log(f"  [umount] {line}")
+                    if um.returncode != 0:
+                        self.log("  [fsck] Unmount failed; skipping fsck.")
+                        return False
+
+                result = subprocess.run(
+                    ["fsck", "-y", source],
+                    capture_output=True,
+                    text=True,
+                    timeout=600,
+                    check=False,
+                )
+                if result.stdout:
+                    for line in result.stdout.strip().splitlines()[:10]:
+                        self.log(f"  [fsck] {line}")
+                if result.stderr:
+                    for line in result.stderr.strip().splitlines()[:10]:
+                        self.log(f"  [fsck] {line}")
+            except Exception as e:
+                self.log(f"  [fsck] Failed to run: {e}")
+                return False
+
+            if 'tk' in sys.modules:
+                try:
+                    root = tk.Tk()
+                    root.withdraw()
+                    messagebox.showinfo(
+                        "Filesystem Repair",
+                        f"fsck was run on {source}. Re-mount the radio volume, then click Update again."
+                    )
+                    root.destroy()
+                except Exception:
+                    pass
+            return True
+
+        return False
     
     def copy_tree_with_progress(self, src, dst, use_phase=False):
         """Copy only changed files (size/mtime fast path with MD5 fallback)."""
