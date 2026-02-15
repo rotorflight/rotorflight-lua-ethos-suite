@@ -11,16 +11,55 @@ local MSP_API_CMD_READ = 80
 local MSP_API_CMD_WRITE = 81
 local MSP_REBUILD_ON_WRITE = true
 
+local offOn = {
+    "@i18n(api.MOTOR_CONFIG.tbl_off)@",
+    "@i18n(api.MOTOR_CONFIG.tbl_on)@"
+}
+
+local blackbox_fields_bitmap = {
+    { field = "command",  tableIdxInc = -1, table = offOn }, -- bit 0
+    { field = "setpoint", tableIdxInc = -1, table = offOn }, -- bit 1
+    { field = "mixer",    tableIdxInc = -1, table = offOn }, -- bit 2
+    { field = "pid",      tableIdxInc = -1, table = offOn }, -- bit 3
+    { field = "attitude", tableIdxInc = -1, table = offOn }, -- bit 4
+    { field = "gyroraw",  tableIdxInc = -1, table = offOn }, -- bit 5
+    { field = "gyro",     tableIdxInc = -1, table = offOn }, -- bit 6
+    { field = "acc",      tableIdxInc = -1, table = offOn }, -- bit 7
+    { field = "mag",      tableIdxInc = -1, table = offOn }, -- bit 8
+    { field = "alt",      tableIdxInc = -1, table = offOn }, -- bit 9
+    { field = "battery",  tableIdxInc = -1, table = offOn }, -- bit 10
+    { field = "rssi",     tableIdxInc = -1, table = offOn }, -- bit 11
+    { field = "gps",      tableIdxInc = -1, table = offOn }, -- bit 12
+    { field = "rpm",      tableIdxInc = -1, table = offOn }, -- bit 13
+    { field = "motors",   tableIdxInc = -1, table = offOn }, -- bit 14
+    { field = "servos",   tableIdxInc = -1, table = offOn }, -- bit 15
+    { field = "vbec",     tableIdxInc = -1, table = offOn }, -- bit 16
+    { field = "vbus",     tableIdxInc = -1, table = offOn }, -- bit 17
+    { field = "temps",    tableIdxInc = -1, table = offOn }, -- bit 18
+}
+
+if rfsuite.utils.apiVersionCompare(">=", "12.07") then
+    blackbox_fields_bitmap[#blackbox_fields_bitmap + 1] = { field = "esc", tableIdxInc = -1, table = offOn }   -- bit 19
+    blackbox_fields_bitmap[#blackbox_fields_bitmap + 1] = { field = "bec", tableIdxInc = -1, table = offOn }   -- bit 20
+    blackbox_fields_bitmap[#blackbox_fields_bitmap + 1] = { field = "esc2", tableIdxInc = -1, table = offOn }  -- bit 21
+end
+
+if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    blackbox_fields_bitmap[#blackbox_fields_bitmap + 1] = { field = "governor", tableIdxInc = -1, table = offOn } -- bit 22
+end
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
+    -- Sim values aligned to observed payload:
+    -- READ [80]{1,1,1,8,0,127,238,7,0,0,0,0,5}
     { field = "blackbox_supported", type = "U8", apiVersion = 12.06, simResponse = {1} },
-    { field = "device", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "mode", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "denom", type = "U16", apiVersion = 12.06, simResponse = {1,0} },
-    { field = "fields", type = "U32", apiVersion = 12.06, simResponse = {0,0,0,0} },
-    { field = "initialEraseFreeSpaceKiB", type = "U16", apiVersion = 12.06, simResponse = {0,0}, mandatory = false },
+    { field = "device", type = "U8", apiVersion = 12.06, simResponse = {1} },
+    { field = "mode", type = "U8", apiVersion = 12.06, simResponse = {1} },
+    { field = "denom", type = "U16", apiVersion = 12.06, simResponse = {8,0}, unit = "1/x" },
+    { field = "fields", type = "U32", apiVersion = 12.06, simResponse = {127,238,7,0}, bitmap = blackbox_fields_bitmap },
+    { field = "initialEraseFreeSpaceKiB", type = "U16", apiVersion = 12.06, simResponse = {0,0}, mandatory = false, unit = "KiB" },
     { field = "rollingErase", type = "U8", apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "gracePeriod", type = "U8", apiVersion = 12.06, simResponse = {0}, mandatory = false },
+    { field = "gracePeriod", type = "U8", apiVersion = 12.06, simResponse = {5}, mandatory = false, unit = "s" },
 }
 -- LuaFormatter on
 
