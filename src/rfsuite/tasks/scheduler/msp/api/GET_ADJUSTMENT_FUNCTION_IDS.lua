@@ -6,7 +6,7 @@
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
 
-local API_NAME = "ADJUSTMENT_FUNCTIONS"
+local API_NAME = "GET_ADJUSTMENT_FUNCTION_IDS"
 local MSP_API_CMD_READ = 167
 local MSP_MIN_BYTES = 0
 local ADJUSTMENT_RANGE_MAX = 42
@@ -32,7 +32,7 @@ local function parseAdjustmentFunctions(buf)
         functions[i] = fn
     end
 
-    parsed.adjustment_functions = functions
+    parsed.adjustment_function_ids = functions
     return {parsed = parsed, buffer = buf}
 end
 

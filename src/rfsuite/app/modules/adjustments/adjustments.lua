@@ -670,26 +670,26 @@ end
 
 local function readAdjustmentFunctions(onComplete, onError)
     if state.supportsAdjustmentFunctions == false then
-        if onError then onError("ADJUSTMENT_FUNCTIONS unsupported") end
+        if onError then onError("GET_ADJUSTMENT_FUNCTION_IDS unsupported") end
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load("ADJUSTMENT_FUNCTIONS")
+    local API = rfsuite.tasks.msp.api.load("GET_ADJUSTMENT_FUNCTION_IDS")
     if not API then
         state.supportsAdjustmentFunctions = false
-        if onError then onError("ADJUSTMENT_FUNCTIONS API unavailable") end
+        if onError then onError("GET_ADJUSTMENT_FUNCTION_IDS API unavailable") end
         return
     end
 
     API.setCompleteHandler(function()
         state.supportsAdjustmentFunctions = true
-        local values = API.readValue("adjustment_functions") or {}
+        local values = API.readValue("adjustment_function_ids") or {}
         if onComplete then onComplete(values) end
     end)
 
     API.setErrorHandler(function()
         state.supportsAdjustmentFunctions = false
-        if onError then onError("ADJUSTMENT_FUNCTIONS read failed") end
+        if onError then onError("GET_ADJUSTMENT_FUNCTION_IDS read failed") end
     end)
 
     API.read()
