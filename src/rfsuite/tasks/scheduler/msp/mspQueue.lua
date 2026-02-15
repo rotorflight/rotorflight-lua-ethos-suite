@@ -424,7 +424,10 @@ function MspQueueController:processQueue()
 
         -- After a successful completion, briefly drain duplicate/late replies for this cmd
         if not system.getVersion().simulation then
-            drainAfterSuccess(self, self.currentMessage.command)
+            local completedCommand = self.currentMessage and self.currentMessage.command
+            if completedCommand ~= nil then
+                drainAfterSuccess(self, completedCommand)
+            end
         end
 
         self.currentMessage = nil

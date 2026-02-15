@@ -43,6 +43,7 @@ local state = {
     pollingEnabled = false,
     movementPaused = false,
     resumeMovementPending = false,
+    autoRecenterPending = false,
     viewYawOffset = 0,
     display = {
         roll_degrees = 0,
@@ -116,6 +117,10 @@ local function parseAttitude(buf)
     state.live.roll = (tonumber(rollRaw) or 0) / 10.0
     state.live.pitch = (tonumber(pitchRaw) or 0) / 10.0
     state.live.yaw = tonumber(yawRaw) or 0
+    if state.autoRecenterPending then
+        recenterYawView()
+        state.autoRecenterPending = false
+    end
     return true
 end
 
@@ -226,9 +231,7 @@ local function writeData()
     sensorAPI.setValue("mag_alignment", clamp(tonumber(state.display.mag_alignment) or 0, 0, 9))
 
     boardAPI.setCompleteHandler(function()
-        clearMspQueue()
         sensorAPI.setCompleteHandler(function()
-            clearMspQueue()
             eepromAPI.setCompleteHandler(function()
                 state.saving = false
                 state.resumeMovementPending = true
@@ -530,6 +533,7 @@ local function openPage(opts)
     state.pollingEnabled = false
     state.movementPaused = false
     state.resumeMovementPending = false
+    state.autoRecenterPending = true
     state.viewYawOffset = 0
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
