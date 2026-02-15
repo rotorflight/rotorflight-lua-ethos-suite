@@ -47,6 +47,7 @@ local userpref_defaults = {
     general = {
         iconsize = 2,
         syncname = false,
+        developer_tools = false,
         gimbalsupression = 0.85,
         txbatt_type = 0,
         hs_loader = 0,

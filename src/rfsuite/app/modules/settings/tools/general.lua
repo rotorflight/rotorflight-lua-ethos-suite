@@ -86,6 +86,11 @@ local function openPage(opts)
         return config.mspstatusdialog
     end, function(newValue) config.mspstatusdialog = newValue end)
 
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_development)@ @i18n(app.menu_section_tools)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.developer_tools or false end, function(newValue) config.developer_tools = newValue end)
+
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
@@ -109,6 +114,7 @@ local function onSaveMenu()
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
+        rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
         rfsuite.app.triggers.closeSave = true
         return true
     end

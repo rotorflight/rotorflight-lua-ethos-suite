@@ -89,8 +89,7 @@ return {
             newline = true,
             pages = {
                 "copyprofiles",
-                "profile_select",
-                "developer"
+                "profile_select"
             }
         },
         -- Single entries open directly from the main menu.
@@ -106,6 +105,12 @@ return {
             entry = "settings",
             image = "app/modules/settings/settings.png",
             offline = true
+        },
+        {
+            title = "Developer",
+            entry = "developer",
+            image = "app/modules/developer/developer.png",
+            developer = true
         },
         {
             title = "@i18n(app.modules.diagnostics.name)@",

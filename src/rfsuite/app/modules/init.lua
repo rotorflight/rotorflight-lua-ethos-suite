@@ -11,6 +11,15 @@ local manifest = loadfile("app/modules/manifest.lua")()
 local sections = {}
 local missingModules = {}
 
+local function isTruthy(value)
+    return value == true or value == "true" or value == 1 or value == "1"
+end
+
+local function developerToolsEnabled()
+    local pref = rfsuite.preferences and rfsuite.preferences.general
+    return pref and isTruthy(pref.developer_tools) or false
+end
+
 local function resolveLoaderSpeed(value)
     if value == nil then return nil end
     if type(value) == "number" then return value end
@@ -57,7 +66,7 @@ local function applyDefaults(dest, src, keys)
 end
 
 -- Build `sections` (main menu entries) and `pages` (submenu items) from manifest.
-for sidx, section in ipairs(manifest.sections or {}) do
+for _, section in ipairs(manifest.sections or {}) do
     local out = {}
     for k, v in pairs(section) do
         if k ~= "entry" and k ~= "pages" then out[k] = v end
@@ -87,40 +96,48 @@ for sidx, section in ipairs(manifest.sections or {}) do
         end
     end
 
-    out.loaderspeed = resolveLoaderSpeed(out.loaderspeed)
-    sections[#sections + 1] = out
+    local sectionIsDeveloper = isTruthy(out.developer) or isTruthy(section.developer)
+    local showDeveloperModules = developerToolsEnabled()
+    if not sectionIsDeveloper or showDeveloperModules then
+        out.loaderspeed = resolveLoaderSpeed(out.loaderspeed)
+        local sectionIndex = #sections + 1
+        sections[sectionIndex] = out
 
-    if section.pages then
-        -- `pages` defines submenu items; each entry maps to a module folder.
-        for _, pageSpec in ipairs(section.pages) do
-            local folder = nil
-            local overrides = nil
+        if section.pages then
+            -- `pages` defines submenu items; each entry maps to a module folder.
+            for _, pageSpec in ipairs(section.pages) do
+                local folder = nil
+                local overrides = nil
 
-            if type(pageSpec) == "string" then
-                folder = pageSpec
-            elseif type(pageSpec) == "table" then
-                -- Allow overrides (e.g. order, title) alongside folder/module name.
-                folder = pageSpec.folder or pageSpec.module or pageSpec[1]
-                overrides = pageSpec
-            end
+                if type(pageSpec) == "string" then
+                    folder = pageSpec
+                elseif type(pageSpec) == "table" then
+                    -- Allow overrides (e.g. order, title) alongside folder/module name.
+                    folder = pageSpec.folder or pageSpec.module or pageSpec[1]
+                    overrides = pageSpec
+                end
 
-            if folder then
-                local mod = loadModuleConfig(folder)
-                if mod then
-                    -- Start with module config, then apply any manifest overrides.
-                    local page = {}
-                    for k, v in pairs(mod) do page[k] = v end
-                    page.folder = folder
-                    page.section = sidx
+                if folder then
+                    local mod = loadModuleConfig(folder)
+                    if mod then
+                        -- Start with module config, then apply any manifest overrides.
+                        local page = {}
+                        for k, v in pairs(mod) do page[k] = v end
+                        page.folder = folder
+                        page.section = sectionIndex
 
-                    if overrides then
-                        for k, v in pairs(overrides) do
-                            if k ~= "folder" and k ~= "module" then page[k] = v end
+                        if overrides then
+                            for k, v in pairs(overrides) do
+                                if k ~= "folder" and k ~= "module" then page[k] = v end
+                            end
+                        end
+
+                        local pageIsDeveloper = isTruthy(page.developer)
+                        if not pageIsDeveloper or showDeveloperModules then
+                            page.loaderspeed = resolveLoaderSpeed(page.loaderspeed)
+                            pages[#pages + 1] = page
                         end
                     end
-
-                    page.loaderspeed = resolveLoaderSpeed(page.loaderspeed)
-                    pages[#pages + 1] = page
                 end
             end
         end

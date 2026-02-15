@@ -132,7 +132,7 @@ local function wakeup()
 end
 
 local function onNavMenu()
-    app.ui.openMainMenuSub("tools")
+    app.ui.openMainMenu()
     return true
 end
 
