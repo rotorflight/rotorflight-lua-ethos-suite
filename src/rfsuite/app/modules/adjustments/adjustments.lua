@@ -1752,7 +1752,7 @@ local function onReloadMenu()
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.openMainMenuSub("advanced")
+    rfsuite.app.ui.openMainMenuSub("hardware")
     return true
 end
 

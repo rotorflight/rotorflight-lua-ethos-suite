@@ -55,9 +55,7 @@ return {
                 "profile_mainrotor",
                 "profile_tailrotor",
                 "profile_rescue",
-                "rates_advanced",
-                "modes",
-                "adjustments"
+                "rates_advanced"
             }
         },
         {
@@ -76,10 +74,12 @@ return {
                 "radio_config",
                 "stats",
                 "failsafe",
+                "adjustments",
                 {"governor", script_by_mspversion = {
                     {">=", "12.09", "governor.lua", loaderspeed = "FAST"},
                     {"<", "12.09", "governor_legacy.lua", loaderspeed = "SLOW"}
-                }}
+                }},
+                "modes"
             }
         },
         {
