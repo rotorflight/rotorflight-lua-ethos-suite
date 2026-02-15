@@ -1165,6 +1165,12 @@ local function updateLiveFields()
         if preview.active then valueText = valueText .. "*" end
         state.liveFields.preview:value("Output: " .. valueText)
     end
+    if state.liveFields.previewCompact and state.liveFields.previewCompact.value then
+        local preview = calcPreview(adjRange, getAdjustmentType(adjRange), enaUs, adjUs)
+        local valueText = preview.text
+        if preview.active then valueText = valueText .. "*" end
+        state.liveFields.previewCompact:value("O:" .. valueText)
+    end
 end
 
 local function render()
@@ -1584,6 +1590,8 @@ local function render()
     registerFocus("valEnd", valEnd)
     state.liveFields.valStart = valStart
     state.liveFields.valEnd = valEnd
+    local previewCompact = form.addStaticText(valRangeLine, {x = xSet, y = y, w = wSet, h = h}, "O:-")
+    if previewCompact and previewCompact.value then state.liveFields.previewCompact = previewCompact end
     if adjType == 0 then
         if valStart and valStart.enable then valStart:enable(false) end
         if valEnd and valEnd.enable then valEnd:enable(false) end
