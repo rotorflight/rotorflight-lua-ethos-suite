@@ -21,6 +21,8 @@ local formFields = app.formFields
 local radio = app.radio
 
 local MSP_ATTITUDE = 108
+local BASE_VIEW_PITCH_R = rad(-90)
+local BASE_VIEW_YAW_R = rad(90)
 
 local state = {
     pageIdx = nil,
@@ -221,25 +223,43 @@ local function writeData()
     boardAPI.write()
 end
 
-local function rotatePoint(x, y, z, rollR, pitchR, yawR)
+-- Match configurator model transform:
+-- model.rotation.x = -pitch
+-- modelWrapper.rotation.y = -yaw
+-- model.rotation.z = -roll
+-- World transform on points becomes: Rz(roll) -> Rx(pitch) -> Ry(yaw).
+local function rotatePoint(x, y, z, pitchR, yawR, rollR)
+    -- Rear-view baseline (tail toward viewer) while keeping model upright.
+    local cbp = cos(BASE_VIEW_PITCH_R)
+    local sbp = sin(BASE_VIEW_PITCH_R)
+    local px = x
+    local py = y * cbp - z * sbp
+    local pz = y * sbp + z * cbp
+
+    local cby = cos(BASE_VIEW_YAW_R)
+    local sby = sin(BASE_VIEW_YAW_R)
+    local bx = px * cby + pz * sby
+    local by = py
+    local bz = -px * sby + pz * cby
+
+    local cz = cos(rollR)
+    local sz = sin(rollR)
+    local cx = cos(pitchR)
+    local sx = sin(pitchR)
     local cy = cos(yawR)
     local sy = sin(yawR)
-    local cp = cos(pitchR)
-    local sp = sin(pitchR)
-    local cr = cos(rollR)
-    local sr = sin(rollR)
 
-    local x1 = x
-    local y1 = y * cr - z * sr
-    local z1 = y * sr + z * cr
+    local x1 = bx * cz - by * sz
+    local y1 = bx * sz + by * cz
+    local z1 = bz
 
-    local x2 = x1 * cp + z1 * sp
-    local y2 = y1
-    local z2 = -x1 * sp + z1 * cp
+    local x2 = x1
+    local y2 = y1 * cx - z1 * sx
+    local z2 = y1 * sx + z1 * cx
 
-    local x3 = x2 * cy - y2 * sy
-    local y3 = x2 * sy + y2 * cy
-    local z3 = z2
+    local x3 = x2 * cy + z2 * sy
+    local y3 = y2
+    local z3 = -x2 * sy + z2 * cy
 
     return x3, y3, z3
 end
@@ -252,9 +272,9 @@ local function projectPoint(px, py, pz, cx, cy, scale)
     return sx, sy
 end
 
-local function drawLine3D(a, b, cx, cy, scale, rr, pr, yr, color)
-    local ax, ay, az = rotatePoint(a[1], a[2], a[3], rr, pr, yr)
-    local bx, by, bz = rotatePoint(b[1], b[2], b[3], rr, pr, yr)
+local function drawLine3D(a, b, cx, cy, scale, pitchR, yawR, rollR, color)
+    local ax, ay, az = rotatePoint(a[1], a[2], a[3], pitchR, yawR, rollR)
+    local bx, by, bz = rotatePoint(b[1], b[2], b[3], pitchR, yawR, rollR)
     local x1, y1 = projectPoint(ax, ay, az, cx, cy, scale)
     local x2, y2 = projectPoint(bx, by, bz, cx, cy, scale)
     lcd.color(color)
@@ -271,10 +291,10 @@ local function drawVisual()
 
     local isDark = lcd.darkMode()
     local bg = isDark and lcd.RGB(18, 18, 18) or lcd.RGB(245, 245, 245)
-    local grid = isDark and lcd.GREY(55) or lcd.GREY(200)
-    local mainColor = isDark and lcd.RGB(235, 235, 235) or lcd.RGB(20, 20, 20)
-    local accent = isDark and lcd.RGB(255, 200, 80) or lcd.RGB(0, 120, 255)
-    local disc = isDark and lcd.RGB(120, 120, 120) or lcd.RGB(170, 170, 170)
+    local grid = isDark and lcd.GREY(70) or lcd.GREY(210)
+    local mainColor = isDark and lcd.RGB(248, 248, 248) or lcd.RGB(8, 8, 8)
+    local accent = isDark and lcd.RGB(255, 220, 110) or lcd.RGB(0, 110, 235)
+    local disc = isDark and lcd.RGB(150, 150, 150) or lcd.RGB(150, 150, 150)
 
     local panelX = x + 4
     local panelY = y + 2
@@ -286,33 +306,16 @@ local function drawVisual()
     lcd.color(grid)
     lcd.drawRectangle(panelX, panelY, panelW, panelH)
 
-    -- Match configurator feel more closely:
-    -- invert attitude signs for display and apply a fixed rear-view camera baseline.
-    local rr = rad(-(state.live.roll + state.display.roll_degrees))
-    local pr = rad(-(state.live.pitch + state.display.pitch_degrees)) + rad(90)
-    local yr = rad(-(state.live.yaw + state.display.yaw_degrees))
-
-    lcd.font(FONT_XS)
-    local liveText = string.format("Live  R:%0.1f  P:%0.1f  Y:%0.1f", state.live.roll, state.live.pitch, state.live.yaw)
-    local offsText = string.format("Offset R:%d  P:%d  Y:%d  Mag:%d", state.display.roll_degrees, state.display.pitch_degrees, state.display.yaw_degrees, state.display.mag_alignment)
-    local _, th1 = lcd.getTextSize(liveText)
-    local _, th2 = lcd.getTextSize(offsText)
-    local textPad = 3
-    local headerH = th1 + th2 + textPad + 8
-
-    lcd.color(bg)
-    lcd.drawFilledRectangle(panelX + 1, panelY + 1, panelW - 2, headerH)
-    lcd.color(grid)
-    lcd.drawLine(panelX + 1, panelY + headerH, panelX + panelW - 2, panelY + headerH)
-
-    lcd.color(mainColor)
-    lcd.drawText(panelX + 8, panelY + 4, liveText, LEFT)
-    lcd.drawText(panelX + 8, panelY + 4 + th1 + textPad, offsText, LEFT)
+    -- Configurator mapping:
+    -- x = -pitch, y = -yaw, z = -roll.
+    local pitchR = rad(-(state.live.pitch + state.display.pitch_degrees))
+    local yawR = rad(-(state.live.yaw + state.display.yaw_degrees))
+    local rollR = rad(-(state.live.roll + state.display.roll_degrees))
 
     local gx0 = panelX + 1
-    local gy0 = panelY + headerH + 2
+    local gy0 = panelY + 1
     local gw0 = panelW - 2
-    local gh0 = panelH - headerH - 3
+    local gh0 = panelH - 2
     if gh0 < 40 then return end
 
     lcd.color(grid)
@@ -324,9 +327,22 @@ local function drawVisual()
         lcd.drawLine(gx, gy0, gx, gy0 + gh0)
     end
 
+    lcd.font(FONT_XS)
+    local liveText = string.format("Live  R:%0.1f  P:%0.1f  Y:%0.1f", state.live.roll, state.live.pitch, state.live.yaw)
+    local offsText = string.format("Offset R:%d  P:%d  Y:%d  Mag:%d", state.display.roll_degrees, state.display.pitch_degrees, state.display.yaw_degrees, state.display.mag_alignment)
+    local _, th1 = lcd.getTextSize(liveText)
+    local _, th2 = lcd.getTextSize(offsText)
+    local textPad = 2
+    local textX = gx0 + 8
+    local textY = gy0 + 6
+
+    lcd.color(mainColor)
+    lcd.drawText(textX, textY, liveText, LEFT)
+    lcd.drawText(textX, textY + th1 + textPad, offsText, LEFT)
+
     local cx = gx0 + floor(gw0 * 0.5)
-    local cy = gy0 + floor(gh0 * 0.62)
-    local scale = max(8, min(gw0, gh0) * 0.13)
+    local cy = gy0 + floor(gh0 * 0.63)
+    local scale = max(8, min(gw0, gh0) * 0.2112)
 
     -- Simplified heli wireframe for clearer orientation cues.
     local nose = {2.2, 0.0, 0.0}
@@ -345,33 +361,33 @@ local function drawVisual()
     local skidRF = {0.7, 0.58, -0.60}
     local skidRB = {-0.9, 0.58, -0.60}
 
-    local rotorA = {0.0, -1.6, 1.02}
-    local rotorB = {0.0, 1.6, 1.02}
-    local rotorC = {-1.6, 0.0, 1.02}
-    local rotorD = {1.6, 0.0, 1.02}
+    local rotorA = {0.0, -1.9, 1.02}
+    local rotorB = {0.0, 1.9, 1.02}
+    local rotorC = {-1.9, 0.0, 1.02}
+    local rotorD = {1.9, 0.0, 1.02}
 
     -- Rotor plane + mast
-    drawLine3D(rotorA, rotorB, cx, cy, scale, rr, pr, yr, disc)
-    drawLine3D(rotorC, rotorD, cx, cy, scale, rr, pr, yr, disc)
-    drawLine3D(top, mast, cx, cy, scale, rr, pr, yr, disc)
+    drawLine3D(rotorA, rotorB, cx, cy, scale, pitchR, yawR, rollR, disc)
+    drawLine3D(rotorC, rotorD, cx, cy, scale, pitchR, yawR, rollR, disc)
+    drawLine3D(top, mast, cx, cy, scale, pitchR, yawR, rollR, disc)
 
     -- Fuselage
-    drawLine3D(tail, nose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(lb, lf, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(rb, rf, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(lf, nose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(rf, nose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(lb, tail, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(rb, tail, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(top, nose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(top, tail, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(tail, nose, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(lb, lf, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(rb, rf, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(lf, nose, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(rf, nose, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(lb, tail, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(rb, tail, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(top, nose, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(top, tail, cx, cy, scale, pitchR, yawR, rollR, mainColor)
 
     -- Tail fin + skids
-    drawLine3D(finU, finD, cx, cy, scale, rr, pr, yr, accent)
-    drawLine3D(skidLF, skidLB, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(skidRF, skidRB, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(skidLF, skidRF, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(skidLB, skidRB, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(finU, finD, cx, cy, scale, pitchR, yawR, rollR, accent)
+    drawLine3D(skidLF, skidLB, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidRF, skidRB, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidLF, skidRF, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidLB, skidRB, cx, cy, scale, pitchR, yawR, rollR, mainColor)
 
 end
 
