@@ -68,6 +68,7 @@ return {
                 "mixer",
                 "esc_motors",
                 "accelerometer",
+                "alignment",
                 "telemetry",
                 "filters",
                 "power",
