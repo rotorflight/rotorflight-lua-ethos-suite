@@ -70,6 +70,7 @@ return {
                 "accelerometer",
                 "alignment",
                 "telemetry",
+                "ports",
                 "filters",
                 "power",
                 "radio_config",
