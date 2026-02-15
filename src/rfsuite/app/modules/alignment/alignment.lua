@@ -23,6 +23,8 @@ local radio = app.radio
 local MSP_ATTITUDE = 108
 local BASE_VIEW_PITCH_R = rad(-90)
 local BASE_VIEW_YAW_R = rad(90)
+local CAMERA_DIST = 7.0
+local CAMERA_NEAR_EPS = 0.25
 
 local state = {
     pageIdx = nil,
@@ -265,8 +267,9 @@ local function rotatePoint(x, y, z, pitchR, yawR, rollR)
 end
 
 local function projectPoint(px, py, pz, cx, cy, scale)
-    local d = 7.0
-    local f = d / (d - pz)
+    local denom = CAMERA_DIST - pz
+    if denom <= CAMERA_NEAR_EPS then return nil, nil end
+    local f = CAMERA_DIST / denom
     local sx = cx + (px * f * scale)
     local sy = cy - (py * f * scale)
     return sx, sy
@@ -275,8 +278,12 @@ end
 local function drawLine3D(a, b, cx, cy, scale, pitchR, yawR, rollR, color)
     local ax, ay, az = rotatePoint(a[1], a[2], a[3], pitchR, yawR, rollR)
     local bx, by, bz = rotatePoint(b[1], b[2], b[3], pitchR, yawR, rollR)
+    if (CAMERA_DIST - az) <= CAMERA_NEAR_EPS or (CAMERA_DIST - bz) <= CAMERA_NEAR_EPS then
+        return
+    end
     local x1, y1 = projectPoint(ax, ay, az, cx, cy, scale)
     local x2, y2 = projectPoint(bx, by, bz, cx, cy, scale)
+    if x1 == nil or x2 == nil then return end
     lcd.color(color)
     lcd.drawLine(x1, y1, x2, y2)
 end
