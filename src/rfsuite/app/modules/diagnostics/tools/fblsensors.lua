@@ -97,7 +97,7 @@ local function drawGraph()
     local lcdW, lcdH = lcd.getWindowSize()
 
     local gx = 0
-    local gy = math.floor(form.height() + 4)
+    local gy = math.floor(form.height() + 2)
     local gw = lcdW - 1
     local gh = lcdH - gy - 2
     if gh < 30 then return end
@@ -131,6 +131,14 @@ local function drawGraph()
     end
 
     local isDark = lcd.darkMode()
+
+    local summary = selectedSensorName() .. "  " .. state.lastValueText
+    if state.lastStateText and state.lastStateText ~= "-" then
+        summary = summary .. "  " .. state.lastStateText
+    end
+    lcd.color(isDark and lcd.RGB(230, 230, 230) or lcd.RGB(20, 20, 20))
+    lcd.drawText(px, py - 2, summary, LEFT)
+
     lcd.color(isDark and lcd.GREY(80) or lcd.GREY(180))
     for i = 0, 4 do
         local y = py + math.floor((ph * i) / 4 + 0.5)
@@ -188,14 +196,8 @@ local function openPage(opts)
         resetSamples()
     end)
 
-    line = form.addLine("Value")
-    app.formFields[2] = form.addStaticText(line, nil, state.lastValueText)
-
-    line = form.addLine("State")
-    app.formFields[3] = form.addStaticText(line, nil, state.lastStateText)
-
     line = form.addLine("Auto scale")
-    app.formFields[4] = form.addBooleanField(line, nil, function()
+    app.formFields[2] = form.addBooleanField(line, nil, function()
         return state.autoScale == true
     end, function(v)
         state.autoScale = (v == true)
@@ -208,9 +210,6 @@ local function updateSensorState()
     local key = selectedSensorKey()
     if not key then
         state.lastStateText = "-"
-        if app.formFields[3] then
-            app.formFields[3]:value(state.lastStateText)
-        end
         return
     end
 
@@ -218,14 +217,8 @@ local function updateSensorState()
     local ok = (src ~= nil and src:state() ~= false)
     if ok then
         state.lastStateText = "@i18n(app.modules.validate_sensors.ok)@"
-        if app.formFields[3] and app.formFields[3].color then app.formFields[3]:color(GREEN) end
     else
         state.lastStateText = "@i18n(app.modules.validate_sensors.invalid)@"
-        if app.formFields[3] and app.formFields[3].color then app.formFields[3]:color(RED) end
-    end
-
-    if app.formFields[3] then
-        app.formFields[3]:value(state.lastStateText)
     end
 end
 
@@ -233,19 +226,16 @@ local function sampleSensor()
     local key = selectedSensorKey()
     if not key then
         state.lastValueText = "-"
-        if app.formFields[2] then app.formFields[2]:value(state.lastValueText) end
         return
     end
 
     local value = tasks.telemetry.getSensor(key)
     if type(value) == "number" then
         addSample(value)
-        state.lastValueText = selectedSensorName() .. ": " .. formatValue(value)
+        state.lastValueText = formatValue(value)
     else
-        state.lastValueText = selectedSensorName() .. ": -"
+        state.lastValueText = "-"
     end
-
-    if app.formFields[2] then app.formFields[2]:value(state.lastValueText) end
 end
 
 local function wakeup()
@@ -263,8 +253,7 @@ end
 
 local function onToolMenu()
     resetSamples()
-    state.lastValueText = selectedSensorName() .. ": -"
-    if app.formFields[2] then app.formFields[2]:value(state.lastValueText) end
+    state.lastValueText = "-"
 end
 
 local function event(_, category, value)
