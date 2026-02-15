@@ -20,6 +20,8 @@ local min = math.min
 local formFields = app.formFields
 local radio = app.radio
 
+local MSP_ATTITUDE = 108
+
 local state = {
     pageIdx = nil,
     wakeupEnabled = false,
@@ -28,6 +30,12 @@ local state = {
     triggerSave = false,
     dirty = false,
     invalidateAt = 0,
+    attitudeSamplePeriod = 0.08,
+    lastAttitudeAt = 0,
+    pendingAttitude = false,
+    pendingAt = 0,
+    pendingTimeout = 1.0,
+    pollingEnabled = false,
     display = {
         roll_degrees = 0,
         pitch_degrees = 0,
@@ -82,12 +90,41 @@ local function markDirty()
     lcd.invalidate()
 end
 
-local function readLiveAttitude()
-    local telemetry = tasks and tasks.telemetry
-    if not telemetry or not telemetry.getSensor then return end
-    state.live.roll = tonumber(telemetry.getSensor("attroll")) or 0
-    state.live.pitch = tonumber(telemetry.getSensor("attpitch")) or 0
-    state.live.yaw = tonumber(telemetry.getSensor("attyaw")) or 0
+local function parseAttitude(buf)
+    local m = tasks and tasks.msp and tasks.msp.mspHelper
+    if not m then return false end
+
+    local rollRaw = m.readS16(buf)
+    local pitchRaw = m.readS16(buf)
+    local yawRaw = m.readS16(buf)
+    if rollRaw == nil or pitchRaw == nil or yawRaw == nil then return false end
+
+    -- MSP_ATTITUDE provides roll/pitch in 0.1 deg and heading/yaw in deg.
+    state.live.roll = (tonumber(rollRaw) or 0) / 10.0
+    state.live.pitch = (tonumber(pitchRaw) or 0) / 10.0
+    state.live.yaw = tonumber(yawRaw) or 0
+    return true
+end
+
+local function requestAttitude()
+    if state.pendingAttitude then return false end
+    if not (tasks and tasks.msp and tasks.msp.mspQueue) then return false end
+
+    state.pendingAttitude = true
+    state.pendingAt = os.clock()
+
+    return tasks.msp.mspQueue:add({
+        command = MSP_ATTITUDE,
+        uuid = "alignment.attitude",
+        processReply = function(_, buf)
+            parseAttitude(buf)
+            state.pendingAttitude = false
+        end,
+        errorHandler = function()
+            state.pendingAttitude = false
+        end,
+        simulatorResponse = {}
+    })
 end
 
 local function readData()
@@ -338,6 +375,10 @@ local function openPage(opts)
     state.saving = false
     state.dataLoaded = false
     state.invalidateAt = 0
+    state.lastAttitudeAt = 0
+    state.pendingAttitude = false
+    state.pendingAt = 0
+    state.pollingEnabled = false
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
@@ -470,11 +511,42 @@ local function wakeup()
     if state.triggerSave then
         state.triggerSave = false
         writeData()
+        return
     end
 
-    readLiveAttitude()
-
     local now = os.clock()
+    local dialogs = app and app.dialogs
+
+    -- Do not start movement polling until loaders are gone.
+    if not state.pollingEnabled then
+        if dialogs and (dialogs.progressDisplay or dialogs.saveDisplay) then
+            return
+        end
+        state.pollingEnabled = true
+        state.lastAttitudeAt = 0
+    end
+
+    -- Saving path: pause movement MSP calls completely.
+    if state.saving or (dialogs and dialogs.saveDisplay) then
+        state.pendingAttitude = false
+        if (now - state.invalidateAt) >= 0.15 then
+            state.invalidateAt = now
+            lcd.invalidate()
+        end
+        return
+    end
+
+    if state.pendingAttitude and (now - state.pendingAt) > state.pendingTimeout then
+        state.pendingAttitude = false
+    end
+
+    if (now - state.lastAttitudeAt) >= state.attitudeSamplePeriod then
+        state.lastAttitudeAt = now
+        if tasks and tasks.msp and tasks.msp.mspQueue and tasks.msp.mspQueue:isProcessed() then
+            requestAttitude()
+        end
+    end
+
     if (now - state.invalidateAt) >= 0.08 then
         state.invalidateAt = now
         lcd.invalidate()
