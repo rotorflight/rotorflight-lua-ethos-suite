@@ -73,6 +73,7 @@ return {
                 "power",
                 "radio_config",
                 "stats",
+                "beepers",
                 "blackbox",
                 "failsafe",
                 "adjustments",

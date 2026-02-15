@@ -2907,6 +2907,176 @@
           "translation": "Reading"
         }
       },
+      "beepers": {
+        "dshot_tone": {
+          "english": "ESC beacon tone",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "ESC beacon tone"
+        },
+        "field_acc_calibration": {
+          "english": "ACC calibration",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "ACC calibration"
+        },
+        "field_acc_calibration_fail": {
+          "english": "ACC calibration fail",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "ACC calibration fail"
+        },
+        "field_armed": {
+          "english": "Armed",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Armed"
+        },
+        "field_arming": {
+          "english": "Arming",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Arming"
+        },
+        "field_arming_gps_fix": {
+          "english": "Arming GPS fix",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Arming GPS fix"
+        },
+        "field_arming_gps_no_fix": {
+          "english": "Arming GPS no fix",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Arming GPS no fix"
+        },
+        "field_bat_crit_low": {
+          "english": "Battery critical low",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Battery critical low"
+        },
+        "field_bat_low": {
+          "english": "Battery low",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Battery low"
+        },
+        "field_blackbox_erase": {
+          "english": "Blackbox erase",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Blackbox erase"
+        },
+        "field_disarm_repeat": {
+          "english": "Disarm repeat",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Disarm repeat"
+        },
+        "field_disarming": {
+          "english": "Disarming",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Disarming"
+        },
+        "field_gps_status": {
+          "english": "GPS status",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "GPS status"
+        },
+        "field_gyro_calibrated": {
+          "english": "Gyro calibrated",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Gyro calibrated"
+        },
+        "field_ready_beep": {
+          "english": "Ready beep",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Ready beep"
+        },
+        "field_rx_lost": {
+          "english": "RX lost",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "RX lost"
+        },
+        "field_rx_lost_landing": {
+          "english": "RX lost landing",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "RX lost landing"
+        },
+        "field_rx_set": {
+          "english": "RX set",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "RX set"
+        },
+        "field_system_init": {
+          "english": "System init",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "System init"
+        },
+        "field_usb": {
+          "english": "USB",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "USB"
+        },
+        "help_p1": {
+          "english": "Configure analog beeper conditions and DShot beacon behavior.",
+          "max_length": 61,
+          "needs_translation": false,
+          "translation": "Configure analog beeper conditions and DShot beacon behavior."
+        },
+        "help_p2": {
+          "english": "ESC Beacon page controls beacon tone and conditions.",
+          "max_length": 52,
+          "needs_translation": false,
+          "translation": "ESC Beacon page controls beacon tone and conditions."
+        },
+        "loading": {
+          "english": "Loading beeper configuration...",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Loading beeper configuration..."
+        },
+        "menu_configuration": {
+          "english": "Configuration",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Configuration"
+        },
+        "menu_dshot": {
+          "english": "ESC Beacon",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "ESC Beacon"
+        },
+        "name": {
+          "english": "Beepers",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Beepers"
+        },
+        "saving": {
+          "english": "Saving Beepers...",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Saving Beepers..."
+        },
+        "status": {
+          "english": "Status",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Status"
+        }
+      },
       "blackbox": {
         "dataflash": {
           "english": "Dataflash",

@@ -9429,6 +9429,204 @@
           "reverse_text": false,
           "max_length": 29
         }
+      },
+      "beepers": {
+        "name": {
+          "english": "Beepers",
+          "translation": "Beepers",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "menu_configuration": {
+          "english": "Configuration",
+          "translation": "Configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "menu_dshot": {
+          "english": "DShot",
+          "translation": "DShot",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "help_p1": {
+          "english": "Configure analog beeper conditions and DShot beacon behavior.",
+          "translation": "Configure analog beeper conditions and DShot beacon behavior.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 61
+        },
+        "help_p2": {
+          "english": "DShot page controls beacon tone and conditions.",
+          "translation": "DShot page controls beacon tone and conditions.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 47
+        },
+        "loading": {
+          "english": "Loading beeper configuration...",
+          "translation": "Loading beeper configuration...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "saving": {
+          "english": "Saving Beepers...",
+          "translation": "Saving Beepers...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "dshot_tone": {
+          "english": "DShot beacon tone",
+          "translation": "DShot beacon tone",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "field_gyro_calibrated": {
+          "english": "Gyro calibrated",
+          "translation": "Gyro calibrated",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_rx_lost": {
+          "english": "RX lost",
+          "translation": "RX lost",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "field_rx_lost_landing": {
+          "english": "RX lost landing",
+          "translation": "RX lost landing",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_disarming": {
+          "english": "Disarming",
+          "translation": "Disarming",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "field_arming": {
+          "english": "Arming",
+          "translation": "Arming",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "field_arming_gps_fix": {
+          "english": "Arming GPS fix",
+          "translation": "Arming GPS fix",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "field_bat_crit_low": {
+          "english": "Battery critical low",
+          "translation": "Battery critical low",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "field_bat_low": {
+          "english": "Battery low",
+          "translation": "Battery low",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "field_gps_status": {
+          "english": "GPS status",
+          "translation": "GPS status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "field_rx_set": {
+          "english": "RX set",
+          "translation": "RX set",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "field_acc_calibration": {
+          "english": "ACC calibration",
+          "translation": "ACC calibration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_acc_calibration_fail": {
+          "english": "ACC calibration fail",
+          "translation": "ACC calibration fail",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "field_ready_beep": {
+          "english": "Ready beep",
+          "translation": "Ready beep",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "field_disarm_repeat": {
+          "english": "Disarm repeat",
+          "translation": "Disarm repeat",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "field_armed": {
+          "english": "Armed",
+          "translation": "Armed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "field_system_init": {
+          "english": "System init",
+          "translation": "System init",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "field_usb": {
+          "english": "USB",
+          "translation": "USB",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "field_blackbox_erase": {
+          "english": "Blackbox erase",
+          "translation": "Blackbox erase",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "field_arming_gps_no_fix": {
+          "english": "Arming GPS no fix",
+          "translation": "Arming GPS no fix",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        }
       }
     },
     "msg_loaded_task": {
