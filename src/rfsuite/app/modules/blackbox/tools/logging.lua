@@ -5,87 +5,296 @@
 
 local rfsuite = require("rfsuite")
 
-local LOG_FIELDS_START = 1
+local app = rfsuite.app
+local tasks = rfsuite.tasks
 
-local OFF_ON_OPTIONS = {"Off", "On"}
+local FEATURE_BITS = {
+    gps = 7,
+    governor = 26,
+    esc_sensor = 27
+}
 
-local apidata = {
-    api = {
-        [1] = "BLACKBOX_CONFIG"
+local state = {
+    loading = false,
+    loaded = false,
+    dirty = false,
+    pendingReads = 0,
+    featureBitmap = 0,
+    cfg = {
+        blackbox_supported = 0,
+        device = 0,
+        mode = 0,
+        denom = 8,
+        fields = 0,
+        initialEraseFreeSpaceKiB = 0,
+        rollingErase = 0,
+        gracePeriod = 5
     },
-    formdata = {
-        labels = {},
-        fields = {
-            {t = "Log Command", mspapi = 1, apikey = "fields->command", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Setpoint", mspapi = 1, apikey = "fields->setpoint", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Mixer", mspapi = 1, apikey = "fields->mixer", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log PID", mspapi = 1, apikey = "fields->pid", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Attitude", mspapi = 1, apikey = "fields->attitude", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Gyro Raw", mspapi = 1, apikey = "fields->gyroraw", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Gyro", mspapi = 1, apikey = "fields->gyro", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Acc", mspapi = 1, apikey = "fields->acc", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Mag", mspapi = 1, apikey = "fields->mag", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Alt", mspapi = 1, apikey = "fields->alt", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Battery", mspapi = 1, apikey = "fields->battery", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log RSSI", mspapi = 1, apikey = "fields->rssi", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log GPS", mspapi = 1, apikey = "fields->gps", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log RPM", mspapi = 1, apikey = "fields->rpm", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Motors", mspapi = 1, apikey = "fields->motors", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Servos", mspapi = 1, apikey = "fields->servos", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log VBEC", mspapi = 1, apikey = "fields->vbec", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log VBUS", mspapi = 1, apikey = "fields->vbus", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log Temps", mspapi = 1, apikey = "fields->temps", type = 1, table = OFF_ON_OPTIONS},
-            {t = "Log ESC", mspapi = 1, apikey = "fields->esc", type = 1, table = OFF_ON_OPTIONS, apiversiongte = 12.07},
-            {t = "Log BEC", mspapi = 1, apikey = "fields->bec", type = 1, table = OFF_ON_OPTIONS, apiversiongte = 12.07},
-            {t = "Log ESC2", mspapi = 1, apikey = "fields->esc2", type = 1, table = OFF_ON_OPTIONS, apiversiongte = 12.07},
-            {t = "Log Governor", mspapi = 1, apikey = "fields->governor", type = 1, table = OFF_ON_OPTIONS, apiversiongte = 12.09}
-        }
+    form = {
+        toggles = {}
     }
 }
 
-local function postLoad()
-    rfsuite.app.triggers.closeProgressLoader = true
+local FIELD_DEFS = {
+    {label = "Command", bit = 0},
+    {label = "Setpoint", bit = 1},
+    {label = "Mixer", bit = 2},
+    {label = "PID", bit = 3},
+    {label = "Attitude", bit = 4},
+    {label = "Gyro Raw", bit = 5},
+    {label = "Gyro", bit = 6},
+    {label = "Acc", bit = 7},
+    {label = "Mag", bit = 8},
+    {label = "Alt", bit = 9},
+    {label = "Battery", bit = 10},
+    {label = "RSSI", bit = 11},
+    {label = "GPS", bit = 12, featureBit = FEATURE_BITS.gps},
+    {label = "RPM", bit = 13},
+    {label = "Motors", bit = 14},
+    {label = "Servos", bit = 15},
+    {label = "VBEC", bit = 16},
+    {label = "VBUS", bit = 17},
+    {label = "Temps", bit = 18},
+    {label = "ESC", bit = 19, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
+    {label = "BEC", bit = 20, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
+    {label = "ESC2", bit = 21, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
+    {label = "Governor", bit = 22, apiversiongte = "12.09", featureBit = FEATURE_BITS.governor}
+}
+
+local function copyTable(src)
+    if type(src) ~= "table" then return src end
+    local dst = {}
+    for k, v in pairs(src) do
+        if type(v) == "table" then dst[k] = copyTable(v) else dst[k] = v end
+    end
+    return dst
+end
+
+local function hasBit(mask, bit)
+    local b = tonumber(bit or 0) or 0
+    return (((tonumber(mask or 0) or 0) & (1 << b)) ~= 0)
+end
+
+local function setBit(mask, bit, enable)
+    local m = tonumber(mask or 0) or 0
+    local b = tonumber(bit or 0) or 0
+    local f = (1 << b)
+    if enable then
+        return (m | f)
+    end
+    return (m & (~f))
+end
+
+local function supportsField(def)
+    if def.apiversiongte and not rfsuite.utils.apiVersionCompare(">=", def.apiversiongte) then
+        return false
+    end
+    if def.featureBit and not hasBit(state.featureBitmap, def.featureBit) then
+        return false
+    end
+    return true
+end
+
+local function markDirty()
+    state.dirty = true
+end
+
+local function canEdit()
+    local supported = tonumber(state.cfg.blackbox_supported or 0) == 1
+    local device = tonumber(state.cfg.device or 0) or 0
+    local mode = tonumber(state.cfg.mode or 0) or 0
+    return state.loaded and supported and device ~= 0 and mode ~= 0
+end
+
+local function updateSaveEnabled()
+    local save = app.formNavigationFields and app.formNavigationFields.save
+    if save and save.enable then save:enable(canEdit() and state.dirty) end
+end
+
+local function updateFieldEnabled()
+    local editable = canEdit()
+    for _, w in pairs(state.form.toggles) do
+        if w and w.enable then w:enable(editable) end
+    end
+    updateSaveEnabled()
+end
+
+local function renderLoading(message)
+    form.clear()
+    app.ui.fieldHeader("Blackbox / Logging")
+    local line = form.addLine("Status")
+    form.addStaticText(line, nil, message or "Loading...")
+end
+
+local function renderForm()
+    form.clear()
+    app.ui.fieldHeader("Blackbox / Logging")
+
+    state.form.toggles = {}
+
+    for i = 1, #FIELD_DEFS do
+        local def = FIELD_DEFS[i]
+        if supportsField(def) then
+            local line = form.addLine(def.label)
+            state.form.toggles[def.bit] = form.addBooleanField(line, nil, function()
+                return hasBit(state.cfg.fields, def.bit)
+            end, function(v)
+                state.cfg.fields = setBit(state.cfg.fields, def.bit, v)
+                markDirty()
+                updateSaveEnabled()
+            end)
+        end
+    end
+
+    updateFieldEnabled()
+    app.triggers.closeProgressLoader = true
+end
+
+local function syncSessionSnapshot()
+    if not rfsuite.session then return end
+    if not rfsuite.session.blackbox then rfsuite.session.blackbox = {} end
+    rfsuite.session.blackbox.feature = {enabledFeatures = state.featureBitmap or 0}
+    rfsuite.session.blackbox.config = copyTable(state.cfg)
+    rfsuite.session.blackbox.ready = tonumber(state.cfg.blackbox_supported or 0) == 1
+end
+
+local function onReadDone()
+    state.pendingReads = state.pendingReads - 1
+    if state.pendingReads <= 0 then
+        state.loading = false
+        state.loaded = true
+        syncSessionSnapshot()
+        renderForm()
+    end
+end
+
+local function loadFromSessionSnapshot()
+    local snapshot = rfsuite.session and rfsuite.session.blackbox or nil
+    if not snapshot or not snapshot.config then return false end
+
+    state.featureBitmap = tonumber(snapshot.feature and snapshot.feature.enabledFeatures or 0) or 0
+    local parsed = snapshot.config
+    state.cfg.blackbox_supported = tonumber(parsed.blackbox_supported or 0) or 0
+    state.cfg.device = tonumber(parsed.device or 0) or 0
+    state.cfg.mode = tonumber(parsed.mode or 0) or 0
+    state.cfg.denom = tonumber(parsed.denom or 1) or 1
+    state.cfg.fields = tonumber(parsed.fields or 0) or 0
+    state.cfg.initialEraseFreeSpaceKiB = tonumber(parsed.initialEraseFreeSpaceKiB or 0) or 0
+    state.cfg.rollingErase = tonumber(parsed.rollingErase or 0) or 0
+    state.cfg.gracePeriod = tonumber(parsed.gracePeriod or 0) or 0
+    return true
+end
+
+local function requestData(forceApiRead)
+    if state.loading then return end
+
+    state.loading = true
+    state.loaded = false
+    state.dirty = false
+
+    renderLoading("Loading blackbox logging...")
+
+    if not forceApiRead and loadFromSessionSnapshot() then
+        state.loading = false
+        state.loaded = true
+        renderForm()
+        return
+    end
+
+    state.pendingReads = 2
+
+    local FAPI = tasks.msp.api.load("FEATURE_CONFIG")
+    FAPI.setUUID("blackbox-logging-feature")
+    FAPI.setCompleteHandler(function()
+        local d = FAPI.data()
+        local parsed = d and d.parsed or nil
+        state.featureBitmap = tonumber(parsed and parsed.enabledFeatures or 0) or 0
+        onReadDone()
+    end)
+    FAPI.setErrorHandler(function() onReadDone() end)
+    FAPI.read()
+
+    local BAPI = tasks.msp.api.load("BLACKBOX_CONFIG")
+    BAPI.setUUID("blackbox-logging-config")
+    BAPI.setCompleteHandler(function()
+        local d = BAPI.data()
+        local parsed = d and d.parsed or nil
+        if parsed then
+            state.cfg.blackbox_supported = tonumber(parsed.blackbox_supported or 0) or 0
+            state.cfg.device = tonumber(parsed.device or 0) or 0
+            state.cfg.mode = tonumber(parsed.mode or 0) or 0
+            state.cfg.denom = tonumber(parsed.denom or 1) or 1
+            state.cfg.fields = tonumber(parsed.fields or 0) or 0
+            state.cfg.initialEraseFreeSpaceKiB = tonumber(parsed.initialEraseFreeSpaceKiB or 0) or 0
+            state.cfg.rollingErase = tonumber(parsed.rollingErase or 0) or 0
+            state.cfg.gracePeriod = tonumber(parsed.gracePeriod or 0) or 0
+        end
+        onReadDone()
+    end)
+    BAPI.setErrorHandler(function() onReadDone() end)
+    BAPI.read()
+end
+
+local function openPage()
+    requestData(false)
+end
+
+local function onSaveMenu()
+    if not canEdit() or not state.dirty then return end
+
+    app.ui.progressDisplaySave("Saving Blackbox...")
+
+    local API = tasks.msp.api.load("BLACKBOX_CONFIG")
+    API.setUUID("blackbox-logging-write")
+    API.setErrorHandler(function()
+        app.triggers.closeSave = true
+        app.triggers.showSaveArmedWarning = true
+    end)
+    API.setCompleteHandler(function()
+        state.dirty = false
+        syncSessionSnapshot()
+        updateSaveEnabled()
+        app.utils.settingsSaved()
+    end)
+
+    API.setValue("device", state.cfg.device)
+    API.setValue("mode", state.cfg.mode)
+    API.setValue("denom", state.cfg.denom)
+    API.setValue("fields", state.cfg.fields)
+    API.setValue("initialEraseFreeSpaceKiB", state.cfg.initialEraseFreeSpaceKiB)
+    API.setValue("rollingErase", state.cfg.rollingErase)
+    API.setValue("gracePeriod", state.cfg.gracePeriod)
+    API.write()
+end
+
+local function onReloadMenu()
+    requestData(true)
 end
 
 local function wakeup()
-    local values = rfsuite.tasks.msp.api.apidata.values
-    local cfg = values and values.BLACKBOX_CONFIG
-    if not cfg and rfsuite.session and rfsuite.session.blackbox then
-        cfg = rfsuite.session.blackbox.config
-    end
-    local blackboxSupported = cfg and tonumber(cfg.blackbox_supported or 0) == 1
-    local device = cfg and tonumber(cfg.device or 0) or 0
-    local mode = cfg and tonumber(cfg.mode or 0) or 0
-
-    local enabled = blackboxSupported and device ~= 0 and mode ~= 0
-
-    if rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields.save and rfsuite.app.formNavigationFields.save.enable then
-        rfsuite.app.formNavigationFields.save:enable(enabled)
-    end
-
-    for i = LOG_FIELDS_START, #apidata.formdata.fields do
-        local f = apidata.formdata.fields[i]
-        local widget = rfsuite.app.formFields[i]
-        if widget and widget.enable and f then
-            local valid = (f.apiversion == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversion))
-                and (f.apiversionlt == nil or rfsuite.utils.apiVersionCompare("<", f.apiversionlt))
-                and (f.apiversiongt == nil or rfsuite.utils.apiVersionCompare(">", f.apiversiongt))
-                and (f.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", f.apiversionlte))
-                and (f.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversiongte))
-            widget:enable(enabled and valid)
-        end
-    end
+    updateFieldEnabled()
 end
 
 local function event(widget, category, value)
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+        app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
         return true
     end
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+    app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
 end
 
-return {apidata = apidata, eepromWrite = true, reboot = false, postLoad = postLoad, wakeup = wakeup, event = event, onNavMenu = onNavMenu, API = {}, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}
+return {
+    openPage = openPage,
+    wakeup = wakeup,
+    onSaveMenu = onSaveMenu,
+    onReloadMenu = onReloadMenu,
+    event = event,
+    onNavMenu = onNavMenu,
+    eepromWrite = true,
+    reboot = false,
+    navButtons = {menu = true, save = true, reload = true, tool = false, help = true},
+    API = {}
+}
