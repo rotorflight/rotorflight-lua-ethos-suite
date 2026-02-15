@@ -935,6 +935,26 @@ function ui._prepareFieldLine(f, radioText)
     return posField
 end
 
+function ui._shouldManageDirtySave()
+    if app._pageUsesCustomOpen then return false end
+    if not (app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields) then return false end
+    if app.Page.disableSaveUntilDirty == false then return false end
+    local save = app.formNavigationFields and app.formNavigationFields.save
+    return save and save.enable
+end
+
+function ui.setPageDirty(isDirty)
+    app.pageDirty = isDirty and true or false
+    if ui._shouldManageDirtySave() then
+        app.formNavigationFields.save:enable(app.pageDirty)
+    end
+end
+
+function ui.markPageDirty()
+    if app.pageDirty then return end
+    ui.setPageDirty(true)
+end
+
 function ui.fieldBoolean(i,lf)
     local page = app.Page
     local fields = page and page.apidata and page.apidata.formdata.fields or lf
@@ -964,6 +984,7 @@ function ui.fieldBoolean(i,lf)
     end
 
     formFields[i] = form.addBooleanField(formLines[app.formLineCnt], posField, function() return decode() end, function(valueBool)
+        ui.markPageDirty()
         local value = encode(valueBool == true)
         if f.postEdit then f.postEdit(page, value) end
         if f.onChange then f.onChange(page, value) end
@@ -1004,6 +1025,7 @@ function ui.fieldChoice(i,lf)
         if not active then return nil end
         return app.utils.getFieldValue(active)
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page, value) end
         if f.onChange then f.onChange(page, value) end
         f.value = app.utils.saveFieldValue(fields[i], value)
@@ -1046,6 +1068,7 @@ function ui.fieldSlider(i,lf)
         end
         return app.utils.getFieldValue(fields[i])
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(fields[i], value)
@@ -1096,6 +1119,7 @@ function ui.fieldNumber(i,lf)
         if not active then return nil end
         return app.utils.getFieldValue(active)
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
@@ -1163,6 +1187,7 @@ function ui.fieldSource(i,lf)
         if not active then return nil end
         return app.utils.getFieldValue(active)
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
@@ -1206,6 +1231,7 @@ function ui.fieldSensor(i,lf)
         if not active then return nil end
         return app.utils.getFieldValue(active)
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
@@ -1254,6 +1280,7 @@ function ui.fieldColor(i,lf)
             return color
         end
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
@@ -1297,6 +1324,7 @@ function ui.fieldSwitch(i,lf)
         if not active then return nil end
         return app.utils.getFieldValue(active)
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
@@ -1345,6 +1373,7 @@ function ui.fieldText(i,lf)
         if not active then return nil end
         return app.utils.getFieldValue(active)
     end, function(value)
+        ui.markPageDirty()
         if f.postEdit then f.postEdit(page) end
         if f.onChange then f.onChange(page) end
         f.value = app.utils.saveFieldValue(fields[i], value)
@@ -1466,6 +1495,7 @@ function ui.openPage(opts)
     app.fieldHelpTxt = helpData and helpData.fields or nil
 
     if app.Page.openPage then
+        app._pageUsesCustomOpen = true
 
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
@@ -1474,6 +1504,7 @@ function ui.openPage(opts)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
     end
+    app._pageUsesCustomOpen = false
 
     app.lastIdx = idx
     app.lastTitle = title
@@ -1600,6 +1631,9 @@ function ui.navigationButtons(x, y, w, h)
                 end
             end
         })
+        if ui._shouldManageDirtySave() then
+            ui.setPageDirty(false)
+        end
     end
 
     if navButtons.reload == true then
@@ -2083,6 +2117,7 @@ function ui.saveSettings()
                     app.triggers.closeSaveFake = true
                     app.triggers.isSaving = false
                 else
+                    ui.setPageDirty(false)
                     if app.Page.postSave then app.Page.postSave(app.Page) end
                     app.utils.settingsSaved()
                 end

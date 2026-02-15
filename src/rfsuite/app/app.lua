@@ -212,6 +212,19 @@ function app.event(widget, category, value, x, y)
 
         if value == KEY_ENTER_LONG then
             if app.Page.navButtons and app.Page.navButtons.save == false then return true end
+
+            -- Block long-press save when page is not dirty on standard API pages.
+            if app.Page and app.Page.canSave and app.Page.canSave(app.Page) == false then
+                system.killEvents(KEY_ENTER_BREAK)
+                return true
+            end
+            if not app._pageUsesCustomOpen and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
+                if app.pageDirty ~= true then
+                    system.killEvents(KEY_ENTER_BREAK)
+                    return true
+                end
+            end
+
             log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
