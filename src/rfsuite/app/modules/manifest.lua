@@ -73,6 +73,7 @@ return {
                 "power",
                 "radio_config",
                 "stats",
+                "blackbox",
                 "failsafe",
                 "adjustments",
                 {"governor", script_by_mspversion = {
