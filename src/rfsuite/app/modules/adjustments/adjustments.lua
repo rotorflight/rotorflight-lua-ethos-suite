@@ -24,6 +24,8 @@ local ADJ_STEP_MIN = 0
 local ADJ_STEP_MAX = 255
 local ADJUSTMENT_RANGE_MAX = 42
 local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
+local USE_MSP_FUNCTION_NAME_PREFETCH = false -- gate the prefetch call until its in the firmware
+local MSP_FUNCTION_NAME_PREFETCH_MIN_API = "12.09"
 
 local ADJUST_FUNCTIONS = {
     {id = 0, name = "None", min = 0, max = 100},
@@ -134,7 +136,8 @@ local state = {
     dirtySlots = {},
     loadedSlots = {},
     pendingSlotLoads = {},
-    supportsAdjustmentFunctions = nil
+    supportsAdjustmentFunctions = nil,
+    showFunctionNamesInRangeSelector = false
 }
 
 local function setPendingFocus(key)
@@ -335,6 +338,7 @@ end
 
 local function buildRangeSlotLabel(slotIndex, adjRange)
     local label = "@i18n(app.modules.adjustments.range)@ " .. tostring(slotIndex)
+    if not state.showFunctionNamesInRangeSelector then return label end
     if not hasAssignedFunction(adjRange) then return label end
 
     local fnId = math.floor(adjRange.adjFunction or 0)
@@ -683,6 +687,11 @@ local function readAdjustmentFunctions(onComplete, onError)
     API.read()
 end
 
+local function shouldUseMspFunctionNamePrefetch()
+    if not USE_MSP_FUNCTION_NAME_PREFETCH then return false end
+    return rfsuite.utils.apiVersionCompare(">=", MSP_FUNCTION_NAME_PREFETCH_MIN_API)
+end
+
 local function applyAdjustmentFunctions(functions)
     if type(functions) ~= "table" then return end
     local maxSlots = math.min(#state.adjustmentRanges, ADJUSTMENT_RANGE_MAX)
@@ -730,6 +739,7 @@ local function readAdjustmentRanges()
             state.loading = false
             state.loaded = true
             state.readFallbackLocked = false
+            state.showFunctionNamesInRangeSelector = false
             state.dirty = false
             state.dirtySlots = {}
             state.loadedSlots = {}
@@ -758,6 +768,7 @@ local function readAdjustmentRanges()
             state.loading = false
             state.loaded = true
             state.readFallbackLocked = true
+            state.showFunctionNamesInRangeSelector = false
             state.dirty = false
             state.dirtySlots = {}
             state.loadedSlots = {}
@@ -780,6 +791,7 @@ local function readAdjustmentRanges()
     state.selectedRangeIndex = clamp(state.selectedRangeIndex, 1, math.max(#state.adjustmentRanges, 1))
     state.loadedSlots = {}
     state.pendingSlotLoads = {}
+    state.showFunctionNamesInRangeSelector = false
 
     local function finalizeInitialLoad()
         state.loading = false
@@ -794,12 +806,19 @@ local function readAdjustmentRanges()
     end
 
     requestSlotLoad(state.selectedRangeIndex, function()
+        if not shouldUseMspFunctionNamePrefetch() then
+            finalizeInitialLoad()
+            return
+        end
+
         -- Optional acceleration path: prefill slot labels by function-id only.
         -- If firmware does not support this command, continue normally.
         readAdjustmentFunctions(function(functions)
             applyAdjustmentFunctions(functions)
+            state.showFunctionNamesInRangeSelector = true
             finalizeInitialLoad()
         end, function()
+            state.showFunctionNamesInRangeSelector = false
             finalizeInitialLoad()
         end)
     end, function()
