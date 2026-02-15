@@ -8425,6 +8425,27 @@
           "reverse_text": false,
           "translation": "其他"
         },
+        "panel_display": {
+          "english": "Display",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Display"
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "max_length": 11,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Integration"
+        },
+        "panel_safety_prompts": {
+          "english": "Safety & Prompts",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Safety & Prompts"
+        },
         "pid_profile": {
           "english": "PID Profile",
           "max_length": 11,
@@ -8571,6 +8592,20 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "DEBUG"
+        },
+        "txt_developer": {
+          "english": "Developer",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Developer"
+        },
+        "txt_developer_tools": {
+          "english": "Developer Tools",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Developer Tools"
         },
         "txt_development": {
           "english": "Development",

@@ -36,66 +36,58 @@ local function openPage(opts)
     local saved = rfsuite.preferences.general or {}
     for k, v in pairs(saved) do config[k] = v end
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_iconsize)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.txt_text)@", 0}, {"@i18n(app.modules.settings.txt_small)@", 1}, {"@i18n(app.modules.settings.txt_large)@", 2}}, function() return config.iconsize ~= nil and config.iconsize or 1 end, function(newValue) config.iconsize = newValue end)
+    local function addFieldLine(container, label)
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        local line = container:addLine(label)
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = line
+        return line
+    end
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_hs_loader)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.txt_hs_loader_fastclose)@", 0}, {"@i18n(app.modules.settings.txt_hs_loader_wait)@", 1}}, function() return config.hs_loader ~= nil and config.hs_loader or 1 end, function(newValue) config.hs_loader = newValue end)
+    local displayPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_display)@")
+    local safetyPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_safety_prompts)@")
+    local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
+    local developerPanel = form.addExpansionPanel("@i18n(app.modules.settings.txt_development)@")
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.dashboard_loader_loader_style_select)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.loader_style_small)@", 0}, {"@i18n(app.modules.settings.loader_style_medium)@", 1}, {"@i18n(app.modules.settings.loader_style_large)@", 2}}, function() return config.theme_loader ~= nil and config.theme_loader or 1 end, function(newValue) config.theme_loader = newValue end)
+    local line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_iconsize)@")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.txt_text)@", 0}, {"@i18n(app.modules.settings.txt_small)@", 1}, {"@i18n(app.modules.settings.txt_large)@", 2}}, function() return config.iconsize ~= nil and config.iconsize or 1 end, function(newValue) config.iconsize = newValue end)
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_batttype)@")
+    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_batttype)@")
     local txbattChoices = {{"@i18n(app.modules.settings.txt_battdef)@", 0}, {"@i18n(app.modules.settings.txt_batttext)@", 1}, {"@i18n(app.modules.settings.txt_battdig)@", 2}}
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, txbattChoices, function() return config.txbatt_type ~= nil and config.txbatt_type or 0 end, function(newValue)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, txbattChoices, function() return config.txbatt_type ~= nil and config.txbatt_type or 0 end, function(newValue)
         config.txbatt_type = newValue
         if rfsuite.preferences and rfsuite.preferences.general then rfsuite.preferences.general.txbatt_type = newValue end
     end)
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_save_confirm)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.save_confirm or false end, function(newValue) config.save_confirm = newValue end)
+    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.dashboard_loader_loader_style_select)@")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.loader_style_small)@", 0}, {"@i18n(app.modules.settings.loader_style_medium)@", 1}, {"@i18n(app.modules.settings.loader_style_large)@", 2}}, function() return config.theme_loader ~= nil and config.theme_loader or 1 end, function(newValue) config.theme_loader = newValue end)
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_save_armed_warning)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
+    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_hs_loader)@")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.txt_hs_loader_fastclose)@", 0}, {"@i18n(app.modules.settings.txt_hs_loader_wait)@", 1}}, function() return config.hs_loader ~= nil and config.hs_loader or 1 end, function(newValue) config.hs_loader = newValue end)
+
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_confirm)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.save_confirm or false end, function(newValue) config.save_confirm = newValue end)
+
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_armed_warning)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.save_armed_warning == nil then return true end
         return config.save_armed_warning
     end, function(newValue) config.save_armed_warning = newValue end)
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_reload_confirm)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.reload_confirm or false end, function(newValue) config.reload_confirm = newValue end)
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_reload_confirm)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.reload_confirm or false end, function(newValue) config.reload_confirm = newValue end)
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_mspstatusdialog)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
+    line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_syncname)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
+
+    line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_mspstatusdialog)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.mspstatusdialog == nil then return true end
         return config.mspstatusdialog
     end, function(newValue) config.mspstatusdialog = newValue end)
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_development)@ @i18n(app.menu_section_tools)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.developer_tools or false end, function(newValue) config.developer_tools = newValue end)
-
-
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_syncname)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
+    line = addFieldLine(developerPanel, "@i18n(app.modules.settings.txt_developer_tools)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.developer_tools or false end, function(newValue) config.developer_tools = newValue end)
 
 
     for i, field in ipairs(rfsuite.app.formFields) do if field and field.enable then field:enable(true) end end

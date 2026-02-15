@@ -107,17 +107,17 @@ return {
             offline = true
         },
         {
-            title = "Developer",
-            entry = "developer",
-            image = "app/modules/developer/developer.png",
-            developer = true
-        },
-        {
             title = "@i18n(app.modules.diagnostics.name)@",
             entry = "diagnostics",
             image = "app/modules/diagnostics/diagnostics.png",
             bgtask = true,
             offline = true
+        },
+        {
+            title = "@i18n(app.modules.settings.txt_developer)@",
+            entry = "developer",
+            image = "app/modules/developer/developer.png",
+            developer = true
         }
     }
 }

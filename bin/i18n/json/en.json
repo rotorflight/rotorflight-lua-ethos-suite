@@ -7372,11 +7372,41 @@
           "translation": "Development",
           "max_length": 11
         },
+        "txt_developer_tools": {
+          "english": "Developer Tools",
+          "needs_translation": false,
+          "translation": "Developer Tools",
+          "max_length": 15
+        },
+        "txt_developer": {
+          "english": "Developer",
+          "needs_translation": false,
+          "translation": "Developer",
+          "max_length": 9
+        },
         "txt_general": {
           "english": "General",
           "needs_translation": false,
           "translation": "General",
           "max_length": 7
+        },
+        "panel_display": {
+          "english": "Display",
+          "needs_translation": false,
+          "translation": "Display",
+          "max_length": 7
+        },
+        "panel_safety_prompts": {
+          "english": "Safety & Prompts",
+          "needs_translation": false,
+          "translation": "Safety & Prompts",
+          "max_length": 16
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "needs_translation": false,
+          "translation": "Integration",
+          "max_length": 11
         },
         "txt_hs_loader": {
           "english": "Progress Loader",

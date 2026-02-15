@@ -8579,12 +8579,47 @@
           "translation": "开发",
           "reverse_text": false
         },
+        "txt_developer_tools": {
+          "english": "Developer Tools",
+          "translation": "Developer Tools",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "txt_developer": {
+          "english": "Developer",
+          "translation": "Developer",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
         "txt_general": {
           "english": "General",
           "max_length": 7,
           "needs_translation": false,
           "translation": "常规",
           "reverse_text": false
+        },
+        "panel_display": {
+          "english": "Display",
+          "translation": "Display",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "panel_safety_prompts": {
+          "english": "Safety & Prompts",
+          "translation": "Safety & Prompts",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "translation": "Integration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
         },
         "txt_hs_loader": {
           "english": "Progress Loader",
