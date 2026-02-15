@@ -9,7 +9,6 @@ local arg = {...}
 local config = arg[1]
 
 local logger = {}
-logger.pauseDepth = 0
 
 -- Localize globals
 local os_clock = os.clock
@@ -27,14 +26,10 @@ local function getLogPrefix()
 end
 logger.queue.config.prefix = getLogPrefix
 
-local function syncDeveloperLoggingConfig()
-    local dev = rfsuite.preferences and rfsuite.preferences.developer
-    local mode = dev and dev.loglevel or "off"
-    logger.queue.config.enabled = (mode ~= "off")
-    logger.queue.config.log_to_file = (mode == "debug")
+if rfsuite.preferences and rfsuite.preferences.developer then
+    logger.queue.config.min_print_level = rfsuite.preferences.developer.loglevel
+    logger.queue.config.log_to_file = (rfsuite.preferences.developer.loglevel == "debug")
 end
-
-syncDeveloperLoggingConfig()
 
 function logger.wakeup()
     local session = rfsuite.session
@@ -47,27 +42,11 @@ function logger.reset()
     logger.queue.reset()
 end
 
-function logger.add(message, route)
-    if (logger.pauseDepth or 0) > 0 then return false end
-    syncDeveloperLoggingConfig()
-    logger.queue.add(message, route)
-    return true
-end
-
-function logger.pause()
-    logger.pauseDepth = (logger.pauseDepth or 0) + 1
-    return logger.pauseDepth
-end
-
-function logger.resume()
-    local depth = logger.pauseDepth or 0
-    if depth > 0 then depth = depth - 1 end
-    logger.pauseDepth = depth
-    return depth == 0
-end
-
-function logger.isPaused()
-    return (logger.pauseDepth or 0) > 0
+function logger.add(message, level)
+    local dev = rfsuite.preferences.developer
+    logger.queue.config.min_print_level = dev.loglevel
+    logger.queue.config.log_to_file = (dev.loglevel == "debug")
+    logger.queue.add(message, level)
 end
 
 function logger.getConnectLines(n)
