@@ -33,6 +33,7 @@ local function openPage(opts)
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
 
+    config = {}
     local saved = rfsuite.preferences.general or {}
     for k, v in pairs(saved) do config[k] = v end
 
@@ -54,10 +55,7 @@ local function openPage(opts)
 
     line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_batttype)@")
     local txbattChoices = {{"@i18n(app.modules.settings.txt_battdef)@", 0}, {"@i18n(app.modules.settings.txt_batttext)@", 1}, {"@i18n(app.modules.settings.txt_battdig)@", 2}}
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, txbattChoices, function() return config.txbatt_type ~= nil and config.txbatt_type or 0 end, function(newValue)
-        config.txbatt_type = newValue
-        if rfsuite.preferences and rfsuite.preferences.general then rfsuite.preferences.general.txbatt_type = newValue end
-    end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, txbattChoices, function() return config.txbatt_type ~= nil and config.txbatt_type or 0 end, function(newValue) config.txbatt_type = newValue end)
 
     line = addFieldLine(displayPanel, "@i18n(app.modules.settings.dashboard_loader_loader_style_select)@")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.loader_style_small)@", 0}, {"@i18n(app.modules.settings.loader_style_medium)@", 1}, {"@i18n(app.modules.settings.loader_style_large)@", 2}}, function() return config.theme_loader ~= nil and config.theme_loader or 1 end, function(newValue) config.theme_loader = newValue end)
@@ -111,7 +109,7 @@ local function onSaveMenu()
         return true
     end
 
-    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+    if config.save_confirm == false or config.save_confirm == "false" then
         doSave()
         return true
     end    

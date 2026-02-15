@@ -28,7 +28,9 @@ local function openPage(opts)
 
     local formFieldCount = 0
 
-    settings = rfsuite.preferences.developer
+    settings = {}
+    local saved = rfsuite.preferences.developer or {}
+    for k, v in pairs(saved) do settings[k] = v end
 
 
     formFieldCount = formFieldCount + 1
@@ -117,6 +119,9 @@ local function onSaveMenu()
     local function doSave()
         local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        for key in pairs(rfsuite.preferences.developer) do
+            if settings[key] == nil then rfsuite.preferences.developer[key] = nil end
+        end
         for key, value in pairs(settings) do rfsuite.preferences.developer[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
 
