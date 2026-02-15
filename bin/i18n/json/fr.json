@@ -3889,8 +3889,8 @@
           "reverse_text": false
         },
         "name": {
-          "english": "ESC/Motors",
-          "translation": "ESC/Moteurs",
+          "english": "ESC & Motors",
+          "translation": "ESC & Moteurs",
           "needs_translation": false,
           "max_length": 10,
           "reverse_text": false

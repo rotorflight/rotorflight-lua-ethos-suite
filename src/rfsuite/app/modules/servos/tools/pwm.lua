@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
 local servoTable = {}
@@ -13,6 +14,7 @@ servoTable['sections'] = {}
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
+local onNavMenu
 
 local pwmServoCount 
 local busServoOffset = 18
@@ -152,7 +154,7 @@ local function openPage(opts)
     local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@ / @i18n(app.modules.servos.pwm)@")
+    rfsuite.app.ui.fieldHeader(title or "@i18n(app.modules.servos.name)@ / @i18n(app.modules.servos.pwm)@")
 
     local buttonW
     local buttonH
@@ -235,7 +237,13 @@ local function openPage(opts)
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
 
-                    rfsuite.app.ui.openPage({idx = pidx, title = pvalue.title, script = "servos/tools/pwm_tool.lua", servoTable = servoTable})
+                    rfsuite.app.ui.openPage({
+                        idx = pidx,
+                        title = pvalue.title,
+                        script = "servos/tools/pwm_tool.lua",
+                        servoTable = servoTable,
+                        returnContext = {idx = pidx, title = title, script = script}
+                    })
                 end
             })
 
@@ -259,7 +267,9 @@ local function openPage(opts)
 end
 
 
-local function event(widget, category, value, x, y) end
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
+end
 
 local function onToolMenu(self)
 
@@ -306,7 +316,7 @@ local function wakeup()
 
     -- go back to main as this tool is compromised 
     if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end
 
@@ -367,7 +377,7 @@ local function servoCenterFocusAllOff(self)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
-local function onNavMenu(self)
+onNavMenu = function(self)
 
     if rfsuite.session.servoOverride == true or inFocus == true then
         rfsuite.app.audio.playServoOverideDisable = true
@@ -378,7 +388,8 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-     rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.servos.name)@", script = "servos/servos.lua"})
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 
 end
 

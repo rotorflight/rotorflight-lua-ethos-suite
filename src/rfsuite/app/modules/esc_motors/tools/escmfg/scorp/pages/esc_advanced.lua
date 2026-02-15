@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 
 local folder = "scorp"
 
@@ -27,20 +28,7 @@ local apidata = {
 
 local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 
-local function onNavMenu(self)
-    rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage({idx = pidx, title = folder, script = "esc_motors/tools/esc_tool.lua"})
-end
-
-local function event(widget, category, value, x, y)
-
-    if category == 5 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pidx, title = folder, script = "esc_motors/tools/esc_tool.lua"})
-        return true
-    end
-
-    return false
-end
+local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 
 return {
     apidata = apidata,
@@ -53,9 +41,9 @@ return {
         return payload
     end,
     postLoad = postLoad,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
-    onNavMenu = onNavMenu,
-    event = event,
+    navButtons = navHandlers.navButtons,
+    onNavMenu = navHandlers.onNavMenu,
+    event = navHandlers.event,
     pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.advanced)@",
     headerLine = rfsuite.escHeaderLineText,
     extraMsgOnSave = "@i18n(app.modules.esc_tools.mfg.scorp.extra_msg_save)@"

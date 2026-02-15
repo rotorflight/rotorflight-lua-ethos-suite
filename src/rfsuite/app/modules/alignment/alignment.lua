@@ -9,6 +9,12 @@ local app = rfsuite.app
 local tasks = rfsuite.tasks
 local prefs = rfsuite.preferences
 local session = rfsuite.session
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({
+    defaultSection = "hardware",
+    showProgress = true,
+    progressSpeed = rfsuite.app.loaderSpeed.FAST
+})
 
 local sin = math.sin
 local cos = math.cos
@@ -697,6 +703,7 @@ end
 local function openPage(opts)
     state.wakeupEnabled = false
     state.pageIdx = opts.idx
+    local title = opts.title or "@i18n(app.modules.alignment.name)@"
 
     app.lastIdx = opts.idx
     app.lastTitle = opts.title
@@ -722,7 +729,7 @@ local function openPage(opts)
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     form.clear()
-    app.ui.fieldHeader("@i18n(app.modules.alignment.name)@")
+    app.ui.fieldHeader(title)
 
     local line1 = form.addLine("")
     local rowY = radio.linePaddingTop
@@ -931,9 +938,7 @@ local function paint()
 end
 
 local function onNavMenu()
-    app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    app.ui.openMainMenuSub("hardware")
-    return true
+    return navHandlers.onNavMenu()
 end
 
 local function event(_, category, value, x, y)
@@ -942,10 +947,7 @@ local function event(_, category, value, x, y)
         return true
     end
 
-    if (category == EVT_CLOSE and value == 0) or value == 35 then
-        app.ui.openMainMenuSub("hardware")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {

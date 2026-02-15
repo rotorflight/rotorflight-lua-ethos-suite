@@ -178,10 +178,11 @@ end
 
 local function wakeup()
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-        if rfsuite.session.activeRateProfile ~= nil then
-            if rfsuite.app.formFields['title'] then
-                rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-            end
+        local activeRateProfile = rfsuite.session and rfsuite.session.activeRateProfile
+        if activeRateProfile ~= nil and rfsuite.app.formFields['title'] then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            baseTitle = tostring(baseTitle):gsub("%s+#%d+$", "")
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeRateProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
         end
     end
 end

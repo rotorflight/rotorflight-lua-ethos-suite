@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local apidata = {
     api = {
@@ -24,7 +25,7 @@ local apidata = {
 
 local function onNavMenu(self)
 
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
+    pageRuntime.openMenuContext()
 
 end
 

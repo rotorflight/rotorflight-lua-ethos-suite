@@ -6,10 +6,8 @@
 local rfsuite = require("rfsuite")
 
 local pages = {}
--- Manifest is the single source of truth for menu structure.
 local manifest = loadfile("app/modules/manifest.lua")()
 local sections = {}
-local missingModules = {}
 
 local function isTruthy(value)
     return value == true or value == "true" or value == 1 or value == "1"
@@ -32,136 +30,87 @@ local function resolveLoaderSpeed(value)
     return nil
 end
 
--- Load a module's init.lua to retrieve script/title/order/etc.
--- Returns a table with `folder` set, or nil on error.
-local function loadModuleConfig(folder)
-    local init_path = "app/modules/" .. folder .. "/init.lua"
-    local func, err = loadfile(init_path)
-    if not func then
-        rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
-        missingModules[#missingModules + 1] = folder
-        return nil
-    end
-
-    local mconfig = func()
-    if type(mconfig) ~= "table" or not mconfig.script then
-        rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
-        missingModules[#missingModules + 1] = folder
-        return nil
-    end
-
-    mconfig.folder = folder
-    return mconfig
-end
-
--- Fill in missing keys from src without overriding explicit manifest values.
--- This lets the manifest stay minimal: when a module's init.lua changes (title,
--- script, offline flags, etc.), the main menu inherits those updates unless the
--- manifest intentionally overrides them. Only change this if you want the
--- manifest to become the authoritative source for those fields.
-local function applyDefaults(dest, src, keys)
-    for _, k in ipairs(keys) do
-        if dest[k] == nil and src[k] ~= nil then dest[k] = src[k] end
-    end
-end
-
--- Build `sections` (main menu entries) and `pages` (submenu items) from manifest.
-for _, section in ipairs(manifest.sections or {}) do
+local function cloneShallow(src)
     local out = {}
-    for k, v in pairs(section) do
-        if k ~= "entry" and k ~= "pages" then out[k] = v end
+    for k, v in pairs(src or {}) do out[k] = v end
+    return out
+end
+
+local showDeveloperModules = developerToolsEnabled()
+
+local function includeByDeveloper(spec)
+    local isDev = isTruthy(spec and spec.developer)
+    return (not isDev) or showDeveloperModules
+end
+
+local function addSection(spec)
+    if not includeByDeveloper(spec) then return nil end
+
+    local section = cloneShallow(spec)
+    section.loaderspeed = resolveLoaderSpeed(section.loaderspeed)
+    section.pages = nil
+    section.order = nil
+    section.parent = nil
+
+    local idx = #sections + 1
+    sections[idx] = section
+    return idx
+end
+
+local function addLeafPage(sectionIndex, spec)
+    if not includeByDeveloper(spec) then return end
+
+    local page = cloneShallow(spec)
+    page.section = sectionIndex
+    page.folder = page.folder or page.module
+    page.loaderspeed = resolveLoaderSpeed(page.loaderspeed)
+
+    if not (page.folder and page.script) then
+        rfsuite.utils.log("Manifest page missing folder/module or script: " .. tostring(page.title), "info")
+        return
     end
 
-    if section.entry then
-        -- `entry` points to a module that opens directly from the main menu.
-        local mod = loadModuleConfig(section.entry)
-        if mod then
-            applyDefaults(out, mod, {
-                "title",
-                "script",
-                "offline",
-                "bgtask",
-                "loaderspeed",
-                "ethosversion",
-                "mspversion",
-                "apiform",
-                "disable",
-                "developer"
-            })
-            out.module = out.module or section.entry
-            if out.image == nil and mod.image then
-                -- Normalize image to absolute app/modules path for main menu icons.
-                out.image = "app/modules/" .. section.entry .. "/" .. mod.image
-            end
-        end
-    end
+    pages[#pages + 1] = page
+end
 
-    local sectionIsDeveloper = isTruthy(out.developer) or isTruthy(section.developer)
-    local showDeveloperModules = developerToolsEnabled()
-    if not sectionIsDeveloper or showDeveloperModules then
-        out.loaderspeed = resolveLoaderSpeed(out.loaderspeed)
-        local sectionIndex = #sections + 1
-        sections[sectionIndex] = out
-
-        if section.pages then
-            -- `pages` defines submenu items; each entry maps to a module folder.
-            for _, pageSpec in ipairs(section.pages) do
-                local folder = nil
-                local overrides = nil
-
-                if type(pageSpec) == "string" then
-                    folder = pageSpec
-                elseif type(pageSpec) == "table" then
-                    -- Allow overrides (e.g. order, title) alongside folder/module name.
-                    folder = pageSpec.folder or pageSpec.module or pageSpec[1]
-                    overrides = pageSpec
-                end
-
-                if folder then
-                    local mod = loadModuleConfig(folder)
-                    if mod then
-                        -- Start with module config, then apply any manifest overrides.
-                        local page = {}
-                        for k, v in pairs(mod) do page[k] = v end
-                        page.folder = folder
-                        page.section = sectionIndex
-
-                        if overrides then
-                            for k, v in pairs(overrides) do
-                                if k ~= "folder" and k ~= "module" then page[k] = v end
-                            end
-                        end
-
-                        local pageIsDeveloper = isTruthy(page.developer)
-                        if not pageIsDeveloper or showDeveloperModules then
-                            page.loaderspeed = resolveLoaderSpeed(page.loaderspeed)
-                            pages[#pages + 1] = page
-                        end
-                    end
-                end
+for _, sectionSpec in ipairs(manifest.sections or {}) do
+    local sectionIndex = addSection(sectionSpec)
+    if sectionIndex then
+        if sectionSpec.pages then
+            for _, pageSpec in ipairs(sectionSpec.pages) do
+                addLeafPage(sectionIndex, pageSpec)
             end
         end
     end
 end
 
-if #missingModules > 0 then
-    -- Keep this as a single log line to avoid spam on low-memory radios.
-    rfsuite.utils.log("Manifest modules missing or invalid: " .. table.concat(missingModules, ", "), "info")
-end
-
-local function sortPagesBySectionAndOrder(pages)
-
+local function sortPagesBySectionAndOrder(pageList)
     local groupedPages = {}
 
-    for _, page in ipairs(pages) do
+    for _, page in ipairs(pageList) do
         if not groupedPages[page.section] then groupedPages[page.section] = {} end
-        table.insert(groupedPages[page.section], page)
+        groupedPages[page.section][#groupedPages[page.section] + 1] = page
     end
 
-    for section, pagesGroup in pairs(groupedPages) do table.sort(pagesGroup, function(a, b) return a.order < b.order end) end
+    for _, pagesGroup in pairs(groupedPages) do
+        table.sort(pagesGroup, function(a, b)
+            local ao = tonumber(a.order) or 9999
+            local bo = tonumber(b.order) or 9999
+            if ao == bo then
+                return tostring(a.title or "") < tostring(b.title or "")
+            end
+            return ao < bo
+        end)
+    end
 
     local sortedPages = {}
-    for section = 1, #sections do if groupedPages[section] then for _, page in ipairs(groupedPages[section]) do sortedPages[#sortedPages + 1] = page end end end
+    for section = 1, #sections do
+        if groupedPages[section] then
+            for _, page in ipairs(groupedPages[section]) do
+                sortedPages[#sortedPages + 1] = page
+            end
+        end
+    end
 
     return sortedPages
 end

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 local model = model
 local app = rfsuite.app
@@ -11,6 +12,7 @@ local prefs = rfsuite.preferences
 local tasks = rfsuite.tasks
 local rfutils = rfsuite.utils
 local session = rfsuite.session
+local navHandlers = pageRuntime.createMenuHandlers()
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
@@ -18,6 +20,7 @@ local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local currentDisplayMode
+local onNavMenu
 
 local function getCleanModelName()
     local logdir
@@ -209,15 +212,13 @@ local function openPage(opts)
 end
 
 local function event(widget, category, value, x, y)
-    if value == 35 then
-        app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_dir.lua"})
-        return true
-    end
-    return false
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local function wakeup() end
 
-local function onNavMenu() app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_dir.lua"}) end
+onNavMenu = function()
+    return navHandlers.onNavMenu()
+end
 
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

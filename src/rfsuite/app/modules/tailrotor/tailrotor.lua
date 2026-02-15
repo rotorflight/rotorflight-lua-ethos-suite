@@ -39,7 +39,7 @@ local function wakeup()
 
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
         if rfsuite.session.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
+            rfsuite.app.ui.setHeaderTitle(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             currentProfileChecked = true
         end
     end

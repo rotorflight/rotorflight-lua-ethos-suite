@@ -3889,10 +3889,10 @@
           "reverse_text": true
         },
         "name": {
-          "english": "ESC/Motors",
+          "english": "ESC & Motors",
           "max_length": 10,
           "needs_translation": true,
-          "translation": "ESC/מנועים",
+          "translation": "ESC & מנועים",
           "reverse_text": true
         },
         "pin_swap": {

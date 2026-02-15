@@ -63,9 +63,11 @@ end
 local function wakeup()
 
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-
-        if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile) end
-
+        local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+        if activeProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
         local mode = rfsuite.session.governorMode
         if mode == nil then return end
 

@@ -61,6 +61,7 @@ function app.create()
         app.lastIdx = nil -- last selected button index
         app.lastTitle = nil -- last page title string
         app.lastScript = nil -- last page script path
+        app.menuContextStack = {} -- submenu return stack (parent chain)
         app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
         app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
         app.uiState = app.uiStatus.init -- current UI state machine
@@ -203,11 +204,10 @@ function app.event(widget, category, value, x, y)
             log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-            if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            if app.lastMenu == nil then
-                app.ui.openMainMenu()
+            if app.Page.onNavMenu then
+                app.Page.onNavMenu(app.Page)
             else
-                app.ui.openMainMenuSub(app.lastMenu)
+                app.ui.openMenuContext()
             end
             return true
         end

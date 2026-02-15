@@ -4492,11 +4492,11 @@
           "translation": "Aggiornamento frequency"
         },
         "name": {
-          "english": "ESC/Motors",
+          "english": "ESC & Motors",
           "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "ESC/Motori"
+          "translation": "ESC & Motori"
         },
         "pin_swap": {
           "english": "Pin Swap",

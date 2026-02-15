@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local app = rfsuite.app
 local tasks = rfsuite.tasks
@@ -198,15 +200,4 @@ local function onToolMenu()
     })
 end
 
-local function event(widget, category, value)
-    if category == EVT_CLOSE and (value == 0 or value == 35) then
-        app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
-        return true
-    end
-end
-
-local function onNavMenu()
-    app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
-end
-
-return {apidata = apidata, eepromWrite = false, reboot = false, postLoad = postLoad, wakeup = wakeup, onToolMenu = onToolMenu, event = event, onNavMenu = onNavMenu, API = {}, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}}
+return {apidata = apidata, eepromWrite = false, reboot = false, postLoad = postLoad, wakeup = wakeup, onToolMenu = onToolMenu, event = navHandlers.event, onNavMenu = navHandlers.onNavMenu, API = {}, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}}

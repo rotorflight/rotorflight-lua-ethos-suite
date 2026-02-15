@@ -187,7 +187,11 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.telemetry.name)@")
+    local headerTitle = title
+    if type(headerTitle) ~= "string" or headerTitle == "" then
+        headerTitle = "@i18n(app.modules.telemetry.name)@"
+    end
+    rfsuite.app.ui.fieldHeader(headerTitle)
 
     rfsuite.app.formLineCnt = 0
 

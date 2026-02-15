@@ -3833,6 +3833,30 @@
           "translation": "System configuration"
         }
       },
+      "hardware_setup": {
+        "name": {
+          "english": "Setup",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Setup"
+        }
+      },
+      "hardware_interfaces": {
+        "name": {
+          "english": "Interfaces",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Interfaces"
+        }
+      },
+      "hardware_system": {
+        "name": {
+          "english": "System",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "System"
+        }
+      },
       "copyprofiles": {
         "dest_profile": {
           "english": "Dest. Profile",
@@ -3977,10 +4001,10 @@
           "translation": "Update frequency"
         },
         "name": {
-          "english": "ESC/Motors",
+          "english": "ESC & Motors",
           "max_length": 10,
           "needs_translation": false,
-          "translation": "ESC/Motors"
+          "translation": "ESC & Motors"
         },
         "pin_swap": {
           "english": "Pin Swap",

@@ -146,7 +146,7 @@ local function wakeup()
         if rfsuite.session.activeProfile ~= nil then
             local titleField = rfsuite.app.formFields['title']
             if titleField then
-                titleField:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
+                rfsuite.app.ui.setHeaderTitle(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             end
         end
     end

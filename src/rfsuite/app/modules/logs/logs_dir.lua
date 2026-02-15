@@ -4,7 +4,9 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
+local navHandlers = pageRuntime.createMenuHandlers()
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
@@ -104,7 +106,7 @@ end
 
 local function event(widget, category, value)
     if value == 35 or category == 3 then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return true
     end
     return false
@@ -112,6 +114,5 @@ end
 
 local function wakeup() if enableWakeup then end end
 
-local function onNavMenu() rfsuite.app.ui.openMainMenu() end
-
+local function onNavMenu() return navHandlers.onNavMenu() end
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

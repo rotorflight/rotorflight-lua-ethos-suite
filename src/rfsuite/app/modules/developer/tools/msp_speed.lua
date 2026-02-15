@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 local app = rfsuite.app
 local tasks = rfsuite.tasks
@@ -40,6 +41,7 @@ local getMSPCount = 0
 local doNextMsp = true
 
 local mspSpeedTestStats
+local pageIdx
 
 local maxQueryTime = 0
 local minQueryTime = 1000
@@ -226,6 +228,7 @@ local function openPage(opts)
     local pidx = opts.idx
     local title = opts.title
     local script = opts.script
+    pageIdx = pidx
     app.lastIdx = pidx
     app.lastTitle = title
     app.lastScript = script
@@ -233,22 +236,11 @@ local function openPage(opts)
 
     local w, h = lcd.getWindowSize()
 
-    local y = app.radio.linePaddingTop
-
     form.clear()
 
-    local titleline = form.addLine("Developer / " .. "@i18n(app.modules.msp_speed.name)@")
+    app.ui.fieldHeader("Developer / " .. "@i18n(app.modules.msp_speed.name)@")
 
-    local buttonW = 100
-    local buttonWs = buttonW - (buttonW * 20) / 100
-    local x = w - 10
-
-    app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, press = function() app.ui.openPage({idx = pageIdx, title = "Developer", script = "developer/developer.lua"}) end})
-    app.formNavigationFields['menu']:focus()
-
-    app.formNavigationFields['tool'] = form.addButton(line, {x = x - buttonWs, y = app.radio.linePaddingTop, w = buttonWs, h = app.radio.navbuttonHeight}, {text = "*", icon = nil, options = FONT_S, press = function() openSpeedTestDialog() end})
-
-    local posText = {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
+    local posText = {x = w - 220, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
 
     line['rf'] = form.addLine("@i18n(app.modules.msp_speed.rf_protocol)@")
     fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(tasks.msp.protocol.mspProtocol))
@@ -283,6 +275,11 @@ local function openPage(opts)
     formLoaded = true
 end
 
+local function onToolMenu()
+    openSpeedTestDialog()
+    return true
+end
+
 local function mspSuccess(self)
     if testLoader then
         mspQueryTimeCount = mspQueryTimeCount + os.clock() - mspQueryStartTime
@@ -313,16 +310,24 @@ local function close()
 end
 
 local function onNavMenu()
-    app.ui.openPage({idx = pageIdx, title = "Developer", script = "developer/developer.lua"})
+    pageRuntime.openMenuContext()
     return true
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage({idx = pageIdx, title = "Developer", script = "developer/developer.lua"})
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
-return {openPage = openPage, onNavMenu = onNavMenu, mspRetry = mspRetry, mspSuccess = mspSuccess, mspTimeout = mspTimeout, mspChecksum = mspChecksum, event = event, close = close, API = {}}
+return {
+    openPage = openPage,
+    onNavMenu = onNavMenu,
+    onToolMenu = onToolMenu,
+    navButtons = {menu = true, save = false, reload = false, tool = true, help = false},
+    mspRetry = mspRetry,
+    mspSuccess = mspSuccess,
+    mspTimeout = mspTimeout,
+    mspChecksum = mspChecksum,
+    event = event,
+    close = close,
+    API = {}
+}

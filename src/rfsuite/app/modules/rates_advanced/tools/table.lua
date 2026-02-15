@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local activateWakeup = false
 local extraMsgOnSave = nil
@@ -89,7 +91,12 @@ end
 local function wakeup()
     if activateWakeup and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
-        if rfsuite.session.activeRateProfile then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end
+        local activeRateProfile = rfsuite.session and rfsuite.session.activeRateProfile
+        if activeRateProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            baseTitle = tostring(baseTitle):gsub("%s+#%d+$", "")
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeRateProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
 
         if doFullReload == true then
             rfsuite.utils.log("Reloading full after rate type change", "info")
@@ -114,10 +121,6 @@ local function flagRateChange(self)
 end
 
 
-local function onNavMenu(self)
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "rates_advanced/rates_advanced.lua"})
-end
-
 local function postEepromWrite(self) if resetRates == true then doFullReload = true end end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.rates_type)@", onNavMenu = onNavMenu, reboot = false, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.rates_type)@", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}

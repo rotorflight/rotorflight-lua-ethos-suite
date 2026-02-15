@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local triggerSave = false
@@ -469,7 +470,7 @@ end
 
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
+    pageRuntime.openMenuContext()
 end
 
 local function onSaveMenu()
@@ -507,7 +508,7 @@ local function wakeup()
 
     -- we are compromised without this - go back to main
     if rfsuite.session.tailMode == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end    
 

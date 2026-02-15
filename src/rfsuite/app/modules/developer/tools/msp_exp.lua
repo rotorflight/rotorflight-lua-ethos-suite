@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local fields = {}
 local total_bytes = rfsuite.preferences.developer.mspexpbytes
@@ -113,7 +114,7 @@ end
 local function preUnload() enableWakeup = false end
 
 local function onNavMenu()
-    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = "Developer", script = "developer/developer.lua"})
+    pageRuntime.openMenuContext()
     return true
 end
 

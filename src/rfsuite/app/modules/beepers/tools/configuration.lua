@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local app = rfsuite.app
 local tasks = rfsuite.tasks
@@ -45,6 +47,7 @@ local state = {
         toggles = {}
     }
 }
+local pageTitle = "@i18n(app.modules.beepers.name)@ / @i18n(app.modules.beepers.menu_configuration)@"
 
 local function copyTable(src)
     if type(src) ~= "table" then return src end
@@ -97,14 +100,14 @@ end
 
 local function renderLoading(message)
     form.clear()
-    app.ui.fieldHeader("@i18n(app.modules.beepers.name)@ / @i18n(app.modules.beepers.menu_configuration)@")
+    app.ui.fieldHeader(pageTitle)
     local line = form.addLine("@i18n(app.modules.beepers.status)@")
     form.addStaticText(line, nil, message or "@i18n(app.msg_loading)@")
 end
 
 local function renderForm()
     form.clear()
-    app.ui.fieldHeader("@i18n(app.modules.beepers.name)@ / @i18n(app.modules.beepers.menu_configuration)@")
+    app.ui.fieldHeader(pageTitle)
 
     state.form.toggles = {}
 
@@ -186,7 +189,8 @@ local function requestData(forceApiRead)
     API.read()
 end
 
-local function openPage()
+local function openPage(opts)
+    pageTitle = (opts and opts.title) or pageTitle
     requestData(false)
 end
 
@@ -280,24 +284,13 @@ local function wakeup()
     updateSaveEnabled()
 end
 
-local function event(widget, category, value)
-    if category == EVT_CLOSE and (value == 0 or value == 35) then
-        app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.beepers.name)@", script = "beepers/beepers.lua"})
-        return true
-    end
-end
-
-local function onNavMenu()
-    app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.beepers.name)@", script = "beepers/beepers.lua"})
-end
-
 return {
     openPage = openPage,
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
-    event = event,
-    onNavMenu = onNavMenu,
+    event = navHandlers.event,
+    onNavMenu = navHandlers.onNavMenu,
     eepromWrite = true,
     reboot = false,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = true},

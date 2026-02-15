@@ -1,0 +1,79 @@
+--[[
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+local app = rfsuite.app
+local prefs = rfsuite.preferences
+local tasks = rfsuite.tasks
+local utils = rfsuite.utils
+local session = rfsuite.session
+
+local S_PAGES = {
+    {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
+    {name = "@i18n(app.modules.governor.menu_time)@", script = "time.lua", image = "time.png"},
+    {name = "@i18n(app.modules.governor.menu_filters)@", script = "filters.lua", image = "filters.png"},
+    {name = "@i18n(app.modules.governor.menu_curves)@", script = "curves.lua", image = "curves.png"}
+}
+
+local prevConnectedState = nil
+local initTime = os.clock()
+local focused = false
+
+return {
+    title = "@i18n(app.modules.governor.name)@",
+    pages = S_PAGES,
+    scriptPrefix = "governor/tools/",
+    iconPrefix = "app/modules/governor/gfx/",
+    loaderSpeed = app.loaderSpeed.DEFAULT,
+    navOptions = {defaultSection = "hardware", showProgress = true},
+    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
+    onOpenPost = function()
+        focused = false
+        if app.formFields then
+            for i, v in pairs(app.formFields) do
+                if v and v.enable then v:enable(false) end
+            end
+        end
+    end,
+    onWakeup = function()
+        if os.clock() - initTime < 0.25 then return end
+
+        if session.governorMode == nil then
+            if tasks and tasks.msp and tasks.msp.helpers then
+                tasks.msp.helpers.governorMode(function(governorMode)
+                    utils.log("Received governor mode: " .. tostring(governorMode), "info")
+                end)
+            end
+            return
+        end
+
+        if app.formFields then
+            for i, v in pairs(app.formFields) do
+                if v and v.enable then v:enable(true) end
+            end
+        end
+
+        if not focused then
+            focused = true
+            local idx = tonumber(prefs.menulastselected["governor"]) or 1
+            local btn = app.formFields and app.formFields[idx] or nil
+            if btn and btn.focus then btn:focus() end
+        end
+
+        app.triggers.closeProgressLoader = true
+
+        local currState = (session.isConnected and session.mcu_id) and true or false
+        if currState ~= prevConnectedState then
+            if app.formFields and app.formFields[2] and app.formFields[2].enable then
+                app.formFields[2]:enable(currState)
+            end
+            if not currState and app.formNavigationFields and app.formNavigationFields["menu"] then
+                app.formNavigationFields["menu"]:focus()
+            end
+            prevConnectedState = currState
+        end
+    end
+}

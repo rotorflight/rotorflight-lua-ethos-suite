@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({showProgress = true})
 
 local activateWakeup = false
 local governorDisabledMsg = false
@@ -36,14 +38,16 @@ local function wakeup()
 
     -- we are compromised if we don't have governor mode known
     if rfsuite.session.governorMode == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end
 
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-
-        if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " / " .. "@i18n(app.modules.governor.menu_flags)@" .. " #" .. rfsuite.session.activeProfile) end
-
+        local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+        if activeProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
         -- Enable/disable fields based on firmware/session state.
         local govEnabled = (rfsuite.session.governorMode ~= nil and rfsuite.session.governorMode ~= 0)
         local adcVoltage = (rfsuite.session.batteryConfig ~= nil and rfsuite.session.batteryConfig.voltageMeterSource == 1)
@@ -80,17 +84,11 @@ local function wakeup()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
-        return true
-    end
+    return navHandlers.event(widget, category, value)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
-    return true
+    return navHandlers.onNavMenu()
 end
 
 return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

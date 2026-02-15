@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local activateWakeup = false
-local currentProfileChecked = false
 
 local apidata = {
     api = {
@@ -35,12 +34,13 @@ end
 local function wakeup()
 
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-        if rfsuite.session.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
-            currentProfileChecked = true
+        local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+        if activeProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
         end
+        activateWakeup = false
     end
-
 end
 
 return {apidata = apidata, title = "@i18n(app.modules.profile_tailrotor.name)@", refreshOnProfileChange = true, reboot = false, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

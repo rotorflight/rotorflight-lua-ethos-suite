@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local ADJUST_TYPE_OPTIONS = {
     "@i18n(app.modules.adjustments.type_off)@",
@@ -1755,11 +1757,6 @@ local function onReloadMenu()
     startLoad()
 end
 
-local function onNavMenu()
-    rfsuite.app.ui.openMainMenuSub("hardware")
-    return true
-end
-
 local function wakeup()
     if state.needsRender then
         render()
@@ -1793,7 +1790,7 @@ return {
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
-    onNavMenu = onNavMenu,
+    onNavMenu = navHandlers.onNavMenu,
     eepromWrite = false,
     reboot = false,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = true},

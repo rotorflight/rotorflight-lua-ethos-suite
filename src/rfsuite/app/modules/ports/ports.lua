@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local MSP_SET_SERIAL_CONFIG = 55
 local MSP_EEPROM_WRITE = 250
@@ -534,11 +536,6 @@ local function onReloadMenu()
     startLoad()
 end
 
-local function onNavMenu()
-    rfsuite.app.ui.openMainMenuSub("hardware")
-    return true
-end
-
 local function openPage(opts)
     state.title = opts.title or "@i18n(app.modules.ports.name)@"
 
@@ -557,7 +554,7 @@ return {
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
-    onNavMenu = onNavMenu,
+    onNavMenu = navHandlers.onNavMenu,
     eepromWrite = false,
     reboot = true,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 local system = system
 local app = rfsuite.app
@@ -11,6 +12,8 @@ local prefs = rfsuite.preferences
 local tasks = rfsuite.tasks
 local rfutils = rfsuite.utils
 local session = rfsuite.session
+local navHandlers = pageRuntime.createMenuHandlers()
+local onNavMenu
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 local res = system.getVersion()
@@ -573,11 +576,7 @@ local function openPage(opts)
 end
 
 local function event(event, category, value, x, y)
-    if value == 35 then
-        app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_logs.lua"})
-        return true
-    end
-    return false
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local slowcount = 0
@@ -739,9 +738,8 @@ local function paint()
     end
 end
 
-local function onNavMenu(self)
-    app.ui.progressDisplay()
-    app.ui.openPage({idx = app.lastIdx, title = app.lastTitle, script = "logs/logs_logs.lua"})
+onNavMenu = function(self)
+    return navHandlers.onNavMenu()
 end
 
 return {event = event, openPage = openPage, wakeup = wakeup, paint = paint, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

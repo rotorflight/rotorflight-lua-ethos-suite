@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local FEATURE_BIT_GPS = 7
 local FEATURE_BIT_LED_STRIP = 16
@@ -378,11 +380,6 @@ local function onReloadMenu()
     rfsuite.app.triggers.triggerReloadFull = true
 end
 
-local function onNavMenu()
-    rfsuite.app.ui.openMainMenuSub("hardware")
-    return true
-end
-
 local function openPage(opts)
     state.title = opts.title or "@i18n(app.modules.configuration.name)@"
     rfsuite.app.lastIdx = opts.idx
@@ -406,7 +403,7 @@ return {
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
-    onNavMenu = onNavMenu,
+    onNavMenu = navHandlers.onNavMenu,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     eepromWrite = false,
     reboot = true,

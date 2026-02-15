@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 local system = system
 
@@ -40,7 +41,7 @@ end
 
 local function openPage(opts)
 
-    local pidx = opts.idx
+    local parentIdx = opts.idx
     local title = opts.title
     local script = opts.script
 
@@ -52,7 +53,7 @@ local function openPage(opts)
 
     form.clear()
 
-    rfsuite.app.lastIdx = pidx
+    rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -62,28 +63,7 @@ local function openPage(opts)
         rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
-    local windowWidth = lcd.getWindowSize()
-
-    form.addLine(title)
-
-    local navButtonW = 100
-    local x = windowWidth - navButtonW - 10
-
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = navButtonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "@i18n(app.navigation_menu)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            rfsuite.app.lastIdx = nil
-            rfsuite.session.lastPage = nil
-
-            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
-
-            rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/esc_motors.lua"})
-        end
-    })
-    rfsuite.app.formNavigationFields['menu']:focus()
+    rfsuite.app.ui.fieldHeader(title)
 
     local buttonW
     local buttonH
@@ -122,7 +102,7 @@ local function openPage(opts)
     local bx = 0
     local y = 0
 
-    for pidx, pvalue in ipairs(pages) do
+    for childIdx, pvalue in ipairs(pages) do
 
         if lc == 0 then
             if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
@@ -133,26 +113,32 @@ local function openPage(opts)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["escmain"][pidx] == nil then rfsuite.app.gfx_buttons["escmain"][pidx] = lcd.loadMask("app/modules/esc_motors/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then rfsuite.app.gfx_buttons["escmain"][childIdx] = lcd.loadMask("app/modules/esc_motors/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
         else
-            rfsuite.app.gfx_buttons["escmain"][pidx] = nil
+            rfsuite.app.gfx_buttons["escmain"][childIdx] = nil
         end
 
-        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+        rfsuite.app.formFields[childIdx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.toolName,
-            icon = rfsuite.app.gfx_buttons["escmain"][pidx],
+            icon = rfsuite.app.gfx_buttons["escmain"][childIdx],
             options = FONT_S,
             paint = function() end,
             press = function()
-                rfsuite.preferences.menulastselected["escmain"] = pidx
+                rfsuite.preferences.menulastselected["escmain"] = childIdx
                 rfsuite.app.ui.progressDisplay(nil,nil,0.5)
-                rfsuite.app.ui.openPage({idx = pidx, title = pvalue.folder, script = "esc_motors/tools/esc_tool.lua"})
+                rfsuite.app.ui.openPage({
+                    idx = childIdx,
+                    title = title .. " / " .. pvalue.toolName,
+                    folder = pvalue.folder,
+                    script = "esc_motors/tools/esc_tool.lua",
+                    returnContext = {idx = parentIdx, title = title, script = script}
+                })
             end
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+        if pvalue.disabled == true then rfsuite.app.formFields[childIdx]:enable(false) end
 
-        if rfsuite.preferences.menulastselected["escmain"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["escmain"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
 
         lc = lc + 1
 
@@ -165,6 +151,18 @@ local function openPage(opts)
     return
 end
 
+local function onNavMenu()
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
+end
+
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-return {pages = pages, openPage = openPage, API = {}}
+return {
+    pages = pages,
+    openPage = openPage,
+    onNavMenu = onNavMenu,
+    event = function(_, category, value) return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu}) end,
+    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
+    API = {}
+}

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -197,7 +198,8 @@ end
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = rfsuite.app.lastTitle, script = "servos/tools/bus.lua", servoOverride = rfsuite.session.servoOverride})
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 
 end
 
@@ -230,7 +232,7 @@ local function wakeup(self)
 
         -- go back to main as this tool is compromised 
         if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
-            rfsuite.app.ui.openMainMenu()
+            rfsuite.app.ui.openMenuContext()
             return
         end
 
@@ -543,11 +545,7 @@ local function openPage(opts)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.servos.name)@", script = "servos/servos.lua", servoOverride = rfsuite.session.servoOverride})
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 
 end
 

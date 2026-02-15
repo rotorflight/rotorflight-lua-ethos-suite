@@ -4492,11 +4492,11 @@
           "translation": "更新频率"
         },
         "name": {
-          "english": "ESC/Motors",
+          "english": "ESC & Motors",
           "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "ESC/电机"
+          "translation": "ESC & 电机"
         },
         "pin_swap": {
           "english": "Pin Swap",

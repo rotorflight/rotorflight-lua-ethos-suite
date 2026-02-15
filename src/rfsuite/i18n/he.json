@@ -4492,11 +4492,11 @@
           "translation": "תדירות עדכון"
         },
         "name": {
-          "english": "ESC/Motors",
+          "english": "ESC & Motors",
           "max_length": 10,
           "needs_translation": true,
           "reverse_text": true,
-          "translation": "ESC/מנועים"
+          "translation": "ESC & מנועים"
         },
         "pin_swap": {
           "english": "Pin Swap",

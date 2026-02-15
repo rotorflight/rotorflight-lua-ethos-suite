@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 
@@ -69,7 +70,12 @@ local function wakeup()
 end
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/esc_motors.lua"})
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, title = title, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}
+local function event(_, category, value)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
+end
+
+return {apidata = apidata, reboot = true, eepromWrite = true, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}

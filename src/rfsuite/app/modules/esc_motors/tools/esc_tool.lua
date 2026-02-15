@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
 local mspSignature
@@ -122,15 +123,18 @@ end
 
 local function openPage(opts)
 
-    local pidx = opts.idx
+    local parentIdx = opts.idx
     local title = opts.title
+    local folder = opts.folder
     local script = opts.script
 
-    rfsuite.app.lastIdx = pidx
+    rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local folder = title
+    if type(folder) ~= "string" or folder == "" then
+        folder = title
+    end
 
     ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
 
@@ -151,38 +155,15 @@ local function openPage(opts)
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
-    local windowWidth = rfsuite.app.lcdWidth
-
     local y = rfsuite.app.radio.linePaddingTop
 
     form.clear()
 
-    local line = form.addLine("@i18n(app.modules.esc_tools.name)@" .. ' / ' .. ESC.toolName)
-
-    local buttonW = 100
-    local x = windowWidth - buttonW
-
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, paint = function() end, press = function() rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.esc_tools.name)@", script = "esc_motors/tools/esc.lua"}) end})
-    rfsuite.app.formNavigationFields['menu']:focus()
-
-    rfsuite.app.formNavigationFields['refresh'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "@i18n(app.navigation_reload)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            rfsuite.app.Page = nil
-            foundESC = false
-            foundESCupdateTag = false
-            showPowerCycleLoader = false
-            showPowerCycleLoaderInProgress = false
-            showPowerCycleLoaderFinished = false
-            powercycleLoaderCounter = 0
-            powercycleLoaderBaseMessage = nil
-            rfsuite.app.triggers.triggerReloadFull = true
-        end
-    })
-    rfsuite.app.formNavigationFields['menu']:focus()
+    local headerTitle = title
+    if type(headerTitle) ~= "string" or headerTitle == "" then
+        headerTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName
+    end
+    rfsuite.app.ui.fieldHeader(headerTitle)
 
     ESC.pages = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/pages.lua"))()
 
@@ -229,7 +210,7 @@ local function openPage(opts)
     if rfsuite.app.gfx_buttons["esctool"] == nil then rfsuite.app.gfx_buttons["esctool"] = {} end
     if rfsuite.preferences.menulastselected["esctool"] == nil then rfsuite.preferences.menulastselected["esctool"] = 1 end
 
-    for pidx, pvalue in ipairs(ESC.pages) do
+    for childIdx, pvalue in ipairs(ESC.pages) do
 
         local section = pvalue
         local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or (section.mspversion and rfsuite.utils.apiVersionCompare("<", section.mspversion))
@@ -250,26 +231,37 @@ local function openPage(opts)
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
             end
 
-            rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                 text = pvalue.title,
                 icon = rfsuite.app.gfx_buttons["esctool"][pvalue.image],
                 options = FONT_S,
                 paint = function() end,
                 press = function()
-                    rfsuite.preferences.menulastselected["esctool"] = pidx
+                    rfsuite.preferences.menulastselected["esctool"] = childIdx
                     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
+                    local childTitle = title .. " / " .. pvalue.title
 
-                    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script})
+                    rfsuite.app.ui.openPage({
+                        idx = childIdx,
+                        title = childTitle,
+                        script = "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script,
+                        returnContext = {
+                            idx = parentIdx,
+                            title = title,
+                            folder = folder,
+                            script = "esc_motors/tools/esc_tool.lua"
+                        }
+                    })
 
                 end
             })
 
-            if rfsuite.preferences.menulastselected["esctool"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.preferences.menulastselected["esctool"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
 
             if rfsuite.app.triggers.escToolEnableButtons == true then
-                rfsuite.app.formFields[pidx]:enable(true)
+                rfsuite.app.formFields[childIdx]:enable(true)
             else
-                rfsuite.app.formFields[pidx]:enable(false)
+                rfsuite.app.formFields[childIdx]:enable(false)
             end
 
             lc = lc + 1
@@ -281,6 +273,24 @@ local function openPage(opts)
 
     rfsuite.app.triggers.escToolEnableButtons = false
 
+end
+
+local function onNavMenu()
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
+end
+
+local function onReloadMenu()
+    rfsuite.app.Page = nil
+    foundESC = false
+    foundESCupdateTag = false
+    showPowerCycleLoader = false
+    showPowerCycleLoaderInProgress = false
+    showPowerCycleLoaderFinished = false
+    powercycleLoaderCounter = 0
+    powercycleLoaderBaseMessage = nil
+    rfsuite.app.triggers.triggerReloadFull = true
+    return true
 end
 
 local function wakeup()
@@ -373,17 +383,23 @@ local function wakeup()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
+    return pageRuntime.handleCloseEvent(category, value, {onClose = function()
         if powercycleLoader then
             powercycleLoader:close()
             powercycleLoaderBaseMessage = nil
             rfsuite.app.ui.clearProgressDialog(powercycleLoader)
         end
-        rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.esc_tools.name)@", script = "esc_motors/tools/esc.lua"})
-        return true
-    end
+        onNavMenu()
+    end})
 
 end
 
-return {openPage = openPage, wakeup = wakeup, event = event, API = {}}
+return {
+    openPage = openPage,
+    wakeup = wakeup,
+    event = event,
+    onNavMenu = onNavMenu,
+    onReloadMenu = onReloadMenu,
+    navButtons = {menu = true, save = false, reload = true, tool = false, help = false},
+    API = {}
+}

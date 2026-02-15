@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local app = rfsuite.app
 local tasks = rfsuite.tasks
@@ -440,15 +441,12 @@ local function onToolMenu()
 end
 
 local function event(_, category, value)
-    if (category == EVT_CLOSE and value == 0) or value == 35 then
-        app.ui.openPage({idx = state.pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local function onNavMenu()
-    app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    app.ui.openPage({idx = state.pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
+    pageRuntime.openMenuContext()
+    return true
 end
 
 return {
