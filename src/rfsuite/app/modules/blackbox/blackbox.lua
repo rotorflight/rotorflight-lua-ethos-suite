@@ -219,7 +219,7 @@ local function openPage(opts)
 end
 
 local function event(widget, category, value)
-    if category == EVT_CLOSE and value == 0 or value == 35 then
+    if category == EVT_CLOSE and (value == 0 or value == 35) then
         rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
         return true
     end

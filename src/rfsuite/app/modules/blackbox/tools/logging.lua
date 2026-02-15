@@ -333,7 +333,7 @@ local function wakeup()
 end
 
 local function event(widget, category, value)
-    if category == EVT_CLOSE and value == 0 or value == 35 then
+    if category == EVT_CLOSE and (value == 0 or value == 35) then
         app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
         return true
     end
