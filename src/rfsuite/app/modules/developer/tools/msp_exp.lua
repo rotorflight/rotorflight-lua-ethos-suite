@@ -112,4 +112,9 @@ end
 
 local function preUnload() enableWakeup = false end
 
-return {apidata = apidata, title = "Experimental", navButtons = {menu = true, save = true, reload = true, help = true}, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, preUnload = preUnload, API = {}}
+local function onNavMenu()
+    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = "Developer", script = "developer/developer.lua"})
+    return true
+end
+
+return {apidata = apidata, title = "Experimental", navButtons = {menu = true, save = true, reload = true, help = true}, onNavMenu = onNavMenu, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, preUnload = preUnload, API = {}}

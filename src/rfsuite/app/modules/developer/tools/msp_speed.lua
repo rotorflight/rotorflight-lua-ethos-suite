@@ -237,13 +237,13 @@ local function openPage(opts)
 
     form.clear()
 
-    local titleline = form.addLine("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.msp_speed.name)@")
+    local titleline = form.addLine("Developer / " .. "@i18n(app.modules.msp_speed.name)@")
 
     local buttonW = 100
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
-    app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, press = function() app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"}) end})
+    app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = buttonW, h = app.radio.navbuttonHeight}, {text = "@i18n(app.navigation_menu)@", icon = nil, options = FONT_S, press = function() app.ui.openPage({idx = pageIdx, title = "Developer", script = "developer/developer.lua"}) end})
     app.formNavigationFields['menu']:focus()
 
     app.formNavigationFields['tool'] = form.addButton(line, {x = x - buttonWs, y = app.radio.linePaddingTop, w = buttonWs, h = app.radio.navbuttonHeight}, {text = "*", icon = nil, options = FONT_S, press = function() openSpeedTestDialog() end})
@@ -312,10 +312,15 @@ local function close()
     end
 end
 
+local function onNavMenu()
+    app.ui.openPage({idx = pageIdx, title = "Developer", script = "developer/developer.lua"})
+    return true
+end
+
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
+        app.ui.openPage({idx = pageIdx, title = "Developer", script = "developer/developer.lua"})
         return true
     end
 end

@@ -90,7 +90,7 @@ return {
             pages = {
                 "copyprofiles",
                 "profile_select",
-                "msp_exp"
+                "developer"
             }
         },
         -- Single entries open directly from the main menu.

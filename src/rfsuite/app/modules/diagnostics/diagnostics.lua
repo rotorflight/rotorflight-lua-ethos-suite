@@ -9,9 +9,8 @@ local log = rfsuite.utils.log
 local lcd = lcd
 
 local S_PAGES = {
-    {name = "@i18n(app.modules.rfstatus.name)@", script = "rfstatus.lua", image = "rfstatus.png", bgtask = false, offline = false}, {name = "@i18n(app.modules.msp_speed.name)@", script = "msp_speed.lua", image = "msp_speed.png", bgtask = true, offline = true}, {name = "@i18n(app.modules.validate_sensors.name)@", script = "sensors.lua", image = "sensors.png", bgtask = true, offline = true},
+    {name = "@i18n(app.modules.rfstatus.name)@", script = "rfstatus.lua", image = "rfstatus.png", bgtask = false, offline = false}, {name = "@i18n(app.modules.validate_sensors.name)@", script = "sensors.lua", image = "sensors.png", bgtask = true, offline = true},
     {name = "@i18n(app.modules.fblstatus.name)@", script = "fblstatus.lua", image = "fblstatus.png", bgtask = true, offline = true}, {name = "@i18n(app.modules.info.name)@", script = "info.lua", image = "info.png", bgtask = true, offline = true},
-    {name = "@i18n(app.modules.api_tester.name)@", script = "api_tester.lua", image = "api_tester.png", bgtask = true, offline = true}
 }
 
 local function openPage(opts)

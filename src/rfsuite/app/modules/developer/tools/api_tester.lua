@@ -34,7 +34,7 @@ local T = {
     CHOICE_NO_API_FILES = "@i18n(app.modules.api_tester.choice_no_api_files)@"
 }
 
-local pageTitle = "@i18n(app.modules.diagnostics.name)@ / " .. T.NAME
+local pageTitle = "Developer / " .. T.NAME
 local apiDir = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
 local MAX_LINE_CHARS = 90
 local lastOpenOpts = nil
@@ -257,7 +257,7 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
-    app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
+    app.ui.openPage({idx = app.lastIdx, title = "Developer", script = "developer/developer.lua"})
 end
 
 local function event(widget, category, value)
@@ -268,7 +268,7 @@ local function event(widget, category, value)
 end
 
 local function wakeup()
-    if state.pendingRebuild and app.lastScript == "diagnostics/tools/api_tester.lua" and lastOpenOpts then
+    if state.pendingRebuild and app.lastScript == "developer/tools/api_tester.lua" and lastOpenOpts then
         state.pendingRebuild = false
         openPage(lastOpenOpts)
     end
