@@ -179,6 +179,8 @@ local function clearMspQueue()
     if q and q.clear then q:clear() end
 end
 
+local requestRebootAfterSave
+
 local function pauseMovement()
     state.movementPaused = true
     state.pendingAttitude = false
@@ -267,6 +269,7 @@ local function writeData()
                 state.dirty = false
                 if app and app.ui and app.ui.setPageDirty then app.ui.setPageDirty(false) end
                 app.triggers.closeProgressLoader = true
+                requestRebootAfterSave()
             end)
             eepromAPI.setErrorHandler(function()
                 state.saving = false
@@ -288,6 +291,25 @@ local function writeData()
         rfsuite.utils.log("Alignment save failed: BOARD_ALIGNMENT_CONFIG", "error")
     end)
     boardAPI.write()
+end
+
+requestRebootAfterSave = function()
+    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("REBOOT")
+    if not rebootAPI then
+        if app and app.utils and app.utils.invalidatePages then app.utils.invalidatePages() end
+        return
+    end
+
+    rebootAPI.setCompleteHandler(function()
+        rfsuite.utils.log("Rebooting FC", "info")
+        rfsuite.utils.onReboot()
+    end)
+
+    rebootAPI.setErrorHandler(function()
+        if app and app.utils and app.utils.invalidatePages then app.utils.invalidatePages() end
+    end)
+
+    rebootAPI.write()
 end
 
 -- Match configurator model transform:
