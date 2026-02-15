@@ -3605,6 +3605,204 @@
           "max_length": 7
         }
       },
+      "alignment": {
+        "name": {
+          "english": "Alignment",
+          "translation": "Alignment",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "help_p1": {
+          "english": "Set board roll, pitch and yaw mounting offsets.",
+          "translation": "Set board roll, pitch and yaw mounting offsets.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 47
+        },
+        "help_p2": {
+          "english": "Set magnetometer alignment and save to write EEPROM.",
+          "translation": "Set magnetometer alignment and save to write EEPROM.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 52
+        },
+        "help_p3": {
+          "english": "The visual below follows live attitude from MSP.",
+          "translation": "The visual below follows live attitude from MSP.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 48
+        },
+        "roll": {
+          "english": "Roll",
+          "translation": "Roll",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "pitch": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "yaw": {
+          "english": "Yaw",
+          "translation": "Yaw",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "mag": {
+          "english": "Mag",
+          "translation": "Mag",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "mag_default": {
+          "english": "Default",
+          "translation": "Default",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "mag_cw_0": {
+          "english": "CW 0 deg",
+          "translation": "CW 0 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "mag_cw_90": {
+          "english": "CW 90 deg",
+          "translation": "CW 90 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "mag_cw_180": {
+          "english": "CW 180 deg",
+          "translation": "CW 180 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "mag_cw_270": {
+          "english": "CW 270 deg",
+          "translation": "CW 270 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "mag_cw_0_flip": {
+          "english": "CW 0 deg flip",
+          "translation": "CW 0 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "mag_cw_90_flip": {
+          "english": "CW 90 deg flip",
+          "translation": "CW 90 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "mag_cw_180_flip": {
+          "english": "CW 180 deg flip",
+          "translation": "CW 180 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "mag_cw_270_flip": {
+          "english": "CW 270 deg flip",
+          "translation": "CW 270 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "mag_custom": {
+          "english": "Custom",
+          "translation": "Custom",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "live_fmt": {
+          "english": "Live  R:%0.1f  P:%0.1f  Y:%0.1f",
+          "translation": "Live  R:%0.1f  P:%0.1f  Y:%0.1f",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "offset_fmt": {
+          "english": "Offset R:%d  P:%d  Y:%d  Mag:%d",
+          "translation": "Offset R:%d  P:%d  Y:%d  Mag:%d",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "view_yaw_fmt": {
+          "english": "View Yaw:%0.1f",
+          "translation": "View Yaw:%0.1f",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "nose_direction": {
+          "english": "Nose Direction",
+          "translation": "Nose Direction",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "nose_level": {
+          "english": "Nose Level",
+          "translation": "Nose Level",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "nose_up": {
+          "english": "Nose Up",
+          "translation": "Nose Up",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "nose_down": {
+          "english": "Nose Down",
+          "translation": "Nose Down",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "leaning_left": {
+          "english": "Leaning Left",
+          "translation": "Leaning Left",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "leaning_right": {
+          "english": "Leaning Right",
+          "translation": "Leaning Right",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "msg_reset_tail_view": {
+          "english": "Reset view yaw so the tail faces you?",
+          "translation": "Reset view yaw so the tail faces you?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 37
+        }
+      },
       "esc_motors": {
         "consumption_correction": {
           "english": "Consumption Correction",

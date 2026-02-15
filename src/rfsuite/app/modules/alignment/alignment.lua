@@ -61,16 +61,16 @@ local state = {
 }
 
 local magAlignChoices = {
-    {"Default", 1},
-    {"CW 0 deg", 2},
-    {"CW 90 deg", 3},
-    {"CW 180 deg", 4},
-    {"CW 270 deg", 5},
-    {"CW 0 deg flip", 6},
-    {"CW 90 deg flip", 7},
-    {"CW 180 deg flip", 8},
-    {"CW 270 deg flip", 9},
-    {"Custom", 10}
+    {"@i18n(app.modules.alignment.mag_default)@", 1},
+    {"@i18n(app.modules.alignment.mag_cw_0)@", 2},
+    {"@i18n(app.modules.alignment.mag_cw_90)@", 3},
+    {"@i18n(app.modules.alignment.mag_cw_180)@", 4},
+    {"@i18n(app.modules.alignment.mag_cw_270)@", 5},
+    {"@i18n(app.modules.alignment.mag_cw_0_flip)@", 6},
+    {"@i18n(app.modules.alignment.mag_cw_90_flip)@", 7},
+    {"@i18n(app.modules.alignment.mag_cw_180_flip)@", 8},
+    {"@i18n(app.modules.alignment.mag_cw_270_flip)@", 9},
+    {"@i18n(app.modules.alignment.mag_custom)@", 10}
 }
 
 local function toSigned16(v)
@@ -398,8 +398,8 @@ local function drawVisual()
     end
 
     lcd.font(FONT_XS)
-    local liveText = string.format("Live  R:%0.1f  P:%0.1f  Y:%0.1f", state.live.roll, state.live.pitch, state.live.yaw)
-    local offsText = string.format("Offset R:%d  P:%d  Y:%d  Mag:%d", state.display.roll_degrees, state.display.pitch_degrees, state.display.yaw_degrees, state.display.mag_alignment)
+    local liveText = string.format("@i18n(app.modules.alignment.live_fmt)@", state.live.roll, state.live.pitch, state.live.yaw)
+    local offsText = string.format("@i18n(app.modules.alignment.offset_fmt)@", state.display.roll_degrees, state.display.pitch_degrees, state.display.yaw_degrees, state.display.mag_alignment)
     local _, th1 = lcd.getTextSize(liveText)
     local _, th2 = lcd.getTextSize(offsText)
     local textPad = 2
@@ -409,7 +409,7 @@ local function drawVisual()
     lcd.color(mainColor)
     lcd.drawText(textX, textY, liveText, LEFT)
     lcd.drawText(textX, textY + th1 + textPad, offsText, LEFT)
-    lcd.drawText(textX, textY + th1 + th2 + 14, string.format("View Yaw:%0.1f", state.viewYawOffset), LEFT)
+    lcd.drawText(textX, textY + th1 + th2 + 14, string.format("@i18n(app.modules.alignment.view_yaw_fmt)@", state.viewYawOffset), LEFT)
 
     local miniX = infoX + 8
     local miniY = textY + th1 + th2 + 46
@@ -420,7 +420,7 @@ local function drawVisual()
         lcd.drawRectangle(miniX, miniY, miniW, miniH)
 
         lcd.color(mainColor)
-        lcd.drawText(miniX + 4, miniY + 2, "Nose Direction", LEFT)
+        lcd.drawText(miniX + 4, miniY + 2, "@i18n(app.modules.alignment.nose_direction)@", LEFT)
 
         local mx = miniX + floor(miniW * 0.5)
         local my = miniY + floor(miniH * 0.60)
@@ -437,17 +437,17 @@ local function drawVisual()
             if mag > 0.001 then
                 local ux = dx / mag
                 local uy = dy / mag
-                local htxt, vtxt = "Center", "Center"
-                if ux > 0.35 then htxt = "Right" elseif ux < -0.35 then htxt = "Left" end
-                if uy > 0.35 then vtxt = "Up" elseif uy < -0.35 then vtxt = "Down" end
+                local htxt, vtxt = "center", "center"
+                if ux > 0.35 then htxt = "right" elseif ux < -0.35 then htxt = "left" end
+                if uy > 0.35 then vtxt = "up" elseif uy < -0.35 then vtxt = "down" end
 
-                local primary = "Nose Level"
-                if vtxt == "Up" then primary = "Nose Up" end
-                if vtxt == "Down" then primary = "Nose Down" end
+                local primary = "@i18n(app.modules.alignment.nose_level)@"
+                if vtxt == "up" then primary = "@i18n(app.modules.alignment.nose_up)@" end
+                if vtxt == "down" then primary = "@i18n(app.modules.alignment.nose_down)@" end
 
                 local secondary = ""
-                if htxt == "Left" then secondary = "Leaning Left" end
-                if htxt == "Right" then secondary = "Leaning Right" end
+                if htxt == "left" then secondary = "@i18n(app.modules.alignment.leaning_left)@" end
+                if htxt == "right" then secondary = "@i18n(app.modules.alignment.leaning_right)@" end
 
                 lcd.font(FONT_STD)
                 lcd.color(accent)
@@ -540,7 +540,7 @@ local function openPage(opts)
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     form.clear()
-    app.ui.fieldHeader("Alignment")
+    app.ui.fieldHeader("@i18n(app.modules.alignment.name)@")
 
     local line1 = form.addLine("")
     local rowY = radio.linePaddingTop
@@ -553,13 +553,18 @@ local function openPage(opts)
     local fieldW = screenW - leftPad - rightPad
     local slotGap = gap
     local slotW = floor((fieldW - (slotGap * 3)) / 4)
-    local labels = {"Roll", "Pitch", "Yaw", "Mag"}
+    local labels = {
+        "@i18n(app.modules.alignment.roll)@",
+        "@i18n(app.modules.alignment.pitch)@",
+        "@i18n(app.modules.alignment.yaw)@",
+        "@i18n(app.modules.alignment.mag)@"
+    }
 
     lcd.font(FONT_STD)
-    local wRoll = lcd.getTextSize("Roll ")
-    local wPitch = lcd.getTextSize("Pitch ")
-    local wYaw = lcd.getTextSize("Yaw ")
-    local wMag = lcd.getTextSize("Mag ")
+    local wRoll = lcd.getTextSize(labels[1] .. " ")
+    local wPitch = lcd.getTextSize(labels[2] .. " ")
+    local wYaw = lcd.getTextSize(labels[3] .. " ")
+    local wMag = lcd.getTextSize(labels[4] .. " ")
     local labelWidths = {wRoll, wPitch, wYaw, wMag}
 
     local slotX1 = fieldX
@@ -652,8 +657,8 @@ end
 
 local function onToolMenu()
     form.openDialog({
-        title = "Alignment",
-        message = "Reset view yaw so the tail faces you?",
+        title = "@i18n(app.modules.alignment.name)@",
+        message = "@i18n(app.modules.alignment.msg_reset_tail_view)@",
         buttons = {
             {
                 label = "@i18n(app.btn_ok_long)@",

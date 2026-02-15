@@ -2773,6 +2773,176 @@
           "translation": "Value Range"
         }
       },
+      "alignment": {
+        "help_p1": {
+          "english": "Set board roll, pitch and yaw mounting offsets.",
+          "max_length": 47,
+          "needs_translation": false,
+          "translation": "Set board roll, pitch and yaw mounting offsets."
+        },
+        "help_p2": {
+          "english": "Set magnetometer alignment and save to write EEPROM.",
+          "max_length": 52,
+          "needs_translation": false,
+          "translation": "Set magnetometer alignment and save to write EEPROM."
+        },
+        "help_p3": {
+          "english": "The visual below follows live attitude from MSP.",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "The visual below follows live attitude from MSP."
+        },
+        "leaning_left": {
+          "english": "Leaning Left",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Leaning Left"
+        },
+        "leaning_right": {
+          "english": "Leaning Right",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Leaning Right"
+        },
+        "live_fmt": {
+          "english": "Live  R:%0.1f  P:%0.1f  Y:%0.1f",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Live  R:%0.1f  P:%0.1f  Y:%0.1f"
+        },
+        "mag": {
+          "english": "Mag",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Mag"
+        },
+        "mag_custom": {
+          "english": "Custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Custom"
+        },
+        "mag_cw_0": {
+          "english": "CW 0 deg",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "CW 0 deg"
+        },
+        "mag_cw_0_flip": {
+          "english": "CW 0 deg flip",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "CW 0 deg flip"
+        },
+        "mag_cw_180": {
+          "english": "CW 180 deg",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "CW 180 deg"
+        },
+        "mag_cw_180_flip": {
+          "english": "CW 180 deg flip",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "CW 180 deg flip"
+        },
+        "mag_cw_270": {
+          "english": "CW 270 deg",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "CW 270 deg"
+        },
+        "mag_cw_270_flip": {
+          "english": "CW 270 deg flip",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "CW 270 deg flip"
+        },
+        "mag_cw_90": {
+          "english": "CW 90 deg",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "CW 90 deg"
+        },
+        "mag_cw_90_flip": {
+          "english": "CW 90 deg flip",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "CW 90 deg flip"
+        },
+        "mag_default": {
+          "english": "Default",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Default"
+        },
+        "msg_reset_tail_view": {
+          "english": "Reset view yaw so the tail faces you?",
+          "max_length": 37,
+          "needs_translation": false,
+          "translation": "Reset view yaw so the tail faces you?"
+        },
+        "name": {
+          "english": "Alignment",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Alignment"
+        },
+        "nose_direction": {
+          "english": "Nose Direction",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Nose Direction"
+        },
+        "nose_down": {
+          "english": "Nose Down",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Nose Down"
+        },
+        "nose_level": {
+          "english": "Nose Level",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Nose Level"
+        },
+        "nose_up": {
+          "english": "Nose Up",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Nose Up"
+        },
+        "offset_fmt": {
+          "english": "Offset R:%d  P:%d  Y:%d  Mag:%d",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Offset R:%d  P:%d  Y:%d  Mag:%d"
+        },
+        "pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Pitch"
+        },
+        "roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Roll"
+        },
+        "view_yaw_fmt": {
+          "english": "View Yaw:%0.1f",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "View Yaw:%0.1f"
+        },
+        "yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Yaw"
+        }
+      },
       "api_tester": {
         "btn_test": {
           "english": "Test",
