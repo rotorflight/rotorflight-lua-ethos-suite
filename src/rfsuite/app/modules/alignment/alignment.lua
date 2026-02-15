@@ -40,6 +40,7 @@ local state = {
     pendingAt = 0,
     pendingTimeout = 1.0,
     pollingEnabled = false,
+    viewYawOffset = 0,
     display = {
         roll_degrees = 0,
         pitch_degrees = 0,
@@ -91,6 +92,11 @@ end
 local function markDirty()
     state.dirty = true
     if app and app.ui and app.ui.setPageDirty then app.ui.setPageDirty(true) end
+    lcd.invalidate()
+end
+
+local function recenterYawView()
+    state.viewYawOffset = (tonumber(state.live.yaw) or 0) + (tonumber(state.display.yaw_degrees) or 0)
     lcd.invalidate()
 end
 
@@ -316,14 +322,24 @@ local function drawVisual()
     -- Configurator mapping:
     -- x = -pitch, y = -yaw, z = -roll.
     local pitchR = rad(-(state.live.pitch + state.display.pitch_degrees))
-    local yawR = rad(-(state.live.yaw + state.display.yaw_degrees))
+    local yawR = rad(-((state.live.yaw + state.display.yaw_degrees) - state.viewYawOffset))
     local rollR = rad(-(state.live.roll + state.display.roll_degrees))
 
-    local gx0 = panelX + 1
+    local leftPanelW = clamp(floor(panelW * 0.40), 150, floor(panelW * 0.70))
+    local infoX = panelX + 1
+    local infoY = panelY + 1
+    local infoW = leftPanelW
+    local infoH = panelH - 2
+
+    local gx0 = infoX + infoW + 1
     local gy0 = panelY + 1
-    local gw0 = panelW - 2
+    local gw0 = panelW - infoW - 3
     local gh0 = panelH - 2
     if gh0 < 40 then return end
+
+    lcd.color(grid)
+    lcd.drawRectangle(infoX, infoY, infoW, infoH)
+    lcd.drawLine(gx0 - 1, panelY + 1, gx0 - 1, panelY + panelH - 2)
 
     lcd.color(grid)
     local step = 24
@@ -340,12 +356,14 @@ local function drawVisual()
     local _, th1 = lcd.getTextSize(liveText)
     local _, th2 = lcd.getTextSize(offsText)
     local textPad = 2
-    local textX = gx0 + 8
-    local textY = gy0 + 6
+    local textX = infoX + 8
+    local textY = infoY + 6
 
     lcd.color(mainColor)
     lcd.drawText(textX, textY, liveText, LEFT)
     lcd.drawText(textX, textY + th1 + textPad, offsText, LEFT)
+    lcd.drawText(textX, textY + th1 + th2 + 14, string.format("View Yaw:%0.1f", state.viewYawOffset), LEFT)
+    lcd.drawText(textX, textY + th1 + th2 + 28, "Tool: Tail View reset", LEFT)
 
     local cx = gx0 + floor(gw0 * 0.5)
     local cy = gy0 + floor(gh0 * 0.63)
@@ -416,6 +434,7 @@ local function openPage(opts)
     state.pendingAttitude = false
     state.pendingAt = 0
     state.pollingEnabled = false
+    state.viewYawOffset = 0
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
@@ -542,6 +561,11 @@ local function onReloadMenu()
     app.triggers.triggerReloadFull = true
 end
 
+local function onToolMenu()
+    recenterYawView()
+    return true
+end
+
 local function wakeup()
     if not state.wakeupEnabled then return end
 
@@ -615,8 +639,9 @@ return {
     paint = paint,
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
+    onToolMenu = onToolMenu,
     onNavMenu = onNavMenu,
     event = event,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = true},
+    navButtons = {menu = true, save = true, reload = true, tool = true, help = true},
     API = {}
 }
