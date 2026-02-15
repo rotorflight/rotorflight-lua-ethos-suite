@@ -50,6 +50,9 @@ end
 local function wakeup()
     local values = rfsuite.tasks.msp.api.apidata.values
     local cfg = values and values.BLACKBOX_CONFIG
+    if not cfg and rfsuite.session and rfsuite.session.blackbox then
+        cfg = rfsuite.session.blackbox.config
+    end
     local blackboxSupported = cfg and tonumber(cfg.blackbox_supported or 0) == 1
     local device = cfg and tonumber(cfg.device or 0) or 0
     local mode = cfg and tonumber(cfg.mode or 0) or 0

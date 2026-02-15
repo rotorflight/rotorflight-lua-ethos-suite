@@ -15,6 +15,108 @@ local S_PAGES = {
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
+local prereqRequested = false
+local prereqReady = false
+local featureConfigReady = false
+local blackboxConfigReady = false
+local blackboxSupported = false
+local blackboxFocused = false
+local featureBitmap = 0
+local blackboxConfigParsed = {}
+
+local function copyTable(src)
+    if type(src) ~= "table" then return src end
+    local dst = {}
+    for k, v in pairs(src) do
+        if type(v) == "table" then
+            dst[k] = copyTable(v)
+        else
+            dst[k] = v
+        end
+    end
+    return dst
+end
+
+local function setButtonsEnabled(enabled)
+    for i = 1, #S_PAGES do
+        local f = rfsuite.app.formFields and rfsuite.app.formFields[i]
+        if f and f.enable then f:enable(enabled) end
+    end
+end
+
+local function updateMenuAvailability()
+    local connected = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+    local canOpen = prereqReady and connected and blackboxSupported
+
+    setButtonsEnabled(canOpen)
+
+    if canOpen and not blackboxFocused then
+        blackboxFocused = true
+        local idx = tonumber(rfsuite.preferences.menulastselected["blackbox"]) or 1
+        local btn = rfsuite.app.formFields and rfsuite.app.formFields[idx] or nil
+        if btn and btn.focus then btn:focus() end
+    end
+end
+
+local function onPrereqDone()
+    prereqReady = featureConfigReady and blackboxConfigReady
+    if prereqReady then
+        rfsuite.session.blackbox = {
+            feature = {
+                enabledFeatures = featureBitmap
+            },
+            config = copyTable(blackboxConfigParsed or {}),
+            ready = blackboxSupported
+        }
+        updateMenuAvailability()
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
+end
+
+local function requestBlackboxPrereqs()
+    if prereqRequested then return end
+    prereqRequested = true
+    prereqReady = false
+    featureConfigReady = false
+    blackboxConfigReady = false
+    blackboxSupported = false
+    featureBitmap = 0
+    blackboxConfigParsed = {}
+    blackboxFocused = false
+
+    local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+    FAPI.setUUID("blackbox-menu-feature")
+    FAPI.setCompleteHandler(function()
+        local d = FAPI.data()
+        local parsed = d and d.parsed or nil
+        featureBitmap = tonumber(parsed and parsed.enabledFeatures or 0) or 0
+        featureConfigReady = true
+        onPrereqDone()
+    end)
+    FAPI.setErrorHandler(function()
+        featureConfigReady = true
+        onPrereqDone()
+    end)
+    FAPI.read()
+
+    local BAPI = rfsuite.tasks.msp.api.load("BLACKBOX_CONFIG")
+    BAPI.setUUID("blackbox-menu-config")
+    BAPI.setCompleteHandler(function()
+        local d = BAPI.data()
+        local parsed = d and d.parsed or nil
+        blackboxConfigParsed = copyTable(parsed or {})
+        blackboxSupported = tonumber(parsed and parsed.blackbox_supported or 0) == 1
+        blackboxConfigReady = true
+        onPrereqDone()
+    end)
+    BAPI.setErrorHandler(function()
+        blackboxConfigParsed = {}
+        blackboxSupported = false
+        blackboxConfigReady = true
+        onPrereqDone()
+    end)
+    BAPI.read()
+end
 
 local function openPage(opts)
     local pidx = opts.idx
@@ -65,7 +167,10 @@ local function openPage(opts)
     end
 
     if rfsuite.app.gfx_buttons["blackbox"] == nil then rfsuite.app.gfx_buttons["blackbox"] = {} end
-    if rfsuite.preferences.menulastselected["blackbox"] == nil then rfsuite.preferences.menulastselected["blackbox"] = 1 end
+    local lastSelected = tonumber(rfsuite.preferences.menulastselected["blackbox"]) or 1
+    if lastSelected < 1 then lastSelected = 1 end
+    if lastSelected > #S_PAGES then lastSelected = #S_PAGES end
+    rfsuite.preferences.menulastselected["blackbox"] = lastSelected
 
     local lc = 0
     local bx = 0
@@ -101,13 +206,15 @@ local function openPage(opts)
             end
         })
 
-        if rfsuite.preferences.menulastselected["blackbox"] == idx then rfsuite.app.formFields[idx]:focus() end
+        rfsuite.app.formFields[idx]:enable(false)
 
         lc = lc + 1
         if lc == numPerRow then lc = 0 end
     end
 
-    rfsuite.app.triggers.closeProgressLoader = true
+    prereqRequested = false
+    requestBlackboxPrereqs()
+
     enableWakeup = true
 end
 
@@ -125,6 +232,9 @@ end
 local function wakeup()
     if not enableWakeup then return end
     if os.clock() - initTime < 0.25 then return end
+
+    if not prereqRequested then requestBlackboxPrereqs() end
+    updateMenuAvailability()
 
     local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
     if currState ~= prevConnectedState then
