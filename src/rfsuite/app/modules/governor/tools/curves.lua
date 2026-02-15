@@ -56,6 +56,9 @@ local function saveData()
         -- EEPROM commit
         local EAPI = tasks.msp.api.load("EEPROM_WRITE")
         EAPI.setCompleteHandler(function()
+            if app and app.ui and app.ui.setPageDirty then
+                app.ui.setPageDirty(false)
+            end
             app.triggers.closeProgressLoader = true
         end)
         EAPI.write()

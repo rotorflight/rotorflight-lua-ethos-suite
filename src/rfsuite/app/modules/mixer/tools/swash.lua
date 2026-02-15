@@ -245,6 +245,9 @@ local function writeNext(i)
             needsReboot = false
         end
 
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.setPageDirty then
+            rfsuite.app.ui.setPageDirty(false)
+        end
         rfsuite.app.triggers.closeProgressLoader = true
         return
     end

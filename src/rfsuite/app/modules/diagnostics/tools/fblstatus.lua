@@ -262,4 +262,4 @@ local function onNavMenu()
     app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.diagnostics.name)@", script = "diagnostics/diagnostics.lua"})
 end
 
-return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = true, help = false}, API = {}}
+return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}
