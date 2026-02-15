@@ -17,6 +17,7 @@ local FEATURE_BITS = {
 local state = {
     loading = false,
     loaded = false,
+    saving = false,
     dirty = false,
     pendingReads = 0,
     featureBitmap = 0,
@@ -108,7 +109,7 @@ end
 
 local function updateSaveEnabled()
     local save = app.formNavigationFields and app.formNavigationFields.save
-    if save and save.enable then save:enable(canEdit() and state.dirty) end
+    if save and save.enable then save:enable(canEdit() and state.dirty and not state.saving) end
 end
 
 local function updateFieldEnabled()
@@ -239,22 +240,45 @@ local function openPage()
     requestData(false)
 end
 
-local function onSaveMenu()
-    if not canEdit() or not state.dirty then return end
+local function performSave()
+    if not canEdit() or not state.dirty or state.saving then return end
 
+    state.saving = true
     app.ui.progressDisplaySave("Saving Blackbox...")
 
     local API = tasks.msp.api.load("BLACKBOX_CONFIG")
     API.setUUID("blackbox-logging-write")
     API.setErrorHandler(function()
+        state.saving = false
         app.triggers.closeSave = true
         app.triggers.showSaveArmedWarning = true
+        updateSaveEnabled()
     end)
     API.setCompleteHandler(function()
-        state.dirty = false
-        syncSessionSnapshot()
-        updateSaveEnabled()
-        app.utils.settingsSaved()
+        local eepromWrite = {
+            command = 250,
+            processReply = function()
+                state.saving = false
+                state.dirty = false
+                syncSessionSnapshot()
+                app.triggers.closeSave = true
+                updateSaveEnabled()
+            end,
+            errorHandler = function()
+                state.saving = false
+                app.triggers.closeSave = true
+                app.triggers.showSaveArmedWarning = true
+                updateSaveEnabled()
+            end,
+            simulatorResponse = {}
+        }
+        local ok = tasks.msp.mspQueue:add(eepromWrite)
+        if not ok then
+            state.saving = false
+            app.triggers.closeSave = true
+            app.triggers.showSaveArmedWarning = true
+            updateSaveEnabled()
+        end
     end)
 
     API.setValue("device", state.cfg.device)
@@ -265,6 +289,39 @@ local function onSaveMenu()
     API.setValue("rollingErase", state.cfg.rollingErase)
     API.setValue("gracePeriod", state.cfg.gracePeriod)
     API.write()
+end
+
+local function onSaveMenu()
+    if not canEdit() or not state.dirty then return end
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        performSave()
+        return
+    end
+
+    local buttons = {
+        {
+            label = "@i18n(app.btn_ok_long)@",
+            action = function()
+                performSave()
+                return true
+            end
+        },
+        {
+            label = "@i18n(app.btn_cancel)@",
+            action = function() return true end
+        }
+    }
+
+    form.openDialog({
+        width = nil,
+        title = "@i18n(app.msg_save_settings)@",
+        message = "@i18n(app.msg_save_current_page)@",
+        buttons = buttons,
+        wakeup = function() end,
+        paint = function() end,
+        options = TEXT_LEFT
+    })
 end
 
 local function onReloadMenu()
