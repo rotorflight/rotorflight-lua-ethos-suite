@@ -17,6 +17,7 @@ local floor = math.floor
 local sqrt = math.sqrt
 local max = math.max
 local min = math.min
+local t_sort = table.sort
 
 local formFields = app.formFields
 local radio = app.radio
@@ -26,6 +27,7 @@ local BASE_VIEW_PITCH_R = rad(-90)
 local BASE_VIEW_YAW_R = rad(90)
 local CAMERA_DIST = 7.0
 local CAMERA_NEAR_EPS = 0.25
+local SHOW_BACKGROUND_GRID = false
 
 local state = {
     pageIdx = nil,
@@ -341,6 +343,36 @@ local function drawFilledTriangle3D(a, b, c, cx, cy, scale, pitchR, yawR, rollR,
     lcd.drawFilledTriangle(x1, y1, x2, y2, x3, y3)
 end
 
+local function collectTriangle3D(list, a, b, c, cx, cy, scale, pitchR, yawR, rollR, color)
+    local ax, ay, az = rotatePoint(a[1], a[2], a[3], pitchR, yawR, rollR)
+    local bx, by, bz = rotatePoint(b[1], b[2], b[3], pitchR, yawR, rollR)
+    local cx3, cy3, cz3 = rotatePoint(c[1], c[2], c[3], pitchR, yawR, rollR)
+    if (CAMERA_DIST - az) <= CAMERA_NEAR_EPS or (CAMERA_DIST - bz) <= CAMERA_NEAR_EPS or (CAMERA_DIST - cz3) <= CAMERA_NEAR_EPS then
+        return
+    end
+
+    local x1, y1 = projectPoint(ax, ay, az, cx, cy, scale)
+    local x2, y2 = projectPoint(bx, by, bz, cx, cy, scale)
+    local x3, y3 = projectPoint(cx3, cy3, cz3, cx, cy, scale)
+    if x1 == nil or x2 == nil or x3 == nil then return end
+
+    list[#list + 1] = {
+        x1 = x1, y1 = y1, x2 = x2, y2 = y2, x3 = x3, y3 = y3,
+        z = (az + bz + cz3) / 3,
+        color = color
+    }
+end
+
+local function drawTriangleList(list)
+    if #list == 0 then return end
+    t_sort(list, function(a, b) return a.z < b.z end)
+    for i = 1, #list do
+        local t = list[i]
+        lcd.color(t.color)
+        lcd.drawFilledTriangle(t.x1, t.y1, t.x2, t.y2, t.x3, t.y3)
+    end
+end
+
 local function drawVisual()
     local w, h = lcd.getWindowSize()
     local x = 0
@@ -355,6 +387,9 @@ local function drawVisual()
     local mainColor = isDark and lcd.RGB(248, 248, 248) or lcd.RGB(8, 8, 8)
     local accent = isDark and lcd.RGB(255, 220, 110) or lcd.RGB(0, 110, 235)
     local disc = isDark and lcd.RGB(150, 150, 150) or lcd.RGB(150, 150, 150)
+    local bodyLight = isDark and lcd.RGB(220, 220, 220) or lcd.RGB(180, 180, 180)
+    local bodyMid = isDark and lcd.RGB(180, 180, 180) or lcd.RGB(145, 145, 145)
+    local bodyDark = isDark and lcd.RGB(140, 140, 140) or lcd.RGB(112, 112, 112)
 
     local panelX = x + 4
     local panelY = y + 2
@@ -388,13 +423,15 @@ local function drawVisual()
     lcd.drawRectangle(infoX, infoY, infoW, infoH)
     lcd.drawLine(gx0 - 1, panelY + 1, gx0 - 1, panelY + panelH - 2)
 
-    lcd.color(grid)
-    local step = 24
-    for gy = gy0 + step, gy0 + gh0 - 1, step do
-        lcd.drawLine(gx0, gy, gx0 + gw0, gy)
-    end
-    for gx = gx0 + step, gx0 + gw0 - 1, step do
-        lcd.drawLine(gx, gy0, gx, gy0 + gh0)
+    if SHOW_BACKGROUND_GRID then
+        lcd.color(grid)
+        local step = 24
+        for gy = gy0 + step, gy0 + gh0 - 1, step do
+            lcd.drawLine(gx0, gy, gx0 + gw0, gy)
+        end
+        for gx = gx0 + step, gx0 + gw0 - 1, step do
+            lcd.drawLine(gx, gy0, gx, gy0 + gh0)
+        end
     end
 
     lcd.font(FONT_XS)
@@ -486,6 +523,17 @@ local function drawVisual()
     local rotorB = {0.0, 1.9, 1.02}
     local rotorC = {-1.9, 0.0, 1.02}
     local rotorD = {1.9, 0.0, 1.02}
+
+    local fuselage = {}
+    collectTriangle3D(fuselage, nose, lf, top, cx, cy, scale, pitchR, yawR, rollR, bodyLight)
+    collectTriangle3D(fuselage, nose, top, rf, cx, cy, scale, pitchR, yawR, rollR, bodyLight)
+    collectTriangle3D(fuselage, lf, lb, top, cx, cy, scale, pitchR, yawR, rollR, bodyMid)
+    collectTriangle3D(fuselage, rf, top, rb, cx, cy, scale, pitchR, yawR, rollR, bodyMid)
+    collectTriangle3D(fuselage, lb, tail, top, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    collectTriangle3D(fuselage, rb, top, tail, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    collectTriangle3D(fuselage, lf, lb, rb, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    collectTriangle3D(fuselage, lf, rb, rf, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    drawTriangleList(fuselage)
 
     -- Rotor plane + mast
     drawLine3D(rotorA, rotorB, cx, cy, scale, pitchR, yawR, rollR, disc)
