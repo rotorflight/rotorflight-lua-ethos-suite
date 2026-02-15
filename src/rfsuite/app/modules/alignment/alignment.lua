@@ -41,6 +41,8 @@ local state = {
     pendingAt = 0,
     pendingTimeout = 1.0,
     pollingEnabled = false,
+    movementPaused = false,
+    resumeMovementPending = false,
     viewYawOffset = 0,
     display = {
         roll_degrees = 0,
@@ -138,6 +140,25 @@ local function requestAttitude()
     })
 end
 
+local function clearMspQueue()
+    local q = tasks and tasks.msp and tasks.msp.mspQueue
+    if q and q.clear then q:clear() end
+end
+
+local function pauseMovement()
+    state.movementPaused = true
+    state.pendingAttitude = false
+    state.pollingEnabled = false
+end
+
+local function resumeMovement()
+    state.movementPaused = false
+    state.resumeMovementPending = false
+    state.pendingAttitude = false
+    state.pollingEnabled = false
+    state.lastAttitudeAt = 0
+end
+
 local function readData()
     state.dataLoaded = false
 
@@ -180,8 +201,10 @@ end
 local function writeData()
     if state.saving then return end
     state.saving = true
+    pauseMovement()
 
     app.ui.progressDisplay("@i18n(app.msg_saving_settings)@", "@i18n(app.msg_saving_to_fbl)@")
+    clearMspQueue()
 
     local boardAPI = tasks.msp.api.load("BOARD_ALIGNMENT_CONFIG")
     local sensorAPI = tasks.msp.api.load("SENSOR_ALIGNMENT")
@@ -203,9 +226,12 @@ local function writeData()
     sensorAPI.setValue("mag_alignment", clamp(tonumber(state.display.mag_alignment) or 0, 0, 9))
 
     boardAPI.setCompleteHandler(function()
+        clearMspQueue()
         sensorAPI.setCompleteHandler(function()
+            clearMspQueue()
             eepromAPI.setCompleteHandler(function()
                 state.saving = false
+                state.resumeMovementPending = true
                 state.dirty = false
                 if app and app.ui and app.ui.setPageDirty then app.ui.setPageDirty(false) end
                 app.triggers.closeProgressLoader = true
@@ -502,6 +528,8 @@ local function openPage(opts)
     state.pendingAttitude = false
     state.pendingAt = 0
     state.pollingEnabled = false
+    state.movementPaused = false
+    state.resumeMovementPending = false
     state.viewYawOffset = 0
 
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
@@ -653,6 +681,23 @@ local function wakeup()
 
     local now = os.clock()
     local dialogs = app and app.dialogs
+
+    if state.resumeMovementPending then
+        local queueIdle = tasks and tasks.msp and tasks.msp.mspQueue and tasks.msp.mspQueue:isProcessed()
+        if queueIdle and not (dialogs and (dialogs.progressDisplay or dialogs.saveDisplay)) then
+            resumeMovement()
+        else
+            return
+        end
+    end
+
+    if state.movementPaused then
+        if (now - state.invalidateAt) >= 0.15 then
+            state.invalidateAt = now
+            lcd.invalidate()
+        end
+        return
+    end
 
     -- Do not start movement polling until loaders are gone.
     if not state.pollingEnabled then
