@@ -7,6 +7,8 @@ local rfsuite = require("rfsuite")
 local settings = {}
 local enableWakeup = false
 local system = system
+local DEVELOPER_MENU_SCRIPT = "developer/developer.lua"
+local DEVELOPER_MENU_TITLE = "Developer"
 
 local function openPage(opts)
 
@@ -21,7 +23,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.txt_development)@")
+    rfsuite.app.ui.fieldHeader(DEVELOPER_MENU_TITLE .. " / " .. "@i18n(app.modules.settings.name)@")
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
@@ -107,7 +109,7 @@ end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/settings.lua"})
+    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = DEVELOPER_MENU_TITLE, script = DEVELOPER_MENU_SCRIPT})
 end
 
 local function onSaveMenu()
@@ -143,7 +145,7 @@ end
 local function event(widget, category, value, x, y)
 
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/settings.lua"})
+        rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = DEVELOPER_MENU_TITLE, script = DEVELOPER_MENU_SCRIPT})
         return true
     end
 end
