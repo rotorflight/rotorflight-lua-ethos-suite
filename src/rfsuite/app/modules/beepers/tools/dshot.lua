@@ -76,9 +76,17 @@ local function markDirty()
     state.dirty = true
 end
 
+local function useDirtySave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    return not (pref == false or pref == "false")
+end
+
 local function updateSaveEnabled()
     local save = app.formNavigationFields and app.formNavigationFields.save
-    if save and save.enable then save:enable(state.loaded and state.dirty and not state.saving) end
+    if save and save.enable then
+        local allow = state.loaded and (not state.saving) and ((not useDirtySave()) or state.dirty)
+        save:enable(allow)
+    end
 end
 
 local function renderLoading(message)
@@ -185,7 +193,8 @@ local function openPage()
 end
 
 local function performSave()
-    if not state.loaded or not state.dirty or state.saving then return end
+    if not state.loaded or state.saving then return end
+    if useDirtySave() and (not state.dirty) then return end
 
     state.saving = true
     app.ui.progressDisplaySave("@i18n(app.modules.beepers.saving)@")
@@ -232,7 +241,8 @@ local function performSave()
 end
 
 local function onSaveMenu()
-    if not state.loaded or not state.dirty then return end
+    if not state.loaded then return end
+    if useDirtySave() and (not state.dirty) then return end
 
     if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
         performSave()

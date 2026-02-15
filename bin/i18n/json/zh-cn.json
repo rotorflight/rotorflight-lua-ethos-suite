@@ -8788,6 +8788,13 @@
           "needs_translation": false,
           "translation": "电压",
           "reverse_text": false
+        },
+        "txt_save_requires_changes": {
+          "english": "Save requires changes",
+          "translation": "Save requires changes",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
         }
       },
       "stats": {
@@ -9446,11 +9453,11 @@
           "max_length": 13
         },
         "menu_dshot": {
-          "english": "DShot",
+          "english": "ESC Beacon",
           "translation": "DShot",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 5
+          "max_length": 10
         },
         "status": {
           "english": "Status",
@@ -9467,11 +9474,11 @@
           "max_length": 61
         },
         "help_p2": {
-          "english": "DShot page controls beacon tone and conditions.",
+          "english": "ESC Beacon page controls beacon tone and conditions.",
           "translation": "DShot page controls beacon tone and conditions.",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 47
+          "max_length": 52
         },
         "loading": {
           "english": "Loading beeper configuration...",
@@ -9488,11 +9495,11 @@
           "max_length": 17
         },
         "dshot_tone": {
-          "english": "DShot beacon tone",
+          "english": "ESC beacon tone",
           "translation": "DShot beacon tone",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 17
+          "max_length": 15
         },
         "field_gyro_calibrated": {
           "english": "Gyro calibrated",

@@ -212,13 +212,15 @@ function app.event(widget, category, value, x, y)
 
         if value == KEY_ENTER_LONG then
             if app.Page.navButtons and app.Page.navButtons.save == false then return true end
+            local dirtyPref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+            local requireDirty = not (dirtyPref == false or dirtyPref == "false")
 
             -- Block long-press save when page is not dirty on standard API pages.
             if app.Page and app.Page.canSave and app.Page.canSave(app.Page) == false then
                 system.killEvents(KEY_ENTER_BREAK)
                 return true
             end
-            if not app._pageUsesCustomOpen and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
+            if requireDirty and not app._pageUsesCustomOpen and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
                 if app.pageDirty ~= true then
                     system.killEvents(KEY_ENTER_BREAK)
                     return true

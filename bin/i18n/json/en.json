@@ -7551,6 +7551,12 @@
           "needs_translation": false,
           "translation": "Voltage",
           "max_length": 7
+        },
+        "txt_save_requires_changes": {
+          "english": "Save requires changes",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Save requires changes"
         }
       },
       "stats": {
@@ -8156,7 +8162,7 @@
           "english": "ESC beacon tone",
           "needs_translation": false,
           "translation": "ESC beacon tone",
-          "max_length": 17
+          "max_length": 15
         },
         "field_gyro_calibrated": {
           "english": "Gyro calibrated",

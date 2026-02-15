@@ -66,6 +66,12 @@ local function openPage(opts)
     line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_confirm)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.save_confirm or false end, function(newValue) config.save_confirm = newValue end)
 
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_requires_changes)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
+        if config.save_dirty_only == nil then return true end
+        return config.save_dirty_only
+    end, function(newValue) config.save_dirty_only = newValue end)
+
     line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_armed_warning)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.save_armed_warning == nil then return true end

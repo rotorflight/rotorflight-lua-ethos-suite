@@ -2910,7 +2910,7 @@
       "beepers": {
         "dshot_tone": {
           "english": "ESC beacon tone",
-          "max_length": 17,
+          "max_length": 15,
           "needs_translation": false,
           "translation": "ESC beacon tone"
         },
@@ -8071,6 +8071,12 @@
           "max_length": 15,
           "needs_translation": false,
           "translation": "Confirm on save"
+        },
+        "txt_save_requires_changes": {
+          "english": "Save requires changes",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Save requires changes"
         },
         "txt_small": {
           "english": "SMALL",

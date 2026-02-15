@@ -128,7 +128,9 @@ local AUX_OPTIONS_TBL = buildChoiceTable(AUX_OPTIONS, 0)
 local MODE_LOGIC_OPTIONS_TBL = buildChoiceTable(MODE_LOGIC_OPTIONS, -1)
 
 local function canSave()
-    return state.loaded and (not state.loading) and (not state.saving) and state.dirty
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    local requireDirty = not (pref == false or pref == "false")
+    return state.loaded and (not state.loading) and (not state.saving) and ((not requireDirty) or state.dirty)
 end
 
 local function updateSaveButtonState()
@@ -788,7 +790,9 @@ end
 
 local function onSaveMenu()
     if state.loading or state.saving or not state.loaded then return end
-    if not state.dirty then return end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    local requireDirty = not (pref == false or pref == "false")
+    if requireDirty and (not state.dirty) then return end
 
     if hasActiveAutoDetect() then
         local buttons = {{label = "OK", action = function() return true end}}

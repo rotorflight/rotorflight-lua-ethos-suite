@@ -136,6 +136,8 @@ local function openPage(opts)
 end
 
 local function canSave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
     return rfsuite.app.pageDirty == true
 end
 

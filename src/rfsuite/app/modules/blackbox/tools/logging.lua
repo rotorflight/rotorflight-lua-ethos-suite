@@ -107,9 +107,17 @@ local function canEdit()
     return state.loaded and supported and device ~= 0 and mode ~= 0
 end
 
+local function useDirtySave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    return not (pref == false or pref == "false")
+end
+
 local function updateSaveEnabled()
     local save = app.formNavigationFields and app.formNavigationFields.save
-    if save and save.enable then save:enable(canEdit() and state.dirty and not state.saving) end
+    if save and save.enable then
+        local allow = canEdit() and (not state.saving) and ((not useDirtySave()) or state.dirty)
+        save:enable(allow)
+    end
 end
 
 local function updateFieldEnabled()
@@ -241,7 +249,8 @@ local function openPage()
 end
 
 local function performSave()
-    if not canEdit() or not state.dirty or state.saving then return end
+    if not canEdit() or state.saving then return end
+    if useDirtySave() and (not state.dirty) then return end
 
     state.saving = true
     app.ui.progressDisplaySave("@i18n(app.modules.blackbox.saving)@")
@@ -292,7 +301,8 @@ local function performSave()
 end
 
 local function onSaveMenu()
-    if not canEdit() or not state.dirty then return end
+    if not canEdit() then return end
+    if useDirtySave() and (not state.dirty) then return end
 
     if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
         performSave()

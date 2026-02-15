@@ -219,6 +219,8 @@ end
 
 local function canSave()
     if rfsuite.session.servoOverride == true then return false end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
     return rfsuite.app.pageDirty == true
 end
 

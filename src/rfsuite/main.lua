@@ -53,6 +53,7 @@ local userpref_defaults = {
         hs_loader = 0,
         theme_loader = 1,  
         save_confirm = true,   
+        save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
         save_armed_warning = true

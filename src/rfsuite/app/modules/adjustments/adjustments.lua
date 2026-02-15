@@ -537,7 +537,9 @@ local function updateSaveButtonState()
     local saveField = nav and nav["save"] or nil
     if not saveField or not saveField.enable then return end
 
-    local canSave = state.loaded and (not state.loading) and (not state.saving) and (not state.readFallbackLocked) and state.dirty
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    local requireDirty = not (pref == false or pref == "false")
+    local canSave = state.loaded and (not state.loading) and (not state.saving) and (not state.readFallbackLocked) and ((not requireDirty) or state.dirty)
     saveField:enable(canSave)
 end
 
@@ -1709,7 +1711,9 @@ end
 local function onSaveMenu()
     if state.loading or state.saving or not state.loaded then return end
     if state.readFallbackLocked then return end
-    if not state.dirty then return end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    local requireDirty = not (pref == false or pref == "false")
+    if requireDirty and (not state.dirty) then return end
 
     if hasActiveAutoDetect() then
         local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}

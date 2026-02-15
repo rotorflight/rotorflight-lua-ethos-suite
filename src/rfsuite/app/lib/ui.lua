@@ -941,6 +941,8 @@ end
 
 function ui._shouldManageDirtySave()
     if app.Page.disableSaveUntilDirty == false then return false end
+    local pref = preferences and preferences.general and preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return false end
     local save = app.formNavigationFields and app.formNavigationFields.save
     return save and save.enable
 end
@@ -1550,7 +1552,7 @@ function ui.openPage(opts)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
         app.Page.openPage(opts)
-        if app.Page.disableSaveUntilDirty ~= false and not app.Page.canSave then
+        if ui._shouldManageDirtySave() and app.Page.disableSaveUntilDirty ~= false and not app.Page.canSave then
             app.Page.canSave = function()
                 return app.pageDirty == true
             end

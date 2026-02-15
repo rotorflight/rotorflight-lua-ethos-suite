@@ -3384,8 +3384,8 @@
       },
       "beepers": {
         "dshot_tone": {
-          "english": "DShot beacon tone",
-          "max_length": 17,
+          "english": "ESC beacon tone",
+          "max_length": 15,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "DShot beacon tone"
@@ -3531,8 +3531,8 @@
           "translation": "Configure analog beeper conditions and DShot beacon behavior."
         },
         "help_p2": {
-          "english": "DShot page controls beacon tone and conditions.",
-          "max_length": 47,
+          "english": "ESC Beacon page controls beacon tone and conditions.",
+          "max_length": 52,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "DShot page controls beacon tone and conditions."
@@ -3552,8 +3552,8 @@
           "translation": "Configuration"
         },
         "menu_dshot": {
-          "english": "DShot",
-          "max_length": 5,
+          "english": "ESC Beacon",
+          "max_length": 10,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "DShot"
@@ -9394,6 +9394,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Confirm on Lagre"
+        },
+        "txt_save_requires_changes": {
+          "english": "Save requires changes",
+          "max_length": 21,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Save requires changes"
         },
         "txt_small": {
           "english": "SMALL",
