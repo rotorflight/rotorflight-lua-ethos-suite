@@ -109,6 +109,10 @@ def _get_work_dir():
         return Path.home() / "Library" / "Application Support" / "rfsuite-updater"
     if sys.platform.startswith("linux"):
         return Path.home() / ".local" / "share" / "rfsuite-updater"
+    if sys.platform == "win32":
+        # In onefile builds APP_DIR can be a deep temp extraction path; keep this short.
+        base = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir())
+        return base / "rfsuite_updater_work"
     return APP_DIR / "rfsuite_updater_work"
 
 WORK_DIR = _get_work_dir()
@@ -2363,7 +2367,23 @@ class UpdaterGUI:
 
                 try:
                     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                        zip_ref.extractall(extract_dir)
+                        skipped = 0
+                        for member in zip_ref.infolist():
+                            name = member.filename.replace("\\", "/")
+                            parts = [p for p in name.split("/") if p and p != "."]
+                            ignore = False
+                            for part in parts:
+                                if part in ("__pycache__", "._pycache__") or part.startswith("._"):
+                                    ignore = True
+                                    break
+                            if not ignore and name.endswith((".pyc", ".pyo")):
+                                ignore = True
+                            if ignore:
+                                skipped += 1
+                                continue
+                            zip_ref.extract(member, extract_dir)
+                        if skipped:
+                            self.log(f"  Skipped {skipped} ephemeral archive entries")
                     self.log("✓ Archive extracted")
                     self.mark_step_done("Extract")
                 except Exception as e:
