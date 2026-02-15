@@ -47,8 +47,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "Dataflash", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"},
-            {t = "SD Card", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"}
+            {t = "@i18n(app.modules.blackbox.dataflash)@", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"},
+            {t = "@i18n(app.modules.blackbox.sdcard)@", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"}
         }
     }
 }
@@ -70,27 +70,27 @@ local function formatSize(bytes)
 end
 
 local function formatDataflashStatus()
-    if not status.dataflash.supported then return "Not supported" end
-    if status.eraseInProgress or not status.dataflash.ready then return "Erasing / busy..." end
+    if not status.dataflash.supported then return "@i18n(app.modules.blackbox.not_supported)@" end
+    if status.eraseInProgress or not status.dataflash.ready then return "@i18n(app.modules.blackbox.erasing_busy)@" end
     local total = status.dataflash.totalSize or 0
     local used = status.dataflash.usedSize or 0
-    return string.format("Used %s / %s", formatSize(used), formatSize(total))
+    return string.format("@i18n(app.modules.blackbox.used_fmt)@", formatSize(used), formatSize(total))
 end
 
 local function formatSDCardStatus()
-    if not status.sdcard.supported then return "Not supported" end
+    if not status.sdcard.supported then return "@i18n(app.modules.blackbox.not_supported)@" end
     local state = status.sdcard.state or SDCARD_STATE.NOT_PRESENT
-    if state == SDCARD_STATE.NOT_PRESENT then return "No card" end
-    if state == SDCARD_STATE.FATAL then return string.format("Error (code %d)", status.sdcard.filesystemLastError or 0) end
-    if state == SDCARD_STATE.CARD_INIT then return "Initializing card..." end
-    if state == SDCARD_STATE.FS_INIT then return "Initializing filesystem..." end
+    if state == SDCARD_STATE.NOT_PRESENT then return "@i18n(app.modules.blackbox.no_card)@" end
+    if state == SDCARD_STATE.FATAL then return string.format("@i18n(app.modules.blackbox.error_code_fmt)@", status.sdcard.filesystemLastError or 0) end
+    if state == SDCARD_STATE.CARD_INIT then return "@i18n(app.modules.blackbox.initializing_card)@" end
+    if state == SDCARD_STATE.FS_INIT then return "@i18n(app.modules.blackbox.initializing_filesystem)@" end
     if state == SDCARD_STATE.READY then
         local totalKB = status.sdcard.totalSizeKB or 0
         local freeKB = status.sdcard.freeSizeKB or 0
         local usedKB = math.max(totalKB - freeKB, 0)
-        return string.format("Used %s / %s", formatSize(usedKB * 1024), formatSize(totalKB * 1024))
+        return string.format("@i18n(app.modules.blackbox.used_fmt)@", formatSize(usedKB * 1024), formatSize(totalKB * 1024))
     end
-    return string.format("Unknown state (%d)", state)
+    return string.format("@i18n(app.modules.blackbox.unknown_state_fmt)@", state)
 end
 
 local function updateStatusFields()
@@ -177,7 +177,7 @@ local function onToolMenu()
             action = function()
                 status.eraseInProgress = true
                 eraseDataflash()
-                app.ui.progressDisplay("Blackbox", "Erasing dataflash...")
+                app.ui.progressDisplay("@i18n(app.modules.blackbox.name)@", "@i18n(app.modules.blackbox.erasing_dataflash)@")
                 return true
             end
         },
@@ -189,8 +189,8 @@ local function onToolMenu()
 
     form.openDialog({
         width = nil,
-        title = "Blackbox",
-        message = "Erase onboard dataflash logs?",
+        title = "@i18n(app.modules.blackbox.name)@",
+        message = "@i18n(app.modules.blackbox.erase_prompt)@",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,
@@ -200,13 +200,13 @@ end
 
 local function event(widget, category, value)
     if category == EVT_CLOSE and (value == 0 or value == 35) then
-        app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+        app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
         return true
     end
 end
 
 local function onNavMenu()
-    app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+    app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
 end
 
 return {apidata = apidata, eepromWrite = false, reboot = false, postLoad = postLoad, wakeup = wakeup, onToolMenu = onToolMenu, event = event, onNavMenu = onNavMenu, API = {}, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}}

@@ -37,29 +37,29 @@ local state = {
 }
 
 local FIELD_DEFS = {
-    {label = "Command", bit = 0},
-    {label = "Setpoint", bit = 1},
-    {label = "Mixer", bit = 2},
-    {label = "PID", bit = 3},
-    {label = "Attitude", bit = 4},
-    {label = "Gyro Raw", bit = 5},
-    {label = "Gyro", bit = 6},
-    {label = "Acc", bit = 7},
-    {label = "Mag", bit = 8},
-    {label = "Alt", bit = 9},
-    {label = "Battery", bit = 10},
-    {label = "RSSI", bit = 11},
-    {label = "GPS", bit = 12, featureBit = FEATURE_BITS.gps},
-    {label = "RPM", bit = 13},
-    {label = "Motors", bit = 14},
-    {label = "Servos", bit = 15},
-    {label = "VBEC", bit = 16},
-    {label = "VBUS", bit = 17},
-    {label = "Temps", bit = 18},
-    {label = "ESC", bit = 19, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
-    {label = "BEC", bit = 20, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
-    {label = "ESC2", bit = 21, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
-    {label = "Governor", bit = 22, apiversiongte = "12.09", featureBit = FEATURE_BITS.governor}
+    {label = "@i18n(app.modules.blackbox.log_command)@", bit = 0},
+    {label = "@i18n(app.modules.blackbox.log_setpoint)@", bit = 1},
+    {label = "@i18n(app.modules.blackbox.log_mixer)@", bit = 2},
+    {label = "@i18n(app.modules.blackbox.log_pid)@", bit = 3},
+    {label = "@i18n(app.modules.blackbox.log_attitude)@", bit = 4},
+    {label = "@i18n(app.modules.blackbox.log_gyro_raw)@", bit = 5},
+    {label = "@i18n(app.modules.blackbox.log_gyro)@", bit = 6},
+    {label = "@i18n(app.modules.blackbox.log_acc)@", bit = 7},
+    {label = "@i18n(app.modules.blackbox.log_mag)@", bit = 8},
+    {label = "@i18n(app.modules.blackbox.log_alt)@", bit = 9},
+    {label = "@i18n(app.modules.blackbox.log_battery)@", bit = 10},
+    {label = "@i18n(app.modules.blackbox.log_rssi)@", bit = 11},
+    {label = "@i18n(app.modules.blackbox.log_gps)@", bit = 12, featureBit = FEATURE_BITS.gps},
+    {label = "@i18n(app.modules.blackbox.log_rpm)@", bit = 13},
+    {label = "@i18n(app.modules.blackbox.log_motors)@", bit = 14},
+    {label = "@i18n(app.modules.blackbox.log_servos)@", bit = 15},
+    {label = "@i18n(app.modules.blackbox.log_vbec)@", bit = 16},
+    {label = "@i18n(app.modules.blackbox.log_vbus)@", bit = 17},
+    {label = "@i18n(app.modules.blackbox.log_temps)@", bit = 18},
+    {label = "@i18n(app.modules.blackbox.log_esc)@", bit = 19, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
+    {label = "@i18n(app.modules.blackbox.log_bec)@", bit = 20, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
+    {label = "@i18n(app.modules.blackbox.log_esc2)@", bit = 21, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
+    {label = "@i18n(app.modules.blackbox.log_governor)@", bit = 22, apiversiongte = "12.09", featureBit = FEATURE_BITS.governor}
 }
 
 local function copyTable(src)
@@ -122,14 +122,14 @@ end
 
 local function renderLoading(message)
     form.clear()
-    app.ui.fieldHeader("Blackbox / Logging")
-    local line = form.addLine("Status")
-    form.addStaticText(line, nil, message or "Loading...")
+    app.ui.fieldHeader("@i18n(app.modules.blackbox.name)@ / @i18n(app.modules.blackbox.menu_logging)@")
+    local line = form.addLine("@i18n(app.modules.blackbox.status)@")
+    form.addStaticText(line, nil, message or "@i18n(app.msg_loading)@")
 end
 
 local function renderForm()
     form.clear()
-    app.ui.fieldHeader("Blackbox / Logging")
+    app.ui.fieldHeader("@i18n(app.modules.blackbox.name)@ / @i18n(app.modules.blackbox.menu_logging)@")
 
     state.form.toggles = {}
 
@@ -193,7 +193,7 @@ local function requestData(forceApiRead)
     state.loaded = false
     state.dirty = false
 
-    renderLoading("Loading blackbox logging...")
+    renderLoading("@i18n(app.modules.blackbox.loading_logging)@")
 
     if not forceApiRead and loadFromSessionSnapshot() then
         state.loading = false
@@ -244,7 +244,7 @@ local function performSave()
     if not canEdit() or not state.dirty or state.saving then return end
 
     state.saving = true
-    app.ui.progressDisplaySave("Saving Blackbox...")
+    app.ui.progressDisplaySave("@i18n(app.modules.blackbox.saving)@")
 
     local API = tasks.msp.api.load("BLACKBOX_CONFIG")
     API.setUUID("blackbox-logging-write")
@@ -334,13 +334,13 @@ end
 
 local function event(widget, category, value)
     if category == EVT_CLOSE and (value == 0 or value == 35) then
-        app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+        app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
         return true
     end
 end
 
 local function onNavMenu()
-    app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+    app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
 end
 
 return {

@@ -35,17 +35,17 @@ local state = {
 
 local function onoffTable()
     return {
-        {"Off", 0},
-        {"On", 1}
+        {"@i18n(app.modules.blackbox.off)@", 0},
+        {"@i18n(app.modules.blackbox.on)@", 1}
     }
 end
 
 local function modeTable()
     return {
-        {"Off", 0},
-        {"Normal", 1},
-        {"Armed", 2},
-        {"Switch", 3}
+        {"@i18n(app.modules.blackbox.mode_off)@", 0},
+        {"@i18n(app.modules.blackbox.mode_normal)@", 1},
+        {"@i18n(app.modules.blackbox.mode_armed)@", 2},
+        {"@i18n(app.modules.blackbox.mode_switch)@", 3}
     }
 end
 
@@ -73,17 +73,17 @@ local function denomTable(currentDenom)
     end
 
     if not seen then
-        tbl[#tbl + 1] = {string.format("Custom %s [1/%d]", formatRateHz(current), current), current}
+        tbl[#tbl + 1] = {string.format("@i18n(app.modules.blackbox.rate_custom)@", formatRateHz(current), current), current}
     end
 
     return tbl
 end
 
 local function deviceTable()
-    local t = {{"Disabled", 0}}
-    if state.media.dataflashSupported then t[#t + 1] = {"Onboard Flash", 1} end
-    if state.media.sdcardSupported then t[#t + 1] = {"SD Card", 2} end
-    t[#t + 1] = {"Serial Port", 3}
+    local t = {{"@i18n(app.modules.blackbox.device_disabled)@", 0}}
+    if state.media.dataflashSupported then t[#t + 1] = {"@i18n(app.modules.blackbox.device_onboard_flash)@", 1} end
+    if state.media.sdcardSupported then t[#t + 1] = {"@i18n(app.modules.blackbox.device_sdcard)@", 2} end
+    t[#t + 1] = {"@i18n(app.modules.blackbox.device_serial_port)@", 3}
     return t
 end
 
@@ -126,37 +126,37 @@ end
 
 local function renderLoading(message)
     form.clear()
-    app.ui.fieldHeader("Blackbox / Configuration")
-    local line = form.addLine("Status")
-    form.addStaticText(line, nil, message or "Loading...")
+    app.ui.fieldHeader("@i18n(app.modules.blackbox.name)@ / @i18n(app.modules.blackbox.menu_configuration)@")
+    local line = form.addLine("@i18n(app.modules.blackbox.status)@")
+    form.addStaticText(line, nil, message or "@i18n(app.msg_loading)@")
 end
 
 local function renderForm()
     form.clear()
-    app.ui.fieldHeader("Blackbox / Configuration")
+    app.ui.fieldHeader("@i18n(app.modules.blackbox.name)@ / @i18n(app.modules.blackbox.menu_configuration)@")
 
-    local line = form.addLine("Device")
+    local line = form.addLine("@i18n(app.modules.blackbox.device)@")
     state.form.device = form.addChoiceField(line, nil, deviceTable(), function() return state.cfg.device end, function(v)
         state.cfg.device = v
         markDirty()
         updateVisibility()
     end)
 
-    line = form.addLine("Mode")
+    line = form.addLine("@i18n(app.modules.blackbox.logging_mode)@")
     state.form.mode = form.addChoiceField(line, nil, modeTable(), function() return state.cfg.mode end, function(v)
         state.cfg.mode = v
         markDirty()
         updateVisibility()
     end)
 
-    line = form.addLine("Logging Rate")
+    line = form.addLine("@i18n(app.modules.blackbox.logging_rate)@")
     state.form.denom = form.addChoiceField(line, nil, denomTable(state.cfg.denom), function() return state.cfg.denom end, function(v)
         state.cfg.denom = v
         markDirty()
         updateSaveEnabled()
     end)
 
-    line = form.addLine("Grace Period")
+    line = form.addLine("@i18n(app.modules.blackbox.disarm_grace_period)@")
     state.form.gracePeriod = form.addNumberField(line, nil, 0, 255, function() return state.cfg.gracePeriod end, function(v)
         state.cfg.gracePeriod = v
         markDirty()
@@ -164,7 +164,7 @@ local function renderForm()
     end)
     if state.form.gracePeriod and state.form.gracePeriod.suffix then state.form.gracePeriod:suffix("s") end
 
-    line = form.addLine("Initial Erase Free")
+    line = form.addLine("@i18n(app.modules.blackbox.initial_erase)@")
     state.form.initialErase = form.addNumberField(line, nil, 0, 65535, function() return state.cfg.initialEraseFreeSpaceKiB end, function(v)
         state.cfg.initialEraseFreeSpaceKiB = v
         markDirty()
@@ -172,7 +172,7 @@ local function renderForm()
     end)
     if state.form.initialErase and state.form.initialErase.suffix then state.form.initialErase:suffix("KiB") end
 
-    line = form.addLine("Rolling Erase")
+    line = form.addLine("@i18n(app.modules.blackbox.rolling_erase)@")
     state.form.rollingErase = form.addBooleanField(line, nil, function()
         return tonumber(state.cfg.rollingErase or 0) == 1
     end, function(v)
@@ -235,7 +235,7 @@ local function requestData(forceApiRead)
     state.dirty = false
     state.pendingReads = 0
 
-    renderLoading("Loading feature/config...")
+    renderLoading("@i18n(app.modules.blackbox.loading_feature_config)@")
 
     local seededFromSession = false
     if not forceApiRead then
@@ -291,7 +291,7 @@ local function performSave()
     if not canEdit() or not state.dirty or state.saving then return end
 
     state.saving = true
-    app.ui.progressDisplaySave("Saving Blackbox...")
+    app.ui.progressDisplaySave("@i18n(app.modules.blackbox.saving)@")
 
     local API = tasks.msp.api.load("BLACKBOX_CONFIG")
     API.setUUID("blackbox-config-write")
@@ -397,13 +397,13 @@ end
 
 local function event(widget, category, value)
     if category == EVT_CLOSE and (value == 0 or value == 35) then
-        app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+        app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
         return true
     end
 end
 
 local function onNavMenu()
-    app.ui.openPage({idx = app.lastIdx, title = "Blackbox", script = "blackbox/blackbox.lua"})
+    app.ui.openPage({idx = app.lastIdx, title = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua"})
 end
 
 return {

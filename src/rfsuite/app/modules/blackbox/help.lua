@@ -7,9 +7,9 @@ local data = {}
 
 data["help"] = {}
 data["help"]["default"] = {
-    "Configure Blackbox logging and monitor media status.",
-    "Tool menu can erase onboard dataflash logs.",
-    "Mass-storage reboot is intentionally not included in this module."
+    "@i18n(app.modules.blackbox.help_p1)@",
+    "@i18n(app.modules.blackbox.help_p2)@",
+    "@i18n(app.modules.blackbox.help_p3)@"
 }
 
 return data

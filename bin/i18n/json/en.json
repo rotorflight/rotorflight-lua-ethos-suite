@@ -7722,6 +7722,386 @@
           "translation": "OK",
           "max_length": 2
         }
+      },
+      "blackbox": {
+        "name": {
+          "english": "Blackbox",
+          "needs_translation": false,
+          "translation": "Blackbox",
+          "max_length": 8
+        },
+        "menu_configuration": {
+          "english": "Configuration",
+          "needs_translation": false,
+          "translation": "Configuration",
+          "max_length": 13
+        },
+        "menu_logging": {
+          "english": "Logging",
+          "needs_translation": false,
+          "translation": "Logging",
+          "max_length": 7
+        },
+        "menu_status": {
+          "english": "Status",
+          "needs_translation": false,
+          "translation": "Status",
+          "max_length": 6
+        },
+        "status": {
+          "english": "Status",
+          "needs_translation": false,
+          "translation": "Status",
+          "max_length": 6
+        },
+        "help_p1": {
+          "english": "Configure Blackbox logging and monitor media status.",
+          "needs_translation": false,
+          "translation": "Configure Blackbox logging and monitor media status.",
+          "max_length": 52
+        },
+        "help_p2": {
+          "english": "Tool menu can erase onboard dataflash logs.",
+          "needs_translation": false,
+          "translation": "Tool menu can erase onboard dataflash logs.",
+          "max_length": 43
+        },
+        "help_p3": {
+          "english": "Mass-storage reboot is intentionally not included in this module.",
+          "needs_translation": false,
+          "translation": "Mass-storage reboot is intentionally not included in this module.",
+          "max_length": 65
+        },
+        "off": {
+          "english": "Off",
+          "needs_translation": false,
+          "translation": "Off",
+          "max_length": 3
+        },
+        "on": {
+          "english": "On",
+          "needs_translation": false,
+          "translation": "On",
+          "max_length": 2
+        },
+        "mode_off": {
+          "english": "Off",
+          "needs_translation": false,
+          "translation": "Off",
+          "max_length": 3
+        },
+        "mode_normal": {
+          "english": "Normal",
+          "needs_translation": false,
+          "translation": "Normal",
+          "max_length": 6
+        },
+        "mode_armed": {
+          "english": "Armed",
+          "needs_translation": false,
+          "translation": "Armed",
+          "max_length": 5
+        },
+        "mode_switch": {
+          "english": "Switch",
+          "needs_translation": false,
+          "translation": "Switch",
+          "max_length": 6
+        },
+        "rate_custom": {
+          "english": "Custom %s [1/%d]",
+          "needs_translation": false,
+          "translation": "Custom %s [1/%d]",
+          "max_length": 16
+        },
+        "device": {
+          "english": "Logging device",
+          "needs_translation": false,
+          "translation": "Logging device",
+          "max_length": 14
+        },
+        "device_disabled": {
+          "english": "Disabled",
+          "needs_translation": false,
+          "translation": "Disabled",
+          "max_length": 8
+        },
+        "device_onboard_flash": {
+          "english": "Onboard Flash",
+          "needs_translation": false,
+          "translation": "Onboard Flash",
+          "max_length": 13
+        },
+        "device_sdcard": {
+          "english": "SD Card",
+          "needs_translation": false,
+          "translation": "SD Card",
+          "max_length": 7
+        },
+        "device_serial_port": {
+          "english": "Serial Port",
+          "needs_translation": false,
+          "translation": "Serial Port",
+          "max_length": 11
+        },
+        "logging_mode": {
+          "english": "Logging mode",
+          "needs_translation": false,
+          "translation": "Logging mode",
+          "max_length": 12
+        },
+        "logging_rate": {
+          "english": "Logging rate",
+          "needs_translation": false,
+          "translation": "Logging rate",
+          "max_length": 12
+        },
+        "disarm_grace_period": {
+          "english": "Disarm grace period",
+          "needs_translation": false,
+          "translation": "Disarm grace period",
+          "max_length": 19
+        },
+        "initial_erase": {
+          "english": "Initial erase",
+          "needs_translation": false,
+          "translation": "Initial erase",
+          "max_length": 13
+        },
+        "rolling_erase": {
+          "english": "Rolling erase",
+          "needs_translation": false,
+          "translation": "Rolling erase",
+          "max_length": 13
+        },
+        "loading_feature_config": {
+          "english": "Loading feature/config...",
+          "needs_translation": false,
+          "translation": "Loading feature/config...",
+          "max_length": 25
+        },
+        "loading_logging": {
+          "english": "Loading blackbox logging...",
+          "needs_translation": false,
+          "translation": "Loading blackbox logging...",
+          "max_length": 27
+        },
+        "saving": {
+          "english": "Saving Blackbox...",
+          "needs_translation": false,
+          "translation": "Saving Blackbox...",
+          "max_length": 18
+        },
+        "log_command": {
+          "english": "Command",
+          "needs_translation": false,
+          "translation": "Command",
+          "max_length": 7
+        },
+        "log_setpoint": {
+          "english": "Setpoint",
+          "needs_translation": false,
+          "translation": "Setpoint",
+          "max_length": 8
+        },
+        "log_mixer": {
+          "english": "Mixer",
+          "needs_translation": false,
+          "translation": "Mixer",
+          "max_length": 5
+        },
+        "log_pid": {
+          "english": "PID",
+          "needs_translation": false,
+          "translation": "PID",
+          "max_length": 3
+        },
+        "log_attitude": {
+          "english": "Attitude",
+          "needs_translation": false,
+          "translation": "Attitude",
+          "max_length": 8
+        },
+        "log_gyro_raw": {
+          "english": "Gyro Raw",
+          "needs_translation": false,
+          "translation": "Gyro Raw",
+          "max_length": 8
+        },
+        "log_gyro": {
+          "english": "Gyro",
+          "needs_translation": false,
+          "translation": "Gyro",
+          "max_length": 4
+        },
+        "log_acc": {
+          "english": "Acc",
+          "needs_translation": false,
+          "translation": "Acc",
+          "max_length": 3
+        },
+        "log_mag": {
+          "english": "Mag",
+          "needs_translation": false,
+          "translation": "Mag",
+          "max_length": 3
+        },
+        "log_alt": {
+          "english": "Alt",
+          "needs_translation": false,
+          "translation": "Alt",
+          "max_length": 3
+        },
+        "log_battery": {
+          "english": "Battery",
+          "needs_translation": false,
+          "translation": "Battery",
+          "max_length": 7
+        },
+        "log_rssi": {
+          "english": "RSSI",
+          "needs_translation": false,
+          "translation": "RSSI",
+          "max_length": 4
+        },
+        "log_gps": {
+          "english": "GPS",
+          "needs_translation": false,
+          "translation": "GPS",
+          "max_length": 3
+        },
+        "log_rpm": {
+          "english": "RPM",
+          "needs_translation": false,
+          "translation": "RPM",
+          "max_length": 3
+        },
+        "log_motors": {
+          "english": "Motors",
+          "needs_translation": false,
+          "translation": "Motors",
+          "max_length": 6
+        },
+        "log_servos": {
+          "english": "Servos",
+          "needs_translation": false,
+          "translation": "Servos",
+          "max_length": 6
+        },
+        "log_vbec": {
+          "english": "VBEC",
+          "needs_translation": false,
+          "translation": "VBEC",
+          "max_length": 4
+        },
+        "log_vbus": {
+          "english": "VBUS",
+          "needs_translation": false,
+          "translation": "VBUS",
+          "max_length": 4
+        },
+        "log_temps": {
+          "english": "Temps",
+          "needs_translation": false,
+          "translation": "Temps",
+          "max_length": 5
+        },
+        "log_esc": {
+          "english": "ESC",
+          "needs_translation": false,
+          "translation": "ESC",
+          "max_length": 3
+        },
+        "log_bec": {
+          "english": "BEC",
+          "needs_translation": false,
+          "translation": "BEC",
+          "max_length": 3
+        },
+        "log_esc2": {
+          "english": "ESC2",
+          "needs_translation": false,
+          "translation": "ESC2",
+          "max_length": 4
+        },
+        "log_governor": {
+          "english": "Governor",
+          "needs_translation": false,
+          "translation": "Governor",
+          "max_length": 8
+        },
+        "dataflash": {
+          "english": "Dataflash",
+          "needs_translation": false,
+          "translation": "Dataflash",
+          "max_length": 9
+        },
+        "sdcard": {
+          "english": "SD Card",
+          "needs_translation": false,
+          "translation": "SD Card",
+          "max_length": 7
+        },
+        "not_supported": {
+          "english": "Not supported",
+          "needs_translation": false,
+          "translation": "Not supported",
+          "max_length": 13
+        },
+        "erasing_busy": {
+          "english": "Erasing / busy...",
+          "needs_translation": false,
+          "translation": "Erasing / busy...",
+          "max_length": 17
+        },
+        "used_fmt": {
+          "english": "Used %s / %s",
+          "needs_translation": false,
+          "translation": "Used %s / %s",
+          "max_length": 12
+        },
+        "no_card": {
+          "english": "No card",
+          "needs_translation": false,
+          "translation": "No card",
+          "max_length": 7
+        },
+        "error_code_fmt": {
+          "english": "Error (code %d)",
+          "needs_translation": false,
+          "translation": "Error (code %d)",
+          "max_length": 15
+        },
+        "initializing_card": {
+          "english": "Initializing card...",
+          "needs_translation": false,
+          "translation": "Initializing card...",
+          "max_length": 20
+        },
+        "initializing_filesystem": {
+          "english": "Initializing filesystem...",
+          "needs_translation": false,
+          "translation": "Initializing filesystem...",
+          "max_length": 26
+        },
+        "unknown_state_fmt": {
+          "english": "Unknown state (%d)",
+          "needs_translation": false,
+          "translation": "Unknown state (%d)",
+          "max_length": 18
+        },
+        "erasing_dataflash": {
+          "english": "Erasing dataflash...",
+          "needs_translation": false,
+          "translation": "Erasing dataflash...",
+          "max_length": 20
+        },
+        "erase_prompt": {
+          "english": "Erase onboard dataflash logs?",
+          "needs_translation": false,
+          "translation": "Erase onboard dataflash logs?",
+          "max_length": 29
+        }
       }
     },
     "msg_loaded_task": {

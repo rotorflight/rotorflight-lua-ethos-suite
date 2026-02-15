@@ -7,9 +7,9 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 
 local S_PAGES = {
-    [1] = { name = "Configuration", script = "configuration.lua", image = "configuration.png" },
-    [2] = { name = "Logging", script = "logging.lua", image = "logging.png" },
-    [3] = { name = "Status", script = "status.lua", image = "status.png" }
+    [1] = { name = "@i18n(app.modules.blackbox.menu_configuration)@", script = "configuration.lua", image = "configuration.png" },
+    [2] = { name = "@i18n(app.modules.blackbox.menu_logging)@", script = "logging.lua", image = "logging.png" },
+    [3] = { name = "@i18n(app.modules.blackbox.menu_status)@", script = "status.lua", image = "status.png" }
 }
 
 local enableWakeup = false
@@ -142,7 +142,7 @@ local function openPage(opts)
         rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
-    rfsuite.app.ui.fieldHeader("Blackbox")
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.blackbox.name)@")
 
     local buttonW
     local buttonH
@@ -201,7 +201,7 @@ local function openPage(opts)
             press = function()
                 rfsuite.preferences.menulastselected["blackbox"] = idx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
-                local name = "Blackbox / " .. page.name
+                local name = "@i18n(app.modules.blackbox.name)@" .. " / " .. page.name
                 rfsuite.app.ui.openPage({idx = idx, title = name, script = "blackbox/tools/" .. page.script})
             end
         })
