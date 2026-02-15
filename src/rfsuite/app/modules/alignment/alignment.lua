@@ -475,7 +475,7 @@ local function drawVisual()
                 local ux = dx / mag
                 local uy = dy / mag
                 local htxt, vtxt = "center", "center"
-                if ux > 0.35 then htxt = "right" elseif ux < -0.35 then htxt = "left" end
+                if ux > 0.35 then htxt = "left" elseif ux < -0.35 then htxt = "right" end
                 if uy > 0.35 then vtxt = "up" elseif uy < -0.35 then vtxt = "down" end
 
                 local primary = "@i18n(app.modules.alignment.nose_level)@"
@@ -513,11 +513,34 @@ local function drawVisual()
     local mast = {0.0, 0.0, 1.02}
     local finU = {-2.1, 0.0, 0.42}
     local finD = {-2.1, 0.0, -0.20}
+    local boomSL = {-0.95, -0.18, 0.06}
+    local boomSR = {-0.95, 0.18, 0.06}
+    local boomSU = {-0.95, 0.0, 0.16}
+    local boomSD = {-0.95, 0.0, -0.04}
+    local boomEL = {-2.05, -0.11, 0.02}
+    local boomER = {-2.05, 0.11, 0.02}
+    local boomEU = {-2.05, 0.0, 0.10}
+    local boomED = {-2.05, 0.0, -0.04}
 
-    local skidLF = {0.7, -0.58, -0.60}
-    local skidLB = {-0.9, -0.58, -0.60}
-    local skidRF = {0.7, 0.58, -0.60}
-    local skidRB = {-0.9, 0.58, -0.60}
+    local skidL1 = {1.12, -0.66, -0.69}
+    local skidL2 = {0.76, -0.66, -0.64}
+    local skidL3 = {0.00, -0.66, -0.62}
+    local skidL4 = {-0.96, -0.66, -0.63}
+    local skidL5 = {-1.24, -0.66, -0.67}
+    local skidR1 = {1.12, 0.66, -0.69}
+    local skidR2 = {0.76, 0.66, -0.64}
+    local skidR3 = {0.00, 0.66, -0.62}
+    local skidR4 = {-0.96, 0.66, -0.63}
+    local skidR5 = {-1.24, 0.66, -0.67}
+
+    local strutLFTop = {0.48, -0.48, -0.30}
+    local strutLFBot = {0.48, -0.66, -0.63}
+    local strutLBTop = {-0.58, -0.45, -0.28}
+    local strutLBBot = {-0.58, -0.66, -0.63}
+    local strutRFTop = {0.48, 0.48, -0.30}
+    local strutRFBot = {0.48, 0.66, -0.63}
+    local strutRBTop = {-0.58, 0.45, -0.28}
+    local strutRBBot = {-0.58, 0.66, -0.63}
 
     local rotorA = {0.0, -1.9, 1.02}
     local rotorB = {0.0, 1.9, 1.02}
@@ -533,6 +556,15 @@ local function drawVisual()
     collectTriangle3D(fuselage, rb, top, tail, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
     collectTriangle3D(fuselage, lf, lb, rb, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
     collectTriangle3D(fuselage, lf, rb, rf, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    -- Tail boom (low-poly pod-and-boom profile)
+    collectTriangle3D(fuselage, boomSU, boomSL, boomEU, cx, cy, scale, pitchR, yawR, rollR, bodyMid)
+    collectTriangle3D(fuselage, boomSL, boomEL, boomEU, cx, cy, scale, pitchR, yawR, rollR, bodyMid)
+    collectTriangle3D(fuselage, boomSU, boomEU, boomSR, cx, cy, scale, pitchR, yawR, rollR, bodyMid)
+    collectTriangle3D(fuselage, boomSR, boomEU, boomER, cx, cy, scale, pitchR, yawR, rollR, bodyMid)
+    collectTriangle3D(fuselage, boomSL, boomSD, boomEL, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    collectTriangle3D(fuselage, boomSD, boomED, boomEL, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    collectTriangle3D(fuselage, boomSD, boomSR, boomED, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
+    collectTriangle3D(fuselage, boomSR, boomER, boomED, cx, cy, scale, pitchR, yawR, rollR, bodyDark)
     drawTriangleList(fuselage)
 
     -- Rotor plane + mast
@@ -551,13 +583,29 @@ local function drawVisual()
     drawLine3D(rb, tail, cx, cy, scale, pitchR, yawR, rollR, mainColor)
     drawLine3D(top, nose, cx, cy, scale, pitchR, yawR, rollR, mainColor)
     drawLine3D(top, tail, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(boomSU, boomEU, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(boomSL, boomEL, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(boomSR, boomER, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(boomSD, boomED, cx, cy, scale, pitchR, yawR, rollR, mainColor)
 
     -- Tail fin + skids
     drawLine3D(finU, finD, cx, cy, scale, pitchR, yawR, rollR, accent)
-    drawLine3D(skidLF, skidLB, cx, cy, scale, pitchR, yawR, rollR, mainColor)
-    drawLine3D(skidRF, skidRB, cx, cy, scale, pitchR, yawR, rollR, mainColor)
-    drawLine3D(skidLF, skidRF, cx, cy, scale, pitchR, yawR, rollR, mainColor)
-    drawLine3D(skidLB, skidRB, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidL1, skidL2, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidL2, skidL3, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidL3, skidL4, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidL4, skidL5, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidR1, skidR2, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidR2, skidR3, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidR3, skidR4, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(skidR4, skidR5, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutLFTop, strutLFBot, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutLBTop, strutLBBot, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutRFTop, strutRFBot, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutRBTop, strutRBBot, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutLFBot, strutRFBot, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutLBBot, strutRBBot, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutLFTop, strutRFTop, cx, cy, scale, pitchR, yawR, rollR, mainColor)
+    drawLine3D(strutLBTop, strutRBTop, cx, cy, scale, pitchR, yawR, rollR, mainColor)
 
 end
 
