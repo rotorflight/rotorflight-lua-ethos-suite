@@ -171,6 +171,7 @@ local function openPage(opts)
                 end
                 return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
             end, function(value)
+                rfsuite.app.ui.markPageDirty()
                 if f.postEdit then f.postEdit(rfsuite.app.Page) end
                 if f.onChange then f.onChange(rfsuite.app.Page) end
 
@@ -179,6 +180,7 @@ local function openPage(opts)
         end
     end
 
+    rfsuite.app.ui.setPageDirty(false)
 end
 
 local function postLoad(self)
@@ -217,4 +219,8 @@ local function onNavMenu(self)
     rfsuite.app.ui.openPage({idx = pidx, title = title, script = "rates_advanced/rates_advanced.lua"})
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.name)@", onNavMenu = onNavMenu, reboot = false, openPage = openPage, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, postLoad = postLoad, wakeup = wakeup, API = {}, onToolMenu = onToolMenu, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}
+local function canSave()
+    return rfsuite.app.pageDirty == true
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.name)@", onNavMenu = onNavMenu, reboot = false, openPage = openPage, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, postLoad = postLoad, wakeup = wakeup, API = {}, onToolMenu = onToolMenu, canSave = canSave, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}

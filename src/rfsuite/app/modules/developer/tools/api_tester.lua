@@ -279,6 +279,6 @@ return {
     wakeup = wakeup,
     event = event,
     onNavMenu = onNavMenu,
-    navButtons = {menu = true, save = true, reload = false, tool = false, help = true},
+    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     API = {}
 }

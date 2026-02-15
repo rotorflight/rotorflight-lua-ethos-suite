@@ -148,7 +148,10 @@ local function openPage(opts)
                     value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
                 end
                 return value
-            end, function(value) f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value) end)
+            end, function(value)
+                rfsuite.app.ui.markPageDirty()
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            end)
             if f.default ~= nil then
                 local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
@@ -170,6 +173,7 @@ local function openPage(opts)
         end
     end
 
+    rfsuite.app.ui.setPageDirty(false)
 end
 
 local function wakeup()
@@ -190,4 +194,8 @@ local function onHelpMenu()
 
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, API = {}}
+local function canSave()
+    return rfsuite.app.pageDirty == true
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, canSave = canSave, API = {}}

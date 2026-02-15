@@ -357,6 +357,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
                     app.dialogs.save:close()
+                    ui.setPageDirty(false)
                     ui.clearProgressDialog(app.dialogs.save)
                     return
                 end
@@ -367,12 +368,14 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
                     app.dialogs.save:close()
+                    ui.setPageDirty(false)
                     ui.clearProgressDialog(app.dialogs.save)
 
                 end
             elseif tasks.msp.mspQueue:isProcessed() then
                 if app.dialogs.saveIsWait then
                     app.dialogs.save:close()
+                    ui.setPageDirty(false)
                     ui.clearProgressDialog(app.dialogs.save)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveProgressCounter = 0
@@ -383,6 +386,7 @@ function ui.progressDisplaySave(message)
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
                     app.dialogs.save:close()
+                    ui.setPageDirty(false)
                     ui.clearProgressDialog(app.dialogs.save)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveProgressCounter = 0
@@ -936,8 +940,6 @@ function ui._prepareFieldLine(f, radioText)
 end
 
 function ui._shouldManageDirtySave()
-    if app._pageUsesCustomOpen then return false end
-    if not (app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields) then return false end
     if app.Page.disableSaveUntilDirty == false then return false end
     local save = app.formNavigationFields and app.formNavigationFields.save
     return save and save.enable
@@ -945,14 +947,61 @@ end
 
 function ui.setPageDirty(isDirty)
     app.pageDirty = isDirty and true or false
-    if ui._shouldManageDirtySave() then
-        app.formNavigationFields.save:enable(app.pageDirty)
+    local save = app.formNavigationFields and app.formNavigationFields.save
+    if save and save.enable then
+        if app.Page and app.Page.canSave then
+            save:enable(app.Page.canSave(app.Page) == true)
+            return
+        end
+        if ui._shouldManageDirtySave() then
+            save:enable(app.pageDirty)
+        end
     end
 end
 
 function ui.markPageDirty()
     if app.pageDirty then return end
     ui.setPageDirty(true)
+end
+
+function ui._installDirtyCallbackWrappers()
+    if ui._dirtyWrappersInstalled then return end
+    if not form then return end
+
+    local function wrapSetter(methodName)
+        local original = form[methodName]
+        if type(original) ~= "function" then return end
+        form[methodName] = function(...)
+            local argc = select("#", ...)
+            local args = {...}
+            local setterIdx = nil
+            for i = argc, 1, -1 do
+                if type(args[i]) == "function" then
+                    setterIdx = i
+                    break
+                end
+            end
+            if setterIdx then
+                local setter = args[setterIdx]
+                args[setterIdx] = function(...)
+                    ui.markPageDirty()
+                    return setter(...)
+                end
+            end
+            return original(table.unpack(args, 1, argc))
+        end
+    end
+
+    wrapSetter("addBooleanField")
+    wrapSetter("addChoiceField")
+    wrapSetter("addNumberField")
+    wrapSetter("addTextField")
+    wrapSetter("addSourceField")
+    wrapSetter("addSensorField")
+    wrapSetter("addColorField")
+    wrapSetter("addSwitchField")
+
+    ui._dirtyWrappersInstalled = true
 end
 
 function ui.fieldBoolean(i,lf)
@@ -1476,6 +1525,7 @@ function ui.openPage(opts)
     end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "start")
+    ui._installDirtyCallbackWrappers()
 
     -- Ensure previous page releases resources before loading a new one.
     ui.cleanupCurrentPage()
@@ -1500,6 +1550,12 @@ function ui.openPage(opts)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
         app.Page.openPage(opts)
+        if app.Page.disableSaveUntilDirty ~= false and not app.Page.canSave then
+            app.Page.canSave = function()
+                return app.pageDirty == true
+            end
+        end
+        ui.setPageDirty(false)
         collectgarbage('collect')
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
