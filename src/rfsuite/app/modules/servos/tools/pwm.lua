@@ -25,20 +25,20 @@ local function writeEeprom()
 end
 
 local function buildServoTable()
+    servoTable = {}
+    servoTable['sections'] = {}
 
-    -- calculate servo count based on bus enabled or not
-    if rfsuite.session.servoBusEnabled == nil or rfsuite.session.servoBusEnabled == false then
-        pwmServoCount = rfsuite.session.servoCount
-    else    
-        if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-            if system.getVersion().simulation == true then
-                pwmServoCount = rfsuite.session.servoCount
-            else
-                pwmServoCount = rfsuite.session.servoCount - busServoOffset
-            end
-        else
-            pwmServoCount = rfsuite.session.servoCount
-        end
+    local totalServoCount = tonumber(rfsuite.session.servoCount or 0) or 0
+    pwmServoCount = totalServoCount
+
+    -- On some targets/API variants servoCount already excludes BUS outputs.
+    -- Only subtract BUS offset when the total clearly includes those outputs.
+    if rfsuite.session.servoBusEnabled == true and rfsuite.utils.apiVersionCompare(">=", "12.09") and not system.getVersion().simulation and totalServoCount > busServoOffset then
+        pwmServoCount = totalServoCount - busServoOffset
+    end
+
+    if pwmServoCount < 0 then
+        pwmServoCount = 0
     end
 
     for i = 1, pwmServoCount do
