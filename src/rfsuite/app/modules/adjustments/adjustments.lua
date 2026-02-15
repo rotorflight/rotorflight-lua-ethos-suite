@@ -24,8 +24,10 @@ local ADJ_STEP_MIN = 0
 local ADJ_STEP_MAX = 255
 local ADJUSTMENT_RANGE_MAX = 42
 local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
-local USE_MSP_FUNCTION_NAME_PREFETCH = false -- gate the prefetch call until its in the firmware
 local MSP_FUNCTION_NAME_PREFETCH_MIN_API = "12.09"
+
+-- gate the prefetch call until its in the firmware
+local USE_MSP_FUNCTION_NAME_PREFETCH = true 
 
 local ADJUST_FUNCTIONS = {
     {id = 0, name = "None", min = 0, max = 100},
@@ -99,7 +101,7 @@ local ADJUST_FUNCTIONS = {
     {id = 68, name = "Pitch Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
     {id = 69, name = "Roll Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
     {id = 70, name = "Yaw Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
-    {id = 71, name = "Collective Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
+    {id = 71, name = "Col Setpoint Boost Gain", min = 0, max = 255, minApi = "12.08"},
     {id = 72, name = "Yaw Dyn Ceiling Gain", min = 0, max = 250, minApi = "12.08"},
     {id = 73, name = "Yaw Dyn Deadband Gain", min = 0, max = 250, minApi = "12.08"},
     {id = 74, name = "Yaw Dyn Deadband Filter", min = 0, max = 250, minApi = "12.08"},
@@ -315,6 +317,12 @@ local function getFunctionById(id)
     return nil
 end
 
+local function getFunctionDisplayName(fnId)
+    local fn = getFunctionById(math.floor(fnId or 0))
+    if fn and fn.name then return fn.name end
+    return "@i18n(app.modules.adjustments.function_label)@ " .. tostring(math.floor(fnId or 0))
+end
+
 local function getFunctionChoiceIndex(fnId)
     for i = 1, #state.functionOptionIds do
         if state.functionOptionIds[i] == fnId then return i end
@@ -342,9 +350,7 @@ local function buildRangeSlotLabel(slotIndex, adjRange)
     if not hasAssignedFunction(adjRange) then return label end
 
     local fnId = math.floor(adjRange.adjFunction or 0)
-
-    local fn = getFunctionById(fnId)
-    local fnName = fn and fn.name or ("@i18n(app.modules.adjustments.function_label)@ " .. tostring(fnId))
+    local fnName = getFunctionDisplayName(fnId)
     return label .. " - " .. fnName
 end
 
@@ -1123,9 +1129,9 @@ local function updateLiveFields()
         enaUs = getAuxPulseUs(adjRange.enaChannel or 0)
         if state.liveFields.ena and state.liveFields.ena.value then
             if enaUs then
-                state.liveFields.ena:value(tostring(enaUs) .. "us")
+                state.liveFields.ena:value(" " .. tostring(enaUs) .. "us")
             else
-                state.liveFields.ena:value("--")
+                state.liveFields.ena:value(" --")
             end
         end
     end
@@ -1146,9 +1152,9 @@ local function updateLiveFields()
         adjUs = getAuxPulseUs(adjRange.adjChannel or 0)
         if state.liveFields.adj and state.liveFields.adj.value then
             if adjUs then
-                state.liveFields.adj:value(tostring(adjUs) .. "us")
+                state.liveFields.adj:value(" " .. tostring(adjUs) .. "us")
             else
-                state.liveFields.adj:value("--")
+                state.liveFields.adj:value(" --")
             end
         end
     end
@@ -1237,11 +1243,20 @@ local function render()
     if state.infoMessage then form.addLine(state.infoMessage) end
 
     local slotOptionsTbl = buildRangeSlotOptions()
+    local adjRange = getSelectedRange()
+    if not adjRange then return end
+
+    buildFunctionOptions(adjRange.adjFunction)
+    local adjType = getAdjustmentType(adjRange)
 
     local slotLine = form.addLine("@i18n(app.modules.adjustments.range)@")
+    local slotChoiceW = wRightColumn
+    if not state.showFunctionNamesInRangeSelector then
+        slotChoiceW = math.max(96, math.floor(wRightColumn * 0.5))
+    end
     local slotChoice = form.addChoiceField(
         slotLine,
-        {x = xChoice, y = y, w = wRightColumn, h = h},
+        {x = xChoice, y = y, w = slotChoiceW, h = h},
         slotOptionsTbl,
         function() return state.selectedRangeIndex end,
         function(value)
@@ -1260,11 +1275,14 @@ local function render()
     state.liveFields.slotChoice = slotChoice
     if slotChoice and slotChoice.values then slotChoice:values(slotOptionsTbl) end
 
-    local adjRange = getSelectedRange()
-    if not adjRange then return end
-
-    buildFunctionOptions(adjRange.adjFunction)
-    local adjType = getAdjustmentType(adjRange)
+    if not state.showFunctionNamesInRangeSelector then
+        local slotFnX = xChoice + slotChoiceW + gap
+        local slotFnW = (xChoice + wRightColumn) - slotFnX
+        if slotFnW > 20 then
+            local slotFunctionName = form.addStaticText(slotLine, {x = slotFnX, y = y, w = slotFnW, h = h}, " " .. getFunctionDisplayName(adjRange.adjFunction))
+            if slotFunctionName and slotFunctionName.value then state.liveFields.slotFunction = slotFunctionName end
+        end
+    end
 
     local typeLine = form.addLine("@i18n(app.modules.adjustments.type)@", nil, true)
     local typeChoice = form.addChoiceField(
@@ -1324,7 +1342,7 @@ local function render()
     registerFocus("enaChoice", enaChoice)
     if enaChoice and enaChoice.values then enaChoice:values(ENA_CHANNEL_OPTIONS_TBL) end
     if enaChoice and enaChoice.enable then enaChoice:enable(true) end
-    local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
+    local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, " --")
     if enaLive and enaLive.value then state.liveFields.ena = enaLive end
     enaSetBtn = form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
         text = "@i18n(app.modules.adjustments.set)@",
@@ -1400,7 +1418,7 @@ local function render()
     registerFocus("adjChoice", adjChoice)
     if adjChoice and adjChoice.values then adjChoice:values(ADJ_CHANNEL_OPTIONS_TBL) end
     if adjChoice and adjChoice.enable then adjChoice:enable(true) end
-    local adjLive = form.addStaticText(adjChannelLine, {x = xLive, y = y, w = wLive, h = h}, "--")
+    local adjLive = form.addStaticText(adjChannelLine, {x = xLive, y = y, w = wLive, h = h}, " --")
     if adjLive and adjLive.value then state.liveFields.adj = adjLive end
 
     if adjType == 2 then
@@ -1515,6 +1533,9 @@ local function render()
             state.adjustmentRanges[state.selectedRangeIndex] = adjRange
             markDirty()
             refreshRangeSlotOptions()
+            if state.liveFields.slotFunction and state.liveFields.slotFunction.value and not state.showFunctionNamesInRangeSelector then
+                state.liveFields.slotFunction:value(" " .. getFunctionDisplayName(adjRange.adjFunction))
+            end
             local newType = getAdjustmentType(adjRange)
             if prevType == 2 or newType == 2 then
                 setPendingFocus("functionChoice")
