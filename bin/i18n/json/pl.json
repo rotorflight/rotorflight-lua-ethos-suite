@@ -6524,6 +6524,176 @@
           "reverse_text": false
         }
       },
+      "ports": {
+        "error_eeprom_write_failed": {
+          "english": "EEPROM write failed",
+          "translation": "EEPROM write failed",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "error_failed_load": {
+          "english": "Failed to load port configuration",
+          "translation": "Failed to load port configuration",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "error_read_serial_ports": {
+          "english": "Failed reading serial ports",
+          "translation": "Failed reading serial ports",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "error_save_failed": {
+          "english": "Save failed",
+          "translation": "Save failed",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "error_serial_api_unavailable": {
+          "english": "SERIAL_CONFIG API unavailable",
+          "translation": "SERIAL_CONFIG API unavailable",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "error_serial_write_failed_for": {
+          "english": "Serial write failed for",
+          "translation": "Serial write failed for",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_blackbox": {
+          "english": "Blackbox",
+          "translation": "Blackbox",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_custom": {
+          "english": "Custom",
+          "translation": "Custom",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_disabled": {
+          "english": "Disabled",
+          "translation": "Disabled",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_esc_sensor": {
+          "english": "ESC Sensor",
+          "translation": "ESC Sensor",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_fbus_out": {
+          "english": "FBus Out",
+          "translation": "FBus Out",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_rx_serial": {
+          "english": "RX Serial",
+          "translation": "RX Serial",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_sbus_out": {
+          "english": "SBus Out",
+          "translation": "SBus Out",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_telem_frsky": {
+          "english": "Telemetry FrSky",
+          "translation": "Telemetry FrSky",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_telem_hott": {
+          "english": "Telemetry HoTT",
+          "translation": "Telemetry HoTT",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_telem_ibus": {
+          "english": "Telemetry iBus",
+          "translation": "Telemetry iBus",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_telem_ltm": {
+          "english": "Telemetry LTM",
+          "translation": "Telemetry LTM",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_telem_mavlink": {
+          "english": "Telemetry MAVLink",
+          "translation": "Telemetry MAVLink",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "function_telem_smartport": {
+          "english": "Telemetry SmartPort",
+          "translation": "Telemetry SmartPort",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "load_error_prefix": {
+          "english": "Load error:",
+          "translation": "Load error:",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "loading": {
+          "english": "Loading serial ports...",
+          "translation": "Loading serial ports...",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "name": {
+          "english": "Ports",
+          "translation": "Ports",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "no_ports_reported": {
+          "english": "No serial ports reported by FC.",
+          "translation": "No serial ports reported by FC.",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "port_prefix": {
+          "english": "Port",
+          "translation": "Port",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "progress_loading": {
+          "english": "Loading serial ports",
+          "translation": "Loading serial ports",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "progress_saving": {
+          "english": "Saving serial ports",
+          "translation": "Saving serial ports",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "rx_tag": {
+          "english": "[RX]",
+          "translation": "[RX]",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "save_error_prefix": {
+          "english": "Save error:",
+          "translation": "Save error:",
+          "needs_translation": true,
+          "reverse_text": false
+        }
+      },
       "profile_autolevel": {
         "acro_trainer": {
           "english": "Acro trainer",

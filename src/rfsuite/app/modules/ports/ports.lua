@@ -25,20 +25,20 @@ local BAUD_RATES = {
 }
 
 local PORT_FUNCTIONS = {
-    {id = 0, excl = 0, name = "Disabled", type = PORT_TYPE_DISABLED},
+    {id = 0, excl = 0, name = "@i18n(app.modules.ports.function_disabled)@", type = PORT_TYPE_DISABLED},
     {id = 1, excl = 1, name = "MSP", type = PORT_TYPE_MSP},
     {id = 2, excl = 2, name = "GPS", type = PORT_TYPE_GPS},
-    {id = 64, excl = 64, name = "RX Serial", type = PORT_TYPE_AUTO},
-    {id = 1024, excl = 1024, name = "ESC Sensor", type = PORT_TYPE_AUTO},
-    {id = 128, excl = 128, name = "Blackbox", type = PORT_TYPE_BLACKBOX},
-    {id = 262144, excl = 262144, name = "SBus Out", type = PORT_TYPE_AUTO, minApi = "12.07"},
-    {id = 524288, excl = 524288, name = "FBus Out", type = PORT_TYPE_AUTO, minApi = "12.09"},
-    {id = 4, excl = 4668, name = "Telemetry FrSky", type = PORT_TYPE_TELEM},
-    {id = 32, excl = 4668, name = "Telemetry SmartPort", type = PORT_TYPE_TELEM},
-    {id = 4096, excl = 4668, name = "Telemetry iBus", type = PORT_TYPE_TELEM},
-    {id = 8, excl = 4668, name = "Telemetry HoTT", type = PORT_TYPE_TELEM},
-    {id = 512, excl = 4668, name = "Telemetry MAVLink", type = PORT_TYPE_MAVLINK},
-    {id = 16, excl = 4668, name = "Telemetry LTM", type = PORT_TYPE_TELEM}
+    {id = 64, excl = 64, name = "@i18n(app.modules.ports.function_rx_serial)@", type = PORT_TYPE_AUTO},
+    {id = 1024, excl = 1024, name = "@i18n(app.modules.ports.function_esc_sensor)@", type = PORT_TYPE_AUTO},
+    {id = 128, excl = 128, name = "@i18n(app.modules.ports.function_blackbox)@", type = PORT_TYPE_BLACKBOX},
+    {id = 262144, excl = 262144, name = "@i18n(app.modules.ports.function_sbus_out)@", type = PORT_TYPE_AUTO, minApi = "12.07"},
+    {id = 524288, excl = 524288, name = "@i18n(app.modules.ports.function_fbus_out)@", type = PORT_TYPE_AUTO, minApi = "12.09"},
+    {id = 4, excl = 4668, name = "@i18n(app.modules.ports.function_telem_frsky)@", type = PORT_TYPE_TELEM},
+    {id = 32, excl = 4668, name = "@i18n(app.modules.ports.function_telem_smartport)@", type = PORT_TYPE_TELEM},
+    {id = 4096, excl = 4668, name = "@i18n(app.modules.ports.function_telem_ibus)@", type = PORT_TYPE_TELEM},
+    {id = 8, excl = 4668, name = "@i18n(app.modules.ports.function_telem_hott)@", type = PORT_TYPE_TELEM},
+    {id = 512, excl = 4668, name = "@i18n(app.modules.ports.function_telem_mavlink)@", type = PORT_TYPE_MAVLINK},
+    {id = 16, excl = 4668, name = "@i18n(app.modules.ports.function_telem_ltm)@", type = PORT_TYPE_TELEM}
 }
 
 local BAUD_OPTIONS = {
@@ -69,7 +69,7 @@ local UART_NAMES = {
 }
 
 local state = {
-    title = "Ports",
+    title = "@i18n(app.modules.ports.name)@",
     loading = false,
     loaded = false,
     saving = false,
@@ -102,13 +102,13 @@ end
 local function portLabel(identifier)
     local name = UART_NAMES[identifier]
     if name then return name end
-    return "Port " .. tostring(identifier)
+    return "@i18n(app.modules.ports.port_prefix)@ " .. tostring(identifier)
 end
 
 local function setLoadError(reason)
     state.loading = false
     state.loaded = false
-    state.loadError = reason or "Failed to load port configuration"
+    state.loadError = reason or "@i18n(app.modules.ports.error_failed_load)@"
     state.needsRender = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -211,7 +211,7 @@ local function buildFunctionChoiceTable(portIndex)
     end
 
     if not seen[port.function_mask] then
-        tableData[#tableData + 1] = {"Custom (" .. tostring(port.function_mask) .. ")", port.function_mask}
+        tableData[#tableData + 1] = {"@i18n(app.modules.ports.function_custom)@ (" .. tostring(port.function_mask) .. ")", port.function_mask}
     end
 
     return tableData
@@ -293,11 +293,11 @@ local function startLoad()
     state.saveError = nil
     state.dirty = false
 
-    rfsuite.app.ui.progressDisplay("Ports", "Loading serial ports", 0.08)
+    rfsuite.app.ui.progressDisplay("@i18n(app.modules.ports.name)@", "@i18n(app.modules.ports.progress_loading)@", 0.08)
 
     local serialApi = rfsuite.tasks.msp.api.load("SERIAL_CONFIG")
     if not serialApi then
-        setLoadError("SERIAL_CONFIG API unavailable")
+        setLoadError("@i18n(app.modules.ports.error_serial_api_unavailable)@")
         return
     end
 
@@ -312,7 +312,7 @@ local function startLoad()
     end)
 
     serialApi.setErrorHandler(function()
-        setLoadError("Failed reading serial ports")
+        setLoadError("@i18n(app.modules.ports.error_read_serial_ports)@")
     end)
 
     serialApi.read()
@@ -338,7 +338,7 @@ local function queueSetSerialPort(port, done, failed)
         command = MSP_SET_SERIAL_CONFIG,
         payload = payload,
         processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("Serial write failed for " .. portLabel(port.identifier)) end end,
+        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_serial_write_failed_for)@ " .. portLabel(port.identifier)) end end,
         simulatorResponse = {}
     }
 
@@ -350,7 +350,7 @@ local function queueEepromWrite(done, failed)
     local message = {
         command = MSP_EEPROM_WRITE,
         processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("EEPROM write failed") end end,
+        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end,
         simulatorResponse = {}
     }
     local ok, reason = queueDirect(message, "ports.eeprom")
@@ -364,14 +364,14 @@ local function savePorts()
     -- Hard guard: never write modified settings for ports that currently carry RX_SERIAL.
     applyReceiverGuardToWorkingCopy()
 
-    rfsuite.app.ui.progressDisplay("Ports", "Saving serial ports", 0.08)
+    rfsuite.app.ui.progressDisplay("@i18n(app.modules.ports.name)@", "@i18n(app.modules.ports.progress_saving)@", 0.08)
 
     local index = 1
     local total = #state.portsWorking
 
     local function failed(reason)
         state.saving = false
-        state.saveError = reason or "Save failed"
+        state.saveError = reason or "@i18n(app.modules.ports.error_save_failed)@"
         state.needsRender = true
         rfsuite.app.triggers.closeProgressLoader = true
     end
@@ -404,22 +404,22 @@ local function render()
     app.ui.fieldHeader(state.title)
 
     if state.loading then
-        form.addLine("Loading serial ports...")
+        form.addLine("@i18n(app.modules.ports.loading)@")
         return
     end
 
     if state.loadError then
-        form.addLine("Load error: " .. tostring(state.loadError))
+        form.addLine("@i18n(app.modules.ports.load_error_prefix)@ " .. tostring(state.loadError))
         return
     end
 
     if #state.portsWorking == 0 then
-        form.addLine("No serial ports reported by FC.")
+        form.addLine("@i18n(app.modules.ports.no_ports_reported)@")
         return
     end
 
     if state.saveError then
-        form.addLine("Save error: " .. tostring(state.saveError))
+        form.addLine("@i18n(app.modules.ports.save_error_prefix)@ " .. tostring(state.saveError))
     end
 
     local width = app.lcdWidth
@@ -437,7 +437,7 @@ local function render()
     for i = 1, #state.portsWorking do
         local port = state.portsWorking[i]
         local lineTitle = portLabel(port.identifier)
-        if port.receiver_locked then lineTitle = lineTitle .. " [RX]" end
+        if port.receiver_locked then lineTitle = lineTitle .. " @i18n(app.modules.ports.rx_tag)@" end
 
         local line = form.addLine(lineTitle)
 
@@ -537,7 +537,7 @@ local function onNavMenu()
 end
 
 local function openPage(opts)
-    state.title = opts.title or "Ports"
+    state.title = opts.title or "@i18n(app.modules.ports.name)@"
 
     rfsuite.app.lastIdx = opts.idx
     rfsuite.app.lastTitle = state.title
@@ -549,7 +549,7 @@ local function openPage(opts)
 end
 
 return {
-    title = "Ports",
+    title = "@i18n(app.modules.ports.name)@",
     openPage = openPage,
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
