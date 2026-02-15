@@ -566,13 +566,13 @@ local function drawVisual()
     local skidR4 = {-0.96, 0.66, -0.63}
     local skidR5 = {-1.24, 0.66, -0.67}
 
-    local strutLFTop = {0.48, -0.48, -0.30}
+    local strutLFTop = {0.52, -0.50, -0.12}
     local strutLFBot = {0.48, -0.66, -0.63}
-    local strutLBTop = {-0.58, -0.45, -0.28}
+    local strutLBTop = {-0.52, -0.44, -0.10}
     local strutLBBot = {-0.58, -0.66, -0.63}
-    local strutRFTop = {0.48, 0.48, -0.30}
+    local strutRFTop = {0.52, 0.50, -0.12}
     local strutRFBot = {0.48, 0.66, -0.63}
-    local strutRBTop = {-0.58, 0.45, -0.28}
+    local strutRBTop = {-0.52, 0.44, -0.10}
     local strutRBBot = {-0.58, 0.66, -0.63}
 
     local rotorA = {0.0, -1.9, 1.02}
