@@ -286,9 +286,11 @@ local function drawVisual()
     lcd.color(grid)
     lcd.drawRectangle(panelX, panelY, panelW, panelH)
 
-    local rr = rad(state.live.roll + state.display.roll_degrees)
-    local pr = rad(state.live.pitch + state.display.pitch_degrees)
-    local yr = rad(state.live.yaw + state.display.yaw_degrees)
+    -- Match configurator feel more closely:
+    -- invert attitude signs for display and apply a fixed rear-view camera baseline.
+    local rr = rad(-(state.live.roll + state.display.roll_degrees))
+    local pr = rad(-(state.live.pitch + state.display.pitch_degrees)) + rad(90)
+    local yr = rad(-(state.live.yaw + state.display.yaw_degrees))
 
     lcd.font(FONT_XS)
     local liveText = string.format("Live  R:%0.1f  P:%0.1f  Y:%0.1f", state.live.roll, state.live.pitch, state.live.yaw)
@@ -324,40 +326,52 @@ local function drawVisual()
 
     local cx = gx0 + floor(gw0 * 0.5)
     local cy = gy0 + floor(gh0 * 0.62)
-    local scale = max(8, min(gw0, gh0) * 0.12)
+    local scale = max(8, min(gw0, gh0) * 0.13)
 
-    local bodyNose = {2.3, 0.0, 0.2}
-    local bodyTail = {-2.2, 0.0, 0.1}
-    local bodyLeft = {0.3, -0.45, 0.1}
-    local bodyRight = {0.3, 0.45, 0.1}
-    local mastTop = {0.0, 0.0, 0.8}
-    local skidL1 = {0.7, -0.55, -0.55}
-    local skidL2 = {-0.8, -0.55, -0.55}
-    local skidR1 = {0.7, 0.55, -0.55}
-    local skidR2 = {-0.8, 0.55, -0.55}
-    local tailUp = {-2.1, 0.0, 0.35}
-    local tailDown = {-2.1, 0.0, -0.15}
+    -- Simplified heli wireframe for clearer orientation cues.
+    local nose = {2.2, 0.0, 0.0}
+    local tail = {-2.4, 0.0, 0.0}
+    local lf = {0.9, -0.58, 0.0}
+    local rf = {0.9, 0.58, 0.0}
+    local lb = {-0.8, -0.42, 0.0}
+    local rb = {-0.8, 0.42, 0.0}
+    local top = {0.0, 0.0, 0.78}
+    local mast = {0.0, 0.0, 1.02}
+    local finU = {-2.1, 0.0, 0.42}
+    local finD = {-2.1, 0.0, -0.20}
 
-    local rotorA = {0.0, -1.5, 0.8}
-    local rotorB = {0.0, 1.5, 0.8}
-    local rotorC = {-1.5, 0.0, 0.8}
-    local rotorD = {1.5, 0.0, 0.8}
+    local skidLF = {0.7, -0.58, -0.60}
+    local skidLB = {-0.9, -0.58, -0.60}
+    local skidRF = {0.7, 0.58, -0.60}
+    local skidRB = {-0.9, 0.58, -0.60}
 
+    local rotorA = {0.0, -1.6, 1.02}
+    local rotorB = {0.0, 1.6, 1.02}
+    local rotorC = {-1.6, 0.0, 1.02}
+    local rotorD = {1.6, 0.0, 1.02}
+
+    -- Rotor plane + mast
     drawLine3D(rotorA, rotorB, cx, cy, scale, rr, pr, yr, disc)
     drawLine3D(rotorC, rotorD, cx, cy, scale, rr, pr, yr, disc)
+    drawLine3D(top, mast, cx, cy, scale, rr, pr, yr, disc)
 
-    drawLine3D(bodyTail, bodyNose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(bodyLeft, bodyNose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(bodyRight, bodyNose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(bodyLeft, bodyTail, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(bodyRight, bodyTail, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(bodyTail, mastTop, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(mastTop, bodyNose, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(tailUp, tailDown, cx, cy, scale, rr, pr, yr, accent)
-    drawLine3D(skidL1, skidL2, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(skidR1, skidR2, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(skidL1, skidR1, cx, cy, scale, rr, pr, yr, mainColor)
-    drawLine3D(skidL2, skidR2, cx, cy, scale, rr, pr, yr, mainColor)
+    -- Fuselage
+    drawLine3D(tail, nose, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(lb, lf, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(rb, rf, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(lf, nose, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(rf, nose, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(lb, tail, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(rb, tail, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(top, nose, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(top, tail, cx, cy, scale, rr, pr, yr, mainColor)
+
+    -- Tail fin + skids
+    drawLine3D(finU, finD, cx, cy, scale, rr, pr, yr, accent)
+    drawLine3D(skidLF, skidLB, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(skidRF, skidRB, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(skidLF, skidRF, cx, cy, scale, rr, pr, yr, mainColor)
+    drawLine3D(skidLB, skidRB, cx, cy, scale, rr, pr, yr, mainColor)
 
 end
 
