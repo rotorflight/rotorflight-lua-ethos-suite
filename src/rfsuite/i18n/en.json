@@ -3627,6 +3627,212 @@
           "translation": "Used %s / %s"
         }
       },
+      "configuration": {
+        "craft_name": {
+          "english": "Craft name",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Craft name"
+        },
+        "error_eeprom_write_failed": {
+          "english": "EEPROM write failed",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "EEPROM write failed"
+        },
+        "error_advanced_api_unavailable": {
+          "english": "ADVANCED_CONFIG API unavailable",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "ADVANCED_CONFIG API unavailable"
+        },
+        "error_advanced_read_failed": {
+          "english": "ADVANCED_CONFIG read failed",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "ADVANCED_CONFIG read failed"
+        },
+        "error_advanced_write_failed": {
+          "english": "ADVANCED_CONFIG write failed",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "ADVANCED_CONFIG write failed"
+        },
+        "error_eeprom_api_unavailable": {
+          "english": "EEPROM_WRITE API unavailable",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "EEPROM_WRITE API unavailable"
+        },
+        "error_feature_api_unavailable": {
+          "english": "FEATURE_CONFIG API unavailable",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "FEATURE_CONFIG API unavailable"
+        },
+        "error_feature_read_failed": {
+          "english": "FEATURE_CONFIG read failed",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "FEATURE_CONFIG read failed"
+        },
+        "error_feature_write_failed": {
+          "english": "FEATURE_CONFIG write failed",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "FEATURE_CONFIG write failed"
+        },
+        "error_name_api_unavailable": {
+          "english": "NAME API unavailable",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "NAME API unavailable"
+        },
+        "error_name_read_failed": {
+          "english": "NAME read failed",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "NAME read failed"
+        },
+        "error_name_write_failed": {
+          "english": "NAME write failed",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "NAME write failed"
+        },
+        "error_save_failed": {
+          "english": "Save failed",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Save failed"
+        },
+        "load_error_prefix": {
+          "english": "Load error:",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Load error:"
+        },
+        "loading": {
+          "english": "Loading configuration...",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Loading configuration..."
+        },
+        "progress_loading": {
+          "english": "Loading configuration",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Loading configuration"
+        },
+        "progress_saving": {
+          "english": "Saving configuration",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Saving configuration"
+        },
+        "save_error_prefix": {
+          "english": "Save error:",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Save error:"
+        },
+        "feature_cms": {
+          "english": "CMS",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "CMS"
+        },
+        "feature_gps": {
+          "english": "GPS",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "GPS"
+        },
+        "feature_led_strip": {
+          "english": "LED_STRIP",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "LED_STRIP"
+        },
+        "features": {
+          "english": "Features",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Features"
+        },
+        "help_p1": {
+          "english": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
+          "max_length": 93,
+          "needs_translation": false,
+          "translation": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags."
+        },
+        "help_p2": {
+          "english": "Saving writes these values to EEPROM and reboots the flight controller.",
+          "max_length": 69,
+          "needs_translation": false,
+          "translation": "Saving writes these values to EEPROM and reboots the flight controller."
+        },
+        "name": {
+          "english": "Configuration",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Configuration"
+        },
+        "personalization": {
+          "english": "Personalization",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Personalization"
+        },
+        "pid_loop_1": {
+          "english": "1:1 (Fastest)",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "1:1 (Fastest)"
+        },
+        "pid_loop_16": {
+          "english": "1:16",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "1:16"
+        },
+        "pid_loop_2": {
+          "english": "1:2",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "1:2"
+        },
+        "pid_loop_4": {
+          "english": "1:4",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "1:4"
+        },
+        "pid_loop_8": {
+          "english": "1:8",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "1:8"
+        },
+        "pid_loop_custom": {
+          "english": "Custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Custom"
+        },
+        "pid_loop_speed": {
+          "english": "PID loop speed",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "PID loop speed"
+        },
+        "system_configuration": {
+          "english": "System configuration",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "System configuration"
+        }
+      },
       "copyprofiles": {
         "dest_profile": {
           "english": "Dest. Profile",

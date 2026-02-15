@@ -4221,6 +4221,110 @@
           "translation": "Used %s / %s"
         }
       },
+      "configuration": {
+        "craft_name": {
+          "english": "Craft name",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Craft name"
+        },
+        "feature_cms": {
+          "english": "CMS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "CMS"
+        },
+        "feature_gps": {
+          "english": "GPS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "GPS"
+        },
+        "feature_led_strip": {
+          "english": "LED_STRIP",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "LED_STRIP"
+        },
+        "features": {
+          "english": "Features",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Features"
+        },
+        "help_p1": {
+          "english": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags."
+        },
+        "help_p2": {
+          "english": "Saving writes these values to EEPROM and reboots the flight controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Saving writes these values to EEPROM and reboots the flight controller."
+        },
+        "name": {
+          "english": "Configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Configuration"
+        },
+        "personalization": {
+          "english": "Personalization",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Personalization"
+        },
+        "pid_loop_1": {
+          "english": "1:1 (Fastest)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "1:1 (Fastest)"
+        },
+        "pid_loop_16": {
+          "english": "1:16",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "1:16"
+        },
+        "pid_loop_2": {
+          "english": "1:2",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "1:2"
+        },
+        "pid_loop_4": {
+          "english": "1:4",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "1:4"
+        },
+        "pid_loop_8": {
+          "english": "1:8",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "1:8"
+        },
+        "pid_loop_custom": {
+          "english": "Custom",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Custom"
+        },
+        "pid_loop_speed": {
+          "english": "PID loop speed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "PID loop speed"
+        },
+        "system_configuration": {
+          "english": "System configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "System configuration"
+        }
+      },
       "copyprofiles": {
         "dest_profile": {
           "english": "Dest. Profile",

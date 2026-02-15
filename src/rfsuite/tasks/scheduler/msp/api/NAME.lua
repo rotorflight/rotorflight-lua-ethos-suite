@@ -41,24 +41,23 @@ local MSP_API_MSG_TIMEOUT
 local function parseMSPName(buf)
     local parsedData = {}
     local name = ""
-    local offset = 1
+    local readU8 = rfsuite.tasks.msp.mspHelper.readU8
+    local maxLen = MAX_NAME_LENGTH
 
-    while offset <= #buf do
-        local char = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then break end
-        if char then
-            name = name .. string.char(char)
-        end    
-        offset = offset + 1
+    -- Do not rely on '#buf' because some buffer objects don't expose a useful length.
+    buf.offset = 1
+    while #name < maxLen do
+        local char = readU8(buf)
+        if char == nil or char == 0 then break end
+        name = name .. string.char(char)
     end
-
-    if #buf == 0 then name = "" end
 
     parsedData["name"] = name
 
     local data = {}
     data.parsed = parsedData
     data.buffer = buf
+    data.structure = MSP_API_STRUCTURE_READ
 
     return data
 end

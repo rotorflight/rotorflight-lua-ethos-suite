@@ -940,6 +940,7 @@ function ui._prepareFieldLine(f, radioText)
 end
 
 function ui._shouldManageDirtySave()
+    if not app.Page then return false end
     if app.Page.disableSaveUntilDirty == false then return false end
     local pref = preferences and preferences.general and preferences.general.save_dirty_only
     if pref == false or pref == "false" then return false end

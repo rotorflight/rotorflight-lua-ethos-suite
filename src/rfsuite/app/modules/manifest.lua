@@ -64,6 +64,7 @@ return {
             image = "app/gfx/hardware.png",
             loaderspeed = "FAST",
             pages = {
+                "configuration",
                 "servos",
                 "mixer",
                 "esc_motors",
