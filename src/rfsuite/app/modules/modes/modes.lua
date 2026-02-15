@@ -11,6 +11,7 @@ local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5
 local RANGE_SNAP_DELTA_US = 50
+local MODULE_LOADER_SPEED = 0.05
 
 local state = {
     title = "Modes",
@@ -506,7 +507,9 @@ local function startLoad()
     state.autoDetectSlots = {}
     state.channelSources = {}
     state.needsRender = true
-    rfsuite.app.ui.progressDisplay("Modes", "Loading mode configuration")
+    local page = rfsuite.app and rfsuite.app.Page or nil
+    local speed = page and tonumber(page.loaderspeed) or MODULE_LOADER_SPEED
+    rfsuite.app.ui.progressDisplay("Modes", "Loading mode configuration", speed)
     readBoxIds()
 end
 
