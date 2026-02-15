@@ -378,40 +378,43 @@ local function drawVisual()
 
         local mx = miniX + floor(miniW * 0.5)
         local my = miniY + floor(miniH * 0.60)
-        local len = max(14, floor(min(miniW, miniH) * 0.30))
-        local head = max(5, floor(len * 0.32))
+        local miniScale = max(8, floor(min(miniW, miniH) * 0.19))
 
-        -- Use the same transformed model frame so this arrow matches
-        -- the main heli orientation for up/left/right cues.
-        local nwx, nwy = rotatePoint(2.2, 0.0, 0.0, pitchR, yawR, rollR)
-        local twx, twy = rotatePoint(-2.2, 0.0, 0.0, pitchR, yawR, rollR)
-        local dx = nwx - twx
-        local dy = nwy - twy
-        local mag = sqrt((dx * dx) + (dy * dy))
-        if mag > 0.001 then
-            local ux = dx / mag
-            local uy = dy / mag
-            local ex = mx + (ux * len)
-            local ey = my - (uy * len)
-            local px = -uy
-            local py = ux
-            local hx1 = ex - (ux * head) + (px * (head * 0.65))
-            local hy1 = ey + (uy * head) - (py * (head * 0.65))
-            local hx2 = ex - (ux * head) - (px * (head * 0.65))
-            local hy2 = ey + (uy * head) + (py * (head * 0.65))
+        -- Drive arrow from projected nose/tail points so it mirrors heli motion.
+        local nwx, nwy, nwz = rotatePoint(2.2, 0.0, 0.0, pitchR, yawR, rollR)
+        local twx, twy, twz = rotatePoint(-2.2, 0.0, 0.0, pitchR, yawR, rollR)
+        local npx, npy = projectPoint(nwx, nwy, nwz, mx, my, miniScale)
+        local tpx, tpy = projectPoint(twx, twy, twz, mx, my, miniScale)
+        if npx and npy and tpx and tpy then
+            local dx = npx - tpx
+            local dy = -(npy - tpy)
+            local mag = sqrt((dx * dx) + (dy * dy))
+            if mag > 0.001 then
+                local ux = dx / mag
+                local uy = dy / mag
+                local ex = npx
+                local ey = npy
+                local head = max(5, floor(min(14, mag * 0.45)))
+                local px = -uy
+                local py = ux
+                local hx1 = ex - (ux * head) + (px * (head * 0.65))
+                local hy1 = ey - (uy * head) - (py * (head * 0.65))
+                local hx2 = ex - (ux * head) - (px * (head * 0.65))
+                local hy2 = ey - (uy * head) + (py * (head * 0.65))
 
-            lcd.color(accent)
-            lcd.drawLine(mx, my, ex, ey)
-            lcd.drawLine(ex, ey, hx1, hy1)
-            lcd.drawLine(ex, ey, hx2, hy2)
+                lcd.color(accent)
+                lcd.drawLine(tpx, tpy, ex, ey)
+                lcd.drawLine(ex, ey, hx1, hy1)
+                lcd.drawLine(ex, ey, hx2, hy2)
 
-            local htxt, vtxt = "Center", "Center"
-            if ux > 0.35 then htxt = "Right" elseif ux < -0.35 then htxt = "Left" end
-            if uy > 0.35 then vtxt = "Up" elseif uy < -0.35 then vtxt = "Down" end
-            local dirText = "Nose: " .. vtxt
-            if htxt ~= "Center" then dirText = dirText .. "-" .. htxt end
-            lcd.color(mainColor)
-            lcd.drawText(miniX + 6, miniY + miniH - 16, dirText, LEFT)
+                local htxt, vtxt = "Center", "Center"
+                if ux > 0.35 then htxt = "Right" elseif ux < -0.35 then htxt = "Left" end
+                if uy > 0.35 then vtxt = "Up" elseif uy < -0.35 then vtxt = "Down" end
+                local dirText = "Nose: " .. vtxt
+                if htxt ~= "Center" then dirText = dirText .. "-" .. htxt end
+                lcd.color(mainColor)
+                lcd.drawText(miniX + 6, miniY + miniH - 16, dirText, LEFT)
+            end
         end
     end
 
@@ -518,9 +521,9 @@ local function openPage(opts)
     local slotX4 = fieldX + (slotW + slotGap) * 3
     local slotX = {slotX1, slotX2, slotX3, slotX4}
 
-    local bw1 = clamp(slotW - labelWidths[1] - 2, 30, 56)
-    local bw2 = clamp(slotW - labelWidths[2] - 2, 30, 56)
-    local bw3 = clamp(slotW - labelWidths[3] - 2, 30, 56)
+    local bw1 = clamp(slotW - labelWidths[1] - 2, 34, 86)
+    local bw2 = clamp(slotW - labelWidths[2] - 2, 34, 86)
+    local bw3 = clamp(slotW - labelWidths[3] - 2, 34, 86)
     local boxWidths = {bw1, bw2, bw3}
 
     form.addStaticText(line1, {x = slotX[1], y = rowY, w = labelWidths[1], h = rowH}, labels[1])
