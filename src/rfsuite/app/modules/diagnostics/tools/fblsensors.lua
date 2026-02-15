@@ -45,7 +45,6 @@ local state = {
     pageIdx = nil,
     sourceChoices = {},
     selectedSourceIdx = 1,
-    autoScale = true,
     samples = {},
     maxSamples = 180,
     lastValueText = "-",
@@ -265,15 +264,10 @@ local function drawGraph()
     if pw < 20 or ph < 20 then return end
 
     local minV, maxV
-    if state.autoScale then
-        for i = 1, #state.samples do
-            local v = state.samples[i]
-            if minV == nil or v < minV then minV = v end
-            if maxV == nil or v > maxV then maxV = v end
-        end
-    else
-        minV = -2000
-        maxV = 2000
+    for i = 1, #state.samples do
+        local v = state.samples[i]
+        if minV == nil or v < minV then minV = v end
+        if maxV == nil or v > maxV then maxV = v end
     end
 
     if minV == nil or maxV == nil then
@@ -397,13 +391,6 @@ local function openPage(opts)
         state.selectedSourceIdx = tonumber(v) or 1
         state.lastStateText = "WAIT"
         resetSamples()
-    end)
-
-    line = form.addLine("Auto scale")
-    app.formFields[2] = form.addBooleanField(line, nil, function()
-        return state.autoScale == true
-    end, function(v)
-        state.autoScale = (v == true)
     end)
 
     state.wakeupEnabled = true
