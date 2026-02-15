@@ -293,6 +293,22 @@ local function getDefaultSensors(sensorListFromApi)
     return defaultSensors
 end
 
+local function applyDefaultSensors()
+    local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
+    local changed = false
+
+    for _, v in pairs(sensorListFromApi) do
+        if config[v] ~= true then
+            config[v] = true
+            changed = true
+        end
+    end
+
+    if changed and rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.markPageDirty then
+        rfsuite.app.ui.markPageDirty()
+    end
+end
+
 -- shallow-copy helper (snapshots tables so API internals can’t mutate our cache)
 local function copyTable(src)
     if type(src) ~= "table" then return src end
@@ -429,14 +445,12 @@ local function wakeup()
     end
 
     if setDefaultSensors == true then
-        local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
-        for _, v in pairs(sensorListFromApi) do config[v] = true end
+        applyDefaultSensors()
         setDefaultSensors = false
     end
 
     if setDefaultSensors == true then
-        local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
-        for _, v in pairs(sensorListFromApi) do config[v] = true end
+        applyDefaultSensors()
         setDefaultSensors = false
     end
 end
