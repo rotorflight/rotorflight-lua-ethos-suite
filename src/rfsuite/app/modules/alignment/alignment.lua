@@ -14,6 +14,7 @@ local sin = math.sin
 local cos = math.cos
 local rad = math.rad
 local floor = math.floor
+local sqrt = math.sqrt
 local max = math.max
 local min = math.min
 
@@ -363,7 +364,56 @@ local function drawVisual()
     lcd.drawText(textX, textY, liveText, LEFT)
     lcd.drawText(textX, textY + th1 + textPad, offsText, LEFT)
     lcd.drawText(textX, textY + th1 + th2 + 14, string.format("View Yaw:%0.1f", state.viewYawOffset), LEFT)
-    lcd.drawText(textX, textY + th1 + th2 + 28, "Tool: Tail View reset", LEFT)
+
+    local miniX = infoX + 8
+    local miniY = textY + th1 + th2 + 46
+    local miniW = max(40, infoW - 16)
+    local miniH = max(40, infoH - (miniY - infoY) - 8)
+    if miniH >= 56 then
+        lcd.color(grid)
+        lcd.drawRectangle(miniX, miniY, miniW, miniH)
+
+        lcd.color(mainColor)
+        lcd.drawText(miniX + 4, miniY + 2, "Nose Direction", LEFT)
+
+        local mx = miniX + floor(miniW * 0.5)
+        local my = miniY + floor(miniH * 0.60)
+        local len = max(14, floor(min(miniW, miniH) * 0.30))
+        local head = max(5, floor(len * 0.32))
+
+        -- Use the same transformed model frame so this arrow matches
+        -- the main heli orientation for up/left/right cues.
+        local nwx, nwy = rotatePoint(2.2, 0.0, 0.0, pitchR, yawR, rollR)
+        local twx, twy = rotatePoint(-2.2, 0.0, 0.0, pitchR, yawR, rollR)
+        local dx = nwx - twx
+        local dy = nwy - twy
+        local mag = sqrt((dx * dx) + (dy * dy))
+        if mag > 0.001 then
+            local ux = dx / mag
+            local uy = dy / mag
+            local ex = mx + (ux * len)
+            local ey = my - (uy * len)
+            local px = -uy
+            local py = ux
+            local hx1 = ex - (ux * head) + (px * (head * 0.65))
+            local hy1 = ey + (uy * head) - (py * (head * 0.65))
+            local hx2 = ex - (ux * head) - (px * (head * 0.65))
+            local hy2 = ey + (uy * head) + (py * (head * 0.65))
+
+            lcd.color(accent)
+            lcd.drawLine(mx, my, ex, ey)
+            lcd.drawLine(ex, ey, hx1, hy1)
+            lcd.drawLine(ex, ey, hx2, hy2)
+
+            local htxt, vtxt = "Center", "Center"
+            if ux > 0.35 then htxt = "Right" elseif ux < -0.35 then htxt = "Left" end
+            if uy > 0.35 then vtxt = "Up" elseif uy < -0.35 then vtxt = "Down" end
+            local dirText = "Nose: " .. vtxt
+            if htxt ~= "Center" then dirText = dirText .. "-" .. htxt end
+            lcd.color(mainColor)
+            lcd.drawText(miniX + 6, miniY + miniH - 16, dirText, LEFT)
+        end
+    end
 
     local cx = gx0 + floor(gw0 * 0.5)
     local cy = gy0 + floor(gh0 * 0.63)
@@ -440,7 +490,7 @@ local function openPage(opts)
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
     form.clear()
-    app.ui.fieldHeader("Board and Sensor Alignment")
+    app.ui.fieldHeader("Alignment")
 
     local line1 = form.addLine("")
     local rowY = radio.linePaddingTop
@@ -449,36 +499,24 @@ local function openPage(opts)
     local leftPad = 2
     local rightPad = 6
     local gap = 4
-    local labelW = 130
-    local axisLabelW = 0
-    local fieldX = floor(screenW * 0.48)
-    local fieldW = screenW - fieldX - rightPad
-    if fieldW < 180 then
-        fieldX = min(fieldX, screenW - 180 - rightPad)
-        fieldW = screenW - fieldX - rightPad
-    end
-    if fieldX < (leftPad + labelW + gap) then
-        fieldX = leftPad + labelW + gap
-        fieldW = screenW - fieldX - rightPad
-    end
-
+    local fieldX = leftPad
+    local fieldW = screenW - leftPad - rightPad
     local slotGap = gap
-    local slotW = floor((fieldW - (slotGap * 2)) / 3)
-    local labels = {"Roll", "Pitch", "Yaw"}
-    local x = fieldX
-
-    form.addStaticText(line1, {x = leftPad, y = rowY, w = labelW, h = rowH}, "Alignment:")
+    local slotW = floor((fieldW - (slotGap * 3)) / 4)
+    local labels = {"Roll", "Pitch", "Yaw", "Mag"}
 
     lcd.font(FONT_STD)
     local wRoll = lcd.getTextSize("Roll ")
     local wPitch = lcd.getTextSize("Pitch ")
     local wYaw = lcd.getTextSize("Yaw ")
-    local labelWidths = {wRoll, wPitch, wYaw}
+    local wMag = lcd.getTextSize("Mag ")
+    local labelWidths = {wRoll, wPitch, wYaw, wMag}
 
     local slotX1 = fieldX
     local slotX2 = fieldX + slotW + slotGap
     local slotX3 = fieldX + (slotW + slotGap) * 2
-    local slotX = {slotX1, slotX2, slotX3}
+    local slotX4 = fieldX + (slotW + slotGap) * 3
+    local slotX = {slotX1, slotX2, slotX3, slotX4}
 
     local bw1 = clamp(slotW - labelWidths[1] - 2, 30, 56)
     local bw2 = clamp(slotW - labelWidths[2] - 2, 30, 56)
@@ -512,8 +550,9 @@ local function openPage(opts)
     end)
     formFields[3]:suffix("°")
 
-    local line4 = form.addLine("MAG Alignment")
-    formFields[4] = form.addChoiceField(line4, {x = fieldX, y = rowY, w = fieldW, h = rowH}, magAlignChoices, function()
+    form.addStaticText(line1, {x = slotX[4], y = rowY, w = labelWidths[4], h = rowH}, labels[4])
+    local magW = max(72, slotW - labelWidths[4] - 2)
+    formFields[4] = form.addChoiceField(line1, {x = slotX[4] + labelWidths[4] + 2, y = rowY, w = magW, h = rowH}, magAlignChoices, function()
         return state.display.mag_alignment + 1
     end, function(v)
         state.display.mag_alignment = clamp((tonumber(v) or 1) - 1, 0, 9)
@@ -562,7 +601,26 @@ local function onReloadMenu()
 end
 
 local function onToolMenu()
-    recenterYawView()
+    form.openDialog({
+        title = "Alignment",
+        message = "Reset view yaw so the tail faces you?",
+        buttons = {
+            {
+                label = "@i18n(app.btn_ok_long)@",
+                action = function()
+                    recenterYawView()
+                    return true
+                end
+            },
+            {
+                label = "@i18n(app.btn_cancel)@",
+                action = function()
+                    return true
+                end
+            }
+        },
+        options = TEXT_LEFT
+    })
     return true
 end
 
