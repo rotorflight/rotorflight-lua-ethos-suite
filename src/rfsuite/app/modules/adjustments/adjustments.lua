@@ -1155,11 +1155,9 @@ local function updateLiveFields()
 
     if state.liveFields.preview and state.liveFields.preview.value then
         local preview = calcPreview(adjRange, getAdjustmentType(adjRange), enaUs, adjUs)
-        if preview.active then
-            state.liveFields.preview:value(preview.text .. " *")
-        else
-            state.liveFields.preview:value(preview.text)
-        end
+        local valueText = preview.text
+        if preview.active then valueText = valueText .. "*" end
+        state.liveFields.preview:value("Output: " .. valueText)
     end
 end
 
@@ -1216,9 +1214,12 @@ local function render()
 
     local activeCount = countActiveRanges()
     local infoLine = form.addLine("@i18n(app.modules.adjustments.active_ranges)@ " .. tostring(activeCount) .. " / " .. tostring(#state.adjustmentRanges))
+    local previewW = math.max(48, math.floor(width * 0.16))
+    local previewX = width - rightPadding - previewW
+
     if state.dirty then
-        local statusW = math.floor(width * 0.32)
-        local statusX = width - rightPadding - statusW
+        local statusW = math.max(76, math.floor(width * 0.22))
+        local statusX = previewX - gap - statusW
         local statusBtn = form.addButton(infoLine, {x = statusX, y = y, w = statusW, h = h}, {
             text = "@i18n(app.modules.adjustments.unsaved_changes)@",
             icon = nil,
@@ -1228,6 +1229,8 @@ local function render()
         })
         if statusBtn and statusBtn.enable then statusBtn:enable(false) end
     end
+    local preview = form.addStaticText(infoLine, {x = previewX, y = y, w = previewW, h = h}, "Output: -")
+    if preview and preview.value then state.liveFields.preview = preview end
 
     if hasActiveAutoDetect() then form.addLine("@i18n(app.modules.adjustments.auto_detect_active_toggle)@") end
     if state.saveError then form.addLine("@i18n(app.modules.adjustments.save_error)@ " .. tostring(state.saveError)) end
@@ -1564,10 +1567,6 @@ local function render()
         if valStart and valStart.enable then valStart:enable(false) end
         if valEnd and valEnd.enable then valEnd:enable(false) end
     end
-
-    local previewLine = form.addLine("@i18n(app.modules.adjustments.current_output)@")
-    local preview = form.addStaticText(previewLine, {x = width - rightPadding - math.floor(width * 0.45), y = y, w = math.floor(width * 0.45), h = h}, "-")
-    if preview and preview.value then state.liveFields.preview = preview end
 
     restorePendingFocus(focusTargets)
 end
