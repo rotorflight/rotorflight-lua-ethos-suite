@@ -16,6 +16,18 @@ local handlers = core.createHandlers()
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
+local function buildSimulatorResponse()
+    local response = {20, 1, 0, 0}
+    for _ = 1, 19 do
+        response[#response + 1] = 0
+        response[#response + 1] = 0
+        response[#response + 1] = 0
+    end
+    return response
+end
+
+local SIMULATOR_RESPONSE = buildSimulatorResponse()
+
 local function parseModeRangesExtra(buf)
     local parsed = {}
     local extras = {}
@@ -47,7 +59,7 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {},
+        simulatorResponse = SIMULATOR_RESPONSE,
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT
     }
