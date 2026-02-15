@@ -15,6 +15,7 @@ local handlers = core.createHandlers()
 
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
+local SIMULATOR_RESPONSE = {0, 1, 2, 53, 27, 36, 45, 13, 52, 19, 20, 26, 31, 51, 55, 56, 57}
 
 local function parseBoxIds(buf)
     local parsed = {}
@@ -42,7 +43,7 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {},
+        simulatorResponse = SIMULATOR_RESPONSE,
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT
     }

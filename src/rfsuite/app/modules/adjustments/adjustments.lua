@@ -27,7 +27,7 @@ local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
 local MSP_FUNCTION_NAME_PREFETCH_MIN_API = "12.09"
 
 -- gate the prefetch call until its in the firmware
-local USE_MSP_FUNCTION_NAME_PREFETCH = true 
+local USE_MSP_FUNCTION_NAME_PREFETCH = false
 
 local ADJUST_FUNCTIONS = {
     {id = 0, name = "None", min = 0, max = 100},
