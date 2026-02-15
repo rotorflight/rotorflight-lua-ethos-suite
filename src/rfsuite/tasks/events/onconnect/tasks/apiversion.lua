@@ -41,13 +41,13 @@ function apiversion.wakeup()
             local restoreProto = originalProto
 
             if version then
-                local apiVersionString = tostring(version)
+                local apiVersionString = string.format("%.2f", version)
 
                 if not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionString) then
                     rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "info")
                     rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "connect")
                     rfsuite.session.apiVersionInvalid = true
-                    rfsuite.session.apiVersion = version
+                    rfsuite.session.apiVersion = apiVersionString
 
                     rfsuite.config.mspProtocolVersion = restoreProto
                     return
@@ -82,7 +82,7 @@ function apiversion.wakeup()
                 rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "connect")
             end
 
-            rfsuite.session.apiVersion = version
+            rfsuite.session.apiVersion = version and string.format("%.2f", version) or nil
             rfsuite.session.apiVersionInvalid = false
             if rfsuite.session.apiVersion then
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
