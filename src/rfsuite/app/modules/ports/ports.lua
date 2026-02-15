@@ -385,6 +385,9 @@ local function savePorts()
                 state.portsOriginal = clonePorts(state.portsWorking)
                 state.needsRender = true
                 rfsuite.app.triggers.closeProgressLoader = true
+
+                -- Ports changes require reboot to ensure serial service state is rebuilt.
+                rfsuite.app.ui.rebootFc()
             end, failed)
             return
         end
@@ -556,7 +559,7 @@ return {
     onReloadMenu = onReloadMenu,
     onNavMenu = onNavMenu,
     eepromWrite = false,
-    reboot = false,
+    reboot = true,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     API = {},
     canSave = canSave
