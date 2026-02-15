@@ -171,6 +171,8 @@ end
 
 function app.event(widget, category, value, x, y)
 
+
+
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
         app.utils.invalidatePages()

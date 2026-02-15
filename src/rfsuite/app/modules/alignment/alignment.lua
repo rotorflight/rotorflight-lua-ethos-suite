@@ -749,7 +749,12 @@ local function onNavMenu()
     return true
 end
 
-local function event(_, category, value)
+local function event(_, category, value, x, y)
+    if value == 128 then
+        recenterYawView()
+        return true
+    end
+
     if (category == EVT_CLOSE and value == 0) or value == 35 then
         app.ui.openMainMenuSub("hardware")
         return true
