@@ -295,6 +295,23 @@ local function drawLine3D(a, b, cx, cy, scale, pitchR, yawR, rollR, color)
     lcd.drawLine(x1, y1, x2, y2)
 end
 
+local function drawFilledTriangle3D(a, b, c, cx, cy, scale, pitchR, yawR, rollR, color)
+    local ax, ay, az = rotatePoint(a[1], a[2], a[3], pitchR, yawR, rollR)
+    local bx, by, bz = rotatePoint(b[1], b[2], b[3], pitchR, yawR, rollR)
+    local cx3, cy3, cz3 = rotatePoint(c[1], c[2], c[3], pitchR, yawR, rollR)
+    if (CAMERA_DIST - az) <= CAMERA_NEAR_EPS or (CAMERA_DIST - bz) <= CAMERA_NEAR_EPS or (CAMERA_DIST - cz3) <= CAMERA_NEAR_EPS then
+        return
+    end
+
+    local x1, y1 = projectPoint(ax, ay, az, cx, cy, scale)
+    local x2, y2 = projectPoint(bx, by, bz, cx, cy, scale)
+    local x3, y3 = projectPoint(cx3, cy3, cz3, cx, cy, scale)
+    if x1 == nil or x2 == nil or x3 == nil then return end
+
+    lcd.color(color)
+    lcd.drawFilledTriangle(x1, y1, x2, y2, x3, y3)
+end
+
 local function drawVisual()
     local w, h = lcd.getWindowSize()
     local x = 0
@@ -378,13 +395,12 @@ local function drawVisual()
 
         local mx = miniX + floor(miniW * 0.5)
         local my = miniY + floor(miniH * 0.60)
-        local miniScale = max(8, floor(min(miniW, miniH) * 0.19))
 
-        -- Drive arrow from projected nose/tail points so it mirrors heli motion.
+        -- Use projected nose/tail points to generate a clear textual cue.
         local nwx, nwy, nwz = rotatePoint(2.2, 0.0, 0.0, pitchR, yawR, rollR)
         local twx, twy, twz = rotatePoint(-2.2, 0.0, 0.0, pitchR, yawR, rollR)
-        local npx, npy = projectPoint(nwx, nwy, nwz, mx, my, miniScale)
-        local tpx, tpy = projectPoint(twx, twy, twz, mx, my, miniScale)
+        local npx, npy = projectPoint(nwx, nwy, nwz, mx, my, 1.0)
+        local tpx, tpy = projectPoint(twx, twy, twz, mx, my, 1.0)
         if npx and npy and tpx and tpy then
             local dx = npx - tpx
             local dy = -(npy - tpy)
@@ -392,28 +408,26 @@ local function drawVisual()
             if mag > 0.001 then
                 local ux = dx / mag
                 local uy = dy / mag
-                local ex = npx
-                local ey = npy
-                local head = max(5, floor(min(14, mag * 0.45)))
-                local px = -uy
-                local py = ux
-                local hx1 = ex - (ux * head) + (px * (head * 0.65))
-                local hy1 = ey - (uy * head) - (py * (head * 0.65))
-                local hx2 = ex - (ux * head) - (px * (head * 0.65))
-                local hy2 = ey - (uy * head) + (py * (head * 0.65))
-
-                lcd.color(accent)
-                lcd.drawLine(tpx, tpy, ex, ey)
-                lcd.drawLine(ex, ey, hx1, hy1)
-                lcd.drawLine(ex, ey, hx2, hy2)
-
                 local htxt, vtxt = "Center", "Center"
                 if ux > 0.35 then htxt = "Right" elseif ux < -0.35 then htxt = "Left" end
                 if uy > 0.35 then vtxt = "Up" elseif uy < -0.35 then vtxt = "Down" end
-                local dirText = "Nose: " .. vtxt
-                if htxt ~= "Center" then dirText = dirText .. "-" .. htxt end
+
+                local primary = "Nose Level"
+                if vtxt == "Up" then primary = "Nose Up" end
+                if vtxt == "Down" then primary = "Nose Down" end
+
+                local secondary = ""
+                if htxt == "Left" then secondary = "Leaning Left" end
+                if htxt == "Right" then secondary = "Leaning Right" end
+
+                lcd.font(FONT_STD)
+                lcd.color(accent)
+                lcd.drawText(miniX + 6, miniY + floor(miniH * 0.42), primary, LEFT)
+                lcd.font(FONT_XS)
                 lcd.color(mainColor)
-                lcd.drawText(miniX + 6, miniY + miniH - 16, dirText, LEFT)
+                if secondary ~= "" then
+                    lcd.drawText(miniX + 6, miniY + floor(miniH * 0.42) + 22, secondary, LEFT)
+                end
             end
         end
     end
@@ -450,6 +464,7 @@ local function drawVisual()
     drawLine3D(top, mast, cx, cy, scale, pitchR, yawR, rollR, disc)
 
     -- Fuselage
+    drawFilledTriangle3D(nose, lf, rf, cx, cy, scale, pitchR, yawR, rollR, accent)
     drawLine3D(tail, nose, cx, cy, scale, pitchR, yawR, rollR, mainColor)
     drawLine3D(lb, lf, cx, cy, scale, pitchR, yawR, rollR, mainColor)
     drawLine3D(rb, rf, cx, cy, scale, pitchR, yawR, rollR, mainColor)
