@@ -5,6 +5,8 @@
 
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local session = rfsuite.session
+local tasks = rfsuite.tasks
 
 local API_NAME = "REBOOT"
 local MSP_API_CMD_WRITE = 68
@@ -45,6 +47,15 @@ local function errorHandlerStatic(self, buf)
 end
 
 local function write(suppliedPayload)
+    local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
+    local armedByFlags = (armflags == 1 or armflags == 3)
+    if (session and session.isArmed) or armedByFlags then
+        if rfsuite and rfsuite.utils and rfsuite.utils.log then
+            rfsuite.utils.log("REBOOT API blocked while armed", "info")
+        end
+        return false, "armed_blocked"
+    end
+
     local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())

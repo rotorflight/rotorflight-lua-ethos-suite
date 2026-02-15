@@ -2256,6 +2256,16 @@ function ui.saveSettings()
 end
 
 function ui.rebootFc()
+    local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
+    local armedByFlags = (armflags == 1 or armflags == 3)
+    if (session and session.isArmed) or armedByFlags then
+        utils.log("Blocked reboot while armed", "info")
+        app.pageState = app.pageStatus.display
+        app.triggers.closeSaveFake = true
+        app.triggers.isSaving = false
+        app.triggers.showSaveArmedWarning = true
+        return false, "armed_blocked"
+    end
 
     app.pageState = app.pageStatus.rebooting
     local ok, reason = tasks.msp.mspQueue:add({
@@ -2273,6 +2283,7 @@ function ui.rebootFc()
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
     end
+    return ok, reason
 end
 
 function ui.adminStatsOverlay()
