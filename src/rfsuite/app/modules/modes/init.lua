@@ -3,6 +3,6 @@
   GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
-local init = {title = "Modes", section = "advanced", script = "modes.lua", image = "modes.png", order = 9, ethosversion = {1, 6, 2}}
+local init = {title = "Modes", section = "advanced", script = "modes.lua", image = "modes.png", order = 9, loaderspeed = 0.1, ethosversion = {1, 6, 2}}
 
 return init

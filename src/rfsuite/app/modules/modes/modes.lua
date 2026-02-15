@@ -126,6 +126,25 @@ end
 local AUX_OPTIONS_TBL = buildChoiceTable(AUX_OPTIONS, 0)
 local MODE_LOGIC_OPTIONS_TBL = buildChoiceTable(MODE_LOGIC_OPTIONS, -1)
 
+local function canSave()
+    return state.loaded and (not state.loading) and (not state.saving) and state.dirty
+end
+
+local function updateSaveButtonState()
+    local nav = rfsuite.app and rfsuite.app.formNavigationFields
+    local saveField = nav and nav["save"] or nil
+    if not saveField then return end
+    if saveField.enable then
+        saveField:enable(canSave())
+    end
+end
+
+local function syncNavButtonsForState()
+    local page = rfsuite.app and rfsuite.app.Page
+    if not page then return end
+    page.navButtons = {menu = true, save = true, reload = true, tool = false, help = true}
+end
+
 -- Forward declaration: used by helpers defined before the function body.
 local buildModesFromRaw
 
@@ -549,6 +568,7 @@ end
 local function render()
     local app = rfsuite.app
     state.liveRangeFields = {}
+    syncNavButtonsForState()
     form.clear()
     app.ui.fieldHeader(state.title)
 
@@ -816,6 +836,7 @@ local function wakeup()
         render()
         state.needsRender = false
     end
+    updateSaveButtonState()
     if not state.loaded or state.loading then return end
     if state.saving then return end
     updateLiveRangeFields()
