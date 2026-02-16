@@ -542,7 +542,7 @@ function ui.openMenuContext(defaultSectionId, showProgress, speed)
 
     local targetSectionId = navigation.resolveMenuContext(app.MainMenu, app.lastMenu, defaultSectionId)
     if targetSectionId then
-        ui.openMainMenuSub(targetSectionId)
+        ui.openMainMenu(targetSectionId)
         return
     end
 
@@ -1018,7 +1018,36 @@ function ui.resetPageState(activesection)
     collectgarbage('collect')
 end
 
-function ui.openMainMenu()
+local function openMenuSectionById(sectionId)
+    if not sectionId or sectionId == "mainmenu" then return false end
+
+    local mainMenu = app.MainMenu or assert(loadfile("app/modules/init.lua"))()
+    local section, sectionIndex = navigation.findSection(mainMenu, sectionId)
+    if not section then return false end
+
+    -- Manifest-driven sections now resolve directly to module pages.
+    if section.module then
+        app.lastMenu = sectionId
+        app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
+
+        local speed = tonumber(section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
+        local script, speedOverride = resolvePageScript(section)
+        if speedOverride ~= nil then
+            speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
+        end
+
+        app.isOfflinePage = section.offline == true
+        app.ui.progressDisplay(nil, nil, speed)
+        app.ui.openPage({idx = sectionIndex, title = section.title, script = section.module .. "/" .. script})
+        return true
+    end
+
+    return false
+end
+
+function ui.openMainMenu(activesection)
+
+    if openMenuSectionById(activesection) then return end
 
     ui.resetPageState()
     app.lastMenu = "mainmenu"
@@ -1138,7 +1167,7 @@ function ui.openMainMenu()
                             app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
                         else
                             app.ui.progressDisplay(nil, nil, speed)
-                            app.ui.openMainMenuSub(menuItem.id)
+                            app.ui.openMainMenu(menuItem.id)
                         end
                     end
                 })
@@ -1154,163 +1183,6 @@ function ui.openMainMenu()
     app.triggers.closeProgressLoader = true
 
     utils.reportMemoryUsage("app.openMainMenu", "end")
-
-    collectgarbage('collect')
-    collectgarbage('collect')
-end
-
-function ui.openMainMenuSub(activesection)
-
-    ui.resetPageState(activesection)
-    app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
-
-    utils.reportMemoryUsage("app.openMainMenuSub", "start")
-
-    if not utils.ethosVersionAtLeast(config.ethosVersion) then return end
-
-    local MainMenu = app.MainMenu
-    
-    app.lastMenu = activesection
-
-    preferences.general.iconsize = tonumber(preferences.general.iconsize) or 1
-
-    local buttonW, buttonH, padding, numPerRow
-
-    if preferences.general.iconsize == 0 then
-        padding = app.radio.buttonPaddingSmall
-        buttonW = (app.lcdWidth - padding) / app.radio.buttonsPerRow - padding
-        buttonH = app.radio.navbuttonHeight
-        numPerRow = app.radio.buttonsPerRow
-    elseif preferences.general.iconsize == 1 then
-        padding = app.radio.buttonPaddingSmall
-        buttonW = app.radio.buttonWidthSmall
-        buttonH = app.radio.buttonHeightSmall
-        numPerRow = app.radio.buttonsPerRowSmall
-    elseif preferences.general.iconsize == 2 then
-        padding = app.radio.buttonPadding
-        buttonW = app.radio.buttonWidth
-        buttonH = app.radio.buttonHeight
-        numPerRow = app.radio.buttonsPerRow
-    end
-
-    form.clear()
-
-    app.gfx_buttons[activesection] = app.gfx_buttons[activesection] or {}
-    preferences.menulastselected[activesection] = preferences.menulastselected[activesection] or 1
-
-    for idx, section in ipairs(MainMenu.sections) do
-        if section.id == activesection then
-            local w, h = lcdGetWindowSize()
-            local windowWidth, windowHeight = w, h
-            local padding = app.radio.buttonPadding
-            local parentId = navigation.getParentSectionId(MainMenu, activesection)
-
-            local menuOnlyNav = {menu = true, save = false, reload = false, tool = false, help = false}
-            local header = form.addLine("")
-            app.ui.setHeaderTitle(section.title, header, menuOnlyNav)
-            app.ui.navigationButtons(windowWidth - 5, getHeaderNavButtonY(app.radio.linePaddingTop), app.radio.menuButtonWidth or 100, getHeaderNavButtonHeight(), {
-                navButtons = menuOnlyNav,
-                onNavMenu = function()
-                    app.lastIdx = nil
-                    session.lastPage = nil
-                    if app.Page and app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-                    if parentId then
-                        app.ui.openMainMenuSub(parentId)
-                    else
-                        app.ui.openMainMenu()
-                    end
-                end
-            })
-            app.ui.disableAllNavigationFields()
-            app.ui.enableNavigationField("menu")
-
-            local lc, y = 0, 0
-
-            for pidx, page in ipairs(MainMenu.pages) do
-                if page.section == idx then
-                    local pageIndex = pidx
-                    local pageItem = page
-                    local hideEntry = not menuEntryVisible(pageItem)
-
-                    local offline = pageItem.offline
-                    app.formFieldsOffline[pageIndex] = offline or false
-
-                    if not hideEntry then
-                        if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
-
-                        local x = (buttonW + padding) * lc
-
-                        if preferences.general.iconsize ~= 0 then
-                            if type(pageItem.image) == "string" and pageItem.image:sub(1, 4) == "app/" then
-                                app.gfx_buttons[activesection][pageIndex] = app.gfx_buttons[activesection][pageIndex] or lcdLoadMask(pageItem.image)
-                            elseif pageItem.folder and pageItem.image then
-                                app.gfx_buttons[activesection][pageIndex] = app.gfx_buttons[activesection][pageIndex] or lcdLoadMask("app/modules/" .. pageItem.folder .. "/" .. pageItem.image)
-                            else
-                                app.gfx_buttons[activesection][pageIndex] = nil
-                            end
-                        else
-                            app.gfx_buttons[activesection][pageIndex] = nil
-                        end
-
-                        app.formFields[pageIndex] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
-                            text = pageItem.title,
-                            icon = app.gfx_buttons[activesection][pageIndex],
-                            options = FONT_S,
-                            paint = function() end,
-                            press = function()
-                                preferences.menulastselected[activesection] = pageIndex
-                                local speed = tonumber(pageItem.loaderspeed or section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
-                                app.isOfflinePage = offline
-                                local script, speedOverride = resolvePageScript(pageItem, section)
-                                if speedOverride ~= nil then
-                                    speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
-                                end
-                                app.ui.progressDisplay(nil, nil, speed)
-                                if pageItem.id and not pageItem.folder then
-                                    app.ui.openMainMenuSub(pageItem.id)
-                                else
-                                    app.ui.openPage({idx = pageIndex, title = pageItem.title, script = pageItem.folder .. "/" .. script})
-                                end
-                            end
-                        })
-
-
-                        lc = (lc + 1) % numPerRow
-                    end
-                end
-            end
-        end
-    end
-
-    -- Aggressive cache clearing on page exit to minimize memory retention.
-    if app and type(app.gfx_buttons) == "table" then
-        app.gfx_buttons = {}
-        if preferences and preferences.developer and preferences.developer.memstats then
-            utils.log("[mem] gfx cache cleared on page exit", "debug")
-        end
-    end
-
-    if tasks and tasks.msp and tasks.msp.api then
-        if tasks.msp.api.clearFileExistsCache then tasks.msp.api.clearFileExistsCache() end
-        if tasks.msp.api.clearChunkCache then tasks.msp.api.clearChunkCache() end
-        if preferences and preferences.developer and preferences.developer.memstats then
-            utils.log("[mem] msp api caches cleared on page exit", "debug")
-        end
-    end
-
-    -- Trim MSP API file-exists cache if it grows (can creep with many module/API loads).
-    if tasks and tasks.msp and tasks.msp.api and tasks.msp.api._fileExistsCache then
-        local cache = tasks.msp.api._fileExistsCache
-        local n = 0
-        for _ in pairs(cache) do n = n + 1 end
-        if n > 16 then
-            tasks.msp.api.clearFileExistsCache()
-        end
-    end
-
-    app.triggers.closeProgressLoader = true
-
-    utils.reportMemoryUsage("app.openMainMenuSub", "end")
 
     collectgarbage('collect')
     collectgarbage('collect')

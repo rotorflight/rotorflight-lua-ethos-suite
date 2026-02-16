@@ -27,18 +27,6 @@ function navigation.sectionExists(mainMenu, sectionId)
     return idx ~= nil
 end
 
-function navigation.getParentSectionId(mainMenu, sectionId)
-    local sections = getSections(mainMenu)
-    if not sections then return nil end
-
-    local section, _ = navigation.findSection(mainMenu, sectionId)
-    if not section or not section.parent then return nil end
-
-    local parent = sections[section.parent]
-    if parent then return parent.id end
-    return nil
-end
-
 function navigation.resolveMenuContext(mainMenu, lastMenuId, defaultSectionId)
     if navigation.sectionExists(mainMenu, lastMenuId) then return lastMenuId end
     if navigation.sectionExists(mainMenu, defaultSectionId) then return defaultSectionId end
