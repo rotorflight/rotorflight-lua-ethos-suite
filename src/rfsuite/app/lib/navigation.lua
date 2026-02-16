@@ -28,8 +28,8 @@ function navigation.sectionExists(mainMenu, sectionId)
 end
 
 function navigation.resolveMenuContext(mainMenu, lastMenuId, defaultSectionId)
-    if navigation.sectionExists(mainMenu, lastMenuId) then return lastMenuId end
     if navigation.sectionExists(mainMenu, defaultSectionId) then return defaultSectionId end
+    if navigation.sectionExists(mainMenu, lastMenuId) then return lastMenuId end
     return nil
 end
 

@@ -544,6 +544,12 @@ function ui.openMenuContext(defaultSectionId, showProgress, speed)
         return
     end
 
+    -- No explicit target means "back to root menu", not "re-open last section".
+    if type(defaultSectionId) ~= "string" or defaultSectionId == "" then
+        ui.openMainMenu()
+        return
+    end
+
     local targetSectionId = navigation.resolveMenuContext(app.MainMenu, app.lastMenu, defaultSectionId)
     if targetSectionId then
         ui.openMainMenu(targetSectionId)
