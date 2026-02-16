@@ -103,7 +103,7 @@ end
 
 function utils.msp_version_array_to_indexed()
     local arr = {}
-    local tbl = rfsuite.config.supportedMspApiVersion or {"12.06", "12.07", "12.08"}
+    local tbl = rfsuite.config.supportedMspApiVersion or {"12.07", "12.08", "12.09", "12.10"}
     for i, v in ipairs(tbl) do arr[#arr + 1] = {v, i} end
     return arr
 end
