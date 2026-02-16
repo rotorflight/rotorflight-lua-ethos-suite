@@ -57,6 +57,12 @@ return {
             title = "@i18n(app.header_system)@",
             sections = {
                 {
+                    title = "@i18n(app.menu_section_tools)@",
+                    menuId = "tools_menu",
+                    image = "app/gfx/tools.png",
+                    ethosversion = {1, 6, 2}
+                },
+                {
                     title = "@i18n(app.modules.logs.name)@",
                     module = "logs",
                     script = "logs_dir.lua",
@@ -79,12 +85,6 @@ return {
                     menuId = "settings_admin",
                     image = "app/modules/settings/settings.png",
                     offline = true,
-                    ethosversion = {1, 6, 2}
-                },
-                {
-                    title = "@i18n(app.menu_section_tools)@",
-                    menuId = "tools_menu",
-                    image = "app/gfx/tools.png",
                     ethosversion = {1, 6, 2}
                 },
                 {
