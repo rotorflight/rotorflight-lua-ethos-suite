@@ -56,6 +56,9 @@ local sliderPositionOld = 1
 
 local processedLogData = false
 local currentDataIndex = 1
+local slowcount = 0
+local carriedOver = nil
+local subStepSize = nil
 
 local paintCache = {points = {}, step_size = 0, position = 1, graphCount = 0, laneHeight = 0, currentLane = 0, decimationFactor = 1, needsUpdate = false}
 
@@ -489,8 +492,9 @@ local function openPage(opts)
     local logfile = opts.logfile
     local displaymode = opts.displaymode
     local dirname = opts.dirname
+    local modelName = opts.modelName
 
-    tasks.msp.protocol.mspIntervalOveride = nil
+    if tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
 
     app.triggers.isReady = false
     app.uiState = app.uiStatus.pages
@@ -503,18 +507,29 @@ local function openPage(opts)
 
     local err
 
-    local name = utils.resolveModelName(session.mcu_id or app.activeLogDir)
+    local name = modelName or utils.resolveModelName(dirname or session.mcu_id)
     app.ui.fieldHeader("Logs / " .. name .. " / " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    local filePath
-
-    if app.activeLogDir then
-        filePath = utils.getLogDir(app.activeLogDir) .. "/" .. logfile
-    else
-        filePath = utils.getLogDir() .. "/" .. logfile
-    end
+    local filePath = utils.getLogDir(dirname) .. logfile
     logFileHandle, err = io.open(filePath, "rb")
+    if not logFileHandle then
+        rfutils.log("Failed to open log file: " .. tostring(err), "error")
+        app.ui.progressDisplay()
+        onNavMenu()
+        return
+    end
+
+    zoomLevel = 1
+    sliderPosition = 1
+    sliderPositionOld = 1
+    processedLogData = false
+    currentDataIndex = 1
+    slowcount = 0
+    carriedOver = nil
+    subStepSize = nil
+    logData = {}
+    paintCache.needsUpdate = true
 
     local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
     app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function() return sliderPosition end, function(newValue) sliderPosition = newValue end)
@@ -578,10 +593,6 @@ end
 local function event(event, category, value, x, y)
     return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
-
-local slowcount = 0
-local carriedOver = nil
-local subStepSize = nil
 
 local function updatePaintCache()
     if not logData or not processedLogData then return end

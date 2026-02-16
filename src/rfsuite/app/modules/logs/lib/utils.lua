@@ -49,13 +49,14 @@ function utils.getLogs(logDir)
     return result
 end
 
-function utils.getLogPath()
+function utils.getLogPath(dirname)
 
     os.mkdir("LOGS:")
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/telemetry")
 
-    if rfsuite.app.activeLogDir then return string.format("LOGS:/rfsuite/telemetry/%s/", rfsuite.app.activeLogDir) end
+    local targetDir = dirname or rfsuite.app.activeLogDir
+    if targetDir then return string.format("LOGS:/rfsuite/telemetry/%s/", targetDir) end
     return "LOGS:/rfsuite/telemetry/"
 end
 

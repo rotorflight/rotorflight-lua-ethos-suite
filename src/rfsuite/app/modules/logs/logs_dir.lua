@@ -83,11 +83,17 @@ local function openPage(opts)
                 options = FONT_S,
                 icon = rfsuite.app.gfx_buttons.logs[i],
                 press = function()
-                    rfsuite.preferences.menulastselected.logs = i
+                    rfsuite.preferences.menulastselected.logs_folder = i
                     rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.activeLogDir = item.foldername
                     rfsuite.utils.log("Opening logs for: " .. item.foldername, "info")
-                    rfsuite.app.ui.openPage({idx = i, title = "Logs", script = "logs/logs_logs.lua"})
+                    rfsuite.app.ui.openPage({
+                        idx = i,
+                        title = title,
+                        script = "logs/logs_logs.lua",
+                        dirname = item.foldername,
+                        modelName = modelName,
+                        returnContext = {idx = idx, title = title, script = script}
+                    })
                 end
             })
 

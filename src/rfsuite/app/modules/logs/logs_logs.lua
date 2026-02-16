@@ -47,6 +47,8 @@ local function openPage(opts)
     local title = opts.title
     local script = opts.script
     local displaymode = opts.displaymode
+    local dirname = opts.dirname
+    local modelName = opts.modelName
 
     if not rfutils.ethosVersionAtLeast() then return end
 
@@ -89,11 +91,11 @@ local function openPage(opts)
     local sc
     local panel
 
-    local logDir = utils.getLogPath()
+    local logDir = utils.getLogPath(dirname)
 
     local logs = utils.getLogs(logDir)
 
-    local name = utils.resolveModelName(session.mcu_id or app.activeLogDir)
+    local name = modelName or utils.resolveModelName(dirname or session.mcu_id)
     app.ui.fieldHeader("Logs / " .. name)
 
     local buttonW
@@ -130,10 +132,9 @@ local function openPage(opts)
     local bx = 0
 
     if app.gfx_buttons["logs_logs"] == nil then app.gfx_buttons["logs_logs"] = {} end
-    if prefs.menulastselected["logs"] == nil then prefs.menulastselected["logs_logs"] = 1 end
 
     if app.gfx_buttons["logs"] == nil then app.gfx_buttons["logs"] = {} end
-    if prefs.menulastselected["logs_logs"] == nil then prefs.menulastselected["logs_logs"] = 1 end
+    if prefs.menulastselected["logs_logs"] == nil then prefs.menulastselected["logs_logs"] = "" end
 
     local groupedLogs = {}
     for _, filename in ipairs(logs) do
@@ -165,37 +166,56 @@ local function openPage(opts)
 
     else
         app.gfx_buttons["logs_logs"] = app.gfx_buttons["logs_logs"] or {}
-        prefs.menulastselected["logs_logs"] = prefs.menulastselected["logs_logs"] or 1
+        prefs.menulastselected["logs_logs"] = prefs.menulastselected["logs_logs"] or ""
+
+        local buttonIndex = 0
 
         for idx, section in ipairs(dates) do
 
             form.addLine(format_date(section))
             local lc, y = 0, 0
 
-            for pidx, page in ipairs(groupedLogs[section]) do
+            for _, page in ipairs(groupedLogs[section]) do
+                buttonIndex = buttonIndex + 1
+                local currentButtonIndex = buttonIndex
+                local pageName = page
 
                 if lc == 0 then y = form.height() + (prefs.general.iconsize == 2 and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
 
                 local x = (buttonW + padding) * lc
                 if prefs.general.iconsize ~= 0 then
-                    if app.gfx_buttons["logs_logs"][pidx] == nil then app.gfx_buttons["logs_logs"][pidx] = lcd.loadMask("app/modules/logs/gfx/logs.png") end
+                    if app.gfx_buttons["logs_logs"][currentButtonIndex] == nil then app.gfx_buttons["logs_logs"][currentButtonIndex] = lcd.loadMask("app/modules/logs/gfx/logs.png") end
                 else
-                    app.gfx_buttons["logs_logs"][pidx] = nil
+                    app.gfx_buttons["logs_logs"][currentButtonIndex] = nil
                 end
 
-                app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
-                    text = extractHourMinute(page),
-                    icon = app.gfx_buttons["logs_logs"][pidx],
+                app.formFields[currentButtonIndex] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                    text = extractHourMinute(pageName),
+                    icon = app.gfx_buttons["logs_logs"][currentButtonIndex],
                     options = FONT_S,
                     paint = function() end,
                     press = function()
-                        prefs.menulastselected["logs_logs"] = tostring(idx) .. "_" .. tostring(pidx)
+                        prefs.menulastselected["logs_logs"] = pageName
                         app.ui.progressDisplay()
-                        app.ui.openPage({idx = pidx, title = "Logs", script = "logs/logs_view.lua", logfile = page})
+                        app.ui.openPage({
+                            idx = currentButtonIndex,
+                            title = title,
+                            script = "logs/logs_view.lua",
+                            logfile = pageName,
+                            dirname = dirname,
+                            modelName = name,
+                            returnContext = {
+                                idx = pidx,
+                                title = title,
+                                script = script,
+                                dirname = dirname,
+                                modelName = name
+                            }
+                        })
                     end
                 })
 
-                if prefs.menulastselected["logs_logs"] == tostring(idx) .. "_" .. tostring(pidx) then app.formFields[pidx]:focus() end
+                if prefs.menulastselected["logs_logs"] == pageName then app.formFields[currentButtonIndex]:focus() end
 
                 lc = (lc + 1) % numPerRow
 
