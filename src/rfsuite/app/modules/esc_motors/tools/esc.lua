@@ -10,6 +10,19 @@ local system = system
 
 local pages = {}
 
+local function resolveModulePath(script)
+    if type(script) ~= "string" then return nil, nil end
+    local relativeScript = script
+    if relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+    local modulePath = script
+    if modulePath:sub(1, 4) ~= "app/" then
+        modulePath = "app/modules/" .. modulePath
+    end
+    return modulePath, relativeScript
+end
+
 local function findMFG()
     local mfgsList = {}
 
@@ -44,6 +57,7 @@ local function openPage(opts)
     local parentIdx = opts.idx
     local title = opts.title
     local script = opts.script
+    local modulePath, relativeScript = resolveModulePath(script)
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
@@ -55,7 +69,7 @@ local function openPage(opts)
 
     rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    rfsuite.app.lastScript = relativeScript or script
 
     if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
         rfsuite.preferences.general.iconsize = 1
@@ -96,7 +110,7 @@ local function openPage(opts)
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
-    assert(loadfile("app/modules/" .. script))()
+    assert(loadfile(modulePath))()
     pages = findMFG()
     local lc = 0
     local bx = 0
@@ -126,15 +140,15 @@ local function openPage(opts)
             press = function()
                 rfsuite.preferences.menulastselected["escmain"] = childIdx
                 rfsuite.app.ui.progressDisplay(nil,nil,0.5)
-                rfsuite.app.ui.openPage({
-                    idx = childIdx,
-                    title = title .. " / " .. pvalue.toolName,
-                    folder = pvalue.folder,
-                    script = "esc_motors/tools/esc_tool.lua",
-                    returnContext = {idx = parentIdx, title = title, script = script}
-                })
-            end
-        })
+                    rfsuite.app.ui.openPage({
+                        idx = childIdx,
+                        title = title .. " / " .. pvalue.toolName,
+                        folder = pvalue.folder,
+                        script = "esc_motors/tools/esc_tool.lua",
+                        returnContext = {idx = parentIdx, title = title, script = relativeScript or script}
+                    })
+                end
+            })
 
         if pvalue.disabled == true then rfsuite.app.formFields[childIdx]:enable(false) end
 

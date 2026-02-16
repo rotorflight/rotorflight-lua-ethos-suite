@@ -2444,11 +2444,41 @@
       "needs_translation": false,
       "translation": "Advanced"
     },
+    "menu_section_controls": {
+      "english": "Controls",
+      "max_length": 8,
+      "needs_translation": false,
+      "translation": "Controls"
+    },
+    "menu_section_flight_tuning": {
+      "english": "Flight Tuning",
+      "max_length": 13,
+      "needs_translation": false,
+      "translation": "Flight Tuning"
+    },
     "menu_section_hardware": {
       "english": "Hardware",
       "max_length": 8,
       "needs_translation": false,
       "translation": "Hardware"
+    },
+    "menu_section_mechanics": {
+      "english": "Mechanics",
+      "max_length": 9,
+      "needs_translation": false,
+      "translation": "Mechanics"
+    },
+    "menu_section_profiles": {
+      "english": "Profiles",
+      "max_length": 8,
+      "needs_translation": false,
+      "translation": "Profiles"
+    },
+    "menu_section_safety": {
+      "english": "Safety",
+      "max_length": 6,
+      "needs_translation": false,
+      "translation": "Safety"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -5215,6 +5245,14 @@
           "translation": "Yaw"
         }
       },
+      "fblsensors": {
+        "name": {
+          "english": "FBL Sensors",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "FBL Sensors"
+        }
+      },
       "fblstatus": {
         "arming_disable_flag_0": {
           "english": "No Gyro",
@@ -6035,6 +6073,14 @@
           "max_length": 13,
           "needs_translation": false,
           "translation": "Yaw Direction"
+        }
+      },
+      "modes": {
+        "name": {
+          "english": "Modes",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Modes"
         }
       },
       "msp_exp": {

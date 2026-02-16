@@ -10,6 +10,22 @@ local lcd = lcd
 local container = {}
 local MENU_ONLY_NAV_BUTTONS = {menu = true, save = false, reload = false, tool = false, help = false}
 
+local function isManifestMenuRouterScript(script)
+    return type(script) == "string" and (script == "manifest_menu/menu.lua" or script == "app/modules/manifest_menu/menu.lua")
+end
+
+local function copyReturnContext(base, menuId)
+    local ctx = {
+        idx = base.idx,
+        title = base.title,
+        script = base.script
+    }
+    if type(menuId) == "string" and menuId ~= "" then
+        ctx.menuId = menuId
+    end
+    return ctx
+end
+
 local function resolveScriptFromRules(rules)
     if type(rules) ~= "table" then return nil, nil end
     local utils = rfsuite.utils
@@ -90,6 +106,13 @@ function container.create(cfg)
         local pidx = opts.idx
         local pageTitle = opts.title or cfg.title
         local script = opts.script
+        local currentMenuId = opts.menuId
+        if (type(currentMenuId) ~= "string" or currentMenuId == "") and isManifestMenuRouterScript(script) and type(app.activeManifestMenuId) == "string" and app.activeManifestMenuId ~= "" then
+            currentMenuId = app.activeManifestMenuId
+        end
+        if type(currentMenuId) == "string" and currentMenuId ~= "" then
+            app.activeManifestMenuId = currentMenuId
+        end
 
         if tasks and tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
 
@@ -214,17 +237,30 @@ function container.create(cfg)
                     paint = function() end,
                     press = function()
                         prefs.menulastselected[cfg.moduleKey] = i
-                        local resolvedScript, speedOverride = resolveItemScript(item)
+                        local resolvedScript, speedOverride
+                        if type(item.menuId) == "string" and item.menuId ~= "" then
+                            speedOverride = item.loaderspeed
+                        else
+                            resolvedScript, speedOverride = resolveItemScript(item)
+                        end
                         local loaderSpeed = speedOverride or cfg.loaderSpeed or app.loaderSpeed.FAST
                         if type(loaderSpeed) == "string" and app.loaderSpeed then
                             loaderSpeed = app.loaderSpeed[loaderSpeed] or app.loaderSpeed.FAST
+                        end
+                        local targetScript
+                        if type(item.menuId) == "string" and item.menuId ~= "" then
+                            app.pendingManifestMenuId = item.menuId
+                            targetScript = "manifest_menu/menu.lua"
+                        else
+                            targetScript = scriptPathFor(cfg, item, resolvedScript)
                         end
                         app.ui.progressDisplay(nil, nil, loaderSpeed)
                         app.ui.openPage({
                             idx = i,
                             title = titleForChild(cfg, pageTitle, item),
-                            script = scriptPathFor(cfg, item, resolvedScript),
-                            returnContext = {idx = pidx, title = pageTitle, script = script}
+                            script = targetScript,
+                            menuId = item.menuId,
+                            returnContext = copyReturnContext({idx = pidx, title = pageTitle, script = script}, currentMenuId)
                         })
                     end
                 })

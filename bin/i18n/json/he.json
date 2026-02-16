@@ -2843,12 +2843,42 @@
       "translation": "מתקדם",
       "reverse_text": true
     },
+    "menu_section_flight_tuning": {
+      "english": "Flight Tuning",
+      "translation": "Flight Tuning",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "menu_section_controls": {
+      "english": "Controls",
+      "translation": "Controls",
+      "needs_translation": true,
+      "reverse_text": false
+    },
     "menu_section_hardware": {
       "english": "Hardware",
       "max_length": 8,
       "needs_translation": true,
       "translation": "חומרה",
       "reverse_text": true
+    },
+    "menu_section_mechanics": {
+      "english": "Mechanics",
+      "translation": "Mechanics",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "menu_section_profiles": {
+      "english": "Profiles",
+      "translation": "Profiles",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "menu_section_safety": {
+      "english": "Safety",
+      "translation": "Safety",
+      "needs_translation": true,
+      "reverse_text": false
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -5470,6 +5500,14 @@
           "reverse_text": true
         }
       },
+      "fblsensors": {
+        "name": {
+          "english": "FBL Sensors",
+          "translation": "FBL Sensors",
+          "needs_translation": true,
+          "reverse_text": false
+        }
+      },
       "configuration": {
         "craft_name": {
           "english": "Craft name",
@@ -6382,6 +6420,14 @@
           "needs_translation": true,
           "translation": "כיוון yaw",
           "reverse_text": true
+        }
+      },
+      "modes": {
+        "name": {
+          "english": "Modes",
+          "translation": "Modes",
+          "needs_translation": true,
+          "reverse_text": false
         }
       },
       "msp_exp": {

@@ -34,6 +34,10 @@ local HEADER_NAV_HEIGHT_REDUCTION = 4
 local HEADER_NAV_Y_SHIFT = 6
 local HEADER_OVERLAY_Y_OFFSET = 5
 
+local function isManifestMenuRouterScript(script)
+    return type(script) == "string" and (script == "manifest_menu/menu.lua" or script == "app/modules/manifest_menu/menu.lua")
+end
+
 local function resolveScriptFromRules(rules)
     if type(rules) ~= "table" then return nil end
     for _, rule in ipairs(rules) do
@@ -1025,7 +1029,7 @@ local function openMenuSectionById(sectionId)
     local section, sectionIndex = navigation.findSection(mainMenu, sectionId)
     if not section then return false end
 
-    -- Manifest-driven sections now resolve directly to module pages.
+    -- Section backed by a concrete module/script page.
     if section.module then
         app.lastMenu = sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
@@ -1039,6 +1043,19 @@ local function openMenuSectionById(sectionId)
         app.isOfflinePage = section.offline == true
         app.ui.progressDisplay(nil, nil, speed)
         app.ui.openPage({idx = sectionIndex, title = section.title, script = section.module .. "/" .. script})
+        return true
+    end
+
+    -- Section backed by a manifest menu id loaded through a shared menu module.
+    if type(section.menuId) == "string" and section.menuId ~= "" then
+        app.lastMenu = sectionId
+        app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
+
+        local speed = tonumber(section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
+        app.pendingManifestMenuId = section.menuId
+        app.isOfflinePage = section.offline == true
+        app.ui.progressDisplay(nil, nil, speed)
+        app.ui.openPage({idx = sectionIndex, title = section.title, script = "manifest_menu/menu.lua", menuId = section.menuId})
         return true
     end
 
@@ -1165,6 +1182,11 @@ function ui.openMainMenu(activesection)
                             end
                             app.ui.progressDisplay(nil, nil, speed)
                             app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
+                        elseif type(menuItem.menuId) == "string" and menuItem.menuId ~= "" then
+                            app.isOfflinePage = menuItem.offline == true
+                            app.pendingManifestMenuId = menuItem.menuId
+                            app.ui.progressDisplay(nil, nil, speed)
+                            app.ui.openPage({idx = menuIndex, title = menuItem.title, script = "manifest_menu/menu.lua", menuId = menuItem.menuId})
                         else
                             app.ui.progressDisplay(nil, nil, speed)
                             app.ui.openMainMenu(menuItem.id)
@@ -1915,6 +1937,14 @@ function ui.openPage(opts)
         error("ui.openPage requires opts.script")
     end
 
+    if isManifestMenuRouterScript(script) then
+        if type(opts.menuId) == "string" and opts.menuId ~= "" then
+            app.pendingManifestMenuId = opts.menuId
+        elseif (type(app.pendingManifestMenuId) ~= "string" or app.pendingManifestMenuId == "") and type(app.activeManifestMenuId) == "string" and app.activeManifestMenuId ~= "" then
+            app.pendingManifestMenuId = app.activeManifestMenuId
+        end
+    end
+
     if type(returnStack) == "table" then
         navigation.setReturnStack(app, returnStack)
     elseif type(returnContext) == "table" and type(returnContext.script) == "string" then
@@ -2384,7 +2414,19 @@ function ui.mspApiUpdateFormAttributes()
         end
     end
 
-    app.formNavigationFields['menu']:focus(true)
+    -- During rapid page transitions the menu button may not exist yet.
+    -- Focus the first available navigation field instead of assuming "menu".
+    local navFields = app.formNavigationFields
+    if type(navFields) == "table" then
+        local focusOrder = {"menu", "save", "reload", "tool", "help"}
+        for i = 1, #focusOrder do
+            local navField = navFields[focusOrder[i]]
+            if navField and navField.focus then
+                navField:focus(true)
+                break
+            end
+        end
+    end
 end
 
 function ui.requestPage()

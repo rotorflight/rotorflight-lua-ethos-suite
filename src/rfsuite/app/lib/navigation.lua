@@ -63,7 +63,7 @@ function navigation.pushReturnContext(appState, ctx)
         return stack
     end
     local top = stack[#stack]
-    if not (top and top.idx == ctx.idx and top.title == ctx.title and top.script == ctx.script) then
+    if not (top and top.idx == ctx.idx and top.title == ctx.title and top.script == ctx.script and top.menuId == ctx.menuId) then
         local entry = {}
         for k, v in pairs(ctx) do
             entry[k] = v

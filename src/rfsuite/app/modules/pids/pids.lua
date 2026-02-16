@@ -7,6 +7,19 @@ local rfsuite = require("rfsuite")
 
 local activateWakeup = false
 
+local function resolveScriptPath(script)
+    if type(script) ~= "string" then return nil, nil end
+    local relativeScript = script
+    if relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+    local modulePath = script
+    if modulePath:sub(1, 4) ~= "app/" then
+        modulePath = "app/modules/" .. modulePath
+    end
+    return modulePath, relativeScript
+end
+
 local apidata = {
     api = {
         [1] = 'PID_TUNING'
@@ -62,12 +75,13 @@ local function openPage(opts)
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    local modulePath, relativeScript = resolveScriptPath(script)
+    rfsuite.app.Page = assert(loadfile(modulePath))()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
+    rfsuite.app.lastScript = relativeScript or script
+    rfsuite.session.lastPage = relativeScript or script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 

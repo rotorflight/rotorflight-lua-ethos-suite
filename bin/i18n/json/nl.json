@@ -2843,11 +2843,41 @@
       "max_length": 8,
       "reverse_text": false
     },
+    "menu_section_flight_tuning": {
+      "english": "Flight Tuning",
+      "translation": "Flight Tuning",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "menu_section_controls": {
+      "english": "Controls",
+      "translation": "Controls",
+      "needs_translation": true,
+      "reverse_text": false
+    },
     "menu_section_hardware": {
       "english": "Hardware",
       "translation": "Hardware",
       "needs_translation": true,
       "max_length": 8,
+      "reverse_text": false
+    },
+    "menu_section_mechanics": {
+      "english": "Mechanics",
+      "translation": "Mechanics",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "menu_section_profiles": {
+      "english": "Profiles",
+      "translation": "Profiles",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "menu_section_safety": {
+      "english": "Safety",
+      "translation": "Safety",
+      "needs_translation": true,
       "reverse_text": false
     },
     "menu_section_tools": {
@@ -5470,6 +5500,14 @@
           "reverse_text": false
         }
       },
+      "fblsensors": {
+        "name": {
+          "english": "FBL Sensors",
+          "translation": "FBL Sensors",
+          "needs_translation": true,
+          "reverse_text": false
+        }
+      },
       "configuration": {
         "craft_name": {
           "english": "Craft name",
@@ -6381,6 +6419,14 @@
           "translation": "Yaw Richting",
           "needs_translation": false,
           "max_length": 13,
+          "reverse_text": false
+        }
+      },
+      "modes": {
+        "name": {
+          "english": "Modes",
+          "translation": "Modes",
+          "needs_translation": true,
           "reverse_text": false
         }
       },
