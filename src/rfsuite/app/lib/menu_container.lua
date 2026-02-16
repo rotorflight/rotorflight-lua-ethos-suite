@@ -94,11 +94,11 @@ function container.create(cfg)
     local app = rfsuite.app
     local prefs = rfsuite.preferences
     local tasks = rfsuite.tasks
-    local session = rfsuite.session
 
     local pages = cfg.pages or {}
     local navHandlers = pageRuntime.createMenuHandlers(cfg.navOptions or {})
     local enableWakeup = false
+    local lastLinkState = nil
 
     local function openPage(opts)
         if cfg.onOpenPre then cfg.onOpenPre(opts) end
@@ -289,18 +289,36 @@ function container.create(cfg)
             if handled == true then return end
         end
 
-        if not tasks.active() then
-            for i, v in pairs(app.formFieldsBGTask) do
-                if v == true and app.formFields[i] and app.formFields[i].enable then app.formFields[i]:enable(false) end
-            end
-        elseif not session.isConnected then
+        if type(app.formFields) ~= "table" or type(app.formFieldsOffline) ~= "table" then return end
+
+        local tasksActive = tasks and tasks.active and tasks.active()
+        local liveSession = rfsuite.session
+        local isConnected = (liveSession and liveSession.isConnected and liveSession.mcu_id) and true or false
+
+        if not isConnected then
+            -- Offline mode is manifest-driven: only entries explicitly marked offline remain enabled.
             for i, v in pairs(app.formFieldsOffline) do
-                if app.formFields[i] and app.formFields[i].enable then app.formFields[i]:enable(v == true) end
+                local field = app.formFields[i]
+                if field and field.enable then
+                    local blockedByBgTask = (app.formFieldsBGTask[i] == true) and (not tasksActive)
+                    field:enable((v == true) and (not blockedByBgTask))
+                end
+            end
+        elseif not tasksActive then
+            for i, field in pairs(app.formFields) do
+                if field and field.enable then
+                    field:enable(app.formFieldsBGTask[i] ~= true)
+                end
             end
         else
-            for i in pairs(app.formFields) do
-                if app.formFields[i] and app.formFields[i].enable then app.formFields[i]:enable(true) end
+            for i, field in pairs(app.formFields) do
+                if field and field.enable then field:enable(true) end
             end
+        end
+
+        if lastLinkState ~= isConnected then
+            lastLinkState = isConnected
+            if form and form.invalidate then form.invalidate() end
         end
     end
 
