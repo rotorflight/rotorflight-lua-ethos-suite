@@ -1041,18 +1041,17 @@ function ui.openMainMenu()
 
     local lc, bx, y = 0, 0, 0
 
-    local header = form.addLine("@i18n(app.header_configuration)@")
-
-    local navX = windowWidth - 110
-    app.formNavigationFields['menu'] = form.addButton(header, {x = navX, y = getHeaderNavButtonY(app.radio.linePaddingTop), w = 100, h = getHeaderNavButtonHeight()}, {
-        text = "@i18n(app.navigation_menu)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
+    local menuOnlyNav = {menu = true, save = false, reload = false, tool = false, help = false}
+    local header = form.addLine("")
+    app.ui.setHeaderTitle("@i18n(app.header_configuration)@", header, menuOnlyNav)
+    app.ui.navigationButtons(windowWidth - 5, getHeaderNavButtonY(app.radio.linePaddingTop), app.radio.menuButtonWidth or 100, getHeaderNavButtonHeight(), {
+        navButtons = menuOnlyNav,
+        onNavMenu = function()
             app.close()
         end
     })
+    app.ui.disableAllNavigationFields()
+    app.ui.enableNavigationField("menu")
 
     local pidx = 0
     for _, pvalue in ipairs(Menu) do
@@ -1163,16 +1162,12 @@ function ui.openMainMenuSub(activesection)
             local padding = app.radio.buttonPadding
             local parentId = navigation.getParentSectionId(MainMenu, activesection)
 
+            local menuOnlyNav = {menu = true, save = false, reload = false, tool = false, help = false}
             local header = form.addLine("")
-            app.ui.setHeaderTitle(section.title, header, {menu = true})
-
-            local x = windowWidth - 110
-            app.formNavigationFields['menu'] = form.addButton(header, {x = x, y = getHeaderNavButtonY(app.radio.linePaddingTop), w = 100, h = getHeaderNavButtonHeight()}, {
-                text = "@i18n(app.navigation_menu)@",
-                icon = nil,
-                options = FONT_S,
-                paint = function() end,
-                press = function()
+            app.ui.setHeaderTitle(section.title, header, menuOnlyNav)
+            app.ui.navigationButtons(windowWidth - 5, getHeaderNavButtonY(app.radio.linePaddingTop), app.radio.menuButtonWidth or 100, getHeaderNavButtonHeight(), {
+                navButtons = menuOnlyNav,
+                onNavMenu = function()
                     app.lastIdx = nil
                     session.lastPage = nil
                     if app.Page and app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
@@ -1183,7 +1178,8 @@ function ui.openMainMenuSub(activesection)
                     end
                 end
             })
-            app.formNavigationFields['menu']:focus()
+            app.ui.disableAllNavigationFields()
+            app.ui.enableNavigationField("menu")
 
             local lc, y = 0, 0
 
@@ -1890,12 +1886,19 @@ function ui.getHeaderMetrics(navButtons)
     local navX = w - 5
     local reserved = 0
 
-    -- Reserve header title space using visible nav button slot widths.
-    if buttons.help == true then reserved = reserved + buttonW + padding end
-    if buttons.tool == true then reserved = reserved + buttonW + padding end
-    if buttons.reload == true then reserved = reserved + buttonW + padding end
-    if buttons.save == true then reserved = reserved + buttonW + padding end
-    if buttons.menu == true then reserved = reserved + buttonW + padding end
+    local menuOnlyHeader = (type(buttons) == "table")
+        and (buttons.menu == true)
+        and (buttons.save == nil)
+        and (buttons.reload == nil)
+        and (buttons.tool == nil)
+        and (buttons.help == nil)
+
+    -- Standard page headers always allocate full nav slots for stable layout.
+    if menuOnlyHeader then
+        reserved = buttonW + padding
+    else
+        reserved = (buttonW + padding) * 5
+    end
 
     local titleRightEdge = navX - reserved
     local titleWidth = math.max(40, titleRightEdge - 8)
@@ -2111,10 +2114,9 @@ function ui.openPage(opts)
     collectgarbage('collect')
 end
 
-function ui.navigationButtons(x, y, w, h)
+function ui.navigationButtons(x, y, w, h, opts)
 
 
-    local xOffset = 0
     local padding = 5
     local wS = w - (w * 20) / 100
     local helpOffset = 0
@@ -2123,110 +2125,134 @@ function ui.navigationButtons(x, y, w, h)
     local saveOffset = 0
     local menuOffset = 0
 
-    local navButtons
-    if app.Page.navButtons == nil then
-        navButtons = {menu = true, save = true, reload = true, help = true}
+    local navOpts = opts or {}
+    local navButtons = navOpts.navButtons or (app.Page and app.Page.navButtons)
+    local menuEnabled, saveEnabled, reloadEnabled, toolEnabled, helpEnabled
+    if navButtons == nil then
+        menuEnabled = true
+        saveEnabled = true
+        reloadEnabled = true
+        toolEnabled = false
+        helpEnabled = true
     else
-        navButtons = app.Page.navButtons
+        menuEnabled = (navButtons.menu == true)
+        saveEnabled = (navButtons.save == true)
+        reloadEnabled = (navButtons.reload == true)
+        toolEnabled = (navButtons.tool == true)
+        helpEnabled = (navButtons.help == true)
     end
 
-    if navButtons.help ~= nil and navButtons.help == true then xOffset = xOffset + wS + padding end
-    helpOffset = x - xOffset
+    helpOffset = x - (wS + padding)
+    toolOffset = helpOffset - (wS + padding)
+    reloadOffset = toolOffset - (w + padding)
+    saveOffset = reloadOffset - (w + padding)
+    menuOffset = saveOffset - (w + padding)
 
-    if navButtons.tool ~= nil and navButtons.tool == true then xOffset = xOffset + wS + padding end
-    toolOffset = x - xOffset
+    app.formNavigationFields['menu'] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
+        text = "@i18n(app.navigation_menu)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if navOpts.onNavMenu then
+                navOpts.onNavMenu()
+            elseif app.Page and app.Page.onNavMenu then
+                app.Page.onNavMenu(app.Page)
+            else
+                app.ui.openMenuContext()
+            end
+        end
+    })
 
-    if navButtons.reload ~= nil and navButtons.reload == true then xOffset = xOffset + w + padding end
-    reloadOffset = x - xOffset
+    app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
+        text = "@i18n(app.navigation_save)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if app.Page and app.Page.onSaveMenu then
+                app.Page.onSaveMenu(app.Page)
+            else
+                app.triggers.triggerSave = true
+            end
+        end
+    })
 
-    if navButtons.save ~= nil and navButtons.save == true then xOffset = xOffset + w + padding end
-    saveOffset = x - xOffset
+    app.formNavigationFields['reload'] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
+        text = "@i18n(app.navigation_reload)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if app.Page and app.Page.onReloadMenu then
+                app.Page.onReloadMenu(app.Page)
+            else
+                app.triggers.triggerReload = true
+            end
+            return true
+        end
+    })
 
-    if navButtons.menu ~= nil and navButtons.menu == true then xOffset = xOffset + w + padding end
-    menuOffset = x - xOffset
+    app.formNavigationFields['tool'] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {
+        text = "@i18n(app.navigation_tools)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if app.Page and app.Page.onToolMenu then app.Page.onToolMenu(app.Page) end
+        end
+    })
 
-    if navButtons.menu == true then
-        app.formNavigationFields['menu'] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
-            text = "@i18n(app.navigation_menu)@",
-            icon = nil,
-            options = FONT_S,
-            paint = function() end,
-            press = function()
-                if app.Page and app.Page.onNavMenu then
-                    app.Page.onNavMenu(app.Page)
+    local section = (type(app.lastScript) == "string") and app.lastScript:match("([^/]+)") or nil
+    local script = (type(app.lastScript) == "string") and app.lastScript:match("/([^/]+)%.lua$") or nil
+    local help = section and getHelpData(section) or nil
+    local hasHelpData = (help and help.help and (help.help[script] or help.help['default'])) and true or false
+    app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
+        text = "@i18n(app.navigation_help)@",
+        icon = nil,
+        options = FONT_S,
+        paint = function() end,
+        press = function()
+            if app.Page and app.Page.onHelpMenu then
+                app.Page.onHelpMenu(app.Page)
+            elseif help then
+                if script and help.help[script] then
+                    app.ui.openPageHelp(help.help[script])
                 else
-                    app.ui.openMenuContext()
+                    app.ui.openPageHelp(help.help['default'])
                 end
             end
-        })
+        end
+    })
+
+    local toolCanRun = (toolEnabled and app.Page and app.Page.onToolMenu ~= nil) and true or false
+    local helpCanRun = (helpEnabled and ((app.Page and app.Page.onHelpMenu ~= nil) or hasHelpData)) and true or false
+    local enabledState = {menu = menuEnabled, save = saveEnabled, reload = reloadEnabled, tool = toolCanRun, help = helpCanRun}
+
+    app.formNavigationFields['menu']:enable(enabledState.menu)
+    app.formNavigationFields['save']:enable(enabledState.save)
+    app.formNavigationFields['reload']:enable(enabledState.reload)
+    app.formNavigationFields['tool']:enable(enabledState.tool)
+    app.formNavigationFields['help']:enable(enabledState.help)
+
+    local focused = false
+    local focusOrder = {"menu", "save", "reload", "tool", "help"}
+    for i = 1, #focusOrder do
+        local key = focusOrder[i]
+        local btn = app.formNavigationFields[key]
+        if btn and enabledState[key] then
+            btn:focus()
+            focused = true
+            break
+        end
+    end
+
+    if not focused and app.formNavigationFields['menu'] then
         app.formNavigationFields['menu']:focus()
     end
 
-    if navButtons.save == true then
-        app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
-            text = "@i18n(app.navigation_save)@",
-            icon = nil,
-            options = FONT_S,
-            paint = function() end,
-            press = function()
-                if app.Page and app.Page.onSaveMenu then
-                    app.Page.onSaveMenu(app.Page)
-                else
-                    app.triggers.triggerSave = true
-                end
-            end
-        })
-        if ui._shouldManageDirtySave() then
-            ui.setPageDirty(false)
-        end
-    end
-
-    if navButtons.reload == true then
-        app.formNavigationFields['reload'] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
-            text = "@i18n(app.navigation_reload)@",
-            icon = nil,
-            options = FONT_S,
-            paint = function() end,
-            press = function()
-                if app.Page and app.Page.onReloadMenu then
-                    app.Page.onReloadMenu(app.Page)
-                else
-                    app.triggers.triggerReload = true
-                end
-                return true
-            end
-        })
-    end
-
-    if navButtons.tool == true then app.formNavigationFields['tool'] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {text = "@i18n(app.navigation_tools)@", icon = nil, options = FONT_S, paint = function() end, press = function() app.Page.onToolMenu() end}) end
-
-    if navButtons.help == true then
-        local section = app.lastScript:match("([^/]+)")
-        local script = app.lastScript:match("/([^/]+)%.lua$")
-
-        local help = getHelpData(section)
-        if help then
-            app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-                text = "@i18n(app.navigation_help)@",
-                icon = nil,
-                options = FONT_S,
-                paint = function() end,
-                press = function()
-                    if app.Page and app.Page.onHelpMenu then
-                        app.Page.onHelpMenu(app.Page)
-                    else
-                        if help.help[script] then
-                            app.ui.openPageHelp(help.help[script])
-                        else
-                            app.ui.openPageHelp(help.help['default'])
-                        end
-                    end
-                end
-            })
-        else
-            app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {text = "@i18n(app.navigation_help)@", icon = nil, options = FONT_S, paint = function() end, press = function() end})
-            app.formNavigationFields['help']:enable(false)
-        end
+    if ui._shouldManageDirtySave() then
+        ui.setPageDirty(false)
     end
 end
 

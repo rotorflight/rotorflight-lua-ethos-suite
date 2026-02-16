@@ -8,6 +8,7 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
 local container = {}
+local MENU_ONLY_NAV_BUTTONS = {menu = true, save = false, reload = false, tool = false, help = false}
 
 local function resolveScriptFromRules(rules)
     if type(rules) ~= "table" then return nil, nil end
@@ -98,33 +99,43 @@ function container.create(cfg)
 
         prefs.general.iconsize = tonumber(prefs.general.iconsize) or 1
 
-        local w = lcd.getWindowSize()
-        local windowWidth = w
-        local headerButtonH = (app.ui and app.ui.getHeaderNavButtonHeight and app.ui.getHeaderNavButtonHeight()) or app.radio.navbuttonHeight
-        local headerButtonY = (app.ui and app.ui.getHeaderNavButtonY and app.ui.getHeaderNavButtonY(app.radio.linePaddingTop)) or app.radio.linePaddingTop
-        local headerTitleY = (app.ui and app.ui.getHeaderTitleY and app.ui.getHeaderTitleY(app.radio.linePaddingTop)) or app.radio.linePaddingTop
+        if app.Page then app.Page.navButtons = MENU_ONLY_NAV_BUTTONS end
 
-        local header = form.addLine("")
-        if app.ui and app.ui.setHeaderTitle then
-            app.ui.setHeaderTitle(pageTitle, header, {menu = true})
-        else
-            form.addStaticText(header, {x = 0, y = headerTitleY, w = windowWidth - 115, h = headerButtonH}, pageTitle or "")
-        end
-        local navX = windowWidth - 110
-        app.formNavigationFields["menu"] = form.addButton(header, {x = navX, y = headerButtonY, w = 100, h = headerButtonH}, {
-            text = "@i18n(app.navigation_menu)@",
-            icon = nil,
-            options = FONT_S,
-            paint = function() end,
-            press = function()
-                if app.Page and app.Page.onNavMenu then
-                    app.Page.onNavMenu(app.Page)
-                else
-                    navHandlers.onNavMenu()
-                end
+        if app.ui and app.ui.fieldHeader then
+            app.ui.fieldHeader(pageTitle)
+            if app.ui.disableAllNavigationFields and app.ui.enableNavigationField then
+                app.ui.disableAllNavigationFields()
+                app.ui.enableNavigationField("menu")
             end
-        })
-        app.formNavigationFields["menu"]:focus()
+        else
+            local w = lcd.getWindowSize()
+            local windowWidth = w
+            local headerButtonH = (app.ui and app.ui.getHeaderNavButtonHeight and app.ui.getHeaderNavButtonHeight()) or app.radio.navbuttonHeight
+            local headerButtonY = (app.ui and app.ui.getHeaderNavButtonY and app.ui.getHeaderNavButtonY(app.radio.linePaddingTop)) or app.radio.linePaddingTop
+            local headerTitleY = (app.ui and app.ui.getHeaderTitleY and app.ui.getHeaderTitleY(app.radio.linePaddingTop)) or app.radio.linePaddingTop
+
+            local header = form.addLine("")
+            if app.ui and app.ui.setHeaderTitle then
+                app.ui.setHeaderTitle(pageTitle, header, MENU_ONLY_NAV_BUTTONS)
+            else
+                form.addStaticText(header, {x = 0, y = headerTitleY, w = windowWidth - 115, h = headerButtonH}, pageTitle or "")
+            end
+            local navX = windowWidth - 110
+            app.formNavigationFields["menu"] = form.addButton(header, {x = navX, y = headerButtonY, w = 100, h = headerButtonH}, {
+                text = "@i18n(app.navigation_menu)@",
+                icon = nil,
+                options = FONT_S,
+                paint = function() end,
+                press = function()
+                    if app.Page and app.Page.onNavMenu then
+                        app.Page.onNavMenu(app.Page)
+                    else
+                        navHandlers.onNavMenu()
+                    end
+                end
+            })
+            app.formNavigationFields["menu"]:focus()
+        end
 
         local buttonW
         local buttonH
@@ -255,7 +266,7 @@ function container.create(cfg)
         onNavMenu = navHandlers.onNavMenu,
         event = event,
         API = cfg.API or {},
-        navButtons = cfg.navButtons
+        navButtons = MENU_ONLY_NAV_BUTTONS
     }
 end
 
