@@ -68,17 +68,20 @@ end
 
 local function getPidLoopChoices(currentValue)
     local gyroHz = 1000000 / (state.gyroDeltaUs > 0 and state.gyroDeltaUs or 250)
+    local function formatPidLoopKhz(valueKhz)
+        return string.format("%d kHz", math.floor(valueKhz + 0.5))
+    end
     local tableData = {}
     local present = {}
     for i = 1, #PID_LOOP_DENOMS do
         local denom = PID_LOOP_DENOMS[i]
         local pidKhz = (gyroHz / denom) / 1000
-        tableData[#tableData + 1] = {string.format("%.2f kHz", pidKhz), denom}
+        tableData[#tableData + 1] = {formatPidLoopKhz(pidKhz), denom}
         present[denom] = true
     end
     if currentValue and not present[currentValue] then
         local pidKhz = (gyroHz / currentValue) / 1000
-        tableData[#tableData + 1] = {string.format("%.2f kHz", pidKhz), currentValue}
+        tableData[#tableData + 1] = {formatPidLoopKhz(pidKhz), currentValue}
     end
     return tableData
 end
