@@ -54,7 +54,7 @@ local function mainMenuIconEnableDisable()
     -- Calling :focus() repeatedly breaks keyboard navigation (it keeps snapping back).
     -- So we compute the desired focus target, and only apply focus once per "menu state key".
     local function desiredFocusIndex()
-        local lm = app.lastMenu or "mainmenu"
+        local lm = (app.uiState == app.uiStatus.mainMenu) and "mainmenu" or (app.lastMenu or "mainmenu")
         local idx = rfsuite.preferences.menulastselected[lm] or rfsuite.preferences.menulastselected["mainmenu"]
         return idx
     end
@@ -63,9 +63,9 @@ local function mainMenuIconEnableDisable()
         local idx = desiredFocusIndex()
         if not idx or not app.formFields or not app.formFields[idx] then return end
 
-        local lm = app.lastMenu or "mainmenu"
-        local formKey = tostring(app.formFields) -- changes when the form is rebuilt
-        local key = tostring(modeTag) .. "|" .. tostring(lm) .. "|" .. tostring(idx) .. "|" .. formKey
+        local lm = (app.uiState == app.uiStatus.mainMenu) and "mainmenu" or (app.lastMenu or "mainmenu")
+        local focusEpoch = tostring(app._menuFocusEpoch or 0)
+        local key = tostring(modeTag) .. "|" .. tostring(lm) .. "|" .. tostring(idx) .. "|" .. focusEpoch
 
         -- Reset focus latch if we have entered a new menu/mode/form combination
         if app._mainMenuFocusKey ~= key then

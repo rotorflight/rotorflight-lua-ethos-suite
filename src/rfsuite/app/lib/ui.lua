@@ -669,6 +669,8 @@ end
 function ui.openMainMenu()
 
     ui.resetPageState()
+    app.lastMenu = "mainmenu"
+    app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
     utils.reportMemoryUsage("app.openMainMenu", "start")
 
@@ -730,11 +732,13 @@ function ui.openMainMenu()
     for _, pvalue in ipairs(Menu) do
         if pvalue.parent == nil then
             pidx = pidx + 1
+            local menuIndex = pidx
+            local menuItem = pvalue
 
-            app.formFieldsOffline[pidx] = pvalue.offline or false
-            app.formFieldsBGTask[pidx] = pvalue.bgtask or false
+            app.formFieldsOffline[menuIndex] = menuItem.offline or false
+            app.formFieldsBGTask[menuIndex] = menuItem.bgtask or false
 
-            if pvalue.newline then
+            if menuItem.newline then
                 lc = 0
                 form.addLine("@i18n(app.header_system)@")
             end
@@ -744,35 +748,35 @@ function ui.openMainMenu()
             bx = (buttonW + padding) * lc
 
             if preferences.general.iconsize ~= 0 then
-                app.gfx_buttons["mainmenu"][pidx] = app.gfx_buttons["mainmenu"][pidx] or lcdLoadMask(pvalue.image)
+                app.gfx_buttons["mainmenu"][menuIndex] = app.gfx_buttons["mainmenu"][menuIndex] or lcdLoadMask(menuItem.image)
             else
-                app.gfx_buttons["mainmenu"][pidx] = nil
+                app.gfx_buttons["mainmenu"][menuIndex] = nil
             end
 
-            app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = pvalue.title,
-                icon = app.gfx_buttons["mainmenu"][pidx],
+            app.formFields[menuIndex] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                text = menuItem.title,
+                icon = app.gfx_buttons["mainmenu"][menuIndex],
                 options = FONT_S,
                 paint = function() end,
                 press = function()
-                    preferences.menulastselected["mainmenu"] = pidx
-                    local speed = tonumber(pvalue.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
-                    if pvalue.module then
+                    preferences.menulastselected["mainmenu"] = menuIndex
+                    local speed = tonumber(menuItem.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
+                    if menuItem.module then
                         app.isOfflinePage = true
-                        local script, speedOverride = resolvePageScript(pvalue)
+                        local script, speedOverride = resolvePageScript(menuItem)
                         if speedOverride ~= nil then
                             speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
                         end
                         app.ui.progressDisplay(nil, nil, speed)
-                        app.ui.openPage({idx = pidx, title = pvalue.title, script = pvalue.module .. "/" .. script})
+                        app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
                     else
                         app.ui.progressDisplay(nil, nil, speed)
-                        app.ui.openMainMenuSub(pvalue.id)
+                        app.ui.openMainMenuSub(menuItem.id)
                     end
                 end
             })
 
-            app.formFields[pidx]:enable(false)
+            app.formFields[menuIndex]:enable(false)
 
             lc = lc + 1
             if lc == numPerRow then lc = 0 end
@@ -790,6 +794,7 @@ end
 function ui.openMainMenuSub(activesection)
 
     ui.resetPageState(activesection)
+    app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
     utils.reportMemoryUsage("app.openMainMenuSub", "start")
 
@@ -858,10 +863,12 @@ function ui.openMainMenuSub(activesection)
 
             for pidx, page in ipairs(MainMenu.pages) do
                 if page.section == idx then
-                    local hideEntry = (page.ethosversion and not utils.ethosVersionAtLeast(page.ethosversion)) or (page.mspversion and utils.apiVersionCompare("<", page.mspversion)) 
+                    local pageIndex = pidx
+                    local pageItem = page
+                    local hideEntry = (pageItem.ethosversion and not utils.ethosVersionAtLeast(pageItem.ethosversion)) or (pageItem.mspversion and utils.apiVersionCompare("<", pageItem.mspversion))
 
-                    local offline = page.offline
-                    app.formFieldsOffline[pidx] = offline or false
+                    local offline = pageItem.offline
+                    app.formFieldsOffline[pageIndex] = offline or false
 
                     if not hideEntry then
                         if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
@@ -869,35 +876,35 @@ function ui.openMainMenuSub(activesection)
                         local x = (buttonW + padding) * lc
 
                         if preferences.general.iconsize ~= 0 then
-                            if type(page.image) == "string" and page.image:sub(1, 4) == "app/" then
-                                app.gfx_buttons[activesection][pidx] = app.gfx_buttons[activesection][pidx] or lcdLoadMask(page.image)
-                            elseif page.folder and page.image then
-                                app.gfx_buttons[activesection][pidx] = app.gfx_buttons[activesection][pidx] or lcdLoadMask("app/modules/" .. page.folder .. "/" .. page.image)
+                            if type(pageItem.image) == "string" and pageItem.image:sub(1, 4) == "app/" then
+                                app.gfx_buttons[activesection][pageIndex] = app.gfx_buttons[activesection][pageIndex] or lcdLoadMask(pageItem.image)
+                            elseif pageItem.folder and pageItem.image then
+                                app.gfx_buttons[activesection][pageIndex] = app.gfx_buttons[activesection][pageIndex] or lcdLoadMask("app/modules/" .. pageItem.folder .. "/" .. pageItem.image)
                             else
-                                app.gfx_buttons[activesection][pidx] = nil
+                                app.gfx_buttons[activesection][pageIndex] = nil
                             end
                         else
-                            app.gfx_buttons[activesection][pidx] = nil
+                            app.gfx_buttons[activesection][pageIndex] = nil
                         end
 
-                        app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
-                            text = page.title,
-                            icon = app.gfx_buttons[activesection][pidx],
+                        app.formFields[pageIndex] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                            text = pageItem.title,
+                            icon = app.gfx_buttons[activesection][pageIndex],
                             options = FONT_S,
                             paint = function() end,
                             press = function()
-                                preferences.menulastselected[activesection] = pidx
-                                local speed = tonumber(page.loaderspeed or section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
+                                preferences.menulastselected[activesection] = pageIndex
+                                local speed = tonumber(pageItem.loaderspeed or section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                                 app.isOfflinePage = offline
-                                local script, speedOverride = resolvePageScript(page, section)
+                                local script, speedOverride = resolvePageScript(pageItem, section)
                                 if speedOverride ~= nil then
                                     speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
                                 end
                                 app.ui.progressDisplay(nil, nil, speed)
-                                if page.id and not page.folder then
-                                    app.ui.openMainMenuSub(page.id)
+                                if pageItem.id and not pageItem.folder then
+                                    app.ui.openMainMenuSub(pageItem.id)
                                 else
-                                    app.ui.openPage({idx = pidx, title = page.title, script = page.folder .. "/" .. script})
+                                    app.ui.openPage({idx = pageIndex, title = pageItem.title, script = pageItem.folder .. "/" .. script})
                                 end
                             end
                         })

@@ -86,6 +86,7 @@ function container.create(cfg)
         app.uiState = app.uiStatus.mainMenu
 
         form.clear()
+        app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
         app.lastIdx = pidx
         app.lastTitle = pageTitle
