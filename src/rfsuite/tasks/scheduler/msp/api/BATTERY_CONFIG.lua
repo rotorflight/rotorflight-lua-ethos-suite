@@ -19,7 +19,7 @@ local tblBatterySource = {
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
     {field = "batteryCellCount", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6, help = "@i18n(api.BATTERY_CONFIG.batteryCellCount)@"},
     {field = "voltageMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.voltageMeterSource)@"},
     {field = "currentMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.currentMeterSource)@"},
@@ -28,13 +28,25 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "vbatfullcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1, help = "@i18n(api.BATTERY_CONFIG.vbatfullcellvoltage)@"},
     {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5, help = "@i18n(api.BATTERY_CONFIG.vbatwarningcellvoltage)@"},
     {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}, help = "@i18n(api.BATTERY_CONFIG.lvcPercentage)@"},
-    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%", help = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@"}
+    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%", help = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@"},
+    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 10, 0}, simResponse = {136, 19}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 10, 0}, simResponse = {136, 19}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 10, 0}, simResponse = {136, 19}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 10, 0}, simResponse = {136, 19}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 10, 0}, simResponse = {136, 19}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 10, 0}, simResponse = {136, 19}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryType", type = "U8", apiVersion = {12, 10, 0}, simResponse = {0}, min = 0, max = 5, default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"},
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local MSP_API_STRUCTURE_WRITE = {}
+for _, v in ipairs(MSP_API_STRUCTURE_READ) do
+    if v.field ~= "batteryType" then
+        MSP_API_STRUCTURE_WRITE[#MSP_API_STRUCTURE_WRITE + 1] = v
+    end
+end
 
 local mspData = nil
 local mspWriteComplete = false

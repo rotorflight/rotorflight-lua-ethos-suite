@@ -27,6 +27,12 @@
         "needs_translation": false,
         "translation": "The number of cells in your battery."
       },
+      "batteryType": {
+        "english": "Selected battery type (0-5)",
+        "max_length": 27,
+        "needs_translation": false,
+        "translation": "Selected battery type (0-5)"
+      },
       "source_adc": {
         "english": "Battery ADC",
         "max_length": 11,

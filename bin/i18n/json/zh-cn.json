@@ -31,6 +31,13 @@
         "translation": "电池电芯数量。",
         "reverse_text": false
       },
+      "batteryType": {
+        "english": "Selected battery type (0-5)",
+        "translation": "The current selected battery type (0-5)",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 27
+      },
       "source_adc": {
         "english": "Battery ADC",
         "max_length": 11,

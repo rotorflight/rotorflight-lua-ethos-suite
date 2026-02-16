@@ -31,6 +31,13 @@
         "reverse_text": false,
         "translation": "Zellenanzahl des Akkus."
       },
+      "batteryType": {
+        "english": "Selected battery type (0-5)",
+        "max_length": 27,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "The current selected battery type (0-5)"
+      },
       "source_adc": {
         "english": "Battery ADC",
         "max_length": 11,
