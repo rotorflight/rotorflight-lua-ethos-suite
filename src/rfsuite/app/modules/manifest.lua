@@ -266,9 +266,9 @@ return {
                 return "@i18n(app.modules.settings.txt_developer)@ / " .. item.name
             end,
             pages = {
-                {name = "@i18n(app.modules.msp_speed.name)@", script = "developer/tools/msp_speed.lua", image = "app/modules/developer/gfx/msp_speed.png", bgtask = true, offline = true},
-                {name = "@i18n(app.modules.api_tester.name)@", script = "developer/tools/api_tester.lua", image = "app/modules/developer/gfx/api_tester.png", bgtask = true, offline = true},
-                {name = "@i18n(app.modules.msp_exp.name)@", script = "developer/tools/msp_exp.lua", image = "app/modules/developer/gfx/msp_exp.png", bgtask = true, offline = true},
+                {name = "@i18n(app.modules.msp_speed.name)@", script = "developer/tools/msp_speed.lua", image = "app/modules/developer/gfx/msp_speed.png", bgtask = true, offline = false},
+                {name = "@i18n(app.modules.api_tester.name)@", script = "developer/tools/api_tester.lua", image = "app/modules/developer/gfx/api_tester.png", bgtask = true, offline = false},
+                {name = "@i18n(app.modules.msp_exp.name)@", script = "developer/tools/msp_exp.lua", image = "app/modules/developer/gfx/msp_exp.png", bgtask = true, offline = false},
                 {name = "@i18n(app.modules.settings.name)@", script = "settings/tools/development.lua", image = "app/modules/developer/gfx/settings.png", bgtask = true, offline = true}
             }
         },
@@ -281,8 +281,8 @@ return {
             pages = {
                 {name = "@i18n(app.modules.rfstatus.name)@", script = "rfstatus.lua", image = "rfstatus.png", bgtask = false, offline = false},
                 {name = "@i18n(app.modules.validate_sensors.name)@", script = "sensors.lua", image = "sensors.png", bgtask = true, offline = true},
-                {name = "@i18n(app.modules.fblsensors.name)@", script = "fblsensors.lua", image = "fblsensors.png", bgtask = true, offline = true},
-                {name = "@i18n(app.modules.fblstatus.name)@", script = "fblstatus.lua", image = "fblstatus.png", bgtask = true, offline = true},
+                {name = "@i18n(app.modules.fblsensors.name)@", script = "fblsensors.lua", image = "fblsensors.png", bgtask = true, offline = false},
+                {name = "@i18n(app.modules.fblstatus.name)@", script = "fblstatus.lua", image = "fblstatus.png", bgtask = true, offline = false},
                 {name = "@i18n(app.modules.info.name)@", script = "info.lua", image = "info.png", bgtask = true, offline = true}
             }
         },
@@ -393,10 +393,10 @@ return {
             navOptions = {defaultSection = "system", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             pages = {
-                {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png"},
-                {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png"},
-                {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png"},
-                {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png"}
+                {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png", offline = true},
+                {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png", offline = true},
+                {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png", offline = true},
+                {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png", offline = true}
             }
         },
         settings_dashboard = {
@@ -408,8 +408,8 @@ return {
             navOptions = {defaultSection = "system", showProgress = true},
             hooksScript = "app/modules/settings/tools/dashboard_hooks.lua",
             pages = {
-                {name = "@i18n(app.modules.settings.dashboard_theme)@", script = "dashboard_theme.lua", image = "dashboard_theme.png"},
-                {name = "@i18n(app.modules.settings.dashboard_settings)@", script = "dashboard_settings.lua", image = "dashboard_settings.png"}
+                {name = "@i18n(app.modules.settings.dashboard_theme)@", script = "dashboard_theme.lua", image = "dashboard_theme.png", offline = true},
+                {name = "@i18n(app.modules.settings.dashboard_settings)@", script = "dashboard_settings.lua", image = "dashboard_settings.png", offline = false}
             }
         },
         settings_dashboard_audio = {
@@ -420,9 +420,9 @@ return {
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             navOptions = {defaultSection = "system", showProgress = true},
             pages = {
-                {name = "@i18n(app.modules.settings.txt_audio_events)@", script = "audio_events.lua", image = "audio_events.png"},
-                {name = "@i18n(app.modules.settings.txt_audio_switches)@", script = "audio_switches.lua", image = "audio_switches.png"},
-                {name = "@i18n(app.modules.settings.txt_audio_timer)@", script = "audio_timer.lua", image = "audio_timer.png"}
+                {name = "@i18n(app.modules.settings.txt_audio_events)@", script = "audio_events.lua", image = "audio_events.png", offline = true},
+                {name = "@i18n(app.modules.settings.txt_audio_switches)@", script = "audio_switches.lua", image = "audio_switches.png", offline = true},
+                {name = "@i18n(app.modules.settings.txt_audio_timer)@", script = "audio_timer.lua", image = "audio_timer.png", offline = true}
             }
         }
     }
