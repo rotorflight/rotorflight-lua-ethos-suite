@@ -8048,6 +8048,12 @@
           "translation": "Icon Size",
           "max_length": 9
         },
+        "txt_collapse_unused_menu_entries": {
+          "english": "Collapse Navigation",
+          "needs_translation": false,
+          "translation": "Collapse Navigation",
+          "max_length": 19
+        },
         "txt_info": {
           "english": "INFO",
           "needs_translation": false,

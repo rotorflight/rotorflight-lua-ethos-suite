@@ -9943,6 +9943,13 @@
           "reverse_text": false,
           "translation": "Tx Battery Options"
         },
+        "txt_collapse_unused_menu_entries": {
+          "english": "Collapse Unused Menu Entries",
+          "max_length": 28,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Collapse Unused Menu Entries"
+        },
         "txt_debug": {
           "english": "DEBUG",
           "max_length": 5,
