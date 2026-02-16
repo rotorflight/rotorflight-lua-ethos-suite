@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 
 local folder = "omp"
-local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
+local ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 

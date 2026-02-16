@@ -26,7 +26,7 @@ end
 local function findMFG()
     local mfgsList = {}
 
-    local mfgs_path = "app/modules/esc_motors/tools/escmfg/"
+    local mfgs_path = "app/modules/esc_tools/tools/escmfg/"
 
     for _, v in pairs(system.listFiles(mfgs_path)) do
 
@@ -127,7 +127,7 @@ local function openPage(opts)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then rfsuite.app.gfx_buttons["escmain"][childIdx] = lcd.loadMask("app/modules/esc_motors/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then rfsuite.app.gfx_buttons["escmain"][childIdx] = lcd.loadMask("app/modules/esc_tools/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["escmain"][childIdx] = nil
         end
@@ -144,7 +144,7 @@ local function openPage(opts)
                         idx = childIdx,
                         title = title .. " / " .. pvalue.toolName,
                         folder = pvalue.folder,
-                        script = "esc_motors/tools/esc_tool.lua",
+                        script = "esc_tools/tools/esc_tool.lua",
                         returnContext = {idx = parentIdx, title = title, script = relativeScript or script}
                     })
                 end
@@ -166,7 +166,7 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
-    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
 

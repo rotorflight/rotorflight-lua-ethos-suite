@@ -10,7 +10,7 @@ local escToolsPage = {}
 
 function escToolsPage.createSubmenuHandlers(folder)
     local function onNavMenu()
-        pageRuntime.openMenuContext({defaultSection = "hardware"})
+        pageRuntime.openMenuContext({defaultSection = "system"})
         return true
     end
 

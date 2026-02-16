@@ -183,7 +183,8 @@ return {
             navOptions = {defaultSection = "system", showProgress = true},
             pages = {
                 {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 0, 6}, disabled = true},
-                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 0, 6}}
+                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 3}
             }
         },
         advanced_menu = {
@@ -254,8 +255,7 @@ return {
             pages = {
                 {name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png"},
                 {name = "@i18n(app.modules.esc_motors.telemetry)@", script = "telemetry.lua", image = "telemetry.png"},
-                {name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"},
-                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc.lua", image = "esc.png"}
+                {name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"}
             }
         },
         developer = {

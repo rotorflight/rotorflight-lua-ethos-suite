@@ -136,7 +136,7 @@ local function openPage(opts)
         folder = title
     end
 
-    ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
+    ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 
     if ESC.mspapi ~= nil then
 
@@ -165,7 +165,7 @@ local function openPage(opts)
     end
     rfsuite.app.ui.fieldHeader(headerTitle)
 
-    ESC.pages = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/pages.lua"))()
+    ESC.pages = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/pages.lua"))()
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
@@ -226,7 +226,7 @@ local function openPage(opts)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc_motors/tools/escmfg/" .. folder .. "/gfx/" .. pvalue.image) end
+                if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. pvalue.image) end
             else
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
             end
@@ -244,12 +244,12 @@ local function openPage(opts)
                     rfsuite.app.ui.openPage({
                         idx = childIdx,
                         title = childTitle,
-                        script = "esc_motors/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script,
+                        script = "esc_tools/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script,
                         returnContext = {
                             idx = parentIdx,
                             title = title,
                             folder = folder,
-                            script = "esc_motors/tools/esc_tool.lua"
+                            script = "esc_tools/tools/esc_tool.lua"
                         }
                     })
 
@@ -276,7 +276,7 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
-    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
 
