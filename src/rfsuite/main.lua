@@ -108,6 +108,7 @@ local userpref_defaults = {
         postalertinterval = 10,
         postalertperiod = 30
     },
+    shortcuts = {},
     menulastselected = {}
 }
 

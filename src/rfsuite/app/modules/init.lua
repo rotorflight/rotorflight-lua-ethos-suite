@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local shortcuts = assert(loadfile("app/lib/shortcuts.lua"))()
 
 local pages = {}
 local manifest = loadfile("app/modules/manifest.lua")()
@@ -16,6 +17,15 @@ end
 local function developerToolsEnabled()
     local pref = rfsuite.preferences and rfsuite.preferences.general
     return pref and isTruthy(pref.developer_tools) or false
+end
+
+local function shortcutsEnabled()
+    local prefs = rfsuite.preferences and rfsuite.preferences.shortcuts
+    if type(prefs) ~= "table" then return false end
+    for _, value in pairs(prefs) do
+        if isTruthy(value) then return true end
+    end
+    return false
 end
 
 local function resolveLoaderSpeed(value)
@@ -37,14 +47,24 @@ local function cloneShallow(src)
 end
 
 local showDeveloperModules = developerToolsEnabled()
+local shortcutSections = nil
 
 local function includeByDeveloper(spec)
     local isDev = isTruthy(spec and spec.developer)
     return (not isDev) or showDeveloperModules
 end
 
+local function includeByShortcuts(spec)
+    local requiresShortcuts = isTruthy(spec and spec.requiresShortcuts)
+    if requiresShortcuts then
+        return shortcutsEnabled()
+    end
+    return true
+end
+
 local function addSection(spec)
     if not includeByDeveloper(spec) then return nil end
+    if not includeByShortcuts(spec) then return nil end
 
     local section = cloneShallow(spec)
     section.loaderspeed = resolveLoaderSpeed(section.loaderspeed)
@@ -59,6 +79,7 @@ end
 
 local function addLeafPage(sectionIndex, spec)
     if not includeByDeveloper(spec) then return end
+    if not includeByShortcuts(spec) then return end
 
     local page = cloneShallow(spec)
     page.section = sectionIndex
@@ -73,6 +94,13 @@ local function addLeafPage(sectionIndex, spec)
     pages[#pages + 1] = page
 end
 
+local function resolveShortcutSections()
+    if shortcutSections ~= nil then return shortcutSections end
+    local prefs = rfsuite.preferences and rfsuite.preferences.shortcuts or {}
+    shortcutSections = shortcuts.buildSelectedSections(prefs)
+    return shortcutSections
+end
+
 local function flattenSectionSpecs(rawSections)
     local out = {}
     if type(rawSections) ~= "table" then return out end
@@ -85,6 +113,14 @@ local function flattenSectionSpecs(rawSections)
                     if spec.group == nil then spec.group = entry.id end
                     if spec.groupTitle == nil then spec.groupTitle = entry.title end
                     out[#out + 1] = spec
+                end
+            end
+            if entry.id == "configuration" then
+                local extras = resolveShortcutSections()
+                if type(extras) == "table" and #extras > 0 then
+                    for _, extra in ipairs(extras) do
+                        out[#out + 1] = extra
+                    end
                 end
             end
         elseif type(entry) == "table" then
