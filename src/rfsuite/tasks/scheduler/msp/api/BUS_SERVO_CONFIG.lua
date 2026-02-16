@@ -17,7 +17,7 @@ for i = 1, BUS_SERVO_CHANNELS do
     MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = {
         field = "source_type_" .. i,
         type = "U8",
-        apiVersion = 12.06,
+        apiVersion = {12, 0, 6},
         simResponse = {0}
     }
 end

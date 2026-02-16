@@ -130,8 +130,8 @@ return {
             iconPrefix = "app/modules/",
             navOptions = {showProgress = true},
             pages = {
-                {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 6}, disabled = true},
-                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 6}}
+                {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 0, 6}, disabled = true},
+                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 0, 6}}
             }
         },
         advanced_menu = {
@@ -141,13 +141,13 @@ return {
             loaderSpeed = "FAST",
             navOptions = {showProgress = true},
             pages = {
-                {name = "@i18n(app.modules.profile_pidcontroller.name)@", script = "profile_pidcontroller/pidcontroller.lua", image = "profile_pidcontroller/pids-controller.png", order = 1, apiversion = {12, 6}},
-                {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 2, apiversion = {12, 6}},
-                {name = "@i18n(app.modules.profile_autolevel.name)@", script = "profile_autolevel/autolevel.lua", image = "profile_autolevel/autolevel.png", order = 3, apiversion = {12, 6}},
-                {name = "@i18n(app.modules.profile_mainrotor.name)@", script = "profile_mainrotor/mainrotor.lua", image = "profile_mainrotor/mainrotor.png", order = 4, apiversion = {12, 6}},
-                {name = "@i18n(app.modules.profile_tailrotor.name)@", script = "profile_tailrotor/tailrotor.lua", image = "profile_tailrotor/tailrotor.png", order = 5, apiversion = {12, 6}},
-                {name = "@i18n(app.modules.profile_rescue.name)@", script = "profile_rescue/rescue.lua", image = "profile_rescue/rescue.png", order = 6, apiversion = {12, 6}},
-                {name = "@i18n(app.modules.rates_advanced.name)@", script = "rates_advanced/rates_advanced.lua", image = "rates_advanced/rates.png", order = 7, apiversion = {12, 6}}
+                {name = "@i18n(app.modules.profile_pidcontroller.name)@", script = "profile_pidcontroller/pidcontroller.lua", image = "profile_pidcontroller/pids-controller.png", order = 1, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 2, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.profile_autolevel.name)@", script = "profile_autolevel/autolevel.lua", image = "profile_autolevel/autolevel.png", order = 3, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.profile_mainrotor.name)@", script = "profile_mainrotor/mainrotor.lua", image = "profile_mainrotor/mainrotor.png", order = 4, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.profile_tailrotor.name)@", script = "profile_tailrotor/tailrotor.lua", image = "profile_tailrotor/tailrotor.png", order = 5, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.profile_rescue.name)@", script = "profile_rescue/rescue.lua", image = "profile_rescue/rescue.png", order = 6, apiversion = {12, 0, 6}},
+                {name = "@i18n(app.modules.rates_advanced.name)@", script = "rates_advanced/rates_advanced.lua", image = "rates_advanced/rates.png", order = 7, apiversion = {12, 0, 6}}
             }
         },
         hardware_menu = {

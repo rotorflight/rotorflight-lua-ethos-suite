@@ -220,7 +220,7 @@ local function wakeup(self)
 
             local now = os.clock()
             local settleTime
-            if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
                 settleTime = 0.05
             else
                 settleTime = 0.85
@@ -228,7 +228,7 @@ local function wakeup(self)
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
                     local ok, reason
-                    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+                    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
                         ok, reason = self.saveServoCenter(self)
                     else
                         ok, reason = self.saveServoSettings(self)
@@ -581,7 +581,7 @@ local function openPage(opts)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    if USE_INDEXED and rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if USE_INDEXED and rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
     else
         getServoConfigurations(getServoConfigurationsEnd)

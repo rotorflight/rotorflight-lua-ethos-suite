@@ -329,7 +329,7 @@ local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
             local message = {command = 196, payload = {}}
             rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
             rfsuite.tasks.msp.mspQueue:add(message)
@@ -348,7 +348,7 @@ end
 
 local function servoCenterFocusAllOff(self)
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
             local message = {command = 196, payload = {}}
             rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
             rfsuite.tasks.msp.mspQueue:add(message)

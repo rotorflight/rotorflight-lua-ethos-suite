@@ -18,20 +18,20 @@ local MSP_API_STRUCTURE_READ_DATA = {}
 for mode = 0, MODE_COUNT - 1 do
     for direction = 0, DIRECTION_COUNT - 1 do
         local idx = (mode * DIRECTION_COUNT) + direction + 1
-        MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "mode_" .. idx, type = "U8", apiVersion = 12.06, simResponse = {mode} }
-        MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "fun_" .. idx,  type = "U8", apiVersion = 12.06, simResponse = {direction} }
-        MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. idx,type = "U8", apiVersion = 12.06, simResponse = {0} }
+        MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "mode_" .. idx, type = "U8", apiVersion = {12, 0, 6}, simResponse = {mode} }
+        MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "fun_" .. idx,  type = "U8", apiVersion = {12, 0, 6}, simResponse = {direction} }
+        MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. idx,type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} }
     end
 end
 for j = 0, SPECIAL_COLOR_COUNT - 1 do
     local idx = (MODE_COUNT * DIRECTION_COUNT) + j + 1
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "mode_" .. idx, type = "U8", apiVersion = 12.06, simResponse = {MODE_COUNT} }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "fun_" .. idx,  type = "U8", apiVersion = 12.06, simResponse = {j} }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. idx,type = "U8", apiVersion = 12.06, simResponse = {0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "mode_" .. idx, type = "U8", apiVersion = {12, 0, 6}, simResponse = {MODE_COUNT} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "fun_" .. idx,  type = "U8", apiVersion = {12, 0, 6}, simResponse = {j} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. idx,type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} }
 end
-MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "aux_mode",  type = "U8", apiVersion = 12.06, simResponse = {255} }
-MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "aux_fun",   type = "U8", apiVersion = 12.06, simResponse = {0} }
-MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "aux_color", type = "U8", apiVersion = 12.06, simResponse = {0} }
+MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "aux_mode",  type = "U8", apiVersion = {12, 0, 6}, simResponse = {255} }
+MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "aux_fun",   type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} }
+MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "aux_color", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} }
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 

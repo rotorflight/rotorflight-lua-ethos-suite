@@ -13,12 +13,12 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "meter_count",   type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "frame_length",  type = "U8",  apiVersion = 12.06, simResponse = {6} },
-    { field = "meter_id",      type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "meter_type",    type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "scale",         type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "offset",        type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "meter_count",   type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "frame_length",  type = "U8",  apiVersion = {12, 0, 6}, simResponse = {6} },
+    { field = "meter_id",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "meter_type",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "scale",         type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "offset",        type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 

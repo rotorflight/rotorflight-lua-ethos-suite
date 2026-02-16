@@ -92,7 +92,7 @@ return {
             end
         end
 
-        if rfsuite.utils.apiVersionCompare(">=", "12.09") then getMixerCompatibilityStatus() end
+        if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then getMixerCompatibilityStatus() end
     end,
     onWakeup = function()
         if os.clock() - initTime < 0.25 then return end
@@ -111,7 +111,7 @@ return {
         local enable = currState
 
         if rfsuite.app.formFields then
-            if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
                 if MIXER_PITCH_RATE ~= nil and MIXER_PITCH_MIN ~= nil and MIXER_PITCH_MAX ~= nil and
                     MIXER_ROLL_RATE ~= nil and MIXER_ROLL_MIN ~= nil and MIXER_ROLL_MAX ~= nil and
                     MIXER_COLLECTIVE_RATE ~= nil and MIXER_COLLECTIVE_MIN ~= nil and MIXER_COLLECTIVE_MAX ~= nil then

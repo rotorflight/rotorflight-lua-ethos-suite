@@ -229,7 +229,7 @@ local function dropSensor(physId, primId, appId, frameValue)
 
     if rfsuite.session.apiVersion == nil then return end
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.08") then return end
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then return end
 
     if dropSensorList[appId] ~= nil then
         local v = dropSensorList[appId]
@@ -330,7 +330,7 @@ local function ensureSensorsFromConfig()
                         end
                     end
 
-                    if rfsuite.session.apiVersion ~= nil and rfsuite.utils.apiVersionCompare("<", "12.08") then
+                    if rfsuite.session.apiVersion ~= nil and rfsuite.utils.apiVersionCompare("<", {12, 0, 8}) then
                         local drop = dropSensorList[appId]
                         if drop then
                             if frsky.dropSensorCache[appId] == nil then frsky.dropSensorCache[appId] = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId}) end

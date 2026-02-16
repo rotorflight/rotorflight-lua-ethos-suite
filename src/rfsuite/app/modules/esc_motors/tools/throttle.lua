@@ -113,7 +113,7 @@ local function wakeup()
         formFields[FIELDKEY.MINTHROTTLE]:enable(false)
         formFields[FIELDKEY.MAXTHROTTLE]:enable(false)
         formFields[FIELDKEY.UNSYNCED]:enable(false)        
-    elseif(protocolValue == 9 and rfsuite.utils.apiVersionCompare(">=", "12.07")) then  -- CASTLE
+    elseif(protocolValue == 9 and rfsuite.utils.apiVersionCompare(">=", {12, 0, 7})) then  -- CASTLE
         formFields[FIELDKEY.PWM_RATE]:enable(true)
         formFields[FIELDKEY.MINCOMMAND]:enable(true)
         formFields[FIELDKEY.MINTHROTTLE]:enable(true)

@@ -13,12 +13,12 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "provider",                 type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "sbas_mode",                type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "auto_config",              type = "U8", apiVersion = 12.06, simResponse = {1} },
-    { field = "auto_baud",                type = "U8", apiVersion = 12.06, simResponse = {1} },
-    { field = "set_home_point_once",      type = "U8", apiVersion = 12.43, simResponse = {0} },
-    { field = "ublox_use_galileo",        type = "U8", apiVersion = 12.43, simResponse = {0} },
+    { field = "provider",                 type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "sbas_mode",                type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "auto_config",              type = "U8", apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "auto_baud",                type = "U8", apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "set_home_point_once",      type = "U8", apiVersion = {12, 43}, simResponse = {0} },
+    { field = "ublox_use_galileo",        type = "U8", apiVersion = {12, 43}, simResponse = {0} },
 }
 -- LuaFormatter on
 

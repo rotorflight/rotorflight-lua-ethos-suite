@@ -13,18 +13,18 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "year",         type = "U16", apiVersion = 12.06, simResponse = {233, 7} },
-    { field = "month",        type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "day",          type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "hours",        type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "minutes",      type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "seconds",      type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "milliseconds", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "year",         type = "U16", apiVersion = {12, 0, 6}, simResponse = {233, 7} },
+    { field = "month",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "day",          type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "hours",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "minutes",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "seconds",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "milliseconds", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
 }
 
 local MSP_API_STRUCTURE_WRITE = {
-    { field = "seconds",      type = "U32", apiVersion = 12.06 },
-    { field = "milliseconds", type = "U16", apiVersion = 12.06 },
+    { field = "seconds",      type = "U32", apiVersion = {12, 0, 6} },
+    { field = "milliseconds", type = "U16", apiVersion = {12, 0, 6} },
 }
 -- LuaFormatter on
 

@@ -15,12 +15,12 @@ local MAX_SERIAL_PORTS = 12
 local MSP_API_STRUCTURE_READ_DATA = {}
 for i = 1, MAX_SERIAL_PORTS do
     local mandatory = (i == 1)
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_identifier",        type = "U8",  apiVersion = 12.06, simResponse = {i - 1}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_function_mask",     type = "U32", apiVersion = 12.06, simResponse = {0, 0, 0, 0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_msp_baud_index",    type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_gps_baud_index",    type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_telem_baud_index",  type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_blackbox_baud_index", type = "U8", apiVersion = 12.06, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_identifier",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {i - 1}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_function_mask",     type = "U32", apiVersion = {12, 0, 6}, simResponse = {0, 0, 0, 0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_msp_baud_index",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_gps_baud_index",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_telem_baud_index",  type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_blackbox_baud_index", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
 end
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)

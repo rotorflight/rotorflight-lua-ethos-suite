@@ -13,7 +13,7 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "auto_disarm_delay", type = "U8", apiVersion = 12.06, simResponse = {5} },
+    { field = "auto_disarm_delay", type = "U8", apiVersion = {12, 0, 6}, simResponse = {5} },
 }
 -- LuaFormatter on
 

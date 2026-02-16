@@ -13,14 +13,14 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "aileron", type = "U8", apiVersion = 12.06, simResponse = {0}, min = 0, max = 15, default = 0, help = "@i18n(api.RX_MAP.help_aileron)@"},
-    {field = "elevator", type = "U8", apiVersion = 12.06, simResponse = {1}, min = 0, max = 15, default = 1, help = "@i18n(api.RX_MAP.help_elevator)@"},
-    {field = "rudder", type = "U8", apiVersion = 12.06, simResponse = {2}, min = 0, max = 15, default = 2, help = "@i18n(api.RX_MAP.help_rudder)@"},
-    {field = "collective", type = "U8", apiVersion = 12.06, simResponse = {3}, min = 0, max = 15, default = 3, help = "@i18n(api.RX_MAP.help_collective)@"},
-    {field = "throttle", type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 15, default = 4, help = "@i18n(api.RX_MAP.help_throttle)@"},
-    {field = "aux1", type = "U8", apiVersion = 12.06, simResponse = {5}, min = 0, max = 15, default = 5, help = "@i18n(api.RX_MAP.help_aux1)@"},
-    {field = "aux2", type = "U8", apiVersion = 12.06, simResponse = {6}, min = 0, max = 15, default = 6, help = "@i18n(api.RX_MAP.help_aux2)@"},
-    {field = "aux3", type = "U8", apiVersion = 12.06, simResponse = {7}, min = 0, max = 15, default = 7, help = "@i18n(api.RX_MAP.help_aux3)@"},
+    {field = "aileron", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, min = 0, max = 15, default = 0, help = "@i18n(api.RX_MAP.help_aileron)@"},
+    {field = "elevator", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, min = 0, max = 15, default = 1, help = "@i18n(api.RX_MAP.help_elevator)@"},
+    {field = "rudder", type = "U8", apiVersion = {12, 0, 6}, simResponse = {2}, min = 0, max = 15, default = 2, help = "@i18n(api.RX_MAP.help_rudder)@"},
+    {field = "collective", type = "U8", apiVersion = {12, 0, 6}, simResponse = {3}, min = 0, max = 15, default = 3, help = "@i18n(api.RX_MAP.help_collective)@"},
+    {field = "throttle", type = "U8", apiVersion = {12, 0, 6}, simResponse = {4}, min = 0, max = 15, default = 4, help = "@i18n(api.RX_MAP.help_throttle)@"},
+    {field = "aux1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {5}, min = 0, max = 15, default = 5, help = "@i18n(api.RX_MAP.help_aux1)@"},
+    {field = "aux2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}, min = 0, max = 15, default = 6, help = "@i18n(api.RX_MAP.help_aux2)@"},
+    {field = "aux3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {7}, min = 0, max = 15, default = 7, help = "@i18n(api.RX_MAP.help_aux3)@"},
 }
 -- LuaFormatter on
 

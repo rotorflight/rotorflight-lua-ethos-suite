@@ -35,7 +35,7 @@ local function buildServoTable()
 
     -- On some targets/API variants servoCount already excludes BUS outputs.
     -- Only subtract BUS offset when the total clearly includes those outputs.
-    if rfsuite.session.servoBusEnabled == true and rfsuite.utils.apiVersionCompare(">=", "12.09") and not system.getVersion().simulation and totalServoCount > busServoOffset then
+    if rfsuite.session.servoBusEnabled == true and rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) and not system.getVersion().simulation and totalServoCount > busServoOffset then
         pwmServoCount = totalServoCount - busServoOffset
     end
 
@@ -343,7 +343,7 @@ local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
             local message = {command = 196, payload = {}}
             rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
             rfsuite.tasks.msp.mspQueue:add(message)
@@ -362,7 +362,7 @@ end
 
 local function servoCenterFocusAllOff(self)
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
             local message = {command = 196, payload = {}}
             rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
             rfsuite.tasks.msp.mspQueue:add(message)

@@ -13,14 +13,14 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "motor_1", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_2", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_3", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_4", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_5", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_6", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_7", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "motor_8", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "motor_1", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_2", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_3", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_4", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_5", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_6", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_7", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "motor_8", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 

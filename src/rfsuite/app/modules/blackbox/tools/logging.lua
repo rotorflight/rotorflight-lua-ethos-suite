@@ -59,10 +59,10 @@ local FIELD_DEFS = {
     {label = "@i18n(app.modules.blackbox.log_vbec)@", bit = 16},
     {label = "@i18n(app.modules.blackbox.log_vbus)@", bit = 17},
     {label = "@i18n(app.modules.blackbox.log_temps)@", bit = 18},
-    {label = "@i18n(app.modules.blackbox.log_esc)@", bit = 19, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
-    {label = "@i18n(app.modules.blackbox.log_bec)@", bit = 20, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
-    {label = "@i18n(app.modules.blackbox.log_esc2)@", bit = 21, apiversiongte = "12.07", featureBit = FEATURE_BITS.esc_sensor},
-    {label = "@i18n(app.modules.blackbox.log_governor)@", bit = 22, apiversiongte = "12.09", featureBit = FEATURE_BITS.governor}
+    {label = "@i18n(app.modules.blackbox.log_esc)@", bit = 19, apiversiongte = {12, 0, 7}, featureBit = FEATURE_BITS.esc_sensor},
+    {label = "@i18n(app.modules.blackbox.log_bec)@", bit = 20, apiversiongte = {12, 0, 7}, featureBit = FEATURE_BITS.esc_sensor},
+    {label = "@i18n(app.modules.blackbox.log_esc2)@", bit = 21, apiversiongte = {12, 0, 7}, featureBit = FEATURE_BITS.esc_sensor},
+    {label = "@i18n(app.modules.blackbox.log_governor)@", bit = 22, apiversiongte = {12, 0, 9}, featureBit = FEATURE_BITS.governor}
 }
 
 local function copyTable(src)

@@ -13,9 +13,9 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "roll_degrees",  type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "pitch_degrees", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "yaw_degrees",   type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "roll_degrees",  type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "pitch_degrees", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "yaw_degrees",   type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 

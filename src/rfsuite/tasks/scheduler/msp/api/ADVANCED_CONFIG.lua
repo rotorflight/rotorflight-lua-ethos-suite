@@ -13,11 +13,11 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "gyro_sync_denom_compat", type = "U8", apiVersion = 12.06, simResponse = {1}, default = 1 },
-    { field = "pid_process_denom", type = "U8", apiVersion = 12.06, simResponse = {1}, min = 1, max = 16 },
-    { field = "use_unsynced_pwm", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "motor_pwm_protocol", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "motor_pwm_rate", type = "U16", apiVersion = 12.06, simResponse = {232, 3} },
+    { field = "gyro_sync_denom_compat", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, default = 1 },
+    { field = "pid_process_denom", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, min = 1, max = 16 },
+    { field = "use_unsynced_pwm", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "motor_pwm_protocol", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "motor_pwm_rate", type = "U16", apiVersion = {12, 0, 6}, simResponse = {232, 3} },
 }
 -- LuaFormatter on
 

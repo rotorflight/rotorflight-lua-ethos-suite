@@ -13,18 +13,18 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "debug_count",       type = "U8", apiVersion = 12.06, simResponse = {8} },
-    { field = "debug_value_count", type = "U8", apiVersion = 12.06, simResponse = {8} },
-    { field = "debug_mode",        type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "debug_axis",        type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "debug_count",       type = "U8", apiVersion = {12, 0, 6}, simResponse = {8} },
+    { field = "debug_value_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {8} },
+    { field = "debug_mode",        type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "debug_axis",        type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 local MSP_API_STRUCTURE_WRITE = {
-    { field = "debug_mode", type = "U8", apiVersion = 12.06 },
-    { field = "debug_axis", type = "U8", apiVersion = 12.06 },
+    { field = "debug_mode", type = "U8", apiVersion = {12, 0, 6} },
+    { field = "debug_axis", type = "U8", apiVersion = {12, 0, 6} },
 }
 
 local mspData = nil

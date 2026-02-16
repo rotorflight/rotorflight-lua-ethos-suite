@@ -87,7 +87,7 @@ return {
                 end
             end
 
-            if rfsuite.utils.apiVersionCompare(">", "12.08") and
+            if rfsuite.utils.apiVersionCompare(">", {12, 0, 8}) and
                 rfsuite.app.formFields[MENU_ID.BUS] and
                 rfsuite.session.servoBusEnabled == true then
                 rfsuite.app.formFields[MENU_ID.BUS]:enable(true)

@@ -14,10 +14,10 @@ local LED_MAX_STRIP_LENGTH = 32
 
 local MSP_API_STRUCTURE_READ_DATA = {}
 for i = 1, LED_MAX_STRIP_LENGTH do
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "led_config_" .. i, type = "U64", apiVersion = 12.06, simResponse = {0,0,0,0,0,0,0,0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "led_config_" .. i, type = "U64", apiVersion = {12, 0, 6}, simResponse = {0,0,0,0,0,0,0,0} }
 end
-MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "advanced_profile_support", type = "U8", apiVersion = 12.06, simResponse = {1} }
-MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "ledstrip_profile", type = "U8", apiVersion = 12.06, simResponse = {0} }
+MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "advanced_profile_support", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1} }
+MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "ledstrip_profile", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} }
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 

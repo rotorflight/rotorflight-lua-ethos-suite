@@ -13,9 +13,9 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "gyro_1_alignment", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "gyro_2_alignment", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "mag_alignment",    type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "gyro_1_alignment", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "gyro_2_alignment", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "mag_alignment",    type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
 }
 -- LuaFormatter on
 

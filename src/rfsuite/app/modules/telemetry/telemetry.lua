@@ -199,7 +199,7 @@ local function openPage(opts)
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
-    if rfsuite.utils.apiVersionCompare("<", "12.08") then
+    if rfsuite.utils.apiVersionCompare("<", {12, 0, 8}) then
         rfsuite.app.triggers.closeProgressLoader = true
 
         rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.telemetry.invalid_version)@")

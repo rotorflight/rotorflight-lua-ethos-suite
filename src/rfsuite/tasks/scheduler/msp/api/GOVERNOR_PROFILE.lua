@@ -14,7 +14,7 @@ local MSP_REBUILD_ON_WRITE = false
 local MSP_API_STRUCTURE_READ_DATA
 
 -- LuaFormatter off
-if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
 
     local offOn = {
         "@i18n(api.GOVERNOR_PROFILE.tbl_off)@",
@@ -32,39 +32,39 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
     }
 
     MSP_API_STRUCTURE_READ_DATA = {
-        { field = "governor_headspeed",        type = "U16", apiVersion = 12.09, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "@i18n(api.GOVERNOR_PROFILE.governor_headspeed)@" },
-        { field = "governor_gain",             type = "U8",  apiVersion = 12.09, simResponse = {100},      min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_gain)@" },
-        { field = "governor_p_gain",           type = "U8",  apiVersion = 12.09, simResponse = {10},       min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_p_gain)@" },
-        { field = "governor_i_gain",           type = "U8",  apiVersion = 12.09, simResponse = {125},      min = 0,   max = 250,   default = 50,  help = "@i18n(api.GOVERNOR_PROFILE.governor_i_gain)@" },
-        { field = "governor_d_gain",           type = "U8",  apiVersion = 12.09, simResponse = {5},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_d_gain)@" },
-        { field = "governor_f_gain",           type = "U8",  apiVersion = 12.09, simResponse = {20},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_f_gain)@" },
-        { field = "governor_tta_gain",         type = "U8",  apiVersion = 12.09, simResponse = {0},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_gain)@" },
-        { field = "governor_tta_limit",        type = "U8",  apiVersion = 12.09, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_limit)@" },
-        { field = "governor_yaw_weight",       type = "U8",  apiVersion = 12.09, simResponse = {10},       min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_yaw_weight)@" },
-        { field = "governor_cyclic_weight",    type = "U8",  apiVersion = 12.09, simResponse = {40},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_cyclic_weight)@" },
-        { field = "governor_collective_weight",type = "U8",  apiVersion = 12.09, simResponse = {100},      min = 0,   max = 250,   default = 100, help = "@i18n(api.GOVERNOR_PROFILE.governor_collective_weight)@" },
-        { field = "governor_max_throttle",     type = "U8",  apiVersion = 12.09, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_max_throttle)@" },
-        { field = "governor_min_throttle",     type = "U8",  apiVersion = 12.09, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_min_throttle)@" },
-        { field = "governor_fallback_drop",    type = "U8",  apiVersion = 12.09, simResponse = {10},       min = 0,   max = 50,    default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_fallback_drop)@" },
-        { field = "governor_flags",            type = "U16", apiVersion = 12.09, simResponse = {251, 3}, bitmap = governor_flags_bitmap, help = "@i18n(api.GOVERNOR_PROFILE.governor_flags)@" }
+        { field = "governor_headspeed",        type = "U16", apiVersion = {12, 0, 9}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "@i18n(api.GOVERNOR_PROFILE.governor_headspeed)@" },
+        { field = "governor_gain",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_gain)@" },
+        { field = "governor_p_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_p_gain)@" },
+        { field = "governor_i_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {125},      min = 0,   max = 250,   default = 50,  help = "@i18n(api.GOVERNOR_PROFILE.governor_i_gain)@" },
+        { field = "governor_d_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_d_gain)@" },
+        { field = "governor_f_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_f_gain)@" },
+        { field = "governor_tta_gain",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_gain)@" },
+        { field = "governor_tta_limit",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_limit)@" },
+        { field = "governor_yaw_weight",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_yaw_weight)@" },
+        { field = "governor_cyclic_weight",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {40},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_cyclic_weight)@" },
+        { field = "governor_collective_weight",type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 100, help = "@i18n(api.GOVERNOR_PROFILE.governor_collective_weight)@" },
+        { field = "governor_max_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_max_throttle)@" },
+        { field = "governor_min_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_min_throttle)@" },
+        { field = "governor_fallback_drop",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 50,    default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_fallback_drop)@" },
+        { field = "governor_flags",            type = "U16", apiVersion = {12, 0, 9}, simResponse = {251, 3}, bitmap = governor_flags_bitmap, help = "@i18n(api.GOVERNOR_PROFILE.governor_flags)@" }
     }
 
 else
 
     MSP_API_STRUCTURE_READ_DATA = {
-        { field = "governor_headspeed",           type = "U16", apiVersion = 12.06, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "@i18n(api.GOVERNOR_PROFILE.governor_headspeed)@" },
-        { field = "governor_gain",                type = "U8",  apiVersion = 12.06, simResponse = {100},      min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_gain)@" },
-        { field = "governor_p_gain",              type = "U8",  apiVersion = 12.06, simResponse = {10},       min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_p_gain)@" },
-        { field = "governor_i_gain",              type = "U8",  apiVersion = 12.06, simResponse = {125},      min = 0,   max = 250,   default = 50,  help = "@i18n(api.GOVERNOR_PROFILE.governor_i_gain)@" },
-        { field = "governor_d_gain",              type = "U8",  apiVersion = 12.06, simResponse = {5},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_d_gain)@" },
-        { field = "governor_f_gain",              type = "U8",  apiVersion = 12.06, simResponse = {20},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_f_gain)@" },
-        { field = "governor_tta_gain",            type = "U8",  apiVersion = 12.06, simResponse = {0},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_gain)@" },
-        { field = "governor_tta_limit",           type = "U8",  apiVersion = 12.06, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_limit)@" },
-        { field = "governor_yaw_ff_weight",       type = "U8",  apiVersion = 12.06, simResponse = {10},       min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_yaw_ff_weight)@" },
-        { field = "governor_cyclic_ff_weight",    type = "U8",  apiVersion = 12.06, simResponse = {40},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_cyclic_ff_weight)@" },
-        { field = "governor_collective_ff_weight",type = "U8",  apiVersion = 12.06, simResponse = {100},      min = 0,   max = 250,   default = 100, help = "@i18n(api.GOVERNOR_PROFILE.governor_collective_ff_weight)@" },
-        { field = "governor_max_throttle",        type = "U8",  apiVersion = 12.06, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_max_throttle)@" },
-        { field = "governor_min_throttle",        type = "U8",  apiVersion = 12.06, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_min_throttle)@" }
+        { field = "governor_headspeed",           type = "U16", apiVersion = {12, 0, 6}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "@i18n(api.GOVERNOR_PROFILE.governor_headspeed)@" },
+        { field = "governor_gain",                type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_gain)@" },
+        { field = "governor_p_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_p_gain)@" },
+        { field = "governor_i_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {125},      min = 0,   max = 250,   default = 50,  help = "@i18n(api.GOVERNOR_PROFILE.governor_i_gain)@" },
+        { field = "governor_d_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {5},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_d_gain)@" },
+        { field = "governor_f_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_f_gain)@" },
+        { field = "governor_tta_gain",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_gain)@" },
+        { field = "governor_tta_limit",           type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_limit)@" },
+        { field = "governor_yaw_ff_weight",       type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_yaw_ff_weight)@" },
+        { field = "governor_cyclic_ff_weight",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {40},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_cyclic_ff_weight)@" },
+        { field = "governor_collective_ff_weight",type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 100, help = "@i18n(api.GOVERNOR_PROFILE.governor_collective_ff_weight)@" },
+        { field = "governor_max_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_max_throttle)@" },
+        { field = "governor_min_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_min_throttle)@" }
     }
 
 end

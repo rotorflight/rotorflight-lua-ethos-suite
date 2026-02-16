@@ -13,13 +13,13 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "throttle_p", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "throttle_i", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "throttle_d", type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "vel_p",      type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "vel_i",      type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "vel_d",      type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "yaw_p",      type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
+    { field = "throttle_p", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "throttle_i", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "throttle_d", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "vel_p",      type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "vel_i",      type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "vel_d",      type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "yaw_p",      type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 

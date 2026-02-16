@@ -13,14 +13,14 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "osd_flags",       type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "video_system",    type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "units",           type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "rssi_alarm",      type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "cap_alarm",       type = "U16", apiVersion = 12.06, simResponse = {0, 0}, mandatory = false },
-    { field = "legacy_timer_lo", type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "legacy_timer_hi", type = "U8",  apiVersion = 12.06, simResponse = {0}, mandatory = false },
-    { field = "alt_alarm",       type = "U16", apiVersion = 12.06, simResponse = {0, 0}, mandatory = false },
+    { field = "osd_flags",       type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
+    { field = "video_system",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
+    { field = "units",           type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
+    { field = "rssi_alarm",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
+    { field = "cap_alarm",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, mandatory = false },
+    { field = "legacy_timer_lo", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
+    { field = "legacy_timer_hi", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
+    { field = "alt_alarm",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, mandatory = false },
 }
 -- LuaFormatter on
 

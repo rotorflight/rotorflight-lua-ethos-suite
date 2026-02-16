@@ -13,15 +13,15 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rssi_source",      type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "rtc_datetime_set", type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "rssi_source",      type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "rtc_datetime_set", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 local MSP_API_STRUCTURE_WRITE = {
-    { field = "rssi", type = "U8", apiVersion = 12.06 },
+    { field = "rssi", type = "U8", apiVersion = {12, 0, 6} },
 }
 
 local mspData = nil

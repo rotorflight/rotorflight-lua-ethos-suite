@@ -27,7 +27,7 @@ local config = {
         probeProtocol = 1,
         maxProtocol = 2,
         allowAutoUpgrade = true,
-        v2MinApiVersion = "12.09",
+        v2MinApiVersion = {12, 0, 9},
     },
     mspProtocolVersion = 1,
 }

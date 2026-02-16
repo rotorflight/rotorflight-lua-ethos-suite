@@ -15,7 +15,7 @@ local MAX_NAME_LENGTH = 16
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field="name",mandatory=false,type="U8",apiVersion=12.06,simResponse={80,105,108,111,116},help="@i18n(api.NAME.name)@"}
+    {field="name",mandatory=false,type="U8",apiVersion={12, 0, 6},simResponse={80,105,108,111,116},help="@i18n(api.NAME.name)@"}
 }
 -- LuaFormatter on
 

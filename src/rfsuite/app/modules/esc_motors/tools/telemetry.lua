@@ -27,12 +27,12 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELDKEY.PROTOCOL] = {t = "@i18n(app.modules.esc_motors.telemetry_protocol)@",  api = "ESC_SENSOR_CONFIG:protocol",      apiversion = 12.06, type = 1},
-            [FIELDKEY.HALF_DUPLEX] = {t = "@i18n(app.modules.esc_motors.half_duplex)@",  api = "ESC_SENSOR_CONFIG:half_duplex",      apiversion = 12.06, type = 1},
-            [FIELDKEY.PIN_SWAP] = {t = "@i18n(app.modules.esc_motors.pin_swap)@",  api = "ESC_SENSOR_CONFIG:pin_swap",      apiversion = 12.06, type = 1},            
-            [FIELDKEY.VOLTAGE_CORRECTION] = {t = "@i18n(app.modules.esc_motors.voltage_correction)@",  api = "ESC_SENSOR_CONFIG:voltage_correction",    apiversion = 12.08},
-            [FIELDKEY.CURRENT_CORRECTION] = {t = "@i18n(app.modules.esc_motors.current_correction)@",  api = "ESC_SENSOR_CONFIG:current_correction",    apiversion = 12.08},
-            [FIELDKEY.CONSUMPTION_CORRECTION] = {t = "@i18n(app.modules.esc_motors.consumption_correction)@", api = "ESC_SENSOR_CONFIG:consumption_correction", apiversion = 12.08}
+            [FIELDKEY.PROTOCOL] = {t = "@i18n(app.modules.esc_motors.telemetry_protocol)@",  api = "ESC_SENSOR_CONFIG:protocol",      apiversion = {12, 0, 6}, type = 1},
+            [FIELDKEY.HALF_DUPLEX] = {t = "@i18n(app.modules.esc_motors.half_duplex)@",  api = "ESC_SENSOR_CONFIG:half_duplex",      apiversion = {12, 0, 6}, type = 1},
+            [FIELDKEY.PIN_SWAP] = {t = "@i18n(app.modules.esc_motors.pin_swap)@",  api = "ESC_SENSOR_CONFIG:pin_swap",      apiversion = {12, 0, 6}, type = 1},            
+            [FIELDKEY.VOLTAGE_CORRECTION] = {t = "@i18n(app.modules.esc_motors.voltage_correction)@",  api = "ESC_SENSOR_CONFIG:voltage_correction",    apiversion = {12, 0, 8}},
+            [FIELDKEY.CURRENT_CORRECTION] = {t = "@i18n(app.modules.esc_motors.current_correction)@",  api = "ESC_SENSOR_CONFIG:current_correction",    apiversion = {12, 0, 8}},
+            [FIELDKEY.CONSUMPTION_CORRECTION] = {t = "@i18n(app.modules.esc_motors.consumption_correction)@", api = "ESC_SENSOR_CONFIG:consumption_correction", apiversion = {12, 0, 8}}
         }
     }
 }
@@ -61,7 +61,7 @@ local function wakeup()
     if protocolValue == 0 then  -- NONE
         formFields[FIELDKEY.HALF_DUPLEX]:enable(false)
         formFields[FIELDKEY.PIN_SWAP]:enable(false)
-        if rfsuite.utils.apiVersionCompare(">=", "12.08") then
+        if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
             formFields[FIELDKEY.VOLTAGE_CORRECTION]:enable(false)
             formFields[FIELDKEY.CURRENT_CORRECTION]:enable(false)
             formFields[FIELDKEY.CONSUMPTION_CORRECTION]:enable(false)
@@ -69,7 +69,7 @@ local function wakeup()
     else  -- ENABLED
         formFields[FIELDKEY.HALF_DUPLEX]:enable(true)
         formFields[FIELDKEY.PIN_SWAP]:enable(true)
-        if rfsuite.utils.apiVersionCompare(">=", "12.08") then
+        if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
             formFields[FIELDKEY.VOLTAGE_CORRECTION]:enable(true)
             formFields[FIELDKEY.CURRENT_CORRECTION]:enable(true)
             formFields[FIELDKEY.CONSUMPTION_CORRECTION]:enable(true)

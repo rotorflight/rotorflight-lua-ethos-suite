@@ -17,9 +17,9 @@ local FIXED_INDEX = 3
 -- Note.  We do not do any parameters on these calls like min, max etc as the calls are very bespoke and 
 --        do not benifit from generic handling.
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rate_stabilized_yaw", type = "U16", apiVersion = 12.09, simResponse = { 250, 0 }},
-    { field = "min_stabilized_yaw",  type = "U16", apiVersion = 12.09, simResponse = { 30, 251 } },
-    { field = "max_stabilized_yaw",  type = "U16", apiVersion = 12.09, simResponse = { 226, 4 } },
+    { field = "rate_stabilized_yaw", type = "U16", apiVersion = {12, 0, 9}, simResponse = { 250, 0 }},
+    { field = "min_stabilized_yaw",  type = "U16", apiVersion = {12, 0, 9}, simResponse = { 30, 251 } },
+    { field = "max_stabilized_yaw",  type = "U16", apiVersion = {12, 0, 9}, simResponse = { 226, 4 } },
 }
 
 -- LuaFormatter on

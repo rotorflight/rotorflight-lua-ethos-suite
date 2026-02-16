@@ -173,7 +173,7 @@ function utils.getGovernorState(value)
         [101] = "@i18n(widgets.governor.DISARMED):upper()@"
     }
 
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", "12.07") then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", {12, 0, 7}) then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
         if armflags == 0 or armflags == 2 then value = 101 end
     end

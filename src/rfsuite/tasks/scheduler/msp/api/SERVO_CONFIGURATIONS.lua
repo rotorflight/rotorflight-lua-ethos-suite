@@ -48,7 +48,7 @@ local function generateMSPStructureRead(servoCount)
         {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
     }
 
-    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table_insert(MSP_API_STRUCTURE, {field = string_format("servo_%d_%s", i, field.field), type = field.type, apiVersion = 12.07}) end end
+    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table_insert(MSP_API_STRUCTURE, {field = string_format("servo_%d_%s", i, field.field), type = field.type, apiVersion = {12, 0, 7}}) end end
 
     return MSP_API_STRUCTURE
 end

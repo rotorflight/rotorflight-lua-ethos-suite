@@ -13,10 +13,10 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "rssi_channel", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "rssi_scale",   type = "U8", apiVersion = 12.06, simResponse = {100} },
-    { field = "rssi_invert",  type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "rssi_offset",  type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "rssi_channel", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "rssi_scale",   type = "U8", apiVersion = {12, 0, 6}, simResponse = {100} },
+    { field = "rssi_invert",  type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "rssi_offset",  type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
 }
 -- LuaFormatter on
 

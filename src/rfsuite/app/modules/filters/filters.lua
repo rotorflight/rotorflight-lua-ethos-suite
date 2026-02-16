@@ -38,8 +38,8 @@ local apidata = {
             { t = "@i18n(app.modules.filters.notch_q)@", label = 9, inline = 1, mspapi = 1, apikey = "dyn_notch_q" },
             { t = "@i18n(app.modules.filters.notch_min_hz)@", label = 10, inline = 2, mspapi = 1, apikey = "dyn_notch_min_hz" },
             { t = "@i18n(app.modules.filters.notch_max_hz)@", label = 10, inline = 1, mspapi = 1, apikey = "dyn_notch_max_hz" },
-            { t = "@i18n(app.modules.filters.rpm_preset)@", label = 11, inline = 1, mspapi = 1, apikey = "rpm_preset", type = 1, apiversiongte = 12.08 },
-            { t = "@i18n(app.modules.filters.rpm_min_hz)@", label = 12, inline = 1, mspapi = 1, apikey = "rpm_min_hz", apiversiongte = 12.08 }
+            { t = "@i18n(app.modules.filters.rpm_preset)@", label = 11, inline = 1, mspapi = 1, apikey = "rpm_preset", type = 1, apiversiongte = {12, 0, 8} },
+            { t = "@i18n(app.modules.filters.rpm_min_hz)@", label = 12, inline = 1, mspapi = 1, apikey = "rpm_min_hz", apiversiongte = {12, 0, 8} }
         }
     }
 }

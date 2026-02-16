@@ -13,19 +13,19 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "device_type",      type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "band",             type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "channel",          type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "power",            type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "pit_mode",         type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "freq",             type = "U16", apiVersion = 12.06, simResponse = {108, 22} },
-    { field = "device_ready",     type = "U8",  apiVersion = 12.06, simResponse = {1} },
-    { field = "low_power_disarm", type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "pit_mode_freq",    type = "U16", apiVersion = 12.42, simResponse = {0, 0} },
-    { field = "vtxtable_available", type = "U8", apiVersion = 12.42, simResponse = {1} },
-    { field = "vtxtable_bands",   type = "U8",  apiVersion = 12.42, simResponse = {5} },
-    { field = "vtxtable_channels",type = "U8",  apiVersion = 12.42, simResponse = {8} },
-    { field = "vtxtable_power_levels", type = "U8", apiVersion = 12.42, simResponse = {5} },
+    { field = "device_type",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "band",             type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "channel",          type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "power",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "pit_mode",         type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "freq",             type = "U16", apiVersion = {12, 0, 6}, simResponse = {108, 22} },
+    { field = "device_ready",     type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "low_power_disarm", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "pit_mode_freq",    type = "U16", apiVersion = {12, 42}, simResponse = {0, 0} },
+    { field = "vtxtable_available", type = "U8", apiVersion = {12, 42}, simResponse = {1} },
+    { field = "vtxtable_bands",   type = "U8",  apiVersion = {12, 42}, simResponse = {5} },
+    { field = "vtxtable_channels",type = "U8",  apiVersion = {12, 42}, simResponse = {8} },
+    { field = "vtxtable_power_levels", type = "U8", apiVersion = {12, 42}, simResponse = {5} },
 }
 -- LuaFormatter on
 

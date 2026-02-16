@@ -13,12 +13,12 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "power_level",  type = "U8",  apiVersion = 12.06, simResponse = {1}, mandatory = false },
-    { field = "power_value",  type = "U16", apiVersion = 12.06, simResponse = {25, 0}, mandatory = false },
-    { field = "label_length", type = "U8",  apiVersion = 12.06, simResponse = {3}, mandatory = false },
-    { field = "label_1",      type = "U8",  apiVersion = 12.06, simResponse = {50}, mandatory = false },
-    { field = "label_2",      type = "U8",  apiVersion = 12.06, simResponse = {53}, mandatory = false },
-    { field = "label_3",      type = "U8",  apiVersion = 12.06, simResponse = {77}, mandatory = false },
+    { field = "power_level",  type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1}, mandatory = false },
+    { field = "power_value",  type = "U16", apiVersion = {12, 0, 6}, simResponse = {25, 0}, mandatory = false },
+    { field = "label_length", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {3}, mandatory = false },
+    { field = "label_1",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {50}, mandatory = false },
+    { field = "label_2",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {53}, mandatory = false },
+    { field = "label_3",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {77}, mandatory = false },
 }
 -- LuaFormatter on
 

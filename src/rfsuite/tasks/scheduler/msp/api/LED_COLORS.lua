@@ -14,9 +14,9 @@ local LED_CONFIGURABLE_COLOR_COUNT = 16
 
 local MSP_API_STRUCTURE_READ_DATA = {}
 for i = 1, LED_CONFIGURABLE_COLOR_COUNT do
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_h", type = "U16", apiVersion = 12.06, simResponse = {0, 0} }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_s", type = "U8",  apiVersion = 12.06, simResponse = {0} }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_v", type = "U8",  apiVersion = 12.06, simResponse = {0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_h", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_s", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} }
+    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_v", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} }
 end
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)

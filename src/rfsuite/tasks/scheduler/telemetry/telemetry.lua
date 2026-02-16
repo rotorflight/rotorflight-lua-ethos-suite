@@ -8,7 +8,6 @@ local rfsuite = require("rfsuite")
 local arg = {...}
 
 local simSensors = rfsuite.utils.simSensors
-local round = rfsuite.utils.round
 
 local telemetry = {}
 
@@ -213,7 +212,7 @@ local sensorTable = {
         sensors = {
             sim = {{uid = 0x5005, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_esc') end, min = 0, max = 100}},
             sport = {
-                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, mspgt = 12.08},
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, mspgt = {12, 0, 8}},
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418}
             },
             crsf = {
@@ -250,8 +249,8 @@ local sensorTable = {
         sensors = {
             sim = {{uid = 0x5006, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_mcu') end, min = 0, max = 100}},
             sport = {
-                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08},
-                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07}
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = {12, 0, 8}},
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = {12, 0, 7}}
             },
             crsf = {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}
@@ -612,10 +611,9 @@ end
 local function checkCondition(sensorEntry)
     local sess = rfsuite.session
     if not (sess and sess.apiVersion) then return true end
-    local roundedApiVersion = round(sess.apiVersion, 2)
     local gt, lt = sensorEntry.mspgt, sensorEntry.msplt
-    if gt then return roundedApiVersion >= round(gt, 2) end
-    if lt then return roundedApiVersion <= round(lt, 2) end
+    if gt and not rfsuite.utils.apiVersionCompare(">=", gt) then return false end
+    if lt and not rfsuite.utils.apiVersionCompare("<=", lt) then return false end
     return true
 end
 

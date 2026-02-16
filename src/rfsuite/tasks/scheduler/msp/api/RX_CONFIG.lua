@@ -13,15 +13,15 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "serialrx_provider", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "serialrx_inverted", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "halfDuplex", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "rx_pulse_min", type = "U16", apiVersion = 12.06, simResponse = {107, 3}, unit = "us" },
-    { field = "rx_pulse_max", type = "U16", apiVersion = 12.06, simResponse = {77, 8}, unit = "us" },
-    { field = "rx_spi_protocol", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "rx_spi_id", type = "U32", apiVersion = 12.06, simResponse = {0,0,0,0} },
-    { field = "rx_spi_rf_channel_count", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "pinSwap", type = "U8", apiVersion = 12.06, simResponse = {0} },
+    { field = "serialrx_provider", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "serialrx_inverted", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "halfDuplex", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "rx_pulse_min", type = "U16", apiVersion = {12, 0, 6}, simResponse = {107, 3}, unit = "us" },
+    { field = "rx_pulse_max", type = "U16", apiVersion = {12, 0, 6}, simResponse = {77, 8}, unit = "us" },
+    { field = "rx_spi_protocol", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "rx_spi_id", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0,0,0,0} },
+    { field = "rx_spi_rf_channel_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "pinSwap", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
 }
 -- LuaFormatter on
 

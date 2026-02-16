@@ -14,7 +14,7 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_WRITE = {
-    {field = "rebootMode", type = "U8", apiVersion = 12.06, simResponse = {0}}
+    {field = "rebootMode", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}}
 }
 -- LuaFormatter on
 

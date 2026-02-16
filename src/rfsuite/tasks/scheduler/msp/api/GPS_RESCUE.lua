@@ -13,20 +13,20 @@ local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "angle",                    type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "initial_altitude_m",       type = "U16", apiVersion = 12.06, simResponse = {100, 0} },
-    { field = "descent_distance_m",       type = "U16", apiVersion = 12.06, simResponse = {100, 0} },
-    { field = "rescue_groundspeed",       type = "U16", apiVersion = 12.06, simResponse = {200, 0} },
-    { field = "throttle_min",             type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "throttle_max",             type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "throttle_hover",           type = "U16", apiVersion = 12.06, simResponse = {0, 0} },
-    { field = "sanity_checks",            type = "U8",  apiVersion = 12.06, simResponse = {0} },
-    { field = "min_sats",                 type = "U8",  apiVersion = 12.06, simResponse = {6} },
-    { field = "ascend_rate",              type = "U16", apiVersion = 12.43, simResponse = {0, 0} },
-    { field = "descend_rate",             type = "U16", apiVersion = 12.43, simResponse = {0, 0} },
-    { field = "allow_arming_without_fix", type = "U8",  apiVersion = 12.43, simResponse = {0} },
-    { field = "altitude_mode",            type = "U8",  apiVersion = 12.43, simResponse = {0} },
-    { field = "min_rescue_dth",           type = "U16", apiVersion = 12.44, simResponse = {0, 0} },
+    { field = "angle",                    type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "initial_altitude_m",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0} },
+    { field = "descent_distance_m",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0} },
+    { field = "rescue_groundspeed",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {200, 0} },
+    { field = "throttle_min",             type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "throttle_max",             type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "throttle_hover",           type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} },
+    { field = "sanity_checks",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "min_sats",                 type = "U8",  apiVersion = {12, 0, 6}, simResponse = {6} },
+    { field = "ascend_rate",              type = "U16", apiVersion = {12, 43}, simResponse = {0, 0} },
+    { field = "descend_rate",             type = "U16", apiVersion = {12, 43}, simResponse = {0, 0} },
+    { field = "allow_arming_without_fix", type = "U8",  apiVersion = {12, 43}, simResponse = {0} },
+    { field = "altitude_mode",            type = "U8",  apiVersion = {12, 43}, simResponse = {0} },
+    { field = "min_rescue_dth",           type = "U16", apiVersion = {12, 44}, simResponse = {0, 0} },
 }
 -- LuaFormatter on
 

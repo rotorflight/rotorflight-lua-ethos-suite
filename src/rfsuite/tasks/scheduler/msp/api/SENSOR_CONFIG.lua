@@ -13,15 +13,15 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "acc_hardware", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "baro_hardware", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "mag_hardware", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "gyro_to_use", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "gyro_high_fsr", type = "U8", apiVersion = 12.06, simResponse = {0} },
-    { field = "gyroMovementCalibrationThreshold", type = "U8", apiVersion = 12.06, simResponse = {48} },
-    { field = "gyroCalibrationDuration", type = "U16", apiVersion = 12.06, simResponse = {244, 1} },
-    { field = "gyro_offset_yaw", type = "U16", apiVersion = 12.06, simResponse = {0,0} },
-    { field = "checkOverflow", type = "U8", apiVersion = 12.06, simResponse = {1} },
+    { field = "acc_hardware", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "baro_hardware", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "mag_hardware", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "gyro_to_use", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "gyro_high_fsr", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
+    { field = "gyroMovementCalibrationThreshold", type = "U8", apiVersion = {12, 0, 6}, simResponse = {48} },
+    { field = "gyroCalibrationDuration", type = "U16", apiVersion = {12, 0, 6}, simResponse = {244, 1} },
+    { field = "gyro_offset_yaw", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0,0} },
+    { field = "checkOverflow", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1} },
 }
 -- LuaFormatter on
 

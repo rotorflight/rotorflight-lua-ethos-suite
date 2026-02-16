@@ -13,9 +13,9 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "beeper_off_flags", type = "U32", apiVersion = 12.06, simResponse = {0,0,0,0} },
-    { field = "dshotBeaconTone", type = "U8", apiVersion = 12.06, simResponse = {1} },
-    { field = "dshotBeaconOffFlags", type = "U32", apiVersion = 12.06, simResponse = {0,0,0,0}, mandatory = false },
+    { field = "beeper_off_flags", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0,0,0,0} },
+    { field = "dshotBeaconTone", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1} },
+    { field = "dshotBeaconOffFlags", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0,0,0,0}, mandatory = false },
 }
 -- LuaFormatter on
 
