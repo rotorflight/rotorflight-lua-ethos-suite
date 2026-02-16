@@ -6,10 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local MENU_ID = {PWM = 1, BUS = 2}
-local S_PAGES = {
-    [MENU_ID.PWM] = {name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png"},
-    [MENU_ID.BUS] = {name = "@i18n(app.modules.servos.bus)@", script = "bus.lua", image = "bus.png"}
-}
 
 local prevConnectedState = nil
 local fieldFocusSet = false
@@ -65,14 +61,6 @@ local function requestServoInfoChain()
 end
 
 return {
-    title = "@i18n(app.modules.servos.name)@",
-    moduleKey = "servos_type",
-    pages = S_PAGES,
-    scriptPrefix = "servos/tools/",
-    iconPrefix = "app/modules/servos/gfx/",
-    loaderSpeed = rfsuite.app.loaderSpeed.DEFAULT,
-    navOptions = {defaultSection = "hardware", showProgress = true},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     onOpenPost = function()
         fieldFocusSet = false
         chainInFlight = false

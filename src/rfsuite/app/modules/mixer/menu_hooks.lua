@@ -5,22 +5,6 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES
-if rfsuite.utils.apiVersionCompare(">=", "12.09") then
-    S_PAGES = {
-        {name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png", disabled = true},
-        {name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", disabled = true},
-        {name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", disabled = true},
-        {name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png", disabled = true}
-    }
-else
-    S_PAGES = {
-        {name = "@i18n(app.modules.mixer.swash)@", script = "swash_legacy.lua", image = "swash.png"},
-        {name = "@i18n(app.modules.mixer.tail)@", script = "tail_legacy.lua", image = "tail.png"},
-        {name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png"}
-    }
-end
-
 local prevConnectedState = nil
 local initTime = os.clock()
 local focused = false
@@ -89,13 +73,6 @@ local function mixerInputsAreCompatible()
 end
 
 return {
-    title = "@i18n(app.modules.mixer.name)@",
-    pages = S_PAGES,
-    scriptPrefix = "mixer/tools/",
-    iconPrefix = "app/modules/mixer/gfx/",
-    loaderSpeed = rfsuite.app.loaderSpeed.DEFAULT,
-    navOptions = {defaultSection = "hardware", showProgress = true},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     onOpenPost = function()
         focused = false
         mixerCompatibilityStatus = false

@@ -5,7 +5,4 @@
 
 local submenuBuilder = assert(loadfile("app/lib/submenu_builder.lua"))()
 
-return submenuBuilder.create({
-    moduleKey = "beepers",
-    hooksScript = "app/modules/beepers/menu_hooks.lua"
-})
+return submenuBuilder.createFromManifest("beepers")

@@ -5,23 +5,11 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {
-    {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
-    {name = "@i18n(app.modules.governor.menu_flags)@", script = "flags.lua", image = "flags.png"}
-}
-
 local prevConnectedState = nil
 local initTime = os.clock()
 local focused = false
 
 return {
-    title = "@i18n(app.modules.profile_governor.name)@",
-    pages = S_PAGES,
-    scriptPrefix = "profile_governor/tools/",
-    iconPrefix = "app/modules/governor/gfx/",
-    loaderSpeed = rfsuite.app.loaderSpeed.DEFAULT,
-    navOptions = {showProgress = true},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     onWakeup = function()
         if os.clock() - initTime < 0.25 then return end
 

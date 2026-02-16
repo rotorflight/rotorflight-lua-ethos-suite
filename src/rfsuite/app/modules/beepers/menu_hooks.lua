@@ -5,11 +5,6 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {
-    {name = "@i18n(app.modules.beepers.menu_configuration)@", script = "configuration.lua", image = "configuration.png"},
-    {name = "@i18n(app.modules.beepers.menu_dshot)@", script = "dshot.lua", image = "dshot.png"}
-}
-
 local prevConnectedState = nil
 local initTime = os.clock()
 local prereqRequested = false
@@ -26,9 +21,9 @@ local function copyTable(src)
 end
 
 local function setButtonsEnabled(enabled)
-    for i = 1, #S_PAGES do
-        local f = rfsuite.app.formFields and rfsuite.app.formFields[i]
-        if f and f.enable then f:enable(enabled) end
+    if not rfsuite.app.formFields then return end
+    for i, f in pairs(rfsuite.app.formFields) do
+        if type(i) == "number" and f and f.enable then f:enable(enabled) end
     end
 end
 
@@ -83,13 +78,6 @@ local function requestPrereqs()
 end
 
 return {
-    title = "@i18n(app.modules.beepers.name)@",
-    pages = S_PAGES,
-    scriptPrefix = "beepers/tools/",
-    iconPrefix = "app/modules/beepers/gfx/",
-    loaderSpeed = rfsuite.app.loaderSpeed.DEFAULT,
-    navOptions = {defaultSection = "hardware"},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = true},
     onOpenPost = function()
         prereqRequested = false
         setButtonsEnabled(false)

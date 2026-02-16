@@ -9,16 +9,6 @@ local prevConnectedState = nil
 local initTime = os.clock()
 
 return {
-    title = "@i18n(app.modules.rates_advanced.name)@",
-    pages = {
-        {name = "@i18n(app.modules.rates_advanced.advanced)@", script = "advanced.lua", image = "advanced.png"},
-        {name = "@i18n(app.modules.rates_advanced.table)@", script = "table.lua", image = "table.png"}
-    },
-    scriptPrefix = "rates_advanced/tools/",
-    iconPrefix = "app/modules/rates_advanced/gfx/",
-    loaderSpeed = rfsuite.app.loaderSpeed.DEFAULT,
-    navOptions = {defaultSection = "advanced", showProgress = true},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     onWakeup = function()
         if os.clock() - initTime < 0.25 then return end
 

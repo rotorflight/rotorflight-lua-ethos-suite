@@ -5,7 +5,4 @@
 
 local submenuBuilder = assert(loadfile("app/lib/submenu_builder.lua"))()
 
-return submenuBuilder.create({
-    moduleKey = "blackbox",
-    hooksScript = "app/modules/blackbox/menu_hooks.lua"
-})
+return submenuBuilder.createFromManifest("blackbox")

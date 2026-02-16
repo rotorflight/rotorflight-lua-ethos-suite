@@ -5,11 +5,4 @@
 
 local submenuBuilder = assert(loadfile("app/lib/submenu_builder.lua"))()
 
-return submenuBuilder.create({
-    moduleKey = "hardware_menu",
-    hooksScript = "app/modules/hardware/menu_hooks.lua",
-    scriptPrefix = "app/modules/",
-    iconPrefix = "",
-    navOptions = {showProgress = true}
-})
-
+return submenuBuilder.createFromManifest("hardware_menu")

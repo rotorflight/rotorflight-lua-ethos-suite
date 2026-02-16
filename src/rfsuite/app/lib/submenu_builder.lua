@@ -6,6 +6,13 @@
 local buildContainer = assert(loadfile("app/lib/menu_container.lua"))()
 
 local submenu = {}
+local manifestPath = "app/modules/manifest.lua"
+
+local function cloneShallow(src)
+    local out = {}
+    for k, v in pairs(src or {}) do out[k] = v end
+    return out
+end
 
 local function mergeShallow(base, override)
     local out = {}
@@ -29,6 +36,34 @@ local function resolvePages(opts, hooks)
     end
     if type(hooks.pages) == "table" then return hooks.pages end
     return opts.pages or {}
+end
+
+local function loadManifest()
+    local chunk = assert(loadfile(manifestPath))
+    local manifest = chunk()
+    if type(manifest) ~= "table" then return {} end
+    return manifest
+end
+
+local function resolveManifestMenuSpec(menuId)
+    if type(menuId) ~= "string" or menuId == "" then
+        error("submenu.createFromManifest requires opts.menuId")
+    end
+
+    local manifest = loadManifest()
+    local menus = manifest.menus
+    if type(menus) ~= "table" then
+        error("Manifest has no menus table for submenu id: " .. menuId)
+    end
+
+    local spec = menus[menuId]
+    if type(spec) ~= "table" then
+        error("No manifest submenu entry for id: " .. menuId)
+    end
+
+    local cfg = cloneShallow(spec)
+    if cfg.moduleKey == nil then cfg.moduleKey = menuId end
+    return cfg
 end
 
 function submenu.create(opts)
@@ -60,6 +95,22 @@ function submenu.create(opts)
     end
 
     return page
+end
+
+function submenu.createFromManifest(opts)
+    local options = opts
+    if type(options) == "string" then options = {menuId = options} end
+    if type(options) ~= "table" then
+        error("submenu.createFromManifest expects a table or menu id string")
+    end
+
+    local menuId = options.menuId or options.id
+    local manifestCfg = resolveManifestMenuSpec(menuId)
+    local merged = mergeShallow(manifestCfg, options)
+    merged.menuId = nil
+    merged.id = nil
+
+    return submenu.create(merged)
 end
 
 return submenu

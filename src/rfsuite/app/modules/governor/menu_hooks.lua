@@ -11,25 +11,11 @@ local tasks = rfsuite.tasks
 local utils = rfsuite.utils
 local session = rfsuite.session
 
-local S_PAGES = {
-    {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
-    {name = "@i18n(app.modules.governor.menu_time)@", script = "time.lua", image = "time.png"},
-    {name = "@i18n(app.modules.governor.menu_filters)@", script = "filters.lua", image = "filters.png"},
-    {name = "@i18n(app.modules.governor.menu_curves)@", script = "curves.lua", image = "curves.png"}
-}
-
 local prevConnectedState = nil
 local initTime = os.clock()
 local focused = false
 
 return {
-    title = "@i18n(app.modules.governor.name)@",
-    pages = S_PAGES,
-    scriptPrefix = "governor/tools/",
-    iconPrefix = "app/modules/governor/gfx/",
-    loaderSpeed = app.loaderSpeed.DEFAULT,
-    navOptions = {defaultSection = "hardware", showProgress = true},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     onOpenPost = function()
         focused = false
         if app.formFields then

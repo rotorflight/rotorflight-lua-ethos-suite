@@ -5,24 +5,10 @@
 
 local rfsuite = require("rfsuite")
 
-local S_PAGES = {
-    {name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png"},
-    {name = "@i18n(app.modules.esc_motors.telemetry)@", script = "telemetry.lua", image = "telemetry.png"},
-    {name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"},
-    {name = "@i18n(app.modules.esc_tools.name)@", script = "esc.lua", image = "esc.png"}
-}
-
 local prevConnectedState = nil
 local initTime = os.clock()
 
 return {
-    title = "@i18n(app.modules.esc_motors.name)@",
-    pages = S_PAGES,
-    scriptPrefix = "esc_motors/tools/",
-    iconPrefix = "app/modules/esc_motors/gfx/",
-    loaderSpeed = 0.08,
-    navOptions = {defaultSection = "hardware", showProgress = true},
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
     onOpenPost = function()
         rfsuite.app.triggers.closeProgressLoader = true
     end,
