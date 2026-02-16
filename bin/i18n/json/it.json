@@ -3889,10 +3889,10 @@
           "reverse_text": false
         },
         "name": {
-          "english": "ESC/Motors",
+          "english": "ESC & Motors",
           "translation": "ESC/Motori",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 12,
           "reverse_text": false
         },
         "pin_swap": {
@@ -5475,103 +5475,266 @@
           "english": "Craft name",
           "translation": "Craft name",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "error_eeprom_write_failed": {
+          "english": "EEPROM write failed",
+          "translation": "EEPROM write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "error_advanced_api_unavailable": {
+          "english": "ADVANCED_CONFIG API unavailable",
+          "translation": "ADVANCED_CONFIG API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "error_advanced_read_failed": {
+          "english": "ADVANCED_CONFIG read failed",
+          "translation": "ADVANCED_CONFIG read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "error_advanced_write_failed": {
+          "english": "ADVANCED_CONFIG write failed",
+          "translation": "ADVANCED_CONFIG write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "error_eeprom_api_unavailable": {
+          "english": "EEPROM_WRITE API unavailable",
+          "translation": "EEPROM_WRITE API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "error_feature_api_unavailable": {
+          "english": "FEATURE_CONFIG API unavailable",
+          "translation": "FEATURE_CONFIG API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
+        "error_feature_read_failed": {
+          "english": "FEATURE_CONFIG read failed",
+          "translation": "FEATURE_CONFIG read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "error_feature_write_failed": {
+          "english": "FEATURE_CONFIG write failed",
+          "translation": "FEATURE_CONFIG write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "error_name_api_unavailable": {
+          "english": "NAME API unavailable",
+          "translation": "NAME API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "error_name_read_failed": {
+          "english": "NAME read failed",
+          "translation": "NAME read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "error_name_write_failed": {
+          "english": "NAME write failed",
+          "translation": "NAME write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "error_save_failed": {
+          "english": "Save failed",
+          "translation": "Save failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "load_error_prefix": {
+          "english": "Load error:",
+          "translation": "Load error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "loading": {
+          "english": "Loading configuration...",
+          "translation": "Loading configuration...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 24
+        },
+        "progress_loading": {
+          "english": "Loading configuration",
+          "translation": "Loading configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "progress_saving": {
+          "english": "Saving configuration",
+          "translation": "Saving configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "save_error_prefix": {
+          "english": "Save error:",
+          "translation": "Save error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
         },
         "feature_cms": {
           "english": "CMS",
           "translation": "CMS",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 3
         },
         "feature_gps": {
           "english": "GPS",
           "translation": "GPS",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 3
         },
         "feature_led_strip": {
           "english": "LED_STRIP",
           "translation": "LED_STRIP",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 9
         },
         "features": {
           "english": "Features",
           "translation": "Features",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         },
         "help_p1": {
           "english": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
           "translation": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 91
         },
         "help_p2": {
           "english": "Saving writes these values to EEPROM and reboots the flight controller.",
           "translation": "Saving writes these values to EEPROM and reboots the flight controller.",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 71
         },
         "name": {
           "english": "Configuration",
           "translation": "Configuration",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "personalization": {
           "english": "Personalization",
           "translation": "Personalization",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 15
         },
         "pid_loop_1": {
           "english": "1:1 (Fastest)",
           "translation": "1:1 (Fastest)",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "pid_loop_16": {
           "english": "1:16",
           "translation": "1:16",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 4
         },
         "pid_loop_2": {
           "english": "1:2",
           "translation": "1:2",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 3
         },
         "pid_loop_4": {
           "english": "1:4",
           "translation": "1:4",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 3
         },
         "pid_loop_8": {
           "english": "1:8",
           "translation": "1:8",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 3
         },
         "pid_loop_custom": {
           "english": "Custom",
           "translation": "Custom",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 6
         },
         "pid_loop_speed": {
           "english": "PID loop speed",
           "translation": "PID loop speed",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 14
         },
         "system_configuration": {
           "english": "System configuration",
           "translation": "System configuration",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 20
+        }
+      },
+      "hardware_setup": {
+        "name": {
+          "english": "Setup",
+          "translation": "Setup",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        }
+      },
+      "hardware_interfaces": {
+        "name": {
+          "english": "Interfaces",
+          "translation": "Interfaces",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        }
+      },
+      "hardware_system": {
+        "name": {
+          "english": "System",
+          "translation": "System",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
         }
       },
       "filters": {
@@ -6633,169 +6796,197 @@
           "english": "EEPROM write failed",
           "translation": "EEPROM write failed",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 19
         },
         "error_failed_load": {
           "english": "Failed to load port configuration",
           "translation": "Failed to load port configuration",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 33
         },
         "error_read_serial_ports": {
           "english": "Failed reading serial ports",
           "translation": "Failed reading serial ports",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 27
         },
         "error_save_failed": {
           "english": "Save failed",
           "translation": "Save failed",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 11
         },
         "error_serial_api_unavailable": {
           "english": "SERIAL_CONFIG API unavailable",
           "translation": "SERIAL_CONFIG API unavailable",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 29
         },
         "error_serial_write_failed_for": {
           "english": "Serial write failed for",
           "translation": "Serial write failed for",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 23
         },
         "function_blackbox": {
           "english": "Blackbox",
           "translation": "Blackbox",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         },
         "function_custom": {
           "english": "Custom",
           "translation": "Custom",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 6
         },
         "function_disabled": {
           "english": "Disabled",
           "translation": "Disabled",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         },
         "function_esc_sensor": {
           "english": "ESC Sensor",
           "translation": "ESC Sensor",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 10
         },
         "function_fbus_out": {
           "english": "FBus Out",
           "translation": "FBus Out",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         },
         "function_rx_serial": {
           "english": "RX Serial",
           "translation": "RX Serial",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 9
         },
         "function_sbus_out": {
           "english": "SBus Out",
           "translation": "SBus Out",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "translation": "Telemetry FrSky",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 15
         },
         "function_telem_hott": {
           "english": "Telemetry HoTT",
           "translation": "Telemetry HoTT",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 14
         },
         "function_telem_ibus": {
           "english": "Telemetry iBus",
           "translation": "Telemetry iBus",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 14
         },
         "function_telem_ltm": {
           "english": "Telemetry LTM",
           "translation": "Telemetry LTM",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "function_telem_mavlink": {
           "english": "Telemetry MAVLink",
           "translation": "Telemetry MAVLink",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 17
         },
         "function_telem_smartport": {
           "english": "Telemetry SmartPort",
           "translation": "Telemetry SmartPort",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 19
         },
         "load_error_prefix": {
           "english": "Load error:",
           "translation": "Load error:",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 11
         },
         "loading": {
           "english": "Loading serial ports...",
           "translation": "Loading serial ports...",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 23
         },
         "name": {
           "english": "Ports",
           "translation": "Ports",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 5
         },
         "no_ports_reported": {
           "english": "No serial ports reported by FC.",
           "translation": "No serial ports reported by FC.",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 31
         },
         "port_prefix": {
           "english": "Port",
           "translation": "Port",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 4
         },
         "progress_loading": {
           "english": "Loading serial ports",
           "translation": "Loading serial ports",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 20
         },
         "progress_saving": {
           "english": "Saving serial ports",
           "translation": "Saving serial ports",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 19
         },
         "rx_tag": {
           "english": "[RX]",
           "translation": "[RX]",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 4
         },
         "save_error_prefix": {
           "english": "Save error:",
           "translation": "Save error:",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 11
         }
       },
       "profile_autolevel": {
@@ -10292,7 +10483,7 @@
     "reverse_text": false
   },
   "reload": {
-    "english": "reload",
+    "english": "Reload",
     "translation": "ricarica",
     "needs_translation": false,
     "max_length": 6,
