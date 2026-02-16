@@ -5195,8 +5195,8 @@
           }
         },
         "name": {
-          "english": "ESC Tools",
-          "max_length": 9,
+          "english": "Esc Programing",
+          "max_length": 14,
           "needs_translation": true,
           "translation": "כלי ESC",
           "reverse_text": true

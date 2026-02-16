@@ -5099,10 +5099,10 @@
           }
         },
         "name": {
-          "english": "ESC Tools",
-          "max_length": 9,
+          "english": "Esc Programing",
+          "max_length": 14,
           "needs_translation": false,
-          "translation": "ESC Tools"
+          "translation": "Esc Programing"
         },
         "please_powercycle": {
           "english": "Please power cycle the ESC...",

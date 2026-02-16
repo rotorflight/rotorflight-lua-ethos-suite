@@ -167,7 +167,8 @@ return {
                 {name = "@i18n(app.modules.esc_motors.name)@", menuId = "esc_motors", image = "esc_motors/esc.png", order = 1, loaderspeed = 0.08},
                 {name = "@i18n(app.modules.power.name)@", menuId = "power", image = "power/power.png", order = 2},
                 {name = "@i18n(app.modules.governor.name)@", menuId = "governor", image = "governor/governor.png", order = 3, apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "governor/governor.png", order = 3, apiversionlt = {12, 0, 9}}
+                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "governor/governor.png", order = 3, apiversionlt = {12, 0, 9}},
+                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 4, offline = false}
             }
         },
         safety_menu = {
@@ -193,8 +194,7 @@ return {
             pages = {
                 {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 0, 6}, disabled = true, offline = false},
                 {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 0, 6}, offline = false},
-                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 3, offline = false},
-                {name = "@i18n(app.modules.diagnostics.name)@", menuId = "diagnostics", image = "diagnostics/diagnostics.png", order = 4, offline = true}
+                {name = "@i18n(app.modules.diagnostics.name)@", menuId = "diagnostics", image = "diagnostics/diagnostics.png", order = 3, offline = true}
             }
         },
         advanced_menu = {
