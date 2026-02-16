@@ -4,134 +4,121 @@
 ]] --
 
 -- Module-backed menu manifest.
--- `sections` define the app main menu entries.
--- `sections[*].group` and `sections[*].groupTitle` drive grouped main-menu rendering.
+-- `sections` define main-menu groups; each group provides `sections = { ... }` entries.
 -- `menus` define submenu pages used by submenu_builder.createFromManifest().
-
-local GOV_RULES = {
-    {">=", "12.09", "governor.lua", loaderspeed = "FAST"},
-    {"<", "12.09", "governor_legacy.lua", loaderspeed = "SLOW"}
-}
-
-local HARDWARE_GOV_RULES = {
-    {">=", "12.09", "governor/governor.lua", loaderspeed = "FAST"},
-    {"<", "12.09", "governor/governor_legacy.lua", loaderspeed = "SLOW"}
-}
-
-local MIXER_SWASH_RULES = {
-    {">=", "12.09", "swash.lua"},
-    {"<", "12.09", "swash_legacy.lua"}
-}
-
-local MIXER_TAIL_RULES = {
-    {">=", "12.09", "tail.lua"},
-    {"<", "12.09", "tail_legacy.lua"}
-}
 
 return {
     sections = {
         {
-            title = "@i18n(app.modules.pids.name)@",
-            module = "pids",
-            script = "pids.lua",
-            image = "app/modules/pids/pids.png",
-            group = "configuration",
-            ethosversion = {1, 6, 2}
+            id = "configuration",
+            title = "@i18n(app.header_configuration)@",
+            sections = {
+                {
+                    title = "@i18n(app.modules.pids.name)@",
+                    module = "pids",
+                    script = "pids.lua",
+                    image = "app/modules/pids/pids.png",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.rates.name)@",
+                    module = "rates",
+                    script = "rates.lua",
+                    image = "app/modules/rates/rates.png",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.profile_governor.name)@",
+                    module = "profile_governor",
+                    script = "governor.lua",
+                    image = "app/modules/profile_governor/governor.png",
+                    apiversion = "12.09",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.profile_governor.name)@",
+                    module = "profile_governor",
+                    script = "governor_legacy.lua",
+                    image = "app/modules/profile_governor/governor.png",
+                    apiversionlt = "12.09",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.profile_tailrotor.name)@",
+                    module = "tailrotor",
+                    script = "tailrotor.lua",
+                    image = "app/modules/tailrotor/tailrotor.png",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.menu_section_advanced)@",
+                    id = "advanced",
+                    module = "advanced",
+                    script = "menu.lua",
+                    image = "app/gfx/advanced.png",
+                    loaderspeed = "FAST",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.menu_section_hardware)@",
+                    id = "hardware",
+                    module = "hardware",
+                    script = "menu.lua",
+                    image = "app/gfx/hardware.png",
+                    loaderspeed = "FAST",
+                    ethosversion = {1, 6, 2}
+                }
+            }
         },
         {
-            title = "@i18n(app.modules.rates.name)@",
-            module = "rates",
-            script = "rates.lua",
-            image = "app/modules/rates/rates.png",
-            group = "configuration",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.modules.profile_governor.name)@",
-            module = "profile_governor",
-            script = "governor.lua",
-            image = "app/modules/profile_governor/governor.png",
-            script_by_mspversion = GOV_RULES,
-            group = "configuration",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.modules.profile_tailrotor.name)@",
-            module = "tailrotor",
-            script = "tailrotor.lua",
-            image = "app/modules/tailrotor/tailrotor.png",
-            group = "configuration",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.menu_section_advanced)@",
-            id = "advanced",
-            module = "advanced",
-            script = "menu.lua",
-            image = "app/gfx/advanced.png",
-            loaderspeed = "FAST",
-            group = "configuration",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.menu_section_hardware)@",
-            id = "hardware",
-            module = "hardware",
-            script = "menu.lua",
-            image = "app/gfx/hardware.png",
-            loaderspeed = "FAST",
-            group = "configuration",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.menu_section_tools)@",
-            id = "tools",
-            module = "tools",
-            script = "menu.lua",
-            image = "app/gfx/tools.png",
-            group = "system",
-            groupTitle = "@i18n(app.header_system)@",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.modules.logs.name)@",
-            module = "logs",
-            script = "logs_dir.lua",
-            image = "app/modules/logs/gfx/logs.png",
-            loaderspeed = "FAST",
-            offline = true,
-            group = "system",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.modules.settings.name)@",
-            module = "settings",
-            script = "settings.lua",
-            image = "app/modules/settings/settings.png",
-            offline = true,
-            group = "system",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.modules.diagnostics.name)@",
-            module = "diagnostics",
-            script = "diagnostics.lua",
-            image = "app/modules/diagnostics/diagnostics.png",
-            bgtask = true,
-            offline = true,
-            group = "system",
-            ethosversion = {1, 6, 2}
-        },
-        {
-            title = "@i18n(app.modules.settings.txt_developer)@",
-            module = "developer",
-            script = "developer.lua",
-            image = "app/modules/developer/developer.png",
-            developer = true,
-            bgtask = true,
-            offline = true,
-            group = "system",
-            ethosversion = {1, 6, 2}
+            id = "system",
+            title = "@i18n(app.header_system)@",
+            sections = {
+                {
+                    title = "@i18n(app.menu_section_tools)@",
+                    id = "tools",
+                    module = "tools",
+                    script = "menu.lua",
+                    image = "app/gfx/tools.png",
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.logs.name)@",
+                    module = "logs",
+                    script = "logs_dir.lua",
+                    image = "app/modules/logs/gfx/logs.png",
+                    loaderspeed = "FAST",
+                    offline = true,
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.settings.name)@",
+                    module = "settings",
+                    script = "settings.lua",
+                    image = "app/modules/settings/settings.png",
+                    offline = true,
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.diagnostics.name)@",
+                    module = "diagnostics",
+                    script = "diagnostics.lua",
+                    image = "app/modules/diagnostics/diagnostics.png",
+                    bgtask = true,
+                    offline = true,
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.settings.txt_developer)@",
+                    module = "developer",
+                    script = "developer.lua",
+                    image = "app/modules/developer/developer.png",
+                    developer = true,
+                    bgtask = true,
+                    offline = true,
+                    ethosversion = {1, 6, 2}
+                }
+            }
         }
     },
     menus = {
@@ -184,7 +171,8 @@ return {
                 {name = "@i18n(app.modules.adjustments.name)@", script = "adjustments/adjustments.lua", image = "app/modules/adjustments/adjustments.png", order = 15, loaderspeed = 0.1},
                 {name = "@i18n(app.modules.filters.name)@", script = "filters/filters.lua", image = "app/modules/filters/filters.png", order = 16},
                 {name = "@i18n(app.modules.power.name)@", script = "power/power.lua", image = "app/modules/power/power.png", order = 17},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor.lua", image = "app/modules/governor/governor.png", order = 18, script_by_mspversion = HARDWARE_GOV_RULES}
+                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor.lua", image = "app/modules/governor/governor.png", order = 18, apiversion = "12.09"},
+                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "app/modules/governor/governor.png", order = 18, apiversionlt = "12.09"}
             }
         },
         power = {
@@ -307,9 +295,11 @@ return {
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/mixer/menu_hooks.lua",
             pages = {
-                {name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png", script_by_mspversion = MIXER_SWASH_RULES},
-                {name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", mspversion = "12.09"},
-                {name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", script_by_mspversion = MIXER_TAIL_RULES},
+                {name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png", apiversion = "12.09"},
+                {name = "@i18n(app.modules.mixer.swash)@", script = "swash_legacy.lua", image = "swash.png", apiversionlt = "12.09"},
+                {name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", apiversion = "12.09"},
+                {name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", apiversion = "12.09"},
+                {name = "@i18n(app.modules.mixer.tail)@", script = "tail_legacy.lua", image = "tail.png", apiversionlt = "12.09"},
                 {name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png"}
             }
         },

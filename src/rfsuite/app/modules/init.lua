@@ -73,7 +73,29 @@ local function addLeafPage(sectionIndex, spec)
     pages[#pages + 1] = page
 end
 
-for _, sectionSpec in ipairs(manifest.sections or {}) do
+local function flattenSectionSpecs(rawSections)
+    local out = {}
+    if type(rawSections) ~= "table" then return out end
+
+    for _, entry in ipairs(rawSections) do
+        if type(entry) == "table" and type(entry.sections) == "table" then
+            for _, child in ipairs(entry.sections) do
+                if type(child) == "table" then
+                    local spec = cloneShallow(child)
+                    if spec.group == nil then spec.group = entry.id end
+                    if spec.groupTitle == nil then spec.groupTitle = entry.title end
+                    out[#out + 1] = spec
+                end
+            end
+        elseif type(entry) == "table" then
+            out[#out + 1] = entry
+        end
+    end
+
+    return out
+end
+
+for _, sectionSpec in ipairs(flattenSectionSpecs(manifest.sections)) do
     local sectionIndex = addSection(sectionSpec)
     if sectionIndex then
         if sectionSpec.pages then

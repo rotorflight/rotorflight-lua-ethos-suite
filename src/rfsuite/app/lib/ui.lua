@@ -60,6 +60,23 @@ local function resolvePageScript(page, section)
     return page.script, page.loaderspeed
 end
 
+local function apiVersionMatches(spec)
+    if type(spec) ~= "table" then return true end
+    return (spec.apiversion == nil or utils.apiVersionCompare(">=", spec.apiversion)) and
+        (spec.apiversionlt == nil or utils.apiVersionCompare("<", spec.apiversionlt)) and
+        (spec.apiversiongt == nil or utils.apiVersionCompare(">", spec.apiversiongt)) and
+        (spec.apiversionlte == nil or utils.apiVersionCompare("<=", spec.apiversionlte)) and
+        (spec.apiversiongte == nil or utils.apiVersionCompare(">=", spec.apiversiongte))
+end
+
+local function menuEntryVisible(spec)
+    if type(spec) ~= "table" then return false end
+    if spec.ethosversion and not utils.ethosVersionAtLeast(spec.ethosversion) then return false end
+    if spec.mspversion and utils.apiVersionCompare("<", spec.mspversion) then return false end
+    if not apiVersionMatches(spec) then return false end
+    return true
+end
+
 local function trimText(value)
     if type(value) ~= "string" then return "" end
     return (value:gsub("^%s+", ""):gsub("%s+$", ""))
@@ -145,8 +162,13 @@ local function getMainMenuCategoryBySectionIndex(sectionIndex)
 
     local category = MAIN_MENU_CATEGORY_CONFIGURATION
     for i = 1, #sections do
-        local section = sections[i]
-        if section and section.newline then category = MAIN_MENU_CATEGORY_SYSTEM end
+        local section = sections[i] or {}
+        local groupTitle = trimText(section.groupTitle)
+        if groupTitle ~= "" then
+            category = groupTitle
+        elseif section.newline then
+            category = MAIN_MENU_CATEGORY_SYSTEM
+        end
         if i == sectionIndex then return category end
     end
 
@@ -1040,8 +1062,8 @@ function ui.openMainMenu()
     app.gfx_buttons["mainmenu"] = app.gfx_buttons["mainmenu"] or {}
     preferences.menulastselected["mainmenu"] = preferences.menulastselected["mainmenu"] or 1
 
-    -- Prefer the already-built menu structure; fallback loads manifest directly.
-    local Menu = (app.MainMenu and app.MainMenu.sections) or (assert(loadfile("app/modules/manifest.lua"))().sections)
+    -- Prefer the already-built menu structure; fallback resolves through modules/init normalization.
+    local Menu = (app.MainMenu and app.MainMenu.sections) or (assert(loadfile("app/modules/init.lua"))().sections)
 
     local lc, bx, y = 0, 0, 0
 
@@ -1061,69 +1083,71 @@ function ui.openMainMenu()
     local activeMenuGroup = nil
     for _, pvalue in ipairs(Menu) do
         if pvalue.parent == nil then
-            pidx = pidx + 1
-            local menuIndex = pidx
             local menuItem = pvalue
+            if menuEntryVisible(menuItem) then
+                pidx = pidx + 1
+                local menuIndex = pidx
 
-            app.formFieldsOffline[menuIndex] = menuItem.offline or false
-            app.formFieldsBGTask[menuIndex] = menuItem.bgtask or false
+                app.formFieldsOffline[menuIndex] = menuItem.offline or false
+                app.formFieldsBGTask[menuIndex] = menuItem.bgtask or false
 
-            local groupChanged = false
-            if type(menuItem.group) == "string" and menuItem.group ~= "" then
-                if activeMenuGroup ~= menuItem.group then
-                    activeMenuGroup = menuItem.group
-                    groupChanged = true
-                end
-            end
-
-            if groupChanged then
-                lc = 0
-                if type(menuItem.groupTitle) == "string" and menuItem.groupTitle ~= "" then
-                    form.addLine(menuItem.groupTitle)
-                end
-            elseif menuItem.newline then
-                -- Legacy fallback for older manifests; grouped menus should use group/groupTitle.
-                lc = 0
-                form.addLine(menuItem.groupTitle or "@i18n(app.header_system)@")
-            end
-
-            if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
-
-            bx = (buttonW + padding) * lc
-
-            if preferences.general.iconsize ~= 0 then
-                app.gfx_buttons["mainmenu"][menuIndex] = app.gfx_buttons["mainmenu"][menuIndex] or lcdLoadMask(menuItem.image)
-            else
-                app.gfx_buttons["mainmenu"][menuIndex] = nil
-            end
-
-            app.formFields[menuIndex] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = menuItem.title,
-                icon = app.gfx_buttons["mainmenu"][menuIndex],
-                options = FONT_S,
-                paint = function() end,
-                press = function()
-                    preferences.menulastselected["mainmenu"] = menuIndex
-                    local speed = tonumber(menuItem.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
-                    if menuItem.module then
-                        app.isOfflinePage = true
-                        local script, speedOverride = resolvePageScript(menuItem)
-                        if speedOverride ~= nil then
-                            speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
-                        end
-                        app.ui.progressDisplay(nil, nil, speed)
-                        app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
-                    else
-                        app.ui.progressDisplay(nil, nil, speed)
-                        app.ui.openMainMenuSub(menuItem.id)
+                local groupChanged = false
+                if type(menuItem.group) == "string" and menuItem.group ~= "" then
+                    if activeMenuGroup ~= menuItem.group then
+                        activeMenuGroup = menuItem.group
+                        groupChanged = true
                     end
                 end
-            })
 
-            app.formFields[menuIndex]:enable(false)
+                if groupChanged then
+                    lc = 0
+                    if pidx > 1 and type(menuItem.groupTitle) == "string" and menuItem.groupTitle ~= "" then
+                        form.addLine(menuItem.groupTitle)
+                    end
+                elseif menuItem.newline then
+                    -- Legacy fallback for older manifests; grouped menus should use group/groupTitle.
+                    lc = 0
+                    form.addLine(menuItem.groupTitle or "@i18n(app.header_system)@")
+                end
 
-            lc = lc + 1
-            if lc == numPerRow then lc = 0 end
+                if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
+
+                bx = (buttonW + padding) * lc
+
+                if preferences.general.iconsize ~= 0 then
+                    app.gfx_buttons["mainmenu"][menuIndex] = app.gfx_buttons["mainmenu"][menuIndex] or lcdLoadMask(menuItem.image)
+                else
+                    app.gfx_buttons["mainmenu"][menuIndex] = nil
+                end
+
+                app.formFields[menuIndex] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                    text = menuItem.title,
+                    icon = app.gfx_buttons["mainmenu"][menuIndex],
+                    options = FONT_S,
+                    paint = function() end,
+                    press = function()
+                        preferences.menulastselected["mainmenu"] = menuIndex
+                        local speed = tonumber(menuItem.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
+                        if menuItem.module then
+                            app.isOfflinePage = true
+                            local script, speedOverride = resolvePageScript(menuItem)
+                            if speedOverride ~= nil then
+                                speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
+                            end
+                            app.ui.progressDisplay(nil, nil, speed)
+                            app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
+                        else
+                            app.ui.progressDisplay(nil, nil, speed)
+                            app.ui.openMainMenuSub(menuItem.id)
+                        end
+                    end
+                })
+
+                app.formFields[menuIndex]:enable(false)
+
+                lc = lc + 1
+                if lc == numPerRow then lc = 0 end
+            end
         end
     end
 
@@ -1206,7 +1230,7 @@ function ui.openMainMenuSub(activesection)
                 if page.section == idx then
                     local pageIndex = pidx
                     local pageItem = page
-                    local hideEntry = (pageItem.ethosversion and not utils.ethosVersionAtLeast(pageItem.ethosversion)) or (pageItem.mspversion and utils.apiVersionCompare("<", pageItem.mspversion))
+                    local hideEntry = not menuEntryVisible(pageItem)
 
                     local offline = pageItem.offline
                     app.formFieldsOffline[pageIndex] = offline or false

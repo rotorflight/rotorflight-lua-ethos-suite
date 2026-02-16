@@ -64,6 +64,16 @@ local function titleForChild(cfg, pageTitle, item)
     return (pageTitle or "") .. " / " .. (item.name or "")
 end
 
+local function apiVersionMatches(item)
+    local utils = rfsuite.utils
+    if type(item) ~= "table" or not utils or not utils.apiVersionCompare then return true end
+    return (item.apiversion == nil or utils.apiVersionCompare(">=", item.apiversion)) and
+        (item.apiversionlt == nil or utils.apiVersionCompare("<", item.apiversionlt)) and
+        (item.apiversiongt == nil or utils.apiVersionCompare(">", item.apiversiongt)) and
+        (item.apiversionlte == nil or utils.apiVersionCompare("<=", item.apiversionlte)) and
+        (item.apiversiongte == nil or utils.apiVersionCompare(">=", item.apiversiongte))
+end
+
 function container.create(cfg)
     local app = rfsuite.app
     local prefs = rfsuite.preferences
@@ -173,7 +183,8 @@ function container.create(cfg)
 
         for i, item in ipairs(pages) do
             local hideEntry = (item.ethosversion and not rfsuite.utils.ethosVersionAtLeast(item.ethosversion)) or
-                (item.mspversion and rfsuite.utils.apiVersionCompare("<", item.mspversion))
+                (item.mspversion and rfsuite.utils.apiVersionCompare("<", item.mspversion)) or
+                (not apiVersionMatches(item))
 
             app.formFieldsOffline[i] = item.offline or false
             app.formFieldsBGTask[i] = item.bgtask or false
@@ -219,9 +230,6 @@ function container.create(cfg)
                 })
 
                 if item.disabled == true then app.formFields[i]:enable(false) end
-                if item.apiversion and not rfsuite.utils.apiVersionCompare(">=", item.apiversion) then
-                    app.formFields[i]:enable(false)
-                end
 
                 if prefs.menulastselected[cfg.moduleKey] == i then app.formFields[i]:focus() end
 
