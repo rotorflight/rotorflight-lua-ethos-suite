@@ -531,15 +531,47 @@ function utils.keys(tbl)
     return keys
 end
 
-function utils.apiVersionCompare(op, req)
+local function appendVersionParts(parts, value)
+    if value == nil then return end
 
-    local function parts(x)
-        local t = {}
-        for n in tostring(x):gmatch("(%d+)") do t[#t + 1] = tonumber(n) end
-        return t
+    local valueType = type(value)
+
+    if valueType == "table" then
+        local arrayValues = {}
+        for _, token in ipairs(value) do arrayValues[#arrayValues + 1] = token end
+
+        -- Accept {major, 0, minor} as an explicit form for two-digit minor
+        -- versions, e.g. {12, 0, 9} => 12.09.
+        if #arrayValues == 3 then
+            local major = tonumber(arrayValues[1])
+            local middle = tonumber(arrayValues[2])
+            local minor = tonumber(arrayValues[3])
+            if major and middle == 0 and minor then
+                parts[#parts + 1] = major
+                parts[#parts + 1] = minor
+                return
+            end
+        end
+
+        if #arrayValues > 0 then
+            for i = 1, #arrayValues do appendVersionParts(parts, arrayValues[i]) end
+        elseif value[0] ~= nil then
+            appendVersionParts(parts, value[0])
+        end
+        return
     end
 
-    local a, b = parts(rfsuite.session.apiVersion or 12.06), parts(req)
+    for n in tostring(value):gmatch("(%d+)") do parts[#parts + 1] = tonumber(n) end
+end
+
+local function versionParts(value)
+    local parts = {}
+    appendVersionParts(parts, value)
+    return parts
+end
+
+function utils.apiVersionCompare(op, req)
+    local a, b = versionParts(rfsuite.session.apiVersion or "12.06"), versionParts(req)
     if #a == 0 or #b == 0 then return false end
 
     local len = math.max(#a, #b)

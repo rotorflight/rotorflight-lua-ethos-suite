@@ -6,6 +6,8 @@
 -- Module-backed menu manifest.
 -- `sections` define main-menu groups; each group provides `sections = { ... }` entries.
 -- `menus` define submenu pages used by submenu_builder.createFromManifest().
+-- API gates use table versions. For padded-minor releases prefer `{major, 0, minor}`
+-- so `12.09` remains explicit before moving to `12.10`.
 
 return {
     sections = {
@@ -32,7 +34,7 @@ return {
                     module = "profile_governor",
                     script = "governor.lua",
                     image = "app/modules/profile_governor/governor.png",
-                    apiversion = "12.09",
+                    apiversion = {12, 0, 9},
                     ethosversion = {1, 6, 2}
                 },
                 {
@@ -40,7 +42,7 @@ return {
                     module = "profile_governor",
                     script = "governor_legacy.lua",
                     image = "app/modules/profile_governor/governor.png",
-                    apiversionlt = "12.09",
+                    apiversionlt = {12, 0, 9},
                     ethosversion = {1, 6, 2}
                 },
                 {
@@ -128,8 +130,8 @@ return {
             iconPrefix = "app/modules/",
             navOptions = {showProgress = true},
             pages = {
-                {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = "12.06", disabled = true},
-                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = "12.06"}
+                {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 6}, disabled = true},
+                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 6}}
             }
         },
         advanced_menu = {
@@ -139,13 +141,13 @@ return {
             loaderSpeed = "FAST",
             navOptions = {showProgress = true},
             pages = {
-                {name = "@i18n(app.modules.profile_pidcontroller.name)@", script = "profile_pidcontroller/pidcontroller.lua", image = "profile_pidcontroller/pids-controller.png", order = 1, apiversion = "12.06"},
-                {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 2, apiversion = "12.06"},
-                {name = "@i18n(app.modules.profile_autolevel.name)@", script = "profile_autolevel/autolevel.lua", image = "profile_autolevel/autolevel.png", order = 3, apiversion = "12.06"},
-                {name = "@i18n(app.modules.profile_mainrotor.name)@", script = "profile_mainrotor/mainrotor.lua", image = "profile_mainrotor/mainrotor.png", order = 4, apiversion = "12.06"},
-                {name = "@i18n(app.modules.profile_tailrotor.name)@", script = "profile_tailrotor/tailrotor.lua", image = "profile_tailrotor/tailrotor.png", order = 5, apiversion = "12.06"},
-                {name = "@i18n(app.modules.profile_rescue.name)@", script = "profile_rescue/rescue.lua", image = "profile_rescue/rescue.png", order = 6, apiversion = "12.06"},
-                {name = "@i18n(app.modules.rates_advanced.name)@", script = "rates_advanced/rates_advanced.lua", image = "rates_advanced/rates.png", order = 7, apiversion = "12.06"}
+                {name = "@i18n(app.modules.profile_pidcontroller.name)@", script = "profile_pidcontroller/pidcontroller.lua", image = "profile_pidcontroller/pids-controller.png", order = 1, apiversion = {12, 6}},
+                {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 2, apiversion = {12, 6}},
+                {name = "@i18n(app.modules.profile_autolevel.name)@", script = "profile_autolevel/autolevel.lua", image = "profile_autolevel/autolevel.png", order = 3, apiversion = {12, 6}},
+                {name = "@i18n(app.modules.profile_mainrotor.name)@", script = "profile_mainrotor/mainrotor.lua", image = "profile_mainrotor/mainrotor.png", order = 4, apiversion = {12, 6}},
+                {name = "@i18n(app.modules.profile_tailrotor.name)@", script = "profile_tailrotor/tailrotor.lua", image = "profile_tailrotor/tailrotor.png", order = 5, apiversion = {12, 6}},
+                {name = "@i18n(app.modules.profile_rescue.name)@", script = "profile_rescue/rescue.lua", image = "profile_rescue/rescue.png", order = 6, apiversion = {12, 6}},
+                {name = "@i18n(app.modules.rates_advanced.name)@", script = "rates_advanced/rates_advanced.lua", image = "rates_advanced/rates.png", order = 7, apiversion = {12, 6}}
             }
         },
         hardware_menu = {
@@ -171,8 +173,8 @@ return {
                 {name = "@i18n(app.modules.adjustments.name)@", script = "adjustments/adjustments.lua", image = "app/modules/adjustments/adjustments.png", order = 15, loaderspeed = 0.1},
                 {name = "@i18n(app.modules.filters.name)@", script = "filters/filters.lua", image = "app/modules/filters/filters.png", order = 16},
                 {name = "@i18n(app.modules.power.name)@", script = "power/power.lua", image = "app/modules/power/power.png", order = 17},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor.lua", image = "app/modules/governor/governor.png", order = 18, apiversion = "12.09"},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "app/modules/governor/governor.png", order = 18, apiversionlt = "12.09"}
+                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor.lua", image = "app/modules/governor/governor.png", order = 18, apiversion = {12, 0, 9}},
+                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "app/modules/governor/governor.png", order = 18, apiversionlt = {12, 0, 9}}
             }
         },
         power = {
@@ -295,11 +297,11 @@ return {
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/mixer/menu_hooks.lua",
             pages = {
-                {name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png", apiversion = "12.09"},
-                {name = "@i18n(app.modules.mixer.swash)@", script = "swash_legacy.lua", image = "swash.png", apiversionlt = "12.09"},
-                {name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", apiversion = "12.09"},
-                {name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", apiversion = "12.09"},
-                {name = "@i18n(app.modules.mixer.tail)@", script = "tail_legacy.lua", image = "tail.png", apiversionlt = "12.09"},
+                {name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png", apiversion = {12, 0, 9}},
+                {name = "@i18n(app.modules.mixer.swash)@", script = "swash_legacy.lua", image = "swash.png", apiversionlt = {12, 0, 9}},
+                {name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", apiversion = {12, 0, 9}},
+                {name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", apiversion = {12, 0, 9}},
+                {name = "@i18n(app.modules.mixer.tail)@", script = "tail_legacy.lua", image = "tail.png", apiversionlt = {12, 0, 9}},
                 {name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png"}
             }
         },
