@@ -86,9 +86,10 @@ local function openPage(opts)
                     rfsuite.preferences.menulastselected.logs_folder = i
                     rfsuite.app.ui.progressDisplay()
                     rfsuite.utils.log("Opening logs for: " .. item.foldername, "info")
+                    local logsModelTitle = "Logs / " .. modelName
                     rfsuite.app.ui.openPage({
                         idx = i,
-                        title = title,
+                        title = logsModelTitle,
                         script = "logs/logs_logs.lua",
                         dirname = item.foldername,
                         modelName = modelName,
