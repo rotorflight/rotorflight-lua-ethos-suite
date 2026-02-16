@@ -11,6 +11,22 @@ local app = {}
 local utils = rfsuite.utils
 local log = utils.log
 local compile = loadfile
+local lastNoOpSaveToneAt = 0
+
+local function playNoOpSaveTone()
+    local now = os.clock()
+    if (now - lastNoOpSaveToneAt) < 0.25 then return end
+    lastNoOpSaveToneAt = now
+
+    if system and system.playTone then
+        pcall(system.playTone, 420, 180, 0)
+        return
+    end
+
+    if utils and utils.playFileCommon then
+        utils.playFileCommon("beep.wav")
+    end
+end
 
 local arg = {...}
 local config = arg[1]
@@ -231,11 +247,13 @@ function app.event(widget, category, value, x, y)
 
             -- Block long-press save when page is not dirty on standard API pages.
             if app.Page and app.Page.canSave and app.Page.canSave(app.Page) == false then
+                playNoOpSaveTone()
                 system.killEvents(KEY_ENTER_BREAK)
                 return true
             end
             if requireDirty and not app._pageUsesCustomOpen and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
                 if app.pageDirty ~= true then
+                    playNoOpSaveTone()
                     system.killEvents(KEY_ENTER_BREAK)
                     return true
                 end
