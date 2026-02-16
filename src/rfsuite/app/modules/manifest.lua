@@ -5,6 +5,7 @@
 
 -- Module-backed menu manifest.
 -- `sections` define the app main menu entries.
+-- `sections[*].group` and `sections[*].groupTitle` drive grouped main-menu rendering.
 -- `menus` define submenu pages used by submenu_builder.createFromManifest().
 
 local GOV_RULES = {
@@ -34,6 +35,7 @@ return {
             module = "pids",
             script = "pids.lua",
             image = "app/modules/pids/pids.png",
+            group = "configuration",
             ethosversion = {1, 6, 2}
         },
         {
@@ -41,6 +43,7 @@ return {
             module = "rates",
             script = "rates.lua",
             image = "app/modules/rates/rates.png",
+            group = "configuration",
             ethosversion = {1, 6, 2}
         },
         {
@@ -49,6 +52,7 @@ return {
             script = "governor.lua",
             image = "app/modules/profile_governor/governor.png",
             script_by_mspversion = GOV_RULES,
+            group = "configuration",
             ethosversion = {1, 6, 2}
         },
         {
@@ -56,6 +60,7 @@ return {
             module = "tailrotor",
             script = "tailrotor.lua",
             image = "app/modules/tailrotor/tailrotor.png",
+            group = "configuration",
             ethosversion = {1, 6, 2}
         },
         {
@@ -65,6 +70,7 @@ return {
             script = "menu.lua",
             image = "app/gfx/advanced.png",
             loaderspeed = "FAST",
+            group = "configuration",
             ethosversion = {1, 6, 2}
         },
         {
@@ -74,6 +80,7 @@ return {
             script = "menu.lua",
             image = "app/gfx/hardware.png",
             loaderspeed = "FAST",
+            group = "configuration",
             ethosversion = {1, 6, 2}
         },
         {
@@ -82,7 +89,8 @@ return {
             module = "tools",
             script = "menu.lua",
             image = "app/gfx/tools.png",
-            newline = true,
+            group = "system",
+            groupTitle = "@i18n(app.header_system)@",
             ethosversion = {1, 6, 2}
         },
         {
@@ -92,6 +100,7 @@ return {
             image = "app/modules/logs/gfx/logs.png",
             loaderspeed = "FAST",
             offline = true,
+            group = "system",
             ethosversion = {1, 6, 2}
         },
         {
@@ -100,6 +109,7 @@ return {
             script = "settings.lua",
             image = "app/modules/settings/settings.png",
             offline = true,
+            group = "system",
             ethosversion = {1, 6, 2}
         },
         {
@@ -109,6 +119,7 @@ return {
             image = "app/modules/diagnostics/diagnostics.png",
             bgtask = true,
             offline = true,
+            group = "system",
             ethosversion = {1, 6, 2}
         },
         {
@@ -119,6 +130,7 @@ return {
             developer = true,
             bgtask = true,
             offline = true,
+            group = "system",
             ethosversion = {1, 6, 2}
         }
     },

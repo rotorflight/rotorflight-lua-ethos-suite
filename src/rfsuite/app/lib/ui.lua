@@ -1058,6 +1058,7 @@ function ui.openMainMenu()
     app.ui.enableNavigationField("menu")
 
     local pidx = 0
+    local activeMenuGroup = nil
     for _, pvalue in ipairs(Menu) do
         if pvalue.parent == nil then
             pidx = pidx + 1
@@ -1067,9 +1068,23 @@ function ui.openMainMenu()
             app.formFieldsOffline[menuIndex] = menuItem.offline or false
             app.formFieldsBGTask[menuIndex] = menuItem.bgtask or false
 
-            if menuItem.newline then
+            local groupChanged = false
+            if type(menuItem.group) == "string" and menuItem.group ~= "" then
+                if activeMenuGroup ~= menuItem.group then
+                    activeMenuGroup = menuItem.group
+                    groupChanged = true
+                end
+            end
+
+            if groupChanged then
                 lc = 0
-                form.addLine("@i18n(app.header_system)@")
+                if type(menuItem.groupTitle) == "string" and menuItem.groupTitle ~= "" then
+                    form.addLine(menuItem.groupTitle)
+                end
+            elseif menuItem.newline then
+                -- Legacy fallback for older manifests; grouped menus should use group/groupTitle.
+                lc = 0
+                form.addLine(menuItem.groupTitle or "@i18n(app.header_system)@")
             end
 
             if lc == 0 then y = form.height() + ((preferences.general.iconsize == 2) and app.radio.buttonPadding or app.radio.buttonPaddingSmall) end
