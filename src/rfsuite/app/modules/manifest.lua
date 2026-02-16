@@ -49,6 +49,14 @@ return {
                     image = "app/modules/failsafe/failsafe.png",
                     loaderspeed = "FAST",
                     ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.modules.esc_motors.name)@",
+                    id = "powertrain",
+                    menuId = "powertrain_menu",
+                    image = "app/modules/esc_motors/esc.png",
+                    loaderspeed = "FAST",
+                    ethosversion = {1, 6, 2}
                 }
             }
         },
@@ -145,12 +153,21 @@ return {
             loaderSpeed = "FAST",
             navOptions = {showProgress = true},
             pages = {
+                {name = "@i18n(app.modules.mixer.name)@", menuId = "mixer", image = "mixer/mixer.png", order = 1, loaderspeed = 0.08},
+                {name = "@i18n(app.modules.servos.name)@", menuId = "servos_type", image = "servos/servos.png", order = 2, loaderspeed = 0.08}
+            }
+        },
+        powertrain_menu = {
+            title = "@i18n(app.modules.power.name)@",
+            scriptPrefix = "app/modules/",
+            iconPrefix = "app/modules/",
+            loaderSpeed = "FAST",
+            navOptions = {showProgress = true},
+            pages = {
                 {name = "@i18n(app.modules.esc_motors.name)@", menuId = "esc_motors", image = "esc_motors/esc.png", order = 1, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.mixer.name)@", menuId = "mixer", image = "mixer/mixer.png", order = 2, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.servos.name)@", menuId = "servos_type", image = "servos/servos.png", order = 3, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.power.name)@", menuId = "power", image = "power/power.png", order = 4},
-                {name = "@i18n(app.modules.governor.name)@", menuId = "governor", image = "governor/governor.png", order = 5, apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "governor/governor.png", order = 5, apiversionlt = {12, 0, 9}}
+                {name = "@i18n(app.modules.power.name)@", menuId = "power", image = "power/power.png", order = 2},
+                {name = "@i18n(app.modules.governor.name)@", menuId = "governor", image = "governor/governor.png", order = 3, apiversion = {12, 0, 9}},
+                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "governor/governor.png", order = 3, apiversionlt = {12, 0, 9}}
             }
         },
         safety_menu = {
@@ -229,7 +246,7 @@ return {
             scriptPrefix = "power/tools/",
             iconPrefix = "app/modules/power/gfx/",
             loaderSpeed = 0.08,
-            navOptions = {defaultSection = "mechanics"},
+            navOptions = {defaultSection = "powertrain"},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             pages = {
                 {name = "@i18n(app.modules.power.battery_name)@", script = "battery.lua", image = "battery.png"},
@@ -242,7 +259,7 @@ return {
             scriptPrefix = "esc_motors/tools/",
             iconPrefix = "app/modules/esc_motors/gfx/",
             loaderSpeed = 0.08,
-            navOptions = {defaultSection = "mechanics", showProgress = true},
+            navOptions = {defaultSection = "powertrain", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/esc_motors/menu_hooks.lua",
             pages = {
@@ -284,7 +301,7 @@ return {
             scriptPrefix = "governor/tools/",
             iconPrefix = "app/modules/governor/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "mechanics", showProgress = true},
+            navOptions = {defaultSection = "powertrain", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/governor/menu_hooks.lua",
             pages = {
