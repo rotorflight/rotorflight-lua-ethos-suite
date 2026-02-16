@@ -75,10 +75,16 @@ return {
                     ethosversion = {1, 6, 2}
                 },
                 {
-                    title = "@i18n(app.modules.hardware_system.name)@",
-                    id = "system",
-                    menuId = "system_menu",
+                    title = "@i18n(app.modules.settings.name)@",
+                    menuId = "settings_admin",
                     image = "app/modules/settings/settings.png",
+                    offline = true,
+                    ethosversion = {1, 6, 2}
+                },
+                {
+                    title = "@i18n(app.menu_section_tools)@",
+                    menuId = "tools_menu",
+                    image = "app/gfx/tools.png",
                     ethosversion = {1, 6, 2}
                 },
                 {
@@ -168,17 +174,6 @@ return {
                 {name = "@i18n(app.modules.beepers.name)@", menuId = "beepers", image = "beepers/beepers.png", order = 4},
                 {name = "@i18n(app.modules.blackbox.name)@", menuId = "blackbox", image = "blackbox/blackbox.png", order = 5},
                 {name = "@i18n(app.modules.stats.name)@", script = "stats/stats.lua", image = "stats/stats.png", order = 6}
-            }
-        },
-        system_menu = {
-            title = "@i18n(app.modules.hardware_system.name)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
-            pages = {
-                {name = "@i18n(app.menu_section_tools)@", menuId = "tools_menu", image = "app/gfx/tools.png", order = 1},
-                {name = "@i18n(app.modules.settings.name)@", menuId = "settings_admin", image = "settings/settings.png", order = 2, offline = true}
             }
         },
         tools_menu = {
