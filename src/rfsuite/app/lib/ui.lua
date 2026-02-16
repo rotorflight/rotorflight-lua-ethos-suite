@@ -266,6 +266,22 @@ local function getMenuSectionTitleById(sectionId)
     return nil
 end
 
+local function getMenuSectionTitleByMenuId(menuId)
+    if type(menuId) ~= "string" or menuId == "" then return nil end
+    local menu = app and app.MainMenu
+    local sections = menu and menu.sections
+    if type(sections) ~= "table" then return nil end
+
+    for i = 1, #sections do
+        local section = sections[i]
+        if section and section.menuId == menuId and section.title then
+            return composeSectionPath(i, section.title)
+        end
+    end
+
+    return nil
+end
+
 local function getMenuSectionTitleByScript(script)
     if type(script) ~= "string" then return nil end
     if script:sub(1, 12) == "app/modules/" then
@@ -311,6 +327,7 @@ local function getBreadcrumbFromReturnStack()
             if type(ctx.script) == "string" then
                 appendBreadcrumbParts(ctxPathParts, getMenuSectionTitleByScript(ctx.script))
             end
+            appendBreadcrumbParts(ctxPathParts, getMenuSectionTitleByMenuId(ctx.menuId))
             appendBreadcrumbParts(ctxPathParts, ctx.title)
             appendBreadcrumbParts(parts, tableConcat(ctxPathParts, " / "))
         end
@@ -341,6 +358,9 @@ local function resolveHeaderContext(rawTitle, script)
     local parentBreadcrumb = getBreadcrumbFromReturnStack()
     if not parentBreadcrumb or parentBreadcrumb == "" then
         parentBreadcrumb = getMenuSectionTitleById(app and app.lastMenu)
+    end
+    if not parentBreadcrumb or parentBreadcrumb == "" then
+        parentBreadcrumb = getMenuSectionTitleByMenuId(app and (app.activeManifestMenuId or app.pendingManifestMenuId))
     end
     if not parentBreadcrumb or parentBreadcrumb == "" then
         parentBreadcrumb = getMenuSectionTitleByScript(script or (app and app.lastScript))
@@ -379,7 +399,10 @@ local function drawHeaderBreadcrumbOverlay(startY, reserveRightWidth)
     if not app then return false, startY end
     local breadcrumb = app.headerParentBreadcrumb
     if type(breadcrumb) ~= "string" or trimText(breadcrumb) == "" then
-        breadcrumb = getBreadcrumbFromReturnStack() or getMenuSectionTitleById(app.lastMenu) or getMenuSectionTitleByScript(app.lastScript)
+        breadcrumb = getBreadcrumbFromReturnStack() or
+            getMenuSectionTitleById(app.lastMenu) or
+            getMenuSectionTitleByMenuId(app and (app.activeManifestMenuId or app.pendingManifestMenuId)) or
+            getMenuSectionTitleByScript(app.lastScript)
         breadcrumb = stripBreadcrumbLeafForDisplay(breadcrumb, app.headerTitle or app.lastTitle)
         if type(breadcrumb) == "string" then app.headerParentBreadcrumb = breadcrumb end
     end
@@ -1179,6 +1202,9 @@ function ui.openMainMenu(activesection)
                     paint = function() end,
                     press = function()
                         preferences.menulastselected["mainmenu"] = menuIndex
+                        if type(menuItem.id) == "string" and menuItem.id ~= "" then
+                            app.lastMenu = menuItem.id
+                        end
                         local speed = tonumber(menuItem.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
                         if menuItem.module then
                             app.isOfflinePage = true
