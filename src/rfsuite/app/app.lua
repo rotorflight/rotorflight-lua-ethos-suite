@@ -184,6 +184,7 @@ end
 function app.event(widget, category, value, x, y)
 
 
+    local isCloseEvent = (category == EVT_CLOSE and value == 0) or value == 35
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
@@ -200,18 +201,18 @@ function app.event(widget, category, value, x, y)
         end
     end
 
-    if app.uiState == app.uiStatus.mainMenu and app.lastMenu ~= nil and value == 35 then
-        app.ui.openMainMenu()
-        return true
-    end
-    if rfsuite.app.lastMenu ~= nil and category == 3 and value == 0 then
-        app.ui.openMainMenu()
+    if app.uiState == app.uiStatus.mainMenu and isCloseEvent then
+        if app.lastMenu and app.lastMenu ~= "mainmenu" then
+            app.ui.openMainMenu()
+        else
+            app.close()
+        end
         return true
     end
 
     if app.uiState == app.uiStatus.pages then
 
-        if category == EVT_CLOSE and value == 0 or value == 35 then
+        if isCloseEvent then
             log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
