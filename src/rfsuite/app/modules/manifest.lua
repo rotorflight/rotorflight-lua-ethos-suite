@@ -60,6 +60,7 @@ return {
                     title = "@i18n(app.menu_section_tools)@",
                     menuId = "tools_menu",
                     image = "app/gfx/tools.png",
+                    offline = true,
                     ethosversion = {1, 6, 2}
                 },
                 {
@@ -68,15 +69,6 @@ return {
                     script = "logs_dir.lua",
                     image = "app/modules/logs/gfx/logs.png",
                     loaderspeed = "FAST",
-                    offline = true,
-                    ethosversion = {1, 6, 2}
-                },
-                {
-                    title = "@i18n(app.modules.diagnostics.name)@",
-                    module = "diagnostics",
-                    script = "diagnostics.lua",
-                    image = "app/modules/diagnostics/diagnostics.png",
-                    bgtask = true,
                     offline = true,
                     ethosversion = {1, 6, 2}
                 },
@@ -184,7 +176,8 @@ return {
             pages = {
                 {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 0, 6}, disabled = true},
                 {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 3}
+                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 3},
+                {name = "@i18n(app.modules.diagnostics.name)@", menuId = "diagnostics", image = "diagnostics/diagnostics.png", order = 4, offline = true}
             }
         },
         advanced_menu = {
