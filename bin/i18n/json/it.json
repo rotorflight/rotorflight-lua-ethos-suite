@@ -2847,13 +2847,15 @@
       "english": "Flight Tuning",
       "translation": "Flight Tuning",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 13
     },
     "menu_section_controls": {
       "english": "Controls",
       "translation": "Controls",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 8
     },
     "menu_section_hardware": {
       "english": "Hardware",
@@ -2866,19 +2868,22 @@
       "english": "Mechanics",
       "translation": "Mechanics",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 9
     },
     "menu_section_profiles": {
       "english": "Profiles",
       "translation": "Profiles",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 8
     },
     "menu_section_safety": {
       "english": "Safety",
       "translation": "Safety",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 6
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -5505,7 +5510,8 @@
           "english": "FBL Sensors",
           "translation": "FBL Sensors",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 11
         }
       },
       "configuration": {
@@ -6427,7 +6433,8 @@
           "english": "Modes",
           "translation": "Modes",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 5
         }
       },
       "msp_exp": {

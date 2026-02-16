@@ -2843,8 +2843,16 @@
       "reverse_text": false,
       "translation": "Zaawans"
     },
+    "menu_section_controls": {
+      "english": "Controls",
+      "max_length": 8,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Controls"
+    },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
+      "max_length": 13,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Flight Tuning"
@@ -2858,18 +2866,21 @@
     },
     "menu_section_mechanics": {
       "english": "Mechanics",
+      "max_length": 9,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Mechanics"
     },
     "menu_section_profiles": {
       "english": "Profiles",
+      "max_length": 8,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Profiles"
     },
     "menu_section_safety": {
       "english": "Safety",
+      "max_length": 6,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Safety"
@@ -6096,6 +6107,7 @@
       "fblsensors": {
         "name": {
           "english": "FBL Sensors",
+          "max_length": 11,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "FBL Sensors"
@@ -7060,6 +7072,7 @@
       "modes": {
         "name": {
           "english": "Modes",
+          "max_length": 5,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Modes"
