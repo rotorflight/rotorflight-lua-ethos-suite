@@ -32,6 +32,7 @@ local MAIN_MENU_CATEGORY_CONFIGURATION = "@i18n(app.header_configuration)@"
 local MAIN_MENU_CATEGORY_SYSTEM = "@i18n(app.header_system)@"
 local HEADER_NAV_HEIGHT_REDUCTION = 4
 local HEADER_NAV_Y_SHIFT = 6
+local HEADER_OVERLAY_Y_OFFSET = 5
 
 local function resolveScriptFromRules(rules)
     if type(rules) ~= "table" then return nil end
@@ -348,7 +349,7 @@ local function fitTextToWidth(text, maxWidth)
     return clipped .. ellipsis
 end
 
-local function drawHeaderBreadcrumbOverlay(startY)
+local function drawHeaderBreadcrumbOverlay(startY, reserveRightWidth)
     if not app then return false, startY end
     local breadcrumb = app.headerParentBreadcrumb
     if type(breadcrumb) ~= "string" or trimText(breadcrumb) == "" then
@@ -366,11 +367,14 @@ local function drawHeaderBreadcrumbOverlay(startY)
         screenW = lcdGetWindowSize()
     end
     if not screenW or screenW <= 0 then return false, startY end
+    local reserved = math.max(0, tonumber(reserveRightWidth) or 0)
+    local maxTextWidth = screenW - 8 - reserved
+    if maxTextWidth <= 0 then return false, startY end
 
     lcdFont(FONT_XXS)
-    lcdColor(lcd.RGB(190, 190, 190))
+    lcdColor(lcd.RGB(170, 170, 170))
 
-    local text = fitTextToWidth(breadcrumb, screenW - 8)
+    local text = fitTextToWidth(breadcrumb, maxTextWidth)
     if text == "" then return false, startY end
     lcdDrawText(0, startY, text)
 
@@ -2801,43 +2805,67 @@ end
 
 function ui.adminStatsOverlay()
 
-    local baseY = getHeaderNavAreaBottom() + 3
-    local breadcrumbDrawn, statsStartY = drawHeaderBreadcrumbOverlay(baseY)
-    if not breadcrumbDrawn then statsStartY = baseY end
+    local baseY = getHeaderNavAreaBottom() + HEADER_OVERLAY_Y_OFFSET
+    local showStats = preferences and preferences.developer and preferences.developer.overlaystatsadmin and not (session and session.mspBusy)
 
-    if preferences and preferences.developer and preferences.developer.overlaystatsadmin and not (session and session.mspBusy) then
+    if not showStats then
+        drawHeaderBreadcrumbOverlay(baseY)
+        return
+    end
 
-        lcdFont(FONT_XXS)
-        lcdColor(lcd.RGB(255, 255, 255))
+    local cpuUsage = (rfsuite.performance and rfsuite.performance.cpuload) or 0
+    local ramUsed = (rfsuite.performance and rfsuite.performance.usedram) or 0
+    local luaRamKB = (rfsuite.performance and rfsuite.performance.luaRamKB) or 0
 
-        local cpuUsage = (rfsuite.performance and rfsuite.performance.cpuload) or 0
-        local ramUsed = (rfsuite.performance and rfsuite.performance.usedram) or 0
-        local luaRamKB = (rfsuite.performance and rfsuite.performance.luaRamKB) or 0
+    local function fmtInt(n) return utils.round(n or 0, 0) end
+    local function fmtKB(n) return string.format("%.0f", n or 0) end
 
-        local cfg = {startY = statsStartY, decimalsKB = 0, labelGap = 4, blocks = {LOAD = {x = 0, valueRight = 50}, USED = {x = 70, valueRight = 130}, FREE = {x = 160, valueRight = 230}}}
+    local loadColor = lcd.RGB(180, 230, 255)
+    if cpuUsage >= 85 then
+        loadColor = lcd.RGB(255, 130, 130)
+    elseif cpuUsage >= 70 then
+        loadColor = lcd.RGB(255, 210, 140)
+    end
+    local statColor = lcd.RGB(245, 245, 245)
 
-        local function fmtInt(n) return utils.round(n or 0, 0) end
-        local function fmtKB(n) return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end
+    local rows = {
+        {label = "LOAD:", value = tostring(fmtInt(cpuUsage)) .. "%", color = loadColor},
+        {label = "USED:", value = tostring(fmtInt(ramUsed)) .. "kB", color = statColor},
+        {label = "FREE:", value = tostring(fmtKB(luaRamKB)) .. "KB", color = statColor}
+    }
 
-        local rows = {{"LOAD", "LOAD:", tostring(fmtInt(cpuUsage)) .. "%"}, {"USED", "USED", tostring(fmtInt(ramUsed)) .. "kB"}, {"FREE", "FREE", tostring(fmtKB(luaRamKB)) .. "KB"}}
+    local screenW = app.lcdWidth
+    if not screenW or screenW <= 0 then screenW = lcdGetWindowSize() end
+    if not screenW or screenW <= 0 then return end
 
-        local y = cfg.startY
+    lcdFont(FONT_XXS)
+    local labelGap = 4
+    local blockGap = 8
+    local rightPad = 11
+    local blocks = {}
+    local totalWidth = 0
 
-        local function drawBlock(key, label, valueWithUnit)
-            local b = cfg.blocks[key];
-            if not b then return end
+    for i = 1, #rows do
+        local row = rows[i]
+        local labelW = lcdGetTextSize(row.label)
+        local valueW = lcdGetTextSize(row.value)
+        local blockW = labelW + labelGap + valueW
+        blocks[i] = {label = row.label, value = row.value, labelW = labelW, valueW = valueW, width = blockW}
+        if i > 1 then totalWidth = totalWidth + blockGap end
+        totalWidth = totalWidth + blockW
+    end
 
-            lcdDrawText(b.x, y, label)
+    drawHeaderBreadcrumbOverlay(baseY, totalWidth + rightPad + 4)
 
-            local vx = b.x + lcdGetTextSize(label) + cfg.labelGap
-            local vWidth = lcdGetTextSize(valueWithUnit)
-            lcdDrawText(math.max(vx, b.valueRight - vWidth), y, valueWithUnit)
-        end
+    local x = math.max(0, screenW - rightPad - totalWidth)
+    local y = baseY
 
-        for i = 1, #rows do
-            local key, label, v = rows[i][1], rows[i][2], rows[i][3]
-            drawBlock(key, label, v)
-        end
+    for i = 1, #blocks do
+        local block = blocks[i]
+        lcdColor(block.color or statColor)
+        lcdDrawText(x, y, block.label)
+        lcdDrawText(x + block.width - block.valueW, y, block.value)
+        x = x + block.width + blockGap
     end
 end
 
