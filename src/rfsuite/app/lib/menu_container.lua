@@ -99,6 +99,7 @@ function container.create(cfg)
     local navHandlers = pageRuntime.createMenuHandlers(cfg.navOptions or {})
     local enableWakeup = false
     local lastLinkState = nil
+    local lastFieldEnabled = {}
 
     local function openPage(opts)
         if cfg.onOpenPre then cfg.onOpenPre(opts) end
@@ -301,18 +302,31 @@ function container.create(cfg)
                 local field = app.formFields[i]
                 if field and field.enable then
                     local blockedByBgTask = (app.formFieldsBGTask[i] == true) and (not tasksActive)
-                    field:enable((v == true) and (not blockedByBgTask))
+                    local shouldEnable = (v == true) and (not blockedByBgTask)
+                    if lastFieldEnabled[i] ~= shouldEnable then
+                        field:enable(shouldEnable)
+                        lastFieldEnabled[i] = shouldEnable
+                    end
                 end
             end
         elseif not tasksActive then
             for i, field in pairs(app.formFields) do
                 if field and field.enable then
-                    field:enable(app.formFieldsBGTask[i] ~= true)
+                    local shouldEnable = app.formFieldsBGTask[i] ~= true
+                    if lastFieldEnabled[i] ~= shouldEnable then
+                        field:enable(shouldEnable)
+                        lastFieldEnabled[i] = shouldEnable
+                    end
                 end
             end
         else
             for i, field in pairs(app.formFields) do
-                if field and field.enable then field:enable(true) end
+                if field and field.enable then
+                    if lastFieldEnabled[i] ~= true then
+                        field:enable(true)
+                        lastFieldEnabled[i] = true
+                    end
+                end
             end
         end
 

@@ -188,6 +188,54 @@ local function composeSectionPath(sectionIndex, sectionTitle)
     return category .. " / " .. title
 end
 
+local menuLookupCache = {menuRef = nil}
+
+local function refreshMenuLookupCache()
+    local menu = app and app.MainMenu
+    if menuLookupCache.menuRef == menu then return menuLookupCache end
+
+    local cache = {
+        menuRef = menu,
+        sectionPathByIndex = {},
+        sectionPathById = {},
+        sectionPathByMenuId = {},
+        sectionPathByModule = {},
+        sectionPathByFolder = {}
+    }
+
+    local sections = menu and menu.sections
+    if type(sections) == "table" then
+        for i = 1, #sections do
+            local section = sections[i]
+            if section and section.title then
+                local path = composeSectionPath(i, section.title)
+                cache.sectionPathByIndex[i] = path
+                if section.id ~= nil then cache.sectionPathById[section.id] = path end
+                if type(section.menuId) == "string" and section.menuId ~= "" then
+                    cache.sectionPathByMenuId[section.menuId] = path
+                end
+                if type(section.module) == "string" and section.module ~= "" then
+                    cache.sectionPathByModule[section.module] = path
+                end
+            end
+        end
+    end
+
+    local pages = menu and menu.pages
+    if type(pages) == "table" then
+        for i = 1, #pages do
+            local page = pages[i]
+            if page and type(page.folder) == "string" and page.folder ~= "" then
+                local path = cache.sectionPathByIndex[page.section]
+                if path then cache.sectionPathByFolder[page.folder] = path end
+            end
+        end
+    end
+
+    menuLookupCache = cache
+    return menuLookupCache
+end
+
 local function getHeaderNavButtonHeight()
     local base = (app and app.radio and app.radio.navbuttonHeight) or 0
     if base <= 0 then return base end
@@ -252,34 +300,12 @@ end
 
 local function getMenuSectionTitleById(sectionId)
     if not sectionId then return nil end
-    local menu = app and app.MainMenu
-    local sections = menu and menu.sections
-    if type(sections) ~= "table" then return nil end
-
-    for i = 1, #sections do
-        local section = sections[i]
-        if section and section.id == sectionId and section.title then
-            return composeSectionPath(i, section.title)
-        end
-    end
-
-    return nil
+    return refreshMenuLookupCache().sectionPathById[sectionId]
 end
 
 local function getMenuSectionTitleByMenuId(menuId)
     if type(menuId) ~= "string" or menuId == "" then return nil end
-    local menu = app and app.MainMenu
-    local sections = menu and menu.sections
-    if type(sections) ~= "table" then return nil end
-
-    for i = 1, #sections do
-        local section = sections[i]
-        if section and section.menuId == menuId and section.title then
-            return composeSectionPath(i, section.title)
-        end
-    end
-
-    return nil
+    return refreshMenuLookupCache().sectionPathByMenuId[menuId]
 end
 
 local function getMenuSectionTitleByScript(script)
@@ -290,29 +316,8 @@ local function getMenuSectionTitleByScript(script)
     local folder = script:match("^([^/]+)")
     if not folder or folder == "" then return nil end
 
-    local menu = app and app.MainMenu
-    local pages = menu and menu.pages
-    local sections = menu and menu.sections
-    if type(sections) ~= "table" then return nil end
-
-    if type(pages) == "table" then
-        for i = 1, #pages do
-            local page = pages[i]
-            if page and page.folder == folder then
-                local section = sections[page.section]
-                if section and section.title then return composeSectionPath(page.section, section.title) end
-            end
-        end
-    end
-
-    for i = 1, #sections do
-        local section = sections[i]
-        if section and section.title and section.module == folder then
-            return composeSectionPath(i, section.title)
-        end
-    end
-
-    return nil
+    local cache = refreshMenuLookupCache()
+    return cache.sectionPathByFolder[folder] or cache.sectionPathByModule[folder]
 end
 
 local function getBreadcrumbFromReturnStack()
