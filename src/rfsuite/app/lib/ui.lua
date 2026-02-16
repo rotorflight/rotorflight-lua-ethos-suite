@@ -28,6 +28,10 @@ local apiCore
 local navigation = assert(loadfile("app/lib/navigation.lua"))()
 
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+local MAIN_MENU_CATEGORY_CONFIGURATION = "@i18n(app.header_configuration)@"
+local MAIN_MENU_CATEGORY_SYSTEM = "@i18n(app.header_system)@"
+local HEADER_NAV_HEIGHT_REDUCTION = 4
+local HEADER_NAV_Y_SHIFT = 6
 
 local function resolveScriptFromRules(rules)
     if type(rules) ~= "table" then return nil end
@@ -53,6 +57,326 @@ local function resolvePageScript(page, section)
         if page.script_default then return page.script_default, page.loaderspeed end
     end
     return page.script, page.loaderspeed
+end
+
+local function trimText(value)
+    if type(value) ~= "string" then return "" end
+    return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function splitBreadcrumbTitle(title)
+    local out = {}
+    if type(title) ~= "string" then return out end
+
+    local start = 1
+    while true do
+        local i, j = title:find(" / ", start, true)
+        if not i then
+            local tail = trimText(title:sub(start))
+            if tail ~= "" then out[#out + 1] = tail end
+            break
+        end
+
+        local part = trimText(title:sub(start, i - 1))
+        if part ~= "" then out[#out + 1] = part end
+        start = j + 1
+    end
+
+    return out
+end
+
+local function normalizeBreadcrumbMatchText(value)
+    local text = trimText(value)
+    if text == "" then return "" end
+    text = text:lower()
+    text = text:gsub("[^%w]+", " ")
+    text = text:gsub("%s+", " ")
+    text = trimText(text)
+    if text == "" then return "" end
+
+    local tokens = {}
+    for token in text:gmatch("%S+") do
+        if token ~= "i18n" and token ~= "app" and token ~= "modules" and token ~= "module" and token ~= "name" and token ~= "menu" and token ~= "section" and token ~= "header" then
+            tokens[#tokens + 1] = token
+        end
+    end
+
+    if #tokens > 0 then
+        text = tableConcat(tokens, " ")
+    end
+
+    return trimText(text)
+end
+
+local function breadcrumbLeafMatchesDisplay(leafText, displayText)
+    local leaf = normalizeBreadcrumbMatchText(leafText)
+    local display = normalizeBreadcrumbMatchText(displayText)
+    if leaf == "" or display == "" then return false end
+    if leaf == display then return true end
+
+    if #display > #leaf and display:sub(1, #leaf) == leaf then
+        local nextChar = display:sub(#leaf + 1, #leaf + 1)
+        if nextChar == " " then return true end
+    end
+
+    return false
+end
+
+local function stripBreadcrumbLeafForDisplay(breadcrumb, displayTitle)
+    local crumb = trimText(breadcrumb)
+    local leaf = trimText(displayTitle)
+    if crumb == "" or leaf == "" then return breadcrumb end
+
+    local parts = splitBreadcrumbTitle(crumb)
+    if #parts == 0 then return crumb end
+    if not breadcrumbLeafMatchesDisplay(parts[#parts], leaf) then return crumb end
+
+    parts[#parts] = nil
+    if #parts == 0 then return nil end
+    return tableConcat(parts, " / ")
+end
+
+local function getMainMenuCategoryBySectionIndex(sectionIndex)
+    if type(sectionIndex) ~= "number" then return nil end
+    local menu = app and app.MainMenu
+    local sections = menu and menu.sections
+    if type(sections) ~= "table" then return nil end
+
+    local category = MAIN_MENU_CATEGORY_CONFIGURATION
+    for i = 1, #sections do
+        local section = sections[i]
+        if section and section.newline then category = MAIN_MENU_CATEGORY_SYSTEM end
+        if i == sectionIndex then return category end
+    end
+
+    return nil
+end
+
+local function composeSectionPath(sectionIndex, sectionTitle)
+    local title = trimText(sectionTitle)
+    if title == "" then return nil end
+
+    local category = trimText(getMainMenuCategoryBySectionIndex(sectionIndex))
+    if category == "" then return title end
+    return category .. " / " .. title
+end
+
+local function getHeaderNavButtonHeight()
+    local base = (app and app.radio and app.radio.navbuttonHeight) or 0
+    if base <= 0 then return base end
+    return math.max(20, base - HEADER_NAV_HEIGHT_REDUCTION)
+end
+
+local function getHeaderNavButtonY(baseY)
+    local y = tonumber(baseY) or 0
+    return math.max(0, y - HEADER_NAV_Y_SHIFT)
+end
+
+local function getHeaderTitleY(baseY)
+    -- Keep title aligned with the compact button row.
+    return getHeaderNavButtonY(baseY)
+end
+
+local function getHeaderNavAreaBottom()
+    local baseY = (app and app.radio and app.radio.linePaddingTop) or 0
+    return getHeaderNavButtonY(baseY) + getHeaderNavButtonHeight()
+end
+
+local function appendBreadcrumbParts(parts, candidate)
+    if type(parts) ~= "table" then return end
+    local source = splitBreadcrumbTitle(candidate)
+    if #source == 0 then
+        local item = trimText(candidate)
+        if item ~= "" then source = {item} end
+    end
+
+    local clean = {}
+    for i = 1, #source do
+        local part = trimText(source[i])
+        if part ~= "" then clean[#clean + 1] = part end
+    end
+    if #clean == 0 then return end
+
+    if #parts == 0 then
+        for i = 1, #clean do parts[#parts + 1] = clean[i] end
+        return
+    end
+
+    local maxOverlap = math.min(#parts, #clean)
+    local overlap = 0
+    for o = maxOverlap, 1, -1 do
+        local matches = true
+        for i = 1, o do
+            if parts[#parts - o + i] ~= clean[i] then
+                matches = false
+                break
+            end
+        end
+        if matches then
+            overlap = o
+            break
+        end
+    end
+
+    for i = overlap + 1, #clean do
+        parts[#parts + 1] = clean[i]
+    end
+end
+
+local function getMenuSectionTitleById(sectionId)
+    if not sectionId then return nil end
+    local menu = app and app.MainMenu
+    local sections = menu and menu.sections
+    if type(sections) ~= "table" then return nil end
+
+    for i = 1, #sections do
+        local section = sections[i]
+        if section and section.id == sectionId and section.title then
+            return composeSectionPath(i, section.title)
+        end
+    end
+
+    return nil
+end
+
+local function getMenuSectionTitleByScript(script)
+    if type(script) ~= "string" then return nil end
+    if script:sub(1, 12) == "app/modules/" then
+        script = script:sub(13)
+    end
+    local folder = script:match("^([^/]+)")
+    if not folder or folder == "" then return nil end
+
+    local menu = app and app.MainMenu
+    local pages = menu and menu.pages
+    local sections = menu and menu.sections
+    if type(sections) ~= "table" then return nil end
+
+    if type(pages) == "table" then
+        for i = 1, #pages do
+            local page = pages[i]
+            if page and page.folder == folder then
+                local section = sections[page.section]
+                if section and section.title then return composeSectionPath(page.section, section.title) end
+            end
+        end
+    end
+
+    for i = 1, #sections do
+        local section = sections[i]
+        if section and section.title and section.module == folder then
+            return composeSectionPath(i, section.title)
+        end
+    end
+
+    return nil
+end
+
+local function getBreadcrumbFromReturnStack()
+    if not app or type(app.menuContextStack) ~= "table" then return nil end
+    if #app.menuContextStack == 0 then return nil end
+
+    local parts = {}
+    for i = 1, #app.menuContextStack do
+        local ctx = app.menuContextStack[i]
+        if type(ctx) == "table" then
+            local ctxPathParts = {}
+            if type(ctx.script) == "string" then
+                appendBreadcrumbParts(ctxPathParts, getMenuSectionTitleByScript(ctx.script))
+            end
+            appendBreadcrumbParts(ctxPathParts, ctx.title)
+            appendBreadcrumbParts(parts, tableConcat(ctxPathParts, " / "))
+        end
+    end
+
+    if #parts == 0 then return nil end
+    return tableConcat(parts, " / ")
+end
+
+local function resolveHeaderContext(rawTitle, script)
+    local title = rawTitle
+    if title == nil then title = "No Title" end
+    if type(title) ~= "string" then title = tostring(title) end
+    title = trimText(title)
+    if title == "" then title = "No Title" end
+
+    local parts = splitBreadcrumbTitle(title)
+    local displayTitle = title
+    local parentFromTitle = nil
+    if #parts > 1 then
+        displayTitle = parts[#parts]
+        parts[#parts] = nil
+        parentFromTitle = tableConcat(parts, " / ")
+    elseif #parts == 1 then
+        displayTitle = parts[1]
+    end
+
+    local parentBreadcrumb = getBreadcrumbFromReturnStack()
+    if not parentBreadcrumb or parentBreadcrumb == "" then
+        parentBreadcrumb = getMenuSectionTitleById(app and app.lastMenu)
+    end
+    if not parentBreadcrumb or parentBreadcrumb == "" then
+        parentBreadcrumb = getMenuSectionTitleByScript(script or (app and app.lastScript))
+    end
+    if (not parentBreadcrumb or parentBreadcrumb == "") and parentFromTitle and parentFromTitle ~= "" then
+        parentBreadcrumb = parentFromTitle
+    end
+    parentBreadcrumb = stripBreadcrumbLeafForDisplay(parentBreadcrumb, displayTitle)
+    if parentBreadcrumb == displayTitle then parentBreadcrumb = nil end
+
+    if app then
+        app.headerTitle = displayTitle
+        app.headerParentBreadcrumb = parentBreadcrumb
+    end
+
+    return displayTitle, parentBreadcrumb
+end
+
+local function fitTextToWidth(text, maxWidth)
+    if type(text) ~= "string" or text == "" then return "" end
+    if type(maxWidth) ~= "number" or maxWidth <= 0 then return "" end
+
+    if lcdGetTextSize(text) <= maxWidth then return text end
+
+    local ellipsis = "..."
+    local clipped = text
+    while #clipped > 0 and lcdGetTextSize(clipped .. ellipsis) > maxWidth do
+        clipped = clipped:sub(1, -2)
+    end
+
+    if clipped == "" then return ellipsis end
+    return clipped .. ellipsis
+end
+
+local function drawHeaderBreadcrumbOverlay(startY)
+    if not app then return false, startY end
+    local breadcrumb = app.headerParentBreadcrumb
+    if type(breadcrumb) ~= "string" or trimText(breadcrumb) == "" then
+        breadcrumb = getBreadcrumbFromReturnStack() or getMenuSectionTitleById(app.lastMenu) or getMenuSectionTitleByScript(app.lastScript)
+        breadcrumb = stripBreadcrumbLeafForDisplay(breadcrumb, app.headerTitle or app.lastTitle)
+        if type(breadcrumb) == "string" then app.headerParentBreadcrumb = breadcrumb end
+    end
+    if type(breadcrumb) ~= "string" then return false, startY end
+
+    breadcrumb = trimText(breadcrumb)
+    if breadcrumb == "" then return false, startY end
+
+    local screenW = app.lcdWidth
+    if not screenW or screenW <= 0 then
+        screenW = lcdGetWindowSize()
+    end
+    if not screenW or screenW <= 0 then return false, startY end
+
+    lcdFont(FONT_XXS)
+    lcdColor(lcd.RGB(190, 190, 190))
+
+    local text = fitTextToWidth(breadcrumb, screenW - 8)
+    if text == "" then return false, startY end
+    lcdDrawText(0, startY, text)
+
+    local _, textH = lcdGetTextSize(text)
+    if not textH or textH <= 0 then textH = 6 end
+    return true, startY + textH + 2
 end
 
 local function getMspStatusExtras()
@@ -648,6 +972,8 @@ function ui.resetPageState(activesection)
     app.lastIdx = nil
     app.lastTitle = nil
     app.lastScript = nil
+    app.headerTitle = nil
+    app.headerParentBreadcrumb = nil
 
     session.lastPage = nil
     app.triggers.isReady = false
@@ -718,7 +1044,7 @@ function ui.openMainMenu()
     local header = form.addLine("@i18n(app.header_configuration)@")
 
     local navX = windowWidth - 110
-    app.formNavigationFields['menu'] = form.addButton(header, {x = navX, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
+    app.formNavigationFields['menu'] = form.addButton(header, {x = navX, y = getHeaderNavButtonY(app.radio.linePaddingTop), w = 100, h = getHeaderNavButtonHeight()}, {
         text = "@i18n(app.navigation_menu)@",
         icon = nil,
         options = FONT_S,
@@ -841,7 +1167,7 @@ function ui.openMainMenuSub(activesection)
             app.ui.setHeaderTitle(section.title, header, {menu = true})
 
             local x = windowWidth - 110
-            app.formNavigationFields['menu'] = form.addButton(header, {x = x, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
+            app.formNavigationFields['menu'] = form.addButton(header, {x = x, y = getHeaderNavButtonY(app.radio.linePaddingTop), w = 100, h = getHeaderNavButtonHeight()}, {
                 text = "@i18n(app.navigation_menu)@",
                 icon = nil,
                 options = FONT_S,
@@ -1559,7 +1885,7 @@ function ui.getHeaderMetrics(navButtons)
     local w, _ = lcdGetWindowSize()
     local padding = 5
     local buttonW = radio.menuButtonWidth or 100
-    local buttonH = radio.navbuttonHeight
+    local buttonH = getHeaderNavButtonHeight()
     local buttons = navButtons or {menu = true}
     local navX = w - 5
     local reserved = 0
@@ -1581,16 +1907,30 @@ function ui.getHeaderMetrics(navButtons)
     }
 end
 
+function ui.getHeaderNavButtonHeight()
+    return getHeaderNavButtonHeight()
+end
+
+function ui.getHeaderNavButtonY(baseY)
+    return getHeaderNavButtonY(baseY)
+end
+
+function ui.getHeaderTitleY(baseY)
+    return getHeaderTitleY(baseY)
+end
+
 function ui.setHeaderTitle(rawTitle, lineRef, navButtons)
     local radio = app.radio
     local formFields = app.formFields
     local metrics = ui.getHeaderMetrics(navButtons)
-    local displayTitle = ui.fitHeaderTitle(rawTitle, metrics.titleWidth)
+    local resolvedTitle = resolveHeaderContext(rawTitle, app and app.lastScript)
+    local displayTitle = ui.fitHeaderTitle(resolvedTitle, metrics.titleWidth)
+    local titleY = getHeaderTitleY(radio.linePaddingTop)
     local lineObj = lineRef or (formFields and formFields["menu"]) or nil
     if not lineObj then return end
 
     if lineRef and formFields then
-        formFields["title"] = form.addStaticText(lineObj, {x = 0, y = radio.linePaddingTop, w = metrics.titleWidth, h = radio.navbuttonHeight}, displayTitle)
+        formFields["title"] = form.addStaticText(lineObj, {x = 0, y = titleY, w = metrics.titleWidth, h = radio.navbuttonHeight}, displayTitle)
         return
     end
 
@@ -1600,22 +1940,21 @@ function ui.setHeaderTitle(rawTitle, lineRef, navButtons)
     end
 
     if formFields then
-        formFields["title"] = form.addStaticText(lineObj, {x = 0, y = radio.linePaddingTop, w = metrics.titleWidth, h = radio.navbuttonHeight}, displayTitle)
+        formFields["title"] = form.addStaticText(lineObj, {x = 0, y = titleY, w = metrics.titleWidth, h = radio.navbuttonHeight}, displayTitle)
     else
-        form.addStaticText(lineObj, {x = 0, y = radio.linePaddingTop, w = metrics.titleWidth, h = radio.navbuttonHeight}, displayTitle)
+        form.addStaticText(lineObj, {x = 0, y = titleY, w = metrics.titleWidth, h = radio.navbuttonHeight}, displayTitle)
     end
 end
 
 function ui.fieldHeader(title)
     local radio = app.radio
     local formFields = app.formFields
-    if not title then title = "No Title" end
 
     local navButtons = (app.Page and app.Page.navButtons) or {menu = true, save = true, reload = true, help = true}
     local metrics = ui.getHeaderMetrics(navButtons)
     formFields["menu"] = form.addLine("")
     ui.setHeaderTitle(title, formFields["menu"], navButtons)
-    app.ui.navigationButtons(metrics.windowWidth - 5, radio.linePaddingTop, metrics.buttonW, metrics.buttonH)
+    app.ui.navigationButtons(metrics.windowWidth - 5, getHeaderNavButtonY(radio.linePaddingTop), metrics.buttonW, metrics.buttonH)
 end
 
 function ui.openPageRefresh(opts)
@@ -2436,8 +2775,11 @@ end
 
 function ui.adminStatsOverlay()
 
+    local baseY = getHeaderNavAreaBottom() + 3
+    local breadcrumbDrawn, statsStartY = drawHeaderBreadcrumbOverlay(baseY)
+    if not breadcrumbDrawn then statsStartY = baseY end
 
-    if preferences and preferences.developer and preferences.developer.overlaystatsadmin then
+    if preferences and preferences.developer and preferences.developer.overlaystatsadmin and not (session and session.mspBusy) then
 
         lcdFont(FONT_XXS)
         lcdColor(lcd.RGB(255, 255, 255))
@@ -2446,7 +2788,7 @@ function ui.adminStatsOverlay()
         local ramUsed = (rfsuite.performance and rfsuite.performance.usedram) or 0
         local luaRamKB = (rfsuite.performance and rfsuite.performance.luaRamKB) or 0
 
-        local cfg = {startY = app.radio.navbuttonHeight + 3, decimalsKB = 0, labelGap = 4, blocks = {LOAD = {x = 0, valueRight = 50}, USED = {x = 70, valueRight = 130}, FREE = {x = 160, valueRight = 230}}}
+        local cfg = {startY = statsStartY, decimalsKB = 0, labelGap = 4, blocks = {LOAD = {x = 0, valueRight = 50}, USED = {x = 70, valueRight = 130}, FREE = {x = 160, valueRight = 230}}}
 
         local function fmtInt(n) return utils.round(n or 0, 0) end
         local function fmtKB(n) return string.format("%." .. tostring(cfg.decimalsKB) .. "f", n or 0) end

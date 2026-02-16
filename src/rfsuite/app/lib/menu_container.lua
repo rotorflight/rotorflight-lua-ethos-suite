@@ -100,15 +100,18 @@ function container.create(cfg)
 
         local w = lcd.getWindowSize()
         local windowWidth = w
+        local headerButtonH = (app.ui and app.ui.getHeaderNavButtonHeight and app.ui.getHeaderNavButtonHeight()) or app.radio.navbuttonHeight
+        local headerButtonY = (app.ui and app.ui.getHeaderNavButtonY and app.ui.getHeaderNavButtonY(app.radio.linePaddingTop)) or app.radio.linePaddingTop
+        local headerTitleY = (app.ui and app.ui.getHeaderTitleY and app.ui.getHeaderTitleY(app.radio.linePaddingTop)) or app.radio.linePaddingTop
 
         local header = form.addLine("")
         if app.ui and app.ui.setHeaderTitle then
             app.ui.setHeaderTitle(pageTitle, header, {menu = true})
         else
-            form.addStaticText(header, {x = 0, y = app.radio.linePaddingTop, w = windowWidth - 115, h = app.radio.navbuttonHeight}, pageTitle or "")
+            form.addStaticText(header, {x = 0, y = headerTitleY, w = windowWidth - 115, h = headerButtonH}, pageTitle or "")
         end
         local navX = windowWidth - 110
-        app.formNavigationFields["menu"] = form.addButton(header, {x = navX, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}, {
+        app.formNavigationFields["menu"] = form.addButton(header, {x = navX, y = headerButtonY, w = 100, h = headerButtonH}, {
             text = "@i18n(app.navigation_menu)@",
             icon = nil,
             options = FONT_S,

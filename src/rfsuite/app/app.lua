@@ -21,7 +21,7 @@ app.guiIsRunning = false
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
-    if app.ui and app.ui.adminStatsOverlay then if not rfsuite.session.mspBusy then app.ui.adminStatsOverlay() end end
+    if app.ui and app.ui.adminStatsOverlay then app.ui.adminStatsOverlay() end
 
 end
 
@@ -30,7 +30,16 @@ function app.wakeup_protected()
 
     if app.tasks then app.tasks.wakeup() end
 
-    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then if not rfsuite.session.mspBusy then lcd.invalidate() end end
+    local hasBreadcrumb = app.uiState == app.uiStatus.pages and (
+        (app.headerParentBreadcrumb and app.headerParentBreadcrumb ~= "") or
+        (app.lastMenu ~= nil) or
+        (app.lastScript ~= nil)
+    )
+    local wantsStats = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin
+
+    if hasBreadcrumb or (wantsStats and not rfsuite.session.mspBusy) then
+        lcd.invalidate()
+    end
 end
 
 function app.wakeup()
@@ -61,6 +70,8 @@ function app.create()
         app.lastIdx = nil -- last selected button index
         app.lastTitle = nil -- last page title string
         app.lastScript = nil -- last page script path
+        app.headerTitle = nil -- resolved large header title
+        app.headerParentBreadcrumb = nil -- resolved micro breadcrumb parent path
         app.menuContextStack = {} -- submenu return stack (parent chain)
         app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
         app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
