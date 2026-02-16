@@ -295,7 +295,7 @@ function container.create(cfg)
             end
         elseif not session.isConnected then
             for i, v in pairs(app.formFieldsOffline) do
-                if v == true and app.formFields[i] and app.formFields[i].enable then app.formFields[i]:enable(false) end
+                if app.formFields[i] and app.formFields[i].enable then app.formFields[i]:enable(v == true) end
             end
         else
             for i in pairs(app.formFields) do
