@@ -184,7 +184,7 @@ end
 function app.event(widget, category, value, x, y)
 
 
-    local isCloseEvent = (category == EVT_CLOSE and value == 0) or value == 35
+    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == 35) and value ~= KEY_ENTER_LONG
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
@@ -197,7 +197,7 @@ function app.event(widget, category, value, x, y)
         if app.Page.event then
             log("USING PAGES EVENTS", "debug")
             local ret = app.Page.event(widget, category, value, x, y)
-            if ret ~= nil then return ret end
+            if ret ~= nil and ret ~= false then return ret end
         end
     end
 

@@ -8,7 +8,8 @@ local rfsuite = require("rfsuite")
 local runtime = {}
 
 local function shouldHandleClose(category, value)
-    return (category == EVT_CLOSE and value == 0) or value == 35
+    if value == KEY_ENTER_LONG then return false end
+    return category == EVT_CLOSE and (value == 0 or value == 35)
 end
 
 function runtime.openMenuContext(opts)
@@ -27,7 +28,7 @@ function runtime.handleCloseEvent(category, value, opts)
         end
         return true
     end
-    return false
+    return nil
 end
 
 function runtime.createMenuHandlers(opts)
