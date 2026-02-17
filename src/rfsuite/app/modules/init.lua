@@ -123,16 +123,6 @@ local function shortcutDisplayMode()
     return (mixedPref == true) and "mixed" or "dock"
 end
 
-local function mixedShortcutSpec(extra, parentSpec)
-    local spec = cloneShallow(extra)
-    if type(parentSpec) == "table" then
-        if parentSpec.group ~= nil then spec.group = parentSpec.group end
-        if parentSpec.groupTitle ~= nil then spec.groupTitle = parentSpec.groupTitle end
-    end
-    spec.newline = nil
-    return spec
-end
-
 local function flattenSectionSpecs(rawSections)
     local out = {}
     if type(rawSections) ~= "table" then return out end
@@ -140,18 +130,6 @@ local function flattenSectionSpecs(rawSections)
     local shortcutMode = shortcutDisplayMode()
     local extras = resolveShortcutSections()
     if type(extras) ~= "table" then extras = {} end
-
-    local extrasByContext = {}
-    local emittedShortcutIds = {}
-    if shortcutMode == "mixed" then
-        for _, extra in ipairs(extras) do
-            local ctx = type(extra.menuContextId) == "string" and extra.menuContextId or nil
-            if ctx and ctx ~= "" then
-                extrasByContext[ctx] = extrasByContext[ctx] or {}
-                extrasByContext[ctx][#extrasByContext[ctx] + 1] = extra
-            end
-        end
-    end
 
     for _, entry in ipairs(rawSections) do
         if type(entry) == "table" and type(entry.sections) == "table" then
@@ -161,18 +139,6 @@ local function flattenSectionSpecs(rawSections)
                     if spec.group == nil then spec.group = entry.id end
                     if spec.groupTitle == nil then spec.groupTitle = entry.title end
                     out[#out + 1] = spec
-
-                    if shortcutMode == "mixed" and type(spec.id) == "string" and spec.id ~= "" then
-                        local linked = extrasByContext[spec.id]
-                        if type(linked) == "table" then
-                            for _, extra in ipairs(linked) do
-                                out[#out + 1] = mixedShortcutSpec(extra, spec)
-                                if type(extra.id) == "string" and extra.id ~= "" then
-                                    emittedShortcutIds[extra.id] = true
-                                end
-                            end
-                        end
-                    end
                 end
             end
             if shortcutMode == "dock" and entry.id == "configuration" then
@@ -187,14 +153,9 @@ local function flattenSectionSpecs(rawSections)
 
     if shortcutMode == "mixed" then
         for _, extra in ipairs(extras) do
-            local extraId = (type(extra.id) == "string" and extra.id ~= "") and extra.id or nil
-            if not extraId or not emittedShortcutIds[extraId] then
-                local fallback = cloneShallow(extra)
-                fallback.group = "configuration"
-                fallback.groupTitle = "@i18n(app.header_configuration)@"
-                fallback.newline = nil
-                out[#out + 1] = fallback
-            end
+            local appended = cloneShallow(extra)
+            appended.newline = nil
+            out[#out + 1] = appended
         end
     end
 
