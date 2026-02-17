@@ -1074,7 +1074,10 @@ local function openMenuSectionById(sectionId)
         end
         if section.forceMenuToMain then
             app._forceMenuToMain = true
+        else
+            app._forceMenuToMain = false
         end
+        app._openedFromShortcuts = (section.group == "shortcuts") or (section.groupTitle == "@i18n(app.header_shortcuts)@")
         app.lastMenu = (type(section.menuContextId) == "string" and section.menuContextId ~= "") and section.menuContextId or sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
@@ -1086,7 +1089,12 @@ local function openMenuSectionById(sectionId)
 
         app.isOfflinePage = section.offline == true
         app.ui.progressDisplay(nil, nil, speed)
-        app.ui.openPage({idx = sectionIndex, title = section.title, script = section.module .. "/" .. script})
+        app.ui.openPage({
+            idx = sectionIndex,
+            title = section.title,
+            script = section.module .. "/" .. script,
+            openedFromShortcuts = (section.group == "shortcuts")
+        })
         return true
     end
 
@@ -1097,7 +1105,10 @@ local function openMenuSectionById(sectionId)
         end
         if section.forceMenuToMain then
             app._forceMenuToMain = true
+        else
+            app._forceMenuToMain = false
         end
+        app._openedFromShortcuts = (section.group == "shortcuts") or (section.groupTitle == "@i18n(app.header_shortcuts)@")
         app.lastMenu = (type(section.menuContextId) == "string" and section.menuContextId ~= "") and section.menuContextId or sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
@@ -1105,7 +1116,13 @@ local function openMenuSectionById(sectionId)
         app.pendingManifestMenuId = section.menuId
         app.isOfflinePage = section.offline == true
         app.ui.progressDisplay(nil, nil, speed)
-        app.ui.openPage({idx = sectionIndex, title = section.title, script = "manifest_menu/menu.lua", menuId = section.menuId})
+        app.ui.openPage({
+            idx = sectionIndex,
+            title = section.title,
+            script = "manifest_menu/menu.lua",
+            menuId = section.menuId,
+            openedFromShortcuts = (section.group == "shortcuts")
+        })
         return true
     end
 
@@ -1115,6 +1132,8 @@ end
 function ui.openMainMenu(activesection)
 
     if openMenuSectionById(activesection) then return end
+    app._forceMenuToMain = false
+    app._openedFromShortcuts = false
 
     ui.resetPageState()
     app.lastMenu = "mainmenu"
@@ -1234,12 +1253,23 @@ function ui.openMainMenu(activesection)
                                 speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
                             end
                             app.ui.progressDisplay(nil, nil, speed)
-                            app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
+                            app.ui.openPage({
+                                idx = menuIndex,
+                                title = menuItem.title,
+                                script = menuItem.module .. "/" .. script,
+                                openedFromShortcuts = (menuItem.group == "shortcuts")
+                            })
                         elseif type(menuItem.menuId) == "string" and menuItem.menuId ~= "" then
                             app.isOfflinePage = menuItem.offline == true
                             app.pendingManifestMenuId = menuItem.menuId
                             app.ui.progressDisplay(nil, nil, speed)
-                            app.ui.openPage({idx = menuIndex, title = menuItem.title, script = "manifest_menu/menu.lua", menuId = menuItem.menuId})
+                            app.ui.openPage({
+                                idx = menuIndex,
+                                title = menuItem.title,
+                                script = "manifest_menu/menu.lua",
+                                menuId = menuItem.menuId,
+                                openedFromShortcuts = (menuItem.group == "shortcuts")
+                            })
                         else
                             app.ui.progressDisplay(nil, nil, speed)
                             app.ui.openMainMenu(menuItem.id)
@@ -2026,7 +2056,16 @@ function ui.openPage(opts)
     if modulePath:sub(1, 4) ~= "app/" then
         modulePath = "app/modules/" .. modulePath
     end
+    if opts.openedFromShortcuts ~= nil then
+        app._openedFromShortcuts = (opts.openedFromShortcuts == true)
+    end
     app.Page = assert(loadfile(modulePath))(idx)
+    if app._openedFromShortcuts or app._forceMenuToMain then
+        app.Page.onNavMenu = function()
+            ui.openMainMenu()
+            return true
+        end
+    end
     if app._forceMenuToMain then
         app._forceMenuToMain = false
         app.Page.onNavMenu = function()
@@ -2165,6 +2204,10 @@ function ui.navigationButtons(x, y, w, h, opts)
             options = FONT_S,
             paint = function() end,
                 press = function()
+                    if app._openedFromShortcuts or app._forceMenuToMain then
+                        app.ui.openMainMenu()
+                        return
+                    end
                     if navOpts.onNavMenu then
                         navOpts.onNavMenu()
                     elseif app.Page and app.Page.onNavMenu then
