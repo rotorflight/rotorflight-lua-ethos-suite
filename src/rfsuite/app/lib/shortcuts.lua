@@ -6,8 +6,64 @@
 local shortcuts = {}
 local registryCache = nil
 
+local rfsuite = require("rfsuite")
+
 local function isTruthy(value)
     return value == true or value == "true" or value == 1 or value == "1"
+end
+
+local function preferredApiVersion()
+    local prefs = rfsuite.preferences and rfsuite.preferences.developer
+    local idx = prefs and prefs.apiversion
+    local supported = rfsuite.config and rfsuite.config.supportedMspApiVersion
+    if type(supported) == "table" and idx and supported[idx] then
+        return supported[idx]
+    end
+    return nil
+end
+
+local function apiVersionCompare(op, req)
+    local utils = rfsuite.utils
+    if not utils or not utils.apiVersionCompare then return false end
+
+    local session = rfsuite.session
+    local hasSessionVersion = session and session.apiVersion ~= nil
+    if hasSessionVersion then
+        return utils.apiVersionCompare(op, req)
+    end
+
+    local preferred = preferredApiVersion()
+    if preferred and session then
+        local old = session.apiVersion
+        session.apiVersion = preferred
+        local ok = utils.apiVersionCompare(op, req)
+        session.apiVersion = old
+        return ok
+    end
+
+    return utils.apiVersionCompare(op, req)
+end
+
+local function apiVersionMatches(spec)
+    if type(spec) ~= "table" then return true end
+    return (spec.apiversion == nil or apiVersionCompare(">=", spec.apiversion)) and
+        (spec.apiversionlt == nil or apiVersionCompare("<", spec.apiversionlt)) and
+        (spec.apiversiongt == nil or apiVersionCompare(">", spec.apiversiongt)) and
+        (spec.apiversionlte == nil or apiVersionCompare("<=", spec.apiversionlte)) and
+        (spec.apiversiongte == nil or apiVersionCompare(">=", spec.apiversiongte))
+end
+
+local function pageVisible(page)
+    if type(page) ~= "table" then return false end
+    local utils = rfsuite.utils
+    if page.ethosversion and utils and utils.ethosVersionAtLeast and not utils.ethosVersionAtLeast(page.ethosversion) then
+        return false
+    end
+    if page.mspversion and utils and utils.apiVersionCompare and utils.apiVersionCompare("<", page.mspversion) then
+        return false
+    end
+    if not apiVersionMatches(page) then return false end
+    return true
 end
 
 local function buildMenuOrder(manifest)
@@ -65,11 +121,12 @@ local COPY_KEYS = {
 }
 
 local function resolvePage(menu, page)
+    local fallbackImage = "app/gfx/tools.png"
     local out = {
         name = page.name,
         menuId = page.menuId,
         script = resolveScriptPath(menu.scriptPrefix, page.script),
-        image = resolveImagePath(menu.iconPrefix, page.image)
+        image = resolveImagePath(menu.iconPrefix, page.image) or fallbackImage
     }
     for _, key in ipairs(COPY_KEYS) do
         if page[key] ~= nil then out[key] = page[key] end
@@ -91,6 +148,15 @@ function shortcuts.buildRegistry()
 
     local menus = manifest.menus or {}
     local order = buildMenuOrder(manifest)
+    local menuContextByMenuId = {}
+
+    for _, group in ipairs(manifest.sections or {}) do
+        for _, section in ipairs(group.sections or {}) do
+            if type(section) == "table" and type(section.menuId) == "string" and section.menuId ~= "" then
+                menuContextByMenuId[section.menuId] = section.id
+            end
+        end
+    end
 
     local groups = {}
     local items = {}
@@ -105,7 +171,7 @@ function shortcuts.buildRegistry()
 
             local pageIndex = 0
             for _, page in ipairs(menu.pages) do
-                if type(page) == "table" and type(page.name) == "string" and page.name ~= "" then
+                if type(page) == "table" and type(page.name) == "string" and page.name ~= "" and pageVisible(page) then
                     pageIndex = pageIndex + 1
                     local id = "s_" .. tostring(groupIndex) .. "_" .. tostring(pageIndex)
                     local entry = {
@@ -114,7 +180,8 @@ function shortcuts.buildRegistry()
                         menuId = menuId,
                         groupTitle = group.title,
                         menu = menu,
-                        page = page
+                        page = page,
+                        menuContextId = menuContextByMenuId[menuId]
                     }
                     group.items[#group.items + 1] = entry
                     items[#items + 1] = entry
@@ -174,7 +241,10 @@ function shortcuts.buildSelectedSections(prefs)
                 offline = page.offline,
                 bgtask = page.bgtask,
                 group = "shortcuts",
-                groupTitle = "@i18n(app.header_shortcuts)@"
+                groupTitle = "@i18n(app.header_shortcuts)@",
+                menuContextId = item.menuContextId,
+                forceMenuToMain = true,
+                clearReturnStack = true
             }
 
             for _, key in ipairs(COPY_KEYS) do
@@ -198,6 +268,85 @@ function shortcuts.buildSelectedSections(prefs)
             end
         end
     end
+    return sections
+end
+
+function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
+    if type(manifest) ~= "table" then return {} end
+    local selected = prefs or {}
+    local menus = manifest.menus or {}
+    local order = buildMenuOrder(manifest)
+    local menuContextByMenuId = {}
+    local session = rfsuite.session
+    local isConnected = (session and session.isConnected and session.mcu_id) and true or false
+    local postConnectComplete = (session and session.postConnectComplete) == true
+
+    for _, group in ipairs(manifest.sections or {}) do
+        for _, section in ipairs(group.sections or {}) do
+            if type(section) == "table" and type(section.menuId) == "string" and section.menuId ~= "" then
+                menuContextByMenuId[section.menuId] = section.id
+            end
+        end
+    end
+
+    local sections = {}
+    local groupIndex = 0
+    for _, menuId in ipairs(order) do
+        local menu = menus[menuId]
+        if type(menu) == "table" and type(menu.pages) == "table" then
+            groupIndex = groupIndex + 1
+            local pageIndex = 0
+            for _, page in ipairs(menu.pages) do
+                if type(page) == "table" and type(page.name) == "string" and page.name ~= "" and pageVisible(page) then
+                    pageIndex = pageIndex + 1
+                    local id = "s_" .. tostring(groupIndex) .. "_" .. tostring(pageIndex)
+                    if isTruthy(selected[id]) then
+                        local pageSpec = resolvePage(menu, page)
+                        if not isConnected or not postConnectComplete then
+                            if pageSpec.offline ~= true then
+                                goto continue
+                            end
+                        end
+                        local section = {
+                            id = "shortcut_" .. id,
+                            title = pageSpec.name,
+                            image = pageSpec.image,
+                            loaderspeed = pageSpec.loaderspeed,
+                            offline = pageSpec.offline,
+                            bgtask = pageSpec.bgtask,
+                            group = "shortcuts",
+                            groupTitle = "@i18n(app.header_shortcuts)@",
+                            menuContextId = menuContextByMenuId[menuId],
+                            forceMenuToMain = true,
+                            clearReturnStack = true
+                        }
+
+                        for _, key in ipairs(COPY_KEYS) do
+                            if pageSpec[key] ~= nil then section[key] = pageSpec[key] end
+                        end
+
+                        if type(pageSpec.menuId) == "string" and pageSpec.menuId ~= "" then
+                            section.menuId = pageSpec.menuId
+                        else
+                            local module, script = scriptToModuleAndScript(pageSpec.script)
+                            if module and script then
+                                section.module = module
+                                section.script = script
+                            else
+                                section = nil
+                            end
+                        end
+
+                        if section then
+                            sections[#sections + 1] = section
+                        end
+                    end
+                end
+                ::continue::
+            end
+        end
+    end
+
     return sections
 end
 

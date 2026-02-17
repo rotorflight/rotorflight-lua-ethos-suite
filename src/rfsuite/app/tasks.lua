@@ -12,6 +12,7 @@ local log = utils.log
 local nextUiTask = 1
 local taskAccumulator = 0
 local uiTaskPercent = 100
+local lastPostConnectComplete = false
 
 local function exitApp()
     local app = rfsuite.app
@@ -49,6 +50,17 @@ end
 local function mainMenuIconEnableDisable()
     local app = rfsuite.app
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
+
+    local postConnectComplete = (rfsuite.session and rfsuite.session.postConnectComplete) == true
+    if postConnectComplete and not lastPostConnectComplete then
+        lastPostConnectComplete = true
+        app.MainMenu = assert(loadfile("app/modules/init.lua"))()
+        if app.uiState == app.uiStatus.mainMenu then
+            app.ui.openMainMenu()
+        end
+    elseif not postConnectComplete then
+        lastPostConnectComplete = false
+    end
 
     -- Focus handling:
     -- Calling :focus() repeatedly breaks keyboard navigation (it keeps snapping back).

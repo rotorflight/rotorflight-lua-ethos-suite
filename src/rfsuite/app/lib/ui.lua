@@ -1069,7 +1069,13 @@ local function openMenuSectionById(sectionId)
 
     -- Section backed by a concrete module/script page.
     if section.module then
-        app.lastMenu = sectionId
+        if section.clearReturnStack then
+            navigation.clearReturnStack(app)
+        end
+        if section.forceMenuToMain then
+            app._forceMenuToMain = true
+        end
+        app.lastMenu = (type(section.menuContextId) == "string" and section.menuContextId ~= "") and section.menuContextId or sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
         local speed = tonumber(section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
@@ -1086,7 +1092,13 @@ local function openMenuSectionById(sectionId)
 
     -- Section backed by a manifest menu id loaded through a shared menu module.
     if type(section.menuId) == "string" and section.menuId ~= "" then
-        app.lastMenu = sectionId
+        if section.clearReturnStack then
+            navigation.clearReturnStack(app)
+        end
+        if section.forceMenuToMain then
+            app._forceMenuToMain = true
+        end
+        app.lastMenu = (type(section.menuContextId) == "string" and section.menuContextId ~= "") and section.menuContextId or sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
         local speed = tonumber(section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
@@ -2015,6 +2027,13 @@ function ui.openPage(opts)
         modulePath = "app/modules/" .. modulePath
     end
     app.Page = assert(loadfile(modulePath))(idx)
+    if app._forceMenuToMain then
+        app._forceMenuToMain = false
+        app.Page.onNavMenu = function()
+            ui.openMainMenu()
+            return true
+        end
+    end
 
     local sectionScript = script
     if type(sectionScript) == "string" and sectionScript:sub(1, 12) == "app/modules/" then
@@ -2145,16 +2164,16 @@ function ui.navigationButtons(x, y, w, h, opts)
             icon = nil,
             options = FONT_S,
             paint = function() end,
-            press = function()
-                if navOpts.onNavMenu then
-                    navOpts.onNavMenu()
-                elseif app.Page and app.Page.onNavMenu then
-                    app.Page.onNavMenu(app.Page)
-                else
-                    app.ui.openMenuContext()
+                press = function()
+                    if navOpts.onNavMenu then
+                        navOpts.onNavMenu()
+                    elseif app.Page and app.Page.onNavMenu then
+                        app.Page.onNavMenu(app.Page)
+                    else
+                        app.ui.openMenuContext()
+                    end
                 end
-            end
-        })
+            })
 
         app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
             text = "@i18n(app.navigation_save)@",

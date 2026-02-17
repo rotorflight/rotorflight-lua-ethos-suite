@@ -97,7 +97,7 @@ end
 local function resolveShortcutSections()
     if shortcutSections ~= nil then return shortcutSections end
     local prefs = rfsuite.preferences and rfsuite.preferences.shortcuts or {}
-    shortcutSections = shortcuts.buildSelectedSections(prefs)
+    shortcutSections = shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
     return shortcutSections
 end
 
