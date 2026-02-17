@@ -2438,6 +2438,12 @@
       "needs_translation": false,
       "translation": "Help"
     },
+    "header_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": false,
+      "translation": "Shortcuts"
+    },
     "header_system": {
       "english": "System",
       "max_length": 6,
@@ -2485,6 +2491,12 @@
       "max_length": 6,
       "needs_translation": false,
       "translation": "Safety"
+    },
+    "menu_section_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": false,
+      "translation": "Shortcuts"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -5105,10 +5117,10 @@
           }
         },
         "name": {
-          "english": "ESC Tools",
-          "max_length": 9,
+          "english": "Esc Programing",
+          "max_length": 14,
           "needs_translation": false,
-          "translation": "ESC Tools"
+          "translation": "Esc Programing"
         },
         "please_powercycle": {
           "english": "Please power cycle the ESC...",
@@ -8448,6 +8460,24 @@
           "needs_translation": false,
           "translation": "Rate Profile"
         },
+        "shortcuts": {
+          "english": "Shortcuts",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Shortcuts"
+        },
+        "shortcuts_group": {
+          "english": "Category",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Category"
+        },
+        "shortcuts_none": {
+          "english": "No shortcut sources available.",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "No shortcut sources available."
+        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,
@@ -8549,6 +8579,12 @@
           "max_length": 18,
           "needs_translation": false,
           "translation": "Tx Battery Options"
+        },
+        "txt_collapse_unused_menu_entries": {
+          "english": "Collapse Navigation",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Collapse Navigation"
         },
         "txt_debug": {
           "english": "DEBUG",

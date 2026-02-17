@@ -64,6 +64,16 @@ local function resolvePageScript(page, section)
     return page.script, page.loaderspeed
 end
 
+local function resolveModuleScriptPath(moduleName, script)
+    if type(script) ~= "string" or script == "" then return nil end
+    if script:sub(1, 4) == "app/" then return script end
+    if type(moduleName) ~= "string" or moduleName == "" then return script end
+
+    local prefix = moduleName .. "/"
+    if script:sub(1, #prefix) == prefix then return script end
+    return prefix .. script
+end
+
 local function apiVersionMatches(spec)
     if type(spec) ~= "table" then return true end
     return (spec.apiversion == nil or utils.apiVersionCompare(">=", spec.apiversion)) and
@@ -84,6 +94,10 @@ end
 local function trimText(value)
     if type(value) ~= "string" then return "" end
     return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function isTruthy(value)
+    return value == true or value == "true" or value == 1 or value == "1"
 end
 
 local function splitBreadcrumbTitle(title)
@@ -188,6 +202,54 @@ local function composeSectionPath(sectionIndex, sectionTitle)
     return category .. " / " .. title
 end
 
+local menuLookupCache = {menuRef = nil}
+
+local function refreshMenuLookupCache()
+    local menu = app and app.MainMenu
+    if menuLookupCache.menuRef == menu then return menuLookupCache end
+
+    local cache = {
+        menuRef = menu,
+        sectionPathByIndex = {},
+        sectionPathById = {},
+        sectionPathByMenuId = {},
+        sectionPathByModule = {},
+        sectionPathByFolder = {}
+    }
+
+    local sections = menu and menu.sections
+    if type(sections) == "table" then
+        for i = 1, #sections do
+            local section = sections[i]
+            if section and section.title then
+                local path = composeSectionPath(i, section.title)
+                cache.sectionPathByIndex[i] = path
+                if section.id ~= nil then cache.sectionPathById[section.id] = path end
+                if type(section.menuId) == "string" and section.menuId ~= "" then
+                    cache.sectionPathByMenuId[section.menuId] = path
+                end
+                if type(section.module) == "string" and section.module ~= "" then
+                    cache.sectionPathByModule[section.module] = path
+                end
+            end
+        end
+    end
+
+    local pages = menu and menu.pages
+    if type(pages) == "table" then
+        for i = 1, #pages do
+            local page = pages[i]
+            if page and type(page.folder) == "string" and page.folder ~= "" then
+                local path = cache.sectionPathByIndex[page.section]
+                if path then cache.sectionPathByFolder[page.folder] = path end
+            end
+        end
+    end
+
+    menuLookupCache = cache
+    return menuLookupCache
+end
+
 local function getHeaderNavButtonHeight()
     local base = (app and app.radio and app.radio.navbuttonHeight) or 0
     if base <= 0 then return base end
@@ -252,34 +314,12 @@ end
 
 local function getMenuSectionTitleById(sectionId)
     if not sectionId then return nil end
-    local menu = app and app.MainMenu
-    local sections = menu and menu.sections
-    if type(sections) ~= "table" then return nil end
-
-    for i = 1, #sections do
-        local section = sections[i]
-        if section and section.id == sectionId and section.title then
-            return composeSectionPath(i, section.title)
-        end
-    end
-
-    return nil
+    return refreshMenuLookupCache().sectionPathById[sectionId]
 end
 
 local function getMenuSectionTitleByMenuId(menuId)
     if type(menuId) ~= "string" or menuId == "" then return nil end
-    local menu = app and app.MainMenu
-    local sections = menu and menu.sections
-    if type(sections) ~= "table" then return nil end
-
-    for i = 1, #sections do
-        local section = sections[i]
-        if section and section.menuId == menuId and section.title then
-            return composeSectionPath(i, section.title)
-        end
-    end
-
-    return nil
+    return refreshMenuLookupCache().sectionPathByMenuId[menuId]
 end
 
 local function getMenuSectionTitleByScript(script)
@@ -290,29 +330,8 @@ local function getMenuSectionTitleByScript(script)
     local folder = script:match("^([^/]+)")
     if not folder or folder == "" then return nil end
 
-    local menu = app and app.MainMenu
-    local pages = menu and menu.pages
-    local sections = menu and menu.sections
-    if type(sections) ~= "table" then return nil end
-
-    if type(pages) == "table" then
-        for i = 1, #pages do
-            local page = pages[i]
-            if page and page.folder == folder then
-                local section = sections[page.section]
-                if section and section.title then return composeSectionPath(page.section, section.title) end
-            end
-        end
-    end
-
-    for i = 1, #sections do
-        local section = sections[i]
-        if section and section.title and section.module == folder then
-            return composeSectionPath(i, section.title)
-        end
-    end
-
-    return nil
+    local cache = refreshMenuLookupCache()
+    return cache.sectionPathByFolder[folder] or cache.sectionPathByModule[folder]
 end
 
 local function getBreadcrumbFromReturnStack()
@@ -1060,7 +1079,16 @@ local function openMenuSectionById(sectionId)
 
     -- Section backed by a concrete module/script page.
     if section.module then
-        app.lastMenu = sectionId
+        if section.clearReturnStack then
+            navigation.clearReturnStack(app)
+        end
+        if section.forceMenuToMain then
+            app._forceMenuToMain = true
+        else
+            app._forceMenuToMain = false
+        end
+        app._openedFromShortcuts = (section.group == "shortcuts") or (section.groupTitle == "@i18n(app.header_shortcuts)@")
+        app.lastMenu = (type(section.menuContextId) == "string" and section.menuContextId ~= "") and section.menuContextId or sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
         local speed = tonumber(section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
@@ -1068,23 +1096,45 @@ local function openMenuSectionById(sectionId)
         if speedOverride ~= nil then
             speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
         end
+        local targetScript = resolveModuleScriptPath(section.module, script) or resolveModuleScriptPath(section.module, section.script)
+        if not targetScript then return false end
 
         app.isOfflinePage = section.offline == true
         app.ui.progressDisplay(nil, nil, speed)
-        app.ui.openPage({idx = sectionIndex, title = section.title, script = section.module .. "/" .. script})
+        app.ui.openPage({
+            idx = sectionIndex,
+            title = section.title,
+            script = targetScript,
+            openedFromShortcuts = (section.group == "shortcuts")
+        })
         return true
     end
 
     -- Section backed by a manifest menu id loaded through a shared menu module.
     if type(section.menuId) == "string" and section.menuId ~= "" then
-        app.lastMenu = sectionId
+        if section.clearReturnStack then
+            navigation.clearReturnStack(app)
+        end
+        if section.forceMenuToMain then
+            app._forceMenuToMain = true
+        else
+            app._forceMenuToMain = false
+        end
+        app._openedFromShortcuts = (section.group == "shortcuts") or (section.groupTitle == "@i18n(app.header_shortcuts)@")
+        app.lastMenu = (type(section.menuContextId) == "string" and section.menuContextId ~= "") and section.menuContextId or sectionId
         app._menuFocusEpoch = (app._menuFocusEpoch or 0) + 1
 
         local speed = tonumber(section.loaderspeed) or (app.loaderSpeed and app.loaderSpeed.DEFAULT) or 1.0
         app.pendingManifestMenuId = section.menuId
         app.isOfflinePage = section.offline == true
         app.ui.progressDisplay(nil, nil, speed)
-        app.ui.openPage({idx = sectionIndex, title = section.title, script = "manifest_menu/menu.lua", menuId = section.menuId})
+        app.ui.openPage({
+            idx = sectionIndex,
+            title = section.title,
+            script = "manifest_menu/menu.lua",
+            menuId = section.menuId,
+            openedFromShortcuts = (section.group == "shortcuts")
+        })
         return true
     end
 
@@ -1094,6 +1144,8 @@ end
 function ui.openMainMenu(activesection)
 
     if openMenuSectionById(activesection) then return end
+    app._forceMenuToMain = false
+    app._openedFromShortcuts = false
 
     ui.resetPageState()
     app.lastMenu = "mainmenu"
@@ -1212,13 +1264,26 @@ function ui.openMainMenu(activesection)
                             if speedOverride ~= nil then
                                 speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
                             end
+                            local targetScript = resolveModuleScriptPath(menuItem.module, script) or resolveModuleScriptPath(menuItem.module, menuItem.script)
+                            if not targetScript then return end
                             app.ui.progressDisplay(nil, nil, speed)
-                            app.ui.openPage({idx = menuIndex, title = menuItem.title, script = menuItem.module .. "/" .. script})
+                            app.ui.openPage({
+                                idx = menuIndex,
+                                title = menuItem.title,
+                                script = targetScript,
+                                openedFromShortcuts = (menuItem.group == "shortcuts")
+                            })
                         elseif type(menuItem.menuId) == "string" and menuItem.menuId ~= "" then
                             app.isOfflinePage = menuItem.offline == true
                             app.pendingManifestMenuId = menuItem.menuId
                             app.ui.progressDisplay(nil, nil, speed)
-                            app.ui.openPage({idx = menuIndex, title = menuItem.title, script = "manifest_menu/menu.lua", menuId = menuItem.menuId})
+                            app.ui.openPage({
+                                idx = menuIndex,
+                                title = menuItem.title,
+                                script = "manifest_menu/menu.lua",
+                                menuId = menuItem.menuId,
+                                openedFromShortcuts = (menuItem.group == "shortcuts")
+                            })
                         else
                             app.ui.progressDisplay(nil, nil, speed)
                             app.ui.openMainMenu(menuItem.id)
@@ -1238,7 +1303,6 @@ function ui.openMainMenu(activesection)
 
     utils.reportMemoryUsage("app.openMainMenu", "end")
 
-    collectgarbage('collect')
     collectgarbage('collect')
 end
 
@@ -2005,7 +2069,23 @@ function ui.openPage(opts)
     if modulePath:sub(1, 4) ~= "app/" then
         modulePath = "app/modules/" .. modulePath
     end
+    if opts.openedFromShortcuts ~= nil then
+        app._openedFromShortcuts = (opts.openedFromShortcuts == true)
+    end
     app.Page = assert(loadfile(modulePath))(idx)
+    if app._openedFromShortcuts or app._forceMenuToMain then
+        app.Page.onNavMenu = function()
+            ui.openMainMenu()
+            return true
+        end
+    end
+    if app._forceMenuToMain then
+        app._forceMenuToMain = false
+        app.Page.onNavMenu = function()
+            ui.openMainMenu()
+            return true
+        end
+    end
 
     local sectionScript = script
     if type(sectionScript) == "string" and sectionScript:sub(1, 12) == "app/modules/" then
@@ -2104,6 +2184,7 @@ function ui.navigationButtons(x, y, w, h, opts)
 
     local navOpts = opts or {}
     local navButtons = navOpts.navButtons or (app.Page and app.Page.navButtons)
+    local collapseNavigation = isTruthy(preferences and preferences.general and preferences.general.collapse_unused_menu_entries)
     local menuEnabled, saveEnabled, reloadEnabled, toolEnabled, helpEnabled
     if navButtons == nil then
         menuEnabled = true
@@ -2119,98 +2200,176 @@ function ui.navigationButtons(x, y, w, h, opts)
         helpEnabled = (navButtons.help == true)
     end
 
-    helpOffset = x - (wS + padding)
-    toolOffset = helpOffset - (wS + padding)
-    reloadOffset = toolOffset - (w + padding)
-    saveOffset = reloadOffset - (w + padding)
-    menuOffset = saveOffset - (w + padding)
-
-    app.formNavigationFields['menu'] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
-        text = "@i18n(app.navigation_menu)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            if navOpts.onNavMenu then
-                navOpts.onNavMenu()
-            elseif app.Page and app.Page.onNavMenu then
-                app.Page.onNavMenu(app.Page)
-            else
-                app.ui.openMenuContext()
-            end
-        end
-    })
-
-    app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
-        text = "@i18n(app.navigation_save)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            if app.Page and app.Page.onSaveMenu then
-                app.Page.onSaveMenu(app.Page)
-            else
-                app.triggers.triggerSave = true
-            end
-        end
-    })
-
-    app.formNavigationFields['reload'] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
-        text = "@i18n(app.navigation_reload)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            if app.Page and app.Page.onReloadMenu then
-                app.Page.onReloadMenu(app.Page)
-            else
-                app.triggers.triggerReload = true
-            end
-            return true
-        end
-    })
-
-    app.formNavigationFields['tool'] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {
-        text = "@i18n(app.navigation_tools)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            if app.Page and app.Page.onToolMenu then app.Page.onToolMenu(app.Page) end
-        end
-    })
-
     local section = (type(app.lastScript) == "string") and app.lastScript:match("([^/]+)") or nil
     local script = (type(app.lastScript) == "string") and app.lastScript:match("/([^/]+)%.lua$") or nil
     local help = section and getHelpData(section) or nil
     local hasHelpData = (help and help.help and (help.help[script] or help.help['default'])) and true or false
-    app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-        text = "@i18n(app.navigation_help)@",
-        icon = nil,
-        options = FONT_S,
-        paint = function() end,
-        press = function()
-            if app.Page and app.Page.onHelpMenu then
-                app.Page.onHelpMenu(app.Page)
-            elseif help then
-                if script and help.help[script] then
-                    app.ui.openPageHelp(help.help[script])
+    if not collapseNavigation then
+        helpOffset = x - (wS + padding)
+        toolOffset = helpOffset - (wS + padding)
+        reloadOffset = toolOffset - (w + padding)
+        saveOffset = reloadOffset - (w + padding)
+        menuOffset = saveOffset - (w + padding)
+
+        app.formNavigationFields['menu'] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
+            text = "@i18n(app.navigation_menu)@",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+                press = function()
+                    if app._openedFromShortcuts or app._forceMenuToMain then
+                        app.ui.openMainMenu()
+                        return
+                    end
+                    if navOpts.onNavMenu then
+                        navOpts.onNavMenu()
+                    elseif app.Page and app.Page.onNavMenu then
+                        app.Page.onNavMenu(app.Page)
+                    else
+                        app.ui.openMenuContext()
+                    end
+                end
+            })
+
+        app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
+            text = "@i18n(app.navigation_save)@",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                if app.Page and app.Page.onSaveMenu then
+                    app.Page.onSaveMenu(app.Page)
                 else
-                    app.ui.openPageHelp(help.help['default'])
+                    app.triggers.triggerSave = true
                 end
             end
-        end
-    })
+        })
+
+        app.formNavigationFields['reload'] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
+            text = "@i18n(app.navigation_reload)@",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                if app.Page and app.Page.onReloadMenu then
+                    app.Page.onReloadMenu(app.Page)
+                else
+                    app.triggers.triggerReload = true
+                end
+                return true
+            end
+        })
+
+        app.formNavigationFields['tool'] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {
+            text = "@i18n(app.navigation_tools)@",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                if app.Page and app.Page.onToolMenu then app.Page.onToolMenu(app.Page) end
+            end
+        })
+
+        app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
+            text = "@i18n(app.navigation_help)@",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                if app.Page and app.Page.onHelpMenu then
+                    app.Page.onHelpMenu(app.Page)
+                elseif help then
+                    if script and help.help[script] then
+                        app.ui.openPageHelp(help.help[script])
+                    else
+                        app.ui.openPageHelp(help.help['default'])
+                    end
+                end
+            end
+        })
+    end
 
     local toolCanRun = (toolEnabled and app.Page and app.Page.onToolMenu ~= nil) and true or false
     local helpCanRun = (helpEnabled and ((app.Page and app.Page.onHelpMenu ~= nil) or hasHelpData)) and true or false
     local enabledState = {menu = menuEnabled, save = saveEnabled, reload = reloadEnabled, tool = toolCanRun, help = helpCanRun}
 
-    app.formNavigationFields['menu']:enable(enabledState.menu)
-    app.formNavigationFields['save']:enable(enabledState.save)
-    app.formNavigationFields['reload']:enable(enabledState.reload)
-    app.formNavigationFields['tool']:enable(enabledState.tool)
-    app.formNavigationFields['help']:enable(enabledState.help)
+    if collapseNavigation then
+        if app.formNavigationFields['menu'] then app.formNavigationFields['menu'] = nil end
+        if app.formNavigationFields['save'] then app.formNavigationFields['save'] = nil end
+        if app.formNavigationFields['reload'] then app.formNavigationFields['reload'] = nil end
+        if app.formNavigationFields['tool'] then app.formNavigationFields['tool'] = nil end
+        if app.formNavigationFields['help'] then app.formNavigationFields['help'] = nil end
+
+        local buttonDefs = {
+            {key = "menu", width = w, enabled = enabledState.menu, text = "@i18n(app.navigation_menu)@", press = function()
+                if navOpts.onNavMenu then
+                    navOpts.onNavMenu()
+                elseif app.Page and app.Page.onNavMenu then
+                    app.Page.onNavMenu(app.Page)
+                else
+                    app.ui.openMenuContext()
+                end
+            end},
+            {key = "save", width = w, enabled = enabledState.save, text = "@i18n(app.navigation_save)@", press = function()
+                if app.Page and app.Page.onSaveMenu then
+                    app.Page.onSaveMenu(app.Page)
+                else
+                    app.triggers.triggerSave = true
+                end
+            end},
+            {key = "reload", width = w, enabled = enabledState.reload, text = "@i18n(app.navigation_reload)@", press = function()
+                if app.Page and app.Page.onReloadMenu then
+                    app.Page.onReloadMenu(app.Page)
+                else
+                    app.triggers.triggerReload = true
+                end
+                return true
+            end},
+            {key = "tool", width = wS, enabled = enabledState.tool, text = "@i18n(app.navigation_tools)@", press = function()
+                if app.Page and app.Page.onToolMenu then app.Page.onToolMenu(app.Page) end
+            end},
+            {key = "help", width = wS, enabled = enabledState.help, text = "@i18n(app.navigation_help)@", press = function()
+                if app.Page and app.Page.onHelpMenu then
+                    app.Page.onHelpMenu(app.Page)
+                elseif help then
+                    if script and help.help[script] then
+                        app.ui.openPageHelp(help.help[script])
+                    else
+                        app.ui.openPageHelp(help.help['default'])
+                    end
+                end
+            end}
+        }
+
+        local visibleButtons = {}
+        for i = 1, #buttonDefs do
+            if buttonDefs[i].enabled then
+                visibleButtons[#visibleButtons + 1] = buttonDefs[i]
+            end
+        end
+
+        -- Match legacy header gutter: right-most button stops at (x - padding).
+        local rightEdge = x - padding
+        for i = #visibleButtons, 1, -1 do
+            local def = visibleButtons[i]
+            local bx = rightEdge - def.width
+            app.formNavigationFields[def.key] = form.addButton(line, {x = bx, y = y, w = def.width, h = h}, {
+                text = def.text,
+                icon = nil,
+                options = FONT_S,
+                paint = function() end,
+                press = def.press
+            })
+            app.formNavigationFields[def.key]:enable(true)
+            rightEdge = bx - padding
+        end
+    else
+        app.formNavigationFields['menu']:enable(enabledState.menu)
+        app.formNavigationFields['save']:enable(enabledState.save)
+        app.formNavigationFields['reload']:enable(enabledState.reload)
+        app.formNavigationFields['tool']:enable(enabledState.tool)
+        app.formNavigationFields['help']:enable(enabledState.help)
+    end
 
     local focused = false
     local focusOrder = {"menu", "save", "reload", "tool", "help"}
@@ -2224,8 +2383,15 @@ function ui.navigationButtons(x, y, w, h, opts)
         end
     end
 
-    if not focused and app.formNavigationFields['menu'] then
-        app.formNavigationFields['menu']:focus()
+    if not focused then
+        for i = 1, #focusOrder do
+            local btn = app.formNavigationFields[focusOrder[i]]
+            if btn then
+                btn:focus()
+                focused = true
+                break
+            end
+        end
     end
 
     if ui._shouldManageDirtySave() then

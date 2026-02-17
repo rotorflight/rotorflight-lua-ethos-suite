@@ -46,6 +46,7 @@ rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config)
 local userpref_defaults = {
     general = {
         iconsize = 2,
+        shortcuts_mixed_in = true,
         syncname = false,
         developer_tools = false,
         gimbalsupression = 0.85,
@@ -108,6 +109,7 @@ local userpref_defaults = {
         postalertinterval = 10,
         postalertperiod = 30
     },
+    shortcuts = {},
     menulastselected = {}
 }
 

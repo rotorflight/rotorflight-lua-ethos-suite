@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local shortcuts = assert(loadfile("app/lib/shortcuts.lua"))()
 
 local pages = {}
 local manifest = loadfile("app/modules/manifest.lua")()
@@ -13,9 +14,34 @@ local function isTruthy(value)
     return value == true or value == "true" or value == 1 or value == "1"
 end
 
+local function prefBool(value)
+    if value == nil then return nil end
+    if type(value) == "boolean" then return value end
+    if type(value) == "number" then return value > 0 end
+    if type(value) == "string" then
+        local lowered = value:lower():match("^%s*(.-)%s*$")
+        if lowered == "true" or lowered == "1" or lowered == "yes" or lowered == "on" then return true end
+        if lowered == "false" or lowered == "0" or lowered == "no" or lowered == "off" then return false end
+        if lowered:find("mix", 1, true) then return true end
+        if lowered:find("dock", 1, true) then return false end
+        local num = tonumber(lowered)
+        if num ~= nil then return num > 0 end
+    end
+    return nil
+end
+
 local function developerToolsEnabled()
     local pref = rfsuite.preferences and rfsuite.preferences.general
     return pref and isTruthy(pref.developer_tools) or false
+end
+
+local function shortcutsEnabled()
+    local prefs = rfsuite.preferences and rfsuite.preferences.shortcuts
+    if type(prefs) ~= "table" then return false end
+    for _, value in pairs(prefs) do
+        if isTruthy(value) then return true end
+    end
+    return false
 end
 
 local function resolveLoaderSpeed(value)
@@ -37,14 +63,24 @@ local function cloneShallow(src)
 end
 
 local showDeveloperModules = developerToolsEnabled()
+local shortcutSections = nil
 
 local function includeByDeveloper(spec)
     local isDev = isTruthy(spec and spec.developer)
     return (not isDev) or showDeveloperModules
 end
 
+local function includeByShortcuts(spec)
+    local requiresShortcuts = isTruthy(spec and spec.requiresShortcuts)
+    if requiresShortcuts then
+        return shortcutsEnabled()
+    end
+    return true
+end
+
 local function addSection(spec)
     if not includeByDeveloper(spec) then return nil end
+    if not includeByShortcuts(spec) then return nil end
 
     local section = cloneShallow(spec)
     section.loaderspeed = resolveLoaderSpeed(section.loaderspeed)
@@ -59,6 +95,7 @@ end
 
 local function addLeafPage(sectionIndex, spec)
     if not includeByDeveloper(spec) then return end
+    if not includeByShortcuts(spec) then return end
 
     local page = cloneShallow(spec)
     page.section = sectionIndex
@@ -73,9 +110,26 @@ local function addLeafPage(sectionIndex, spec)
     pages[#pages + 1] = page
 end
 
+local function resolveShortcutSections()
+    if shortcutSections ~= nil then return shortcutSections end
+    local prefs = rfsuite.preferences and rfsuite.preferences.shortcuts or {}
+    shortcutSections = shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
+    return shortcutSections
+end
+
+local function shortcutDisplayMode()
+    local general = rfsuite.preferences and rfsuite.preferences.general
+    local mixedPref = prefBool(general and general.shortcuts_mixed_in)
+    return (mixedPref == true) and "mixed" or "dock"
+end
+
 local function flattenSectionSpecs(rawSections)
     local out = {}
     if type(rawSections) ~= "table" then return out end
+
+    local shortcutMode = shortcutDisplayMode()
+    local extras = resolveShortcutSections()
+    if type(extras) ~= "table" then extras = {} end
 
     for _, entry in ipairs(rawSections) do
         if type(entry) == "table" and type(entry.sections) == "table" then
@@ -87,8 +141,21 @@ local function flattenSectionSpecs(rawSections)
                     out[#out + 1] = spec
                 end
             end
+            if shortcutMode == "dock" and entry.id == "configuration" then
+                for _, extra in ipairs(extras) do
+                    out[#out + 1] = extra
+                end
+            end
         elseif type(entry) == "table" then
             out[#out + 1] = entry
+        end
+    end
+
+    if shortcutMode == "mixed" then
+        for _, extra in ipairs(extras) do
+            local appended = cloneShallow(extra)
+            appended.newline = nil
+            out[#out + 1] = appended
         end
     end
 

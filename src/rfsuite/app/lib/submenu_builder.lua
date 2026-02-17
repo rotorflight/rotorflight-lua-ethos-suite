@@ -7,6 +7,7 @@ local buildContainer = assert(loadfile("app/lib/menu_container.lua"))()
 
 local submenu = {}
 local manifestPath = "app/modules/manifest.lua"
+local manifestCache = nil
 
 local function cloneShallow(src)
     local out = {}
@@ -39,10 +40,17 @@ local function resolvePages(opts, hooks)
 end
 
 local function loadManifest()
+    if type(manifestCache) == "table" then return manifestCache end
+
     local chunk = assert(loadfile(manifestPath))
     local manifest = chunk()
-    if type(manifest) ~= "table" then return {} end
-    return manifest
+    if type(manifest) ~= "table" then
+        manifestCache = {}
+    else
+        manifestCache = manifest
+    end
+
+    return manifestCache
 end
 
 local function resolveManifestMenuSpec(menuId)

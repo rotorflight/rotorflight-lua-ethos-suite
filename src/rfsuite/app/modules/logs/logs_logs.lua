@@ -197,16 +197,17 @@ local function openPage(opts)
                     press = function()
                         prefs.menulastselected["logs_logs"] = pageName
                         app.ui.progressDisplay()
+                        local logsModelTitle = "Logs / " .. name
                         app.ui.openPage({
                             idx = currentButtonIndex,
-                            title = title,
+                            title = logsModelTitle,
                             script = "logs/logs_view.lua",
                             logfile = pageName,
                             dirname = dirname,
                             modelName = name,
                             returnContext = {
                                 idx = pidx,
-                                title = title,
+                                title = logsModelTitle,
                                 script = script,
                                 dirname = dirname,
                                 modelName = name

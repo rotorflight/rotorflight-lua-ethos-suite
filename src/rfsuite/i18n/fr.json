@@ -2836,6 +2836,13 @@
       "reverse_text": false,
       "translation": "Aide"
     },
+    "header_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
+    },
     "header_system": {
       "english": "System",
       "max_length": 6,
@@ -2891,6 +2898,13 @@
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Safety"
+    },
+    "menu_section_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -5941,8 +5955,8 @@
           }
         },
         "name": {
-          "english": "ESC Tools",
-          "max_length": 9,
+          "english": "Esc Programing",
+          "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Outils ESC"
@@ -9831,6 +9845,27 @@
           "reverse_text": false,
           "translation": "Profil de Taux"
         },
+        "shortcuts": {
+          "english": "Shortcuts",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shortcuts"
+        },
+        "shortcuts_group": {
+          "english": "Category",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Category"
+        },
+        "shortcuts_none": {
+          "english": "No shortcut sources available.",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No shortcut sources available."
+        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,
@@ -9949,6 +9984,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Options batterie Tx"
+        },
+        "txt_collapse_unused_menu_entries": {
+          "english": "Collapse Navigation",
+          "max_length": 19,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Collapse Unused Menu Entries"
         },
         "txt_debug": {
           "english": "DEBUG",

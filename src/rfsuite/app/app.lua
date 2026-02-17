@@ -44,6 +44,20 @@ end
 function app.wakeup_protected()
     app.guiIsRunning = true
 
+    if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
+        local ok, err = pcall(app.ui.openMainMenu)
+        if ok then
+            app._pendingMainMenuOpen = false
+        else
+            local msg = tostring(err)
+            if msg:find("Max instructions count reached", 1, true) then
+                -- Retry on next wakeup tick when the VM budget resets.
+                return
+            end
+            error(err)
+        end
+    end
+
     if app.tasks then app.tasks.wakeup() end
 
     local hasBreadcrumb = app.uiState == app.uiStatus.pages and (
@@ -194,7 +208,7 @@ function app.create()
         app.initialized = true
     end
 
-    app.ui.openMainMenu()
+    app._pendingMainMenuOpen = true
 end
 
 function app.event(widget, category, value, x, y)
@@ -210,6 +224,10 @@ function app.event(widget, category, value, x, y)
     end
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
+        if (app._openedFromShortcuts or app._forceMenuToMain) and isCloseEvent then
+            app.ui.openMainMenu()
+            return true
+        end
         if app.Page.event then
             log("USING PAGES EVENTS", "debug")
             local ret = app.Page.event(widget, category, value, x, y)
@@ -232,7 +250,9 @@ function app.event(widget, category, value, x, y)
             log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-            if app.Page.onNavMenu then
+            if app._forceMenuToMain then
+                app.ui.openMainMenu()
+            elseif app.Page.onNavMenu then
                 app.Page.onNavMenu(app.Page)
             else
                 app.ui.openMenuContext()
