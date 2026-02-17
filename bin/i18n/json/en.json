@@ -8179,6 +8179,24 @@
           "max_length": 21,
           "needs_translation": false,
           "translation": "Save requires changes"
+        },
+        "shortcuts": {
+          "english": "Shortcuts",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Shortcuts"
+        },
+        "shortcuts_group": {
+          "english": "Category",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Category"
+        },
+        "shortcuts_none": {
+          "english": "No shortcut sources available.",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "No shortcut sources available."
         }
       },
       "stats": {
@@ -9045,6 +9063,18 @@
       "needs_translation": false,
       "translation": "Hz",
       "max_length": 2
+    },
+    "header_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": false,
+      "translation": "Shortcuts"
+    },
+    "menu_section_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": false,
+      "translation": "Shortcuts"
     }
   },
   "error": {

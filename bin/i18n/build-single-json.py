@@ -46,7 +46,7 @@ def main(argv=None):
     written = 0
     for locale, data in sorted(locales):
         out_path = OUT_DIR / f"{locale}.json"
-        with out_path.open("w", encoding="utf-8") as f:
+        with out_path.open("w", encoding="utf-8", newline="\n") as f:
             json.dump(data, f, ensure_ascii=False, indent=2, sort_keys=True)
         written += 1
         print(f"✔ Wrote {out_path}")

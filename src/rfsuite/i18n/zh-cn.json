@@ -2829,6 +2829,13 @@
       "reverse_text": false,
       "translation": "帮助"
     },
+    "header_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
+    },
     "header_system": {
       "english": "System",
       "max_length": 6,
@@ -2884,6 +2891,13 @@
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Safety"
+    },
+    "menu_section_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -9824,6 +9838,27 @@
           "reverse_text": false,
           "translation": "速率配置"
         },
+        "shortcuts": {
+          "english": "Shortcuts",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shortcuts"
+        },
+        "shortcuts_group": {
+          "english": "Category",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Category"
+        },
+        "shortcuts_none": {
+          "english": "No shortcut sources available.",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No shortcut sources available."
+        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,
@@ -10159,27 +10194,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "电压"
-        },
-        "shortcuts": {
-          "english": "Shortcuts",
-          "max_length": 9,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Shortcuts"
-        },
-        "shortcuts_group": {
-          "english": "Category",
-          "max_length": 8,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Category"
-        },
-        "shortcuts_none": {
-          "english": "No shortcut sources available.",
-          "max_length": 30,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "No shortcut sources available."
         }
       },
       "stats": {
@@ -10547,20 +10561,6 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Hz"
-    },
-    "header_shortcuts": {
-      "english": "Shortcuts",
-      "max_length": 9,
-      "needs_translation": true,
-      "reverse_text": false,
-      "translation": "Shortcuts"
-    },
-    "menu_section_shortcuts": {
-      "english": "Shortcuts",
-      "max_length": 9,
-      "needs_translation": true,
-      "reverse_text": false,
-      "translation": "Shortcuts"
     }
   },
   "error": {
