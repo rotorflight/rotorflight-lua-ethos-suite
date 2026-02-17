@@ -12,7 +12,7 @@ local log = utils.log
 local nextUiTask = 1
 local taskAccumulator = 0
 local uiTaskPercent = 100
-local lastPostConnectComplete = false
+local lastMainMenuBuildApiVersion = nil
 local MAIN_MENU_ENABLE_INTERVAL = 0.05
 local mainMenuLastEnableState = {}
 local mainMenuLastModeKey = nil
@@ -67,15 +67,15 @@ local function mainMenuIconEnableDisable()
         mainMenuLastPassAt = 0
     end
 
-    local postConnectComplete = (rfsuite.session and rfsuite.session.postConnectComplete) == true
-    if postConnectComplete and not lastPostConnectComplete then
-        lastPostConnectComplete = true
+    local currentApiVersion = rfsuite.session and rfsuite.session.apiVersion
+    if currentApiVersion == nil then
+        lastMainMenuBuildApiVersion = nil
+    elseif currentApiVersion ~= lastMainMenuBuildApiVersion then
+        lastMainMenuBuildApiVersion = currentApiVersion
         app.MainMenu = assert(loadfile("app/modules/init.lua"))()
         if app.uiState == app.uiStatus.mainMenu then
             app.ui.openMainMenu()
         end
-    elseif not postConnectComplete then
-        lastPostConnectComplete = false
     end
 
     -- Focus handling:
@@ -449,7 +449,7 @@ end
 function tasks.reset()
     nextUiTask = 1
     taskAccumulator = 0
-    lastPostConnectComplete = false
+    lastMainMenuBuildApiVersion = nil
     mainMenuLastEnableState = {}
     mainMenuLastModeKey = nil
     mainMenuLastFocusEpoch = nil
