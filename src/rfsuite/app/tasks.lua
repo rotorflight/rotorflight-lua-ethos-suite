@@ -13,6 +13,12 @@ local nextUiTask = 1
 local taskAccumulator = 0
 local uiTaskPercent = 100
 local lastPostConnectComplete = false
+local MAIN_MENU_ENABLE_INTERVAL = 0.05
+local mainMenuLastEnableState = {}
+local mainMenuLastModeKey = nil
+local mainMenuLastFocusEpoch = nil
+local mainMenuLastPassAt = 0
+local mainMenuWasActive = false
 
 local function exitApp()
     local app = rfsuite.app
@@ -50,6 +56,16 @@ end
 local function mainMenuIconEnableDisable()
     local app = rfsuite.app
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
+
+    if app.uiState == app.uiStatus.mainMenu then
+        mainMenuWasActive = true
+    elseif mainMenuWasActive then
+        mainMenuWasActive = false
+        mainMenuLastEnableState = {}
+        mainMenuLastModeKey = nil
+        mainMenuLastFocusEpoch = nil
+        mainMenuLastPassAt = 0
+    end
 
     local postConnectComplete = (rfsuite.session and rfsuite.session.postConnectComplete) == true
     if postConnectComplete and not lastPostConnectComplete then
@@ -91,16 +107,61 @@ local function mainMenuIconEnableDisable()
         end
     end
 
+    local function setMainMenuFieldEnabled(index, shouldEnable)
+        local fields = app.formFields
+        local field = fields and fields[index]
+        if field and field.enable then
+            if mainMenuLastEnableState[index] ~= shouldEnable then
+                field:enable(shouldEnable)
+                mainMenuLastEnableState[index] = shouldEnable
+            end
+            return true
+        end
+        mainMenuLastEnableState[index] = nil
+        return false
+    end
+
     if app.uiState == app.uiStatus.mainMenu then
+        local formFieldsOffline = app.formFieldsOffline
+        if type(formFieldsOffline) ~= "table" then return end
+
         local apiV = tostring(rfsuite.session.apiVersion)
         local connected = (rfsuite.session and rfsuite.session.isConnected) == true
         local postConnectComplete = (rfsuite.session and rfsuite.session.postConnectComplete) == true
+        local supportedApi = rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV)
+        local modeTag
+        if not connected then
+            modeTag = "offline"
+        elseif not postConnectComplete then
+            modeTag = "postconnect"
+        elseif supportedApi then
+            modeTag = "online"
+        else
+            modeTag = "online-fallback"
+        end
+
+        local focusEpoch = tostring(app._menuFocusEpoch or 0)
+        if mainMenuLastFocusEpoch ~= focusEpoch then
+            mainMenuLastFocusEpoch = focusEpoch
+            mainMenuLastEnableState = {}
+            mainMenuLastPassAt = 0
+        end
+
+        local modeKey = modeTag .. "|" .. tostring(app.lastMenu or "mainmenu")
+        if mainMenuLastModeKey ~= modeKey then
+            mainMenuLastModeKey = modeKey
+            mainMenuLastEnableState = {}
+            mainMenuLastPassAt = 0
+        end
+
+        local now = os.clock()
+        if (now - mainMenuLastPassAt) < MAIN_MENU_ENABLE_INTERVAL then return end
+        mainMenuLastPassAt = now
 
         -- Offline: only allow items explicitly marked offline.
         if not connected then
-            for i, v in pairs(app.formFieldsOffline) do
-                if app.formFields[i] then
-                    app.formFields[i]:enable(v == true)
+            for i, v in pairs(formFieldsOffline) do
+                if setMainMenuFieldEnabled(i, v == true) then
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -109,9 +170,8 @@ local function mainMenuIconEnableDisable()
 
         -- Connected but still in post-connect: still honor offline-only accessibility.
         elseif not postConnectComplete then
-            for i, v in pairs(app.formFieldsOffline) do
-                if app.formFields[i] then
-                    app.formFields[i]:enable(v == true)
+            for i, v in pairs(formFieldsOffline) do
+                if setMainMenuFieldEnabled(i, v == true) then
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -119,11 +179,10 @@ local function mainMenuIconEnableDisable()
             focusOnce("postconnect")
 
         -- Fully connected + supported API: enable everything.
-        elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+        elseif supportedApi then
             app.offlineMode = false
-            for i in pairs(app.formFieldsOffline) do
-                if app.formFields[i] then
-                    app.formFields[i]:enable(true)
+            for i in pairs(formFieldsOffline) do
+                if setMainMenuFieldEnabled(i, true) then
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -134,9 +193,8 @@ local function mainMenuIconEnableDisable()
             -- Fallback: if we are connected and post-connect complete, never leave icons latched disabled.
             -- This avoids a rare dead-end where menu icons stay disabled until restart.
             app.offlineMode = false
-            for i in pairs(app.formFieldsOffline) do
-                if app.formFields[i] then
-                    app.formFields[i]:enable(true)
+            for i in pairs(formFieldsOffline) do
+                if setMainMenuFieldEnabled(i, true) then
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -391,6 +449,12 @@ end
 function tasks.reset()
     nextUiTask = 1
     taskAccumulator = 0
+    lastPostConnectComplete = false
+    mainMenuLastEnableState = {}
+    mainMenuLastModeKey = nil
+    mainMenuLastFocusEpoch = nil
+    mainMenuLastPassAt = 0
+    mainMenuWasActive = false
 end
 
 return tasks

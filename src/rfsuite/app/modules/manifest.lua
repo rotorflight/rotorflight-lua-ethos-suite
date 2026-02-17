@@ -404,7 +404,7 @@ return {
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             pages = {
                 {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png", offline = true},
-                {name = "@i18n(app.modules.settings.shortcuts)@", script = "shortcuts.lua", image = "general.png", offline = true},
+                {name = "@i18n(app.modules.settings.shortcuts)@", script = "shortcuts.lua", image = "shortcuts.png", offline = true},
                 {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png", offline = true},
                 {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png", offline = true},
                 {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png", offline = true}

@@ -1290,7 +1290,6 @@ function ui.openMainMenu(activesection)
     utils.reportMemoryUsage("app.openMainMenu", "end")
 
     collectgarbage('collect')
-    collectgarbage('collect')
 end
 
 function ui.getLabel(id, page)
