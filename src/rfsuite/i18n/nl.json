@@ -115,7 +115,7 @@
         "max_length": 73,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Verhoog of verlaag om de hoeveelheid voltage dip aantepassen tijdens de vlucht."
+        "translation": "Verhoog of verlaag om de hoeveelheid voltage dip te veranderen tijdens de vlucht."
       },
       "tbl_off": {
         "english": "Current Sensor",
@@ -166,7 +166,7 @@
         "max_length": 30,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Timing voor de motor in graden"
+        "translation": "Timing voor de motor"
       },
       "gov_i": {
         "english": "Integral value for the governor",
@@ -206,7 +206,7 @@
       "soft_start": {
         "english": "Soft start time",
         "max_length": 15,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Soft start waarde"
       },
@@ -222,7 +222,7 @@
         "max_length": 10,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Altijd uit"
+        "translation": "Always Uit"
       },
       "tbl_alwayson": {
         "english": "Always On",
@@ -322,12 +322,12 @@
         "max_length": 14,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Auto calculatie"
+        "translation": "Auto Bereken"
       },
       "tbl_ccw": {
         "english": "CCW",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
         "translation": "CCW"
       },
@@ -427,9 +427,9 @@
       "tbl_blue": {
         "english": "BLUE",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Blauw"
+        "translation": "BLUE"
       },
       "tbl_ccw": {
         "english": "CCW",
@@ -448,9 +448,9 @@
       "tbl_cyan": {
         "english": "CYAN",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Geel"
+        "translation": "CYAN"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
@@ -462,9 +462,9 @@
       "tbl_extgov": {
         "english": "External Governor",
         "max_length": 17,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Externe Governor"
+        "translation": "External Governor"
       },
       "tbl_fast": {
         "english": "Fast",
@@ -497,9 +497,9 @@
       "tbl_green": {
         "english": "GREEN",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Groen"
+        "translation": "GREEN"
       },
       "tbl_high": {
         "english": "High",
@@ -511,9 +511,9 @@
       "tbl_jadegreen": {
         "english": "JADE GREEN",
         "max_length": 10,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "JADE Groen"
+        "translation": "JADE GREEN"
       },
       "tbl_low": {
         "english": "Low",
@@ -553,30 +553,30 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Oranje"
+        "translation": "ORANGE"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Roze"
+        "translation": "PINK"
       },
       "tbl_purple": {
         "english": "PURPLE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Paars"
+        "translation": "PURPLE"
       },
       "tbl_red": {
         "english": "Red",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Rood"
+        "translation": "Red"
       },
       "tbl_reverse": {
         "english": "Reverse",
@@ -739,9 +739,9 @@
       "tbl_blue": {
         "english": "BLUE",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Blauw"
+        "translation": "BLUE"
       },
       "tbl_ccw": {
         "english": "CCW",
@@ -760,14 +760,14 @@
       "tbl_cyan": {
         "english": "CYAN",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Geel"
+        "translation": "CYAN"
       },
       "tbl_escgov": {
         "english": "ESC Governor",
         "max_length": 12,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
         "translation": "ESC Governor"
       },
@@ -809,9 +809,9 @@
       "tbl_green": {
         "english": "GREEN",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Groen"
+        "translation": "GREEN"
       },
       "tbl_high": {
         "english": "High",
@@ -823,9 +823,9 @@
       "tbl_jadegreen": {
         "english": "JADE GREEN",
         "max_length": 10,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "JADE Groen"
+        "translation": "JADE GREEN"
       },
       "tbl_low": {
         "english": "Low",
@@ -865,30 +865,30 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Oranje"
+        "translation": "ORANGE"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Roze"
+        "translation": "PINK"
       },
       "tbl_purple": {
         "english": "PURPLE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Paars"
+        "translation": "PURPLE"
       },
       "tbl_red": {
         "english": "Red",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Rood"
+        "translation": "Red"
       },
       "tbl_reverse": {
         "english": "Reverse",
@@ -914,16 +914,16 @@
       "tbl_white": {
         "english": "WHITE",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Wit"
+        "translation": "WHITE"
       },
       "tbl_yellow": {
         "english": "YELLOW",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Geel"
+        "translation": "YELLOW"
       }
     },
     "ESC_PARAMETERS_YGE": {
@@ -1093,7 +1093,7 @@
         "max_length": 6,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Vloeiend"
+        "translation": "Glad"
       },
       "tbl_unused": {
         "english": "*Unused*",
@@ -1184,9 +1184,9 @@
       "tbl_green": {
         "english": "GREEN",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Groen"
+        "translation": "GREEN"
       },
       "tbl_high": {
         "english": "High",
@@ -1198,9 +1198,9 @@
       "tbl_jadegreen": {
         "english": "JADE GREEN",
         "max_length": 10,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "JADE Groen"
+        "translation": "JADE GREEN"
       },
       "tbl_low": {
         "english": "Low",
@@ -1240,30 +1240,30 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Oranje"
+        "translation": "ORANGE"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Roze"
+        "translation": "PINK"
       },
       "tbl_purple": {
         "english": "PURPLE",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Paars"
+        "translation": "PURPLE"
       },
       "tbl_red": {
         "english": "Red",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Rood"
+        "translation": "Red"
       },
       "tbl_reverse": {
         "english": "Reverse",
@@ -1275,30 +1275,30 @@
       "tbl_slow": {
         "english": "Slow",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Langzaam"
+        "translation": "Slow"
       },
       "tbl_vslow": {
         "english": "Very Slow",
         "max_length": 9,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Heel langzaam"
+        "translation": "Very Slow"
       },
       "tbl_white": {
         "english": "WHITE",
         "max_length": 5,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Wit"
+        "translation": "WHITE"
       },
       "tbl_yellow": {
         "english": "YELLOW",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Geel"
+        "translation": "YELLOW"
       }
     },
     "ESC_SENSOR_CONFIG": {
@@ -1393,7 +1393,7 @@
         "max_length": 27,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Aantal notches "
+        "translation": "Number of notches to Toepas."
       },
       "dyn_notch_max_hz": {
         "english": "Maximum frequency to which the notch is applied.",
@@ -1652,9 +1652,9 @@
       "tbl_throttle_type_function": {
         "english": "FUNCTION",
         "max_length": 8,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "FUNCTIE"
+        "translation": "FUNCTION"
       },
       "tbl_throttle_type_normal": {
         "english": "NORMAL",
@@ -1666,7 +1666,7 @@
       "tbl_throttle_type_switch": {
         "english": "SWITCH",
         "max_length": 6,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
         "translation": "SWITCH"
       }
@@ -1677,14 +1677,14 @@
         "max_length": 86,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Collective precomp - Hoeveel collective is mixed in de feedforward."
+        "translation": "Collectief precompensation weight - how much collective is mixed into the feedforward."
       },
       "governor_cyclic_ff_weight": {
         "english": "Cyclic precompensation weight - how much cyclic is mixed into the feedforward.",
         "max_length": 78,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "Cyclic precomp - Hoeveel cyclic is mixed in de feedforward."
+        "translation": "Gewicht Cyclic precompensation - Hoeveel cyclic is mixed in de feedforward."
       },
       "governor_d_gain": {
         "english": "PID loop D-term gain.",
@@ -2738,21 +2738,21 @@
       "channel_mode": {
         "english": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
         "max_length": 72,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Select hoe elk kanaal reageert op signaal verloren: Auto, Hold, of Set."
+        "translation": "Select how each channel behaves when signal is lost: Auto, Hold, or Set."
       },
       "channel_value": {
         "english": "Channel value used only when mode is Set.",
         "max_length": 41,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
-        "translation": "Channel waarde wordt alleen gebruikt wanneer mode Set."
+        "translation": "Channel value used only when mode is Set."
       },
       "tbl_auto": {
         "english": "Auto",
         "max_length": 4,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
         "translation": "Auto"
       },
@@ -2766,7 +2766,7 @@
       "tbl_set": {
         "english": "Set",
         "max_length": 3,
-        "needs_translation": false,
+        "needs_translation": true,
         "reverse_text": false,
         "translation": "Set"
       }
@@ -2783,7 +2783,7 @@
     "btn_close": {
       "english": "CLOSE",
       "max_length": 5,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "SLUITEN"
     },
@@ -2846,44 +2846,44 @@
     "menu_section_controls": {
       "english": "Controls",
       "max_length": 8,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
-      "translation": "Besturing"
+      "translation": "Controls"
     },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
       "max_length": 13,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
       "translation": "Flight Tuning"
     },
     "menu_section_hardware": {
       "english": "Hardware",
       "max_length": 8,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
       "translation": "Hardware"
     },
     "menu_section_mechanics": {
       "english": "Mechanics",
       "max_length": 9,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
       "translation": "Mechanics"
     },
     "menu_section_profiles": {
       "english": "Profiles",
       "max_length": 8,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
-      "translation": "Profielen"
+      "translation": "Profiles"
     },
     "menu_section_safety": {
       "english": "Safety",
       "max_length": 6,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
-      "translation": "Veiligheid"
+      "translation": "Safety"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -2934,37 +2934,37 @@
         "active_ranges": {
           "english": "Active ranges:",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Actieve ranges:"
+          "translation": "Active ranges:"
         },
         "adjust_range": {
           "english": "Adjust Range",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Pas Range"
+          "translation": "Adjust Range"
         },
         "always_fixed_1500_confirm": {
           "english": "Always mode uses fixed 1500us. Set Min/Max to 1500us?",
           "max_length": 53,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Altijd mode gebruikt 1500us. Set Min/Max naar 1500us?"
+          "translation": "Always mode uses fixed 1500us. Set Min/Max to 1500us?"
         },
         "auto_detect_active_toggle": {
           "english": "Auto-detect active: toggle desired AUX channel",
           "max_length": 46,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Auto detectie actief: Schakel het gewenste AUX kanaal."
+          "translation": "Auto-detect active: toggle desired AUX channel"
         },
         "channel_always": {
           "english": "Always",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Altijd"
+          "translation": "Always"
         },
         "channel_auto": {
           "english": "AUTO",
@@ -2990,100 +2990,100 @@
         "confirm_use_current": {
           "english": "Use current value",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Gebruik huidige waarde"
+          "translation": "Use current value"
         },
         "current_output": {
           "english": "Current Output",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Stroom output"
+          "translation": "Current Output"
         },
         "decrease_range": {
           "english": "Decrease Range",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Verklein range"
+          "translation": "Decrease Range"
         },
         "editing_disabled_reload_back": {
           "english": "Editing is disabled. Use Reload or Back.",
           "max_length": 40,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Editing is uitgeschakeld. Gebruik herlaad of terug."
+          "translation": "Editing is disabled. Use Reload or Back."
         },
         "enable_channel": {
           "english": "Enable Channel",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Inschakelen kanaal"
+          "translation": "Enable Channel"
         },
         "enable_range": {
           "english": "Enable Range",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Inschakelen range"
+          "translation": "Enable Range"
         },
         "function": {
           "english": "Function",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Functie"
+          "translation": "Function"
         },
         "function_label": {
           "english": "Function",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Functie"
+          "translation": "Function"
         },
         "increase_range": {
           "english": "Increase Range",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Vergroot range"
+          "translation": "Increase Range"
         },
         "info_default_slots": {
           "english": "No ranges returned by FC. Showing default slot list.",
           "max_length": 52,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen ranges terugestuurd door FC. Toon standaard slot lijst."
+          "translation": "No ranges returned by FC. Showing default slot list."
         },
         "info_legacy_load": {
           "english": "Loaded using legacy adjustment range read.",
           "max_length": 42,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geladen met hulp van de oude aanpassings range meting"
+          "translation": "Loaded using legacy adjustment range read."
         },
         "load_error": {
           "english": "Load error:",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad fout:"
+          "translation": "Load error:"
         },
         "loading_ranges": {
           "english": "Loading adjustment ranges",
           "max_length": 25,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad aanpassings bereik"
+          "translation": "Loading adjustment ranges"
         },
         "loading_ranges_detail": {
           "english": "Loading adjustment ranges...",
           "max_length": 28,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad aanpassings bereik..."
+          "translation": "Loading adjustment ranges..."
         },
         "max_label": {
           "english": "Max",
@@ -3095,79 +3095,79 @@
         "min_label": {
           "english": "Min",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Min"
         },
         "msg_auto_detect_lock_first": {
           "english": "Auto-detect is active for this row. Toggle to lock AUX first.",
           "max_length": 61,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Auto-detect is actief voor deze rij. Schakel om de Aux te koppelen."
+          "translation": "Auto-detect is active for this row. Toggle to lock AUX first."
         },
         "msg_auto_detect_lock_save": {
           "english": "Auto-detect is active. Toggle the desired AUX channel first.",
           "max_length": 60,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Auto-detect is actief. Schakel de benodigde AUX kanaal eerst."
+          "translation": "Auto-detect is active. Toggle the desired AUX channel first."
         },
         "msg_live_channel_unavailable": {
           "english": "Live channel value unavailable.",
           "max_length": 31,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Live kanaal waarde niet beschikbaar."
+          "translation": "Live channel value unavailable."
         },
         "msg_no_free_slots": {
           "english": "No free adjustment slots remain.",
           "max_length": 32,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen vrije aanpassingslots meer beschikbaar."
+          "translation": "No free adjustment slots remain."
         },
         "name": {
           "english": "Adjustments",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Aanpassingen"
+          "translation": "Adjustments"
         },
         "no_ranges_reported": {
           "english": "No adjustment ranges reported by FC.",
           "max_length": 36,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen aanpassings bereik gemeld door FC"
+          "translation": "No adjustment ranges reported by FC."
         },
         "range": {
           "english": "Range",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Bereik"
+          "translation": "Range"
         },
         "read_timeout": {
           "english": "Adjustment read timed out.",
           "max_length": 26,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Aanpassings leestijd fout."
+          "translation": "Adjustment read timed out."
         },
         "save_error": {
           "english": "Save error:",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan fout:"
+          "translation": "Save error:"
         },
         "saving_changed_ranges": {
           "english": "Saving changed ranges",
           "max_length": 21,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Sla veranderde bereik op"
+          "translation": "Saving changed ranges"
         },
         "set": {
           "english": "Set",
@@ -3179,42 +3179,42 @@
         "set_adjust_range": {
           "english": "Set Adjust Range",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Set aanpassen bereik "
+          "translation": "Set Adjust Range"
         },
         "set_decrease_range": {
           "english": "Set Decrease Range",
           "max_length": 18,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Set verklein bereik "
+          "translation": "Set Decrease Range"
         },
         "set_enable_range": {
           "english": "Set Enable Range",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Set activeer bereik"
+          "translation": "Set Enable Range"
         },
         "set_increase_range": {
           "english": "Set Increase Range",
           "max_length": 18,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Set vergroot bereik"
+          "translation": "Set Increase Range"
         },
         "step_size": {
           "english": "Step Size",
           "max_length": 9,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Stap grootte"
+          "translation": "Step Size"
         },
         "type": {
           "english": "Type",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Type"
         },
@@ -3228,9 +3228,9 @@
         "type_off": {
           "english": "OFF",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Uit"
+          "translation": "OFF"
         },
         "type_stepped": {
           "english": "STEPPED",
@@ -3242,60 +3242,60 @@
         "unsaved_changes": {
           "english": "Unsaved changes",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Niet opgeslagen veranderingen"
+          "translation": "Unsaved changes"
         },
         "value_channel": {
           "english": "Value Channel",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Waarde kanaal"
+          "translation": "Value Channel"
         },
         "value_range": {
           "english": "Value Range",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Waarde bereik"
+          "translation": "Value Range"
         }
       },
       "alignment": {
         "help_p1": {
           "english": "Set board roll, pitch and yaw mounting offsets.",
           "max_length": 47,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Set board roll, pitch en yaw montage offsets."
+          "translation": "Set board roll, pitch and yaw mounting offsets."
         },
         "help_p2": {
           "english": "Set magnetometer alignment and save to write EEPROM.",
           "max_length": 52,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Set magnetometer uitlijning en sla op om EEPROM te schrijven."
+          "translation": "Set magnetometer alignment and save to write EEPROM."
         },
         "help_p3": {
           "english": "The visual below follows live attitude from MSP.",
           "max_length": 48,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "De afbeelding hieronder volgt de huidige stand van de FC via MSP."
+          "translation": "The visual below follows live attitude from MSP."
         },
         "leaning_left": {
           "english": "Leaning Left",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Hangt naar links"
+          "translation": "Leaning Left"
         },
         "leaning_right": {
           "english": "Leaning Right",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Hangt naar rechts"
+          "translation": "Leaning Right"
         },
         "live_fmt": {
           "english": "Live  R:%0.1f  P:%0.1f  Y:%0.1f",
@@ -3377,30 +3377,30 @@
         "mag_default": {
           "english": "Default",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Standaard"
+          "translation": "Default"
         },
         "msg_reset_tail_view": {
           "english": "Reset view yaw so the tail faces you?",
           "max_length": 37,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Reset afbeelding zodat de staart richting jou wijst"
+          "translation": "Reset view yaw so the tail faces you?"
         },
         "name": {
           "english": "Alignment",
           "max_length": 9,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Alignment"
         },
         "nose_direction": {
           "english": "Nose Direction",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Neus richting"
+          "translation": "Nose Direction"
         },
         "nose_down": {
           "english": "Nose Down",
@@ -3419,7 +3419,7 @@
         "nose_up": {
           "english": "Nose Up",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Nose Up"
         },
@@ -3433,7 +3433,7 @@
         "pitch": {
           "english": "Pitch",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Pitch"
         },
@@ -3484,16 +3484,16 @@
         "label_error": {
           "english": "Error",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Fout"
+          "translation": "Error"
         },
         "label_fields": {
           "english": "fields",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Velden"
+          "translation": "fields"
         },
         "label_info": {
           "english": "Info",
@@ -3512,30 +3512,30 @@
         "label_value": {
           "english": "Value",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Waarde"
+          "translation": "Value"
         },
         "msg_choose_api": {
           "english": "Choose an API and press Test",
           "max_length": 28,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Kies een API en druk op test"
+          "translation": "Choose an API and press Test"
         },
         "msg_no_api_selected": {
           "english": "No API selected",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen API geselecteerd"
+          "translation": "No API selected"
         },
         "msg_no_data": {
           "english": "No data",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen gegevens"
+          "translation": "No data"
         },
         "msg_no_parsed_result": {
           "english": "No parsed result",
@@ -3547,58 +3547,58 @@
         "msg_read_completed_zero": {
           "english": "Read completed (0 fields)",
           "max_length": 25,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Lezen compleet  (0 fields)"
+          "translation": "Read completed (0 fields)"
         },
         "msg_read_failed": {
           "english": "Read failed",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Lees fout"
+          "translation": "Read failed"
         },
         "msg_unable_to_load": {
           "english": "Unable to load API",
           "max_length": 18,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Niet mogelijk om API te laden"
+          "translation": "Unable to load API"
         },
         "msg_waiting_response": {
           "english": "Waiting for response...",
           "max_length": 23,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Wachten voor reactie..."
+          "translation": "Waiting for response..."
         },
         "name": {
           "english": "API Tester",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "API Tester"
         },
         "panel_read_result": {
           "english": "Read Result",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Lees resultaat"
+          "translation": "Read Result"
         },
         "status_idle": {
           "english": "Idle",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Idle"
         },
         "status_load_failed": {
           "english": "Load failed",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laden mislukt"
+          "translation": "Load failed"
         },
         "status_ok": {
           "english": "OK",
@@ -3610,32 +3610,32 @@
         "status_reading": {
           "english": "Reading",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Lezen"
+          "translation": "Reading"
         }
       },
       "beepers": {
         "dshot_tone": {
           "english": "ESC beacon tone",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "DShot beacon toon"
+          "translation": "DShot beacon tone"
         },
         "field_acc_calibration": {
           "english": "ACC calibration",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "ACC calibratie"
+          "translation": "ACC calibration"
         },
         "field_acc_calibration_fail": {
           "english": "ACC calibration fail",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "ACC calibratie fout"
+          "translation": "ACC calibration fail"
         },
         "field_armed": {
           "english": "Armed",
@@ -3661,42 +3661,42 @@
         "field_arming_gps_no_fix": {
           "english": "Arming GPS no fix",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Arming GPS no fix"
         },
         "field_bat_crit_low": {
           "english": "Battery critical low",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Batterij kritiek leeg"
+          "translation": "Battery critical low"
         },
         "field_bat_low": {
           "english": "Battery low",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Battery leeg"
+          "translation": "Battery low"
         },
         "field_blackbox_erase": {
           "english": "Blackbox erase",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Blackbox verwijderen"
+          "translation": "Blackbox erase"
         },
         "field_disarm_repeat": {
           "english": "Disarm repeat",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Disarm herhalen"
+          "translation": "Disarm repeat"
         },
         "field_disarming": {
           "english": "Disarming",
           "max_length": 9,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Disarming"
         },
@@ -3710,30 +3710,30 @@
         "field_gyro_calibrated": {
           "english": "Gyro calibrated",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Gyro gecalibreerd"
+          "translation": "Gyro calibrated"
         },
         "field_ready_beep": {
           "english": "Ready beep",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Klaar beep"
+          "translation": "Ready beep"
         },
         "field_rx_lost": {
           "english": "RX lost",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "RX signaal kwijt"
+          "translation": "RX lost"
         },
         "field_rx_lost_landing": {
           "english": "RX lost landing",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "RX kwijt landing"
+          "translation": "RX lost landing"
         },
         "field_rx_set": {
           "english": "RX set",
@@ -3759,30 +3759,30 @@
         "help_p1": {
           "english": "Configure analog beeper conditions and DShot beacon behavior.",
           "max_length": 61,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Configureer een analoge beeper condities en Dshot beacon eigenschappen."
+          "translation": "Configure analog beeper conditions and DShot beacon behavior."
         },
         "help_p2": {
           "english": "ESC Beacon page controls beacon tone and conditions.",
           "max_length": 52,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "DShot pagina bestuurt beacon toon en voorwaarden."
+          "translation": "DShot page controls beacon tone and conditions."
         },
         "loading": {
           "english": "Loading beeper configuration...",
           "max_length": 31,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad beeper configuratie..."
+          "translation": "Loading beeper configuration..."
         },
         "menu_configuration": {
           "english": "Configuration",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Configuratie"
+          "translation": "Configuration"
         },
         "menu_dshot": {
           "english": "ESC Beacon",
@@ -3801,9 +3801,9 @@
         "saving": {
           "english": "Saving Beepers...",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan beepers..."
+          "translation": "Saving Beepers..."
         },
         "status": {
           "english": "Status",
@@ -3824,128 +3824,128 @@
         "device": {
           "english": "Logging device",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Logging device"
         },
         "device_disabled": {
           "english": "Disabled",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Uitgeschakeld"
+          "translation": "Disabled"
         },
         "device_onboard_flash": {
           "english": "Onboard Flash",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Intern geheugen"
+          "translation": "Onboard Flash"
         },
         "device_sdcard": {
           "english": "SD Card",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "SD Kaart"
+          "translation": "SD Card"
         },
         "device_serial_port": {
           "english": "Serial Port",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Seriele poort"
+          "translation": "Serial Port"
         },
         "disarm_grace_period": {
           "english": "Disarm grace period",
           "max_length": 19,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Disarm afkoel periode"
+          "translation": "Disarm grace period"
         },
         "erase_prompt": {
           "english": "Erase onboard dataflash logs?",
           "max_length": 29,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Verwijder de logs op het interne geheugen?"
+          "translation": "Erase onboard dataflash logs?"
         },
         "erasing_busy": {
           "english": "Erasing / busy...",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Verwijderen / bezig..."
+          "translation": "Erasing / busy..."
         },
         "erasing_dataflash": {
           "english": "Erasing dataflash...",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Interne geheugen legen..."
+          "translation": "Erasing dataflash..."
         },
         "error_code_fmt": {
           "english": "Error (code %d)",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Fout (code %d)"
+          "translation": "Error (code %d)"
         },
         "help_p1": {
           "english": "Configure Blackbox logging and monitor media status.",
           "max_length": 52,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Configureer Blackbox logging en monitorr media status."
+          "translation": "Configure Blackbox logging and monitor media status."
         },
         "help_p2": {
           "english": "Tool menu can erase onboard dataflash logs.",
           "max_length": 43,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Tool menu kan onboard dataflash logs verwijderen."
+          "translation": "Tool menu can erase onboard dataflash logs."
         },
         "help_p3": {
           "english": "Mass-storage reboot is intentionally not included in this module.",
           "max_length": 65,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Mass-storage herstart is benodigd en niet inbegrepen in deze module."
+          "translation": "Mass-storage reboot is intentionally not included in this module."
         },
         "initial_erase": {
           "english": "Initial erase",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Initial erase"
         },
         "initializing_card": {
           "english": "Initializing card...",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Initializing kaart..."
+          "translation": "Initializing card..."
         },
         "initializing_filesystem": {
           "english": "Initializing filesystem...",
           "max_length": 26,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Initializing filesysteem..."
+          "translation": "Initializing filesystem..."
         },
         "loading_feature_config": {
           "english": "Loading feature/config...",
           "max_length": 25,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad feature/config..."
+          "translation": "Loading feature/config..."
         },
         "loading_logging": {
           "english": "Loading blackbox logging...",
           "max_length": 27,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad blackbox logging..."
+          "translation": "Loading blackbox logging..."
         },
         "log_acc": {
           "english": "Acc",
@@ -3985,7 +3985,7 @@
         "log_command": {
           "english": "Command",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Command"
         },
@@ -4118,23 +4118,23 @@
         "logging_rate": {
           "english": "Logging rate",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Logging snelheid"
+          "translation": "Logging rate"
         },
         "menu_configuration": {
           "english": "Configuration",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Configuratie"
+          "translation": "Configuration"
         },
         "menu_logging": {
           "english": "Logging",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Loggen"
+          "translation": "Logging"
         },
         "menu_status": {
           "english": "Status",
@@ -4146,30 +4146,30 @@
         "mode_armed": {
           "english": "Armed",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Armed"
         },
         "mode_normal": {
           "english": "Normal",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Normaal"
+          "translation": "Normal"
         },
         "mode_off": {
           "english": "Off",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Uit"
+          "translation": "Off"
         },
         "mode_switch": {
           "english": "Switch",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Schakelaar"
+          "translation": "Switch"
         },
         "name": {
           "english": "Blackbox",
@@ -4181,51 +4181,51 @@
         "no_card": {
           "english": "No card",
           "max_length": 7,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen kaart"
+          "translation": "No card"
         },
         "not_supported": {
           "english": "Not supported",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Niet ondersteund"
+          "translation": "Not supported"
         },
         "off": {
           "english": "Off",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Uit"
+          "translation": "Off"
         },
         "on": {
           "english": "On",
           "max_length": 2,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Aan"
+          "translation": "On"
         },
         "rate_custom": {
           "english": "Custom %s [1/%d]",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Aangepast %s [1/%d]"
+          "translation": "Custom %s [1/%d]"
         },
         "rolling_erase": {
           "english": "Rolling erase",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Overschrijven"
+          "translation": "Rolling erase"
         },
         "saving": {
           "english": "Saving Blackbox...",
           "max_length": 18,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan Blackbox..."
+          "translation": "Saving Blackbox..."
         },
         "sdcard": {
           "english": "SD Card",
@@ -4244,109 +4244,109 @@
         "unknown_state_fmt": {
           "english": "Unknown state (%d)",
           "max_length": 18,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Onbekende status (%d)"
+          "translation": "Unknown state (%d)"
         },
         "used_fmt": {
           "english": "Used %s / %s",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Gebruikt %s / %s"
+          "translation": "Used %s / %s"
         }
       },
       "configuration": {
         "craft_name": {
           "english": "Craft name",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Model naam"
+          "translation": "Craft name"
         },
         "error_advanced_api_unavailable": {
           "english": "ADVANCED_CONFIG API unavailable",
           "max_length": 31,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "ADVANCED_CONFIG API niet beschikbaar"
+          "translation": "ADVANCED_CONFIG API unavailable"
         },
         "error_advanced_read_failed": {
           "english": "ADVANCED_CONFIG read failed",
           "max_length": 27,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "ADVANCED_CONFIG lees fout"
+          "translation": "ADVANCED_CONFIG read failed"
         },
         "error_advanced_write_failed": {
           "english": "ADVANCED_CONFIG write failed",
           "max_length": 28,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "ADVANCED_CONFIG schrijf fout"
+          "translation": "ADVANCED_CONFIG write failed"
         },
         "error_eeprom_api_unavailable": {
           "english": "EEPROM_WRITE API unavailable",
           "max_length": 28,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "EEPROM_WRITE API niet beschikbaar"
+          "translation": "EEPROM_WRITE API unavailable"
         },
         "error_eeprom_write_failed": {
           "english": "EEPROM write failed",
           "max_length": 19,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "EEPROM schrijf fout"
+          "translation": "EEPROM write failed"
         },
         "error_feature_api_unavailable": {
           "english": "FEATURE_CONFIG API unavailable",
           "max_length": 30,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "FEATURE_CONFIG API niet beschikbaar"
+          "translation": "FEATURE_CONFIG API unavailable"
         },
         "error_feature_read_failed": {
           "english": "FEATURE_CONFIG read failed",
           "max_length": 26,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "FEATURE_CONFIG lees fout"
+          "translation": "FEATURE_CONFIG read failed"
         },
         "error_feature_write_failed": {
           "english": "FEATURE_CONFIG write failed",
           "max_length": 27,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "FEATURE_CONFIG schrijf fout"
+          "translation": "FEATURE_CONFIG write failed"
         },
         "error_name_api_unavailable": {
           "english": "NAME API unavailable",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "NAME API niet beschikbaar"
+          "translation": "NAME API unavailable"
         },
         "error_name_read_failed": {
           "english": "NAME read failed",
           "max_length": 16,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "NAME lees fout"
+          "translation": "NAME read failed"
         },
         "error_name_write_failed": {
           "english": "NAME write failed",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "NAME schrijf fout"
+          "translation": "NAME write failed"
         },
         "error_save_failed": {
           "english": "Save failed",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan niet gelukt"
+          "translation": "Save failed"
         },
         "feature_cms": {
           "english": "CMS",
@@ -4372,51 +4372,51 @@
         "features": {
           "english": "Features",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Functies"
+          "translation": "Features"
         },
         "help_p1": {
           "english": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
           "max_length": 91,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Gebruik deze pagina voor systeem calibratie en model naam, PID loop snelheid, en functies."
+          "translation": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags."
         },
         "help_p2": {
           "english": "Saving writes these values to EEPROM and reboots the flight controller.",
           "max_length": 71,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan schrijft deze waarden naar EEPROM en herstart de flight controller."
+          "translation": "Saving writes these values to EEPROM and reboots the flight controller."
         },
         "load_error_prefix": {
           "english": "Load error:",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad fout:"
+          "translation": "Load error:"
         },
         "loading": {
           "english": "Loading configuration...",
           "max_length": 24,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laden configuratie..."
+          "translation": "Loading configuration..."
         },
         "name": {
           "english": "Configuration",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Configuratie"
+          "translation": "Configuration"
         },
         "personalization": {
           "english": "Personalization",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Personalisatie"
+          "translation": "Personalization"
         },
         "pid_loop_1": {
           "english": "1:1 (Fastest)",
@@ -4428,7 +4428,7 @@
         "pid_loop_16": {
           "english": "1:16",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "1:16"
         },
@@ -4456,44 +4456,44 @@
         "pid_loop_custom": {
           "english": "Custom",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Aangepast"
+          "translation": "Custom"
         },
         "pid_loop_speed": {
           "english": "PID loop speed",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "PID loop snelheid"
+          "translation": "PID loop speed"
         },
         "progress_loading": {
           "english": "Loading configuration",
           "max_length": 21,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laden configuratie"
+          "translation": "Loading configuration"
         },
         "progress_saving": {
           "english": "Saving configuration",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan configuratie"
+          "translation": "Saving configuration"
         },
         "save_error_prefix": {
           "english": "Save error:",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan fout:"
+          "translation": "Save error:"
         },
         "system_configuration": {
           "english": "System configuration",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Systeem configuratie"
+          "translation": "System configuration"
         }
       },
       "copyprofiles": {
@@ -5824,7 +5824,7 @@
               "max_length": 19,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Capaciteit Correctie"
+              "translation": "Capaciteit Correction"
             },
             "cell_cutoff": {
               "english": "Cell Cutoff",
@@ -5836,7 +5836,7 @@
             "gov": {
               "english": "Governor",
               "max_length": 8,
-              "needs_translation": false,
+              "needs_translation": true,
               "reverse_text": false,
               "translation": "Governor"
             },
@@ -5966,7 +5966,7 @@
         "aux1": {
           "english": "AUX 1",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "AUX 1"
         },
@@ -6064,9 +6064,9 @@
         "help_p1": {
           "english": "Configure the failsafe settings for loss of RC signal.",
           "max_length": 54,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Configureer de failsave instellingen voor signaal kwijt."
+          "translation": "Configure the failsafe settings for loss of RC signal."
         },
         "name": {
           "english": "Failsafe",
@@ -6078,23 +6078,23 @@
         "pitch": {
           "english": "Pitch",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Pitch"
         },
         "roll": {
           "english": "Roll",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Roll"
         },
         "throttle": {
           "english": "Throttle",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Gas"
+          "translation": "Throttle"
         },
         "yaw": {
           "english": "Yaw",
@@ -6108,9 +6108,9 @@
         "name": {
           "english": "FBL Sensors",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "FBL sensoren"
+          "translation": "FBL Sensors"
         }
       },
       "fblstatus": {
@@ -6420,7 +6420,7 @@
         "filter_type": {
           "english": "Filter type",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Filter Type"
         },
@@ -6625,7 +6625,7 @@
         "menu_curves_long": {
           "english": "Governor Bypass Curve",
           "max_length": 21,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Governor Bypass Curve"
         },
@@ -6732,7 +6732,7 @@
         "name": {
           "english": "Interfaces",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Interfaces"
         }
@@ -6750,9 +6750,9 @@
         "name": {
           "english": "System",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Systeem"
+          "translation": "System"
         }
       },
       "info": {
@@ -7347,44 +7347,44 @@
         "error_eeprom_write_failed": {
           "english": "EEPROM write failed",
           "max_length": 19,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "EEPROM schrijf fout"
+          "translation": "EEPROM write failed"
         },
         "error_failed_load": {
           "english": "Failed to load port configuration",
           "max_length": 33,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Niet gelukt om poort configuratie te laden"
+          "translation": "Failed to load port configuration"
         },
         "error_read_serial_ports": {
           "english": "Failed reading serial ports",
           "max_length": 27,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Fout met lezen seriele poort"
+          "translation": "Failed reading serial ports"
         },
         "error_save_failed": {
           "english": "Save failed",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan niet gelukt"
+          "translation": "Save failed"
         },
         "error_serial_api_unavailable": {
           "english": "SERIAL_CONFIG API unavailable",
           "max_length": 29,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "SERIAL_CONFIG API niet beschikbaar"
+          "translation": "SERIAL_CONFIG API unavailable"
         },
         "error_serial_write_failed_for": {
           "english": "Serial write failed for",
           "max_length": 23,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Serieel schrijven niet gelukt voor:"
+          "translation": "Serial write failed for"
         },
         "function_blackbox": {
           "english": "Blackbox",
@@ -7396,135 +7396,135 @@
         "function_custom": {
           "english": "Custom",
           "max_length": 6,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Custom"
         },
         "function_disabled": {
           "english": "Disabled",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Uitgeschakeld"
+          "translation": "Disabled"
         },
         "function_esc_sensor": {
           "english": "ESC Sensor",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "ESC sensor"
+          "translation": "ESC Sensor"
         },
         "function_fbus_out": {
           "english": "FBus Out",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "FBus uut"
+          "translation": "FBus Out"
         },
         "function_rx_serial": {
           "english": "RX Serial",
           "max_length": 9,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "RX serial"
+          "translation": "RX Serial"
         },
         "function_sbus_out": {
           "english": "SBus Out",
           "max_length": 8,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "SBus out"
+          "translation": "SBus Out"
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "max_length": 15,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Telemetrie FrSky"
+          "translation": "Telemetry FrSky"
         },
         "function_telem_hott": {
           "english": "Telemetry HoTT",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Telemetrie HoTT"
+          "translation": "Telemetry HoTT"
         },
         "function_telem_ibus": {
           "english": "Telemetry iBus",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Telemetrie iBus"
+          "translation": "Telemetry iBus"
         },
         "function_telem_ltm": {
           "english": "Telemetry LTM",
           "max_length": 13,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Telemetrie LTM"
+          "translation": "Telemetry LTM"
         },
         "function_telem_mavlink": {
           "english": "Telemetry MAVLink",
           "max_length": 17,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Telemetrie MAVLink"
+          "translation": "Telemetry MAVLink"
         },
         "function_telem_smartport": {
           "english": "Telemetry SmartPort",
           "max_length": 19,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Telemetrie SmartPort"
+          "translation": "Telemetry SmartPort"
         },
         "load_error_prefix": {
           "english": "Load error:",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laad fout:"
+          "translation": "Load error:"
         },
         "loading": {
           "english": "Loading serial ports...",
           "max_length": 23,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laden seriele poorten...."
+          "translation": "Loading serial ports..."
         },
         "name": {
           "english": "Ports",
           "max_length": 5,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Poorten"
+          "translation": "Ports"
         },
         "no_ports_reported": {
           "english": "No serial ports reported by FC.",
           "max_length": 31,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Geen seriele poorten gerapporteerd bij FC"
+          "translation": "No serial ports reported by FC."
         },
         "port_prefix": {
           "english": "Port",
           "max_length": 4,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Poort"
+          "translation": "Port"
         },
         "progress_loading": {
           "english": "Loading serial ports",
           "max_length": 20,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Laden seriele poorten"
+          "translation": "Loading serial ports"
         },
         "progress_saving": {
           "english": "Saving serial ports",
           "max_length": 19,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan seriele poorten"
+          "translation": "Saving serial ports"
         },
         "rx_tag": {
           "english": "[RX]",
@@ -7536,9 +7536,9 @@
         "save_error_prefix": {
           "english": "Save error:",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Opslaan fout:"
+          "translation": "Save error:"
         }
       },
       "power": {
@@ -7696,7 +7696,7 @@
           "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Angle Mode"
+          "translation": "Angle Modus"
         },
         "gain": {
           "english": "Gain",
@@ -7731,12 +7731,12 @@
           "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Horizon Mode"
+          "translation": "Horizon Modus"
         },
         "max": {
           "english": "Max",
           "max_length": 3,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Max"
         },
@@ -10159,6 +10159,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Spanning"
+        },
+        "shortcuts": {
+          "english": "Shortcuts",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shortcuts"
+        },
+        "shortcuts_group": {
+          "english": "Category",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Category"
+        },
+        "shortcuts_none": {
+          "english": "No shortcut sources available.",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No shortcut sources available."
         }
       },
       "stats": {
@@ -10260,7 +10281,7 @@
         "mixer_override": {
           "english": "Mixer Override",
           "max_length": 14,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Mixer Override"
         },
@@ -10302,7 +10323,7 @@
         "yaw_trim": {
           "english": "Yaw. trim %",
           "max_length": 11,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Yaw. trim %"
         }
@@ -10320,7 +10341,7 @@
           "max_length": 60,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Hiermee kunt u controleren of de juiste sensoren verzendt."
+          "translation": "Met deze tool kunt u controleren of u de juiste sensoren verzendt."
         },
         "invalid": {
           "english": "INVALID",
@@ -10502,16 +10523,16 @@
     "navigation_reload": {
       "english": "RELOAD",
       "max_length": 6,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
-      "translation": "Herlaad"
+      "translation": "Reload"
     },
     "navigation_save": {
       "english": "SAVE",
       "max_length": 4,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
-      "translation": "Opslaan"
+      "translation": "Save"
     },
     "navigation_tools": {
       "english": "*",
@@ -10526,6 +10547,20 @@
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Hz"
+    },
+    "header_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
+    },
+    "menu_section_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
     }
   },
   "error": {
@@ -10553,7 +10588,7 @@
     "accx": {
       "english": "Accel X",
       "max_length": 7,
-      "needs_translation": false,
+      "needs_translation": true,
       "reverse_text": false,
       "translation": "Accel X"
     },
