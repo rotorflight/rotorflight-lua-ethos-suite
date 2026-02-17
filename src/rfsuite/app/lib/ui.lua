@@ -64,6 +64,16 @@ local function resolvePageScript(page, section)
     return page.script, page.loaderspeed
 end
 
+local function resolveModuleScriptPath(moduleName, script)
+    if type(script) ~= "string" or script == "" then return nil end
+    if script:sub(1, 4) == "app/" then return script end
+    if type(moduleName) ~= "string" or moduleName == "" then return script end
+
+    local prefix = moduleName .. "/"
+    if script:sub(1, #prefix) == prefix then return script end
+    return prefix .. script
+end
+
 local function apiVersionMatches(spec)
     if type(spec) ~= "table" then return true end
     return (spec.apiversion == nil or utils.apiVersionCompare(">=", spec.apiversion)) and
@@ -1086,13 +1096,15 @@ local function openMenuSectionById(sectionId)
         if speedOverride ~= nil then
             speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
         end
+        local targetScript = resolveModuleScriptPath(section.module, script) or resolveModuleScriptPath(section.module, section.script)
+        if not targetScript then return false end
 
         app.isOfflinePage = section.offline == true
         app.ui.progressDisplay(nil, nil, speed)
         app.ui.openPage({
             idx = sectionIndex,
             title = section.title,
-            script = section.module .. "/" .. script,
+            script = targetScript,
             openedFromShortcuts = (section.group == "shortcuts")
         })
         return true
@@ -1252,11 +1264,13 @@ function ui.openMainMenu(activesection)
                             if speedOverride ~= nil then
                                 speed = tonumber(speedOverride) or (app.loaderSpeed and app.loaderSpeed[speedOverride]) or speed
                             end
+                            local targetScript = resolveModuleScriptPath(menuItem.module, script) or resolveModuleScriptPath(menuItem.module, menuItem.script)
+                            if not targetScript then return end
                             app.ui.progressDisplay(nil, nil, speed)
                             app.ui.openPage({
                                 idx = menuIndex,
                                 title = menuItem.title,
-                                script = menuItem.module .. "/" .. script,
+                                script = targetScript,
                                 openedFromShortcuts = (menuItem.group == "shortcuts")
                             })
                         elseif type(menuItem.menuId) == "string" and menuItem.menuId ~= "" then

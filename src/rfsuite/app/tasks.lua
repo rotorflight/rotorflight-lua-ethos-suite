@@ -73,9 +73,6 @@ local function mainMenuIconEnableDisable()
     elseif currentApiVersion ~= lastMainMenuBuildApiVersion then
         lastMainMenuBuildApiVersion = currentApiVersion
         app.MainMenu = assert(loadfile("app/modules/init.lua"))()
-        if app.uiState == app.uiStatus.mainMenu then
-            app.ui.openMainMenu()
-        end
     end
 
     -- Focus handling:

@@ -125,8 +125,17 @@ return {
             pages = {
                 {name = "@i18n(app.modules.pids.name)@", script = "pids/pids.lua", image = "pids/pids.png", order = 1},
                 {name = "@i18n(app.modules.rates.name)@", script = "rates/rates.lua", image = "rates/rates.png", order = 2},
-                {name = "@i18n(app.modules.profile_governor.name)@", menuId = "profile_governor", image = "profile_governor/governor.png", order = 3, apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.profile_governor.name)@", script = "profile_governor/governor_legacy.lua", image = "profile_governor/governor.png", order = 3, apiversionlt = {12, 0, 9}},
+                {
+                    name = "@i18n(app.modules.profile_governor.name)@",
+                    script = "profile_governor/governor.lua",
+                    image = "profile_governor/governor.png",
+                    order = 3,
+                    script_by_mspversion = {
+                        {op = ">=", ver = {12, 0, 9}, script = "profile_governor/governor.lua"},
+                        {op = "<", ver = {12, 0, 9}, script = "profile_governor/governor_legacy.lua"}
+                    },
+                    script_default = "profile_governor/governor_legacy.lua"
+                },
                 {name = "@i18n(app.menu_section_advanced)@", menuId = "advanced_menu", image = "app/gfx/advanced.png", order = 4}
             }
         },
@@ -166,8 +175,17 @@ return {
             pages = {
                 {name = "@i18n(app.modules.esc_motors.name)@", menuId = "esc_motors", image = "esc_motors/esc.png", order = 1, loaderspeed = 0.08},
                 {name = "@i18n(app.modules.power.name)@", menuId = "power", image = "power/power.png", order = 2},
-                {name = "@i18n(app.modules.governor.name)@", menuId = "governor", image = "governor/governor.png", order = 3, apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "governor/governor.png", order = 3, apiversionlt = {12, 0, 9}},
+                {
+                    name = "@i18n(app.modules.governor.name)@",
+                    script = "governor/governor.lua",
+                    image = "governor/governor.png",
+                    order = 3,
+                    script_by_mspversion = {
+                        {op = ">=", ver = {12, 0, 9}, script = "governor/governor.lua"},
+                        {op = "<", ver = {12, 0, 9}, script = "governor/governor_legacy.lua"}
+                    },
+                    script_default = "governor/governor_legacy.lua"
+                },
                 {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 4, offline = false}
             }
         },
@@ -237,8 +255,17 @@ return {
                 {name = "@i18n(app.modules.adjustments.name)@", script = "adjustments/adjustments.lua", image = "app/modules/adjustments/adjustments.png", order = 15, loaderspeed = 0.1},
                 {name = "@i18n(app.modules.filters.name)@", script = "filters/filters.lua", image = "app/modules/filters/filters.png", order = 16},
                 {name = "@i18n(app.modules.power.name)@", script = "power/power.lua", image = "app/modules/power/power.png", order = 17},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor.lua", image = "app/modules/governor/governor.png", order = 18, apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.governor.name)@", script = "governor/governor_legacy.lua", image = "app/modules/governor/governor.png", order = 18, apiversionlt = {12, 0, 9}}
+                {
+                    name = "@i18n(app.modules.governor.name)@",
+                    script = "governor/governor.lua",
+                    image = "app/modules/governor/governor.png",
+                    order = 18,
+                    script_by_mspversion = {
+                        {op = ">=", ver = {12, 0, 9}, script = "governor/governor.lua"},
+                        {op = "<", ver = {12, 0, 9}, script = "governor/governor_legacy.lua"}
+                    },
+                    script_default = "governor/governor_legacy.lua"
+                }
             }
         },
         power = {
