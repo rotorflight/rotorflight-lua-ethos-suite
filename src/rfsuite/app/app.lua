@@ -44,6 +44,20 @@ end
 function app.wakeup_protected()
     app.guiIsRunning = true
 
+    if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
+        local ok, err = pcall(app.ui.openMainMenu)
+        if ok then
+            app._pendingMainMenuOpen = false
+        else
+            local msg = tostring(err)
+            if msg:find("Max instructions count reached", 1, true) then
+                -- Retry on next wakeup tick when the VM budget resets.
+                return
+            end
+            error(err)
+        end
+    end
+
     if app.tasks then app.tasks.wakeup() end
 
     local hasBreadcrumb = app.uiState == app.uiStatus.pages and (
@@ -194,7 +208,7 @@ function app.create()
         app.initialized = true
     end
 
-    app.ui.openMainMenu()
+    app._pendingMainMenuOpen = true
 end
 
 function app.event(widget, category, value, x, y)

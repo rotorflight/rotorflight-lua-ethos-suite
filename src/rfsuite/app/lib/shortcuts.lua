@@ -5,11 +5,20 @@
 
 local shortcuts = {}
 local registryCache = nil
+local MAX_SHORTCUTS = 5
 
 local rfsuite = require("rfsuite")
 
 local function isTruthy(value)
     return value == true or value == "true" or value == 1 or value == "1"
+end
+
+local function normalizeMaxSelected(value)
+    local limit = tonumber(value)
+    if limit == nil then limit = MAX_SHORTCUTS end
+    limit = math.floor(limit)
+    if limit < 1 then limit = 1 end
+    return limit
 end
 
 local function preferredApiVersion()
@@ -204,11 +213,35 @@ function shortcuts.isSelected(prefs, id)
     return isTruthy(prefs[id])
 end
 
+function shortcuts.getMaxSelected()
+    return MAX_SHORTCUTS
+end
+
+function shortcuts.limitSelectionMap(prefs, maxSelected)
+    local registry = shortcuts.buildRegistry()
+    local selectedMap = {}
+    if type(prefs) ~= "table" then return selectedMap, 0 end
+
+    local limit = normalizeMaxSelected(maxSelected)
+    local selectedCount = 0
+    for _, item in ipairs(registry.items or {}) do
+        if shortcuts.isSelected(prefs, item.id) then
+            selectedCount = selectedCount + 1
+            if selectedCount <= limit then
+                selectedMap[item.id] = true
+            end
+        end
+    end
+
+    return selectedMap, selectedCount
+end
+
 function shortcuts.buildSelectedPages(prefs)
     local registry = shortcuts.buildRegistry()
+    local selectedMap = shortcuts.limitSelectionMap(prefs, MAX_SHORTCUTS)
     local pages = {}
     for _, item in ipairs(registry.items) do
-        if shortcuts.isSelected(prefs, item.id) then
+        if selectedMap[item.id] then
             pages[#pages + 1] = resolvePage(item.menu or {}, item.page or {})
         end
     end
@@ -229,9 +262,10 @@ end
 
 function shortcuts.buildSelectedSections(prefs)
     local registry = shortcuts.buildRegistry()
+    local selectedMap = shortcuts.limitSelectionMap(prefs, MAX_SHORTCUTS)
     local sections = {}
     for _, item in ipairs(registry.items) do
-        if shortcuts.isSelected(prefs, item.id) then
+        if selectedMap[item.id] then
             local page = resolvePage(item.menu or {}, item.page or {})
             local section = {
                 id = "shortcut_" .. item.id,
@@ -274,12 +308,11 @@ end
 function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
     if type(manifest) ~= "table" then return {} end
     local selected = prefs or {}
+    local maxSelected = normalizeMaxSelected(MAX_SHORTCUTS)
+    local selectedCount = 0
     local menus = manifest.menus or {}
     local order = buildMenuOrder(manifest)
     local menuContextByMenuId = {}
-    local session = rfsuite.session
-    local isConnected = (session and session.isConnected and session.mcu_id) and true or false
-    local postConnectComplete = (session and session.postConnectComplete) == true
 
     for _, group in ipairs(manifest.sections or {}) do
         for _, section in ipairs(group.sections or {}) do
@@ -301,12 +334,11 @@ function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
                     pageIndex = pageIndex + 1
                     local id = "s_" .. tostring(groupIndex) .. "_" .. tostring(pageIndex)
                     if isTruthy(selected[id]) then
-                        local pageSpec = resolvePage(menu, page)
-                        if not isConnected or not postConnectComplete then
-                            if pageSpec.offline ~= true then
-                                goto continue
-                            end
+                        selectedCount = selectedCount + 1
+                        if selectedCount > maxSelected then
+                            goto continue
                         end
+                        local pageSpec = resolvePage(menu, page)
                         local section = {
                             id = "shortcut_" .. id,
                             title = pageSpec.name,

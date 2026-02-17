@@ -10,9 +10,52 @@ local shortcuts = assert(loadfile("app/lib/shortcuts.lua"))()
 local enableWakeup = false
 local config = {}
 local GROUP_PREF_KEY = "settings_shortcuts_group"
+local MAX_SHORTCUTS = (shortcuts.getMaxSelected and shortcuts.getMaxSelected()) or 5
+local shortcutMixedIn = false
+local registryItems = {}
 
 local function prefBool(value)
-    return value == true or value == "true" or value == 1 or value == "1"
+    if value == nil then return nil end
+    if type(value) == "boolean" then return value end
+    if type(value) == "number" then return value > 0 end
+    if type(value) == "string" then
+        local lowered = value:lower():match("^%s*(.-)%s*$")
+        if lowered == "true" or lowered == "1" or lowered == "yes" or lowered == "on" then return true end
+        if lowered == "false" or lowered == "0" or lowered == "no" or lowered == "off" then return false end
+        if lowered:find("mix", 1, true) then return true end
+        if lowered:find("dock", 1, true) then return false end
+        local num = tonumber(lowered)
+        if num ~= nil then return num > 0 end
+    end
+    return nil
+end
+
+local function countSelected(configMap)
+    local count = 0
+    for _, selected in pairs(configMap or {}) do
+        if selected == true then count = count + 1 end
+    end
+    return count
+end
+
+local function buildLimitedSelection(configMap, orderedItems, limit)
+    local selected = {}
+    local selectedCount = 0
+    for _, item in ipairs(orderedItems or {}) do
+        if configMap[item.id] == true then
+            selectedCount = selectedCount + 1
+            if selectedCount <= limit then
+                selected[item.id] = true
+            end
+        end
+    end
+    return selected
+end
+
+local function showShortcutLimitDialog()
+    local message = string.format("No more than %d shortcuts can be selected.", MAX_SHORTCUTS)
+    local buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}
+    form.openDialog({width = nil, title = "@i18n(app.modules.settings.shortcuts)@", message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function openPage(opts)
@@ -34,13 +77,17 @@ local function openPage(opts)
 
     config = {}
     local registry = shortcuts.buildRegistry()
+    registryItems = registry.items or {}
     local saved = rfsuite.preferences.shortcuts or {}
-    for _, item in ipairs(registry.items or {}) do
-        config[item.id] = prefBool(saved[item.id])
+    for _, item in ipairs(registryItems) do
+        config[item.id] = (prefBool(saved[item.id]) == true)
     end
 
     local prefs = rfsuite.preferences
     prefs.menulastselected = prefs.menulastselected or {}
+    prefs.general = prefs.general or {}
+    local mixedInPref = prefBool(prefs.general.shortcuts_mixed_in)
+    shortcutMixedIn = (mixedInPref == true)
     local selectedGroup = tonumber(prefs.menulastselected[GROUP_PREF_KEY]) or 1
     if selectedGroup < 1 then selectedGroup = 1 end
     if selectedGroup > #registry.groups then selectedGroup = #registry.groups end
@@ -60,6 +107,14 @@ local function openPage(opts)
         rfsuite.app.formLines[rfsuite.app.formLineCnt] = line
         return line
     end
+
+    local modeLine = addFieldLine(form, "Mixed In Mode")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(modeLine, nil,
+        function() return shortcutMixedIn == true end,
+        function(newValue)
+            local parsed = prefBool(newValue)
+            if parsed ~= nil then shortcutMixedIn = (parsed == true) end
+        end)
 
     if #registry.groups == 0 then
         rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.settings.shortcuts_none)@")
@@ -82,10 +137,20 @@ local function openPage(opts)
             local panel = form.addExpansionPanel(group.title or "@i18n(app.menu_section_tools)@")
             panel:open(true)
             for _, item in ipairs(group.items) do
+                local itemId = item.id
                 local line = addFieldLine(panel, item.name)
                 rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil,
-                    function() return config[item.id] == true end,
-                    function(newValue) config[item.id] = newValue end)
+                    function() return config[itemId] == true end,
+                    function(newValue)
+                        local parsed = prefBool(newValue)
+                        local selected = (parsed == true)
+                        if selected and config[itemId] ~= true and countSelected(config) >= MAX_SHORTCUTS then
+                            showShortcutLimitDialog()
+                            rfsuite.app.triggers.reloadFull = true
+                            return
+                        end
+                        config[itemId] = selected
+                    end)
             end
         end
     end
@@ -103,10 +168,17 @@ local function onSaveMenu()
 
     local function doSave()
         local prefs = rfsuite.preferences
+        prefs.general = prefs.general or {}
         prefs.shortcuts = prefs.shortcuts or {}
+        prefs.general.shortcuts_mixed_in = (shortcutMixedIn == true)
+        prefs.general.shortcuts_display_mode = nil
+
+        local selectedMap = buildLimitedSelection(config, registryItems, MAX_SHORTCUTS)
         for key in pairs(prefs.shortcuts) do prefs.shortcuts[key] = nil end
-        for id, selected in pairs(config) do
-            if selected == true then prefs.shortcuts[id] = true end
+        for _, item in ipairs(registryItems) do
+            if selectedMap[item.id] == true then
+                prefs.shortcuts[item.id] = true
+            end
         end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", prefs)
         rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
