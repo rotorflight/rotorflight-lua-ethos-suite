@@ -75,29 +75,61 @@ local function pageVisible(page)
     return true
 end
 
-local function buildMenuOrder(manifest)
+local function buildMenuOrderAndContext(manifest)
     local menus = manifest.menus or {}
     local order = {}
+    local queue = {}
+    local queued = {}
     local visited = {}
+    local menuContextByMenuId = {}
+
+    local function enqueueMenu(menuId, contextId)
+        if type(menuId) ~= "string" or menuId == "" then return end
+        if type(contextId) == "string" and contextId ~= "" and menuContextByMenuId[menuId] == nil then
+            menuContextByMenuId[menuId] = contextId
+        end
+        if queued[menuId] then return end
+        queued[menuId] = true
+        queue[#queue + 1] = menuId
+    end
 
     for _, group in ipairs(manifest.sections or {}) do
         for _, section in ipairs(group.sections or {}) do
-            if type(section) == "table" and type(section.menuId) == "string" and section.menuId ~= "" then
-                if not visited[section.menuId] then
-                    visited[section.menuId] = true
-                    order[#order + 1] = section.menuId
+            if type(section) == "table" and pageVisible(section) then
+                local menuId = section.menuId
+                if type(menuId) == "string" and menuId ~= "" then
+                    local contextId = (type(section.id) == "string" and section.id ~= "") and section.id or nil
+                    enqueueMenu(menuId, contextId)
                 end
             end
         end
     end
 
-    for menuId in pairs(menus) do
+    local head = 1
+    while head <= #queue do
+        local menuId = queue[head]
+        head = head + 1
+
         if not visited[menuId] then
+            visited[menuId] = true
             order[#order + 1] = menuId
+
+            local menu = menus[menuId]
+            local contextId = menuContextByMenuId[menuId]
+            if type(menu) == "table" and type(menu.pages) == "table" then
+                for _, page in ipairs(menu.pages) do
+                    if type(page) == "table" and pageVisible(page) then
+                        local childMenuId = page.menuId
+                        if type(childMenuId) == "string" and childMenuId ~= "" then
+                            enqueueMenu(childMenuId, contextId)
+                        end
+                    end
+                end
+            end
         end
     end
 
-    return order
+    return order, menuContextByMenuId
 end
 
 local function resolveScriptPath(scriptPrefix, script)
@@ -156,16 +188,7 @@ function shortcuts.buildRegistry()
     end
 
     local menus = manifest.menus or {}
-    local order = buildMenuOrder(manifest)
-    local menuContextByMenuId = {}
-
-    for _, group in ipairs(manifest.sections or {}) do
-        for _, section in ipairs(group.sections or {}) do
-            if type(section) == "table" and type(section.menuId) == "string" and section.menuId ~= "" then
-                menuContextByMenuId[section.menuId] = section.id
-            end
-        end
-    end
+    local order, menuContextByMenuId = buildMenuOrderAndContext(manifest)
 
     local groups = {}
     local items = {}
@@ -311,16 +334,7 @@ function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
     local maxSelected = normalizeMaxSelected(MAX_SHORTCUTS)
     local selectedCount = 0
     local menus = manifest.menus or {}
-    local order = buildMenuOrder(manifest)
-    local menuContextByMenuId = {}
-
-    for _, group in ipairs(manifest.sections or {}) do
-        for _, section in ipairs(group.sections or {}) do
-            if type(section) == "table" and type(section.menuId) == "string" and section.menuId ~= "" then
-                menuContextByMenuId[section.menuId] = section.id
-            end
-        end
-    end
+    local order, menuContextByMenuId = buildMenuOrderAndContext(manifest)
 
     local sections = {}
     local groupIndex = 0
