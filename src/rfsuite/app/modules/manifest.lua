@@ -33,30 +33,6 @@ return {
                     image = "app/gfx/hardware.png",
                     loaderspeed = "FAST",
                     ethosversion = {1, 6, 2}
-                },
-                {
-                    title = "@i18n(app.menu_section_mechanics)@",
-                    id = "mechanics",
-                    menuId = "mechanics_menu",
-                    image = "app/modules/mixer/mixer.png",
-                    loaderspeed = "FAST",
-                    ethosversion = {1, 6, 2}
-                },
-                {
-                    title = "@i18n(app.menu_section_controls)@",
-                    id = "safety",
-                    menuId = "safety_menu",
-                    image = "app/modules/failsafe/failsafe.png",
-                    loaderspeed = "FAST",
-                    ethosversion = {1, 6, 2}
-                },
-                {
-                    title = "@i18n(app.modules.esc_motors.name)@",
-                    id = "powertrain",
-                    menuId = "powertrain_menu",
-                    image = "app/modules/esc_motors/esc.png",
-                    loaderspeed = "FAST",
-                    ethosversion = {1, 6, 2}
                 }
             }
         },
@@ -113,7 +89,11 @@ return {
                 {name = "@i18n(app.modules.telemetry.name)@", script = "telemetry/telemetry.lua", image = "telemetry/telemetry.png", order = 3},
                 {name = "@i18n(app.modules.accelerometer.name)@", script = "accelerometer/accelerometer.lua", image = "accelerometer/acc.png", order = 4, loaderspeed = 0.08},
                 {name = "@i18n(app.modules.alignment.name)@", script = "alignment/alignment.lua", image = "alignment/alignment.png", order = 5, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.ports.name)@", script = "ports/ports.lua", image = "ports/ports.png", order = 6}
+                {name = "@i18n(app.modules.ports.name)@", script = "ports/ports.lua", image = "ports/ports.png", order = 6},
+                {name = "@i18n(app.modules.mixer.name)@", menuId = "mixer", image = "mixer/mixer.png", order = 7, loaderspeed = 0.08},
+                {name = "@i18n(app.modules.servos.name)@", menuId = "servos_type", image = "servos/servos.png", order = 8, loaderspeed = 0.08},
+                {name = "@i18n(app.menu_section_controls)@", menuId = "safety_menu", image = "failsafe/failsafe.png", order = 9},
+                {name = "@i18n(app.modules.esc_motors.name)@", menuId = "powertrain_menu", image = "esc_motors/esc.png", order = 10}
             }
         },
         flight_tuning_menu = {
@@ -155,23 +135,12 @@ return {
                 {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 7, apiversion = {12, 0, 6}}
             }
         },
-        mechanics_menu = {
-            title = "@i18n(app.menu_section_mechanics)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.mixer.name)@", menuId = "mixer", image = "mixer/mixer.png", order = 1, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.servos.name)@", menuId = "servos_type", image = "servos/servos.png", order = 2, loaderspeed = 0.08}
-            }
-        },
         powertrain_menu = {
             title = "@i18n(app.modules.power.name)@",
             scriptPrefix = "app/modules/",
             iconPrefix = "app/modules/",
             loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
+            navOptions = {defaultSection = "setup", showProgress = true},
             pages = {
                 {name = "@i18n(app.modules.esc_motors.name)@", menuId = "esc_motors", image = "esc_motors/esc.png", order = 1, loaderspeed = 0.08},
                 {name = "@i18n(app.modules.power.name)@", menuId = "power", image = "power/power.png", order = 2},
@@ -194,7 +163,7 @@ return {
             scriptPrefix = "app/modules/",
             iconPrefix = "app/modules/",
             loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
+            navOptions = {defaultSection = "setup", showProgress = true},
             pages = {
                 {name = "@i18n(app.modules.modes.name)@", script = "modes/modes.lua", image = "modes/modes.png", order = 1, loaderspeed = 0.05},
                 {name = "@i18n(app.modules.adjustments.name)@", script = "adjustments/adjustments.lua", image = "adjustments/adjustments.png", order = 2, loaderspeed = 0.1},
@@ -273,7 +242,7 @@ return {
             scriptPrefix = "power/tools/",
             iconPrefix = "app/modules/power/gfx/",
             loaderSpeed = 0.08,
-            navOptions = {defaultSection = "powertrain"},
+            navOptions = {defaultSection = "setup"},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             pages = {
                 {name = "@i18n(app.modules.power.battery_name)@", script = "battery.lua", image = "battery.png"},
@@ -286,7 +255,7 @@ return {
             scriptPrefix = "esc_motors/tools/",
             iconPrefix = "app/modules/esc_motors/gfx/",
             loaderSpeed = 0.08,
-            navOptions = {defaultSection = "powertrain", showProgress = true},
+            navOptions = {defaultSection = "setup", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/esc_motors/menu_hooks.lua",
             pages = {
@@ -328,7 +297,7 @@ return {
             scriptPrefix = "governor/tools/",
             iconPrefix = "app/modules/governor/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "powertrain", showProgress = true},
+            navOptions = {defaultSection = "setup", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/governor/menu_hooks.lua",
             pages = {
@@ -356,7 +325,7 @@ return {
             scriptPrefix = "blackbox/tools/",
             iconPrefix = "app/modules/blackbox/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "safety"},
+            navOptions = {defaultSection = "setup"},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = true},
             hooksScript = "app/modules/blackbox/menu_hooks.lua",
             pages = {
@@ -370,7 +339,7 @@ return {
             scriptPrefix = "beepers/tools/",
             iconPrefix = "app/modules/beepers/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "safety"},
+            navOptions = {defaultSection = "setup"},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = true},
             hooksScript = "app/modules/beepers/menu_hooks.lua",
             pages = {
@@ -383,7 +352,7 @@ return {
             scriptPrefix = "mixer/tools/",
             iconPrefix = "app/modules/mixer/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "mechanics", showProgress = true},
+            navOptions = {defaultSection = "setup", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/mixer/menu_hooks.lua",
             pages = {
@@ -401,7 +370,7 @@ return {
             scriptPrefix = "servos/tools/",
             iconPrefix = "app/modules/servos/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "mechanics", showProgress = true},
+            navOptions = {defaultSection = "setup", showProgress = true},
             navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
             hooksScript = "app/modules/servos/menu_hooks.lua",
             pages = {
