@@ -8729,24 +8729,6 @@
           "max_length": 7,
           "needs_translation": false,
           "translation": "Voltage"
-        },
-        "shortcuts": {
-          "english": "Shortcuts",
-          "max_length": 9,
-          "needs_translation": false,
-          "translation": "Shortcuts"
-        },
-        "shortcuts_group": {
-          "english": "Category",
-          "max_length": 8,
-          "needs_translation": false,
-          "translation": "Category"
-        },
-        "shortcuts_none": {
-          "english": "No shortcut sources available.",
-          "max_length": 30,
-          "needs_translation": false,
-          "translation": "No shortcut sources available."
         }
       },
       "stats": {
@@ -9063,18 +9045,6 @@
       "max_length": 2,
       "needs_translation": false,
       "translation": "Hz"
-    },
-    "header_shortcuts": {
-      "english": "Shortcuts",
-      "max_length": 9,
-      "needs_translation": false,
-      "translation": "Shortcuts"
-    },
-    "menu_section_shortcuts": {
-      "english": "Shortcuts",
-      "max_length": 9,
-      "needs_translation": false,
-      "translation": "Shortcuts"
     }
   },
   "error": {
