@@ -36,7 +36,7 @@ local function openPage(opts)
         rfsuite.app.formLines[rfsuite.app.formLineCnt],
         nil,
         0,
-        20,
+        10,
         function() return tonumber(config.offset_x) or 0 end,
         function(newValue) config.offset_x = tonumber(newValue) or 0 end,
         1
@@ -52,7 +52,7 @@ local function openPage(opts)
         rfsuite.app.formLines[rfsuite.app.formLineCnt],
         nil,
         0,
-        20,
+        10,
         function() return tonumber(config.offset_y) or 0 end,
         function(newValue) config.offset_y = tonumber(newValue) or 0 end,
         1
