@@ -14,7 +14,11 @@ function utils.resolveModelName(foldername)
     local iniName = "LOGS:rfsuite/telemetry/" .. foldername .. "/logs.ini"
     local iniData = rfsuite.ini.load_ini_file(iniName) or {}
 
-    if iniData["model"] and iniData["model"].name then return iniData["model"].name end
+    if iniData["model"] and iniData["model"].name then
+        local modelName = tostring(iniData["model"].name)
+        modelName = modelName:gsub("^%s+", ""):gsub("%s+$", "")
+        if modelName ~= "" then return modelName end
+    end
     return "Unknown"
 end
 
