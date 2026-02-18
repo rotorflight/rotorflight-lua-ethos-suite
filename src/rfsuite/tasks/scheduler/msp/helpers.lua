@@ -11,8 +11,8 @@ local utils = rfsuite.utils
 local helpers = {}
 
 function helpers.governorMode(callback)
-    local session = rfsuite.session
-    if (session.governorMode == nil ) then
+    
+    if (rfsuite.session.governorMode == nil ) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
@@ -20,54 +20,52 @@ function helpers.governorMode(callback)
             if governorMode then 
                 utils.log("Governor mode: " .. governorMode, "debug") 
             end
-            session.governorMode = governorMode
+            rfsuite.session.governorMode = governorMode
             if callback then callback(governorMode) end
         end)
         API.setUUID("e2a1c5b3-7f4a-4c8e-9d2a-3b6f8e2d9a1c")
         API.read()
     else
-        if callback then callback(session.governorMode) end    
+        if callback then callback(rfsuite.session.governorMode) end    
     end
 end
 
 function helpers.servoCount(callback)
-    local session = rfsuite.session
-    if (session.servoCount == nil) then
+    if (rfsuite.session.servoCount == nil) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("STATUS")
         API.setCompleteHandler(function(self, buf)
-            session.servoCount = API.readValue("servo_count")
-            if session.servoCount then 
-                utils.log("Servo count: " .. session.servoCount, "debug") 
+            rfsuite.session.servoCount = API.readValue("servo_count")
+            if rfsuite.session.servoCount then 
+                utils.log("Servo count: " .. rfsuite.session.servoCount, "debug") 
             end    
-            if callback then callback(session.servoCount) end
+            if callback then callback(rfsuite.session.servoCount) end
         end)
         API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
         API.read()
     else
-        if callback then callback(session.servoCount) end    
+        if callback then callback(rfsuite.session.servoCount) end    
     end
 end
 
 function helpers.servoOverride(callback)
-    local session = rfsuite.session
-    if (session.servoOverride == nil) then
+    if (rfsuite.session.servoOverride == nil) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("SERVO_OVERRIDE")
         API.setCompleteHandler(function(self, buf)
             for i, v in pairs(API.data().parsed) do
                 if v == 0 then
                     utils.log("Servo override: true (" .. i .. ")", "debug")
-                    session.servoOverride = true
+                    rfsuite.session.servoOverride = true
                 end
             end
-            if session.servoOverride == nil then session.servoOverride = false end
-            if callback then callback(session.servoOverride) end
+            if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
+            if callback then callback(rfsuite.session.servoOverride) end
         end)
         API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
         API.read()
     else
-        if callback then callback(session.servoOverride) end    
+        if callback then callback(rfsuite.session.servoOverride) end    
     end
 end
 
@@ -89,8 +87,7 @@ function helpers.servoBusEnabled(callback)
         return false
     end
 
-    local session = rfsuite.session
-    if (session.servoBusEnabled == nil) then
+    if (rfsuite.session.servoBusEnabled == nil) then
         local message = {
             command = 54,
             processReply = function(self, buf)
@@ -107,35 +104,34 @@ function helpers.servoBusEnabled(callback)
                     data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
                 end
 
-                session.servoBusEnabled  = processSerialConfig(data)
-                if callback then callback(session.servoBusEnabled) end
+                rfsuite.session.servoBusEnabled  = processSerialConfig(data)
+                if callback then callback(rfsuite.session.servoBusEnabled) end
             end,
             simulatorResponse = {20 , 1  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 0  , 0  , 0  , 8  , 0  , 5  , 4  , 0  , 5  , 1  , 0  , 4  , 0  , 0  , 5  , 4  , 0  , 5  , 2  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 3  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 4  , 64 , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 5  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  }
         }
         rfsuite.tasks.msp.mspQueue:add(message)
     else
-        if callback then callback(session.servoBusEnabled) end
+        if callback then callback(rfsuite.session.servoBusEnabled) end
     end
 end
 
 function helpers.mixerConfig(callback)
-    local session = rfsuite.session
-    if (session.tailMode == nil or session.swashMode == nil) then
+    if (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("MIXER_CONFIG")
         API.setCompleteHandler(function(self, buf)
-            session.tailMode = API.readValue("tail_rotor_mode")
-            session.swashMode = API.readValue("swash_type")
-            if session.tailMode and session.swashMode then
-                utils.log("Tail mode: " .. session.tailMode, "debug")
-                utils.log("Swash mode: " .. session.swashMode, "debug")
+            rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
+            rfsuite.session.swashMode = API.readValue("swash_type")
+            if rfsuite.session.tailMode and rfsuite.session.swashMode then
+                utils.log("Tail mode: " .. rfsuite.session.tailMode, "debug")
+                utils.log("Swash mode: " .. rfsuite.session.swashMode, "debug")
             end
-            if callback then callback(session.tailMode,session.swashMode) end
+            if callback then callback(rfsuite.session.tailMode,rfsuite.session.swashMode) end
         end)
         API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
         API.read()
     else
-        if callback then callback(session.tailMode,session.swashMode) end    
+        if callback then callback(rfsuite.session.tailMode,rfsuite.session.swashMode) end    
     end
 end
 

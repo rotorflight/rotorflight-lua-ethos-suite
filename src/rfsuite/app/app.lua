@@ -60,16 +60,6 @@ function app.wakeup_protected()
 
     if app.tasks then app.tasks.wakeup() end
 
-    local hasBreadcrumb = app.uiState == app.uiStatus.pages and (
-        (app.headerParentBreadcrumb and app.headerParentBreadcrumb ~= "") or
-        (app.lastMenu ~= nil) or
-        (app.lastScript ~= nil)
-    )
-    local wantsStats = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin
-
-    if hasBreadcrumb or (wantsStats and not rfsuite.session.mspBusy) then
-        lcd.invalidate()
-    end
 end
 
 function app.wakeup()

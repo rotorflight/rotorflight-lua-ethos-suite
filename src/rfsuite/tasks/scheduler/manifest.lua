@@ -45,7 +45,7 @@ local manifest = {
   [13] = { name = "timer",        connected = true,  interval = 0.25, script = "scheduler/timer/timer.lua",                linkrequired = true,  simulatoronly = false, spreadschedule = false },
 
   -- MSP processing; adaptive internally, with boost during active traffic
-  [14] = { name = "msp",          connected = false, interval = 0.2,  script = "scheduler/msp/msp.lua",                    linkrequired = false, simulatoronly = false, spreadschedule = false },
+  [14] = { name = "msp",          connected = false, interval = 0.25,  script = "scheduler/msp/msp.lua",                    linkrequired = false, simulatoronly = false, spreadschedule = false },
 }
 
 return manifest
