@@ -100,7 +100,7 @@ return {
             title = "@i18n(app.menu_section_flight_tuning)@",
             scriptPrefix = "app/modules/",
             iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
+            loaderSpeed = "DEFAULT",
             navOptions = {showProgress = true},
             pages = {
                 {name = "@i18n(app.modules.pids.name)@", script = "pids/pids.lua", image = "pids/pids.png", order = 1},
