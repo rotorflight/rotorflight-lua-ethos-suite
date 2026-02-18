@@ -78,10 +78,17 @@ local function onSaveMenu()
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
         rfsuite.preferences.activelook = rfsuite.preferences.activelook or {}
+        local oldOffsetX = tonumber(rfsuite.preferences.activelook.offset_x) or 0
+        local oldOffsetY = tonumber(rfsuite.preferences.activelook.offset_y) or 0
+        local newOffsetX = tonumber(config.offset_x) or 0
+        local newOffsetY = tonumber(config.offset_y) or 0
         for key, value in pairs(config) do rfsuite.preferences.activelook[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-        rfsuite.session = rfsuite.session or {}
-        rfsuite.session.activelookForceRedraw = true
+
+        if oldOffsetX ~= newOffsetX or oldOffsetY ~= newOffsetY then
+            rfsuite.session = rfsuite.session or {}
+            rfsuite.session.activelookReset = true
+        end
 
         rfsuite.app.triggers.closeSave = true
         return true
