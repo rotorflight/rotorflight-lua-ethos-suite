@@ -38,7 +38,7 @@ local function loadSensorModule()
     elseif protocol == "crsf" then
         if not loadedSensorModule or loadedSensorModule.name ~= "elrs" then loadedSensorModule = {name = "elrs", module = assert(loadfile("tasks/scheduler/sensors/elrs.lua"))(config)} end
     elseif protocol == "sport" then
-        if rfsuite.utils.apiVersionCompare(">=", "12.08") then
+        if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky" then loadedSensorModule = {name = "frsky", module = assert(loadfile("tasks/scheduler/sensors/frsky.lua"))(config)} end
         else
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky_legacy" then loadedSensorModule = {name = "frsky_legacy", module = assert(loadfile("tasks/scheduler/sensors/frsky_legacy.lua"))(config)} end

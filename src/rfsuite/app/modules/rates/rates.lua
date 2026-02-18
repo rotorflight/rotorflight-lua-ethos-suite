@@ -10,6 +10,19 @@ local tables = {}
 
 local activateWakeup = false
 
+local function resolveScriptPath(script)
+    if type(script) ~= "string" then return nil, nil end
+    local relativeScript = script
+    if relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+    local modulePath = script
+    if modulePath:sub(1, 4) ~= "app/" then
+        modulePath = "app/modules/" .. modulePath
+    end
+    return modulePath, relativeScript
+end
+
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
 tables[2] = "app/modules/rates/ratetables/raceflight.lua"
@@ -59,12 +72,13 @@ local function openPage(opts)
     local title = opts.title
     local script = opts.script
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    local modulePath, relativeScript = resolveScriptPath(script)
+    rfsuite.app.Page = assert(loadfile(modulePath))()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
+    rfsuite.app.lastScript = relativeScript or script
+    rfsuite.session.lastPage = relativeScript or script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
@@ -148,7 +162,10 @@ local function openPage(opts)
                     value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
                 end
                 return value
-            end, function(value) f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value) end)
+            end, function(value)
+                rfsuite.app.ui.markPageDirty()
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            end)
             if f.default ~= nil then
                 local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
@@ -170,14 +187,16 @@ local function openPage(opts)
         end
     end
 
+    rfsuite.app.ui.setPageDirty(false)
 end
 
 local function wakeup()
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-        if rfsuite.session.activeRateProfile ~= nil then
-            if rfsuite.app.formFields['title'] then
-                rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-            end
+        local activeRateProfile = rfsuite.session and rfsuite.session.activeRateProfile
+        if activeRateProfile ~= nil and rfsuite.app.formFields['title'] then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            baseTitle = tostring(baseTitle):gsub("%s+#%d+$", "")
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeRateProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
         end
     end
 end
@@ -190,4 +209,10 @@ local function onHelpMenu()
 
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, API = {}}
+local function canSave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, canSave = canSave, API = {}}

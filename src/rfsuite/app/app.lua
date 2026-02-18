@@ -11,6 +11,27 @@ local app = {}
 local utils = rfsuite.utils
 local log = utils.log
 local compile = loadfile
+local lastNoOpSaveToneAt = 0
+local busyUiTick = 0
+-- Busy cadence: run app tasks on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_UI_RUN_NUM = 2
+local BUSY_UI_RUN_DEN = 3
+
+local function playNoOpSaveTone()
+    local now = os.clock()
+    if (now - lastNoOpSaveToneAt) < 0.25 then return end
+    lastNoOpSaveToneAt = now
+
+    if system and system.playTone then
+        pcall(system.playTone, 420, 180, 0)
+        return
+    end
+
+    if utils and utils.playFileCommon then
+        utils.playFileCommon("beep.wav")
+    end
+end
 
 local arg = {...}
 local config = arg[1]
@@ -21,16 +42,37 @@ app.guiIsRunning = false
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
-    if app.ui and app.ui.adminStatsOverlay then if not rfsuite.session.mspBusy then app.ui.adminStatsOverlay() end end
+    if app.ui and app.ui.adminStatsOverlay then app.ui.adminStatsOverlay() end
 
 end
 
 function app.wakeup_protected()
     app.guiIsRunning = true
 
-    if app.tasks then app.tasks.wakeup() end
+    -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
+    if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
+        local ok, err = pcall(app.ui.openMainMenu)
+        if ok then
+            app._pendingMainMenuOpen = false
+        else
+            local msg = tostring(err)
+            if msg:find("Max instructions count reached", 1, true) then
+                -- Retry on next wakeup tick when the VM budget resets.
+                return
+            end
+            error(err)
+        end
+    end
 
-    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then if not rfsuite.session.mspBusy then lcd.invalidate() end end
+    -- If MSP is busy, only run UI tasks every N ticks to allow background processing to complete and avoid UI freezes.
+    local runUiTasks = true
+    if rfsuite.session and rfsuite.session.mspBusy then
+        busyUiTick = (busyUiTick % BUSY_UI_RUN_DEN) + 1
+        runUiTasks = busyUiTick <= BUSY_UI_RUN_NUM
+    else
+        busyUiTick = 0
+    end
+    if runUiTasks and app.tasks then app.tasks.wakeup() end
 end
 
 function app.wakeup()
@@ -61,6 +103,9 @@ function app.create()
         app.lastIdx = nil -- last selected button index
         app.lastTitle = nil -- last page title string
         app.lastScript = nil -- last page script path
+        app.headerTitle = nil -- resolved large header title
+        app.headerParentBreadcrumb = nil -- resolved micro breadcrumb parent path
+        app.menuContextStack = {} -- submenu return stack (parent chain)
         app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
         app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
         app.uiState = app.uiStatus.init -- current UI state machine
@@ -166,10 +211,13 @@ function app.create()
         app.initialized = true
     end
 
-    app.ui.openMainMenu()
+    app._pendingMainMenuOpen = true
 end
 
 function app.event(widget, category, value, x, y)
+
+
+    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == 35) and value ~= KEY_ENTER_LONG
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
@@ -179,39 +227,61 @@ function app.event(widget, category, value, x, y)
     end
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
+        if (app._openedFromShortcuts or app._forceMenuToMain) and isCloseEvent then
+            app.ui.openMainMenu()
+            return true
+        end
         if app.Page.event then
             log("USING PAGES EVENTS", "debug")
             local ret = app.Page.event(widget, category, value, x, y)
-            if ret ~= nil then return ret end
+            if ret ~= nil and ret ~= false then return ret end
         end
     end
 
-    if app.uiState == app.uiStatus.mainMenu and app.lastMenu ~= nil and value == 35 then
-        app.ui.openMainMenu()
-        return true
-    end
-    if rfsuite.app.lastMenu ~= nil and category == 3 and value == 0 then
-        app.ui.openMainMenu()
+    if app.uiState == app.uiStatus.mainMenu and isCloseEvent then
+        if app.lastMenu and app.lastMenu ~= "mainmenu" then
+            app.ui.openMainMenu()
+        else
+            app.close()
+        end
         return true
     end
 
     if app.uiState == app.uiStatus.pages then
 
-        if category == EVT_CLOSE and value == 0 or value == 35 then
+        if isCloseEvent then
             log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-            if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            if app.lastMenu == nil then
+            if app._forceMenuToMain then
                 app.ui.openMainMenu()
+            elseif app.Page.onNavMenu then
+                app.Page.onNavMenu(app.Page)
             else
-                app.ui.openMainMenuSub(app.lastMenu)
+                app.ui.openMenuContext()
             end
             return true
         end
 
         if value == KEY_ENTER_LONG then
             if app.Page.navButtons and app.Page.navButtons.save == false then return true end
+            local dirtyPref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+            local requireDirty = not (dirtyPref == false or dirtyPref == "false")
+
+            -- Block long-press save when page is not dirty on standard API pages.
+            if app.Page and app.Page.canSave and app.Page.canSave(app.Page) == false then
+                playNoOpSaveTone()
+                system.killEvents(KEY_ENTER_BREAK)
+                return true
+            end
+            if requireDirty and not app._pageUsesCustomOpen and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
+                if app.pageDirty ~= true then
+                    playNoOpSaveTone()
+                    system.killEvents(KEY_ENTER_BREAK)
+                    return true
+                end
+            end
+
             log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end

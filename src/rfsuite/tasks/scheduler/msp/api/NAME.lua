@@ -8,57 +8,56 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 
 local API_NAME = "NAME"
 local MSP_API_CMD_READ = 10
-local MSP_API_CMD_WRITE = nil
+local MSP_API_CMD_WRITE = 11
 local MSP_REBUILD_ON_WRITE = false
 local MSP_MIN_BYTES = 0
+local MAX_NAME_LENGTH = 16
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field="name",mandatory=false,type="U8",apiVersion=12.06,simResponse={80,105,108,111,116},help="@i18n(api.NAME.name)@"}
+    {field="name",mandatory=false,type="U8",apiVersion={12, 0, 6},simResponse={80,105,108,111,116},help="@i18n(api.NAME.name)@"}
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local MSP_API_STRUCTURE_WRITE = {}
 
 local MSP_API_SIMULATOR_RESPONSE = core.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
-local defaultData = {}
 local os_clock = os.clock
 local tostring = tostring
-local log = rfsuite.utils.log
+local math_min = math.min
+local type = type
+local string_byte = string.byte
 
 local handlers = core.createHandlers()
 
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
-local function parseMSPData(buf)
+local function parseMSPName(buf)
     local parsedData = {}
-
     local name = ""
-    local offset = 1
+    local readU8 = rfsuite.tasks.msp.mspHelper.readU8
+    local maxLen = MAX_NAME_LENGTH
 
-    while offset <= #buf do
-        local char = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then break end
-        if char then
-            name = name .. string.char(char)
-        end    
-        offset = offset + 1
+    -- Do not rely on '#buf' because some buffer objects don't expose a useful length.
+    buf.offset = 1
+    while #name < maxLen do
+        local char = readU8(buf)
+        if char == nil or char == 0 then break end
+        name = name .. string.char(char)
     end
-
-    if #buf == 0 then name = "" end
 
     parsedData["name"] = name
 
     local data = {}
-    data['parsed'] = parsedData
-    data['buffer'] = buf
+    data.parsed = parsedData
+    data.buffer = buf
+    data.structure = MSP_API_STRUCTURE_READ
 
     return data
 end
@@ -105,8 +104,7 @@ local function read()
         command = MSP_API_CMD_READ,
         apiname = API_NAME,
         processReply = function(self, buf)
-
-            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = parseMSPName(buf)
             if #buf >= 0 then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
@@ -125,7 +123,19 @@ local function read()
 end
 
 local function write(suppliedPayload)
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
+    local payload = suppliedPayload
+    if not payload then
+        local nameValue = payloadData.name
+        if nameValue == nil and mspData and mspData.parsed then nameValue = mspData.parsed.name end
+        if nameValue == nil then nameValue = "" end
+        if type(nameValue) ~= "string" then nameValue = tostring(nameValue) end
+
+        payload = {}
+        local length = math_min(#nameValue, MAX_NAME_LENGTH)
+        for i = 1, length do
+            payload[#payload + 1] = string_byte(nameValue, i)
+        end
+    end
 
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
     lastWriteUUID = uuid
@@ -140,7 +150,9 @@ local function readValue(fieldName)
     return nil
 end
 
-local function setValue(fieldName, value) payloadData[fieldName] = value end
+local function setValue(fieldName, value)
+    payloadData[fieldName] = value
+end
 
 local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import re
+import argparse
 from collections import OrderedDict
 from pathlib import Path
 
@@ -14,18 +15,22 @@ def read_json(path: Path) -> OrderedDict:
 
 
 def write_json(path: Path, data: OrderedDict) -> None:
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def is_translation_block(node) -> bool:
     return isinstance(node, dict) and "english" in node and "translation" in node
 
 
-def collect_locale_data():
+def collect_locale_data(only_locales=None):
     locales = {}
     for fpath in sorted(JSON_ROOT.glob("*.json")):
+        locale = fpath.stem
+        if only_locales and locale != "en" and locale not in only_locales:
+            continue
         try:
-            locales[fpath.stem] = read_json(fpath)
+            locales[locale] = read_json(fpath)
         except Exception as e:
             print(f"❌ Failed to parse {fpath}: {e}")
     return locales
@@ -84,13 +89,22 @@ def update_max_lengths_all_locales(locales, en_data):
     walk(en_data, [])
 
 
-def main():
+def parse_args(argv=None):
+    ap = argparse.ArgumentParser(description="Update max_length in i18n JSON files.")
+    ap.add_argument("--only", nargs="*", help="Limit to specific locales (e.g. --only nl)")
+    return ap.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    only_locales = set(args.only or [])
+
     en_path = JSON_ROOT / "en.json"
     if not en_path.exists():
         print(f"❌ Missing {en_path}")
         return 1
 
-    locales = collect_locale_data()
+    locales = collect_locale_data(only_locales if only_locales else None)
     en_data = locales.get("en")
     if not isinstance(en_data, dict):
         print("❌ en.json is not an object")
@@ -102,7 +116,11 @@ def main():
     for locale, data in locales.items():
         path = JSON_ROOT / f"{locale}.json"
         write_json(path, data)
-    print(f"✔ Updated max_length values in {JSON_ROOT}/*.json")
+    if only_locales:
+        target_text = ", ".join(sorted(only_locales))
+        print(f"✔ Updated max_length values for en + [{target_text}]")
+    else:
+        print(f"✔ Updated max_length values in {JSON_ROOT}/*.json")
     return 0
 
 

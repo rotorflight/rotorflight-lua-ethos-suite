@@ -2485,6 +2485,43 @@
         "reverse_text": true
       }
     },
+    "RXFAIL_CONFIG": {
+      "channel_mode": {
+        "english": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
+        "translation": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 72
+      },
+      "channel_value": {
+        "english": "Channel value used only when mode is Set.",
+        "translation": "Channel value used only when mode is Set.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 41
+      },
+      "tbl_auto": {
+        "english": "Auto",
+        "translation": "Auto",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 4
+      },
+      "tbl_hold": {
+        "english": "Hold",
+        "translation": "Hold",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 4
+      },
+      "tbl_set": {
+        "english": "Set",
+        "translation": "Set",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 3
+      }
+    },
     "RC_TUNING": {
       "accel_limit_1": {
         "english": "Maximum acceleration of the craft in response to a stick movement.",
@@ -2806,12 +2843,47 @@
       "translation": "מתקדם",
       "reverse_text": true
     },
+    "menu_section_flight_tuning": {
+      "english": "Flight Tuning",
+      "translation": "Flight Tuning",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 13
+    },
+    "menu_section_controls": {
+      "english": "Controls",
+      "translation": "Controls",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 8
+    },
     "menu_section_hardware": {
       "english": "Hardware",
       "max_length": 8,
       "needs_translation": true,
       "translation": "חומרה",
       "reverse_text": true
+    },
+    "menu_section_mechanics": {
+      "english": "Mechanics",
+      "translation": "Mechanics",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 9
+    },
+    "menu_section_profiles": {
+      "english": "Profiles",
+      "translation": "Profiles",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 8
+    },
+    "menu_section_safety": {
+      "english": "Safety",
+      "translation": "Safety",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 6
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -2821,6 +2893,479 @@
       "reverse_text": true
     },
     "modules": {
+      "adjustments": {
+        "active_ranges": {
+          "english": "Active ranges:",
+          "translation": "Active ranges:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "adjust_range": {
+          "english": "Adjust Range",
+          "translation": "Adjust Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "always_fixed_1500_confirm": {
+          "english": "Always mode uses fixed 1500us. Set Min/Max to 1500us?",
+          "translation": "Always mode uses fixed 1500us. Set Min/Max to 1500us?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 53
+        },
+        "auto_detect_active_toggle": {
+          "english": "Auto-detect active: toggle desired AUX channel",
+          "translation": "Auto-detect active: toggle desired AUX channel",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 46
+        },
+        "channel_always": {
+          "english": "Always",
+          "translation": "Always",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "channel_auto": {
+          "english": "AUTO",
+          "translation": "AUTO",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "channel_auto_detecting": {
+          "english": "AUTO...",
+          "translation": "AUTO...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "channel_aux_prefix": {
+          "english": "AUX ",
+          "translation": "AUX ",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "confirm_use_current": {
+          "english": "Use current value",
+          "translation": "Use current value",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "current_output": {
+          "english": "Current Output",
+          "translation": "Current Output",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "decrease_range": {
+          "english": "Decrease Range",
+          "translation": "Decrease Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "editing_disabled_reload_back": {
+          "english": "Editing is disabled. Use Reload or Back.",
+          "translation": "Editing is disabled. Use Reload or Back.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 40
+        },
+        "enable_channel": {
+          "english": "Enable Channel",
+          "translation": "Enable Channel",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "enable_range": {
+          "english": "Enable Range",
+          "translation": "Enable Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "function": {
+          "english": "Function",
+          "translation": "Function",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "function_label": {
+          "english": "Function",
+          "translation": "Function",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "increase_range": {
+          "english": "Increase Range",
+          "translation": "Increase Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "info_default_slots": {
+          "english": "No ranges returned by FC. Showing default slot list.",
+          "translation": "No ranges returned by FC. Showing default slot list.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 52
+        },
+        "info_legacy_load": {
+          "english": "Loaded using legacy adjustment range read.",
+          "translation": "Loaded using legacy adjustment range read.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 42
+        },
+        "load_error": {
+          "english": "Load error:",
+          "translation": "Load error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "loading_ranges": {
+          "english": "Loading adjustment ranges",
+          "translation": "Loading adjustment ranges",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
+        "loading_ranges_detail": {
+          "english": "Loading adjustment ranges...",
+          "translation": "Loading adjustment ranges...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "max_label": {
+          "english": "Max",
+          "translation": "Max",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "min_label": {
+          "english": "Min",
+          "translation": "Min",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "msg_auto_detect_lock_first": {
+          "english": "Auto-detect is active for this row. Toggle to lock AUX first.",
+          "translation": "Auto-detect is active for this row. Toggle to lock AUX first.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 61
+        },
+        "msg_auto_detect_lock_save": {
+          "english": "Auto-detect is active. Toggle the desired AUX channel first.",
+          "translation": "Auto-detect is active. Toggle the desired AUX channel first.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 60
+        },
+        "msg_live_channel_unavailable": {
+          "english": "Live channel value unavailable.",
+          "translation": "Live channel value unavailable.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "msg_no_free_slots": {
+          "english": "No free adjustment slots remain.",
+          "translation": "No free adjustment slots remain.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 32
+        },
+        "name": {
+          "english": "Adjustments",
+          "translation": "Adjustments",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "no_ranges_reported": {
+          "english": "No adjustment ranges reported by FC.",
+          "translation": "No adjustment ranges reported by FC.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 36
+        },
+        "range": {
+          "english": "Range",
+          "translation": "Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "read_timeout": {
+          "english": "Adjustment read timed out.",
+          "translation": "Adjustment read timed out.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "save_error": {
+          "english": "Save error:",
+          "translation": "Save error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "saving_changed_ranges": {
+          "english": "Saving changed ranges",
+          "translation": "Saving changed ranges",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "set": {
+          "english": "Set",
+          "translation": "Set",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "set_adjust_range": {
+          "english": "Set Adjust Range",
+          "translation": "Set Adjust Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "set_decrease_range": {
+          "english": "Set Decrease Range",
+          "translation": "Set Decrease Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "set_enable_range": {
+          "english": "Set Enable Range",
+          "translation": "Set Enable Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "set_increase_range": {
+          "english": "Set Increase Range",
+          "translation": "Set Increase Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "step_size": {
+          "english": "Step Size",
+          "translation": "Step Size",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "type": {
+          "english": "Type",
+          "translation": "Type",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "type_mapped": {
+          "english": "MAPPED",
+          "translation": "MAPPED",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "type_off": {
+          "english": "OFF",
+          "translation": "OFF",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "type_stepped": {
+          "english": "STEPPED",
+          "translation": "STEPPED",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "unsaved_changes": {
+          "english": "Unsaved changes",
+          "translation": "Unsaved changes",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "value_channel": {
+          "english": "Value Channel",
+          "translation": "Value Channel",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "value_range": {
+          "english": "Value Range",
+          "translation": "Value Range",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        }
+      },
+      "failsafe": {
+        "aux1": {
+          "english": "AUX 1",
+          "translation": "AUX 1",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux10": {
+          "english": "AUX 10",
+          "translation": "AUX 10",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "aux11": {
+          "english": "AUX 11",
+          "translation": "AUX 11",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "aux12": {
+          "english": "AUX 12",
+          "translation": "AUX 12",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "aux13": {
+          "english": "AUX 13",
+          "translation": "AUX 13",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "aux2": {
+          "english": "AUX 2",
+          "translation": "AUX 2",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux3": {
+          "english": "AUX 3",
+          "translation": "AUX 3",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux4": {
+          "english": "AUX 4",
+          "translation": "AUX 4",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux5": {
+          "english": "AUX 5",
+          "translation": "AUX 5",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux6": {
+          "english": "AUX 6",
+          "translation": "AUX 6",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux7": {
+          "english": "AUX 7",
+          "translation": "AUX 7",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux8": {
+          "english": "AUX 8",
+          "translation": "AUX 8",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "aux9": {
+          "english": "AUX 9",
+          "translation": "AUX 9",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "collective": {
+          "english": "Collective",
+          "translation": "Collective",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "help_p1": {
+          "english": "Configure the failsafe settings for loss of RC signal.",
+          "translation": "Configure the failsafe settings for loss of RC signal.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 54
+        },
+        "name": {
+          "english": "Failsafe",
+          "translation": "Failsafe",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "pitch": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "roll": {
+          "english": "Roll",
+          "translation": "Roll",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "throttle": {
+          "english": "Throttle",
+          "translation": "Throttle",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "yaw": {
+          "english": "Yaw",
+          "translation": "Yaw",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        }
+      },
       "accelerometer": {
         "help_p1": {
           "english": "The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
@@ -2939,6 +3484,360 @@
           "reverse_text": true
         }
       },
+      "api_tester": {
+        "btn_test": {
+          "english": "Test",
+          "translation": "Test",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "choice_no_api_files": {
+          "english": "<no api files found>",
+          "translation": "<no api files found>",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "label_api": {
+          "english": "API",
+          "translation": "API",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "label_error": {
+          "english": "Error",
+          "translation": "Error",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "label_fields": {
+          "english": "fields",
+          "translation": "fields",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "label_info": {
+          "english": "Info",
+          "translation": "Info",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "label_status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "label_value": {
+          "english": "Value",
+          "translation": "Value",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "msg_choose_api": {
+          "english": "Choose an API and press Test",
+          "translation": "Choose an API and press Test",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "msg_no_api_selected": {
+          "english": "No API selected",
+          "translation": "No API selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "msg_no_data": {
+          "english": "No data",
+          "translation": "No data",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "msg_no_parsed_result": {
+          "english": "No parsed result",
+          "translation": "No parsed result",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "msg_read_completed_zero": {
+          "english": "Read completed (0 fields)",
+          "translation": "Read completed (0 fields)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
+        "msg_read_failed": {
+          "english": "Read failed",
+          "translation": "Read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "msg_unable_to_load": {
+          "english": "Unable to load API",
+          "translation": "Unable to load API",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "msg_waiting_response": {
+          "english": "Waiting for response...",
+          "translation": "Waiting for response...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "name": {
+          "english": "API Tester",
+          "translation": "API Tester",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "panel_read_result": {
+          "english": "Read Result",
+          "translation": "Read Result",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "status_idle": {
+          "english": "Idle",
+          "translation": "Idle",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "status_load_failed": {
+          "english": "Load failed",
+          "translation": "Load failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "status_ok": {
+          "english": "OK",
+          "translation": "OK",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 2
+        },
+        "status_reading": {
+          "english": "Reading",
+          "translation": "Reading",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        }
+      },
+      "alignment": {
+        "name": {
+          "english": "Alignment",
+          "translation": "Alignment",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "help_p1": {
+          "english": "Set board roll, pitch and yaw mounting offsets.",
+          "translation": "Set board roll, pitch and yaw mounting offsets.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 47
+        },
+        "help_p2": {
+          "english": "Set magnetometer alignment and save to write EEPROM.",
+          "translation": "Set magnetometer alignment and save to write EEPROM.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 52
+        },
+        "help_p3": {
+          "english": "The visual below follows live attitude from MSP.",
+          "translation": "The visual below follows live attitude from MSP.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 48
+        },
+        "roll": {
+          "english": "Roll",
+          "translation": "Roll",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "pitch": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "yaw": {
+          "english": "Yaw",
+          "translation": "Yaw",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "mag": {
+          "english": "Mag",
+          "translation": "Mag",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "mag_default": {
+          "english": "Default",
+          "translation": "Default",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "mag_cw_0": {
+          "english": "CW 0 deg",
+          "translation": "CW 0 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "mag_cw_90": {
+          "english": "CW 90 deg",
+          "translation": "CW 90 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "mag_cw_180": {
+          "english": "CW 180 deg",
+          "translation": "CW 180 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "mag_cw_270": {
+          "english": "CW 270 deg",
+          "translation": "CW 270 deg",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "mag_cw_0_flip": {
+          "english": "CW 0 deg flip",
+          "translation": "CW 0 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "mag_cw_90_flip": {
+          "english": "CW 90 deg flip",
+          "translation": "CW 90 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "mag_cw_180_flip": {
+          "english": "CW 180 deg flip",
+          "translation": "CW 180 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "mag_cw_270_flip": {
+          "english": "CW 270 deg flip",
+          "translation": "CW 270 deg flip",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "mag_custom": {
+          "english": "Custom",
+          "translation": "Custom",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "live_fmt": {
+          "english": "Live  R:%0.1f  P:%0.1f  Y:%0.1f",
+          "translation": "Live  R:%0.1f  P:%0.1f  Y:%0.1f",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "offset_fmt": {
+          "english": "Offset R:%d  P:%d  Y:%d  Mag:%d",
+          "translation": "Offset R:%d  P:%d  Y:%d  Mag:%d",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "view_yaw_fmt": {
+          "english": "View Yaw:%0.1f",
+          "translation": "View Yaw:%0.1f",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "nose_direction": {
+          "english": "Nose Direction",
+          "translation": "Nose Direction",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "nose_level": {
+          "english": "Nose Level",
+          "translation": "Nose Level",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "nose_up": {
+          "english": "Nose Up",
+          "translation": "Nose Up",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "nose_down": {
+          "english": "Nose Down",
+          "translation": "Nose Down",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "leaning_left": {
+          "english": "Leaning Left",
+          "translation": "Leaning Left",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "leaning_right": {
+          "english": "Leaning Right",
+          "translation": "Leaning Right",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "msg_reset_tail_view": {
+          "english": "Reset view yaw so the tail faces you?",
+          "translation": "Reset view yaw so the tail faces you?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 37
+        }
+      },
       "esc_motors": {
         "consumption_correction": {
           "english": "Consumption Correction",
@@ -3025,10 +3924,10 @@
           "reverse_text": true
         },
         "name": {
-          "english": "ESC/Motors",
-          "max_length": 10,
+          "english": "ESC & Motors",
+          "max_length": 12,
           "needs_translation": true,
-          "translation": "ESC/מנועים",
+          "translation": "ESC & מנועים",
           "reverse_text": true
         },
         "pin_swap": {
@@ -4296,8 +5195,8 @@
           }
         },
         "name": {
-          "english": "ESC Tools",
-          "max_length": 9,
+          "english": "Esc Programing",
+          "max_length": 14,
           "needs_translation": true,
           "translation": "כלי ESC",
           "reverse_text": true
@@ -4604,6 +5503,282 @@
           "needs_translation": true,
           "translation": "לא נתמך",
           "reverse_text": true
+        }
+      },
+      "fblsensors": {
+        "name": {
+          "english": "FBL Sensors",
+          "translation": "FBL Sensors",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        }
+      },
+      "configuration": {
+        "craft_name": {
+          "english": "Craft name",
+          "translation": "Craft name",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "error_eeprom_write_failed": {
+          "english": "EEPROM write failed",
+          "translation": "EEPROM write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "error_advanced_api_unavailable": {
+          "english": "ADVANCED_CONFIG API unavailable",
+          "translation": "ADVANCED_CONFIG API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "error_advanced_read_failed": {
+          "english": "ADVANCED_CONFIG read failed",
+          "translation": "ADVANCED_CONFIG read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "error_advanced_write_failed": {
+          "english": "ADVANCED_CONFIG write failed",
+          "translation": "ADVANCED_CONFIG write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "error_eeprom_api_unavailable": {
+          "english": "EEPROM_WRITE API unavailable",
+          "translation": "EEPROM_WRITE API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 28
+        },
+        "error_feature_api_unavailable": {
+          "english": "FEATURE_CONFIG API unavailable",
+          "translation": "FEATURE_CONFIG API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
+        "error_feature_read_failed": {
+          "english": "FEATURE_CONFIG read failed",
+          "translation": "FEATURE_CONFIG read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "error_feature_write_failed": {
+          "english": "FEATURE_CONFIG write failed",
+          "translation": "FEATURE_CONFIG write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "error_name_api_unavailable": {
+          "english": "NAME API unavailable",
+          "translation": "NAME API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "error_name_read_failed": {
+          "english": "NAME read failed",
+          "translation": "NAME read failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "error_name_write_failed": {
+          "english": "NAME write failed",
+          "translation": "NAME write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "error_save_failed": {
+          "english": "Save failed",
+          "translation": "Save failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "load_error_prefix": {
+          "english": "Load error:",
+          "translation": "Load error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "loading": {
+          "english": "Loading configuration...",
+          "translation": "Loading configuration...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 24
+        },
+        "progress_loading": {
+          "english": "Loading configuration",
+          "translation": "Loading configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "progress_saving": {
+          "english": "Saving configuration",
+          "translation": "Saving configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "save_error_prefix": {
+          "english": "Save error:",
+          "translation": "Save error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "feature_cms": {
+          "english": "CMS",
+          "translation": "CMS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "feature_gps": {
+          "english": "GPS",
+          "translation": "GPS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "feature_led_strip": {
+          "english": "LED_STRIP",
+          "translation": "LED_STRIP",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "features": {
+          "english": "Features",
+          "translation": "Features",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "help_p1": {
+          "english": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
+          "translation": "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 91
+        },
+        "help_p2": {
+          "english": "Saving writes these values to EEPROM and reboots the flight controller.",
+          "translation": "Saving writes these values to EEPROM and reboots the flight controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 71
+        },
+        "name": {
+          "english": "Configuration",
+          "translation": "Configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "personalization": {
+          "english": "Personalization",
+          "translation": "Personalization",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "pid_loop_1": {
+          "english": "1:1 (Fastest)",
+          "translation": "1:1 (Fastest)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "pid_loop_16": {
+          "english": "1:16",
+          "translation": "1:16",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "pid_loop_2": {
+          "english": "1:2",
+          "translation": "1:2",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "pid_loop_4": {
+          "english": "1:4",
+          "translation": "1:4",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "pid_loop_8": {
+          "english": "1:8",
+          "translation": "1:8",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "pid_loop_custom": {
+          "english": "Custom",
+          "translation": "Custom",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "pid_loop_speed": {
+          "english": "PID loop speed",
+          "translation": "PID loop speed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "system_configuration": {
+          "english": "System configuration",
+          "translation": "System configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        }
+      },
+      "hardware_setup": {
+        "name": {
+          "english": "Setup",
+          "translation": "Setup",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        }
+      },
+      "hardware_interfaces": {
+        "name": {
+          "english": "Interfaces",
+          "translation": "Interfaces",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        }
+      },
+      "hardware_system": {
+        "name": {
+          "english": "System",
+          "translation": "System",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
         }
       },
       "filters": {
@@ -5253,6 +6428,15 @@
           "reverse_text": true
         }
       },
+      "modes": {
+        "name": {
+          "english": "Modes",
+          "translation": "Modes",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        }
+      },
       "msp_exp": {
         "help_p1": {
           "english": "This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
@@ -5658,6 +6842,204 @@
           "needs_translation": true,
           "translation": "מתח תא אזהרה",
           "reverse_text": true
+        }
+      },
+      "ports": {
+        "error_eeprom_write_failed": {
+          "english": "EEPROM write failed",
+          "translation": "EEPROM write failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "error_failed_load": {
+          "english": "Failed to load port configuration",
+          "translation": "Failed to load port configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 33
+        },
+        "error_read_serial_ports": {
+          "english": "Failed reading serial ports",
+          "translation": "Failed reading serial ports",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "error_save_failed": {
+          "english": "Save failed",
+          "translation": "Save failed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "error_serial_api_unavailable": {
+          "english": "SERIAL_CONFIG API unavailable",
+          "translation": "SERIAL_CONFIG API unavailable",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 29
+        },
+        "error_serial_write_failed_for": {
+          "english": "Serial write failed for",
+          "translation": "Serial write failed for",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "function_blackbox": {
+          "english": "Blackbox",
+          "translation": "Blackbox",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "function_custom": {
+          "english": "Custom",
+          "translation": "Custom",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "function_disabled": {
+          "english": "Disabled",
+          "translation": "Disabled",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "function_esc_sensor": {
+          "english": "ESC Sensor",
+          "translation": "ESC Sensor",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "function_fbus_out": {
+          "english": "FBus Out",
+          "translation": "FBus Out",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "function_rx_serial": {
+          "english": "RX Serial",
+          "translation": "RX Serial",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "function_sbus_out": {
+          "english": "SBus Out",
+          "translation": "SBus Out",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "function_telem_frsky": {
+          "english": "Telemetry FrSky",
+          "translation": "Telemetry FrSky",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "function_telem_hott": {
+          "english": "Telemetry HoTT",
+          "translation": "Telemetry HoTT",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "function_telem_ibus": {
+          "english": "Telemetry iBus",
+          "translation": "Telemetry iBus",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "function_telem_ltm": {
+          "english": "Telemetry LTM",
+          "translation": "Telemetry LTM",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "function_telem_mavlink": {
+          "english": "Telemetry MAVLink",
+          "translation": "Telemetry MAVLink",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "function_telem_smartport": {
+          "english": "Telemetry SmartPort",
+          "translation": "Telemetry SmartPort",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "load_error_prefix": {
+          "english": "Load error:",
+          "translation": "Load error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "loading": {
+          "english": "Loading serial ports...",
+          "translation": "Loading serial ports...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "name": {
+          "english": "Ports",
+          "translation": "Ports",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "no_ports_reported": {
+          "english": "No serial ports reported by FC.",
+          "translation": "No serial ports reported by FC.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "port_prefix": {
+          "english": "Port",
+          "translation": "Port",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "progress_loading": {
+          "english": "Loading serial ports",
+          "translation": "Loading serial ports",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "progress_saving": {
+          "english": "Saving serial ports",
+          "translation": "Saving serial ports",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "rx_tag": {
+          "english": "[RX]",
+          "translation": "[RX]",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "save_error_prefix": {
+          "english": "Save error:",
+          "translation": "Save error:",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
         }
       },
       "profile_autolevel": {
@@ -7913,12 +9295,47 @@
           "translation": "פיתוח",
           "reverse_text": true
         },
+        "txt_developer_tools": {
+          "english": "Developer Tools",
+          "translation": "Developer Tools",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "txt_developer": {
+          "english": "Developer",
+          "translation": "Developer",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
         "txt_general": {
           "english": "General",
           "max_length": 7,
           "needs_translation": true,
           "translation": "כללי",
           "reverse_text": true
+        },
+        "panel_display": {
+          "english": "Display",
+          "translation": "Display",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "panel_safety_prompts": {
+          "english": "Safety & Prompts",
+          "translation": "Safety & Prompts",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "translation": "Integration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
         },
         "txt_hs_loader": {
           "english": "Progress Loader",
@@ -7947,6 +9364,13 @@
           "needs_translation": true,
           "translation": "גודל אייקון",
           "reverse_text": true
+        },
+        "txt_collapse_unused_menu_entries": {
+          "english": "Collapse Navigation",
+          "translation": "Collapse Unused Menu Entries",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
         },
         "txt_info": {
           "english": "INFO",
@@ -8087,6 +9511,34 @@
           "needs_translation": true,
           "translation": "מתח",
           "reverse_text": true
+        },
+        "txt_save_requires_changes": {
+          "english": "Save requires changes",
+          "translation": "Save requires changes",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "shortcuts": {
+          "english": "Shortcuts",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shortcuts"
+        },
+        "shortcuts_group": {
+          "english": "Category",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Category"
+        },
+        "shortcuts_none": {
+          "english": "No shortcut sources available.",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No shortcut sources available."
         }
       },
       "stats": {
@@ -8285,6 +9737,647 @@
           "translation": "אישור",
           "reverse_text": true
         }
+      },
+      "blackbox": {
+        "name": {
+          "english": "Blackbox",
+          "translation": "Blackbox",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "menu_configuration": {
+          "english": "Configuration",
+          "translation": "Configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "menu_logging": {
+          "english": "Logging",
+          "translation": "Logging",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "menu_status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "help_p1": {
+          "english": "Configure Blackbox logging and monitor media status.",
+          "translation": "Configure Blackbox logging and monitor media status.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 52
+        },
+        "help_p2": {
+          "english": "Tool menu can erase onboard dataflash logs.",
+          "translation": "Tool menu can erase onboard dataflash logs.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 43
+        },
+        "help_p3": {
+          "english": "Mass-storage reboot is intentionally not included in this module.",
+          "translation": "Mass-storage reboot is intentionally not included in this module.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 65
+        },
+        "off": {
+          "english": "Off",
+          "translation": "Off",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "on": {
+          "english": "On",
+          "translation": "On",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 2
+        },
+        "mode_off": {
+          "english": "Off",
+          "translation": "Off",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "mode_normal": {
+          "english": "Normal",
+          "translation": "Normal",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "mode_armed": {
+          "english": "Armed",
+          "translation": "Armed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "mode_switch": {
+          "english": "Switch",
+          "translation": "Switch",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "rate_custom": {
+          "english": "Custom %s [1/%d]",
+          "translation": "Custom %s [1/%d]",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "device": {
+          "english": "Logging device",
+          "translation": "Logging device",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "device_disabled": {
+          "english": "Disabled",
+          "translation": "Disabled",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "device_onboard_flash": {
+          "english": "Onboard Flash",
+          "translation": "Onboard Flash",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "device_sdcard": {
+          "english": "SD Card",
+          "translation": "SD Card",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "device_serial_port": {
+          "english": "Serial Port",
+          "translation": "Serial Port",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "logging_mode": {
+          "english": "Logging mode",
+          "translation": "Logging mode",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "logging_rate": {
+          "english": "Logging rate",
+          "translation": "Logging rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "disarm_grace_period": {
+          "english": "Disarm grace period",
+          "translation": "Disarm grace period",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "initial_erase": {
+          "english": "Initial erase",
+          "translation": "Initial erase",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "rolling_erase": {
+          "english": "Rolling erase",
+          "translation": "Rolling erase",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "loading_feature_config": {
+          "english": "Loading feature/config...",
+          "translation": "Loading feature/config...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
+        "loading_logging": {
+          "english": "Loading blackbox logging...",
+          "translation": "Loading blackbox logging...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "saving": {
+          "english": "Saving Blackbox...",
+          "translation": "Saving Blackbox...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "log_command": {
+          "english": "Command",
+          "translation": "Command",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "log_setpoint": {
+          "english": "Setpoint",
+          "translation": "Setpoint",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "log_mixer": {
+          "english": "Mixer",
+          "translation": "Mixer",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "log_pid": {
+          "english": "PID",
+          "translation": "PID",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_attitude": {
+          "english": "Attitude",
+          "translation": "Attitude",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "log_gyro_raw": {
+          "english": "Gyro Raw",
+          "translation": "Gyro Raw",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "log_gyro": {
+          "english": "Gyro",
+          "translation": "Gyro",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "log_acc": {
+          "english": "Acc",
+          "translation": "Acc",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_mag": {
+          "english": "Mag",
+          "translation": "Mag",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_alt": {
+          "english": "Alt",
+          "translation": "Alt",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_battery": {
+          "english": "Battery",
+          "translation": "Battery",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "log_rssi": {
+          "english": "RSSI",
+          "translation": "RSSI",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "log_gps": {
+          "english": "GPS",
+          "translation": "GPS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_rpm": {
+          "english": "RPM",
+          "translation": "RPM",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_motors": {
+          "english": "Motors",
+          "translation": "Motors",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "log_servos": {
+          "english": "Servos",
+          "translation": "Servos",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "log_vbec": {
+          "english": "VBEC",
+          "translation": "VBEC",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "log_vbus": {
+          "english": "VBUS",
+          "translation": "VBUS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "log_temps": {
+          "english": "Temps",
+          "translation": "Temps",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "log_esc": {
+          "english": "ESC",
+          "translation": "ESC",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_bec": {
+          "english": "BEC",
+          "translation": "BEC",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "log_esc2": {
+          "english": "ESC2",
+          "translation": "ESC2",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "log_governor": {
+          "english": "Governor",
+          "translation": "Governor",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "dataflash": {
+          "english": "Dataflash",
+          "translation": "Dataflash",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "sdcard": {
+          "english": "SD Card",
+          "translation": "SD Card",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "not_supported": {
+          "english": "Not supported",
+          "translation": "Not supported",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "erasing_busy": {
+          "english": "Erasing / busy...",
+          "translation": "Erasing / busy...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "used_fmt": {
+          "english": "Used %s / %s",
+          "translation": "Used %s / %s",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "no_card": {
+          "english": "No card",
+          "translation": "No card",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "error_code_fmt": {
+          "english": "Error (code %d)",
+          "translation": "Error (code %d)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "initializing_card": {
+          "english": "Initializing card...",
+          "translation": "Initializing card...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "initializing_filesystem": {
+          "english": "Initializing filesystem...",
+          "translation": "Initializing filesystem...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "unknown_state_fmt": {
+          "english": "Unknown state (%d)",
+          "translation": "Unknown state (%d)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "erasing_dataflash": {
+          "english": "Erasing dataflash...",
+          "translation": "Erasing dataflash...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "erase_prompt": {
+          "english": "Erase onboard dataflash logs?",
+          "translation": "Erase onboard dataflash logs?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 29
+        }
+      },
+      "beepers": {
+        "name": {
+          "english": "Beepers",
+          "translation": "Beepers",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "menu_configuration": {
+          "english": "Configuration",
+          "translation": "Configuration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "menu_dshot": {
+          "english": "ESC Beacon",
+          "translation": "DShot",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "help_p1": {
+          "english": "Configure analog beeper conditions and DShot beacon behavior.",
+          "translation": "Configure analog beeper conditions and DShot beacon behavior.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 61
+        },
+        "help_p2": {
+          "english": "ESC Beacon page controls beacon tone and conditions.",
+          "translation": "DShot page controls beacon tone and conditions.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 52
+        },
+        "loading": {
+          "english": "Loading beeper configuration...",
+          "translation": "Loading beeper configuration...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
+        "saving": {
+          "english": "Saving Beepers...",
+          "translation": "Saving Beepers...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "dshot_tone": {
+          "english": "ESC beacon tone",
+          "translation": "DShot beacon tone",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_gyro_calibrated": {
+          "english": "Gyro calibrated",
+          "translation": "Gyro calibrated",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_rx_lost": {
+          "english": "RX lost",
+          "translation": "RX lost",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "field_rx_lost_landing": {
+          "english": "RX lost landing",
+          "translation": "RX lost landing",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_disarming": {
+          "english": "Disarming",
+          "translation": "Disarming",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "field_arming": {
+          "english": "Arming",
+          "translation": "Arming",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "field_arming_gps_fix": {
+          "english": "Arming GPS fix",
+          "translation": "Arming GPS fix",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "field_bat_crit_low": {
+          "english": "Battery critical low",
+          "translation": "Battery critical low",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "field_bat_low": {
+          "english": "Battery low",
+          "translation": "Battery low",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "field_gps_status": {
+          "english": "GPS status",
+          "translation": "GPS status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "field_rx_set": {
+          "english": "RX set",
+          "translation": "RX set",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "field_acc_calibration": {
+          "english": "ACC calibration",
+          "translation": "ACC calibration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "field_acc_calibration_fail": {
+          "english": "ACC calibration fail",
+          "translation": "ACC calibration fail",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "field_ready_beep": {
+          "english": "Ready beep",
+          "translation": "Ready beep",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "field_disarm_repeat": {
+          "english": "Disarm repeat",
+          "translation": "Disarm repeat",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "field_armed": {
+          "english": "Armed",
+          "translation": "Armed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "field_system_init": {
+          "english": "System init",
+          "translation": "System init",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "field_usb": {
+          "english": "USB",
+          "translation": "USB",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "field_blackbox_erase": {
+          "english": "Blackbox erase",
+          "translation": "Blackbox erase",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "field_arming_gps_no_fix": {
+          "english": "Arming GPS no fix",
+          "translation": "Arming GPS no fix",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        }
       }
     },
     "msg_loaded_task": {
@@ -8454,6 +10547,20 @@
       "needs_translation": true,
       "translation": "Hz",
       "reverse_text": false
+    },
+    "header_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
+    },
+    "menu_section_shortcuts": {
+      "english": "Shortcuts",
+      "max_length": 9,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Shortcuts"
     }
   },
   "error": {
@@ -8471,7 +10578,7 @@
     "reverse_text": false
   },
   "reload": {
-    "english": "reload",
+    "english": "Reload",
     "max_length": 6,
     "needs_translation": true,
     "translation": "טעינה מחדש",

@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({showProgress = true})
 
 local activateWakeup = false
 local governorDisabledMsg = false
@@ -32,65 +34,69 @@ local function postLoad(self)
     activateWakeup = true
 end
 
+local function setNavEnabled(id, enabled)
+    local navFields = rfsuite.app and rfsuite.app.formNavigationFields
+    local nav = navFields and navFields[id]
+    if nav and nav.enable then nav:enable(enabled) end
+end
+
+local function setFieldEnabled(index, enabled)
+    local fields = rfsuite.app and rfsuite.app.formFields
+    local field = fields and fields[index]
+    if field and field.enable then field:enable(enabled) end
+end
+
 local function wakeup()
 
     -- we are compromised if we don't have governor mode known
     if rfsuite.session.governorMode == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end
 
-    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-
-        if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " / " .. "@i18n(app.modules.governor.menu_flags)@" .. " #" .. rfsuite.session.activeProfile) end
-
-        -- Enable/disable fields based on firmware/session state.
-        local govEnabled = (rfsuite.session.governorMode ~= nil and rfsuite.session.governorMode ~= 0)
-        local adcVoltage = (rfsuite.session.batteryConfig ~= nil and rfsuite.session.batteryConfig.voltageMeterSource == 1)
-
-        -- Navigation buttons (if present)
-        if rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields['save'] then
-            rfsuite.app.formNavigationFields['save']:enable(govEnabled)
-        end
-        if rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields['reload'] then
-            rfsuite.app.formNavigationFields['reload']:enable(govEnabled)
-        end
-
-        -- If governor is disabled in firmware, lock the page and show the hint once.
-        if not govEnabled then
-            if rfsuite.app.formFields then
-                rfsuite.app.formFields[FIELD_FALLBACK_PRECOMP]:enable(false)
-                rfsuite.app.formFields[FIELD_PID_SPOOLUP]:enable(false)
-                rfsuite.app.formFields[FIELD_VOLTAGE_COMP]:enable(false)
-                rfsuite.app.formFields[FIELD_DYN_MIN_THROTTLE]:enable(false)
-            end
-            return
-        end
-
-        -- Governor enabled: field availability
-        if rfsuite.app.formFields then
-            rfsuite.app.formFields[FIELD_FALLBACK_PRECOMP]:enable(true)
-            rfsuite.app.formFields[FIELD_PID_SPOOLUP]:enable(true)
-            rfsuite.app.formFields[FIELD_DYN_MIN_THROTTLE]:enable(true)
-
-            -- Voltage compensation requires an ADC voltage source.
-            rfsuite.app.formFields[FIELD_VOLTAGE_COMP]:enable(adcVoltage)
-        end
+    local mspQueue = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if activateWakeup ~= true or not (mspQueue and mspQueue.isProcessed and mspQueue:isProcessed()) then
+        return
     end
+
+    local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+    if activeProfile ~= nil then
+        local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+        rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+    end
+
+    -- Enable/disable fields based on firmware/session state.
+    local govEnabled = (rfsuite.session.governorMode ~= nil and rfsuite.session.governorMode ~= 0)
+    local adcVoltage = (rfsuite.session.batteryConfig ~= nil and rfsuite.session.batteryConfig.voltageMeterSource == 1)
+
+    -- Navigation buttons (if present)
+    setNavEnabled("save", govEnabled)
+    setNavEnabled("reload", govEnabled)
+
+    -- If governor is disabled in firmware, lock the page.
+    if not govEnabled then
+        setFieldEnabled(FIELD_FALLBACK_PRECOMP, false)
+        setFieldEnabled(FIELD_PID_SPOOLUP, false)
+        setFieldEnabled(FIELD_VOLTAGE_COMP, false)
+        setFieldEnabled(FIELD_DYN_MIN_THROTTLE, false)
+        return
+    end
+
+    -- Governor enabled: field availability.
+    setFieldEnabled(FIELD_FALLBACK_PRECOMP, true)
+    setFieldEnabled(FIELD_PID_SPOOLUP, true)
+    setFieldEnabled(FIELD_DYN_MIN_THROTTLE, true)
+
+    -- Voltage compensation requires an ADC voltage source.
+    setFieldEnabled(FIELD_VOLTAGE_COMP, adcVoltage)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
-        return true
-    end
+    return navHandlers.event(widget, category, value)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "profile_governor/governor.lua"})
-    return true
+    return navHandlers.onNavMenu()
 end
 
 return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

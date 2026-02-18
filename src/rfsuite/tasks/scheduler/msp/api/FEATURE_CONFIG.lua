@@ -56,7 +56,7 @@ local features_bitmap = {
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-  { field = "enabledFeatures", type = "U32", apiVersion = 12.06, simResponse = {0,0,0,0}, bitmap = features_bitmap },
+  { field = "enabledFeatures", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0,0,0,0}, bitmap = features_bitmap },
 }
 -- LuaFormatter on
 

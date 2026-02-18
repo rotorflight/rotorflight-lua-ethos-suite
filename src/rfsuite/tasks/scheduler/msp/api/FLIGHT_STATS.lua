@@ -13,10 +13,10 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "flightcount",      type = "U32", apiVersion = 12.09, simResponse = {123, 1, 0, 0}, unit = nil, help = "@i18n(api.FLIGHT_STATS.flightcount)@" },
-    { field = "totalflighttime",  type = "U32", apiVersion = 12.09, simResponse = {0, 1, 2, 0},    unit = "s",  help = "@i18n(api.FLIGHT_STATS.totalflighttime)@" },
-    { field = "totaldistance",    type = "U32", apiVersion = 12.09, simResponse = {0, 0, 0, 0},    unit = nil, help = "@i18n(api.FLIGHT_STATS.totaldistance)@" },
-    { field = "minarmedtime",     type = "S8",  apiVersion = 12.09, simResponse = {15},           unit = "s",  help = "@i18n(api.FLIGHT_STATS.minarmedtime)@" },
+    { field = "flightcount",      type = "U32", apiVersion = {12, 0, 9}, simResponse = {123, 1, 0, 0}, unit = nil, help = "@i18n(api.FLIGHT_STATS.flightcount)@" },
+    { field = "totalflighttime",  type = "U32", apiVersion = {12, 0, 9}, simResponse = {0, 1, 2, 0},    unit = "s",  help = "@i18n(api.FLIGHT_STATS.totalflighttime)@" },
+    { field = "totaldistance",    type = "U32", apiVersion = {12, 0, 9}, simResponse = {0, 0, 0, 0},    unit = nil, help = "@i18n(api.FLIGHT_STATS.totaldistance)@" },
+    { field = "minarmedtime",     type = "S8",  apiVersion = {12, 0, 9}, simResponse = {15},           unit = "s",  help = "@i18n(api.FLIGHT_STATS.minarmedtime)@" },
 }
 -- LuaFormatter on
 

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local formFields = rfsuite.app.formFields
@@ -112,7 +113,7 @@ local function wakeup()
         formFields[FIELDKEY.MINTHROTTLE]:enable(false)
         formFields[FIELDKEY.MAXTHROTTLE]:enable(false)
         formFields[FIELDKEY.UNSYNCED]:enable(false)        
-    elseif(protocolValue == 9 and rfsuite.utils.apiVersionCompare(">=", "12.07")) then  -- CASTLE
+    elseif(protocolValue == 9 and rfsuite.utils.apiVersionCompare(">=", {12, 0, 7})) then  -- CASTLE
         formFields[FIELDKEY.PWM_RATE]:enable(true)
         formFields[FIELDKEY.MINCOMMAND]:enable(true)
         formFields[FIELDKEY.MINTHROTTLE]:enable(true)
@@ -130,7 +131,12 @@ local function wakeup()
 end
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "esc_motors/esc_motors.lua"})
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, title = title, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}
+local function event(_, category, value)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
+end
+
+return {apidata = apidata, reboot = true, eepromWrite = true, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}

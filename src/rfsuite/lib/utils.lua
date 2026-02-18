@@ -103,7 +103,7 @@ end
 
 function utils.msp_version_array_to_indexed()
     local arr = {}
-    local tbl = rfsuite.config.supportedMspApiVersion or {"12.06", "12.07", "12.08"}
+    local tbl = rfsuite.config.supportedMspApiVersion or {"12.07", "12.08", "12.09", "12.10"}
     for i, v in ipairs(tbl) do arr[#arr + 1] = {v, i} end
     return arr
 end
@@ -173,7 +173,7 @@ function utils.getGovernorState(value)
         [101] = "@i18n(widgets.governor.DISARMED):upper()@"
     }
 
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", "12.07") then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", {12, 0, 7}) then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
         if armflags == 0 or armflags == 2 then value = 101 end
     end
@@ -293,16 +293,34 @@ function utils.round(num, places)
     end
 end
 
-function utils.joinTableItems(tbl, delimiter)
-    if not tbl or #tbl == 0 then return "" end
+function utils.joinTableItems(tbl, delimiter, maxItems)
+    if type(tbl) ~= "table" then
+        if tbl == nil then return "" end
+        return tostring(tbl)
+    end
 
     delimiter = delimiter or ""
-    local sIdx = tbl[0] and 0 or 1
+    local sIdx = (tbl[0] ~= nil) and 0 or 1
+    local hardLimit = maxItems or 2048
 
-    local padded = {}
-    for i = sIdx, #tbl do padded[i] = tostring(tbl[i]) .. string.rep(" ", math.max(0, 3 - #tostring(tbl[i]))) end
+    local parts = {}
+    local i = sIdx
+    local count = 0
+    while count < hardLimit do
+        local v = tbl[i]
+        if v == nil then break end
+        parts[#parts + 1] = tostring(v)
+        i = i + 1
+        count = count + 1
+    end
 
-    return table.concat(padded, delimiter, sIdx, #tbl)
+    local joined = table.concat(parts, delimiter)
+    local truncated = tbl[i] ~= nil
+
+    if maxItems ~= nil then
+        return joined, count, truncated
+    end
+    return joined
 end
 
 function utils.log(msg, level) 
@@ -431,10 +449,21 @@ end
 
 
 function utils.logMsp(cmd, rwState, buf, err)
-    if rfsuite.preferences.developer.logmsp then
-        local payload = rfsuite.utils.joinTableItems(buf, ", ")
-        rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
-        if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    if dev and dev.logmsp then
+        local function emit()
+            local payload, shown, truncated = rfsuite.utils.joinTableItems(buf, ", ", 96)
+            if truncated then payload = payload .. " ... (" .. tostring(shown) .. "+ items)" end
+            rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
+            if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
+        end
+
+        local callback = rfsuite.tasks and rfsuite.tasks.callback
+        if callback and callback.now then
+            callback.now(emit)
+        else
+            emit()
+        end
     end
 end
 
@@ -502,15 +531,47 @@ function utils.keys(tbl)
     return keys
 end
 
-function utils.apiVersionCompare(op, req)
+local function appendVersionParts(parts, value)
+    if value == nil then return end
 
-    local function parts(x)
-        local t = {}
-        for n in tostring(x):gmatch("(%d+)") do t[#t + 1] = tonumber(n) end
-        return t
+    local valueType = type(value)
+
+    if valueType == "table" then
+        local arrayValues = {}
+        for _, token in ipairs(value) do arrayValues[#arrayValues + 1] = token end
+
+        -- Accept {major, 0, minor} as an explicit form for two-digit minor
+        -- versions, e.g. {12, 0, 9} => 12.09.
+        if #arrayValues == 3 then
+            local major = tonumber(arrayValues[1])
+            local middle = tonumber(arrayValues[2])
+            local minor = tonumber(arrayValues[3])
+            if major and middle == 0 and minor then
+                parts[#parts + 1] = major
+                parts[#parts + 1] = minor
+                return
+            end
+        end
+
+        if #arrayValues > 0 then
+            for i = 1, #arrayValues do appendVersionParts(parts, arrayValues[i]) end
+        elseif value[0] ~= nil then
+            appendVersionParts(parts, value[0])
+        end
+        return
     end
 
-    local a, b = parts(rfsuite.session.apiVersion or 12.06), parts(req)
+    for n in tostring(value):gmatch("(%d+)") do parts[#parts + 1] = tonumber(n) end
+end
+
+local function versionParts(value)
+    local parts = {}
+    appendVersionParts(parts, value)
+    return parts
+end
+
+function utils.apiVersionCompare(op, req)
+    local a, b = versionParts(rfsuite.session.apiVersion or "12.06"), versionParts(req)
     if #a == 0 or #b == 0 then return false end
 
     local len = math.max(#a, #b)

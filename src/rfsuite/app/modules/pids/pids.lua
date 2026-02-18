@@ -7,6 +7,19 @@ local rfsuite = require("rfsuite")
 
 local activateWakeup = false
 
+local function resolveScriptPath(script)
+    if type(script) ~= "string" then return nil, nil end
+    local relativeScript = script
+    if relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+    local modulePath = script
+    if modulePath:sub(1, 4) ~= "app/" then
+        modulePath = "app/modules/" .. modulePath
+    end
+    return modulePath, relativeScript
+end
+
 local apidata = {
     api = {
         [1] = 'PID_TUNING'
@@ -62,12 +75,13 @@ local function openPage(opts)
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    local modulePath, relativeScript = resolveScriptPath(script)
+    rfsuite.app.Page = assert(loadfile(modulePath))()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
+    rfsuite.app.lastScript = relativeScript or script
+    rfsuite.session.lastPage = relativeScript or script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
@@ -124,6 +138,7 @@ local function openPage(opts)
             end
             return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
         end, function(value)
+            rfsuite.app.ui.markPageDirty()
             if f.postEdit then f.postEdit(rfsuite.app.Page) end
             if f.onChange then f.onChange(rfsuite.app.Page) end
 
@@ -131,6 +146,13 @@ local function openPage(opts)
         end)
     end
 
+    rfsuite.app.ui.setPageDirty(false)
+end
+
+local function canSave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
 end
 
 local function wakeup()
@@ -138,10 +160,10 @@ local function wakeup()
         if rfsuite.session.activeProfile ~= nil then
             local titleField = rfsuite.app.formFields['title']
             if titleField then
-                titleField:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
+                rfsuite.app.ui.setHeaderTitle(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             end
         end
     end
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, canSave = canSave, API = {}}

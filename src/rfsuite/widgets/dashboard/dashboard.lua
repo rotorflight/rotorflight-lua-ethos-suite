@@ -35,6 +35,10 @@ local tasks = rfsuite.tasks
 local objectProfiler = false
 
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
+-- Busy cadence: run dashboard wakeup on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_WAKEUP_RUN_NUM = 2
+local BUSY_WAKEUP_RUN_DEN = 3
 
 local supportedResolutions = {{784, 294}, {784, 316}, {800, 458}, {800, 480}, {472, 191}, {472, 210}, {480, 301}, {480, 320}, {630, 236}, {630, 258}, {640, 338}, {640, 360}}
 
@@ -43,6 +47,7 @@ local lastFlightMode = nil
 local initTime = clock()
 
 local lastWakeup = clock()
+local busyWakeupTick = 0
 
 local isSliding = false
 local isSlidingStart = 0
@@ -1449,6 +1454,18 @@ function dashboard.wakeup()
             return
         end
     end    
+
+    -- If MSP is busy, only run the tasks every N ticks to allow background processing to complete and avoid UI freezes.
+    local session = rfsuite.session
+    if session and session.mspBusy then
+        busyWakeupTick = (busyWakeupTick % BUSY_WAKEUP_RUN_DEN) + 1
+        if busyWakeupTick > BUSY_WAKEUP_RUN_NUM then
+            lastWakeup = now
+            return
+        end
+    else
+        busyWakeupTick = 0
+    end
 
     if not dashboard.wakeup_protected then return end
     local success, err = pcall(dashboard.wakeup_protected)

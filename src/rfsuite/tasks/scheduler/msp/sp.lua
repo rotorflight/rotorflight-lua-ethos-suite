@@ -40,10 +40,9 @@ end
 
 -- Push a telemetry frame using FrSky SPORT / FPort API
 function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
+     
     if not sensor then
-        -- Acquire sensor object lazily using the configured module
-        local activeModule = session.telemetryModuleNumber or 0
-        -- Do not lock to one physId here; FPORT replies use 0x00 while SPORT uses 0x1B.
+        local activeModule = rfsuite.session.telemetryModuleNumber or 0   -- keep full lookup
         sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID})
     end
     return sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
@@ -52,14 +51,11 @@ end
 -- Pop next telemetry frame
 function transport.sportTelemetryPop()
     if not sensor then
-        local activeModule = session.telemetryModuleNumber or 0
-        -- would prefer to filter by physId here but FPORT uses 0x00 while SPORT uses 0x1B, so just filter by primId
-        -- need to check if a way to establish what protocol is in use so we can filter by physId as well, but for now 
-        -- just get the sensor for the reply frame ID and filter manually in the poll loop
-        --sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID, physId = SPORT_REMOTE_SENSOR_ID})
+        local activeModule = rfsuite.session.telemetryModuleNumber or 0   -- keep full lookup
         sensor = sport.getSensor({module = activeModule, primId = REPLY_FRAME_ID})
         return nil, nil, nil, nil
     end
+
     local frame = sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
     return frame:physId(), frame:primId(), frame:appId(), frame:value()

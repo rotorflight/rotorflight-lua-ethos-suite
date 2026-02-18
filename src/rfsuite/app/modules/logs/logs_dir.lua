@@ -4,7 +4,9 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
+local navHandlers = pageRuntime.createMenuHandlers()
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
@@ -81,11 +83,18 @@ local function openPage(opts)
                 options = FONT_S,
                 icon = rfsuite.app.gfx_buttons.logs[i],
                 press = function()
-                    rfsuite.preferences.menulastselected.logs = i
+                    rfsuite.preferences.menulastselected.logs_folder = i
                     rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.activeLogDir = item.foldername
                     rfsuite.utils.log("Opening logs for: " .. item.foldername, "info")
-                    rfsuite.app.ui.openPage({idx = i, title = "Logs", script = "logs/logs_logs.lua"})
+                    local logsModelTitle = "Logs / " .. modelName
+                    rfsuite.app.ui.openPage({
+                        idx = i,
+                        title = logsModelTitle,
+                        script = "logs/logs_logs.lua",
+                        dirname = item.foldername,
+                        modelName = modelName,
+                        returnContext = {idx = idx, title = title, script = script}
+                    })
                 end
             })
 
@@ -104,7 +113,7 @@ end
 
 local function event(widget, category, value)
     if value == 35 or category == 3 then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return true
     end
     return false
@@ -112,6 +121,5 @@ end
 
 local function wakeup() if enableWakeup then end end
 
-local function onNavMenu() rfsuite.app.ui.openMainMenu() end
-
+local function onNavMenu() return navHandlers.onNavMenu() end
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

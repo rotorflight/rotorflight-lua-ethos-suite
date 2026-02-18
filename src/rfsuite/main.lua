@@ -18,7 +18,7 @@ local config = {
     icon_unsupported = lcd.loadMask("app/gfx/unsupported.png"),
     version = {major = 2, minor = 3, revision = 0, suffix = "20251111"},
     ethosVersion = {1, 6, 2},
-    supportedMspApiVersion = {"12.07", "12.08", "12.09"},
+    supportedMspApiVersion = {"12.07", "12.08", "12.09", "12.10"},
     baseDir = "rfsuite",
     preferences = "rfsuite.user",
     defaultRateProfile = 6,   -- default, may be overridden in onconnect/tasks/rateprofile.lua
@@ -27,7 +27,7 @@ local config = {
         probeProtocol = 1,
         maxProtocol = 2,
         allowAutoUpgrade = true,
-        v2MinApiVersion = "12.09",
+        v2MinApiVersion = {12, 0, 9},
     },
     mspProtocolVersion = 1,
 }
@@ -46,12 +46,15 @@ rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config)
 local userpref_defaults = {
     general = {
         iconsize = 2,
+        shortcuts_mixed_in = true,
         syncname = false,
+        developer_tools = false,
         gimbalsupression = 0.85,
         txbatt_type = 0,
         hs_loader = 0,
         theme_loader = 1,  
         save_confirm = true,   
+        save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
         save_armed_warning = true
@@ -106,6 +109,7 @@ local userpref_defaults = {
         postalertinterval = 10,
         postalertperiod = 30
     },
+    shortcuts = {},
     menulastselected = {}
 }
 

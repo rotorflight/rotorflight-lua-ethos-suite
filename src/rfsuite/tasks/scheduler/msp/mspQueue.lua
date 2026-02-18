@@ -20,6 +20,7 @@ local pcall = pcall
 local DEFAULT_RETRY_BACKOFF_SECONDS = 1
 local DEFAULT_BUSY_WARNING_THRESHOLD = 8
 local DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS = 0.35
+local MAX_MSP_LOG_BYTES = 96
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
@@ -363,19 +364,52 @@ function MspQueueController:processQueue()
                 end
                 local logPayload
                 if rwState == "WRITE" then
-                    logPayload = self.currentMessage.payload
+                    local tx = self.currentMessage.payload or {}
+                    local txCount = #tx
+                    logPayload = {}
+                    local limit = txCount
+                    if limit > MAX_MSP_LOG_BYTES then limit = MAX_MSP_LOG_BYTES end
+                    for i = 1, limit do logPayload[#logPayload + 1] = tx[i] end
+                    if txCount > limit then
+                        logPayload[#logPayload + 1] = "..."
+                        logPayload[#logPayload + 1] = "(" .. tostring(txCount) .. " bytes)"
+                    end
                 else
                     local tx = self.currentMessage.payload
                     if tx and #tx > 0 then
                         logPayload = {}
+                        local txCount = #tx
+                        local rxCount = #(buf or {})
+                        local remaining = MAX_MSP_LOG_BYTES
                         -- TX bytes first
-                        for i = 1, #tx do logPayload[#logPayload + 1] = tx[i] end
+                        local txLimit = txCount
+                        if txLimit > remaining then txLimit = remaining end
+                        for i = 1, txLimit do logPayload[#logPayload + 1] = tx[i] end
+                        remaining = remaining - txLimit
                         -- separator (non-byte) for readability; logMsp should print it as-is
-                        logPayload[#logPayload + 1] = "|"
+                        if remaining > 0 then
+                            logPayload[#logPayload + 1] = "|"
+                            remaining = remaining - 1
+                        end
                         -- RX bytes second
-                        for i = 1, #(buf or {}) do logPayload[#logPayload + 1] = buf[i] end
+                        local rxLimit = rxCount
+                        if rxLimit > remaining then rxLimit = remaining end
+                        for i = 1, rxLimit do logPayload[#logPayload + 1] = buf[i] end
+                        if (txCount + rxCount + 1) > MAX_MSP_LOG_BYTES then
+                            logPayload[#logPayload + 1] = "..."
+                            logPayload[#logPayload + 1] = "(" .. tostring(txCount) .. "+" .. tostring(rxCount) .. " bytes)"
+                        end
                     else
-                        logPayload = buf
+                        local rx = buf or {}
+                        local rxCount = #rx
+                        logPayload = {}
+                        local rxLimit = rxCount
+                        if rxLimit > MAX_MSP_LOG_BYTES then rxLimit = MAX_MSP_LOG_BYTES end
+                        for i = 1, rxLimit do logPayload[#logPayload + 1] = rx[i] end
+                        if rxCount > rxLimit then
+                            logPayload[#logPayload + 1] = "..."
+                            logPayload[#logPayload + 1] = "(" .. tostring(rxCount) .. " bytes)"
+                        end
                     end
                 end
 
@@ -390,7 +424,10 @@ function MspQueueController:processQueue()
 
         -- After a successful completion, briefly drain duplicate/late replies for this cmd
         if not system.getVersion().simulation then
-            drainAfterSuccess(self, self.currentMessage.command)
+            local completedCommand = self.currentMessage and self.currentMessage.command
+            if completedCommand ~= nil then
+                drainAfterSuccess(self, completedCommand)
+            end
         end
 
         self.currentMessage = nil

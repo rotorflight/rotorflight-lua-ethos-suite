@@ -42,7 +42,7 @@ end
 
 local function writeStats()
     -- call is not present in older firmwares
-    if not utils.apiVersionCompare(">=", "12.09") then return end
+    if not utils.apiVersionCompare(">=", {12, 0, 9}) then return end
 
     local function toNumber(v, dflt)
         local n = tonumber(v)
@@ -82,7 +82,7 @@ end
 
 local function syncStatsToFBL()
     -- call is not present in older firmwares
-    if not utils.apiVersionCompare(">=", "12.09") then return end
+    if not utils.apiVersionCompare(">=", {12, 0, 9}) then return end
 
     local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
     API.setCompleteHandler(function()

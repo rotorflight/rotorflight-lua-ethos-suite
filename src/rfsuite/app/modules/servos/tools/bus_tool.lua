@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -161,7 +162,10 @@ end
 
 local function onSaveMenuProgress()
     rfsuite.app.ui.progressDisplay()
-    saveServoSettings()
+    local ok = saveServoSettings()
+    if ok then
+        rfsuite.app.ui.setPageDirty(false)
+    end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -194,7 +198,8 @@ end
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage({idx = rfsuite.app.lastIdx, title = rfsuite.app.lastTitle, script = "servos/tools/bus.lua", servoOverride = rfsuite.session.servoOverride})
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 
 end
 
@@ -205,7 +210,20 @@ local function setServoConfigFieldsEnabled(enabled)
         if field and field.enable then field:enable(enabled) end
     end
     local saveField = rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields['save']
-    if saveField and saveField.enable then saveField:enable(enabled) end
+    if saveField and saveField.enable then
+        if enabled then
+            rfsuite.app.ui.setPageDirty(rfsuite.app.pageDirty == true)
+        else
+            saveField:enable(false)
+        end
+    end
+end
+
+local function canSave()
+    if rfsuite.session.servoOverride == true then return false end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
 end
 
 local function wakeup(self)
@@ -214,7 +232,7 @@ local function wakeup(self)
 
         -- go back to main as this tool is compromised 
         if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
-            rfsuite.app.ui.openMainMenu()
+            rfsuite.app.ui.openMenuContext()
             return
         end
 
@@ -326,6 +344,7 @@ local function getServoConfigurationsEnd(callbackParam)
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
+    rfsuite.app.ui.setPageDirty(false)
 end
 
 local function openPage(opts)
@@ -369,6 +388,7 @@ local function openPage(opts)
 
 
     rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.bus)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
+    rfsuite.app.ui.setPageDirty(false)
 
 
     if rfsuite.app.Page.headerLine ~= nil then
@@ -388,7 +408,10 @@ local function openPage(opts)
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
 
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.center)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value) configs[servoIndex]['mid'] = value end)
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value)
+            configs[servoIndex]['mid'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -402,7 +425,10 @@ local function openPage(opts)
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value) configs[servoIndex]['min'] = value end)
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value)
+            configs[servoIndex]['min'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -417,7 +443,10 @@ local function openPage(opts)
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value) configs[servoIndex]['max'] = value end)
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value)
+            configs[servoIndex]['max'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -432,7 +461,10 @@ local function openPage(opts)
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoScaleNeg']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_negative)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scaleNeg'] end, function(value) configs[servoIndex]['scaleNeg'] = value end)
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scaleNeg'] end, function(value)
+            configs[servoIndex]['scaleNeg'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -447,7 +479,10 @@ local function openPage(opts)
         local suffix = nil
         local helpTxt = rfsuite.app.fieldHelpTxt['servoScalePos']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_positive)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scalePos'] end, function(value) configs[servoIndex]['scalePos'] = value end)
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scalePos'] end, function(value)
+            configs[servoIndex]['scalePos'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -462,7 +497,10 @@ local function openPage(opts)
         local suffix = "ms"
         local helpTxt = rfsuite.app.fieldHelpTxt['servoSpeed']['t']
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.speed)@")
-        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['speed'] end, function(value) configs[servoIndex]['speed'] = value end)
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['speed'] end, function(value)
+            configs[servoIndex]['speed'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
@@ -477,7 +515,10 @@ local function openPage(opts)
         local tableIdxInc = -1
         local value
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.reverse)@")
-        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['reverse'] end, function(value) configs[servoIndex]['reverse'] = value end)
+        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['reverse'] end, function(value)
+            configs[servoIndex]['reverse'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
@@ -491,7 +532,10 @@ local function openPage(opts)
             local tableIdxInc = -1
             local value
             rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
-            rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value) configs[servoIndex]['geometry'] = value end)
+            rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value)
+                configs[servoIndex]['geometry'] = value
+                rfsuite.app.ui.markPageDirty()
+            end)
             if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
         end
     end    
@@ -501,11 +545,7 @@ local function openPage(opts)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pidx, title = "@i18n(app.modules.servos.name)@", script = "servos/servos.lua", servoOverride = rfsuite.session.servoOverride})
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 
 end
 
@@ -568,6 +608,7 @@ return {
     wakeup = wakeup,
     openPage = openPage,
     onNavMenu = onNavMenu,
+    canSave = canSave,
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
     navButtons = {menu = true, save = true, reload = true, tool = true, help = true},

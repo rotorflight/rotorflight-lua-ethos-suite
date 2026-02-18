@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local labels = {}
 local fields = {}
@@ -110,7 +111,7 @@ local function wakeup(self)
 
     -- we are compromised without this - go back to main
     if rfsuite.session.tailMode == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end    
 
@@ -243,7 +244,7 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
+    pageRuntime.openMenuContext()
 
 end
 

@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 
 local apidata
 
-if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
 
     apidata = {
         api = {[1] = "RC_CONFIG"},

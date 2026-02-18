@@ -4,9 +4,12 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local settings = {}
 local enableWakeup = false
 local system = system
+local DEVELOPER_MENU_SCRIPT = "developer/developer.lua"
+local DEVELOPER_MENU_TITLE = "Developer"
 
 local function openPage(opts)
 
@@ -21,12 +24,14 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.txt_development)@")
+    rfsuite.app.ui.fieldHeader(DEVELOPER_MENU_TITLE .. " / " .. "@i18n(app.modules.settings.name)@")
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
 
-    settings = rfsuite.preferences.developer
+    settings = {}
+    local saved = rfsuite.preferences.developer or {}
+    for k, v in pairs(saved) do settings[k] = v end
 
 
     formFieldCount = formFieldCount + 1
@@ -106,8 +111,8 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/settings.lua"})
+    pageRuntime.openMenuContext()
+    return true
 end
 
 local function onSaveMenu()
@@ -115,6 +120,9 @@ local function onSaveMenu()
     local function doSave()
         local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        for key in pairs(rfsuite.preferences.developer) do
+            if settings[key] == nil then rfsuite.preferences.developer[key] = nil end
+        end
         for key, value in pairs(settings) do rfsuite.preferences.developer[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
 
@@ -141,11 +149,7 @@ local function onSaveMenu()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.name)@", script = "settings/settings.lua"})
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = false}, API = {}}

@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local triggerSave = false
@@ -245,6 +246,9 @@ local function writeNext(i)
             needsReboot = false
         end
 
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.setPageDirty then
+            rfsuite.app.ui.setPageDirty(false)
+        end
         rfsuite.app.triggers.closeProgressLoader = true
         return
     end
@@ -375,7 +379,7 @@ end
 
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage({idx = pidx, title = title, script = "mixer/mixer.lua"})
+    pageRuntime.openMenuContext()
 end
 
 local function onSaveMenu()

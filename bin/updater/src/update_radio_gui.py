@@ -26,6 +26,7 @@ import ssl
 import traceback
 import math
 import json
+import hashlib
 import webbrowser
 from pathlib import Path
 from urllib.request import urlopen, Request
@@ -89,8 +90,10 @@ DOWNLOAD_TIMEOUT = 120
 DOWNLOAD_RETRIES = 3
 DOWNLOAD_RETRY_DELAY = 2
 COPY_SETTLE_SECONDS = 0.03
+TS_SLACK_SECONDS = 2.0
+CACHE_DIRNAME = "cache"
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "1.0.2"
+UPDATER_VERSION = "1.0.5"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
@@ -106,6 +109,10 @@ def _get_work_dir():
         return Path.home() / "Library" / "Application Support" / "rfsuite-updater"
     if sys.platform.startswith("linux"):
         return Path.home() / ".local" / "share" / "rfsuite-updater"
+    if sys.platform == "win32":
+        # In onefile builds APP_DIR can be a deep temp extraction path; keep this short.
+        base = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir())
+        return base / "rfsuite_updater_work"
     return APP_DIR / "rfsuite_updater_work"
 
 WORK_DIR = _get_work_dir()
@@ -114,6 +121,7 @@ try:
 except Exception:
     WORK_DIR = Path(tempfile.gettempdir()) / "rfsuite_updater_work"
     WORK_DIR.mkdir(parents=True, exist_ok=True)
+UPDATER_SETTINGS_FILE = str(WORK_DIR / "updater_settings.json")
 
 UPDATER_LOCK_FILE = str(WORK_DIR / "rfsuite_updater.lock")
 
@@ -129,6 +137,10 @@ def _cleanup_work_dir():
     try:
         if WORK_DIR.is_dir():
             for item in WORK_DIR.iterdir():
+                if item.name == CACHE_DIRNAME:
+                    continue
+                if item.name == os.path.basename(UPDATER_LOCK_FILE):
+                    continue
                 try:
                     if item.is_dir():
                         shutil.rmtree(item)
@@ -142,6 +154,29 @@ def _cleanup_work_dir():
                 pass
     except Exception:
         pass
+
+
+def _clear_cache_dir():
+    cache_dir = WORK_DIR / CACHE_DIRNAME
+    if not cache_dir.exists():
+        return True, None
+    if not cache_dir.is_dir():
+        return False, f"Cache path is not a directory: {cache_dir}"
+
+    def _on_rm_error(func, path, exc_info):
+        # Retry delete after clearing readonly bits (common on Windows).
+        try:
+            os.chmod(path, 0o700)
+            func(path)
+            return
+        except Exception:
+            raise exc_info[1]
+
+    try:
+        shutil.rmtree(cache_dir, onerror=_on_rm_error)
+        return True, None
+    except Exception as e:
+        return False, f"{type(e).__name__}: {e}"
 
 # Version types
 VERSION_RELEASE = "release"
@@ -591,9 +626,51 @@ class UpdaterGUI:
         self.selected_version = tk.StringVar(value=VERSION_RELEASE)
         self.selected_locale = tk.StringVar(value=DEFAULT_LOCALE)
         self.chkdsk_attempted = False
+        self.settings_path = UPDATER_SETTINGS_FILE
+        self._load_user_settings()
         
         self.setup_ui()
+        self._bind_settings_autosave()
         self.radio = RadioInterface(self.log)
+
+    def _load_user_settings(self):
+        """Load saved updater selections (version + locale)."""
+        try:
+            if not os.path.isfile(self.settings_path):
+                return
+            with open(self.settings_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                return
+
+            version = str(data.get("version", "")).strip()
+            locale = str(data.get("locale", "")).strip()
+
+            if version in (VERSION_RELEASE, VERSION_SNAPSHOT, VERSION_MASTER):
+                self.selected_version.set(version)
+            if locale in AVAILABLE_LOCALES:
+                self.selected_locale.set(locale)
+        except Exception:
+            # Keep defaults on malformed/unreadable settings.
+            return
+
+    def _save_user_settings(self, *_):
+        """Persist current updater selections."""
+        try:
+            _ensure_work_dir()
+            data = {
+                "version": self.selected_version.get(),
+                "locale": self.selected_locale.get(),
+            }
+            with open(self.settings_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            if hasattr(self, "log_text"):
+                self.log(f"⚠ Could not save updater settings: {e}")
+
+    def _bind_settings_autosave(self):
+        self.selected_version.trace_add("write", self._save_user_settings)
+        self.selected_locale.trace_add("write", self._save_user_settings)
     
     def setup_ui(self):
         """Setup the user interface."""
@@ -752,17 +829,19 @@ class UpdaterGUI:
         self.progress_label.pack()
         
         # Segmented progress bar with labels
-        self.step_names = [
+        self.normal_step_names = [
             "Find",
             "Connect",
             "Download",
             "Extract",
             "Translate",
-            "Remove",
             "Copy",
             "Audio",
             "Cleanup",
         ]
+        self.disk_step_names = ["Detect", "Prepare", "Scan", "Finalize"]
+        self.step_names = list(self.normal_step_names)
+        self.disk_progress_mode = False
         self.segment_bar = tk.Canvas(
             status_frame,
             height=36,
@@ -818,12 +897,27 @@ class UpdaterGUI:
             command=self.save_log
         )
         self.save_log_button.pack(side=tk.LEFT, padx=5)
+
+        self.clear_cache_button = ttk.Button(
+            button_frame,
+            text="Delete Cache",
+            command=self.delete_cache
+        )
+        self.clear_cache_button.pack(side=tk.LEFT, padx=5)
+
+        self.check_disk_button = ttk.Button(
+            button_frame,
+            text="Check Disk",
+            command=self.check_disk
+        )
+        self.check_disk_button.pack(side=tk.LEFT, padx=5)
         
         ttk.Button(
             button_frame,
             text="Exit",
             command=self.root.quit
         ).pack(side=tk.RIGHT, padx=5)
+        self.exit_button = button_frame.winfo_children()[-1]
         
         # Info frame
         info_frame = ttk.LabelFrame(self.root, text="Instructions", padding="10")
@@ -875,6 +969,122 @@ class UpdaterGUI:
         """Open URL without SSL verification (to avoid SSL issues on some systems)."""
         context = ssl._create_unverified_context()
         return urlopen(req, timeout=timeout, context=context)
+
+    def _download_cache_dir(self):
+        p = WORK_DIR / CACHE_DIRNAME / "downloads"
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    def _download_cache_paths(self, url):
+        key = hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
+        base = self._download_cache_dir() / key
+        return str(base.with_suffix(".zip")), str(base.with_suffix(".json"))
+
+    def _read_json_file(self, path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+
+    def _write_json_file(self, path, payload):
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(payload, f)
+        except Exception:
+            pass
+
+    def _download_zip_with_cache(self, download_url):
+        """
+        Download release/snapshot zip with local cache revalidation.
+        - Uses If-None-Match / If-Modified-Since when cache metadata exists.
+        - On HTTP 304, reuses cached file.
+        - On download failure, falls back to cached file if present.
+        """
+        cache_zip, cache_meta = self._download_cache_paths(download_url)
+        meta = self._read_json_file(cache_meta)
+        has_cache = os.path.isfile(cache_zip)
+
+        if has_cache:
+            self.log(f"  Cache candidate found: {os.path.basename(cache_zip)}")
+
+        attempt = 0
+        while True:
+            attempt += 1
+            headers = {'User-Agent': 'Mozilla/5.0'}
+            if has_cache:
+                etag = meta.get("etag")
+                last_mod = meta.get("last_modified")
+                if etag:
+                    headers["If-None-Match"] = etag
+                if last_mod:
+                    headers["If-Modified-Since"] = last_mod
+
+            req = Request(download_url, headers=headers)
+            try:
+                self.log(f"  Download attempt {attempt}/{DOWNLOAD_RETRIES} (timeout {DOWNLOAD_TIMEOUT}s)")
+                with self.urlopen_insecure(req, timeout=DOWNLOAD_TIMEOUT) as response:
+                    total_size = int(response.headers.get('content-length', 0))
+                    size_known = total_size > 0
+                    downloaded = 0
+
+                    if size_known:
+                        self.update_progress(0, "Downloading...")
+                    else:
+                        total_size = 50 * 1024 * 1024
+                        self.update_progress(0, "Downloading (size unknown)...")
+                        self.log("  Download size unknown (no content-length); estimating 50MB")
+
+                    last_log_percent = -1
+                    tmp_zip = cache_zip + ".part"
+                    with open(tmp_zip, 'wb') as f:
+                        while True:
+                            if not self.is_updating:
+                                return None
+                            chunk = response.read(8192)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            percent = (downloaded / total_size) * 100 if total_size > 0 else 0
+                            if int(percent) != last_log_percent:
+                                last_log_percent = int(percent)
+                                if size_known:
+                                    self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
+                                else:
+                                    self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%) (estimated)")
+                            self.update_progress(downloaded, f"Downloading... {percent:.1f}%")
+
+                    os.replace(tmp_zip, cache_zip)
+                    meta = {
+                        "url": download_url,
+                        "etag": response.headers.get("ETag"),
+                        "last_modified": response.headers.get("Last-Modified"),
+                        "cached_at": int(time.time()),
+                    }
+                    self._write_json_file(cache_meta, meta)
+                    self.log(f"✓ Downloaded {downloaded} bytes")
+                    return cache_zip
+
+            except HTTPError as e:
+                if e.code == 304 and has_cache:
+                    self.log("  Remote unchanged (HTTP 304). Using cached download.")
+                    return cache_zip
+                if attempt >= DOWNLOAD_RETRIES:
+                    if has_cache:
+                        self.log(f"⚠ Download failed ({e}); using cached download.")
+                        return cache_zip
+                    raise
+                self.log(f"  Download failed: {e}. Retrying in {DOWNLOAD_RETRY_DELAY}s...")
+                time.sleep(DOWNLOAD_RETRY_DELAY)
+            except URLError as e:
+                if attempt >= DOWNLOAD_RETRIES:
+                    if has_cache:
+                        self.log(f"⚠ Download failed ({e}); using cached download.")
+                        return cache_zip
+                    raise
+                self.log(f"  Download failed: {e}. Retrying in {DOWNLOAD_RETRY_DELAY}s...")
+                time.sleep(DOWNLOAD_RETRY_DELAY)
 
     def _parse_version_tuple(self, version):
         try:
@@ -939,6 +1149,176 @@ class UpdaterGUI:
             messagebox.showinfo("Save Log", f"Log saved to:\n{filename}")
         except Exception as e:
             messagebox.showerror("Save Log", f"Failed to save log:\n{e}")
+
+    def delete_cache(self):
+        """Delete updater cache (download and sparse git caches) after confirmation."""
+        if self.is_updating:
+            messagebox.showinfo("Delete Cache", "Cannot delete cache while an update is running.")
+            return
+        confirmed = messagebox.askyesno(
+            "Delete Cache",
+            "Delete cached downloads and cached master sparse checkout?\n\n"
+            "This will force fresh network fetches on the next update."
+        )
+        if not confirmed:
+            return
+        ok, err = _clear_cache_dir()
+        if ok:
+            self.log("Cache deleted by user.")
+            messagebox.showinfo("Delete Cache", "Updater cache deleted.")
+        else:
+            self.log(f"⚠ Failed to delete cache: {err}")
+            messagebox.showerror("Delete Cache", f"Failed to delete cache:\n{err}")
+
+    def _find_scripts_dir_for_maintenance(self):
+        scripts_dir = None
+        try:
+            scripts_dir = self.radio.get_scripts_dir()
+        except Exception:
+            scripts_dir = None
+        if not scripts_dir:
+            scripts_dir = self.radio.find_scripts_dir_on_drives(removable_only=True)
+        if not scripts_dir:
+            scripts_dir = self.radio.find_scripts_dir_on_drives(removable_only=False)
+        return scripts_dir
+
+    def _check_disk_command_for_scripts(self, scripts_dir):
+        if sys.platform == "win32":
+            drive, _ = os.path.splitdrive(scripts_dir)
+            if not drive:
+                raise RuntimeError(f"Could not determine drive letter for: {scripts_dir}")
+            # /x forces dismount and implies /f.
+            return [ "chkdsk", drive, "/f", "/x" ], f"{drive}\\", None
+
+        if sys.platform == "darwin":
+            volume_root = os.path.abspath(os.path.join(scripts_dir, os.pardir))
+            return ["diskutil", "repairVolume", volume_root], volume_root, None
+
+        # Linux/Unix fallback: fsck auto-repair on backing device if discoverable.
+        source = None
+        mountpoint = None
+        try:
+            res = subprocess.run(
+                ["findmnt", "-no", "SOURCE,TARGET", "--target", scripts_dir],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
+            line = (res.stdout or "").strip()
+            if line:
+                parts = line.split()
+                if parts:
+                    source = parts[0]
+                if len(parts) > 1:
+                    mountpoint = parts[1]
+        except Exception:
+            pass
+
+        if not source:
+            raise RuntimeError("Could not resolve mounted source device (findmnt unavailable or no result).")
+        if not source.startswith("/dev/"):
+            raise RuntimeError(f"Resolved source is not a block device: {source}")
+
+        target_desc = f"{source} ({mountpoint or 'unknown mount'})"
+        pre_cmd = ["umount", mountpoint] if mountpoint else None
+        return ["fsck", "-y", source], target_desc, pre_cmd
+
+    def _check_disk_worker(self, scripts_dir):
+        def _run_disk_cmd(cmd, timeout=1800):
+            self.log(f"Running: {' '.join(cmd)}")
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            )
+            if result.stdout:
+                for line in result.stdout.strip().splitlines():
+                    if line.strip():
+                        self.log(f"  [disk] {line}")
+            if result.stderr:
+                for line in result.stderr.strip().splitlines():
+                    if line.strip():
+                        self.log(f"  [disk] {line}")
+            return result
+
+        try:
+            self.root.after(0, lambda: self._set_disk_phase(current="Prepare", status="Preparing disk check...", text="Resolving disk-check command..."))
+            cmd, target_desc, pre_cmd = self._check_disk_command_for_scripts(scripts_dir)
+            self.log(f"Disk check target: {target_desc}")
+            if pre_cmd:
+                self.log("Unmounting volume before fsck...")
+                pre = _run_disk_cmd(pre_cmd, timeout=120)
+                if pre.returncode != 0:
+                    raise RuntimeError(f"Unmount failed for {target_desc}. Please close any apps using the drive and retry.")
+            self.root.after(0, lambda: self._set_disk_phase(done="Prepare", current="Scan", status="Running disk check...", text=f"Checking {target_desc}..."))
+            result = _run_disk_cmd(cmd)
+            self.root.after(0, lambda: self._set_disk_phase(done="Scan", current="Finalize", status="Finalizing disk check...", text="Collecting results..."))
+
+            if result.returncode == 0:
+                self.root.after(0, lambda: messagebox.showinfo("Check Disk", f"Disk check completed for {target_desc}."))
+            else:
+                self.root.after(
+                    0,
+                    lambda: messagebox.showwarning(
+                        "Check Disk",
+                        f"Disk check finished with code {result.returncode} for {target_desc}.\nSee log for details."
+                    )
+                )
+        except FileNotFoundError as e:
+            msg = f"Required tool is not available on this system: {e}"
+            self.log(f"⚠ {msg}")
+            self.root.after(0, lambda: messagebox.showerror("Check Disk", msg))
+        except subprocess.TimeoutExpired:
+            msg = "Disk check timed out."
+            self.log(f"⚠ {msg}")
+            self.root.after(0, lambda: messagebox.showerror("Check Disk", msg))
+        except Exception as e:
+            self.log(f"⚠ Disk check failed: {e}")
+            self.root.after(0, lambda: self._set_disk_phase(current="Finalize", status="Disk check failed", text="Disk check failed."))
+            self.root.after(0, lambda: messagebox.showerror("Check Disk", f"Disk check failed:\n{e}"))
+        finally:
+            def _finish_ui():
+                self.mark_step_done("Finalize")
+                self._set_disk_check_controls_running(False)
+                self._exit_disk_check_progress_mode()
+            self.root.after(0, _finish_ui)
+
+    def check_disk(self):
+        """Run a platform-appropriate filesystem check on the mounted radio volume."""
+        if self.is_updating:
+            messagebox.showinfo("Check Disk", "Cannot run disk check while an update is running.")
+            return
+
+        self._enter_disk_check_progress_mode()
+        self._set_disk_phase(current="Detect", status="Detecting radio volume...", text="Detecting target volume...")
+        scripts_dir = self._find_scripts_dir_for_maintenance()
+        if not scripts_dir:
+            self._exit_disk_check_progress_mode()
+            messagebox.showerror("Check Disk", "Could not locate radio scripts directory. Connect the radio in storage mode and try again.")
+            return
+        self._set_disk_phase(done="Detect", current="Prepare", status="Preparing disk check...", text="Preparing check command...")
+
+        if sys.platform == "win32":
+            check_note = "This will run chkdsk /f /x on the radio drive (auto-fix, force dismount)."
+        elif sys.platform == "darwin":
+            check_note = "This will run diskutil repairVolume on the mounted radio volume."
+        else:
+            check_note = "This will run fsck -y on the detected source device (auto-fix)."
+
+        confirmed = messagebox.askyesno(
+            "Check Disk",
+            f"{check_note}\n\nTarget scripts path:\n{scripts_dir}\n\nContinue?"
+        )
+        if not confirmed:
+            self._exit_disk_check_progress_mode()
+            return
+
+        self.log("Starting disk check...")
+        self._set_disk_check_controls_running(True)
+        threading.Thread(target=self._check_disk_worker, args=(scripts_dir,), daemon=True).start()
     
     def set_status(self, message):
         """Update the status label."""
@@ -1017,6 +1397,58 @@ class UpdaterGUI:
             self._start_segment_pulse()
         self.update_progress(0, f"Current step: {step_name}")
 
+    def _enter_disk_check_progress_mode(self):
+        if self.disk_progress_mode:
+            return
+        self.disk_progress_mode = True
+        self.step_names = list(self.disk_step_names)
+        self.reset_steps()
+
+    def _exit_disk_check_progress_mode(self):
+        if not self.disk_progress_mode:
+            return
+        self.disk_progress_mode = False
+        self.step_names = list(self.normal_step_names)
+        self.reset_steps()
+        self.update_progress(0, "")
+        self.set_status("Ready to update")
+
+    def _set_disk_phase(self, current=None, done=None, status=None, text=None):
+        if status is not None:
+            self.set_status(status)
+        if done is not None:
+            self.mark_step_done(done)
+        if current is not None:
+            self.set_current_step(current)
+        if text is not None:
+            self.update_progress(0, text)
+
+    def _set_disk_check_controls_running(self, running):
+        if running:
+            self.update_button.config(state=tk.DISABLED)
+            self.clear_cache_button.config(state=tk.DISABLED)
+            self.check_disk_button.config(state=tk.DISABLED)
+            self.exit_button.config(state=tk.DISABLED)
+        else:
+            self.update_button.config(state=tk.NORMAL)
+            self.clear_cache_button.config(state=tk.NORMAL)
+            self.check_disk_button.config(state=tk.NORMAL)
+            self.exit_button.config(state=tk.NORMAL)
+
+    def _set_update_controls_running(self, running):
+        if running:
+            self.update_button.config(state=tk.DISABLED)
+            self.cancel_button.config(state=tk.NORMAL)
+            self.clear_cache_button.config(state=tk.DISABLED)
+            self.check_disk_button.config(state=tk.DISABLED)
+            self.exit_button.config(state=tk.DISABLED)
+        else:
+            self.update_button.config(state=tk.NORMAL)
+            self.cancel_button.config(state=tk.DISABLED)
+            self.clear_cache_button.config(state=tk.NORMAL)
+            self.check_disk_button.config(state=tk.NORMAL)
+            self.exit_button.config(state=tk.NORMAL)
+
     def _start_segment_pulse(self):
         if self.segment_pulse_after_id is not None:
             return
@@ -1047,91 +1479,292 @@ class UpdaterGUI:
         for root, dirs, files in os.walk(directory):
             total += len(files)
         return total
+
+    def _file_md5(self, path, chunk=1024 * 1024):
+        h = hashlib.md5()
+        with open(path, "rb", buffering=0) as f:
+            while True:
+                data = f.read(chunk)
+                if not data:
+                    break
+                h.update(data)
+        return h.hexdigest()
+
+    def _needs_copy_with_md5(self, srcf, dstf, ts_slack=TS_SLACK_SECONDS):
+        try:
+            ss = os.stat(srcf)
+        except FileNotFoundError:
+            return False
+        if not os.path.exists(dstf):
+            return True
+        try:
+            ds = os.stat(dstf)
+        except FileNotFoundError:
+            return True
+
+        if ss.st_size != ds.st_size:
+            return True
+        if abs(ss.st_mtime - ds.st_mtime) <= ts_slack:
+            return False
+        try:
+            return self._file_md5(srcf) != self._file_md5(dstf)
+        except Exception:
+            return True
+
+    def _build_rel_file_map(self, root_dir):
+        files = {}
+        if not os.path.isdir(root_dir):
+            return files
+        for root, dirs, names in os.walk(root_dir):
+            dirs[:] = [d for d in dirs if not self._is_ignored_path(os.path.join(root, d), root_dir)]
+            for name in names:
+                full = os.path.join(root, name)
+                if self._is_ignored_path(full, root_dir):
+                    continue
+                rel = os.path.relpath(full, root_dir)
+                files[rel] = full
+        return files
+
+    def _is_ignored_path(self, path, root_dir):
+        rel = os.path.relpath(path, root_dir)
+        rel_norm = rel.replace("\\", "/")
+        parts = [p for p in rel_norm.split("/") if p and p != "."]
+        for part in parts:
+            if part in ("__pycache__", "._pycache__"):
+                return True
+            if part.startswith("._"):
+                return True
+        base = os.path.basename(path)
+        if base.endswith((".pyc", ".pyo")):
+            return True
+        return False
+
+    def _remove_empty_dirs(self, root_dir):
+        if not os.path.isdir(root_dir):
+            return
+        for root, dirs, files in os.walk(root_dir, topdown=False):
+            if dirs or files:
+                continue
+            try:
+                os.rmdir(root)
+            except Exception:
+                pass
+
+    def remove_stale_files_with_progress(self, src, dst, use_phase=False):
+        """Delete files in dst that are not present in src (mirror --delete behavior)."""
+        if not os.path.isdir(dst):
+            return True
+
+        src_files = self._build_rel_file_map(src)
+        dst_files = self._build_rel_file_map(dst)
+        stale = [rel for rel in dst_files.keys() if rel not in src_files]
+        total_stale = len(stale)
+        self.log(f"  Total stale files to delete: {total_stale}")
+
+        removed = 0
+        for rel in stale:
+            if not self.is_updating:
+                return False
+            file_path = dst_files.get(rel) or os.path.join(dst, rel)
+            try:
+                attempt = 0
+                while True:
+                    try:
+                        os.remove(file_path)
+                        break
+                    except OSError as e:
+                        attempt += 1
+                        winerr = getattr(e, "winerror", None)
+                        if winerr == 483 and attempt < 3:
+                            time.sleep(0.5)
+                            continue
+                        raise
+                removed += 1
+                time.sleep(COPY_SETTLE_SECONDS)
+
+                percent = (removed / total_stale) * 100 if total_stale else 100
+                self.update_progress(removed, f"Removed stale {removed}/{total_stale} files ({percent:.1f}%)")
+                if removed % 10 == 0 or removed == total_stale:
+                    self.log(f"  [DEL {removed}/{total_stale}] {rel}")
+            except Exception as e:
+                winerr = getattr(e, "winerror", None)
+                if winerr == 483:
+                    self.log(f"  ⚠ Device error while deleting stale file {os.path.basename(file_path)}.")
+                    self.attempt_chkdsk(file_path)
+                    return False
+                self.log(f"  ⚠ Failed to delete stale file {rel}: {e}")
+
+        self._remove_empty_dirs(dst)
+        return True
     
     def attempt_chkdsk(self, path):
         """Attempt to repair a corrupt filesystem, then prompt user to retry."""
-        if sys.platform != 'win32':
-            return False
         if self.chkdsk_attempted:
             return False
-        drive, _ = os.path.splitdrive(path)
-        if not drive:
-            return False
-        
+
         self.chkdsk_attempted = True
-        self.log(f"Detected filesystem error. Running chkdsk {drive} /f ...")
-        try:
-            result = subprocess.run(
-                ["chkdsk", drive, "/f"],
-                capture_output=True,
-                text=True,
-                timeout=300
-            )
-            if result.stdout:
-                for line in result.stdout.strip().splitlines()[:8]:
-                    self.log(f"  [chkdsk] {line}")
-            if result.stderr:
-                for line in result.stderr.strip().splitlines()[:8]:
-                    self.log(f"  [chkdsk] {line}")
-        except Exception as e:
-            self.log(f"  [chkdsk] Failed to run: {e}")
-        
-        if 'tk' in sys.modules:
+        if sys.platform == 'win32':
+            drive, _ = os.path.splitdrive(path)
+            if not drive:
+                return False
+            self.log(f"Detected filesystem error. Running chkdsk {drive} /f ...")
             try:
-                root = tk.Tk()
-                root.withdraw()
-                messagebox.showinfo(
-                    "Filesystem Repair",
-                    f"CHKDSK was run on {drive}. Please click Update again to retry."
+                result = subprocess.run(
+                    ["chkdsk", drive, "/f"],
+                    capture_output=True,
+                    text=True,
+                    timeout=300
                 )
-                root.destroy()
+                if result.stdout:
+                    for line in result.stdout.strip().splitlines()[:8]:
+                        self.log(f"  [chkdsk] {line}")
+                if result.stderr:
+                    for line in result.stderr.strip().splitlines()[:8]:
+                        self.log(f"  [chkdsk] {line}")
+            except Exception as e:
+                self.log(f"  [chkdsk] Failed to run: {e}")
+
+            if 'tk' in sys.modules:
+                try:
+                    root = tk.Tk()
+                    root.withdraw()
+                    messagebox.showinfo(
+                        "Filesystem Repair",
+                        f"CHKDSK was run on {drive}. Please click Update again to retry."
+                    )
+                    root.destroy()
+                except Exception:
+                    pass
+            return True
+
+        if sys.platform.startswith("linux"):
+            scripts_dir = self._find_scripts_dir_for_maintenance()
+            if not scripts_dir:
+                self.log("  [fsck] Could not locate mounted scripts directory.")
+                return False
+
+            source = None
+            mountpoint = None
+            try:
+                res = subprocess.run(
+                    ["findmnt", "-no", "SOURCE,TARGET", "--target", scripts_dir],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    check=False,
+                )
+                line = (res.stdout or "").strip()
+                if line:
+                    parts = line.split()
+                    if parts:
+                        source = parts[0]
+                    if len(parts) > 1:
+                        mountpoint = parts[1]
             except Exception:
                 pass
-        return True
+
+            if not source or not source.startswith("/dev/"):
+                self.log(f"  [fsck] Could not resolve block device for scripts dir: {scripts_dir}")
+                return False
+
+            self.log(f"Detected filesystem error. Running fsck -y on {source} ...")
+            try:
+                if mountpoint:
+                    self.log(f"  [fsck] Unmounting {mountpoint} first...")
+                    um = subprocess.run(
+                        ["umount", mountpoint],
+                        capture_output=True,
+                        text=True,
+                        timeout=120,
+                        check=False,
+                    )
+                    if um.stdout:
+                        for line in um.stdout.strip().splitlines()[:8]:
+                            self.log(f"  [umount] {line}")
+                    if um.stderr:
+                        for line in um.stderr.strip().splitlines()[:8]:
+                            self.log(f"  [umount] {line}")
+                    if um.returncode != 0:
+                        self.log("  [fsck] Unmount failed; skipping fsck.")
+                        return False
+
+                result = subprocess.run(
+                    ["fsck", "-y", source],
+                    capture_output=True,
+                    text=True,
+                    timeout=600,
+                    check=False,
+                )
+                if result.stdout:
+                    for line in result.stdout.strip().splitlines()[:10]:
+                        self.log(f"  [fsck] {line}")
+                if result.stderr:
+                    for line in result.stderr.strip().splitlines()[:10]:
+                        self.log(f"  [fsck] {line}")
+            except Exception as e:
+                self.log(f"  [fsck] Failed to run: {e}")
+                return False
+
+            if 'tk' in sys.modules:
+                try:
+                    root = tk.Tk()
+                    root.withdraw()
+                    messagebox.showinfo(
+                        "Filesystem Repair",
+                        f"fsck was run on {source}. Re-mount the radio volume, then click Update again."
+                    )
+                    root.destroy()
+                except Exception:
+                    pass
+            return True
+
+        return False
     
     def copy_tree_with_progress(self, src, dst, use_phase=False):
-        """Copy directory tree with progress updates."""
-        # Count total files
-        total_files = self.count_files(src)
-        self.log(f"  Total files to copy: {total_files}")
-        
+        """Copy only changed files (size/mtime fast path with MD5 fallback)."""
+        os.makedirs(dst, exist_ok=True)
+        src_files = self._build_rel_file_map(src)
+        total_files = len(src_files)
+        self.log(f"  Total files to verify: {total_files}")
+
+        to_copy = []
+        checked = 0
+        for rel, src_file in src_files.items():
+            if not self.is_updating:
+                return False
+            dst_file = os.path.join(dst, rel)
+            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            if self._needs_copy_with_md5(src_file, dst_file):
+                to_copy.append((rel, src_file, dst_file))
+            checked += 1
+            if checked % 50 == 0 or checked == total_files:
+                percent = (checked / total_files) * 100 if total_files else 100
+                self.update_progress(checked, f"Verified {checked}/{total_files} files ({percent:.1f}%)")
+
+        self.log(f"  Changed/new files to copy: {len(to_copy)}")
         copied = 0
-        for root, dirs, files in os.walk(src):
-            # Create destination directory structure
-            rel_path = os.path.relpath(root, src)
-            dst_dir = os.path.join(dst, rel_path) if rel_path != '.' else dst
-            os.makedirs(dst_dir, exist_ok=True)
-            
-            # Copy files
-            for file in files:
-                if not self.is_updating:
+        for rel, src_file, dst_file in to_copy:
+            if not self.is_updating:
+                return False
+            try:
+                shutil.copy2(src_file, dst_file)
+                copied += 1
+                time.sleep(COPY_SETTLE_SECONDS)
+                percent = (copied / len(to_copy)) * 100 if to_copy else 100
+                self.update_progress(copied, f"Copied {copied}/{len(to_copy)} files ({percent:.1f}%)")
+                if copied % 10 == 0 or copied == len(to_copy):
+                    self.log(f"  [COPY {copied}/{len(to_copy)}] {rel}")
+            except Exception as e:
+                winerr = getattr(e, "winerror", None)
+                if winerr == 483:
+                    self.log(f"  ⚠ Device error while copying {os.path.basename(src_file)}.")
+                    self.attempt_chkdsk(dst_file)
                     return False
-                
-                src_file = os.path.join(root, file)
-                dst_file = os.path.join(dst_dir, file)
-                
-                try:
-                    shutil.copy2(src_file, dst_file)
-                    copied += 1
-                    time.sleep(COPY_SETTLE_SECONDS)
-                    
-                    # Update progress
-                    percent = (copied / total_files) * 100 if total_files else 100
-                    self.update_progress(copied, f"Copied {copied}/{total_files} files ({percent:.1f}%)")
-                    
-                    # Log every 10th file or last file
-                    if copied % 10 == 0 or copied == total_files:
-                        rel_file = os.path.relpath(src_file, src)
-                        self.log(f"  [{copied}/{total_files}] {rel_file}")
-                
-                except Exception as e:
-                    winerr = getattr(e, "winerror", None)
-                    if winerr == 483:
-                        self.log(f"  ⚠ Device error while copying {file}. The drive may be corrupted.")
-                        self.attempt_chkdsk(dst_file)
-                        return False
-                    self.log(f"  ⚠ Failed to copy {file}: {e}")
-        
+                self.log(f"  ⚠ Failed to copy {os.path.basename(src_file)}: {e}")
+
+        if not to_copy:
+            self.log("  No changed files detected.")
+
         return True
     
     def remove_tree_with_progress(self, directory, use_phase=False):
@@ -1313,15 +1946,16 @@ class UpdaterGUI:
             return False
 
     def sparse_checkout_master(self, dest_dir, locale):
-        """Sparse checkout required folders from master into dest_dir."""
+        """Use persistent sparse master cache, then stage required folders into dest_dir."""
         if not self.is_git_available():
             self.log("⚠ Git not available; falling back to ZIP download")
             return False
 
-        self.log("Using git sparse checkout for master...")
-        os.makedirs(dest_dir, exist_ok=True)
+        cache_repo = WORK_DIR / CACHE_DIRNAME / "master_sparse_repo"
+        os.makedirs(cache_repo, exist_ok=True)
+        self.log(f"Using git sparse cache for master: {cache_repo}")
 
-        def run_git(args, timeout=60, progress_cb=None):
+        def run_git(args, cwd, timeout=60, progress_cb=None):
             cmd = ["git"] + args
             self.log(f"  Git: {' '.join(cmd)}")
             if "fetch" in args and progress_cb:
@@ -1329,7 +1963,7 @@ class UpdaterGUI:
                 try:
                     proc = subprocess.Popen(
                         cmd,
-                        cwd=dest_dir,
+                        cwd=cwd,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT,
                         text=True,
@@ -1363,7 +1997,7 @@ class UpdaterGUI:
             else:
                 result = subprocess.run(
                     cmd,
-                    cwd=dest_dir,
+                    cwd=cwd,
                     capture_output=True,
                     text=True,
                     timeout=timeout,
@@ -1379,37 +2013,92 @@ class UpdaterGUI:
                             self.log(f"    [git] {line}")
                 return result
 
-        # Initialize repository and configure sparse checkout
-        init = run_git(["init"])
-        if init.returncode != 0:
-            self.log(f"⚠ Git init failed: {init.stderr.strip()}")
-            return False
+        git_dir = os.path.join(cache_repo, ".git")
+        if not os.path.isdir(git_dir):
+            init = run_git(["init"], cwd=str(cache_repo))
+            if init.returncode != 0:
+                self.log(f"⚠ Git init failed: {init.stderr.strip()}")
+                return False
+            add_origin = run_git(["remote", "add", "origin", GITHUB_REPO_URL + ".git"], cwd=str(cache_repo))
+            if add_origin.returncode != 0:
+                self.log(f"⚠ Git remote add failed: {add_origin.stderr.strip()}")
+                return False
 
-        run_git(["remote", "add", "origin", GITHUB_REPO_URL + ".git"])
-        run_git(["config", "core.sparseCheckout", "true"])
+        run_git(["config", "core.sparseCheckout", "true"], cwd=str(cache_repo))
+        run_git(["config", "advice.detachedHead", "false"], cwd=str(cache_repo))
 
-        sparse_file = os.path.join(dest_dir, ".git", "info", "sparse-checkout")
+        sparse_file = os.path.join(cache_repo, ".git", "info", "sparse-checkout")
+        os.makedirs(os.path.dirname(sparse_file), exist_ok=True)
         with open(sparse_file, "w", encoding="utf-8") as f:
             f.write("src/rfsuite/\n")
             f.write(".vscode/scripts/\n")
-            # Grab all soundpacks to avoid missing locale audio during master installs
             f.write("bin/sound-generator/soundpack/\n")
 
         fetch = run_git(
             ["fetch", "--depth", "1", "--progress", "origin", "master"],
+            cwd=str(cache_repo),
             timeout=180,
             progress_cb=lambda pct: self.update_progress(pct, f"Fetching master... {pct}%")
         )
+        cache_ready = False
         if fetch.returncode != 0:
             self.log(f"⚠ Git fetch failed: {fetch.stderr.strip()}")
+            if os.path.isdir(os.path.join(cache_repo, "src", TARGET_NAME)):
+                self.log("⚠ Using previously cached master snapshot.")
+                cache_ready = True
+            else:
+                return False
+        else:
+            checkout = run_git(["checkout", "-f", "FETCH_HEAD"], cwd=str(cache_repo))
+            if checkout.returncode != 0:
+                self.log(f"⚠ Git checkout failed: {checkout.stderr.strip()}")
+                if not os.path.isdir(os.path.join(cache_repo, "src", TARGET_NAME)):
+                    return False
+            else:
+                cache_ready = True
+
+        if not cache_ready and not os.path.isdir(os.path.join(cache_repo, "src", TARGET_NAME)):
+            self.log("⚠ Sparse cache does not contain required source tree.")
             return False
 
-        checkout = run_git(["checkout", "FETCH_HEAD"])
-        if checkout.returncode != 0:
-            self.log(f"⚠ Git checkout failed: {checkout.stderr.strip()}")
-            return False
+        if os.path.isdir(dest_dir):
+            shutil.rmtree(dest_dir, ignore_errors=True)
+        os.makedirs(dest_dir, exist_ok=True)
 
-        self.log("✓ Sparse checkout completed")
+        staged_paths = [
+            "src/rfsuite",
+            ".vscode/scripts",
+            "bin/sound-generator/soundpack",
+        ]
+        for rel in staged_paths:
+            src_path = os.path.join(cache_repo, rel)
+            dst_path = os.path.join(dest_dir, rel)
+            if not os.path.exists(src_path):
+                if rel == "src/rfsuite":
+                    self.log(f"⚠ Missing required path in cache: {rel}")
+                    return False
+                self.log(f"⚠ Optional path missing in cache: {rel}")
+                continue
+            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            if os.path.isdir(src_path):
+                def _ignore_ephemeral(_dir, names):
+                    ignored = []
+                    for n in names:
+                        if n in ("__pycache__", "._pycache__"):
+                            ignored.append(n)
+                            continue
+                        if n.startswith("._"):
+                            ignored.append(n)
+                            continue
+                        if n.endswith((".pyc", ".pyo")):
+                            ignored.append(n)
+                    return ignored
+
+                shutil.copytree(src_path, dst_path, dirs_exist_ok=True, ignore=_ignore_ephemeral)
+            else:
+                shutil.copy2(src_path, dst_path)
+
+        self.log("✓ Sparse checkout cache updated and staged")
         return True
 
     def copy_sound_pack(self, repo_dir, dest_dir, locale, use_phase=False):
@@ -1426,27 +2115,47 @@ class UpdaterGUI:
 
         dest = os.path.join(dest_dir, "audio", locale)
         try:
-            if os.path.isdir(dest):
-                self.log(f"  Removing existing audio pack: {dest}")
-                shutil.rmtree(dest)
             os.makedirs(dest, exist_ok=True)
             self.log(f"  Copying audio pack to: {dest}")
-            total_files = self.count_files(src)
+            src_files = self._build_rel_file_map(src)
+            dst_files = self._build_rel_file_map(dest)
+
+            stale = [rel for rel in dst_files.keys() if rel not in src_files]
+            if stale:
+                self.log(f"  Removing stale audio files: {len(stale)}")
+                removed = 0
+                for rel in stale:
+                    p = dst_files.get(rel) or os.path.join(dest, rel)
+                    try:
+                        os.remove(p)
+                        removed += 1
+                        if removed % 10 == 0 or removed == len(stale):
+                            self.log(f"  [AUDIO-DEL {removed}/{len(stale)}] {rel}")
+                    except FileNotFoundError:
+                        pass
+                    except Exception as e:
+                        self.log(f"  ⚠ Failed to remove stale audio {rel}: {e}")
+                self._remove_empty_dirs(dest)
+
+            to_copy = []
+            for rel, src_file in src_files.items():
+                dst_file = os.path.join(dest, rel)
+                os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+                if self._needs_copy_with_md5(src_file, dst_file):
+                    to_copy.append((rel, src_file, dst_file))
+
             copied = 0
-            for root, dirs, files in os.walk(src):
-                rel_path = os.path.relpath(root, src)
-                dst_dir = os.path.join(dest, rel_path) if rel_path != '.' else dest
-                os.makedirs(dst_dir, exist_ok=True)
-                for file in files:
-                    src_file = os.path.join(root, file)
-                    dst_file = os.path.join(dst_dir, file)
-                    shutil.copy2(src_file, dst_file)
-                    copied += 1
-                    percent = (copied / total_files) * 100 if total_files else 100
-                    if use_phase:
-                        self.update_progress(copied, f"Audio {copied}/{total_files} files ({percent:.1f}%)")
-                    self.log(f"  [AUDIO {copied}/{total_files}] {os.path.relpath(src_file, src)}")
-                    time.sleep(COPY_SETTLE_SECONDS)
+            total_files = len(to_copy)
+            for rel, src_file, dst_file in to_copy:
+                shutil.copy2(src_file, dst_file)
+                copied += 1
+                percent = (copied / total_files) * 100 if total_files else 100
+                if use_phase:
+                    self.update_progress(copied, f"Audio {copied}/{total_files} files ({percent:.1f}%)")
+                if copied % 10 == 0 or copied == total_files:
+                    self.log(f"  [AUDIO {copied}/{total_files}] {rel}")
+                time.sleep(COPY_SETTLE_SECONDS)
+
             self.log(f"✓ Audio pack copied: {locale}")
             return True
         except Exception as e:
@@ -1549,8 +2258,7 @@ class UpdaterGUI:
         
         _ensure_work_dir()
         self.is_updating = True
-        self.update_button.config(state=tk.DISABLED)
-        self.cancel_button.config(state=tk.NORMAL)
+        self._set_update_controls_running(True)
         self.reset_steps()
         self.update_progress(0, "Starting...")
         
@@ -1564,8 +2272,7 @@ class UpdaterGUI:
         self.set_status("Update cancelled")
         self._stop_segment_pulse()
         self.update_progress(0, "")
-        self.update_button.config(state=tk.NORMAL)
-        self.cancel_button.config(state=tk.DISABLED)
+        self._set_update_controls_running(False)
     
     def update_process(self):
         """Main update process (runs in background thread)."""
@@ -1700,9 +2407,7 @@ class UpdaterGUI:
             
             _ensure_work_dir()
             temp_dir = tempfile.mkdtemp(prefix="rfsuite-update-", dir=str(WORK_DIR))
-            # Sanitize version name for filename (replace / with -)
-            safe_version_name = version_name.replace('/', '-').replace('\\', '-')
-            zip_path = os.path.join(temp_dir, f"{safe_version_name}.zip")
+            zip_path = None
 
             # For master, prefer sparse checkout to avoid full repo download
             repo_dir = None
@@ -1728,54 +2433,9 @@ class UpdaterGUI:
                     self.log(f"Version suffix for main.lua: {version_suffix}")
                 self.log(f"Downloading from: {download_url}")
                 try:
-                    req = Request(download_url, headers={'User-Agent': 'Mozilla/5.0'})
-                    attempt = 0
-                    while True:
-                        attempt += 1
-                        try:
-                            self.log(f"  Download attempt {attempt}/{DOWNLOAD_RETRIES} (timeout {DOWNLOAD_TIMEOUT}s)")
-                            with self.urlopen_insecure(req, timeout=DOWNLOAD_TIMEOUT) as response:
-                                total_size = int(response.headers.get('content-length', 0))
-                                size_known = total_size > 0
-                                downloaded = 0
-
-                                if size_known:
-                                    self.update_progress(0, "Downloading...")
-                                else:
-                                    total_size = 50 * 1024 * 1024  # 50MB estimate
-                                    self.update_progress(0, "Downloading (size unknown)...")
-                                    self.log("  Download size unknown (no content-length); estimating 50MB")
-
-                                last_log_percent = -1
-
-                                with open(zip_path, 'wb') as f:
-                                    while True:
-                                        if not self.is_updating:
-                                            return
-
-                                        chunk = response.read(8192)
-                                        if not chunk:
-                                            break
-
-                                        f.write(chunk)
-                                        downloaded += len(chunk)
-
-                                        percent = (downloaded / total_size) * 100 if total_size > 0 else 0
-                                        if int(percent) != last_log_percent:
-                                            last_log_percent = int(percent)
-                                            if size_known:
-                                                self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%)")
-                                            else:
-                                                self.log(f"  Downloaded: {downloaded}/{total_size} bytes ({percent:.1f}%) (estimated)")
-                                        self.update_progress(downloaded, f"Downloading... {percent:.1f}%")
-
-                            break
-                        except (URLError, HTTPError) as e:
-                            if attempt >= DOWNLOAD_RETRIES:
-                                raise
-                            self.log(f"  Download failed: {e}. Retrying in {DOWNLOAD_RETRY_DELAY}s...")
-                            time.sleep(DOWNLOAD_RETRY_DELAY)
-                    self.log(f"✓ Downloaded {downloaded} bytes")
+                    zip_path = self._download_zip_with_cache(download_url)
+                    if not zip_path:
+                        return
                     self.mark_step_done("Download")
                 except (URLError, HTTPError) as e:
                     self.log(f"✗ Download failed: {e}")
@@ -1795,7 +2455,23 @@ class UpdaterGUI:
 
                 try:
                     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                        zip_ref.extractall(extract_dir)
+                        skipped = 0
+                        for member in zip_ref.infolist():
+                            name = member.filename.replace("\\", "/")
+                            parts = [p for p in name.split("/") if p and p != "."]
+                            ignore = False
+                            for part in parts:
+                                if part in ("__pycache__", "._pycache__") or part.startswith("._"):
+                                    ignore = True
+                                    break
+                            if not ignore and name.endswith((".pyc", ".pyo")):
+                                ignore = True
+                            if ignore:
+                                skipped += 1
+                                continue
+                            zip_ref.extract(member, extract_dir)
+                        if skipped:
+                            self.log(f"  Skipped {skipped} ephemeral archive entries")
                     self.log("✓ Archive extracted")
                     self.mark_step_done("Extract")
                 except Exception as e:
@@ -1878,33 +2554,27 @@ class UpdaterGUI:
 
             # Step 9: Copy files to radio
             dest_dir = os.path.join(scripts_dir, TARGET_NAME)
-            self.log("Copying new files to radio...")
-            
-            # Remove old installation
-            self.set_current_step("Remove")
-            self.set_status("Removing old installation...")
-            if os.path.isdir(dest_dir):
-                self.log("  Removing old installation...")
-                if not self.remove_tree_with_progress(dest_dir, use_phase=True):
-                    self.log("⚠ Removal cancelled")
-                    return
-                self.mark_step_done("Remove")
-            else:
-                self.mark_step_done("Remove")
+            self.log("Syncing files to radio...")
+
+            # Single visible phase: Copy (includes stale prune + changed-file copy)
+            self.set_current_step("Copy")
+            self.set_status("Removing stale files...")
+            if not self.remove_stale_files_with_progress(src_dir, dest_dir, use_phase=True):
+                self.log("⚠ Stale cleanup cancelled")
+                return
             
             if not self.is_updating:
                 return
             
-            # Copy new files
-            self.log("  Copying new files...")
-            self.set_current_step("Copy")
+            # Copy only changed files
+            self.log("  Copying changed files...")
             self.set_status("Copying files to radio...")
             if not self.copy_tree_with_progress(src_dir, dest_dir, use_phase=True):
                 self.log("⚠ Copy cancelled")
                 return
             self.mark_step_done("Copy")
             
-            self.log(f"✓ Files copied to radio successfully")
+            self.log(f"✓ Files synced to radio successfully")
 
             self.set_status("Finalizing installation...")
 
@@ -1937,7 +2607,6 @@ class UpdaterGUI:
                 shutil.rmtree(temp_dir)
             except Exception:
                 pass
-            _cleanup_work_dir()
             self.mark_step_done("Cleanup")
             
             # Success!
@@ -1979,8 +2648,7 @@ class UpdaterGUI:
         finally:
             self.is_updating = False
             self._stop_segment_pulse()
-            self.update_button.config(state=tk.NORMAL)
-            self.cancel_button.config(state=tk.DISABLED)
+            self._set_update_controls_running(False)
             
             # Disconnect from radio
             try:
@@ -2045,7 +2713,6 @@ def main():
         with open(UPDATER_LOCK_FILE, "w", encoding="utf-8") as f:
             f.write(str(os.getpid()))
         atexit.register(lambda: os.path.exists(UPDATER_LOCK_FILE) and os.remove(UPDATER_LOCK_FILE))
-        atexit.register(_cleanup_work_dir)
 
         if not check_dependencies():
             sys.exit(1)
@@ -2053,7 +2720,6 @@ def main():
         root = tk.Tk()
         app = UpdaterGUI(root)
         def on_close():
-            _cleanup_work_dir()
             root.destroy()
         root.protocol("WM_DELETE_WINDOW", on_close)
         root.mainloop()

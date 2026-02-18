@@ -14,7 +14,7 @@ def read_json(filepath):
 
 def write_json(filepath, data):
     """Write JSON using pretty formatting."""
-    with open(filepath, "w", encoding="utf-8") as f:
+    with open(filepath, "w", encoding="utf-8", newline="\n") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def extract_key_order(data):

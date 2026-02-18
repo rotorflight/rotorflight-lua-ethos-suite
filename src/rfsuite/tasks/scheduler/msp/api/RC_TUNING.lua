@@ -13,7 +13,7 @@ local MSP_REBUILD_ON_WRITE = true
 
 local rateTable
 local rateSimResponse
-if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     rateTable = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK", "ROTORFLIGHT"}
     rateSimResponse = {6}
 else
@@ -23,38 +23,38 @@ end
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rates_type", type = "U8", apiVersion = 12.06, simResponse = rateSimResponse, min = 0, max = 6, default = 4, tableIdxInc = -1, table = rateTable, help = "@i18n(api.RC_TUNING.rates_type)@"},
-    {field = "rcRates_1", type = "U8", apiVersion = 12.06, simResponse = {18}, help = "@i18n(api.RC_TUNING.rcRates_1)@"},
-    {field = "rcExpo_1", type = "U8", apiVersion = 12.06, simResponse = {25}, help = "@i18n(api.RC_TUNING.rcExpo_1)@"},
-    {field = "rates_1", type = "U8", apiVersion = 12.06, simResponse = {32}, help = "@i18n(api.RC_TUNING.rates_1)@"},
-    {field = "response_time_1", type = "U8", apiVersion = 12.06, simResponse = {20}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_1)@"},
-    {field = "accel_limit_1", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_1)@"},
-    {field = "rcRates_2", type = "U8", apiVersion = 12.06, simResponse = {18}, help = "@i18n(api.RC_TUNING.rcRates_2)@"},
-    {field = "rcExpo_2", type = "U8", apiVersion = 12.06, simResponse = {25}, help = "@i18n(api.RC_TUNING.rcExpo_2)@"},
-    {field = "rates_2", type = "U8", apiVersion = 12.06, simResponse = {32}, help = "@i18n(api.RC_TUNING.rates_2)@"},
-    {field = "response_time_2", type = "U8", apiVersion = 12.06, simResponse = {20}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_2)@"},
-    {field = "accel_limit_2", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_2)@"},
-    {field = "rcRates_3", type = "U8", apiVersion = 12.06, simResponse = {32}, help = "@i18n(api.RC_TUNING.rcRates_3)@"},
-    {field = "rcExpo_3", type = "U8", apiVersion = 12.06, simResponse = {50}, help = "@i18n(api.RC_TUNING.rcExpo_3)@"},
-    {field = "rates_3", type = "U8", apiVersion = 12.06, simResponse = {45}, help = "@i18n(api.RC_TUNING.rates_3)@"},
-    {field = "response_time_3", type = "U8", apiVersion = 12.06, simResponse = {10}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_3)@"},
-    {field = "accel_limit_3", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_3)@"},
-    {field = "rcRates_4", type = "U8", apiVersion = 12.06, simResponse = {56}, help = "@i18n(api.RC_TUNING.rcRates_4)@"},
-    {field = "rcExpo_4", type = "U8", apiVersion = 12.06, simResponse = {0}, help = "@i18n(api.RC_TUNING.rcExpo_4)@"},
-    {field = "rates_4", type = "U8", apiVersion = 12.06, simResponse = {56}, help = "@i18n(api.RC_TUNING.rates_4)@"},
-    {field = "response_time_4", type = "U8", apiVersion = 12.06, simResponse = {20}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_4)@"},
-    {field = "accel_limit_4", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_4)@"},
-    {field = "setpoint_boost_gain_1", type = "U8", apiVersion = 12.08, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_1)@"},
-    {field = "setpoint_boost_cutoff_1", type = "U8", apiVersion = 12.08, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_1)@"},
-    {field = "setpoint_boost_gain_2", type = "U8", apiVersion = 12.08, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_2)@"},
-    {field = "setpoint_boost_cutoff_2", type = "U8", apiVersion = 12.08, simResponse = {90}, min = 0, max = 250, unit = "Hz", default = 90, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_2)@"},
-    {field = "setpoint_boost_gain_3", type = "U8", apiVersion = 12.08, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_3)@"},
-    {field = "setpoint_boost_cutoff_3", type = "U8", apiVersion = 12.08, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_3)@"},
-    {field = "setpoint_boost_gain_4", type = "U8", apiVersion = 12.08, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_4)@"},
-    {field = "setpoint_boost_cutoff_4", type = "U8", apiVersion = 12.08, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_4)@"},
-    {field = "yaw_dynamic_ceiling_gain", type = "U8", apiVersion = 12.08, simResponse = {30}, default = 30, min = 0, max = 250, help = "@i18n(api.RC_TUNING.yaw_dynamic_ceiling_gain)@"},
-    {field = "yaw_dynamic_deadband_gain", type = "U8", apiVersion = 12.08, simResponse = {30}, default = 30, min = 0, max = 250, help = "@i18n(api.RC_TUNING.yaw_dynamic_deadband_gain)@"},
-    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = 12.08, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit = "Hz", help = "@i18n(api.RC_TUNING.yaw_dynamic_deadband_filter)@"}
+    {field = "rates_type", type = "U8", apiVersion = {12, 0, 6}, simResponse = rateSimResponse, min = 0, max = 6, default = 4, tableIdxInc = -1, table = rateTable, help = "@i18n(api.RC_TUNING.rates_type)@"},
+    {field = "rcRates_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {18}, help = "@i18n(api.RC_TUNING.rcRates_1)@"},
+    {field = "rcExpo_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {25}, help = "@i18n(api.RC_TUNING.rcExpo_1)@"},
+    {field = "rates_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {32}, help = "@i18n(api.RC_TUNING.rates_1)@"},
+    {field = "response_time_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {20}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_1)@"},
+    {field = "accel_limit_1", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_1)@"},
+    {field = "rcRates_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {18}, help = "@i18n(api.RC_TUNING.rcRates_2)@"},
+    {field = "rcExpo_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {25}, help = "@i18n(api.RC_TUNING.rcExpo_2)@"},
+    {field = "rates_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {32}, help = "@i18n(api.RC_TUNING.rates_2)@"},
+    {field = "response_time_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {20}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_2)@"},
+    {field = "accel_limit_2", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_2)@"},
+    {field = "rcRates_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {32}, help = "@i18n(api.RC_TUNING.rcRates_3)@"},
+    {field = "rcExpo_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {50}, help = "@i18n(api.RC_TUNING.rcExpo_3)@"},
+    {field = "rates_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {45}, help = "@i18n(api.RC_TUNING.rates_3)@"},
+    {field = "response_time_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {10}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_3)@"},
+    {field = "accel_limit_3", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_3)@"},
+    {field = "rcRates_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {56}, help = "@i18n(api.RC_TUNING.rcRates_4)@"},
+    {field = "rcExpo_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, help = "@i18n(api.RC_TUNING.rcExpo_4)@"},
+    {field = "rates_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {56}, help = "@i18n(api.RC_TUNING.rates_4)@"},
+    {field = "response_time_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {20}, min = 0, max = 250, unit = "ms", help = "@i18n(api.RC_TUNING.response_time_4)@"},
+    {field = "accel_limit_4", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10, help = "@i18n(api.RC_TUNING.accel_limit_4)@"},
+    {field = "setpoint_boost_gain_1", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_1)@"},
+    {field = "setpoint_boost_cutoff_1", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_1)@"},
+    {field = "setpoint_boost_gain_2", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_2)@"},
+    {field = "setpoint_boost_cutoff_2", type = "U8", apiVersion = {12, 0, 8}, simResponse = {90}, min = 0, max = 250, unit = "Hz", default = 90, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_2)@"},
+    {field = "setpoint_boost_gain_3", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_3)@"},
+    {field = "setpoint_boost_cutoff_3", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_3)@"},
+    {field = "setpoint_boost_gain_4", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.RC_TUNING.setpoint_boost_gain_4)@"},
+    {field = "setpoint_boost_cutoff_4", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15, help = "@i18n(api.RC_TUNING.setpoint_boost_cutoff_4)@"},
+    {field = "yaw_dynamic_ceiling_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250, help = "@i18n(api.RC_TUNING.yaw_dynamic_ceiling_gain)@"},
+    {field = "yaw_dynamic_deadband_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250, help = "@i18n(api.RC_TUNING.yaw_dynamic_deadband_gain)@"},
+    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = {12, 0, 8}, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit = "Hz", help = "@i18n(api.RC_TUNING.yaw_dynamic_deadband_filter)@"}
 }
 -- LuaFormatter on
 

@@ -4,12 +4,14 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
 local lcd = lcd
 
 local enableWakeup = false
 local prevConnectedState = nil
+local onNavMenu
 
 local function openPage(opts)
 
@@ -134,16 +136,11 @@ end
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.dashboard)@", script = "settings/tools/dashboard.lua"})
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
-local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
-    rfsuite.app.ui.openPage({idx = pageIdx, title = "@i18n(app.modules.settings.dashboard)@", script = "settings/tools/dashboard.lua"})
+onNavMenu = function()
+    pageRuntime.openMenuContext()
     return true
 end
 

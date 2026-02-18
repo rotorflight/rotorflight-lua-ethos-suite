@@ -91,8 +91,12 @@ local function openPage(opts)
     if fields then
         for i, field in ipairs(fields) do
             local label = labels
-            local version = rfsuite.session.apiVersion
-            local valid = (field.apiversion == nil or field.apiversion <= version) and (field.apiversionlt == nil or field.apiversionlt > version) and (field.apiversiongt == nil or field.apiversiongt < version) and (field.apiversionlte == nil or field.apiversionlte >= version) and (field.apiversiongte == nil or field.apiversiongte <= version) and (field.enablefunction == nil or field.enablefunction())
+            local valid = (field.apiversion == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversion)) and
+                (field.apiversionlt == nil or rfsuite.utils.apiVersionCompare("<", field.apiversionlt)) and
+                (field.apiversiongt == nil or rfsuite.utils.apiVersionCompare(">", field.apiversiongt)) and
+                (field.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", field.apiversionlte)) and
+                (field.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversiongte)) and
+                (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
                 rfsuite.app.ui.fieldLabel(field, i, label)
