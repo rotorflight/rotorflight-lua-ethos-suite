@@ -90,6 +90,7 @@ function submenu.create(opts)
         onWakeup = hooks.onWakeup or opts.onWakeup,
         scriptPathResolver = hooks.scriptPathResolver or opts.scriptPathResolver,
         iconPathResolver = hooks.iconPathResolver or opts.iconPathResolver,
+        childTitlePrefix = hooks.childTitlePrefix or opts.childTitlePrefix,
         childTitleResolver = hooks.childTitleResolver or opts.childTitleResolver,
         API = hooks.API or opts.API
     }

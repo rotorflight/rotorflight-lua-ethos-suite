@@ -1,436 +1,1013 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
+  Copyright (C) 2026 Rotorflight Project
   GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
-]] --
 
--- Module-backed menu manifest.
--- `sections` define main-menu groups; each group provides `sections = { ... }` entries.
--- `menus` define submenu pages used by submenu_builder.createFromManifest().
--- `menuId` targets are loaded through `app/modules/manifest_menu/menu.lua`.
--- That router keeps this file as the single source of menu structure and avoids
--- creating one wrapper `menu.lua` per submenu.
--- API gates use table versions. For padded-minor releases prefer `{major, 0, minor}`
--- so `12.09` remains explicit before moving to `12.10`.
+  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY.
+  Edit menu data with: bin/menu/editor/menu_editor.cmd (Windows)
+  or: python bin/menu/editor/src/menu_editor.py
+  Source of truth: bin/menu/manifest.source.json
+  Regenerate with: python bin/menu/generate.py
+]] --
 
 return {
     sections = {
         {
             id = "configuration",
-            title = "@i18n(app.header_configuration)@",
             sections = {
                 {
-                    title = "@i18n(app.menu_section_flight_tuning)@",
+                    ethosversion = { 1, 6, 2 },
                     id = "flight_tuning",
-                    menuId = "flight_tuning_menu",
                     image = "app/gfx/flight_tuning.png",
                     loaderspeed = "FAST",
-                    ethosversion = {1, 6, 2}
+                    menuId = "flight_tuning_menu",
+                    title = "@i18n(app.menu_section_flight_tuning)@",
                 },
                 {
-                    title = "@i18n(app.modules.hardware_setup.name)@",
+                    ethosversion = { 1, 6, 2 },
                     id = "setup",
-                    menuId = "setup_menu",
                     image = "app/gfx/hardware.png",
                     loaderspeed = "FAST",
-                    ethosversion = {1, 6, 2}
-                }
-            }
+                    menuId = "setup_menu",
+                    title = "@i18n(app.modules.hardware_setup.name)@",
+                },
+            },
+            title = "@i18n(app.header_configuration)@",
         },
         {
             id = "system",
-            title = "@i18n(app.header_system)@",
             sections = {
                 {
-                    title = "@i18n(app.menu_section_tools)@",
-                    menuId = "tools_menu",
+                    ethosversion = { 1, 6, 2 },
                     image = "app/gfx/tools.png",
+                    menuId = "tools_menu",
                     offline = true,
-                    ethosversion = {1, 6, 2}
+                    title = "@i18n(app.menu_section_tools)@",
                 },
                 {
-                    title = "@i18n(app.modules.logs.name)@",
-                    module = "logs",
-                    script = "logs_dir.lua",
+                    ethosversion = { 1, 6, 2 },
                     image = "app/modules/logs/gfx/logs.png",
                     loaderspeed = "FAST",
+                    module = "logs",
                     offline = true,
-                    ethosversion = {1, 6, 2}
+                    script = "logs_dir.lua",
+                    title = "@i18n(app.modules.logs.name)@",
                 },
                 {
-                    title = "@i18n(app.modules.settings.name)@",
-                    menuId = "settings_admin",
+                    ethosversion = { 1, 6, 2 },
                     image = "app/modules/settings/settings.png",
+                    menuId = "settings_admin",
                     offline = true,
-                    ethosversion = {1, 6, 2}
+                    title = "@i18n(app.modules.settings.name)@",
                 },
                 {
-                    title = "@i18n(app.modules.settings.txt_developer)@",
-                    module = "developer",
-                    script = "developer.lua",
-                    image = "app/modules/developer/developer.png",
-                    developer = true,
                     bgtask = true,
+                    developer = true,
+                    ethosversion = { 1, 6, 2 },
+                    image = "app/modules/developer/developer.png",
+                    module = "developer",
                     offline = true,
-                    ethosversion = {1, 6, 2}
-                }
-            }
-        }
+                    script = "developer.lua",
+                    title = "@i18n(app.modules.settings.txt_developer)@",
+                },
+            },
+            title = "@i18n(app.header_system)@",
+        },
     },
     menus = {
-        setup_menu = {
-            title = "@i18n(app.modules.hardware_setup.name)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.configuration.name)@", script = "configuration/configuration.lua", image = "configuration/configuration.png", order = 1, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.radio_config.name)@", script = "radio_config/radio_config.lua", image = "radio_config/radio_config.png", order = 2},
-                {name = "@i18n(app.modules.telemetry.name)@", script = "telemetry/telemetry.lua", image = "telemetry/telemetry.png", order = 3},
-                {name = "@i18n(app.modules.accelerometer.name)@", script = "accelerometer/accelerometer.lua", image = "accelerometer/acc.png", order = 4, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.alignment.name)@", script = "alignment/alignment.lua", image = "alignment/alignment.png", order = 5, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.ports.name)@", script = "ports/ports.lua", image = "ports/ports.png", order = 6},
-                {name = "@i18n(app.modules.mixer.name)@", menuId = "mixer", image = "mixer/mixer.png", order = 7, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.servos.name)@", menuId = "servos_type", image = "servos/servos.png", order = 8, loaderspeed = 0.08},
-                {name = "@i18n(app.menu_section_controls)@", menuId = "safety_menu", image = "failsafe/failsafe.png", order = 9},
-                {name = "@i18n(app.modules.esc_motors.name)@", menuId = "powertrain_menu", image = "esc_motors/esc.png", order = 10}
-            }
-        },
-        flight_tuning_menu = {
-            title = "@i18n(app.menu_section_flight_tuning)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "DEFAULT",
-            navOptions = {showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.pids.name)@", script = "pids/pids.lua", image = "pids/pids.png", order = 1},
-                {name = "@i18n(app.modules.rates.name)@", script = "rates/rates.lua", image = "rates/rates.png", order = 2},
-                {
-                    name = "@i18n(app.modules.profile_governor.name)@",
-                    script = "profile_governor/governor.lua",
-                    image = "profile_governor/governor.png",
-                    order = 3,
-                    script_by_mspversion = {
-                        {op = ">=", ver = {12, 0, 9}, script = "profile_governor/governor.lua"},
-                        {op = "<", ver = {12, 0, 9}, script = "profile_governor/governor_legacy.lua"}
-                    },
-                    script_default = "profile_governor/governor_legacy.lua"
-                },
-                {name = "@i18n(app.menu_section_advanced)@", menuId = "advanced_menu", image = "app/gfx/advanced.png", order = 4}
-            }
-        },
-        profiles_menu = {
-            title = "@i18n(app.menu_section_profiles)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {defaultSection = "flight_tuning", showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 1, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_mainrotor.name)@", script = "profile_mainrotor/mainrotor.lua", image = "profile_mainrotor/mainrotor.png", order = 2, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_tailrotor.name)@", script = "profile_tailrotor/tailrotor.lua", image = "profile_tailrotor/tailrotor.png", order = 3, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_rescue.name)@", script = "profile_rescue/rescue.lua", image = "profile_rescue/rescue.png", order = 4, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_autolevel.name)@", script = "profile_autolevel/autolevel.lua", image = "profile_autolevel/autolevel.png", order = 5, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_pidcontroller.name)@", script = "profile_pidcontroller/pidcontroller.lua", image = "profile_pidcontroller/pids-controller.png", order = 6, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 7, apiversion = {12, 0, 6}}
-            }
-        },
-        powertrain_menu = {
-            title = "@i18n(app.modules.power.name)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {defaultSection = "setup", showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.esc_motors.name)@", menuId = "esc_motors", image = "esc_motors/esc.png", order = 1, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.power.name)@", menuId = "power", image = "power/power.png", order = 2},
-                {
-                    name = "@i18n(app.modules.governor.name)@",
-                    script = "governor/governor.lua",
-                    image = "governor/governor.png",
-                    order = 3,
-                    script_by_mspversion = {
-                        {op = ">=", ver = {12, 0, 9}, script = "governor/governor.lua"},
-                        {op = "<", ver = {12, 0, 9}, script = "governor/governor_legacy.lua"}
-                    },
-                    script_default = "governor/governor_legacy.lua"
-                },
-                {name = "@i18n(app.modules.esc_tools.name)@", script = "esc_tools/tools/esc.lua", image = "esc_tools/esc.png", order = 4, offline = false}
-            }
-        },
-        safety_menu = {
-            title = "@i18n(app.menu_section_controls)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {defaultSection = "setup", showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.modes.name)@", script = "modes/modes.lua", image = "modes/modes.png", order = 1, loaderspeed = 0.05},
-                {name = "@i18n(app.modules.adjustments.name)@", script = "adjustments/adjustments.lua", image = "adjustments/adjustments.png", order = 2, loaderspeed = 0.1},
-                {name = "@i18n(app.modules.failsafe.name)@", script = "failsafe/failsafe.lua", image = "failsafe/failsafe.png", order = 3},
-                {name = "@i18n(app.modules.beepers.name)@", menuId = "beepers", image = "beepers/beepers.png", order = 4},
-                {name = "@i18n(app.modules.blackbox.name)@", menuId = "blackbox", image = "blackbox/blackbox.png", order = 5},
-                {name = "@i18n(app.modules.stats.name)@", script = "stats/stats.lua", image = "stats/stats.png", order = 6}
-            }
-        },
-        tools_menu = {
-            title = "@i18n(app.menu_section_tools)@",
-            scriptPrefix = "app/modules/",
-            iconPrefix = "app/modules/",
-            navOptions = {defaultSection = "system", showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.copyprofiles.name)@", script = "copyprofiles/copyprofiles.lua", image = "copyprofiles/copy.png", order = 1, apiversion = {12, 0, 6}, disabled = true, offline = false},
-                {name = "@i18n(app.modules.profile_select.name)@", script = "profile_select/select_profile.lua", image = "profile_select/select_profile.png", order = 2, apiversion = {12, 0, 6}, offline = false},
-                {name = "@i18n(app.modules.diagnostics.name)@", menuId = "diagnostics", image = "diagnostics/diagnostics.png", order = 3, offline = true}
-            }
-        },
         advanced_menu = {
-            title = "@i18n(app.menu_section_advanced)@",
-            scriptPrefix = "app/modules/",
             iconPrefix = "app/modules/",
             loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
+            navOptions = {
+                showProgress = true,
+            },
             pages = {
-                {name = "@i18n(app.modules.filters.name)@", script = "filters/filters.lua", image = "filters/filters.png", order = 1},
-                {name = "@i18n(app.modules.profile_pidcontroller.name)@", script = "profile_pidcontroller/pidcontroller.lua", image = "profile_pidcontroller/pids-controller.png", order = 2, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_pidbandwidth.name)@", script = "profile_pidbandwidth/pidbandwidth.lua", image = "profile_pidbandwidth/pids-bandwidth.png", order = 3, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_autolevel.name)@", script = "profile_autolevel/autolevel.lua", image = "profile_autolevel/autolevel.png", order = 4, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_mainrotor.name)@", script = "profile_mainrotor/mainrotor.lua", image = "profile_mainrotor/mainrotor.png", order = 5, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_tailrotor.name)@", script = "profile_tailrotor/tailrotor.lua", image = "profile_tailrotor/tailrotor.png", order = 6, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.profile_rescue.name)@", script = "profile_rescue/rescue.lua", image = "profile_rescue/rescue.png", order = 7, apiversion = {12, 0, 6}},
-                {name = "@i18n(app.modules.rates_advanced.name)@", script = "rates_advanced/rates_advanced.lua", image = "rates_advanced/rates.png", order = 8, apiversion = {12, 0, 6}}
-            }
-        },
-        hardware_menu = {
-            title = "@i18n(app.menu_section_hardware)@",
-            scriptPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {showProgress = true},
-            pages = {
-                {name = "@i18n(app.modules.configuration.name)@", script = "configuration/configuration.lua", image = "app/modules/configuration/configuration.png", order = 1, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.servos.name)@", script = "servos/servos.lua", image = "app/modules/servos/servos.png", order = 2, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.mixer.name)@", script = "mixer/mixer.lua", image = "app/modules/mixer/mixer.png", order = 3, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.esc_motors.name)@", script = "esc_motors/esc_motors.lua", image = "app/modules/esc_motors/esc.png", order = 4, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.accelerometer.name)@", script = "accelerometer/accelerometer.lua", image = "app/modules/accelerometer/acc.png", order = 5, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.alignment.name)@", script = "alignment/alignment.lua", image = "app/modules/alignment/alignment.png", order = 6, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.ports.name)@", script = "ports/ports.lua", image = "app/modules/ports/ports.png", order = 7, loaderspeed = 0.08},
-                {name = "@i18n(app.modules.telemetry.name)@", script = "telemetry/telemetry.lua", image = "app/modules/telemetry/telemetry.png", order = 8},
-                {name = "@i18n(app.modules.radio_config.name)@", script = "radio_config/radio_config.lua", image = "app/modules/radio_config/radio_config.png", order = 9},
-                {name = "@i18n(app.modules.beepers.name)@", script = "beepers/beepers.lua", image = "app/modules/beepers/beepers.png", order = 10},
-                {name = "@i18n(app.modules.blackbox.name)@", script = "blackbox/blackbox.lua", image = "app/modules/blackbox/blackbox.png", order = 11},
-                {name = "@i18n(app.modules.stats.name)@", script = "stats/stats.lua", image = "app/modules/stats/stats.png", order = 12},
-                {name = "@i18n(app.modules.failsafe.name)@", script = "failsafe/failsafe.lua", image = "app/modules/failsafe/failsafe.png", order = 13},
-                {name = "@i18n(app.modules.modes.name)@", script = "modes/modes.lua", image = "app/modules/modes/modes.png", order = 14, loaderspeed = 0.05},
-                {name = "@i18n(app.modules.adjustments.name)@", script = "adjustments/adjustments.lua", image = "app/modules/adjustments/adjustments.png", order = 15, loaderspeed = 0.1},
-                {name = "@i18n(app.modules.filters.name)@", script = "filters/filters.lua", image = "app/modules/filters/filters.png", order = 16},
-                {name = "@i18n(app.modules.power.name)@", script = "power/power.lua", image = "app/modules/power/power.png", order = 17},
                 {
-                    name = "@i18n(app.modules.governor.name)@",
-                    script = "governor/governor.lua",
-                    image = "app/modules/governor/governor.png",
-                    order = 18,
-                    script_by_mspversion = {
-                        {op = ">=", ver = {12, 0, 9}, script = "governor/governor.lua"},
-                        {op = "<", ver = {12, 0, 9}, script = "governor/governor_legacy.lua"}
-                    },
-                    script_default = "governor/governor_legacy.lua"
-                }
-            }
-        },
-        power = {
-            title = "@i18n(app.modules.power.name)@",
-            scriptPrefix = "power/tools/",
-            iconPrefix = "app/modules/power/gfx/",
-            loaderSpeed = 0.08,
-            navOptions = {defaultSection = "setup"},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            pages = {
-                {name = "@i18n(app.modules.power.battery_name)@", script = "battery.lua", image = "battery.png"},
-                {name = "@i18n(app.modules.power.alert_name)@", script = "alerts.lua", image = "alerts.png"},
-                {name = "@i18n(app.modules.power.source_name)@", script = "source.lua", image = "source.png"}
-            }
-        },
-        esc_motors = {
-            title = "@i18n(app.modules.esc_motors.name)@",
-            scriptPrefix = "esc_motors/tools/",
-            iconPrefix = "app/modules/esc_motors/gfx/",
-            loaderSpeed = 0.08,
-            navOptions = {defaultSection = "setup", showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            hooksScript = "app/modules/esc_motors/menu_hooks.lua",
-            pages = {
-                {name = "@i18n(app.modules.esc_motors.throttle)@", script = "throttle.lua", image = "throttle.png"},
-                {name = "@i18n(app.modules.esc_motors.telemetry)@", script = "telemetry.lua", image = "telemetry.png"},
-                {name = "@i18n(app.modules.esc_motors.rpm)@", script = "rpm.lua", image = "rpm.png"}
-            }
-        },
-        developer = {
-            title = "@i18n(app.modules.settings.txt_developer)@",
-            loaderSpeed = 0.08,
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            childTitleResolver = function(_, item)
-                return "@i18n(app.modules.settings.txt_developer)@ / " .. item.name
-            end,
-            pages = {
-                {name = "@i18n(app.modules.msp_speed.name)@", script = "developer/tools/msp_speed.lua", image = "app/modules/developer/gfx/msp_speed.png", bgtask = true, offline = false},
-                {name = "@i18n(app.modules.api_tester.name)@", script = "developer/tools/api_tester.lua", image = "app/modules/developer/gfx/api_tester.png", bgtask = true, offline = false},
-                {name = "@i18n(app.modules.msp_exp.name)@", script = "developer/tools/msp_exp.lua", image = "app/modules/developer/gfx/msp_exp.png", bgtask = true, offline = false},
-                {name = "@i18n(app.modules.settings.name)@", script = "settings/tools/development.lua", image = "app/modules/developer/gfx/settings.png", bgtask = true, offline = true}
-            }
-        },
-        diagnostics = {
-            title = "@i18n(app.modules.diagnostics.name)@",
-            scriptPrefix = "diagnostics/tools/",
-            iconPrefix = "app/modules/diagnostics/gfx/",
-            loaderSpeed = 0.08,
-            navOptions = {defaultSection = "system"},
-            pages = {
-                {name = "@i18n(app.modules.rfstatus.name)@", script = "rfstatus.lua", image = "rfstatus.png", bgtask = false, offline = false},
-                {name = "@i18n(app.modules.validate_sensors.name)@", script = "sensors.lua", image = "sensors.png", bgtask = true, offline = true},
-                {name = "@i18n(app.modules.fblsensors.name)@", script = "fblsensors.lua", image = "fblsensors.png", bgtask = true, offline = false},
-                {name = "@i18n(app.modules.fblstatus.name)@", script = "fblstatus.lua", image = "fblstatus.png", bgtask = true, offline = false},
-                {name = "@i18n(app.modules.info.name)@", script = "info.lua", image = "info.png", bgtask = true, offline = true}
-            }
-        },
-        governor = {
-            title = "@i18n(app.modules.governor.name)@",
-            scriptPrefix = "governor/tools/",
-            iconPrefix = "app/modules/governor/gfx/",
-            loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "setup", showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            hooksScript = "app/modules/governor/menu_hooks.lua",
-            pages = {
-                {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
-                {name = "@i18n(app.modules.governor.menu_time)@", script = "time.lua", image = "time.png"},
-                {name = "@i18n(app.modules.governor.menu_filters)@", script = "filters.lua", image = "filters.png"},
-                {name = "@i18n(app.modules.governor.menu_curves)@", script = "curves.lua", image = "curves.png"}
-            }
-        },
-        profile_governor = {
-            title = "@i18n(app.modules.profile_governor.name)@",
-            scriptPrefix = "profile_governor/tools/",
-            iconPrefix = "app/modules/governor/gfx/",
-            loaderSpeed = "DEFAULT",
-            navOptions = {showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            hooksScript = "app/modules/profile_governor/menu_hooks.lua",
-            pages = {
-                {name = "@i18n(app.modules.governor.menu_general)@", script = "general.lua", image = "general.png"},
-                {name = "@i18n(app.modules.governor.menu_flags)@", script = "flags.lua", image = "flags.png"}
-            }
-        },
-        blackbox = {
-            title = "@i18n(app.modules.blackbox.name)@",
-            scriptPrefix = "blackbox/tools/",
-            iconPrefix = "app/modules/blackbox/gfx/",
-            loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "setup"},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = true},
-            hooksScript = "app/modules/blackbox/menu_hooks.lua",
-            pages = {
-                {name = "@i18n(app.modules.blackbox.menu_configuration)@", script = "configuration.lua", image = "configuration.png"},
-                {name = "@i18n(app.modules.blackbox.menu_logging)@", script = "logging.lua", image = "logging.png"},
-                {name = "@i18n(app.modules.blackbox.menu_status)@", script = "status.lua", image = "status.png"}
-            }
+                    image = "filters/filters.png",
+                    name = "@i18n(app.modules.filters.name)@",
+                    order = 1,
+                    script = "filters/filters.lua",
+                    shortcutId = "s_advanced_menu_filters_filters_lua_f1de87c4bd",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_pidcontroller/pids-controller.png",
+                    name = "@i18n(app.modules.profile_pidcontroller.name)@",
+                    order = 2,
+                    script = "profile_pidcontroller/pidcontroller.lua",
+                    shortcutId = "s_advanced_menu_profile_pidcontroller_d88ea3ba97",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_pidbandwidth/pids-bandwidth.png",
+                    name = "@i18n(app.modules.profile_pidbandwidth.name)@",
+                    order = 3,
+                    script = "profile_pidbandwidth/pidbandwidth.lua",
+                    shortcutId = "s_advanced_menu_profile_pidbandwidth_p_650df8805e",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_autolevel/autolevel.png",
+                    name = "@i18n(app.modules.profile_autolevel.name)@",
+                    order = 4,
+                    script = "profile_autolevel/autolevel.lua",
+                    shortcutId = "s_advanced_menu_profile_autolevel_auto_d9832fb3eb",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_mainrotor/mainrotor.png",
+                    name = "@i18n(app.modules.profile_mainrotor.name)@",
+                    order = 5,
+                    script = "profile_mainrotor/mainrotor.lua",
+                    shortcutId = "s_advanced_menu_profile_mainrotor_main_99724a655d",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_tailrotor/tailrotor.png",
+                    name = "@i18n(app.modules.profile_tailrotor.name)@",
+                    order = 6,
+                    script = "profile_tailrotor/tailrotor.lua",
+                    shortcutId = "s_advanced_menu_profile_tailrotor_tail_9cd82ec0d9",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_rescue/rescue.png",
+                    name = "@i18n(app.modules.profile_rescue.name)@",
+                    order = 7,
+                    script = "profile_rescue/rescue.lua",
+                    shortcutId = "s_advanced_menu_profile_rescue_rescue_3bb5c29dca",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "rates_advanced/rates.png",
+                    name = "@i18n(app.modules.rates_advanced.name)@",
+                    order = 8,
+                    script = "rates_advanced/rates_advanced.lua",
+                    shortcutId = "s_advanced_menu_rates_advanced_rates_a_ef4795e385",
+                },
+            },
+            scriptPrefix = "app/modules/",
+            title = "@i18n(app.menu_section_advanced)@",
         },
         beepers = {
-            title = "@i18n(app.modules.beepers.name)@",
-            scriptPrefix = "beepers/tools/",
+            hooksScript = "app/modules/beepers/menu_hooks.lua",
             iconPrefix = "app/modules/beepers/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "setup"},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = true},
-            hooksScript = "app/modules/beepers/menu_hooks.lua",
+            navButtons = {
+                help = true,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+            },
             pages = {
-                {name = "@i18n(app.modules.beepers.menu_configuration)@", script = "configuration.lua", image = "configuration.png"},
-                {name = "@i18n(app.modules.beepers.menu_dshot)@", script = "dshot.lua", image = "dshot.png"}
-            }
+                {
+                    image = "configuration.png",
+                    name = "@i18n(app.modules.beepers.menu_configuration)@",
+                    script = "configuration.lua",
+                    shortcutId = "s_beepers_configuration_lua_3d60a90251",
+                },
+                {
+                    image = "dshot.png",
+                    name = "@i18n(app.modules.beepers.menu_dshot)@",
+                    script = "dshot.lua",
+                    shortcutId = "s_beepers_dshot_lua_f1e47cbff2",
+                },
+            },
+            scriptPrefix = "beepers/tools/",
+            title = "@i18n(app.modules.beepers.name)@",
+        },
+        blackbox = {
+            hooksScript = "app/modules/blackbox/menu_hooks.lua",
+            iconPrefix = "app/modules/blackbox/gfx/",
+            loaderSpeed = "DEFAULT",
+            navButtons = {
+                help = true,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+            },
+            pages = {
+                {
+                    image = "configuration.png",
+                    name = "@i18n(app.modules.blackbox.menu_configuration)@",
+                    script = "configuration.lua",
+                    shortcutId = "s_blackbox_configuration_lua_1b07855e2c",
+                },
+                {
+                    image = "logging.png",
+                    name = "@i18n(app.modules.blackbox.menu_logging)@",
+                    script = "logging.lua",
+                    shortcutId = "s_blackbox_logging_lua_6216852e49",
+                },
+                {
+                    image = "status.png",
+                    name = "@i18n(app.modules.blackbox.menu_status)@",
+                    script = "status.lua",
+                    shortcutId = "s_blackbox_status_lua_6d398bae79",
+                },
+                {
+                    name = "@i18n(app.modules.new.name)@",
+                    script = "new/new.lua",
+                    image = "new/new.png",
+                    shortcutId = "s_blackbox_new_new_lua_d1beaabf50",
+                },
+            },
+            scriptPrefix = "blackbox/tools/",
+            title = "@i18n(app.modules.blackbox.name)@",
+        },
+        developer = {
+            childTitlePrefix = "@i18n(app.modules.settings.txt_developer)@",
+            loaderSpeed = 0.08,
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            pages = {
+                {
+                    bgtask = true,
+                    image = "app/modules/developer/gfx/msp_speed.png",
+                    name = "@i18n(app.modules.msp_speed.name)@",
+                    offline = false,
+                    script = "developer/tools/msp_speed.lua",
+                    shortcutId = "s_developer_developer_tools_msp_speed_2a349a7d8c",
+                },
+                {
+                    bgtask = true,
+                    image = "app/modules/developer/gfx/api_tester.png",
+                    name = "@i18n(app.modules.api_tester.name)@",
+                    offline = false,
+                    script = "developer/tools/api_tester.lua",
+                    shortcutId = "s_developer_developer_tools_api_tester_41baf630d2",
+                },
+                {
+                    bgtask = true,
+                    image = "app/modules/developer/gfx/msp_exp.png",
+                    name = "@i18n(app.modules.msp_exp.name)@",
+                    offline = false,
+                    script = "developer/tools/msp_exp.lua",
+                    shortcutId = "s_developer_developer_tools_msp_exp_lu_871dbba7c4",
+                },
+                {
+                    bgtask = true,
+                    image = "app/modules/developer/gfx/settings.png",
+                    name = "@i18n(app.modules.settings.name)@",
+                    offline = true,
+                    script = "settings/tools/development.lua",
+                    shortcutId = "s_developer_settings_tools_development_44d17e37da",
+                },
+            },
+            title = "@i18n(app.modules.settings.txt_developer)@",
+        },
+        diagnostics = {
+            iconPrefix = "app/modules/diagnostics/gfx/",
+            loaderSpeed = 0.08,
+            navOptions = {
+                defaultSection = "system",
+            },
+            pages = {
+                {
+                    bgtask = false,
+                    image = "rfstatus.png",
+                    name = "@i18n(app.modules.rfstatus.name)@",
+                    offline = false,
+                    script = "rfstatus.lua",
+                    shortcutId = "s_diagnostics_rfstatus_lua_ac6fe96c58",
+                },
+                {
+                    bgtask = true,
+                    image = "sensors.png",
+                    name = "@i18n(app.modules.validate_sensors.name)@",
+                    offline = true,
+                    script = "sensors.lua",
+                    shortcutId = "s_diagnostics_sensors_lua_0010694864",
+                },
+                {
+                    bgtask = true,
+                    image = "fblsensors.png",
+                    name = "@i18n(app.modules.fblsensors.name)@",
+                    offline = false,
+                    script = "fblsensors.lua",
+                    shortcutId = "s_diagnostics_fblsensors_lua_05321e9f3c",
+                },
+                {
+                    bgtask = true,
+                    image = "fblstatus.png",
+                    name = "@i18n(app.modules.fblstatus.name)@",
+                    offline = false,
+                    script = "fblstatus.lua",
+                    shortcutId = "s_diagnostics_fblstatus_lua_d9afde0a7c",
+                },
+                {
+                    bgtask = true,
+                    image = "info.png",
+                    name = "@i18n(app.modules.info.name)@",
+                    offline = true,
+                    script = "info.lua",
+                    shortcutId = "s_diagnostics_info_lua_5025a3d5b5",
+                },
+            },
+            scriptPrefix = "diagnostics/tools/",
+            title = "@i18n(app.modules.diagnostics.name)@",
+        },
+        esc_motors = {
+            hooksScript = "app/modules/esc_motors/menu_hooks.lua",
+            iconPrefix = "app/modules/esc_motors/gfx/",
+            loaderSpeed = 0.08,
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "throttle.png",
+                    name = "@i18n(app.modules.esc_motors.throttle)@",
+                    script = "throttle.lua",
+                    shortcutId = "s_esc_motors_throttle_lua_17f21fa300",
+                },
+                {
+                    image = "telemetry.png",
+                    name = "@i18n(app.modules.esc_motors.telemetry)@",
+                    script = "telemetry.lua",
+                    shortcutId = "s_esc_motors_telemetry_lua_a9d9e2a50a",
+                },
+                {
+                    image = "rpm.png",
+                    name = "@i18n(app.modules.esc_motors.rpm)@",
+                    script = "rpm.lua",
+                    shortcutId = "s_esc_motors_rpm_lua_19b6337da0",
+                },
+            },
+            scriptPrefix = "esc_motors/tools/",
+            title = "@i18n(app.modules.esc_motors.name)@",
+        },
+        flight_tuning_menu = {
+            iconPrefix = "app/modules/",
+            loaderSpeed = "DEFAULT",
+            navOptions = {
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "pids/pids.png",
+                    name = "@i18n(app.modules.pids.name)@",
+                    order = 1,
+                    script = "pids/pids.lua",
+                    shortcutId = "s_flight_tuning_menu_pids_pids_lua_e97a40faab",
+                },
+                {
+                    image = "rates/rates.png",
+                    name = "@i18n(app.modules.rates.name)@",
+                    order = 2,
+                    script = "rates/rates.lua",
+                    shortcutId = "s_flight_tuning_menu_rates_rates_lua_853c5751ea",
+                },
+                {
+                    image = "profile_governor/governor.png",
+                    name = "@i18n(app.modules.profile_governor.name)@",
+                    order = 3,
+                    script = "profile_governor/governor.lua",
+                    script_by_mspversion = {
+                        {
+                            op = ">=",
+                            script = "profile_governor/governor.lua",
+                            ver = { 12, 0, 9 },
+                        },
+                        {
+                            op = "<",
+                            script = "profile_governor/governor_legacy.lua",
+                            ver = { 12, 0, 9 },
+                        },
+                    },
+                    script_default = "profile_governor/governor_legacy.lua",
+                    shortcutId = "s_flight_tuning_menu_profile_governor_2361300e05",
+                },
+                {
+                    image = "app/gfx/advanced.png",
+                    menuId = "advanced_menu",
+                    name = "@i18n(app.menu_section_advanced)@",
+                    order = 4,
+                    shortcutId = "s_flight_tuning_menu_advanced_menu_2abad2cdec",
+                },
+            },
+            scriptPrefix = "app/modules/",
+            title = "@i18n(app.menu_section_flight_tuning)@",
+        },
+        governor = {
+            hooksScript = "app/modules/governor/menu_hooks.lua",
+            iconPrefix = "app/modules/governor/gfx/",
+            loaderSpeed = "DEFAULT",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "general.png",
+                    name = "@i18n(app.modules.governor.menu_general)@",
+                    script = "general.lua",
+                    shortcutId = "s_governor_general_lua_bb876f329d",
+                },
+                {
+                    image = "time.png",
+                    name = "@i18n(app.modules.governor.menu_time)@",
+                    script = "time.lua",
+                    shortcutId = "s_governor_time_lua_3fa58c3610",
+                },
+                {
+                    image = "filters.png",
+                    name = "@i18n(app.modules.governor.menu_filters)@",
+                    script = "filters.lua",
+                    shortcutId = "s_governor_filters_lua_258e16a592",
+                },
+                {
+                    image = "curves.png",
+                    name = "@i18n(app.modules.governor.menu_curves)@",
+                    script = "curves.lua",
+                    shortcutId = "s_governor_curves_lua_a8f9b2b504",
+                },
+            },
+            scriptPrefix = "governor/tools/",
+            title = "@i18n(app.modules.governor.name)@",
         },
         mixer = {
-            title = "@i18n(app.modules.mixer.name)@",
-            scriptPrefix = "mixer/tools/",
+            hooksScript = "app/modules/mixer/menu_hooks.lua",
             iconPrefix = "app/modules/mixer/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "setup", showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            hooksScript = "app/modules/mixer/menu_hooks.lua",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+                showProgress = true,
+            },
             pages = {
-                {name = "@i18n(app.modules.mixer.swash)@", script = "swash.lua", image = "swash.png", apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.mixer.swash)@", script = "swash_legacy.lua", image = "swash.png", apiversionlt = {12, 0, 9}},
-                {name = "@i18n(app.modules.mixer.geometry)@", script = "swashgeometry.lua", image = "geometry.png", apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.mixer.tail)@", script = "tail.lua", image = "tail.png", apiversion = {12, 0, 9}},
-                {name = "@i18n(app.modules.mixer.tail)@", script = "tail_legacy.lua", image = "tail.png", apiversionlt = {12, 0, 9}},
-                {name = "@i18n(app.modules.mixer.trims)@", script = "trims.lua", image = "trims.png"}
-            }
+                {
+                    apiversion = { 12, 0, 9 },
+                    image = "swash.png",
+                    name = "@i18n(app.modules.mixer.swash)@",
+                    script = "swash.lua",
+                    shortcutId = "s_mixer_swash_lua_219836e7bb",
+                },
+                {
+                    apiversionlt = { 12, 0, 9 },
+                    image = "swash.png",
+                    name = "@i18n(app.modules.mixer.swash)@",
+                    script = "swash_legacy.lua",
+                    shortcutId = "s_mixer_swash_legacy_lua_c1fdc218f2",
+                },
+                {
+                    apiversion = { 12, 0, 9 },
+                    image = "geometry.png",
+                    name = "@i18n(app.modules.mixer.geometry)@",
+                    script = "swashgeometry.lua",
+                    shortcutId = "s_mixer_swashgeometry_lua_2b19036cb9",
+                },
+                {
+                    apiversion = { 12, 0, 9 },
+                    image = "tail.png",
+                    name = "@i18n(app.modules.mixer.tail)@",
+                    script = "tail.lua",
+                    shortcutId = "s_mixer_tail_lua_4dae4bbc4e",
+                },
+                {
+                    apiversionlt = { 12, 0, 9 },
+                    image = "tail.png",
+                    name = "@i18n(app.modules.mixer.tail)@",
+                    script = "tail_legacy.lua",
+                    shortcutId = "s_mixer_tail_legacy_lua_af252b8ccf",
+                },
+                {
+                    image = "trims.png",
+                    name = "@i18n(app.modules.mixer.trims)@",
+                    script = "trims.lua",
+                    shortcutId = "s_mixer_trims_lua_89bbcb71cc",
+                },
+            },
+            scriptPrefix = "mixer/tools/",
+            title = "@i18n(app.modules.mixer.name)@",
         },
-        servos_type = {
-            moduleKey = "servos_type",
-            title = "@i18n(app.modules.servos.name)@",
-            scriptPrefix = "servos/tools/",
-            iconPrefix = "app/modules/servos/gfx/",
-            loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "setup", showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            hooksScript = "app/modules/servos/menu_hooks.lua",
+        power = {
+            iconPrefix = "app/modules/power/gfx/",
+            loaderSpeed = 0.08,
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+            },
             pages = {
-                {name = "@i18n(app.modules.servos.pwm)@", script = "pwm.lua", image = "pwm.png"},
-                {name = "@i18n(app.modules.servos.bus)@", script = "bus.lua", image = "bus.png"}
-            }
+                {
+                    image = "battery.png",
+                    name = "@i18n(app.modules.power.battery_name)@",
+                    script = "battery.lua",
+                    shortcutId = "s_power_battery_lua_5a48ba2cab",
+                },
+                {
+                    image = "alerts.png",
+                    name = "@i18n(app.modules.power.alert_name)@",
+                    script = "alerts.lua",
+                    shortcutId = "s_power_alerts_lua_9fd7dbdc4d",
+                },
+                {
+                    image = "source.png",
+                    name = "@i18n(app.modules.power.source_name)@",
+                    script = "source.lua",
+                    shortcutId = "s_power_source_lua_6d24f8cd57",
+                },
+            },
+            scriptPrefix = "power/tools/",
+            title = "@i18n(app.modules.power.name)@",
+        },
+        powertrain_menu = {
+            iconPrefix = "app/modules/",
+            loaderSpeed = "FAST",
+            navOptions = {
+                defaultSection = "setup",
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "esc_motors/esc.png",
+                    loaderspeed = 0.08,
+                    menuId = "esc_motors",
+                    name = "@i18n(app.modules.esc_motors.name)@",
+                    order = 1,
+                    shortcutId = "s_powertrain_menu_esc_motors_6639b6eefb",
+                },
+                {
+                    image = "power/power.png",
+                    menuId = "power",
+                    name = "@i18n(app.modules.power.name)@",
+                    order = 2,
+                    shortcutId = "s_powertrain_menu_power_a0e4c1acee",
+                },
+                {
+                    image = "governor/governor.png",
+                    name = "@i18n(app.modules.governor.name)@",
+                    order = 3,
+                    script = "governor/governor.lua",
+                    script_by_mspversion = {
+                        {
+                            op = ">=",
+                            script = "governor/governor.lua",
+                            ver = { 12, 0, 9 },
+                        },
+                        {
+                            op = "<",
+                            script = "governor/governor_legacy.lua",
+                            ver = { 12, 0, 9 },
+                        },
+                    },
+                    script_default = "governor/governor_legacy.lua",
+                    shortcutId = "s_powertrain_menu_governor_governor_lu_a4e4eaa2cc",
+                },
+                {
+                    image = "esc_tools/esc.png",
+                    name = "@i18n(app.modules.esc_tools.name)@",
+                    offline = false,
+                    order = 4,
+                    script = "esc_tools/tools/esc.lua",
+                    shortcutId = "s_powertrain_menu_esc_tools_tools_esc_0ded099fe9",
+                },
+            },
+            scriptPrefix = "app/modules/",
+            title = "@i18n(app.modules.power.name)@",
+        },
+        profile_governor = {
+            hooksScript = "app/modules/profile_governor/menu_hooks.lua",
+            iconPrefix = "app/modules/governor/gfx/",
+            loaderSpeed = "DEFAULT",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "general.png",
+                    name = "@i18n(app.modules.governor.menu_general)@",
+                    script = "general.lua",
+                    shortcutId = "s_profile_governor_general_lua_3a27cf6764",
+                },
+                {
+                    image = "flags.png",
+                    name = "@i18n(app.modules.governor.menu_flags)@",
+                    script = "flags.lua",
+                    shortcutId = "s_profile_governor_flags_lua_3992e9f64d",
+                },
+            },
+            scriptPrefix = "profile_governor/tools/",
+            title = "@i18n(app.modules.profile_governor.name)@",
         },
         rates_advanced = {
-            title = "@i18n(app.modules.rates_advanced.name)@",
-            scriptPrefix = "rates_advanced/tools/",
+            hooksScript = "app/modules/rates_advanced/menu_hooks.lua",
             iconPrefix = "app/modules/rates_advanced/gfx/",
             loaderSpeed = "DEFAULT",
-            navOptions = {defaultSection = "flight_tuning", showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            hooksScript = "app/modules/rates_advanced/menu_hooks.lua",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "flight_tuning",
+                showProgress = true,
+            },
             pages = {
-                {name = "@i18n(app.modules.rates_advanced.advanced)@", script = "advanced.lua", image = "advanced.png"},
-                {name = "@i18n(app.modules.rates_advanced.table)@", script = "table.lua", image = "table.png"}
-            }
+                {
+                    image = "advanced.png",
+                    name = "@i18n(app.modules.rates_advanced.advanced)@",
+                    script = "advanced.lua",
+                    shortcutId = "s_rates_advanced_advanced_lua_5673f8caee",
+                },
+                {
+                    image = "table.png",
+                    name = "@i18n(app.modules.rates_advanced.table)@",
+                    script = "table.lua",
+                    shortcutId = "s_rates_advanced_table_lua_7e2b9c5584",
+                },
+            },
+            scriptPrefix = "rates_advanced/tools/",
+            title = "@i18n(app.modules.rates_advanced.name)@",
+        },
+        safety_menu = {
+            iconPrefix = "app/modules/",
+            loaderSpeed = "FAST",
+            navOptions = {
+                defaultSection = "setup",
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "modes/modes.png",
+                    loaderspeed = 0.05,
+                    name = "@i18n(app.modules.modes.name)@",
+                    order = 1,
+                    script = "modes/modes.lua",
+                    shortcutId = "s_safety_menu_modes_modes_lua_4bfa50db9c",
+                },
+                {
+                    image = "adjustments/adjustments.png",
+                    loaderspeed = 0.1,
+                    name = "@i18n(app.modules.adjustments.name)@",
+                    order = 2,
+                    script = "adjustments/adjustments.lua",
+                    shortcutId = "s_safety_menu_adjustments_adjustments_1aa898354c",
+                },
+                {
+                    image = "failsafe/failsafe.png",
+                    name = "@i18n(app.modules.failsafe.name)@",
+                    order = 3,
+                    script = "failsafe/failsafe.lua",
+                    shortcutId = "s_safety_menu_failsafe_failsafe_lua_5033612baf",
+                },
+                {
+                    image = "beepers/beepers.png",
+                    menuId = "beepers",
+                    name = "@i18n(app.modules.beepers.name)@",
+                    order = 4,
+                    shortcutId = "s_safety_menu_beepers_7440548a09",
+                },
+                {
+                    image = "blackbox/blackbox.png",
+                    menuId = "blackbox",
+                    name = "@i18n(app.modules.blackbox.name)@",
+                    order = 5,
+                    shortcutId = "s_safety_menu_blackbox_91e70d8f9f",
+                },
+                {
+                    image = "stats/stats.png",
+                    name = "@i18n(app.modules.stats.name)@",
+                    order = 6,
+                    script = "stats/stats.lua",
+                    shortcutId = "s_safety_menu_stats_stats_lua_6e4a1dfd3e",
+                },
+            },
+            scriptPrefix = "app/modules/",
+            title = "@i18n(app.menu_section_controls)@",
+        },
+        servos_type = {
+            hooksScript = "app/modules/servos/menu_hooks.lua",
+            iconPrefix = "app/modules/servos/gfx/",
+            loaderSpeed = "DEFAULT",
+            moduleKey = "servos_type",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "setup",
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "pwm.png",
+                    name = "@i18n(app.modules.servos.pwm)@",
+                    script = "pwm.lua",
+                    shortcutId = "s_servos_type_pwm_lua_401567fa69",
+                },
+                {
+                    image = "bus.png",
+                    name = "@i18n(app.modules.servos.bus)@",
+                    script = "bus.lua",
+                    shortcutId = "s_servos_type_bus_lua_a5236c586f",
+                },
+            },
+            scriptPrefix = "servos/tools/",
+            title = "@i18n(app.modules.servos.name)@",
         },
         settings_admin = {
-            title = "@i18n(app.modules.settings.name)@",
-            scriptPrefix = "settings/tools/",
             iconPrefix = "app/modules/settings/gfx/",
             loaderSpeed = 0.08,
-            navOptions = {defaultSection = "system", showProgress = true},
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "system",
+                showProgress = true,
+            },
             pages = {
-                {name = "@i18n(app.modules.settings.txt_general)@", script = "general.lua", image = "general.png", offline = true},
-                {name = "@i18n(app.modules.settings.shortcuts)@", script = "shortcuts.lua", image = "shortcuts.png", offline = true},
-                {name = "@i18n(app.modules.settings.dashboard)@", script = "dashboard.lua", image = "dashboard.png", offline = true},
-                {name = "@i18n(app.modules.settings.localizations)@", script = "localizations.lua", image = "localizations.png", offline = true},
-                {name = "@i18n(app.modules.settings.audio)@", script = "audio.lua", image = "audio.png", offline = true}
-            }
+                {
+                    image = "general.png",
+                    name = "@i18n(app.modules.settings.txt_general)@",
+                    offline = true,
+                    script = "general.lua",
+                    shortcutId = "s_settings_admin_general_lua_691c0a78d1",
+                },
+                {
+                    image = "shortcuts.png",
+                    name = "@i18n(app.modules.settings.shortcuts)@",
+                    offline = true,
+                    script = "shortcuts.lua",
+                    shortcutId = "s_settings_admin_shortcuts_lua_54646c39b7",
+                },
+                {
+                    image = "dashboard.png",
+                    name = "@i18n(app.modules.settings.dashboard)@",
+                    offline = true,
+                    script = "dashboard.lua",
+                    shortcutId = "s_settings_admin_dashboard_lua_8ec1a45c22",
+                },
+                {
+                    image = "localizations.png",
+                    name = "@i18n(app.modules.settings.localizations)@",
+                    offline = true,
+                    script = "localizations.lua",
+                    shortcutId = "s_settings_admin_localizations_lua_bd79bdf42b",
+                },
+                {
+                    image = "audio.png",
+                    name = "@i18n(app.modules.settings.audio)@",
+                    offline = true,
+                    script = "audio.lua",
+                    shortcutId = "s_settings_admin_audio_lua_dee81cdc52",
+                },
+            },
+            scriptPrefix = "settings/tools/",
+            title = "@i18n(app.modules.settings.name)@",
         },
         settings_dashboard = {
-            moduleKey = "settings_dashboard",
-            title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@",
-            scriptPrefix = "settings/tools/",
-            iconPrefix = "app/modules/settings/gfx/",
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            navOptions = {defaultSection = "system", showProgress = true},
             hooksScript = "app/modules/settings/tools/dashboard_hooks.lua",
+            iconPrefix = "app/modules/settings/gfx/",
+            moduleKey = "settings_dashboard",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "system",
+                showProgress = true,
+            },
             pages = {
-                {name = "@i18n(app.modules.settings.dashboard_theme)@", script = "dashboard_theme.lua", image = "dashboard_theme.png", offline = true},
-                {name = "@i18n(app.modules.settings.dashboard_settings)@", script = "dashboard_settings.lua", image = "dashboard_settings.png", offline = false}
-            }
+                {
+                    image = "dashboard_theme.png",
+                    name = "@i18n(app.modules.settings.dashboard_theme)@",
+                    offline = true,
+                    script = "dashboard_theme.lua",
+                    shortcutId = "s_settings_dashboard_dashboard_theme_l_356eb135bd",
+                },
+                {
+                    image = "dashboard_settings.png",
+                    name = "@i18n(app.modules.settings.dashboard_settings)@",
+                    offline = false,
+                    script = "dashboard_settings.lua",
+                    shortcutId = "s_settings_dashboard_dashboard_setting_46c08bc7ee",
+                },
+            },
+            scriptPrefix = "settings/tools/",
+            title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@",
         },
         settings_dashboard_audio = {
-            moduleKey = "settings_dashboard_audio",
-            title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@",
-            scriptPrefix = "settings/tools/",
             iconPrefix = "app/modules/settings/gfx/",
-            navButtons = {menu = true, save = false, reload = false, tool = false, help = false},
-            navOptions = {defaultSection = "system", showProgress = true},
+            moduleKey = "settings_dashboard_audio",
+            navButtons = {
+                help = false,
+                menu = true,
+                reload = false,
+                save = false,
+                tool = false,
+            },
+            navOptions = {
+                defaultSection = "system",
+                showProgress = true,
+            },
             pages = {
-                {name = "@i18n(app.modules.settings.txt_audio_events)@", script = "audio_events.lua", image = "audio_events.png", offline = true},
-                {name = "@i18n(app.modules.settings.txt_audio_switches)@", script = "audio_switches.lua", image = "audio_switches.png", offline = true},
-                {name = "@i18n(app.modules.settings.txt_audio_timer)@", script = "audio_timer.lua", image = "audio_timer.png", offline = true}
-            }
-        }
-    }
+                {
+                    image = "audio_events.png",
+                    name = "@i18n(app.modules.settings.txt_audio_events)@",
+                    offline = true,
+                    script = "audio_events.lua",
+                    shortcutId = "s_settings_dashboard_audio_audio_event_363fb08408",
+                },
+                {
+                    image = "audio_switches.png",
+                    name = "@i18n(app.modules.settings.txt_audio_switches)@",
+                    offline = true,
+                    script = "audio_switches.lua",
+                    shortcutId = "s_settings_dashboard_audio_audio_switc_79dcc8350e",
+                },
+                {
+                    image = "audio_timer.png",
+                    name = "@i18n(app.modules.settings.txt_audio_timer)@",
+                    offline = true,
+                    script = "audio_timer.lua",
+                    shortcutId = "s_settings_dashboard_audio_audio_timer_881a61d3fd",
+                },
+            },
+            scriptPrefix = "settings/tools/",
+            title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@",
+        },
+        setup_menu = {
+            iconPrefix = "app/modules/",
+            loaderSpeed = "FAST",
+            navOptions = {
+                showProgress = true,
+            },
+            pages = {
+                {
+                    image = "configuration/configuration.png",
+                    loaderspeed = 0.08,
+                    name = "@i18n(app.modules.configuration.name)@",
+                    order = 1,
+                    script = "configuration/configuration.lua",
+                    shortcutId = "s_setup_menu_configuration_configurati_fd32dd8698",
+                },
+                {
+                    image = "radio_config/radio_config.png",
+                    name = "@i18n(app.modules.radio_config.name)@",
+                    order = 2,
+                    script = "radio_config/radio_config.lua",
+                    shortcutId = "s_setup_menu_radio_config_radio_config_176a7167bd",
+                },
+                {
+                    image = "telemetry/telemetry.png",
+                    name = "@i18n(app.modules.telemetry.name)@",
+                    order = 3,
+                    script = "telemetry/telemetry.lua",
+                    shortcutId = "s_setup_menu_telemetry_telemetry_lua_72f812703b",
+                },
+                {
+                    image = "accelerometer/acc.png",
+                    loaderspeed = 0.08,
+                    name = "@i18n(app.modules.accelerometer.name)@",
+                    order = 4,
+                    script = "accelerometer/accelerometer.lua",
+                    shortcutId = "s_setup_menu_accelerometer_acceleromet_1e39c3bf97",
+                },
+                {
+                    image = "alignment/alignment.png",
+                    loaderspeed = 0.08,
+                    name = "@i18n(app.modules.alignment.name)@",
+                    order = 5,
+                    script = "alignment/alignment.lua",
+                    shortcutId = "s_setup_menu_alignment_alignment_lua_58dbca14ba",
+                },
+                {
+                    image = "ports/ports.png",
+                    name = "@i18n(app.modules.ports.name)@",
+                    order = 6,
+                    script = "ports/ports.lua",
+                    shortcutId = "s_setup_menu_ports_ports_lua_0511c48eaf",
+                },
+                {
+                    image = "mixer/mixer.png",
+                    loaderspeed = 0.08,
+                    menuId = "mixer",
+                    name = "@i18n(app.modules.mixer.name)@",
+                    order = 7,
+                    shortcutId = "s_setup_menu_mixer_f568f6ed70",
+                },
+                {
+                    image = "servos/servos.png",
+                    loaderspeed = 0.08,
+                    menuId = "servos_type",
+                    name = "@i18n(app.modules.servos.name)@",
+                    order = 8,
+                    shortcutId = "s_setup_menu_servos_type_065c3eb7e4",
+                },
+                {
+                    image = "failsafe/failsafe.png",
+                    menuId = "safety_menu",
+                    name = "@i18n(app.menu_section_controls)@",
+                    order = 9,
+                    shortcutId = "s_setup_menu_safety_menu_f14794af21",
+                },
+                {
+                    image = "esc_motors/esc.png",
+                    menuId = "powertrain_menu",
+                    name = "@i18n(app.modules.esc_motors.name)@",
+                    order = 10,
+                    shortcutId = "s_setup_menu_powertrain_menu_118d5c7022",
+                },
+            },
+            scriptPrefix = "app/modules/",
+            title = "@i18n(app.modules.hardware_setup.name)@",
+        },
+        tools_menu = {
+            iconPrefix = "app/modules/",
+            navOptions = {
+                defaultSection = "system",
+                showProgress = true,
+            },
+            pages = {
+                {
+                    apiversion = { 12, 0, 6 },
+                    disabled = true,
+                    image = "copyprofiles/copy.png",
+                    name = "@i18n(app.modules.copyprofiles.name)@",
+                    offline = false,
+                    order = 1,
+                    script = "copyprofiles/copyprofiles.lua",
+                    shortcutId = "s_tools_menu_copyprofiles_copyprofiles_020f84c51f",
+                },
+                {
+                    apiversion = { 12, 0, 6 },
+                    image = "profile_select/select_profile.png",
+                    name = "@i18n(app.modules.profile_select.name)@",
+                    offline = false,
+                    order = 2,
+                    script = "profile_select/select_profile.lua",
+                    shortcutId = "s_tools_menu_profile_select_select_pro_b62834ef6e",
+                },
+                {
+                    image = "diagnostics/diagnostics.png",
+                    menuId = "diagnostics",
+                    name = "@i18n(app.modules.diagnostics.name)@",
+                    offline = true,
+                    order = 3,
+                    shortcutId = "s_tools_menu_diagnostics_7095acfa6e",
+                },
+            },
+            scriptPrefix = "app/modules/",
+            title = "@i18n(app.menu_section_tools)@",
+        },
+    },
 }

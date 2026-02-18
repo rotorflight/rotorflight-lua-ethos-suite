@@ -1,0 +1,1124 @@
+{
+  "sections": [
+    {
+      "id": "configuration",
+      "sections": [
+        {
+          "ethosversion": [
+            1,
+            6,
+            2
+          ],
+          "id": "flight_tuning",
+          "image": "app/gfx/flight_tuning.png",
+          "loaderspeed": "FAST",
+          "menuId": "flight_tuning_menu",
+          "title": "Flight Tuning",
+          "translation": "@i18n(app.menu_section_flight_tuning)@"
+        },
+        {
+          "ethosversion": [
+            1,
+            6,
+            2
+          ],
+          "id": "setup",
+          "image": "app/gfx/hardware.png",
+          "loaderspeed": "FAST",
+          "menuId": "setup_menu",
+          "title": "Setup",
+          "translation": "@i18n(app.modules.hardware_setup.name)@"
+        }
+      ],
+      "title": "Configuration",
+      "translation": "@i18n(app.header_configuration)@"
+    },
+    {
+      "id": "system",
+      "sections": [
+        {
+          "ethosversion": [
+            1,
+            6,
+            2
+          ],
+          "image": "app/gfx/tools.png",
+          "menuId": "tools_menu",
+          "offline": true,
+          "title": "Tools",
+          "translation": "@i18n(app.menu_section_tools)@"
+        },
+        {
+          "ethosversion": [
+            1,
+            6,
+            2
+          ],
+          "image": "app/modules/logs/gfx/logs.png",
+          "loaderspeed": "FAST",
+          "module": "logs",
+          "offline": true,
+          "script": "logs_dir.lua",
+          "title": "Logs",
+          "translation": "@i18n(app.modules.logs.name)@"
+        },
+        {
+          "ethosversion": [
+            1,
+            6,
+            2
+          ],
+          "image": "app/modules/settings/settings.png",
+          "menuId": "settings_admin",
+          "offline": true,
+          "title": "Settings",
+          "translation": "@i18n(app.modules.settings.name)@"
+        },
+        {
+          "bgtask": true,
+          "developer": true,
+          "ethosversion": [
+            1,
+            6,
+            2
+          ],
+          "image": "app/modules/developer/developer.png",
+          "module": "developer",
+          "offline": true,
+          "script": "developer.lua",
+          "title": "Developer",
+          "translation": "@i18n(app.modules.settings.txt_developer)@"
+        }
+      ],
+      "title": "System",
+      "translation": "@i18n(app.header_system)@"
+    }
+  ],
+  "menus": {
+    "advanced_menu": {
+      "iconPrefix": "app/modules/",
+      "loaderSpeed": "FAST",
+      "navOptions": {
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "filters/filters.png",
+          "name": "Filters",
+          "order": 1,
+          "script": "filters/filters.lua",
+          "translation": "@i18n(app.modules.filters.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_pidcontroller/pids-controller.png",
+          "name": "PID Controller",
+          "order": 2,
+          "script": "profile_pidcontroller/pidcontroller.lua",
+          "translation": "@i18n(app.modules.profile_pidcontroller.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_pidbandwidth/pids-bandwidth.png",
+          "name": "PID Bandwidth",
+          "order": 3,
+          "script": "profile_pidbandwidth/pidbandwidth.lua",
+          "translation": "@i18n(app.modules.profile_pidbandwidth.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_autolevel/autolevel.png",
+          "name": "Autolevel",
+          "order": 4,
+          "script": "profile_autolevel/autolevel.lua",
+          "translation": "@i18n(app.modules.profile_autolevel.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_mainrotor/mainrotor.png",
+          "name": "Main Rotor",
+          "order": 5,
+          "script": "profile_mainrotor/mainrotor.lua",
+          "translation": "@i18n(app.modules.profile_mainrotor.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_tailrotor/tailrotor.png",
+          "name": "Tail Rotor",
+          "order": 6,
+          "script": "profile_tailrotor/tailrotor.lua",
+          "translation": "@i18n(app.modules.profile_tailrotor.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_rescue/rescue.png",
+          "name": "Rescue",
+          "order": 7,
+          "script": "profile_rescue/rescue.lua",
+          "translation": "@i18n(app.modules.profile_rescue.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "rates_advanced/rates.png",
+          "name": "Rates",
+          "order": 8,
+          "script": "rates_advanced/rates_advanced.lua",
+          "translation": "@i18n(app.modules.rates_advanced.name)@"
+        }
+      ],
+      "scriptPrefix": "app/modules/",
+      "title": "Advanced",
+      "translation": "@i18n(app.menu_section_advanced)@"
+    },
+    "beepers": {
+      "hooksScript": "app/modules/beepers/menu_hooks.lua",
+      "iconPrefix": "app/modules/beepers/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "navButtons": {
+        "help": true,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup"
+      },
+      "pages": [
+        {
+          "image": "configuration.png",
+          "name": "Configuration",
+          "script": "configuration.lua",
+          "translation": "@i18n(app.modules.beepers.menu_configuration)@"
+        },
+        {
+          "image": "dshot.png",
+          "name": "ESC Beacon",
+          "script": "dshot.lua",
+          "translation": "@i18n(app.modules.beepers.menu_dshot)@"
+        }
+      ],
+      "scriptPrefix": "beepers/tools/",
+      "title": "Beepers",
+      "translation": "@i18n(app.modules.beepers.name)@"
+    },
+    "blackbox": {
+      "hooksScript": "app/modules/blackbox/menu_hooks.lua",
+      "iconPrefix": "app/modules/blackbox/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "navButtons": {
+        "help": true,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup"
+      },
+      "pages": [
+        {
+          "image": "configuration.png",
+          "name": "Configuration",
+          "script": "configuration.lua",
+          "translation": "@i18n(app.modules.blackbox.menu_configuration)@"
+        },
+        {
+          "image": "logging.png",
+          "name": "Logging",
+          "script": "logging.lua",
+          "translation": "@i18n(app.modules.blackbox.menu_logging)@"
+        },
+        {
+          "image": "status.png",
+          "name": "Status",
+          "script": "status.lua",
+          "translation": "@i18n(app.modules.blackbox.menu_status)@"
+        },
+        {
+          "name": "New Page",
+          "translation": "@i18n(app.modules.new.name)@",
+          "script": "new/new.lua",
+          "image": "new/new.png"
+        }
+      ],
+      "scriptPrefix": "blackbox/tools/",
+      "title": "Blackbox",
+      "translation": "@i18n(app.modules.blackbox.name)@"
+    },
+    "developer": {
+      "childTitlePrefix": "@i18n(app.modules.settings.txt_developer)@",
+      "loaderSpeed": 0.08,
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "pages": [
+        {
+          "bgtask": true,
+          "image": "app/modules/developer/gfx/msp_speed.png",
+          "name": "MSP Speed",
+          "offline": false,
+          "script": "developer/tools/msp_speed.lua",
+          "translation": "@i18n(app.modules.msp_speed.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "app/modules/developer/gfx/api_tester.png",
+          "name": "API Tester",
+          "offline": false,
+          "script": "developer/tools/api_tester.lua",
+          "translation": "@i18n(app.modules.api_tester.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "app/modules/developer/gfx/msp_exp.png",
+          "name": "MSP Expermental",
+          "offline": false,
+          "script": "developer/tools/msp_exp.lua",
+          "translation": "@i18n(app.modules.msp_exp.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "app/modules/developer/gfx/settings.png",
+          "name": "Settings",
+          "offline": true,
+          "script": "settings/tools/development.lua",
+          "translation": "@i18n(app.modules.settings.name)@"
+        }
+      ],
+      "title": "Developer",
+      "translation": "@i18n(app.modules.settings.txt_developer)@"
+    },
+    "diagnostics": {
+      "iconPrefix": "app/modules/diagnostics/gfx/",
+      "loaderSpeed": 0.08,
+      "navOptions": {
+        "defaultSection": "system"
+      },
+      "pages": [
+        {
+          "bgtask": false,
+          "image": "rfstatus.png",
+          "name": "Status",
+          "offline": false,
+          "script": "rfstatus.lua",
+          "translation": "@i18n(app.modules.rfstatus.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "sensors.png",
+          "name": "Sensors",
+          "offline": true,
+          "script": "sensors.lua",
+          "translation": "@i18n(app.modules.validate_sensors.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "fblsensors.png",
+          "name": "FBL Sensors",
+          "offline": false,
+          "script": "fblsensors.lua",
+          "translation": "@i18n(app.modules.fblsensors.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "fblstatus.png",
+          "name": "FBL Status",
+          "offline": false,
+          "script": "fblstatus.lua",
+          "translation": "@i18n(app.modules.fblstatus.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "info.png",
+          "name": "Info",
+          "offline": true,
+          "script": "info.lua",
+          "translation": "@i18n(app.modules.info.name)@"
+        }
+      ],
+      "scriptPrefix": "diagnostics/tools/",
+      "title": "Diagnostics",
+      "translation": "@i18n(app.modules.diagnostics.name)@"
+    },
+    "esc_motors": {
+      "hooksScript": "app/modules/esc_motors/menu_hooks.lua",
+      "iconPrefix": "app/modules/esc_motors/gfx/",
+      "loaderSpeed": 0.08,
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "throttle.png",
+          "name": "Throttle",
+          "script": "throttle.lua",
+          "translation": "@i18n(app.modules.esc_motors.throttle)@"
+        },
+        {
+          "image": "telemetry.png",
+          "name": "Telemetry",
+          "script": "telemetry.lua",
+          "translation": "@i18n(app.modules.esc_motors.telemetry)@"
+        },
+        {
+          "image": "rpm.png",
+          "name": "RPM",
+          "script": "rpm.lua",
+          "translation": "@i18n(app.modules.esc_motors.rpm)@"
+        }
+      ],
+      "scriptPrefix": "esc_motors/tools/",
+      "title": "ESC & Motors",
+      "translation": "@i18n(app.modules.esc_motors.name)@"
+    },
+    "flight_tuning_menu": {
+      "iconPrefix": "app/modules/",
+      "loaderSpeed": "DEFAULT",
+      "navOptions": {
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "pids/pids.png",
+          "name": "PIDs",
+          "order": 1,
+          "script": "pids/pids.lua",
+          "translation": "@i18n(app.modules.pids.name)@"
+        },
+        {
+          "image": "rates/rates.png",
+          "name": "Rates",
+          "order": 2,
+          "script": "rates/rates.lua",
+          "translation": "@i18n(app.modules.rates.name)@"
+        },
+        {
+          "image": "profile_governor/governor.png",
+          "name": "Governor",
+          "order": 3,
+          "script": "profile_governor/governor.lua",
+          "script_by_mspversion": [
+            {
+              "op": ">=",
+              "script": "profile_governor/governor.lua",
+              "ver": [
+                12,
+                0,
+                9
+              ]
+            },
+            {
+              "op": "<",
+              "script": "profile_governor/governor_legacy.lua",
+              "ver": [
+                12,
+                0,
+                9
+              ]
+            }
+          ],
+          "script_default": "profile_governor/governor_legacy.lua",
+          "translation": "@i18n(app.modules.profile_governor.name)@"
+        },
+        {
+          "image": "app/gfx/advanced.png",
+          "menuId": "advanced_menu",
+          "name": "Advanced",
+          "order": 4,
+          "translation": "@i18n(app.menu_section_advanced)@"
+        }
+      ],
+      "scriptPrefix": "app/modules/",
+      "title": "Flight Tuning",
+      "translation": "@i18n(app.menu_section_flight_tuning)@"
+    },
+    "governor": {
+      "hooksScript": "app/modules/governor/menu_hooks.lua",
+      "iconPrefix": "app/modules/governor/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "general.png",
+          "name": "General",
+          "script": "general.lua",
+          "translation": "@i18n(app.modules.governor.menu_general)@"
+        },
+        {
+          "image": "time.png",
+          "name": "Ramp Time",
+          "script": "time.lua",
+          "translation": "@i18n(app.modules.governor.menu_time)@"
+        },
+        {
+          "image": "filters.png",
+          "name": "Filters",
+          "script": "filters.lua",
+          "translation": "@i18n(app.modules.governor.menu_filters)@"
+        },
+        {
+          "image": "curves.png",
+          "name": "Bypass Curve",
+          "script": "curves.lua",
+          "translation": "@i18n(app.modules.governor.menu_curves)@"
+        }
+      ],
+      "scriptPrefix": "governor/tools/",
+      "title": "Governor",
+      "translation": "@i18n(app.modules.governor.name)@"
+    },
+    "mixer": {
+      "hooksScript": "app/modules/mixer/menu_hooks.lua",
+      "iconPrefix": "app/modules/mixer/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "apiversion": [
+            12,
+            0,
+            9
+          ],
+          "image": "swash.png",
+          "name": "Swash",
+          "script": "swash.lua",
+          "translation": "@i18n(app.modules.mixer.swash)@"
+        },
+        {
+          "apiversionlt": [
+            12,
+            0,
+            9
+          ],
+          "image": "swash.png",
+          "name": "Swash",
+          "script": "swash_legacy.lua",
+          "translation": "@i18n(app.modules.mixer.swash)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            9
+          ],
+          "image": "geometry.png",
+          "name": "Geometry",
+          "script": "swashgeometry.lua",
+          "translation": "@i18n(app.modules.mixer.geometry)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            9
+          ],
+          "image": "tail.png",
+          "name": "Tail",
+          "script": "tail.lua",
+          "translation": "@i18n(app.modules.mixer.tail)@"
+        },
+        {
+          "apiversionlt": [
+            12,
+            0,
+            9
+          ],
+          "image": "tail.png",
+          "name": "Tail",
+          "script": "tail_legacy.lua",
+          "translation": "@i18n(app.modules.mixer.tail)@"
+        },
+        {
+          "image": "trims.png",
+          "name": "Trims",
+          "script": "trims.lua",
+          "translation": "@i18n(app.modules.mixer.trims)@"
+        }
+      ],
+      "scriptPrefix": "mixer/tools/",
+      "title": "Mixer",
+      "translation": "@i18n(app.modules.mixer.name)@"
+    },
+    "power": {
+      "iconPrefix": "app/modules/power/gfx/",
+      "loaderSpeed": 0.08,
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup"
+      },
+      "pages": [
+        {
+          "image": "battery.png",
+          "name": "Battery",
+          "script": "battery.lua",
+          "translation": "@i18n(app.modules.power.battery_name)@"
+        },
+        {
+          "image": "alerts.png",
+          "name": "Alerts",
+          "script": "alerts.lua",
+          "translation": "@i18n(app.modules.power.alert_name)@"
+        },
+        {
+          "image": "source.png",
+          "name": "Sources",
+          "script": "source.lua",
+          "translation": "@i18n(app.modules.power.source_name)@"
+        }
+      ],
+      "scriptPrefix": "power/tools/",
+      "title": "Power",
+      "translation": "@i18n(app.modules.power.name)@"
+    },
+    "powertrain_menu": {
+      "iconPrefix": "app/modules/",
+      "loaderSpeed": "FAST",
+      "navOptions": {
+        "defaultSection": "setup",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "esc_motors/esc.png",
+          "loaderspeed": 0.08,
+          "menuId": "esc_motors",
+          "name": "ESC & Motors",
+          "order": 1,
+          "translation": "@i18n(app.modules.esc_motors.name)@"
+        },
+        {
+          "image": "power/power.png",
+          "menuId": "power",
+          "name": "Power",
+          "order": 2,
+          "translation": "@i18n(app.modules.power.name)@"
+        },
+        {
+          "image": "governor/governor.png",
+          "name": "Governor",
+          "order": 3,
+          "script": "governor/governor.lua",
+          "script_by_mspversion": [
+            {
+              "op": ">=",
+              "script": "governor/governor.lua",
+              "ver": [
+                12,
+                0,
+                9
+              ]
+            },
+            {
+              "op": "<",
+              "script": "governor/governor_legacy.lua",
+              "ver": [
+                12,
+                0,
+                9
+              ]
+            }
+          ],
+          "script_default": "governor/governor_legacy.lua",
+          "translation": "@i18n(app.modules.governor.name)@"
+        },
+        {
+          "image": "esc_tools/esc.png",
+          "name": "Esc Programing",
+          "offline": false,
+          "order": 4,
+          "script": "esc_tools/tools/esc.lua",
+          "translation": "@i18n(app.modules.esc_tools.name)@"
+        }
+      ],
+      "scriptPrefix": "app/modules/",
+      "title": "Power",
+      "translation": "@i18n(app.modules.power.name)@"
+    },
+    "profile_governor": {
+      "hooksScript": "app/modules/profile_governor/menu_hooks.lua",
+      "iconPrefix": "app/modules/governor/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "general.png",
+          "name": "General",
+          "script": "general.lua",
+          "translation": "@i18n(app.modules.governor.menu_general)@"
+        },
+        {
+          "image": "flags.png",
+          "name": "Behaviour",
+          "script": "flags.lua",
+          "translation": "@i18n(app.modules.governor.menu_flags)@"
+        }
+      ],
+      "scriptPrefix": "profile_governor/tools/",
+      "title": "Governor",
+      "translation": "@i18n(app.modules.profile_governor.name)@"
+    },
+    "rates_advanced": {
+      "hooksScript": "app/modules/rates_advanced/menu_hooks.lua",
+      "iconPrefix": "app/modules/rates_advanced/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "flight_tuning",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "advanced.png",
+          "name": "Advanced",
+          "script": "advanced.lua",
+          "translation": "@i18n(app.modules.rates_advanced.advanced)@"
+        },
+        {
+          "image": "table.png",
+          "name": "Rate Table",
+          "script": "table.lua",
+          "translation": "@i18n(app.modules.rates_advanced.table)@"
+        }
+      ],
+      "scriptPrefix": "rates_advanced/tools/",
+      "title": "Rates",
+      "translation": "@i18n(app.modules.rates_advanced.name)@"
+    },
+    "safety_menu": {
+      "iconPrefix": "app/modules/",
+      "loaderSpeed": "FAST",
+      "navOptions": {
+        "defaultSection": "setup",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "modes/modes.png",
+          "loaderspeed": 0.05,
+          "name": "Modes",
+          "order": 1,
+          "script": "modes/modes.lua",
+          "translation": "@i18n(app.modules.modes.name)@"
+        },
+        {
+          "image": "adjustments/adjustments.png",
+          "loaderspeed": 0.1,
+          "name": "Adjustments",
+          "order": 2,
+          "script": "adjustments/adjustments.lua",
+          "translation": "@i18n(app.modules.adjustments.name)@"
+        },
+        {
+          "image": "failsafe/failsafe.png",
+          "name": "Failsafe",
+          "order": 3,
+          "script": "failsafe/failsafe.lua",
+          "translation": "@i18n(app.modules.failsafe.name)@"
+        },
+        {
+          "image": "beepers/beepers.png",
+          "menuId": "beepers",
+          "name": "Beepers",
+          "order": 4,
+          "translation": "@i18n(app.modules.beepers.name)@"
+        },
+        {
+          "image": "blackbox/blackbox.png",
+          "menuId": "blackbox",
+          "name": "Blackbox",
+          "order": 5,
+          "translation": "@i18n(app.modules.blackbox.name)@"
+        },
+        {
+          "image": "stats/stats.png",
+          "name": "Stats",
+          "order": 6,
+          "script": "stats/stats.lua",
+          "translation": "@i18n(app.modules.stats.name)@"
+        }
+      ],
+      "scriptPrefix": "app/modules/",
+      "title": "Controls",
+      "translation": "@i18n(app.menu_section_controls)@"
+    },
+    "servos_type": {
+      "hooksScript": "app/modules/servos/menu_hooks.lua",
+      "iconPrefix": "app/modules/servos/gfx/",
+      "loaderSpeed": "DEFAULT",
+      "moduleKey": "servos_type",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "setup",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "pwm.png",
+          "name": "PWM Output",
+          "script": "pwm.lua",
+          "translation": "@i18n(app.modules.servos.pwm)@"
+        },
+        {
+          "image": "bus.png",
+          "name": "BUS Output",
+          "script": "bus.lua",
+          "translation": "@i18n(app.modules.servos.bus)@"
+        }
+      ],
+      "scriptPrefix": "servos/tools/",
+      "title": "Servos",
+      "translation": "@i18n(app.modules.servos.name)@"
+    },
+    "settings_admin": {
+      "iconPrefix": "app/modules/settings/gfx/",
+      "loaderSpeed": 0.08,
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "system",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "general.png",
+          "name": "General",
+          "offline": true,
+          "script": "general.lua",
+          "translation": "@i18n(app.modules.settings.txt_general)@"
+        },
+        {
+          "image": "shortcuts.png",
+          "name": "Shortcuts",
+          "offline": true,
+          "script": "shortcuts.lua",
+          "translation": "@i18n(app.modules.settings.shortcuts)@"
+        },
+        {
+          "image": "dashboard.png",
+          "name": "Dashboard",
+          "offline": true,
+          "script": "dashboard.lua",
+          "translation": "@i18n(app.modules.settings.dashboard)@"
+        },
+        {
+          "image": "localizations.png",
+          "name": "Localization",
+          "offline": true,
+          "script": "localizations.lua",
+          "translation": "@i18n(app.modules.settings.localizations)@"
+        },
+        {
+          "image": "audio.png",
+          "name": "Audio",
+          "offline": true,
+          "script": "audio.lua",
+          "translation": "@i18n(app.modules.settings.audio)@"
+        }
+      ],
+      "scriptPrefix": "settings/tools/",
+      "title": "Settings",
+      "translation": "@i18n(app.modules.settings.name)@"
+    },
+    "settings_dashboard": {
+      "hooksScript": "app/modules/settings/tools/dashboard_hooks.lua",
+      "iconPrefix": "app/modules/settings/gfx/",
+      "moduleKey": "settings_dashboard",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "system",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "dashboard_theme.png",
+          "name": "Theme",
+          "offline": true,
+          "script": "dashboard_theme.lua",
+          "translation": "@i18n(app.modules.settings.dashboard_theme)@"
+        },
+        {
+          "image": "dashboard_settings.png",
+          "name": "Settings",
+          "offline": false,
+          "script": "dashboard_settings.lua",
+          "translation": "@i18n(app.modules.settings.dashboard_settings)@"
+        }
+      ],
+      "scriptPrefix": "settings/tools/",
+      "title": "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@"
+    },
+    "settings_dashboard_audio": {
+      "iconPrefix": "app/modules/settings/gfx/",
+      "moduleKey": "settings_dashboard_audio",
+      "navButtons": {
+        "help": false,
+        "menu": true,
+        "reload": false,
+        "save": false,
+        "tool": false
+      },
+      "navOptions": {
+        "defaultSection": "system",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "audio_events.png",
+          "name": "Events",
+          "offline": true,
+          "script": "audio_events.lua",
+          "translation": "@i18n(app.modules.settings.txt_audio_events)@"
+        },
+        {
+          "image": "audio_switches.png",
+          "name": "Switches",
+          "offline": true,
+          "script": "audio_switches.lua",
+          "translation": "@i18n(app.modules.settings.txt_audio_switches)@"
+        },
+        {
+          "image": "audio_timer.png",
+          "name": "Timer",
+          "offline": true,
+          "script": "audio_timer.lua",
+          "translation": "@i18n(app.modules.settings.txt_audio_timer)@"
+        }
+      ],
+      "scriptPrefix": "settings/tools/",
+      "title": "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@"
+    },
+    "setup_menu": {
+      "iconPrefix": "app/modules/",
+      "loaderSpeed": "FAST",
+      "navOptions": {
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "image": "configuration/configuration.png",
+          "loaderspeed": 0.08,
+          "name": "Configuration",
+          "order": 1,
+          "script": "configuration/configuration.lua",
+          "translation": "@i18n(app.modules.configuration.name)@"
+        },
+        {
+          "image": "radio_config/radio_config.png",
+          "name": "Radio Config",
+          "order": 2,
+          "script": "radio_config/radio_config.lua",
+          "translation": "@i18n(app.modules.radio_config.name)@"
+        },
+        {
+          "image": "telemetry/telemetry.png",
+          "name": "Telemetry",
+          "order": 3,
+          "script": "telemetry/telemetry.lua",
+          "translation": "@i18n(app.modules.telemetry.name)@"
+        },
+        {
+          "image": "accelerometer/acc.png",
+          "loaderspeed": 0.08,
+          "name": "Accelerometer",
+          "order": 4,
+          "script": "accelerometer/accelerometer.lua",
+          "translation": "@i18n(app.modules.accelerometer.name)@"
+        },
+        {
+          "image": "alignment/alignment.png",
+          "loaderspeed": 0.08,
+          "name": "Alignment",
+          "order": 5,
+          "script": "alignment/alignment.lua",
+          "translation": "@i18n(app.modules.alignment.name)@"
+        },
+        {
+          "image": "ports/ports.png",
+          "name": "Ports",
+          "order": 6,
+          "script": "ports/ports.lua",
+          "translation": "@i18n(app.modules.ports.name)@"
+        },
+        {
+          "image": "mixer/mixer.png",
+          "loaderspeed": 0.08,
+          "menuId": "mixer",
+          "name": "Mixer",
+          "order": 7,
+          "translation": "@i18n(app.modules.mixer.name)@"
+        },
+        {
+          "image": "servos/servos.png",
+          "loaderspeed": 0.08,
+          "menuId": "servos_type",
+          "name": "Servos",
+          "order": 8,
+          "translation": "@i18n(app.modules.servos.name)@"
+        },
+        {
+          "image": "failsafe/failsafe.png",
+          "menuId": "safety_menu",
+          "name": "Controls",
+          "order": 9,
+          "translation": "@i18n(app.menu_section_controls)@"
+        },
+        {
+          "image": "esc_motors/esc.png",
+          "menuId": "powertrain_menu",
+          "name": "ESC & Motors",
+          "order": 10,
+          "translation": "@i18n(app.modules.esc_motors.name)@"
+        }
+      ],
+      "scriptPrefix": "app/modules/",
+      "title": "Setup",
+      "translation": "@i18n(app.modules.hardware_setup.name)@"
+    },
+    "tools_menu": {
+      "iconPrefix": "app/modules/",
+      "navOptions": {
+        "defaultSection": "system",
+        "showProgress": true
+      },
+      "pages": [
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "disabled": true,
+          "image": "copyprofiles/copy.png",
+          "name": "Copy Profiles",
+          "offline": false,
+          "order": 1,
+          "script": "copyprofiles/copyprofiles.lua",
+          "translation": "@i18n(app.modules.copyprofiles.name)@"
+        },
+        {
+          "apiversion": [
+            12,
+            0,
+            6
+          ],
+          "image": "profile_select/select_profile.png",
+          "name": "Select Profile",
+          "offline": false,
+          "order": 2,
+          "script": "profile_select/select_profile.lua",
+          "translation": "@i18n(app.modules.profile_select.name)@"
+        },
+        {
+          "image": "diagnostics/diagnostics.png",
+          "menuId": "diagnostics",
+          "name": "Diagnostics",
+          "offline": true,
+          "order": 3,
+          "translation": "@i18n(app.modules.diagnostics.name)@"
+        }
+      ],
+      "scriptPrefix": "app/modules/",
+      "title": "Tools",
+      "translation": "@i18n(app.menu_section_tools)@"
+    }
+  }
+}

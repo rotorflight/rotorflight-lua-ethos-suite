@@ -1086,7 +1086,10 @@ def run_steps(steps, out_dir, lang="en"):
     """Run all requested steps (if any) for this output directory."""
     if not steps:
         return
-    for step in steps:
+    ordered_steps = list(steps)
+    if "menu" not in ordered_steps:
+        ordered_steps.insert(0, "menu")
+    for step in ordered_steps:
         run_step_script(step, out_dir, lang=lang)
 
 
