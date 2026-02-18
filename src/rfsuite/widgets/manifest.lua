@@ -21,11 +21,11 @@ return {
     type = "widget",    
   },
   [3] = {
-    name = "Rotorflight Engo",
-    script = "engodash.lua",
-    varname = "rfengo",
-    key = "rfengo",
-    folder = "engodash",
+    name = "Rotorflight ActiveLook",
+    script = "activelook.lua",
+    varname = "rfactivelook",
+    key = "rfalk",
+    folder = "activelook",
     type = "glasses",    
   },
 }
