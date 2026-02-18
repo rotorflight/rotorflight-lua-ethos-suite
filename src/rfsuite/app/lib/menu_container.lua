@@ -77,6 +77,9 @@ end
 
 local function titleForChild(cfg, pageTitle, item)
     if cfg.childTitleResolver then return cfg.childTitleResolver(pageTitle, item) end
+    if type(cfg.childTitlePrefix) == "string" and cfg.childTitlePrefix ~= "" then
+        return cfg.childTitlePrefix .. " / " .. (item.name or "")
+    end
     return (pageTitle or "") .. " / " .. (item.name or "")
 end
 

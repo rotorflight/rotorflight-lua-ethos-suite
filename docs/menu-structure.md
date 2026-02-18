@@ -1,6 +1,6 @@
 # Menu Structure
 
-Source: `src/rfsuite/app/modules/manifest.lua` (document rendered from simulator mirror)
+Source: `src/rfsuite/app/modules/manifest.lua` (auto-generated from `bin/menu/manifest.source.json`)
 
 ## Main Menu
 

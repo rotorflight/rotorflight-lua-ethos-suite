@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Verify generated menu manifest
+        run: python bin/menu/generate.py --check
+
       - name: Set build variables (commit-based version)
         id: buildvars
         shell: bash

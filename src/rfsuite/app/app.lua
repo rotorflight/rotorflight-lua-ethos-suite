@@ -12,6 +12,11 @@ local utils = rfsuite.utils
 local log = utils.log
 local compile = loadfile
 local lastNoOpSaveToneAt = 0
+local busyUiTick = 0
+-- Busy cadence: run app tasks on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_UI_RUN_NUM = 2
+local BUSY_UI_RUN_DEN = 3
 
 local function playNoOpSaveTone()
     local now = os.clock()
@@ -44,6 +49,7 @@ end
 function app.wakeup_protected()
     app.guiIsRunning = true
 
+    -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
     if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
         local ok, err = pcall(app.ui.openMainMenu)
         if ok then
@@ -58,8 +64,15 @@ function app.wakeup_protected()
         end
     end
 
-    if app.tasks then app.tasks.wakeup() end
-
+    -- If MSP is busy, only run UI tasks every N ticks to allow background processing to complete and avoid UI freezes.
+    local runUiTasks = true
+    if rfsuite.session and rfsuite.session.mspBusy then
+        busyUiTick = (busyUiTick % BUSY_UI_RUN_DEN) + 1
+        runUiTasks = busyUiTick <= BUSY_UI_RUN_NUM
+    else
+        busyUiTick = 0
+    end
+    if runUiTasks and app.tasks then app.tasks.wakeup() end
 end
 
 function app.wakeup()

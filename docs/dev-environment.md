@@ -55,6 +55,14 @@ Used in CI and when updating translations:
 python bin/i18n/build-single-json.py --only en
 ```
 
+### 1b) Menu manifest generation
+Use this when editing `bin/menu/manifest.source.json`:
+
+```bash
+python bin/menu/generate.py
+python bin/menu/generate.py --check
+```
+
 ### 2) Resolve i18n tags (staging/packaging)
 Used in CI packaging and dev workflow:
 

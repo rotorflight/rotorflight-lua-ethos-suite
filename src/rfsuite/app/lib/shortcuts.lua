@@ -144,6 +144,17 @@ local function resolveImagePath(iconPrefix, image)
     return (iconPrefix or "") .. image
 end
 
+local function normalizeShortcutId(value)
+    if type(value) ~= "string" then return nil end
+    local trimmed = value:match("^%s*(.-)%s*$")
+    if trimmed == "" then return nil end
+    return trimmed
+end
+
+local function resolveShortcutId(page)
+    return normalizeShortcutId(page and page.shortcutId)
+end
+
 local COPY_KEYS = {
     "loaderspeed",
     "offline",
@@ -194,30 +205,28 @@ function shortcuts.buildRegistry()
     local items = {}
     local byId = {}
 
-    local groupIndex = 0
     for _, menuId in ipairs(order) do
         local menu = menus[menuId]
         if type(menu) == "table" and type(menu.pages) == "table" then
-            groupIndex = groupIndex + 1
             local group = {title = menu.title or menuId, menuId = menuId, menu = menu, items = {}}
 
-            local pageIndex = 0
             for _, page in ipairs(menu.pages) do
                 if type(page) == "table" and type(page.name) == "string" and page.name ~= "" and pageVisible(page) then
-                    pageIndex = pageIndex + 1
-                    local id = "s_" .. tostring(groupIndex) .. "_" .. tostring(pageIndex)
-                    local entry = {
-                        id = id,
-                        name = page.name,
-                        menuId = menuId,
-                        groupTitle = group.title,
-                        menu = menu,
-                        page = page,
-                        menuContextId = menuContextByMenuId[menuId]
-                    }
-                    group.items[#group.items + 1] = entry
-                    items[#items + 1] = entry
-                    byId[id] = entry
+                    local id = resolveShortcutId(page)
+                    if id then
+                        local entry = {
+                            id = id,
+                            name = page.name,
+                            menuId = menuId,
+                            groupTitle = group.title,
+                            menu = menu,
+                            page = page,
+                            menuContextId = menuContextByMenuId[menuId]
+                        }
+                        group.items[#group.items + 1] = entry
+                        items[#items + 1] = entry
+                        byId[id] = entry
+                    end
                 end
             end
 
@@ -337,17 +346,13 @@ function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
     local order, menuContextByMenuId = buildMenuOrderAndContext(manifest)
 
     local sections = {}
-    local groupIndex = 0
     for _, menuId in ipairs(order) do
         local menu = menus[menuId]
         if type(menu) == "table" and type(menu.pages) == "table" then
-            groupIndex = groupIndex + 1
-            local pageIndex = 0
             for _, page in ipairs(menu.pages) do
                 if type(page) == "table" and type(page.name) == "string" and page.name ~= "" and pageVisible(page) then
-                    pageIndex = pageIndex + 1
-                    local id = "s_" .. tostring(groupIndex) .. "_" .. tostring(pageIndex)
-                    if isTruthy(selected[id]) then
+                    local id = resolveShortcutId(page)
+                    if id and shortcuts.isSelected(selected, id) then
                         selectedCount = selectedCount + 1
                         if selectedCount > maxSelected then
                             goto continue

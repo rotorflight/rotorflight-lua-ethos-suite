@@ -8,6 +8,10 @@ local rfsuite = require("rfsuite")
 local toolbox = {}
 local wakeupScheduler
 local LCD_W, LCD_H
+-- Busy cadence: run toolbox invalidation on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_WAKEUP_RUN_NUM = 2
+local BUSY_WAKEUP_RUN_DEN = 3
 
 local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}}
 
@@ -177,6 +181,16 @@ function toolbox.wakeup(widget)
     local now = os.clock()
 
     if now - (widget.wakeupScheduler or 0) > scheduler then
+        --If MSP is busy, only run UI tasks every N ticks to allow background processing to complete and avoid UI freezes.
+        if rfsuite.session and rfsuite.session.mspBusy then
+            widget._busyWakeupTick = ((widget._busyWakeupTick or 0) % BUSY_WAKEUP_RUN_DEN) + 1
+            if widget._busyWakeupTick > BUSY_WAKEUP_RUN_NUM then
+                widget.wakeupScheduler = now
+                return
+            end
+        else
+            widget._busyWakeupTick = 0
+        end
         lcd.invalidate()
         widget.wakeupScheduler = now
     end
