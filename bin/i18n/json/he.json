@@ -10760,6 +10760,13 @@
       "translation": "פרופיל Rate",
       "reverse_text": true
     },
+    "battery_type": {
+      "english": "Battery Type",
+      "translation": "Battery Type",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 12
+    },
     "rssi": {
       "english": "RSSI",
       "max_length": 4,

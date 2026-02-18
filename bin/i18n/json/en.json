@@ -9246,6 +9246,12 @@
       "translation": "Rate Profile",
       "max_length": 12
     },
+    "battery_type": {
+      "english": "Battery Type",
+      "needs_translation": false,
+      "translation": "Battery Type",
+      "max_length": 12
+    },
     "rssi": {
       "english": "RSSI",
       "needs_translation": false,

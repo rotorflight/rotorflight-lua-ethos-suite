@@ -405,6 +405,19 @@ local sensorTable = {
         }
     },
 
+    battery_type = {
+        name = "@i18n(sensors.battery_type)@",
+        mandatory = true,
+        stats = false,
+        set_telemetry_sensors = 97,
+        sensors = {
+            sim = {{uid = 0x5026, unit = nil, dec = 0, value = function() return simSensors('battery_type') end, min = 0, max = 5}},
+            sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5133}},
+            crsf = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1214}},
+            crsfLegacy = {nil}
+        }
+    },
+
     throttle_percent = {
         name = "@i18n(sensors.throttle_pct)@",
         mandatory = true,

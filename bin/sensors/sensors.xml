@@ -51,7 +51,8 @@
         <Sensor name="temp_mcu" label="MCU Temp" round="true" type="range" rand="5" min="10" max="80" default="30" unit="°C" />
         <Sensor name="throttle_percent" label="Throttle %" rand="5" round="true" type="range" min="0" max="100" unit="%" default="80" />
         <Sensor name="altitude" label="Altitude" rand="5" round="true" type="range" min="0" max="30" unit="m" default="25" />   
-        <Sensor name="cell_count" label="Cell Count" round="true" type="range" min="1" max="12" unit="" default="6" />     
+        <Sensor name="cell_count" label="Cell Count" round="true" type="range" min="1" max="12" unit="" default="6" /> 
+        <Sensor name="battery_type" label="Battery Type" round="true" type="range" min="0" max="5" unit="" default="0" />      
     </Group>
 
     <Group name="Adjustment Functions">

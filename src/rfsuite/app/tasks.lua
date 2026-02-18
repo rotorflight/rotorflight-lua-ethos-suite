@@ -50,7 +50,14 @@ local function profileRateChangeDetection()
             app.triggers.reload = not app.Page.refreshFullOnRateChange
             app.triggers.reloadFull = app.Page.refreshFullOnRateChange
         end
+
     end
+end
+
+local function batteryTypeChangeDetection()
+    local app = rfsuite.app
+    -- TODO: this is currently required to trigger a UI update when the battery type changes, as it affects the battery icon and voltage display. We should consider a more robust way to handle this in the future, such as an event system or observer pattern.
+    -- app.utils.getCurrentBatteryType()
 end
 
 local function mainMenuIconEnableDisable()
@@ -420,7 +427,7 @@ end
 
 local tasks = {}
 
-tasks.list = {exitApp, profileRateChangeDetection,  triggerSaveDialogs, armedSaveWarning, triggerReloadDialogs, telemetryAndPageStateUpdates, performReloadActions, playPendingAudioAlerts, wakeupUITasks, mainMenuIconEnableDisable, requestPage}
+tasks.list = {exitApp, profileRateChangeDetection, batteryTypeChangeDetection, triggerSaveDialogs, armedSaveWarning, triggerReloadDialogs, telemetryAndPageStateUpdates, performReloadActions, playPendingAudioAlerts, wakeupUITasks, mainMenuIconEnableDisable, requestPage}
 
 function tasks.wakeup()
 

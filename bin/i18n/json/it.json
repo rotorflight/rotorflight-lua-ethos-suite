@@ -10760,6 +10760,13 @@
       "max_length": 12,
       "reverse_text": false
     },
+    "battery_type": {
+      "english": "Battery Type",
+      "translation": "Battery Type",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 12
+    },
     "rssi": {
       "english": "RSSI",
       "translation": "RSSI",

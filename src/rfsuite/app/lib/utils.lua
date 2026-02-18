@@ -159,6 +159,19 @@ function utils.getCurrentRateProfile()
     end
 end
 
+function utils.getCurrentBatteryType()
+    local batteryType = tasks.telemetry.getSensor("battery_type")
+    if batteryType ~= nil then
+        session.activeBatteryTypeLast = session.activeBatteryType
+        local p = batteryType
+        if p ~= nil then
+            session.batteryType = math.floor(p)
+        else
+            session.activeBatteryType = 0 -- default battery type
+        end
+    end
+end
+
 function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, rest) return first:upper() .. rest:lower() end) end
 
 function utils.settingsSaved()
