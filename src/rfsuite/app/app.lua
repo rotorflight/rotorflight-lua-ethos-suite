@@ -13,6 +13,8 @@ local log = utils.log
 local compile = loadfile
 local lastNoOpSaveToneAt = 0
 local busyUiTick = 0
+-- Busy cadence: run app tasks on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
 local BUSY_UI_RUN_NUM = 2
 local BUSY_UI_RUN_DEN = 3
 
