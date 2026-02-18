@@ -8,6 +8,8 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local onNavMenu
+local log = rfsuite.utils.log
+local lastActiveBatteryType = nil
 
 local fields = {
     {t = "@i18n(app.modules.power.max_cell_voltage)@",           mspapi = 1, apikey = "vbatmaxcellvoltage"},
@@ -41,15 +43,6 @@ local apidata = {
 }
 
 local function postLoad(self)
-    local batteryType
-    if self.API[2] and self.API[2].data() then
-        batteryType = self.API[2].readValue("batteryType")
-    end
-
-    if batteryType == nil and self.API[1] and self.API[1].data() then
-        batteryType = self.API[1].readValue("batteryType")
-    end
-
     for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "consumptionWarningPercentage" then
             local v = tonumber(f.value)
@@ -61,11 +54,6 @@ local function postLoad(self)
                 end
             end
         end
-
-        if batteryType and f.apikey and string.match(f.apikey, "^batteryCapacity_%d$") then
-            local idx = tonumber(string.match(f.apikey, "%d"))
-            if idx == batteryType then f.t = "* " .. f.t end
-        end
     end
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
@@ -73,6 +61,47 @@ end
 
 local function wakeup(self)
     if enableWakeup == false then return end
+
+    local active = rfsuite.session.activeBatteryType
+    if active == nil then return end
+
+    local currentLine = 0
+    local lastLabel = nil
+    local dirty = false
+
+    print("Active battery type: %s", tostring(active))
+    for i, f in ipairs(self.apidata.formdata.fields) do
+        local valid = true
+        if f.apiVersion and not rfsuite.utils.apiVersionCompare(">=", f.apiVersion) then valid = false end
+        print("Processing field: %s (apikey: %s, valid: %s)", tostring(f.t), tostring(f.apikey), tostring(valid))
+        if f.hidden ~= true and valid then
+            if f.label and f.label ~= lastLabel then
+                currentLine = currentLine + 1
+                lastLabel = f.label
+            end
+
+            currentLine = currentLine + 1
+            print("Checking field '%s' (apikey: %s) on line %d", tostring(f.t), tostring(f.apikey), currentLine)
+            if f.apikey and f.apikey:match("batteryCapacity_%d") then
+                local idx = tonumber(f.apikey:match("batteryCapacity_(%d)"))
+                local lineObj = rfsuite.app.formLines[currentLine]
+                if lineObj then
+                    print("Updating field '%s' (apikey: %s) on line %d with active battery type %d", tostring(f.t), tostring(f.apikey), currentLine, active)
+                    local suffix = (idx == active) and " *" or ""
+                    local original = f.t:gsub(" %*$", ""):gsub("^%* ", "")
+                    local newText = original .. suffix
+                    if f.t ~= newText then
+                        print("Changing field text from '%s' to '%s'", tostring(f.t), tostring(newText))
+                        f.t = newText
+                        pcall(function() lineObj:name(newText) end)
+                        dirty = true
+                    end
+                end
+            end
+        end
+    end
+
+    if dirty and form.invalidate then form.invalidate() end
 end
 
 

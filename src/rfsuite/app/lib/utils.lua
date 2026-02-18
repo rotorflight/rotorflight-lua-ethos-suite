@@ -162,10 +162,8 @@ end
 function utils.getCurrentBatteryType()
     local batteryType = tasks.telemetry.getSensor("battery_type")
     if batteryType ~= nil then
-        session.activeBatteryTypeLast = session.activeBatteryType
-        local p = batteryType
-        if p ~= nil then
-            session.batteryType = math.floor(p)
+        if batteryType ~= nil then
+            session.activeBatteryType = math.floor(batteryType)
         else
             session.activeBatteryType = 0 -- default battery type
         end
