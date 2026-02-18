@@ -51,6 +51,13 @@ function app.wakeup_protected()
 
     -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
     if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
+
+        -- Defer opening main menu until post-connect processing 
+        if rfsuite.session.isConnected and not rfsuite.session.postConnectComplete then
+            app._pendingMainMenuOpen = false
+            return 
+        end
+
         local ok, err = pcall(app.ui.openMainMenu)
         if ok then
             app._pendingMainMenuOpen = false
