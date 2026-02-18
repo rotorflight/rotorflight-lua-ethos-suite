@@ -130,6 +130,16 @@ local function flattenSectionSpecs(rawSections)
     local shortcutMode = shortcutDisplayMode()
     local extras = resolveShortcutSections()
     if type(extras) ~= "table" then extras = {} end
+    local mixedInserted = false
+
+    local function appendMixedShortcuts()
+        for _, extra in ipairs(extras) do
+            local appended = cloneShallow(extra)
+            appended.newline = nil
+            appended._mixedShortcut = true
+            out[#out + 1] = appended
+        end
+    end
 
     for _, entry in ipairs(rawSections) do
         if type(entry) == "table" and type(entry.sections) == "table" then
@@ -146,17 +156,17 @@ local function flattenSectionSpecs(rawSections)
                     out[#out + 1] = extra
                 end
             end
+            if shortcutMode == "mixed" and entry.id == "configuration" then
+                appendMixedShortcuts()
+                mixedInserted = true
+            end
         elseif type(entry) == "table" then
             out[#out + 1] = entry
         end
     end
 
-    if shortcutMode == "mixed" then
-        for _, extra in ipairs(extras) do
-            local appended = cloneShallow(extra)
-            appended.newline = nil
-            out[#out + 1] = appended
-        end
+    if shortcutMode == "mixed" and not mixedInserted then
+        appendMixedShortcuts()
     end
 
     return out

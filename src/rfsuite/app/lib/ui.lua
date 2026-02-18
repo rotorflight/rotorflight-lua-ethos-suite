@@ -1218,8 +1218,9 @@ function ui.openMainMenu(activesection)
                 app.formFieldsOffline[menuIndex] = menuItem.offline or false
                 app.formFieldsBGTask[menuIndex] = menuItem.bgtask or false
 
+                local treatAsMixedShortcut = (menuItem._mixedShortcut == true)
                 local groupChanged = false
-                if type(menuItem.group) == "string" and menuItem.group ~= "" then
+                if (not treatAsMixedShortcut) and type(menuItem.group) == "string" and menuItem.group ~= "" then
                     if activeMenuGroup ~= menuItem.group then
                         activeMenuGroup = menuItem.group
                         groupChanged = true
@@ -1231,7 +1232,7 @@ function ui.openMainMenu(activesection)
                     if pidx > 1 and type(menuItem.groupTitle) == "string" and menuItem.groupTitle ~= "" then
                         form.addLine(menuItem.groupTitle)
                     end
-                elseif menuItem.newline then
+                elseif menuItem.newline and (not treatAsMixedShortcut) then
                     -- Legacy fallback for older manifests; grouped menus should use group/groupTitle.
                     lc = 0
                     form.addLine(menuItem.groupTitle or "@i18n(app.header_system)@")
