@@ -1002,6 +1002,11 @@ function ui.cleanupCurrentPage()
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
     if app.formNavigationFields then for k in pairs(app.formNavigationFields) do app.formNavigationFields[k] = nil end end
+    if app.gfx_buttons then
+        for k in pairs(app.gfx_buttons) do
+            app.gfx_buttons[k] = nil
+        end
+    end
 
     app.fieldHelpTxt = nil
     ui._helpCache = {}
