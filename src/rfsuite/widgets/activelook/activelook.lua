@@ -21,9 +21,9 @@ local VALID_MODES = {preflight = true, inflight = true, postflight = true}
 local MODES = {"preflight", "inflight", "postflight"}
 
 local MODE_ROWS = {
-    preflight = {"status", "line2", "line3"},
-    inflight = {"status", "line2", "line3"},
-    postflight = {"status", "line2", "line3"}
+    preflight = {"line1", "line2", "line3", "line4"},
+    inflight = {"line1", "line2", "line3", "line4"},
+    postflight = {"line1", "line2", "line3", "line4"}
 }
 
 local defaultContext = nil
@@ -159,28 +159,14 @@ local function updateStats(context, mode, snapshot, now)
 end
 
 local function composeLines(context, mode, snapshot, now)
-    if mode == "preflight" then
-        return {
-            status = "PREFLIGHT",
-            line2 = "G:" .. readGovernorText(snapshot.governor),
-            line3 = "V:" .. formatNumber(snapshot.voltage, 1, "V")
-        }
-    end
-
-    if mode == "inflight" then
-        local secs = readFlightSeconds(context, mode, now)
-        return {
-            status = "INFLIGHT",
-            line2 = "T:" .. formatDuration(secs),
-            line3 = "V:" .. formatNumber(snapshot.voltage, 1, "V")
-        }
-    end
-
+    local fuel = snapshot.smartfuel
+    if type(fuel) ~= "number" then fuel = snapshot.fuel end
     local secs = readFlightSeconds(context, mode, now)
     return {
-        status = "POSTFLIGHT",
-        line2 = "T:" .. formatDuration(secs),
-        line3 = "VMIN:" .. formatNumber(context.stats.minVoltage, 1, "V")
+        line1 = "CURRENT: " .. formatNumber(snapshot.current, 1, "A"),
+        line2 = "VOLTAGE: " .. formatNumber(snapshot.voltage, 1, "V"),
+        line3 = "FUEL: " .. formatNumber(fuel, 0, "%"),
+        line4 = "TIMER: " .. formatDuration(secs)
     }
 end
 
@@ -316,8 +302,10 @@ function activelook.wakeup(widget)
 
     local mode = modeFromSession()
     local snapshot = {
-        governor = getSensor("governor"),
-        voltage = getSensor("voltage")
+        voltage = getSensor("voltage"),
+        current = getSensor("current"),
+        fuel = getSensor("fuel"),
+        smartfuel = getSensor("smartfuel")
     }
 
     updateStats(context, mode, snapshot, now)
