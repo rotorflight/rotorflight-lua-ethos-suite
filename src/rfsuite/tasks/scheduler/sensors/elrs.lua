@@ -130,6 +130,7 @@ local sidLookup = {
     [93] = {'0x1205'},
     [95] = {'0x1211'},
     [96] = {'0x1212'},
+    [97] = {'0x1214'},
     [98] = {'0x1213'},
     [99] = {'0x1220', '0x1221', '0x1222'},
     [100] = {'0xDB00'},
@@ -546,6 +547,8 @@ local sensorsList = {
 
     [0x1213] = {name = "LED Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
 
+    [0x1214] = {name = "Battry Type", unit = UNIT_RAW, prec = 0, min = 0, max = 5, dec = decU8},
+   
     [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decAdjFunc},
 
     [0xDB00] = {name = "Debug 0", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
