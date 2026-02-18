@@ -13,10 +13,14 @@ local format = string.format
 
 local FALLBACK_WIDTH = 100
 local FALLBACK_HEIGHT = 100
-local REDRAW_INTERVAL = 0.5
-local LEFT_MARGIN = 2
-local TOP_MARGIN = 4
-local MAX_LAYOUT_LINES = 3
+local REDRAW_INTERVAL = 0.025
+local LEFT_MARGIN = 10
+local TOP_MARGIN = 10
+local TITLE_WIDTH_PX = 200
+local TITLE_HEIGHT_PX = 20
+local VALUE_WIDTH_PX = 200
+local VALUE_HEIGHT_PX = 20
+local MAX_LAYOUT_LINES = 4
 
 local SLOT_TITLES = {
     line1 = "CURRENT:",
@@ -89,6 +93,35 @@ local function getSensor(name)
     return getter(name)
 end
 
+local function toSensorNumber(value)
+    if type(value) == "number" then return value end
+    if type(value) ~= "string" then return nil end
+
+    local text = value:match("^%s*(.-)%s*$")
+    if text == "" then return nil end
+
+    local direct = tonumber(text)
+    if direct then return direct end
+
+    text = text:gsub(",", ".")
+    direct = tonumber(text)
+    if direct then return direct end
+
+    local token = text:match("([+-]?%d*%.?%d+)")
+    if token then return tonumber(token) end
+
+    return nil
+end
+
+local function holdSensorValue(context, key, value)
+    context.sensorHold = context.sensorHold or {}
+    if type(value) == "number" then
+        context.sensorHold[key] = value
+        return value
+    end
+    return context.sensorHold[key]
+end
+
 local function formatNumber(value, decimals, suffix)
     if type(value) ~= "number" then return "-" end
     local text
@@ -106,8 +139,9 @@ local function formatNumber(value, decimals, suffix)
 end
 
 local function formatDuration(seconds)
-    if type(seconds) ~= "number" or seconds < 0 then return "--:--" end
-    local total = floor(seconds + 0.5)
+    local value = toSensorNumber(seconds)
+    if type(value) ~= "number" or value < 0 then return "00:00" end
+    local total = floor(value + 0.5)
     local mins = floor(total / 60)
     local secs = total % 60
     return format("%02d:%02d", mins, secs)
@@ -170,7 +204,11 @@ end
 
 local function composeLines(context, mode, snapshot, now)
     local fuel = snapshot.smartfuel
-    if type(fuel) ~= "number" then fuel = snapshot.fuel end
+    if type(fuel) == "number" then
+        context.stats.lastFuel = fuel
+    else
+        fuel = context.stats and context.stats.lastFuel or nil
+    end
     local secs = readFlightSeconds(context, mode, now)
     return {
         line1 = formatNumber(snapshot.current, 1, "A"),
@@ -194,38 +232,61 @@ local function buildModeLayouts(context, mode)
 
     local offsetX = context.offsetX or 0
     local offsetY = context.offsetY or 0
-    local rowX = offsetX
-    local rowW = context.w - rowX
-    if rowW < 40 then rowW = context.w end
+    local rowX = LEFT_MARGIN + offsetX
+    if rowX < 0 then rowX = 0 end
+    if rowX > (context.w - 1) then rowX = context.w - 1 end
+
+    local titleW = TITLE_WIDTH_PX
+    if titleW < 20 then titleW = 20 end
+    local valueW = VALUE_WIDTH_PX
+    if valueW < 20 then valueW = 20 end
+    local titleH = TITLE_HEIGHT_PX
+    if titleH < 1 then titleH = 1 end
+    local valueH = VALUE_HEIGHT_PX
+    if valueH < 1 then valueH = 1 end
 
     local freeH = context.h - (TOP_MARGIN * 2)
-    local rowH = floor(freeH / count)
-    if rowH < 10 then rowH = 10 end
-
-    local titleW = floor(rowW * 0.56)
-    if titleW < 44 then titleW = 44 end
-    if titleW > rowW - 24 then titleW = rowW - 24 end
-    local valueW = rowW - titleW
-    if valueW < 20 then
-        valueW = 20
-        titleW = rowW - valueW
-    end
+    local rowStep = floor(freeH / count)
+    if rowStep < 10 then rowStep = 10 end
 
     for i, slot in ipairs(slots) do
-        local y = TOP_MARGIN + ((i - 1) * rowH) + offsetY
+        local y = TOP_MARGIN + ((i - 1) * rowStep) + offsetY
+        if y < 0 then y = 0 end
+        if y > (context.h - 1) then y = context.h - 1 end
+
+        local maxLineH = context.h - y
+        if maxLineH < 1 then maxLineH = 1 end
+        local lineTitleH = titleH
+        if lineTitleH > maxLineH then lineTitleH = maxLineH end
+        local lineValueH = valueH
+        if lineValueH > maxLineH then lineValueH = maxLineH end
+
+        local titleX = rowX
+        local titleMaxW = context.w - titleX
+        if titleMaxW < 1 then titleMaxW = 1 end
+        local lineTitleW = titleW
+        if lineTitleW > titleMaxW then lineTitleW = titleMaxW end
+
+        local valueX = titleX + lineTitleW
+        if valueX > (context.w - 1) then valueX = context.w - 1 end
+        local valueMaxW = context.w - valueX
+        if valueMaxW < 1 then valueMaxW = 1 end
+        local lineValueW = valueW
+        if lineValueW > valueMaxW then lineValueW = valueMaxW end
+
         local titleSpec = {
-            x = rowX,
+            x = titleX,
             y = y,
-            width = titleW,
-            height = rowH,
-            text = {x = LEFT_MARGIN, y = 0},
+            width = lineTitleW,
+            height = lineTitleH,
+            text = {x = 0, y = 0},
             border = false
         }
         local valueSpec = {
-            x = rowX + titleW,
+            x = valueX,
             y = y,
-            width = valueW,
-            height = rowH,
+            width = lineValueW,
+            height = lineValueH,
             text = {x = 0, y = 0},
             border = false
         }
@@ -235,14 +296,15 @@ local function buildModeLayouts(context, mode)
 
         logInfo(
             "ActiveLook build mode=" .. tostring(mode)
-                .. " slot=" .. tostring(slot)
-                .. " x=" .. tostring(rowX) .. " y=" .. tostring(y)
-                .. " tw=" .. tostring(titleW)
-                .. " vw=" .. tostring(valueW)
-                .. " h=" .. tostring(rowH)
+                .. " slot=" .. tostring(slot) .. " y=" .. tostring(y)
+                .. " tx=" .. tostring(titleX) .. " tw=" .. tostring(lineTitleW) .. " th=" .. tostring(lineTitleH)
+                .. " vx=" .. tostring(valueX) .. " vw=" .. tostring(lineValueW) .. " vh=" .. tostring(lineValueH)
+                .. " step=" .. tostring(rowStep)
                 .. " titleLayout=" .. tostring(titleLayout)
                 .. " valueLayout=" .. tostring(valueLayout)
         )
+
+        print(valueX, y, lineValueW, lineValueH)
 
         layouts[#layouts + 1] = {
             slot = slot,
@@ -285,24 +347,52 @@ end
 local function renderMode(context, mode, values, force)
     local layouts = context.layouts[mode] or {}
     local cache = context.lastRendered and context.lastRendered[mode] or nil
+    if #layouts == 0 then return end
 
-    for _, entry in ipairs(layouts) do
-        if force and entry.titleLayout then
-            local ok, err = layoutSet(entry.titleLayout, tostring(entry.title or ""))
-            if not ok then
-                logInfo("ActiveLook title render failed mode=" .. tostring(mode) .. " slot=" .. tostring(entry.slot) .. " err=" .. tostring(err))
+    if force then
+        for _, entry in ipairs(layouts) do
+            if entry.titleLayout then
+                local titleOk, titleErr = layoutSet(entry.titleLayout, tostring(entry.title or ""))
+                if not titleOk then
+                    logInfo("ActiveLook title render failed mode=" .. tostring(mode) .. " slot=" .. tostring(entry.slot) .. " err=" .. tostring(titleErr))
+                end
             end
-        end
 
-        local valueText = tostring(values[entry.slot] or "-")
-        if force or not cache or cache[entry.slot] ~= valueText then
-            local ok, err = layoutSet(entry.valueLayout, valueText)
-            if not ok then
-                logInfo("ActiveLook value render failed mode=" .. tostring(mode) .. " slot=" .. tostring(entry.slot) .. " err=" .. tostring(err))
+            local valueText = tostring(values[entry.slot] or "-")
+            local valueOk, valueErr = layoutSet(entry.valueLayout, valueText)
+            if not valueOk then
+                logInfo("ActiveLook value render failed mode=" .. tostring(mode) .. " slot=" .. tostring(entry.slot) .. " err=" .. tostring(valueErr))
             elseif cache then
                 cache[entry.slot] = valueText
             end
         end
+        return
+    end
+
+    for _, entry in ipairs(layouts) do
+        local valueText = tostring(values[entry.slot] or "-")
+        local previousText = cache and cache[entry.slot] or nil
+        local changed = (previousText == nil or previousText ~= valueText)
+
+        if not changed then
+            goto continue
+        end
+
+        if previousText ~= nil then
+            local clearOk, clearErr = layoutSet(entry.valueLayout, "")
+            if not clearOk then
+                logInfo("ActiveLook value clear failed mode=" .. tostring(mode) .. " slot=" .. tostring(entry.slot) .. " err=" .. tostring(clearErr))
+            end
+        end
+
+        local ok, err = layoutSet(entry.valueLayout, valueText)
+        if not ok then
+            logInfo("ActiveLook value render failed mode=" .. tostring(mode) .. " slot=" .. tostring(entry.slot) .. " err=" .. tostring(err))
+        elseif cache then
+            cache[entry.slot] = valueText
+        end
+
+        ::continue::
     end
 end
 
@@ -325,10 +415,12 @@ local function resetState(context)
     context.lastMode = nil
     context.lastWakeup = 0
     context.fullLayout = nil
+    context.sensorHold = {}
     context.stats = {
         inflight = false,
         inflightStart = nil,
         lastFlightSeconds = 0,
+        lastFuel = nil,
         minVoltage = nil
     }
 end
@@ -343,12 +435,14 @@ local function newContext()
         lastMode = nil,
         lastWakeup = 0,
         fullLayout = nil,
+        sensorHold = {},
         offsetX = 0,
         offsetY = 0,
         stats = {
             inflight = false,
             inflightStart = nil,
             lastFlightSeconds = 0,
+            lastFuel = nil,
             minVoltage = nil
         }
     }
@@ -438,10 +532,9 @@ function activelook.wakeup(widget)
     if modeChanged then fullRefresh(context) end
 
     local snapshot = {
-        voltage = getSensor("voltage"),
-        current = getSensor("current"),
-        fuel = getSensor("fuel"),
-        smartfuel = getSensor("smartfuel")
+        voltage = holdSensorValue(context, "voltage", toSensorNumber(getSensor("voltage"))),
+        current = holdSensorValue(context, "current", toSensorNumber(getSensor("current"))),
+        smartfuel = holdSensorValue(context, "smartfuel", toSensorNumber(getSensor("smartfuel")))
     }
 
     updateStats(context, mode, snapshot, now)
