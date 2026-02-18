@@ -356,6 +356,12 @@ local function getBreadcrumbFromReturnStack()
     return tableConcat(parts, " / ")
 end
 
+local function isRootMainMenuContext()
+    if not app then return false end
+    if app.uiState ~= (app.uiStatus and app.uiStatus.mainMenu) then return false end
+    return app.lastMenu == "mainmenu"
+end
+
 local function resolveHeaderContext(rawTitle, script)
     local title = rawTitle
     if title == nil then title = "No Title" end
@@ -372,6 +378,14 @@ local function resolveHeaderContext(rawTitle, script)
         parentFromTitle = tableConcat(parts, " / ")
     elseif #parts == 1 then
         displayTitle = parts[1]
+    end
+
+    if isRootMainMenuContext() then
+        if app then
+            app.headerTitle = displayTitle
+            app.headerParentBreadcrumb = nil
+        end
+        return displayTitle, nil
     end
 
     local parentBreadcrumb = getBreadcrumbFromReturnStack()
@@ -416,6 +430,10 @@ end
 
 local function drawHeaderBreadcrumbOverlay(startY, reserveRightWidth)
     if not app then return false, startY end
+    if isRootMainMenuContext() then
+        app.headerParentBreadcrumb = nil
+        return false, startY
+    end
     local breadcrumb = app.headerParentBreadcrumb
     if type(breadcrumb) ~= "string" or trimText(breadcrumb) == "" then
         breadcrumb = getBreadcrumbFromReturnStack() or
@@ -1052,6 +1070,8 @@ function ui.resetPageState(activesection)
     app.lastScript = nil
     app.headerTitle = nil
     app.headerParentBreadcrumb = nil
+    app.activeManifestMenuId = nil
+    app.pendingManifestMenuId = nil
 
     session.lastPage = nil
     app.triggers.isReady = false
