@@ -68,6 +68,10 @@ local userpref_defaults = {
         theme_inflight = "system/default",
         theme_postflight = "system/default"
     },
+    activelook = {
+        offset_x = 0,
+        offset_y = 0
+    },
     events = {
         armflags = true,
         voltage = true,

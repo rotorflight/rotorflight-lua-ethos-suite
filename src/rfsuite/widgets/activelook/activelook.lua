@@ -174,15 +174,17 @@ local function buildModeLayouts(context, mode)
     local slots = MODE_ROWS[mode]
     local layouts = {}
     local count = #slots
+    local offsetX = context.offsetX or 0
+    local offsetY = context.offsetY or 0
 
     local freeH = context.h - (TOP_MARGIN * 2)
     local rowH = floor(freeH / count)
     if rowH < 10 then rowH = 10 end
 
     for i, slot in ipairs(slots) do
-        local y = TOP_MARGIN + ((i - 1) * rowH)
+        local y = TOP_MARGIN + ((i - 1) * rowH) + offsetY
         local spec = {
-            x = 0,
+            x = offsetX,
             y = y,
             width = context.w,
             height = rowH,
@@ -194,7 +196,7 @@ local function buildModeLayouts(context, mode)
         logInfo(
             "ActiveLook build mode=" .. tostring(mode)
                 .. " slot=" .. tostring(slot)
-                .. " x=0 y=" .. tostring(y)
+                .. " x=" .. tostring(offsetX) .. " y=" .. tostring(y)
                 .. " w=" .. tostring(context.w)
                 .. " h=" .. tostring(rowH)
                 .. " layout=" .. tostring(layout)
@@ -248,6 +250,8 @@ local function newContext()
         lastRendered = {preflight = {}, inflight = {}, postflight = {}},
         lastMode = nil,
         lastWakeup = 0,
+        offsetX = 0,
+        offsetY = 0,
         stats = {
             inflight = false,
             inflightStart = nil,
@@ -273,6 +277,10 @@ function activelook.build(widget)
     local context = getContext(widget)
     if not hasGlassesApi() then return end
 
+    local prefs = rfsuite.preferences and rfsuite.preferences.activelook or {}
+    context.offsetX = tonumber(prefs and prefs.offset_x) or 0
+    context.offsetY = tonumber(prefs and prefs.offset_y) or 0
+
     local w, h = getWindowSize()
     context.w = w
     context.h = h
@@ -288,8 +296,12 @@ function activelook.wakeup(widget)
     local context = getContext(widget)
     if not hasGlassesApi() then return end
 
+    local prefs = rfsuite.preferences and rfsuite.preferences.activelook or {}
+    local offsetX = tonumber(prefs and prefs.offset_x) or 0
+    local offsetY = tonumber(prefs and prefs.offset_y) or 0
+
     local w, h = getWindowSize()
-    if not context.built or context.w ~= w or context.h ~= h then
+    if not context.built or context.w ~= w or context.h ~= h or context.offsetX ~= offsetX or context.offsetY ~= offsetY then
         activelook.build(context)
     end
 
