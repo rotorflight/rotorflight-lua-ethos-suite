@@ -80,6 +80,11 @@ local function smartFuelCalc()
 
     if not telemetry then telemetry = rfsuite.tasks.telemetry end
 
+    local batType = telemetry and telemetry.getSensor and telemetry.getSensor("battery_type")
+    if batType then
+        rfsuite.session.activeBatteryType = math_floor(batType)
+    end
+
     if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then
         resetVoltageTracking()
         return nil

@@ -9436,6 +9436,32 @@
     }
   },
   "widgets": {
+    "battery": {
+      "adjustment_active": {
+        "english": "Selection disabled because Battery Profile adjustment is configured.",
+        "max_length": 65,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "no_profiles": {
+        "english": "No battery profiles configured.",
+        "max_length": 33,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "select_title": {
+        "english": "Select Battery",
+        "max_length": 18,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "title": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      }
+    },
     "bbl": {
       "erase_dataflash": {
         "english": "Erase dataflash",
@@ -9452,6 +9478,12 @@
         "max_length": 12,
         "needs_translation": false,
         "translation": "Altitide Max"
+      },
+      "battery": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
       },
       "bec_voltage": {
         "english": "BEC Voltage",

@@ -13,12 +13,34 @@ local LCD_W, LCD_H
 local BUSY_WAKEUP_RUN_NUM = 2
 local BUSY_WAKEUP_RUN_DEN = 3
 
-local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}}
+local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}, [6] = {object = "battery", name = "Battery Type"}}
 
 local function generateWidgetList(tbl)
     local widgets = {}
     for i, tool in ipairs(tbl) do table.insert(widgets, {tool.name, i}) end
     return widgets
+end
+
+local function loadWidget(widget)
+    if widget.loadedWidget then return end
+    local tool = toolBoxList[widget.object]
+    if not tool then return end
+
+    local path = "widgets/dashboard/objects/text/" .. tool.object .. ".lua"
+    local file = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/" .. path
+    local chunk, err = loadfile(file)
+    if chunk then
+        local status, result = pcall(chunk)
+        if status then
+            widget.loadedWidget = result
+        else
+            print("Error executing widget " .. tool.object .. ": " .. tostring(result))
+        end
+    else
+        if err and not string.find(tostring(err), "No such file") then
+            print("Error loading widget file " .. file .. ": " .. tostring(err))
+        end
+    end
 end
 
 function toolbox.create()
@@ -72,6 +94,12 @@ function toolbox.paint(widget)
     if not rfsuite.session.toolbox then return end
 
     if not widget.object then return end
+
+    if widget.loadedWidget and widget.loadedWidget.paint then
+        local w, h = lcd.getWindowSize()
+        widget.loadedWidget.paint(0, 0, w, h, widget)
+        return
+    end
 
     local isCompiledCheck = "@i18n(iscompiledcheck)@"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
@@ -171,6 +199,12 @@ function toolbox.wakeup(widget)
         return
     end
 
+    loadWidget(widget)
+
+    if widget.loadedWidget and widget.loadedWidget.wakeup then
+        widget.loadedWidget.wakeup(widget)
+    end
+
     local isCompiledCheck = "@i18n(iscompiledcheck1)@"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         lcd.invalidate()
@@ -195,6 +229,14 @@ function toolbox.wakeup(widget)
         widget.wakeupScheduler = now
     end
 
+end
+
+function toolbox.event(widget, category, value, x, y)
+    if widget.onpress and category == EVT_TOUCH and value == TOUCH_release then
+        widget.onpress()
+        return true
+    end
+    return false
 end
 
 function toolbox.menu(widget)

@@ -10990,6 +10990,32 @@
         "reverse_text": false
       }
     },
+    "battery": {
+      "adjustment_active": {
+        "english": "Selection disabled because Battery Profile adjustment is configured.",
+        "needs_translation": false,
+        "max_length": 65,
+        "reverse_text": false
+      },
+      "no_profiles": {
+        "english": "No battery profiles configured.",
+        "needs_translation": false,
+        "max_length": 33,
+        "reverse_text": false
+      },
+      "select_title": {
+        "english": "Select Battery",
+        "needs_translation": false,
+        "max_length": 18,
+        "reverse_text": false
+      },
+      "title": {
+        "english": "Battery Profile",
+        "needs_translation": false,
+        "max_length": 15,
+        "reverse_text": false
+      }
+    },
     "craftimage": {},
     "craftname": {},
     "dashboard": {
@@ -10998,6 +11024,12 @@
         "translation": "Hoogte max",
         "needs_translation": false,
         "max_length": 12,
+        "reverse_text": false
+      },
+      "battery": {
+        "english": "Battery Profile",
+        "needs_translation": false,
+        "max_length": 15,
         "reverse_text": false
       },
       "bec_voltage": {
