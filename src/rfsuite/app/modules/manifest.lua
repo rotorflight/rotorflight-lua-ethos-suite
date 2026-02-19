@@ -529,10 +529,18 @@ return {
             },
             pages = {
                 {
+                    apiversion = { 12, 10, 0 },
                     image = "battery.png",
                     name = "@i18n(app.modules.power.battery_name)@",
                     script = "battery.lua",
                     shortcutId = "s_power_battery_lua_5a48ba2cab",
+                },
+                {
+                    apiversionlt = { 12, 10, 0 },
+                    image = "battery.png",
+                    name = "@i18n(app.modules.power.battery_name)@",
+                    script = "battery_legacy.lua",
+                    shortcutId = "s_power_battery_legacy_lua_2d0a9f9e4b",
                 },
                 {
                     image = "alerts.png",

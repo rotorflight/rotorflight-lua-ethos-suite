@@ -615,9 +615,25 @@
       },
       "pages": [
         {
+          "apiversion": [
+            12,
+            10,
+            0
+          ],
           "image": "battery.png",
           "name": "Battery",
           "script": "battery.lua",
+          "translation": "@i18n(app.modules.power.battery_name)@"
+        },
+        {
+          "apiversionlt": [
+            12,
+            10,
+            0
+          ],
+          "image": "battery.png",
+          "name": "Battery",
+          "script": "battery_legacy.lua",
           "translation": "@i18n(app.modules.power.battery_name)@"
         },
         {
