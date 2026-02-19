@@ -121,6 +121,21 @@ local sensorTable = {
         }
     },
 
+    vfr = {
+        name = "@i18n(sensors.vfr)@",
+        mandatory = false,
+        stats = true,
+        switch_alerts = true,
+        unit = UNIT_PERCENT,
+        unit_string = "%",
+        sensors = {
+            sim = {{appId = 0xF010, subId = 0}},
+            sport = {{appId = 0xF010, subId = 0}},
+            crsf = {{crsfId = 0x14, subId = 2}},
+            crsfLegacy = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}}
+        }
+    },
+
     armflags = {
         name = "@i18n(sensors.arming_flags)@",
         mandatory = true,
