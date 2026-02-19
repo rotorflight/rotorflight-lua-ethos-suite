@@ -1062,10 +1062,17 @@
           "translation": "@i18n(app.menu_section_controls)@"
         },
         {
-          "image": "esc_motors/esc.png",
-          "menuId": "powertrain_menu",
-          "name": "ESC & Motors",
+          "image": "power/power.png",
+          "menuId": "power",
+          "name": "Power",
           "order": 10,
+          "translation": "@i18n(app.modules.power.name)@"
+        },
+        {
+          "image": "esc_motors/esc.png",
+          "menuId": "esc_motors",
+          "name": "ESC & Motors",
+          "order": 11,
           "translation": "@i18n(app.modules.esc_motors.name)@"
         }
       ],

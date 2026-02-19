@@ -56,21 +56,16 @@ Source: `src/rfsuite/app/modules/manifest.lua` (auto-generated from `bin/menu/ma
             - Logging (script `logging.lua`)
             - Status (script `status.lua`)
         - Stats (script `stats/stats.lua`)
-    - ESC & Motors (menuId `powertrain_menu`)
-      - menuId `powertrain_menu`: Power
-        - ESC & Motors (menuId `esc_motors`)
-          - menuId `esc_motors`: ESC & Motors
-            - Throttle (script `throttle.lua`)
-            - Telemetry (script `telemetry.lua`)
-            - RPM (script `rpm.lua`)
-        - Power (menuId `power`)
-          - menuId `power`: Power
-            - Battery (script `battery.lua`)
-            - Alerts (script `alerts.lua`)
-            - Sources (script `source.lua`)
-        - Governor (script `governor/governor.lua`)
-          - variants: >= 12.0.9 => `governor/governor.lua`; < 12.0.9 => `governor/governor_legacy.lua`; default => `governor/governor_legacy.lua`
-        - Esc Programing (script `esc_tools/tools/esc.lua`)
+    - Power (menuId `power`)
+      - menuId `power`: Power
+        - Battery (script `battery.lua`)
+        - Alerts (script `alerts.lua`)
+        - Sources (script `source.lua`)
+    - ESC & Motors (menuId `esc_motors`)
+      - menuId `esc_motors`: ESC & Motors
+        - Throttle (script `throttle.lua`)
+        - Telemetry (script `telemetry.lua`)
+        - RPM (script `rpm.lua`)
 
 ### System
 - Tools (menuId `tools_menu`)
@@ -134,6 +129,13 @@ These menu definitions exist in the manifest but are not directly reachable from
 - menuId `profile_governor`: Governor
   - General (script `general.lua`)
   - Behaviour (script `flags.lua`)
+
+- menuId `powertrain_menu`: Power
+  - ESC & Motors (menuId `esc_motors`)
+  - Power (menuId `power`)
+  - Governor (script `governor/governor.lua`)
+    - variants: >= 12.0.9 => `governor/governor.lua`; < 12.0.9 => `governor/governor_legacy.lua`; default => `governor/governor_legacy.lua`
+  - Esc Programing (script `esc_tools/tools/esc.lua`)
 
 - menuId `profiles_menu`: Profiles
   - Select Profile (script `profile_select/select_profile.lua`)
