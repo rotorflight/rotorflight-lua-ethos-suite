@@ -533,14 +533,14 @@ return {
                     image = "battery.png",
                     name = "@i18n(app.modules.power.battery_name)@",
                     script = "battery.lua",
-                    shortcutId = "s_power_battery_lua_5a48ba2cab",
+                    shortcutId = "s_power_battery_lua_b6a02dfb01",
                 },
                 {
                     apiversionlt = { 12, 10, 0 },
                     image = "battery.png",
                     name = "@i18n(app.modules.power.battery_name)@",
                     script = "battery_legacy.lua",
-                    shortcutId = "s_power_battery_legacy_lua_2d0a9f9e4b",
+                    shortcutId = "s_power_battery_legacy_lua_a56719c088",
                 },
                 {
                     image = "alerts.png",
