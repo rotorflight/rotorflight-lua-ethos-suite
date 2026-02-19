@@ -11,9 +11,13 @@ local MSP_API_CMD_READ = 175
 local MSP_API_CMD_WRITE = 176
 local MSP_REBUILD_ON_WRITE = false
 
+local tblBatteryType = {
+    "1", "2", "3", "4", "5", "6"
+}
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryType", type = "U8", apiVersion = {12, 10, 0}, simResponse = {0}, min = 0, max = 5, default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"}
+    {field = "batteryType", type = "U8", apiVersion = {12, 10, 0}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"}
 }
 -- LuaFormatter on
 
