@@ -10781,6 +10781,13 @@
       "reverse_text": false,
       "translation": "Acceleratore %"
     },
+    "vfr": {
+      "english": "VFR",
+      "max_length": 3,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "VFR"
+    },
     "voltage": {
       "english": "Voltage",
       "max_length": 7,

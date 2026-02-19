@@ -10732,6 +10732,13 @@
       "translation": "链路质量",
       "reverse_text": false
     },
+    "vfr": {
+      "english": "VFR",
+      "translation": "VFR",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 3
+    },
     "mcu_temp": {
       "english": "MCU Temperature",
       "max_length": 15,

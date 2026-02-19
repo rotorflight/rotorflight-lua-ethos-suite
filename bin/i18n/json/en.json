@@ -9222,6 +9222,12 @@
       "translation": "Link Quality",
       "max_length": 12
     },
+    "vfr": {
+      "english": "VFR",
+      "needs_translation": false,
+      "translation": "VFR",
+      "max_length": 3
+    },
     "mcu_temp": {
       "english": "MCU Temperature",
       "needs_translation": false,
