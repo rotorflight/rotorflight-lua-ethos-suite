@@ -26,7 +26,8 @@ local state = {
     currentName = "",
     currentPidLoop = 1,
     currentFeatures = 0,
-    gyroDeltaUs = 250
+    gyroDeltaUs = 250,
+    pidBaseHz = 0
 }
 
 local function bitIsSet(value, bit)
@@ -67,9 +68,15 @@ local function updateSaveButtonState()
 end
 
 local function getPidLoopChoices(currentValue)
-    local gyroHz = 1000000 / (state.gyroDeltaUs > 0 and state.gyroDeltaUs or 250)
+    local rawGyroHz = (state.pidBaseHz > 0 and state.pidBaseHz) or (1000000 / (state.gyroDeltaUs > 0 and state.gyroDeltaUs or 250))
+    local gyroHz = math.floor((rawGyroHz / 1000) + 0.5) * 1000
     local function formatPidLoopKhz(valueKhz)
-        return string.format("%d kHz", math.floor(valueKhz + 0.5))
+        local rounded = math.floor((valueKhz * 100) + 0.5) / 100
+        local text = string.format("%.2f", rounded):gsub("0+$", ""):gsub("%.$", "")
+        if not text:find("%.") and rounded >= 2 then
+            text = text .. ".0"
+        end
+        return string.format("%s kHz", text)
     end
     local tableData = {}
     local present = {}
@@ -193,7 +200,7 @@ local function startLoad()
 
     state.loading = true
     state.loaded = false
-    state.pendingReads = 3
+    state.pendingReads = 4
     state.loadError = nil
     state.saveError = nil
     state.dirty = false
@@ -201,6 +208,7 @@ local function startLoad()
     state.currentPidLoop = 1
     state.currentFeatures = 0
     state.gyroDeltaUs = 250
+    state.pidBaseHz = 0
     state.needsRender = true
 
     rfsuite.app.ui.progressDisplay("@i18n(app.modules.configuration.name)@", "@i18n(app.modules.configuration.progress_loading)@", 0.08)
@@ -254,6 +262,20 @@ local function startLoad()
             onReadDone()
         end)
         featureApi.read()
+    end
+
+    local boardApi = rfsuite.tasks.msp.api.load("BOARD_INFO")
+    if not boardApi then
+        onReadDone()
+    else
+        boardApi.setCompleteHandler(function()
+            local parsed = boardApi.data() and boardApi.data().parsed or nil
+            local sampleRateHz = tonumber(parsed and parsed.gyro_sample_rate_hz or 0) or 0
+            if sampleRateHz > 0 then state.pidBaseHz = sampleRateHz end
+            onReadDone()
+        end)
+        boardApi.setErrorHandler(function() onReadDone() end)
+        boardApi.read()
     end
 
     state.pendingReads = state.pendingReads + 1

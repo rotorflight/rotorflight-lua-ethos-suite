@@ -85,7 +85,6 @@ local function addSection(spec)
     local section = cloneShallow(spec)
     section.loaderspeed = resolveLoaderSpeed(section.loaderspeed)
     section.pages = nil
-    section.order = nil
     section.parent = nil
 
     local idx = #sections + 1
@@ -133,10 +132,11 @@ local function flattenSectionSpecs(rawSections)
     local mixedInserted = false
 
     local function appendMixedShortcuts()
-        for _, extra in ipairs(extras) do
+        for idx, extra in ipairs(extras) do
             local appended = cloneShallow(extra)
             appended.newline = nil
             appended._mixedShortcut = true
+            appended.order = 1000 + idx
             out[#out + 1] = appended
         end
     end
