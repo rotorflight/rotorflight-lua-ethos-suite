@@ -59,6 +59,9 @@ Source: `src/rfsuite/app/modules/manifest.lua` (auto-generated from `bin/menu/ma
     - Power (menuId `power`)
       - menuId `power`: Power
         - Battery (script `battery.lua`)
+          - variants: >= 12.10.0 => `battery.lua`
+        - Battery (script `battery_legacy.lua`)
+          - variants: < 12.10.0 => `battery_legacy.lua`
         - Alerts (script `alerts.lua`)
         - Sources (script `source.lua`)
     - ESC & Motors (menuId `esc_motors`)
