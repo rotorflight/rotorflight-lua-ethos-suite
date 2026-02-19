@@ -88,7 +88,12 @@ local function saveProfileCapacity(profileIndex, capacity)
     local v = tonumber(capacity)
     if v < CAPACITY_PROFILE_MIN then v = CAPACITY_PROFILE_MIN end
     if v > CAPACITY_PROFILE_MAX then v = CAPACITY_PROFILE_MAX end
-    batteryValues["batteryCapacity_" .. tostring(profileIndex)] = math.floor(v + 0.5)
+    local finalVal = math.floor(v + 0.5)
+    batteryValues["batteryCapacity_" .. tostring(profileIndex)] = finalVal
+
+    if rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles then
+        rfsuite.session.batteryConfig.profiles[profileIndex] = finalVal
+    end
 end
 
 local function updateDynamicUi(self, editingType, activeType)
@@ -205,7 +210,12 @@ local function preSave(self)
     local batteryValues = values and values.BATTERY_CONFIG
     if not batteryValues then return end
 
-    batteryValues["batteryCapacity_" .. tostring(editingType)] = math.floor(capacityValue + 0.5)
+    local finalVal = math.floor(capacityValue + 0.5)
+    batteryValues["batteryCapacity_" .. tostring(editingType)] = finalVal
+
+    if rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles then
+        rfsuite.session.batteryConfig.profiles[editingType] = finalVal
+    end
 end
 
 local function event(widget, category, value, x, y)
