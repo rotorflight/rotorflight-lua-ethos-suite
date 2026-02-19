@@ -137,6 +137,8 @@ function app.create()
         app.audio.playServoOverideEnable = false
         app.audio.playMixerOverideDisable = false
         app.audio.playMixerOverideEnable = false
+        app.audio.playMixerPassthroughOverideDisable = false
+        app.audio.playMixerPassthroughOverideEnable = false
         app.audio.playEraseFlash = false
 
         app.dialogs = {}

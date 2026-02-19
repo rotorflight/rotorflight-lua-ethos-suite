@@ -393,6 +393,14 @@ local function playPendingAudioAlerts()
             utils.playFile("app", "moveridedis.wav");
             a.playMixerOverideDisable = false
         end
+        if a.playMixerPassthroughOverideEnable then
+            utils.playFile("app", "mpoverideen.wav");
+            a.playMixerPassthroughOverideEnable = false
+        end
+        if a.playMixerPassthroughOverideDisable then
+            utils.playFile("app", "mpoveridedis.wav");
+            a.playMixerPassthroughOverideDisable = false
+        end
         if a.playSaveArmed then
             utils.playFileCommon("warn.wav");
             a.playSaveArmed = false
