@@ -652,7 +652,7 @@ local function disableOverrideForExit(showDialog)
     end
     inOverRide = false
     if showDialog then
-        rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
+        rfsuite.app.ui.progressDisplay("@i18n(app.modules.mixer.swash_override)@", "@i18n(app.modules.mixer.swash_override_disabling)@")
     end
     mixerOff()
 end
@@ -677,11 +677,11 @@ local function onToolMenu(self)
     local message
     local title
     if inOverRide == false then
-        title = "@i18n(app.modules.trim.enable_mixer_override)@"
-        message = "@i18n(app.modules.trim.enable_mixer_message)@"
+        title = "@i18n(app.modules.mixer.enable_swash_override)@"
+        message = "@i18n(app.modules.mixer.enable_swash_override_message)@"
     else
-        title = "@i18n(app.modules.trim.disable_mixer_override)@"
-        message = "@i18n(app.modules.trim.disable_mixer_message)@"
+        title = "@i18n(app.modules.mixer.disable_swash_override)@"
+        message = "@i18n(app.modules.mixer.disable_swash_override_message)@"
     end
 
     form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
@@ -725,14 +725,14 @@ local function wakeup(self)
 
         if inOverRide == false then
 
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_enabling)@")
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.mixer.swash_override)@", "@i18n(app.modules.mixer.swash_override_enabling)@")
             mixerOn()
             inOverRide = true
             lastAppliedDigest = formDigest()
             lastAppliedFields = snapshotFormFields()
         else
 
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.mixer.swash_override)@", "@i18n(app.modules.mixer.swash_override_disabling)@")
             mixerOff()
             inOverRide = false
         end

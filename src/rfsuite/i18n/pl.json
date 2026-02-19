@@ -6935,12 +6935,40 @@
           "reverse_text": false,
           "translation": "Cyklicz Pitch Limit"
         },
+        "disable_swash_override": {
+          "english": "Disable swash setup mode",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disable swash setup mode"
+        },
+        "disable_swash_override_message": {
+          "english": "Disable swash setup mode and return mixer control to the flight controller.",
+          "max_length": 75,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disable swash setup mode and return mixer control to the flight controller."
+        },
         "elevator_direction": {
           "english": "Elevator Direction",
           "max_length": 18,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Elevator Direction"
+        },
+        "enable_swash_override": {
+          "english": "Enable swash setup mode",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enable swash setup mode"
+        },
+        "enable_swash_override_message": {
+          "english": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller.",
+          "max_length": 159,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller."
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -6983,6 +7011,27 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Swash"
+        },
+        "swash_override": {
+          "english": "Swash Setup Mode",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Swash Setup Mode"
+        },
+        "swash_override_disabling": {
+          "english": "Disabling swash setup mode...",
+          "max_length": 29,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disabling swash setup mode..."
+        },
+        "swash_override_enabling": {
+          "english": "Enabling swash setup mode...",
+          "max_length": 28,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enabling swash setup mode..."
         },
         "swash_phase": {
           "english": "Phase Angle",

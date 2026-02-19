@@ -5416,6 +5416,30 @@
           "translation": "Geometry",
           "max_length": 8
         },
+        "disable_swash_override": {
+          "english": "Disable swash setup mode",
+          "needs_translation": false,
+          "translation": "Disable swash setup mode",
+          "max_length": 24
+        },
+        "disable_swash_override_message": {
+          "english": "Disable swash setup mode and return mixer control to the flight controller.",
+          "needs_translation": false,
+          "translation": "Disable swash setup mode and return mixer control to the flight controller.",
+          "max_length": 75
+        },
+        "enable_swash_override": {
+          "english": "Enable swash setup mode",
+          "needs_translation": false,
+          "translation": "Enable swash setup mode",
+          "max_length": 23
+        },
+        "enable_swash_override_message": {
+          "english": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller.",
+          "needs_translation": false,
+          "translation": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller.",
+          "max_length": 159
+        },
         "help_p1": {
           "english": "Adust swash plate geometry, phase angles, and limits.",
           "needs_translation": false,
@@ -5445,6 +5469,24 @@
           "needs_translation": false,
           "translation": "Phase Angle",
           "max_length": 11
+        },
+        "swash_override": {
+          "english": "Swash Setup Mode",
+          "needs_translation": false,
+          "translation": "Swash Setup Mode",
+          "max_length": 16
+        },
+        "swash_override_disabling": {
+          "english": "Disabling swash setup mode...",
+          "needs_translation": false,
+          "translation": "Disabling swash setup mode...",
+          "max_length": 29
+        },
+        "swash_override_enabling": {
+          "english": "Enabling swash setup mode...",
+          "needs_translation": false,
+          "translation": "Enabling swash setup mode...",
+          "max_length": 28
         },
         "swash_pitch_limit": {
           "english": "Total Pitch Limit",
