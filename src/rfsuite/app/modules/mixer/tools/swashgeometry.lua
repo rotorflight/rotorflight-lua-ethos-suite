@@ -13,8 +13,11 @@ local inOverRide = false
 local saveBusy = false
 local lastChangeTime = os.clock()
 local lastAppliedDigest
+local lastAppliedFields
 local pendingApplyDigest
+local pendingApplyFields
 local liveWriteStartedAt
+local activeSaveSequence
 local LIVE_BASE_INTERVAL = 0.2
 local LIVE_INTERVAL_MIN = 0.12
 local LIVE_INTERVAL_MAX = 0.90
@@ -49,8 +52,8 @@ local LAYOUTINDEX = {
         COLLECTIVE_CALIBRATION   = 2,   -- GET_MIXER_INPUT_COLLECTIVE
         GEO_CORRECTION           = 3,   -- MIXER_CONFIG
         CYCLIC_PITCH_LIMIT       = 4,   -- GET_MIXER_INPUT_PITCH
-        COLLECTIVE_PITCH_LIMIT   = 5,   -- MIXER_CONFIG
-        SWASH_PITCH_LIMIT        = 6,   -- GET_MIXER_INPUT_COLLECTIVE
+        COLLECTIVE_PITCH_LIMIT   = 5,   -- GET_MIXER_INPUT_COLLECTIVE
+        SWASH_PITCH_LIMIT        = 6,   -- MIXER_CONFIG
         SWASH_PHASE              = 7,   -- MIXER_CONFIG
         COL_TILT_COR_POS         = 8,   -- MIXER_CONFIG
         COL_TILT_COR_NEG         = 9,   -- MIXER_CONFIG
@@ -80,6 +83,30 @@ local function formDigest()
         digest[#digest + 1] = tostring(FORMDATA[i] or "")
     end
     return table.concat(digest, "|")
+end
+
+local function snapshotFormFields()
+    local snapshot = {}
+    for i = 1, LAYOUTINDEX.COL_TILT_COR_NEG do
+        snapshot[i] = FORMDATA[i]
+    end
+    return snapshot
+end
+
+local function clearPendingApplyState()
+    pendingApplyDigest = nil
+    pendingApplyFields = nil
+    activeSaveSequence = nil
+end
+
+local function applyPendingApplyState()
+    if pendingApplyDigest ~= nil then
+        lastAppliedDigest = pendingApplyDigest
+    end
+    if pendingApplyFields ~= nil then
+        lastAppliedFields = pendingApplyFields
+    end
+    clearPendingApplyState()
 end
 
 local function clamp(v, minv, maxv)
@@ -379,7 +406,8 @@ end
 function load.complete()
   apiDataToFormData()
   lastAppliedDigest = formDigest()
-  pendingApplyDigest = nil
+  lastAppliedFields = snapshotFormFields()
+  clearPendingApplyState()
   liveWriteStartedAt = nil
   liveUpdateInterval = LIVE_BASE_INTERVAL
   lastChangeTime = os.clock()
@@ -396,18 +424,57 @@ local SAVE_SEQUENCE = {
     "GET_MIXER_INPUT_COLLECTIVE",
 }
 
+local function markChangedApisForField(fieldIndex, changedApis)
+    if fieldIndex == LAYOUTINDEX.CYCLIC_CALIBRATION or fieldIndex == LAYOUTINDEX.CYCLIC_PITCH_LIMIT then
+        changedApis["GET_MIXER_INPUT_PITCH"] = true
+        changedApis["GET_MIXER_INPUT_ROLL"] = true
+        return
+    end
+
+    if fieldIndex == LAYOUTINDEX.COLLECTIVE_CALIBRATION or fieldIndex == LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT then
+        changedApis["GET_MIXER_INPUT_COLLECTIVE"] = true
+        return
+    end
+
+    changedApis["MIXER_CONFIG"] = true
+end
+
+local function buildLiveSaveSequence()
+    if not lastAppliedFields then
+        local sequence = {}
+        for i = 1, #SAVE_SEQUENCE do
+            sequence[#sequence + 1] = SAVE_SEQUENCE[i]
+        end
+        return sequence
+    end
+
+    local changedApis = {}
+    for i = 1, LAYOUTINDEX.COL_TILT_COR_NEG do
+        if FORMDATA[i] ~= lastAppliedFields[i] then
+            markChangedApisForField(i, changedApis)
+        end
+    end
+
+    local sequence = {}
+    for i = 1, #SAVE_SEQUENCE do
+        local apikey = SAVE_SEQUENCE[i]
+        if changedApis[apikey] then
+            sequence[#sequence + 1] = apikey
+        end
+    end
+    return sequence
+end
+
 local function writeNext(i, commitToEeprom)
-    local apikey = SAVE_SEQUENCE[i]
+    local sequence = activeSaveSequence or SAVE_SEQUENCE
+    local apikey = sequence[i]
     if not apikey then
         if commitToEeprom then
             local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
             EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
             EAPI.setCompleteHandler(function(self)
                 rfsuite.utils.log("Writing to EEPROM", "info")
-                if pendingApplyDigest ~= nil then
-                    lastAppliedDigest = pendingApplyDigest
-                end
-                pendingApplyDigest = nil
+                applyPendingApplyState()
                 liveWriteStartedAt = nil
                 if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.setPageDirty then
                     rfsuite.app.ui.setPageDirty(false)
@@ -418,15 +485,12 @@ local function writeNext(i, commitToEeprom)
             local ok = EAPI.write()
             if ok == false then
                 saveBusy = false
-                pendingApplyDigest = nil
+                clearPendingApplyState()
                 liveWriteStartedAt = nil
                 rfsuite.app.triggers.closeProgressLoader = true
             end
         else
-            if pendingApplyDigest ~= nil then
-                lastAppliedDigest = pendingApplyDigest
-            end
-            pendingApplyDigest = nil
+            applyPendingApplyState()
             if liveWriteStartedAt then
                 local elapsed = os.clock() - liveWriteStartedAt
                 local target = clamp(elapsed * 0.75, LIVE_INTERVAL_MIN, LIVE_INTERVAL_MAX)
@@ -460,7 +524,7 @@ local function writeNext(i, commitToEeprom)
     end
     if ok == false then
         saveBusy = false
-        pendingApplyDigest = nil
+        clearPendingApplyState()
         liveWriteStartedAt = nil
         lastChangeTime = os.clock()
         if commitToEeprom then
@@ -473,12 +537,29 @@ function save.start(commitToEeprom)
     if saveBusy then
         return false
     end
+
+    local commit = (commitToEeprom ~= false)
+    local sequence
+    if commit then
+        sequence = SAVE_SEQUENCE
+    else
+        sequence = buildLiveSaveSequence()
+        if #sequence == 0 then
+            return false
+        end
+    end
+
     if not copyFormToApiValues() then
         return false
     end
+
     saveBusy = true
-    local commit = (commitToEeprom ~= false)
+    activeSaveSequence = {}
+    for i = 1, #sequence do
+        activeSaveSequence[i] = sequence[i]
+    end
     pendingApplyDigest = formDigest()
+    pendingApplyFields = snapshotFormFields()
     if not commit then
         liveWriteStartedAt = os.clock()
     else
@@ -512,7 +593,8 @@ local function openPage(opts)
     inOverRide = false
     saveBusy = false
     lastAppliedDigest = nil
-    pendingApplyDigest = nil
+    lastAppliedFields = nil
+    clearPendingApplyState()
     liveWriteStartedAt = nil
     liveUpdateInterval = LIVE_BASE_INTERVAL
 
@@ -647,6 +729,7 @@ local function wakeup(self)
             mixerOn()
             inOverRide = true
             lastAppliedDigest = formDigest()
+            lastAppliedFields = snapshotFormFields()
         else
 
             rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
