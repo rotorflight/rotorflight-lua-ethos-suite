@@ -123,7 +123,7 @@ local sensorTable = {
 
     vfr = {
         name = "@i18n(sensors.vfr)@",
-        mandatory = true,
+        mandatory = false,
         stats = true,
         switch_alerts = true,
         unit = UNIT_PERCENT,
