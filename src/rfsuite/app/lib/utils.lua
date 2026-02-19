@@ -160,14 +160,26 @@ function utils.getCurrentRateProfile()
 end
 
 function utils.getCurrentBatteryType()
-    local batteryType = tasks.telemetry.getSensor("battery_type")
-    if batteryType ~= nil then
-        if batteryType ~= nil then
-            session.activeBatteryType = math.floor(batteryType)
-        else
-            session.activeBatteryType = 0 -- default battery type
-        end
+    local telemetryType = tasks.telemetry.getSensor("battery_type")
+    local telemetryValue = tonumber(telemetryType)
+
+    local values = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and tasks.msp.api.apidata.values
+    local mspType = values and values.BATTERY_TYPE and values.BATTERY_TYPE.batteryType
+    if mspType == nil and values and values.BATTERY_CONFIG then
+        mspType = values.BATTERY_CONFIG.batteryType
     end
+    local mspValue = tonumber(mspType)
+
+    local resolved = telemetryValue
+    if resolved == nil then resolved = mspValue end
+    if resolved == nil then return end
+
+    if mspValue ~= nil and resolved >= 1 and resolved <= 6 and (resolved - 1) == mspValue then
+        resolved = resolved - 1
+    end
+
+    session.activeBatteryTypeLast = session.activeBatteryType
+    session.activeBatteryType = math.floor(resolved)
 end
 
 function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, rest) return first:upper() .. rest:lower() end) end

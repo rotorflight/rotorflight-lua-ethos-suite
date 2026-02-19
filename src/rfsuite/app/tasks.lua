@@ -56,7 +56,12 @@ end
 
 local function batteryTypeChangeDetection()
     local app = rfsuite.app
-    app.utils.getCurrentBatteryType()
+    local now = os.clock()
+    local interval = rfsuite.tasks.telemetry.getSensorSource("battery_type") and 0.1 or 1.5
+    if (now - (app.batteryTypeCheckScheduler or 0)) >= interval then
+        app.batteryTypeCheckScheduler = now
+        app.utils.getCurrentBatteryType()
+    end
 end
 
 local function mainMenuIconEnableDisable()
