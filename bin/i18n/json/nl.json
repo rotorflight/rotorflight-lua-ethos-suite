@@ -6738,6 +6738,13 @@
           "max_length": 7,
           "reverse_text": false
         },
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
         "bec_voltage_alert": {
           "english": "BEC Alert Value",
           "translation": "BEC Alarm Waarde",
@@ -6807,6 +6814,13 @@
           "needs_translation": false,
           "max_length": 5,
           "reverse_text": false
+        },
+        "selected": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
         },
         "rx_voltage_alert": {
           "english": "RxBatt Alert Value",

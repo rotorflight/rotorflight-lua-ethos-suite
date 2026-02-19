@@ -36,7 +36,7 @@
         "max_length": 27,
         "needs_translation": true,
         "reverse_text": false,
-        "translation": "The current selected battery type (0-5)"
+        "translation": "Selected battery type (0-5)"
       },
       "source_adc": {
         "english": "Battery ADC",
@@ -7605,6 +7605,13 @@
           "reverse_text": false,
           "translation": "Kraftstoff berechnen mit"
         },
+        "capacity": {
+          "english": "Capacity",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Capacity"
+        },
         "cell_count": {
           "english": "Cell Count",
           "max_length": 10,
@@ -7667,6 +7674,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "RxBatt-Warnwert"
+        },
+        "selected": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Selected"
         },
         "source_name": {
           "english": "Sources",

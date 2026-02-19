@@ -18,8 +18,8 @@ local CAPACITY_PROFILE_MAX = 40000
 
 local fields = {
     {t = "@i18n(telemetry.group_profiles)@", type = 0, apikey = "profilesGroupHeader", value = ""},
-    {t = "    Selected", mspapi = 2, apikey = "batteryType", type = 1},
-    {t = "    Capacity", mspapi = 1, apikey = "batteryCapacityActive", min = CAPACITY_PROFILE_MIN, max = CAPACITY_PROFILE_MAX, step = 10, unit = "mAh"},
+    {t = "    @i18n(app.modules.power.selected)@", mspapi = 2, apikey = "batteryType", type = 1},
+    {t = "    @i18n(app.modules.power.capacity)@", mspapi = 1, apikey = "batteryCapacityActive", min = CAPACITY_PROFILE_MIN, max = CAPACITY_PROFILE_MAX, step = 10, unit = "mAh"},
     {t = "@i18n(telemetry.group_battery)@", type = 0, apikey = "batteryGroupHeader", value = ""},
     {t = "    @i18n(app.modules.power.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"},
     {t = "    @i18n(app.modules.power.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"},

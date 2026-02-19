@@ -6536,6 +6536,12 @@
           "needs_translation": false,
           "translation": "Calculate Fuel Using"
         },
+        "capacity": {
+          "english": "Capacity",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Capacity"
+        },
         "cell_count": {
           "english": "Cell Count",
           "max_length": 10,
@@ -6589,6 +6595,12 @@
           "max_length": 18,
           "needs_translation": false,
           "translation": "RxBatt Alert Value"
+        },
+        "selected": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Selected"
         },
         "source_name": {
           "english": "Sources",
