@@ -258,7 +258,7 @@ local function startLoad()
     local generation = state.loadGeneration
     state.loading = true
     state.loaded = false
-    state.pendingReads = 5
+    state.pendingReads = 4
     state.loadStartedAt = os.clock()
     state.loadProgressAt = state.loadStartedAt
     state.loadError = nil
@@ -298,14 +298,6 @@ local function startLoad()
         onComplete = function(api)
             local parsed = api.data() and api.data().parsed or nil
             state.currentFeatures = tonumber(parsed and parsed.enabledFeatures or 0) or 0
-        end
-    }, generation)
-
-    startRead(rfsuite.tasks.msp.api.load("BOARD_INFO"), {
-        onComplete = function(api)
-            local parsed = api.data() and api.data().parsed or nil
-            local sampleRateHz = tonumber(parsed and parsed.gyro_sample_rate_hz or 0) or 0
-            if sampleRateHz > 0 then state.pidBaseHz = sampleRateHz end
         end
     }, generation)
 
