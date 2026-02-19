@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "BATTERY_CONFIG"
 local MSP_API_CMD_READ = 32
 local MSP_API_CMD_WRITE = 33
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 local tblBatterySource = {
     [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
