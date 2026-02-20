@@ -36,7 +36,7 @@
         "max_length": 27,
         "needs_translation": true,
         "reverse_text": false,
-        "translation": "Selected battery type (0-5))"
+        "translation": "Selected battery type (0-5)"
       },
       "source_adc": {
         "english": "Battery ADC",
