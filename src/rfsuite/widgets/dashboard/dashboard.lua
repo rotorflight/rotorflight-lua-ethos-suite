@@ -52,6 +52,7 @@ local busyWakeupTick = 0
 local isSliding = false
 local isSlidingStart = 0
 local lastFocusReset = 0
+local toolbarOpenedAt = 0
 
 local function loadToolbarModule()
     local bdir = baseDir or "default"
@@ -70,27 +71,39 @@ local function loadToolbarModule()
 end
 
 local toolbar = loadToolbarModule()
+local function loadEraseModule()
+    local bdir = baseDir or "default"
+    local path = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/lib/erase_dataflash.lua"
+    local chunk = compile(path)
+    if not chunk then
+        log("Failed to compile erase module: " .. tostring(path), "info")
+        return nil
+    end
+    local mod = chunk()
+    if type(mod) ~= "table" then
+        log("Failed to load erase module: " .. tostring(path), "info")
+        return nil
+    end
+    return mod
+end
+
+local eraseDataflash = loadEraseModule()
 
 -- Simple gesture tracking (top-down / bottom-up only)
 local gestureActive = false
 local gestureStartX = 0
 local gestureStartY = 0
 local gestureTriggered = false
-local GESTURE_MIN_DY = 30
-local GESTURE_MAX_DX = 25
+local GESTURE_MIN_DY = 20
+local GESTURE_MAX_DX = 40
 
 dashboard.toolbarVisible = dashboard.toolbarVisible or false
 dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
 
 function dashboard.eraseBlackboxAsk()
-    local typ = "text/blackbox"
-    if not dashboard.objectsByType[typ] and dashboard._moduleCache and dashboard._moduleCache[typ] == nil then
-        dashboard.loadObjectType({type = typ})
-    end
-    local obj = dashboard.objectsByType[typ] or (dashboard._moduleCache and dashboard._moduleCache[typ])
-    if obj and type(obj.eraseBlackboxAsk) == "function" then
-        obj.eraseBlackboxAsk()
+    if eraseDataflash and eraseDataflash.ask then
+        eraseDataflash.ask(dashboard, rfsuite)
     end
 end
 
@@ -1255,6 +1268,13 @@ function dashboard.event(widget, category, value, x, y)
         isSliding = true
         isSlidingStart = clock()
 
+        if not gestureActive and x and y then
+            gestureActive = true
+            gestureStartX = x or 0
+            gestureStartY = y or 0
+            gestureTriggered = false
+        end
+
         if gestureActive and not gestureTriggered and x and y then
             local dx = x - gestureStartX
             local dy = y - gestureStartY
@@ -1265,12 +1285,16 @@ function dashboard.event(widget, category, value, x, y)
                     if not dashboard.selectedToolbarIndex then
                         dashboard.selectedToolbarIndex = 1
                     end
+                    toolbarOpenedAt = now
+                    dashboard._toolbarLastActive = now
+                    dashboard._toolbarCloseAt = 0
                     lcd.invalidate(widget)
                     return true
                 elseif dy >= GESTURE_MIN_DY then
                     gestureTriggered = true
                     dashboard.toolbarVisible = false
                     dashboard.selectedToolbarIndex = nil
+                    toolbarOpenedAt = 0
                     lcd.invalidate(widget)
                     return true
                 end
@@ -1364,6 +1388,36 @@ function dashboard.wakeup_protected(widget)
     if lcd and lcd.resetFocusTimeout and (now - lastFocusReset) >= 5 then
         lcd.resetFocusTimeout()
         lastFocusReset = now
+    end
+    if toolbarOpenedAt == nil then toolbarOpenedAt = 0 end
+    local lastActive = dashboard._toolbarLastActive or 0
+    if dashboard.toolbarVisible and toolbarOpenedAt == 0 then
+        toolbarOpenedAt = now
+    end
+    if dashboard.toolbarVisible and lastActive == 0 then
+        dashboard._toolbarLastActive = now
+        lastActive = now
+    end
+    local closeAt = dashboard._toolbarCloseAt or 0
+    if dashboard.toolbarVisible and closeAt > 0 and now >= closeAt then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+    end
+    local toolbarTimeout = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.toolbar_timeout) or 10
+    if toolbarTimeout > 0 and dashboard.toolbarVisible and (now - lastActive) >= toolbarTimeout then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        lcd.invalidate(widget)
+    end
+
+    if eraseDataflash and eraseDataflash.wakeup then
+        eraseDataflash.wakeup(dashboard, rfsuite)
     end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
@@ -1668,7 +1722,19 @@ function dashboard.menu(widget)
     if (board == "X14" or board == "X14S") and toolbar and toolbar.getItems then
         for _, item in ipairs(toolbar.getItems(dashboard) or {}) do
             if item and item.name and type(item.onClick) == "function" then
-                items[#items + 1] = {item.name, function() item.onClick(dashboard) end}
+                items[#items + 1] = {
+                    item.name,
+                    function()
+                        if toolbar and toolbar.isItemEnabled and not toolbar.isItemEnabled(item, dashboard, rfsuite) then
+                            local msg = "@i18n(app.msg_not_available_now)@" or "Not available right now."
+                            pcall(function()
+                                form.openDialog({title = "@i18n(app.msg_unavailable)@" or "Unavailable", message = msg, buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}})
+                            end)
+                            return
+                        end
+                        item.onClick(dashboard)
+                    end
+                }
             end
         end
     end
