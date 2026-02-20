@@ -544,61 +544,6 @@ return {
             scriptPrefix = "power/tools/",
             title = "@i18n(app.modules.power.name)@",
         },
-        powertrain_menu = {
-            iconPrefix = "app/modules/",
-            loaderSpeed = "FAST",
-            navOptions = {
-                defaultSection = "setup",
-                showProgress = true,
-            },
-            pages = {
-                {
-                    image = "esc_motors/esc.png",
-                    loaderspeed = 0.08,
-                    menuId = "esc_motors",
-                    name = "@i18n(app.modules.esc_motors.name)@",
-                    order = 1,
-                    shortcutId = "s_powertrain_menu_esc_motors_6639b6eefb",
-                },
-                {
-                    image = "power/power.png",
-                    menuId = "power",
-                    name = "@i18n(app.modules.power.name)@",
-                    order = 2,
-                    shortcutId = "s_powertrain_menu_power_a0e4c1acee",
-                },
-                {
-                    image = "governor/governor.png",
-                    name = "@i18n(app.modules.governor.name)@",
-                    order = 3,
-                    script = "governor/governor.lua",
-                    script_by_mspversion = {
-                        {
-                            op = ">=",
-                            script = "governor/governor.lua",
-                            ver = { 12, 0, 9 },
-                        },
-                        {
-                            op = "<",
-                            script = "governor/governor_legacy.lua",
-                            ver = { 12, 0, 9 },
-                        },
-                    },
-                    script_default = "governor/governor_legacy.lua",
-                    shortcutId = "s_powertrain_menu_governor_governor_lu_a4e4eaa2cc",
-                },
-                {
-                    image = "esc_tools/esc.png",
-                    name = "@i18n(app.modules.esc_tools.name)@",
-                    offline = false,
-                    order = 4,
-                    script = "esc_tools/tools/esc.lua",
-                    shortcutId = "s_powertrain_menu_esc_tools_tools_esc_0ded099fe9",
-                },
-            },
-            scriptPrefix = "app/modules/",
-            title = "@i18n(app.modules.power.name)@",
-        },
         profile_governor = {
             hooksScript = "app/modules/profile_governor/menu_hooks.lua",
             iconPrefix = "app/modules/governor/gfx/",
