@@ -18,6 +18,12 @@ local function openProgressDialog(rfsuite, ...)
     return form.openProgressDialog(...)
 end
 
+local function logInfo(msg)
+    if rfsuite and rfsuite.utils and rfsuite.utils.log then
+        rfsuite.utils.log(msg, "info")
+    end
+end
+
 local function updateProgressMessage(dashboard, rfsuite)
     if not dashboard._eraseProgress or not dashboard._eraseProgressBaseMessage then return end
     local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
@@ -38,6 +44,7 @@ end
 
 local function doErase(dashboard, rfsuite)
     if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then return end
+    logInfo("Dataflash erase: queue MSP erase command")
     dashboard._eraseProgress = openProgressDialog(rfsuite, "@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
     dashboard._eraseProgress:value(0)
     dashboard._eraseProgress:closeAllowed(false)
@@ -46,9 +53,26 @@ local function doErase(dashboard, rfsuite)
     dashboard._eraseProgressMspStatusLast = nil
     rfsuite.app.ui.registerProgressDialog(dashboard._eraseProgress, dashboard._eraseProgressBaseMessage)
 
+    local function readDataflashSummary()
+        if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load) then return end
+        local API = rfsuite.tasks.msp.api.load("DATAFLASH_SUMMARY")
+        if not API then return end
+        API.setCompleteHandler(function()
+            local total = API.readValue("total")
+            local used = API.readValue("used")
+            local flags = API.readValue("flags")
+            if total ~= nil then rfsuite.session.bblSize = total end
+            if used ~= nil then rfsuite.session.bblUsed = used end
+            if flags ~= nil then rfsuite.session.bblFlags = flags end
+            logInfo(string.format("Dataflash summary: total=%s used=%s flags=%s", tostring(total), tostring(used), tostring(flags)))
+        end)
+        API.read()
+    end
+
     local message = {
         command = 72,
         processReply = function()
+            logInfo("Dataflash erase: MSP erase reply received")
             if dashboard._eraseProgress then
                 dashboard._eraseProgress:close()
                 rfsuite.app.ui.clearProgressDialog(dashboard._eraseProgress)
@@ -57,6 +81,7 @@ local function doErase(dashboard, rfsuite)
             dashboard._eraseProgressBaseMessage = nil
             dashboard._eraseProgressMspStatusLast = nil
             dashboard._eraseProgressCounter = nil
+            readDataflashSummary()
         end
     }
     rfsuite.tasks.msp.mspQueue:add(message)
