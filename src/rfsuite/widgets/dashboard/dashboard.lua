@@ -71,6 +71,23 @@ local function loadToolbarModule()
 end
 
 local toolbar = loadToolbarModule()
+local function loadEraseModule()
+    local bdir = baseDir or "default"
+    local path = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/lib/erase_dataflash.lua"
+    local chunk = compile(path)
+    if not chunk then
+        log("Failed to compile erase module: " .. tostring(path), "info")
+        return nil
+    end
+    local mod = chunk()
+    if type(mod) ~= "table" then
+        log("Failed to load erase module: " .. tostring(path), "info")
+        return nil
+    end
+    return mod
+end
+
+local eraseDataflash = loadEraseModule()
 
 -- Simple gesture tracking (top-down / bottom-up only)
 local gestureActive = false
@@ -85,13 +102,8 @@ dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
 
 function dashboard.eraseBlackboxAsk()
-    local typ = "text/blackbox"
-    if not dashboard.objectsByType[typ] and dashboard._moduleCache and dashboard._moduleCache[typ] == nil then
-        dashboard.loadObjectType({type = typ})
-    end
-    local obj = dashboard.objectsByType[typ] or (dashboard._moduleCache and dashboard._moduleCache[typ])
-    if obj and type(obj.eraseBlackboxAsk) == "function" then
-        obj.eraseBlackboxAsk()
+    if eraseDataflash and eraseDataflash.ask then
+        eraseDataflash.ask(dashboard, rfsuite)
     end
 end
 
@@ -1384,6 +1396,10 @@ function dashboard.wakeup_protected(widget)
         toolbarOpenedAt = 0
         dashboard._toolbarLastActive = 0
         lcd.invalidate(widget)
+    end
+
+    if eraseDataflash and eraseDataflash.wakeup then
+        eraseDataflash.wakeup(dashboard, rfsuite)
     end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof

@@ -82,7 +82,7 @@ local function eraseBlackboxAsk()
         {
             label = "@i18n(app.btn_ok)@",
             action = function()
-                eraseDataflashGo = true;
+                eraseDataflash()
                 return true
             end
         }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
@@ -195,8 +195,6 @@ function render.wakeup(box)
     box._isLoadingDots = type(displayValue) == "string" and displayValue:match("^%.+$") ~= nil
 
     box._dynamicTextColor = percentUsed ~= nil and utils.resolveThresholdColor(percentUsed, box, "textcolor", "textcolor") or cfg.defaultTextColor
-
-    if not box.onpress then box.onpress = eraseBlackboxAsk end
 
     if eraseDataflashGo then
         eraseDataflashGo = false
