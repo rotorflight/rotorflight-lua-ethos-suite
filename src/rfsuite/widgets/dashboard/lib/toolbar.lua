@@ -282,6 +282,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                     if idx < 1 then idx = count end
                 until idx == start or enabled[idx] ~= false
                 dashboard.selectedToolbarIndex = idx
+                dashboard._toolbarLastActive = os.clock()
                 lcd.invalidate(widget)
                 return true
             elseif value == 4100 then
@@ -291,16 +292,19 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                     if idx > count then idx = 1 end
                 until idx == start or enabled[idx] ~= false
                 dashboard.selectedToolbarIndex = idx
+                dashboard._toolbarLastActive = os.clock()
                 lcd.invalidate(widget)
                 return true
             elseif value == 33 then
                 local r = rects[idx]
                 if r and r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
+                    dashboard._toolbarLastActive = os.clock()
                     return true
                 end
             elseif value == 35 then
                 dashboard.selectedToolbarIndex = nil
+                dashboard._toolbarLastActive = os.clock()
                 lcd.invalidate(widget)
                 return true
             end
@@ -313,9 +317,11 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
         for idx, r in ipairs(rects) do
             if x >= r.x and x < (r.x + r.w) and y >= r.y and y < (r.y + r.h) then
                 dashboard.selectedToolbarIndex = idx
+                dashboard._toolbarLastActive = os.clock()
                 lcd.invalidate(widget)
                 if r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
+                    dashboard._toolbarLastActive = os.clock()
                     return true
                 end
             end

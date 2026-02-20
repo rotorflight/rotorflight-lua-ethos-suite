@@ -52,6 +52,7 @@ local busyWakeupTick = 0
 local isSliding = false
 local isSlidingStart = 0
 local lastFocusReset = 0
+local toolbarOpenedAt = 0
 
 local function loadToolbarModule()
     local bdir = baseDir or "default"
@@ -1254,12 +1255,14 @@ function dashboard.event(widget, category, value, x, y)
                     if not dashboard.selectedToolbarIndex then
                         dashboard.selectedToolbarIndex = 1
                     end
+                    toolbarOpenedAt = now
                     lcd.invalidate(widget)
                     return true
                 elseif dy >= GESTURE_MIN_DY then
                     gestureTriggered = true
                     dashboard.toolbarVisible = false
                     dashboard.selectedToolbarIndex = nil
+                    toolbarOpenedAt = 0
                     lcd.invalidate(widget)
                     return true
                 end
@@ -1353,6 +1356,22 @@ function dashboard.wakeup_protected(widget)
     if lcd and lcd.resetFocusTimeout and (now - lastFocusReset) >= 5 then
         lcd.resetFocusTimeout()
         lastFocusReset = now
+    end
+    if toolbarOpenedAt == nil then toolbarOpenedAt = 0 end
+    local lastActive = dashboard._toolbarLastActive or 0
+    if dashboard.toolbarVisible and toolbarOpenedAt == 0 then
+        toolbarOpenedAt = now
+    end
+    if dashboard.toolbarVisible and lastActive == 0 then
+        dashboard._toolbarLastActive = now
+        lastActive = now
+    end
+    if dashboard.toolbarVisible and (now - lastActive) >= 10 then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        lcd.invalidate(widget)
     end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
