@@ -66,11 +66,17 @@ Source: `src/rfsuite/app/modules/manifest.lua` (auto-generated from `bin/menu/ma
         - Throttle (script `throttle.lua`)
         - Telemetry (script `telemetry.lua`)
         - RPM (script `rpm.lua`)
+    - Governor (menuId `governor`)
+      - menuId `governor`: Governor
+        - General (script `general.lua`)
+        - Ramp Time (script `time.lua`)
+        - Filters (script `filters.lua`)
+        - Bypass Curve (script `curves.lua`)
 
 ### System
 - Tools (menuId `tools_menu`)
   - menuId `tools_menu`: Tools
-    - Copy Profiles (script `copyprofiles/copyprofiles.lua`)
+    - Copy Profiles (script `copyprofiles/copyprofiles.lua`, disabled)
     - Select Profile (script `profile_select/select_profile.lua`)
     - Diagnostics (menuId `diagnostics`)
       - menuId `diagnostics`: Diagnostics
@@ -99,52 +105,9 @@ These menu definitions exist in the manifest but are not directly reachable from
   - MSP Expermental (script `developer/tools/msp_exp.lua`)
   - Settings (script `settings/tools/development.lua`)
 
-- menuId `governor`: Governor
-  - General (script `general.lua`)
-  - Ramp Time (script `time.lua`)
-  - Filters (script `filters.lua`)
-  - Bypass Curve (script `curves.lua`)
-
-- menuId `hardware_menu`: Hardware
-  - Configuration (script `configuration/configuration.lua`)
-  - Servos (script `servos/servos.lua`)
-  - Mixer (script `mixer/mixer.lua`)
-  - ESC & Motors (script `esc_motors/esc_motors.lua`)
-  - Accelerometer (script `accelerometer/accelerometer.lua`)
-  - Alignment (script `alignment/alignment.lua`)
-  - Ports (script `ports/ports.lua`)
-  - Telemetry (script `telemetry/telemetry.lua`)
-  - Radio Config (script `radio_config/radio_config.lua`)
-  - Beepers (script `beepers/beepers.lua`)
-  - Blackbox (script `blackbox/blackbox.lua`)
-  - Stats (script `stats/stats.lua`)
-  - Failsafe (script `failsafe/failsafe.lua`)
-  - Modes (script `modes/modes.lua`)
-  - Adjustments (script `adjustments/adjustments.lua`)
-  - Filters (script `filters/filters.lua`)
-  - Power (script `power/power.lua`)
-  - Governor (script `governor/governor.lua`)
-    - variants: >= 12.0.9 => `governor/governor.lua`; < 12.0.9 => `governor/governor_legacy.lua`; default => `governor/governor_legacy.lua`
-
 - menuId `profile_governor`: Governor
   - General (script `general.lua`)
   - Behaviour (script `flags.lua`)
-
-- menuId `powertrain_menu`: Power
-  - ESC & Motors (menuId `esc_motors`)
-  - Power (menuId `power`)
-  - Governor (script `governor/governor.lua`)
-    - variants: >= 12.0.9 => `governor/governor.lua`; < 12.0.9 => `governor/governor_legacy.lua`; default => `governor/governor_legacy.lua`
-  - Esc Programing (script `esc_tools/tools/esc.lua`)
-
-- menuId `profiles_menu`: Profiles
-  - Select Profile (script `profile_select/select_profile.lua`)
-  - Main Rotor (script `profile_mainrotor/mainrotor.lua`)
-  - Tail Rotor (script `profile_tailrotor/tailrotor.lua`)
-  - Rescue (script `profile_rescue/rescue.lua`)
-  - Autolevel (script `profile_autolevel/autolevel.lua`)
-  - PID Controller (script `profile_pidcontroller/pidcontroller.lua`)
-  - PID Bandwidth (script `profile_pidbandwidth/pidbandwidth.lua`)
 
 - menuId `rates_advanced`: Rates
   - Advanced (script `advanced.lua`)
