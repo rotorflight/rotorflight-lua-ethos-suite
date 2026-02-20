@@ -10471,6 +10471,7 @@
       "reverse_text": false,
       "translation": "模型已更改，重置会话"
     },
+    "msg_not_available_now": "Not available right now.",
     "msg_please_disarm_to_save": {
       "english": "Please disarm to save",
       "max_length": 21,
@@ -10562,6 +10563,7 @@
       "reverse_text": false,
       "translation": "遥测类型更改为"
     },
+    "msg_unavailable": "Unavailable",
     "msg_waiting_for_connection": {
       "english": "Waiting for connection",
       "max_length": 22,

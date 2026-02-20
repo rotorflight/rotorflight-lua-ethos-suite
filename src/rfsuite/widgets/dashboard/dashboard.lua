@@ -1652,7 +1652,9 @@ end
 
 function dashboard.menu(widget)
     local items = {}
-    if toolbar and toolbar.getItems then
+    local v = system and system.getVersion and system.getVersion() or nil
+    local board = v and v.board or ""
+    if (board == "X14" or board == "X14S") and toolbar and toolbar.getItems then
         for _, item in ipairs(toolbar.getItems(dashboard) or {}) do
             if item and item.name and type(item.onClick) == "function" then
                 items[#items + 1] = {
