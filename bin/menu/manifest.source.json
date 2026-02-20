@@ -262,12 +262,6 @@
           "name": "Status",
           "script": "status.lua",
           "translation": "@i18n(app.modules.blackbox.menu_status)@"
-        },
-        {
-          "name": "New Page",
-          "translation": "@i18n(app.modules.new.name)@",
-          "script": "new/new.lua",
-          "image": "new/new.png"
         }
       ],
       "scriptPrefix": "blackbox/tools/",

@@ -212,12 +212,6 @@ return {
                     script = "status.lua",
                     shortcutId = "s_blackbox_status_lua_6d398bae79",
                 },
-                {
-                    name = "@i18n(app.modules.new.name)@",
-                    script = "new/new.lua",
-                    image = "new/new.png",
-                    shortcutId = "s_blackbox_new_new_lua_d1beaabf50",
-                },
             },
             scriptPrefix = "blackbox/tools/",
             title = "@i18n(app.modules.blackbox.name)@",
