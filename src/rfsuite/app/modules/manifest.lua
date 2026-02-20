@@ -968,6 +968,13 @@ return {
                     order = 11,
                     shortcutId = "s_setup_menu_esc_motors_5f43b662f9",
                 },
+                {
+                    image = "governor/governor.png",
+                    menuId = "governor",
+                    name = "@i18n(app.modules.governor.name)@",
+                    order = 11,
+                    shortcutId = "s_setup_menu_governor_753cc06e78",
+                },
             },
             scriptPrefix = "app/modules/",
             title = "@i18n(app.modules.hardware_setup.name)@",
