@@ -1652,12 +1652,22 @@ end
 
 function dashboard.menu(widget)
     local items = {}
-    local v = system and system.getVersion and system.getVersion() or nil
-    local board = v and v.board or ""
-    if (board == "X14" or board == "X14S") and toolbar and toolbar.getItems then
+    if toolbar and toolbar.getItems then
         for _, item in ipairs(toolbar.getItems(dashboard) or {}) do
             if item and item.name and type(item.onClick) == "function" then
-                items[#items + 1] = {item.name, function() item.onClick(dashboard) end}
+                items[#items + 1] = {
+                    item.name,
+                    function()
+                        if toolbar and toolbar.isItemEnabled and not toolbar.isItemEnabled(item, dashboard, rfsuite) then
+                            local msg = "@i18n(app.msg_not_available_now)@" or "Not available right now."
+                            pcall(function()
+                                form.openDialog({title = "@i18n(app.msg_unavailable)@" or "Unavailable", message = msg, buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}})
+                            end)
+                            return
+                        end
+                        item.onClick(dashboard)
+                    end
+                }
             end
         end
     end

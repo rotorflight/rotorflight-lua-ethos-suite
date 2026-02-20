@@ -262,6 +262,10 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     dashboard._toolbarEnabled = enabledItems
 end
 
+function M.isItemEnabled(item, dashboard, rfsuite)
+    return isItemEnabled(item, dashboard, rfsuite)
+end
+
 function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
     if not dashboard.toolbarVisible then return false end
 
