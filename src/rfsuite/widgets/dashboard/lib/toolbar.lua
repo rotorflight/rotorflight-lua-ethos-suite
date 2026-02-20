@@ -85,6 +85,11 @@ local function fitLabelToWidth(lcd, label, maxW)
     return ellipsis
 end
 
+local function getToolbarCache(dashboard)
+    dashboard._toolbarCache = dashboard._toolbarCache or {}
+    return dashboard._toolbarCache
+end
+
 function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
     if not dashboard.toolbarVisible then return end
     local x, y, w, barH = getToolbarBounds(dashboard, lcd)
@@ -107,8 +112,22 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
 
     local items = getToolbarItems(dashboard)
     if #items == 0 then return end
-    sort(items, function(a, b) return (a.order or 0) < (b.order or 0) end)
+
+    local cache = getToolbarCache(dashboard)
     local slots = 6
+    local recache = (cache.itemsRef ~= items) or (cache.w ~= w) or (cache.h ~= barH) or (cache.font ~= FONT_XS) or (cache.slots ~= slots)
+    if recache then
+        local sorted = {}
+        for i = 1, #items do sorted[i] = items[i] end
+        sort(sorted, function(a, b) return (a.order or 0) < (b.order or 0) end)
+        cache.itemsRef = items
+        cache.sortedItems = sorted
+        cache.w = w
+        cache.h = barH
+        cache.font = FONT_XS
+        cache.slots = slots
+        cache.labels = {}
+    end
     local itemW = w / slots
     local boxFill = themeFocusBg
     local selectedFill = themeFocus
@@ -121,7 +140,7 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local iconPad = 6
     lcd.font(FONT_XS)
     for i = 1, slots do
-        local item = items[i]
+        local item = (cache.sortedItems and cache.sortedItems[i]) or items[i]
         if item then
             local ix = x + (i - 1) * itemW
             local iw = itemW
@@ -142,14 +161,18 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
                 local sz = item.iconSize or iconSize
                 local tw = 0
                 local th = 0
+                local fitLabel = nil
                 if item.name then
-                    local fitLabel = fitLabelToWidth(lcd, item.name, bw - 6)
+                    fitLabel = cache.labels and cache.labels[i]
+                    if not fitLabel then
+                        fitLabel = fitLabelToWidth(lcd, item.name, bw - 6)
+                        if cache.labels then cache.labels[i] = fitLabel end
+                    end
                     tw, th = lcd.getTextSize(fitLabel)
                 end
                 local textY = by + textPadTop
                 if item.name then
                     lcd.color(isSelected and themeDefaultBg or themeDefault)
-                    local fitLabel = fitLabelToWidth(lcd, item.name, bw - 6)
                     lcd.drawText(bx + (bw * 0.5), textY, fitLabel, CENTERED)
                 end
                 local labelBand = th + (textPadTop * 2)
