@@ -1657,7 +1657,7 @@ function dashboard.menu(widget)
     if (board == "X14" or board == "X14S") and toolbar and toolbar.getItems then
         for _, item in ipairs(toolbar.getItems(dashboard) or {}) do
             if item and item.name and type(item.onClick) == "function" then
-                items[#items + 1] = {item.name, item.onClick}
+                items[#items + 1] = {item.name, function() item.onClick(dashboard) end}
             end
         end
     end

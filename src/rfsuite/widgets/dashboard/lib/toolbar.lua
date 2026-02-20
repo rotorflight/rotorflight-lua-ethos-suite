@@ -2,6 +2,27 @@
   Toolbar helper for dashboard
 ]] --
 
+local DEFAULT_TOOLBAR_ITEMS = {
+    {
+        name = "@i18n(widgets.dashboard.reset_flight)@",
+        order = 100,
+        icon = "widgets/dashboard/gfx/toolbar_reset.png",
+        iconSize = 55,
+        onClick = function(dashboard)
+            dashboard.resetFlightModeAsk()
+        end
+    },
+    {
+        name = "@i18n(widgets.bbl.erase_dataflash)@",
+        order = 110,
+        icon = "widgets/dashboard/gfx/toolbar_erase.png",
+        iconSize = 55,
+        onClick = function(dashboard)
+            dashboard.eraseBlackboxAsk()
+        end
+    }
+}
+
 local M = {}
 
 local toolbarMaskCache = {}
@@ -32,14 +53,12 @@ local function getToolbarBounds(dashboard, lcd)
     return x, y, w, barH
 end
 
+
 local function getToolbarItems(dashboard)
     if type(dashboard.toolbarItems) == "table" then
         return dashboard.toolbarItems
     end
-    return {
-        {name = "@i18n(widgets.dashboard.reset_flight)@", order = 100, icon = "widgets/dashboard/gfx/toolbar_reset.png", iconSize = 75, onClick = function() dashboard.resetFlightModeAsk() end},
-        {name = "@i18n(widgets.bbl.erase_dataflash)@", order = 110, icon = "widgets/dashboard/gfx/toolbar_erase.png", iconSize = 75, onClick = function() dashboard.eraseBlackboxAsk() end}
-    }
+    return DEFAULT_TOOLBAR_ITEMS
 end
 
 function M.getItems(dashboard)
@@ -76,7 +95,12 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local themeDefaultBg = lcd.themeColor(THEME_DEFAULT_BGCOLOR)
     local themeFocusBg = lcd.themeColor(THEME_FOCUS_BGCOLOR)
     local lineColor = themeFocus
-    lcd.color(lcd.RGB(0, 0, 0, 0.95))
+    local isDark = lcd.darkMode()
+    if isDark then
+        lcd.color(lcd.RGB(0, 0, 0, 0.95))
+    else
+        lcd.color(lcd.RGB(255, 255, 255, 0.95))
+    end
     lcd.drawFilledRectangle(x, y, w, barH)
     lcd.color(lineColor)
     lcd.drawFilledRectangle(x, y, w, 4)
@@ -173,7 +197,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
             elseif value == 33 then
                 local r = rects[idx]
                 if r and r.item and type(r.item.onClick) == "function" then
-                    r.item.onClick()
+                    r.item.onClick(dashboard)
                     return true
                 end
             elseif value == 35 then
@@ -191,7 +215,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                 dashboard.selectedToolbarIndex = idx
                 lcd.invalidate(widget)
                 if r.item and type(r.item.onClick) == "function" then
-                    r.item.onClick()
+                    r.item.onClick(dashboard)
                     return true
                 end
             end
