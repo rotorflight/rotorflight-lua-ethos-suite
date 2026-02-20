@@ -1256,6 +1256,8 @@ function dashboard.event(widget, category, value, x, y)
                         dashboard.selectedToolbarIndex = 1
                     end
                     toolbarOpenedAt = now
+                    dashboard._toolbarLastActive = now
+                    dashboard._toolbarCloseAt = 0
                     lcd.invalidate(widget)
                     return true
                 elseif dy >= GESTURE_MIN_DY then
