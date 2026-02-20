@@ -262,12 +262,6 @@
           "name": "Status",
           "script": "status.lua",
           "translation": "@i18n(app.modules.blackbox.menu_status)@"
-        },
-        {
-          "name": "New Page",
-          "translation": "@i18n(app.modules.new.name)@",
-          "script": "new/new.lua",
-          "image": "new/new.png"
         }
       ],
       "scriptPrefix": "blackbox/tools/",
@@ -634,70 +628,6 @@
         }
       ],
       "scriptPrefix": "power/tools/",
-      "title": "Power",
-      "translation": "@i18n(app.modules.power.name)@"
-    },
-    "powertrain_menu": {
-      "iconPrefix": "app/modules/",
-      "loaderSpeed": "FAST",
-      "navOptions": {
-        "defaultSection": "setup",
-        "showProgress": true
-      },
-      "pages": [
-        {
-          "image": "esc_motors/esc.png",
-          "loaderspeed": 0.08,
-          "menuId": "esc_motors",
-          "name": "ESC & Motors",
-          "order": 1,
-          "translation": "@i18n(app.modules.esc_motors.name)@"
-        },
-        {
-          "image": "power/power.png",
-          "menuId": "power",
-          "name": "Power",
-          "order": 2,
-          "translation": "@i18n(app.modules.power.name)@"
-        },
-        {
-          "image": "governor/governor.png",
-          "name": "Governor",
-          "order": 3,
-          "script": "governor/governor.lua",
-          "script_by_mspversion": [
-            {
-              "op": ">=",
-              "script": "governor/governor.lua",
-              "ver": [
-                12,
-                0,
-                9
-              ]
-            },
-            {
-              "op": "<",
-              "script": "governor/governor_legacy.lua",
-              "ver": [
-                12,
-                0,
-                9
-              ]
-            }
-          ],
-          "script_default": "governor/governor_legacy.lua",
-          "translation": "@i18n(app.modules.governor.name)@"
-        },
-        {
-          "image": "esc_tools/esc.png",
-          "name": "Esc Programing",
-          "offline": false,
-          "order": 4,
-          "script": "esc_tools/tools/esc.lua",
-          "translation": "@i18n(app.modules.esc_tools.name)@"
-        }
-      ],
-      "scriptPrefix": "app/modules/",
       "title": "Power",
       "translation": "@i18n(app.modules.power.name)@"
     },
@@ -1074,11 +1004,25 @@
           "translation": "@i18n(app.menu_section_controls)@"
         },
         {
-          "image": "esc_motors/esc.png",
-          "menuId": "powertrain_menu",
-          "name": "ESC & Motors",
+          "image": "power/power.png",
+          "menuId": "power",
+          "name": "Power",
           "order": 10,
+          "translation": "@i18n(app.modules.power.name)@"
+        },
+        {
+          "image": "esc_motors/esc.png",
+          "menuId": "esc_motors",
+          "name": "ESC & Motors",
+          "order": 11,
           "translation": "@i18n(app.modules.esc_motors.name)@"
+        },
+        {
+          "image": "governor/governor.png",
+          "menuId": "governor",
+          "name": "Governor",
+          "order": 11,
+          "translation": "@i18n(app.modules.governor.name)@"
         }
       ],
       "scriptPrefix": "app/modules/",
