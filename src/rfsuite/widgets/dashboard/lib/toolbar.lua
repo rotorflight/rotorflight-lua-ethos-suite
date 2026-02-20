@@ -306,6 +306,8 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
             elseif value == 35 then
                 dashboard.selectedToolbarIndex = nil
                 dashboard._toolbarLastActive = os.clock()
+                dashboard.toolbarVisible = false
+                dashboard._toolbarCloseAt = 0
                 lcd.invalidate(widget)
                 return true
             end
