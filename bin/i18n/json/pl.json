@@ -9544,6 +9544,13 @@
         }
       },
       "settings": {
+        "txt_toolbar_timeout": {
+          "english": "Dash-bar auto-close",
+          "translation": "Dash-bar auto-close",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
         "adj_callouts": {
           "english": "Adjustment Callouts",
           "translation": "Alarmy regulacji",

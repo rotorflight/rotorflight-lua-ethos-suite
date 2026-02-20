@@ -57,7 +57,8 @@ local userpref_defaults = {
         save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
-        save_armed_warning = true
+        save_armed_warning = true,
+        toolbar_timeout = 10
     },
     localizations = {
         temperature_unit = 0,
