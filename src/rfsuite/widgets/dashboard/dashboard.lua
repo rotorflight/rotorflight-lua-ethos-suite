@@ -1366,6 +1366,15 @@ function dashboard.wakeup_protected(widget)
         dashboard._toolbarLastActive = now
         lastActive = now
     end
+    local closeAt = dashboard._toolbarCloseAt or 0
+    if dashboard.toolbarVisible and closeAt > 0 and now >= closeAt then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+    end
     local toolbarTimeout = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.toolbar_timeout) or 10
     if toolbarTimeout > 0 and dashboard.toolbarVisible and (now - lastActive) >= toolbarTimeout then
         dashboard.toolbarVisible = false

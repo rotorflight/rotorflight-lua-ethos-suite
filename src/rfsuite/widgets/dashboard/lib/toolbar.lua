@@ -300,6 +300,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                 if r and r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
                     dashboard._toolbarLastActive = os.clock()
+                    dashboard._toolbarCloseAt = os.clock() + 2
                     return true
                 end
             elseif value == 35 then
@@ -322,6 +323,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                 if r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
                     dashboard._toolbarLastActive = os.clock()
+                    dashboard._toolbarCloseAt = os.clock() + 2
                     return true
                 end
             end
