@@ -132,6 +132,7 @@ local function ensureCfg(box)
         cfg._theme_version = theme_version
         cfg._param_version = param_version
         cfg.title = getParam(box, "title")
+        print("Loading config for battery widget with title: " .. tostring(cfg.title))
         cfg.titlepos = getParam(box, "titlepos")
         cfg.titlealign = getParam(box, "titlealign")
         cfg.titlefont = getParam(box, "titlefont")

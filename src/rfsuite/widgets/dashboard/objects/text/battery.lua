@@ -31,12 +31,53 @@
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
 
+local rep = string.rep
+local floor = math.floor
+local ceil = math.ceil
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+
+local progress
+local progressBaseMessage
+local progressMspStatusLast
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+
+local function openProgressDialog(...)
+    if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
+local function updateProgressMessage()
+    if not progress or not progressBaseMessage then return end
+    local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
+    if showMsp then
+        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+        if msg ~= progressMspStatusLast then
+            progress:message(msg)
+            progressMspStatusLast = msg
+        end
+    else
+        if progressMspStatusLast ~= nil then
+            progress:message(progressBaseMessage)
+            progressMspStatusLast = nil
+        end
+    end
+end
 
 local ADJUSTMENT_BATTERY_PROFILE = 34
 
@@ -67,11 +108,42 @@ end
 
 local function setBatteryType(typeIndex)
     if typeIndex == rfsuite.session.activeBatteryType then return end
+
+    progress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+    progress:value(0)
+    progress:closeAllowed(false)
+    progressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+    progressMspStatusLast = nil
+
+    if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.registerProgressDialog then
+        rfsuite.app.ui.registerProgressDialog(progress, progressBaseMessage)
+    end
+
     local api = rfsuite.tasks.msp.api.load("BATTERY_TYPE")
-    api.write({batteryType = typeIndex})
+
+    api.setCompleteHandler(function()
+        progress:value(100)
+        progress:close()
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
+            rfsuite.app.ui.clearProgressDialog(progress)
+        end
+        progress = nil
+        rfsuite.session.activeBatteryType = typeIndex
+    end)
+
+    api.setErrorHandler(function()
+        progress:close()
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
+            rfsuite.app.ui.clearProgressDialog(progress)
+        end
+        progress = nil
+    end)
+
+    api.setValue("batteryType", typeIndex)
+    api.write()
 end
 
-local function openSelectionDialog()
+local function chooseBatteryType(widget, box, x, y)
     if isAdjustmentConfigured() then
         form.openDialog({
             title = "@i18n(widgets.battery.title)@",
@@ -82,25 +154,29 @@ local function openSelectionDialog()
         return
     end
 
-    local buttons = {}
-    local profiles = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
-    if profiles then
+    -- Normalize profiles to a sequential array of tables with .name and .idx
+    local profilesRaw = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
+    local profileList = {}
+    if profilesRaw then
+        -- Legacy: numeric keys 0-5, value is capacity
         for i = 0, 5 do
-            local cap = profiles[i]
+            local cap = profilesRaw[i]
             if cap and cap > 0 then
-                table.insert(buttons, {
-                    label = tostring(cap) .. "mAh",
-                    action = function()
-                        setBatteryType(i)
-                        return true
-                    end
-                })
+                table.insert(profileList, { name = tostring(cap) .. "mAh", idx = i })
+            end
+        end
+        -- New: array of tables with .name
+        if #profileList == 0 then
+            for i, p in ipairs(profilesRaw) do
+                if type(p) == "table" and p.name then
+                    table.insert(profileList, { name = p.name, idx = i })
+                end
             end
         end
     end
 
-    if #buttons == 0 then
-         form.openDialog({
+    if #profileList == 0 then
+        form.openDialog({
             title = "@i18n(widgets.battery.title)@",
             message = "@i18n(widgets.battery.no_profiles)@",
             buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}},
@@ -109,11 +185,31 @@ local function openSelectionDialog()
         return
     end
 
-    table.insert(buttons, {label = "@i18n(app.btn_cancel)@", action = function() return true end})
+    local buttons = {}
+    local message = "Please select the battery you what to use:\n\n"
+    for _, profile in ipairs(profileList) do
+        local label = tostring(profile.idx + 1)
+        message = message .. label .. " - " .. profile.name .. "\n"
+    end
+
+    for i = #profileList, 1, -1 do
+        local profile = profileList[i]
+        local label = tostring(profile.idx + 1)
+        table.insert(buttons, {
+            label = label,
+            action = function()
+                setBatteryType(profile.idx)
+                return true
+            end
+        })
+    end
+    
+    local w, h = lcd.getWindowSize()
 
     form.openDialog({
         title = "@i18n(widgets.battery.select_title)@",
-        message = nil,
+        message = message,
+        --width = w,
         buttons = buttons,
         options = TEXT_LEFT
     })
@@ -125,6 +221,7 @@ local function ensureCfg(box)
     local cfg = box._cfg
     if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
         cfg = {}
+        
         cfg._theme_version = theme_version
         cfg._param_version = param_version
         cfg.title = getParam(box, "title")
@@ -166,7 +263,7 @@ function render.wakeup(box)
     local telemetry = rfsuite.tasks.telemetry
     local sensorVal = telemetry and telemetry.getSensor and telemetry.getSensor("battery_type")
     if sensorVal then
-        rfsuite.session.activeBatteryType = math.floor(sensorVal)
+        rfsuite.session.activeBatteryType = floor(sensorVal)
     end
 
     local activeType = rfsuite.session.activeBatteryType
@@ -174,21 +271,35 @@ function render.wakeup(box)
     
     local displayValue
     if activeType and profiles and profiles[activeType] then
-        displayValue = tostring(profiles[activeType])
+        displayValue = tostring(profiles[activeType]) .. " " .. (cfg.unit or "mAh")
+    elseif rfsuite.session.batteryConfig == nil then
+        local maxDots = 3
+        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
+        displayValue = rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
     else
         displayValue = cfg.novalue
     end
 
-    box._currentDisplayValue = displayValue .. " mAh"
+    box._isLoadingDots = type(displayValue) == "string" and displayValue:match("^%.+$") ~= nil
+    box._currentDisplayValue = displayValue
     
-    if not box.onpress then box.onpress = openSelectionDialog end
+    if not box.onpress then box.onpress = chooseBatteryType end
+
+    if progress then
+        updateProgressMessage()
+    end
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cfg or {}
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, c.unit, c.font, c.valuealign, c.defaultTextColor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
+    local unitForPaint = box._isLoadingDots and nil or c.unit
+    local textColor = box._dynamicTextColor or c.defaultTextColor
+    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, unitForPaint, c.font, c.valuealign, textColor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
 end
+
+render.chooseBatteryType = chooseBatteryType    
 
 return render

@@ -20,6 +20,15 @@ local DEFAULT_TOOLBAR_ITEMS = {
         onClick = function(dashboard)
             dashboard.eraseBlackboxAsk()
         end
+    },
+    {
+        name = "Battery Type",
+        order = 110,
+        icon = "widgets/dashboard/gfx/toolbar_battery.png",
+        iconSize = 55,
+        onClick = function(dashboard)
+            dashboard.chooseBatteryType()
+        end
     }
 }
 

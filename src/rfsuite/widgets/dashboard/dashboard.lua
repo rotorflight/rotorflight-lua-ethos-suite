@@ -94,6 +94,17 @@ function dashboard.eraseBlackboxAsk()
     end
 end
 
+function dashboard.chooseBatteryType()
+    local typ = "text/battery"
+    if not dashboard.objectsByType[typ] and dashboard._moduleCache and dashboard._moduleCache[typ] == nil then
+        dashboard.loadObjectType({type = typ})
+    end
+    local obj = dashboard.objectsByType[typ] or (dashboard._moduleCache and dashboard._moduleCache[typ])
+    if obj and type(obj.chooseBatteryType) == "function" then
+        obj.chooseBatteryType()
+    end
+end
+
 dashboard.DEFAULT_THEME = "system/default"
 
 local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
