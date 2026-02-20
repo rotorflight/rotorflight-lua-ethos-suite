@@ -94,8 +94,8 @@ local gestureActive = false
 local gestureStartX = 0
 local gestureStartY = 0
 local gestureTriggered = false
-local GESTURE_MIN_DY = 30
-local GESTURE_MAX_DX = 25
+local GESTURE_MIN_DY = 20
+local GESTURE_MAX_DX = 40
 
 dashboard.toolbarVisible = dashboard.toolbarVisible or false
 dashboard.toolbarItems = dashboard.toolbarItems or nil
@@ -1256,6 +1256,13 @@ function dashboard.event(widget, category, value, x, y)
     if category == 1 and value == TOUCH_MOVE then
         isSliding = true
         isSlidingStart = clock()
+
+        if not gestureActive and x and y then
+            gestureActive = true
+            gestureStartX = x or 0
+            gestureStartY = y or 0
+            gestureTriggered = false
+        end
 
         if gestureActive and not gestureTriggered and x and y then
             local dx = x - gestureStartX
