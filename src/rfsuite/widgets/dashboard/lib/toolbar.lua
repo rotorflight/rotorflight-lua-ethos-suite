@@ -2,6 +2,19 @@
   Toolbar helper for dashboard
 ]] --
 
+-- Toolbar item parameters:
+-- name (string): label text (i18n supported)
+-- order (number): sort order (ascending)
+-- icon (string): mask path (PNG/BMP/JPG)
+-- iconSize (number): desired mask size in pixels
+-- onClick (function(dashboard)): click handler
+-- isConnected (boolean): require session connected
+-- apiVersion (table): API version tuple, e.g. {12, 0, 9}
+-- apiVersionOp (string): comparison op, e.g. ">=", "<=", "=="
+-- enableFunction (function(dashboard, rfsuite)): custom enable check
+-- isArmed (boolean): require armed/disarmed state
+-- flightModes (table): allowed modes, e.g. {"preflight","inflight"}
+    
 local DEFAULT_TOOLBAR_ITEMS = {
     {
         name = "@i18n(widgets.dashboard.reset_flight)@",
@@ -17,6 +30,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
         order = 110,
         icon = "widgets/dashboard/gfx/toolbar_erase.png",
         iconSize = 55,
+        isConnected = true,
         onClick = function(dashboard)
             dashboard.eraseBlackboxAsk()
         end
@@ -90,6 +104,35 @@ local function getToolbarCache(dashboard)
     return dashboard._toolbarCache
 end
 
+local function isItemEnabled(item, dashboard, rfsuite)
+    if not item then return false end
+    if type(item.enableFunction) == "function" then
+        return item.enableFunction(dashboard, rfsuite) == true
+    end
+    if item.isConnected == true then
+        local sess = rfsuite and rfsuite.session
+        if not (sess and sess.isConnected) then return false end
+    end
+    if item.apiVersion and rfsuite and rfsuite.utils and rfsuite.utils.apiVersionCompare then
+        local op = item.apiVersionOp or ">="
+        if not rfsuite.utils.apiVersionCompare(op, item.apiVersion) then return false end
+    end
+    if item.isArmed ~= nil then
+        local sess = rfsuite and rfsuite.session
+        if not sess then return false end
+        if (sess.isArmed == true) ~= (item.isArmed == true) then return false end
+    end
+    if item.flightModes and type(item.flightModes) == "table" then
+        local mode = dashboard and dashboard.flightmode or nil
+        local ok = false
+        for i = 1, #item.flightModes do
+            if item.flightModes[i] == mode then ok = true break end
+        end
+        if not ok then return false end
+    end
+    return true
+end
+
 function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
     if not dashboard.toolbarVisible then return end
     local x, y, w, barH = getToolbarBounds(dashboard, lcd)
@@ -102,9 +145,9 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local lineColor = themeFocus
     local isDark = lcd.darkMode()
     if isDark then
-        lcd.color(lcd.RGB(0, 0, 0, 0.95))
+        lcd.color(lcd.RGB(0, 0, 0, 0.99))
     else
-        lcd.color(lcd.RGB(255, 255, 255, 0.95))
+        lcd.color(lcd.RGB(255, 255, 255, 0.99))
     end
     lcd.drawFilledRectangle(x, y, w, barH)
     lcd.color(lineColor)
@@ -133,6 +176,7 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local selectedFill = themeFocus
     local rects = {}
     local visibleItems = {}
+    local enabledItems = {}
     local iconSize = 55
     local textPadTop = 6
     local slotPad = 12
@@ -150,13 +194,20 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
             local bh = barH - (slotPad * 2) - groupPadTop
             rects[#rects + 1] = {x = ix, y = y, w = iw, h = barH, item = item}
             visibleItems[#visibleItems + 1] = item
+            local isEnabled = isItemEnabled(item, dashboard, rfsuite)
+            enabledItems[i] = isEnabled
             local isSelected = (dashboard.selectedToolbarIndex == i)
-            if isSelected then
-                lcd.color(selectedFill)
+            if isEnabled then
+                if isSelected then
+                    lcd.color(selectedFill)
+                else
+                    lcd.color(boxFill)
+                end
+                lcd.drawFilledRectangle(bx, by, bw, bh)
             else
                 lcd.color(boxFill)
+                lcd.drawRectangle(bx, by, bw, bh, 2)
             end
-            lcd.drawFilledRectangle(bx, by, bw, bh)
             if item.icon then
                 local sz = item.iconSize or iconSize
                 local tw = 0
@@ -172,7 +223,11 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
                 end
                 local textY = by + textPadTop
                 if item.name then
-                    lcd.color(isSelected and themeDefaultBg or themeDefault)
+                    if isEnabled then
+                        lcd.color(isSelected and themeDefaultBg or themeDefault)
+                    else
+                        lcd.color(themeDefault)
+                    end
                     lcd.drawText(bx + (bw * 0.5), textY, fitLabel, CENTERED)
                 end
                 local labelBand = th + (textPadTop * 2)
@@ -187,14 +242,24 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
                 iconY = math.floor(iconY + 0.5)
                 local mask = loadToolbarMask(item.icon, lcd)
                 if mask then
-                    lcd.color(isSelected and themeDefaultBg or themeDefault)
+                    if isEnabled then
+                        lcd.color(isSelected and themeDefaultBg or themeDefault)
+                    else
+                        lcd.color(themeDefault)
+                    end
                     lcd.drawMask(iconX, iconY, mask)
                 end
+            end
+            if not isEnabled then
+                -- Dim disabled item (drawn after icon/text, within border)
+                lcd.color(lcd.RGB(0, 0, 0, 0.8))
+                lcd.drawFilledRectangle(bx + 2, by + 2, bw - 4, bh - 4)
             end
         end
     end
     dashboard._toolbarRects = rects
     dashboard._toolbarItemsSorted = visibleItems
+    dashboard._toolbarEnabled = enabledItems
 end
 
 function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
@@ -202,24 +267,31 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
 
     if category == EVT_KEY and lcd.hasFocus() then
         local rects = dashboard._toolbarRects or {}
+        local enabled = dashboard._toolbarEnabled or {}
         local count = #rects
         if count > 0 then
             local idx = dashboard.selectedToolbarIndex or 1
             if value == 4099 then
-                idx = idx - 1
-                if idx < 1 then idx = count end
+                local start = idx
+                repeat
+                    idx = idx - 1
+                    if idx < 1 then idx = count end
+                until idx == start or enabled[idx] ~= false
                 dashboard.selectedToolbarIndex = idx
                 lcd.invalidate(widget)
                 return true
             elseif value == 4100 then
-                idx = idx + 1
-                if idx > count then idx = 1 end
+                local start = idx
+                repeat
+                    idx = idx + 1
+                    if idx > count then idx = 1 end
+                until idx == start or enabled[idx] ~= false
                 dashboard.selectedToolbarIndex = idx
                 lcd.invalidate(widget)
                 return true
             elseif value == 33 then
                 local r = rects[idx]
-                if r and r.item and type(r.item.onClick) == "function" then
+                if r and r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
                     return true
                 end
@@ -233,11 +305,12 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
 
     if category == 1 and (value == 16641 or value == 16640) and x and y then
         local rects = dashboard._toolbarRects or {}
+        local enabled = dashboard._toolbarEnabled or {}
         for idx, r in ipairs(rects) do
             if x >= r.x and x < (r.x + r.w) and y >= r.y and y < (r.y + r.h) then
                 dashboard.selectedToolbarIndex = idx
                 lcd.invalidate(widget)
-                if r.item and type(r.item.onClick) == "function" then
+                if r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
                     return true
                 end
