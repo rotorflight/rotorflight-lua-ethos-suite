@@ -36,7 +36,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
         end
     },
     {
-        name = "Battery Type",
+        name = "@i18n(widgets.dashboard.battery_type)@",
         order = 110,
         icon = "widgets/dashboard/gfx/toolbar_battery.png",
         iconSize = 55,
