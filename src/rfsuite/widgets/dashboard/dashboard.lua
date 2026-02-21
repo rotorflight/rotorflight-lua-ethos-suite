@@ -1263,7 +1263,7 @@ function dashboard.event(widget, category, value, x, y)
         dashboard.selectedBoxIndex = nil
     end
 
-    if state == "postflight" and category == EVT_KEY and value == 131 then
+    if state == "postflight" and category == EVT_KEY and value == KEY_RTN_LONG then
         rfsuite.widgets.dashboard.flightmode = "preflight"
         dashboard.resetFlightModeAsk()
     end
@@ -1273,7 +1273,7 @@ function dashboard.event(widget, category, value, x, y)
     end
 
     -- Gesture start (touch down) anywhere
-    if category == 1 and (value == 16641 or value == 16640) and x and y then
+    if category == EVT_TOUCH and (value == TOUCH_END or value == TOUCH_START) and x and y then
         local W, H = lcd.getWindowSize()
         gestureActive = true
         gestureStartX = x or 0
@@ -1281,7 +1281,7 @@ function dashboard.event(widget, category, value, x, y)
         gestureTriggered = false
     end
 
-    if category == 1 and value == TOUCH_MOVE then
+    if category == EVT_TOUCH and value == TOUCH_MOVE then
         isSliding = true
         isSlidingStart = clock()
 
@@ -1336,19 +1336,19 @@ function dashboard.event(widget, category, value, x, y)
             end
         end
 
-        if value == 4099 then
+        if value == ROTARY_LEFT then
             pos = pos - 1
             if pos < 1 then pos = count end
             dashboard.selectedBoxIndex = indices[pos]
             lcd.invalidate(widget)
             return true
-        elseif value == 4100 then
+        elseif value == KEY_ROTARY_RIGHT then
             pos = pos + 1
             if pos > count then pos = 1 end
             dashboard.selectedBoxIndex = indices[pos]
             lcd.invalidate(widget)
             return true
-        elseif value == 33 and category == EVT_KEY then
+        elseif value == KEY_ENTER_BREAK and category == EVT_KEY then
             local inIndices = false
             for i = 1, #indices do
                 if indices[i] == dashboard.selectedBoxIndex then
@@ -1366,19 +1366,19 @@ function dashboard.event(widget, category, value, x, y)
                 local rect = rects[idx]
                 if rect and rect.box and rect.box.onpress then
                     rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
-                    system.killEvents(97)
+                    system.killEvents(KEY_ENTER_FIRST)
                     return true
                 end
             end
         end
     end
-    if value == 35 and dashboard.selectedBoxIndex then
+    if value == KEY_DOWN_BREAK and dashboard.selectedBoxIndex then
         dashboard.selectedBoxIndex = nil
         lcd.invalidate(widget)
         return true
     end
 
-    if (not dashboard.toolbarVisible) and category == 1 and value == 16641 and lcd.hasFocus() then
+    if (not dashboard.toolbarVisible) and category == EVT_TOUCH and value == TOUCH_END and lcd.hasFocus() then
         if x and y then
             for i, rect in ipairs(dashboard.boxRects or {}) do
                 if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
@@ -1386,7 +1386,7 @@ function dashboard.event(widget, category, value, x, y)
                         dashboard.selectedBoxIndex = i
                         lcd.invalidate(widget)
                         rect.box.onpress(widget, rect.box, x, y, category, value)
-                        system.killEvents(16640)
+                        system.killEvents(TOUCH_START)
                         return true
                     end
                 end

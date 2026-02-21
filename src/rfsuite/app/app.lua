@@ -232,7 +232,7 @@ function app.event(widget, category, value, x, y)
         end
     end
 
-    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == 35) and value ~= KEY_ENTER_LONG
+    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == KEY_DOWN_BREAK) and value ~= KEY_ENTER_LONG
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")

@@ -9,7 +9,7 @@ local runtime = {}
 
 local function shouldHandleClose(category, value)
     if value == KEY_ENTER_LONG then return false end
-    return category == EVT_CLOSE and (value == 0 or value == 35)
+return category == EVT_CLOSE and (value == 0 or value == KEY_DOWN_BREAK)
 end
 
 function runtime.openMenuContext(opts)
