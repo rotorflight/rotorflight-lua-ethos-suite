@@ -9523,6 +9523,12 @@
         "needs_translation": false,
         "reverse_text": false
       },
+      "battery_type": {
+        "english": "Battery Type",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "Battery Type"
+      },
       "bec_voltage": {
         "english": "BEC Voltage",
         "max_length": 11,

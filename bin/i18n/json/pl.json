@@ -11076,6 +11076,13 @@
         "needs_translation": false,
         "reverse_text": false
       },
+      "battery_type": {
+        "english": "Battery Type",
+        "translation": "Battery Type",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 12
+      },
       "bec_voltage": {
         "english": "BEC Voltage",
         "translation": "BEC Voltage",
