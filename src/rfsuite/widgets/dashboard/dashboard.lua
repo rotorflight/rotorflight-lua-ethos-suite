@@ -1228,6 +1228,26 @@ function dashboard.build(widget) return callStateFunc("build", widget) end
 
 function dashboard.event(widget, category, value, x, y)
 
+    if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
+        local now = clock()
+        dashboard.toolbarVisible = true
+        if not dashboard.selectedToolbarIndex then
+            dashboard.selectedToolbarIndex = 1
+        end
+        toolbarOpenedAt = now
+        dashboard._toolbarLastActive = now
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+        if system and system.killEvents then
+            system.killEvents(value)
+            if KEY_PAGE_UP ~= value then
+                system.killEvents(KEY_PAGE_UP)
+            end
+        end
+        return true
+    end
+
+
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
@@ -1708,25 +1728,7 @@ function dashboard.menu(widget)
     local items = {}
     local v = system and system.getVersion and system.getVersion() or nil
     local board = v and v.board or ""
-    if (board == "X14" or board == "X14S") and toolbar and toolbar.getItems then
-        for _, item in ipairs(toolbar.getItems(dashboard) or {}) do
-            if item and item.name and type(item.onClick) == "function" then
-                items[#items + 1] = {
-                    item.name,
-                    function()
-                        if toolbar and toolbar.isItemEnabled and not toolbar.isItemEnabled(item, dashboard, rfsuite) then
-                            local msg = "@i18n(app.msg_not_available_now)@" or "Not available right now."
-                            pcall(function()
-                                form.openDialog({title = "@i18n(app.msg_unavailable)@" or "Unavailable", message = msg, buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}})
-                            end)
-                            return
-                        end
-                        item.onClick(dashboard)
-                    end
-                }
-            end
-        end
-    end
+    -- X14/X14S toolbar menu path removed (redundant).
     return items
 end
 
