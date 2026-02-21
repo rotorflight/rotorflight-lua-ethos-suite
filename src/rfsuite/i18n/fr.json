@@ -7731,6 +7731,20 @@
           "reverse_text": false,
           "translation": "Selected"
         },
+        "show_battery_type_startup": {
+          "english": "Show battery type choose (startup)",
+          "max_length": 34,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Show battery type choose (startup)"
+        },
+        "show_confirmation_dialog": {
+          "english": "Show confirmation dialog",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Show confirmation dialog"
+        },
         "source_name": {
           "english": "Sources",
           "max_length": 7,
@@ -10996,6 +11010,20 @@
         "max_length": 65,
         "needs_translation": false,
         "reverse_text": false
+      },
+      "msg_battery_selected": {
+        "english": "Selected battery:",
+        "max_length": 17,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Selected battery:"
+      },
+      "msg_select_battery": {
+        "english": "Please select the battery you want to use:",
+        "max_length": 42,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Please select the battery you want to use:"
       },
       "no_profiles": {
         "english": "No battery profiles configured.",

@@ -1424,6 +1424,23 @@ function dashboard.wakeup_protected(widget)
 
     if not dashboard.utils then return end
 
+    if rfsuite.session.isConnected and rfsuite.session.showBatteryTypeStartup and not rfsuite.session.batteryDialogShown then
+        if rfsuite.session.batteryConfig and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
+            rfsuite.session.batteryDialogShown = true
+            local count = 0
+            if rfsuite.session.batteryConfig.profiles then
+                for _, capacity in pairs(rfsuite.session.batteryConfig.profiles) do
+                    if capacity > 0 then count = count + 1 end
+                end
+            end
+            if count > 1 then
+                dashboard.chooseBatteryType()
+            end
+        end
+    elseif not rfsuite.session.isConnected and rfsuite.session.batteryDialogShown then
+        rfsuite.session.batteryDialogShown = false
+    end
+
     local W, H = lcd.getWindowSize()
 
     dashboard.boxRects = dashboard.boxRects or {}
