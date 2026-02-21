@@ -28,9 +28,6 @@ local ADJUSTMENT_RANGE_MAX = 42
 local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
 local MSP_FUNCTION_NAME_PREFETCH_MIN_API = "12.09"
 
--- gate the prefetch call until its in the firmware
-local USE_MSP_FUNCTION_NAME_PREFETCH = false
-
 local ADJUST_FUNCTIONS = {
     {id = 0, name = "None", min = 0, max = 100},
     {id = 1, name = "Rate Profile", min = 1, max = 6},
@@ -698,7 +695,6 @@ local function readAdjustmentFunctions(onComplete, onError)
 end
 
 local function shouldUseMspFunctionNamePrefetch()
-    if not USE_MSP_FUNCTION_NAME_PREFETCH then return false end
     return rfsuite.utils.apiVersionCompare(">=", MSP_FUNCTION_NAME_PREFETCH_MIN_API)
 end
 
