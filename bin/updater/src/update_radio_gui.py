@@ -93,7 +93,7 @@ COPY_SETTLE_SECONDS = 0.03
 TS_SLACK_SECONDS = 2.0
 CACHE_DIRNAME = "cache"
 LOGO_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/logo.png"
-UPDATER_VERSION = "1.0.5"
+UPDATER_VERSION = "1.0.6"
 UPDATER_RELEASE_JSON_URL = "https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/bin/updater/src/release.json"
 UPDATER_INFO_URL = "https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/master/bin/updater/"
 def _get_app_dir():
@@ -177,6 +177,43 @@ def _clear_cache_dir():
         return True, None
     except Exception as e:
         return False, f"{type(e).__name__}: {e}"
+
+def _pid_is_running(pid):
+    try:
+        pid = int(pid)
+    except Exception:
+        return False
+    if pid <= 0:
+        return False
+    if sys.platform == "win32":
+        try:
+            out = subprocess.check_output(["tasklist", "/FI", f"PID eq {pid}"], universal_newlines=True)
+            return str(pid) in out
+        except Exception:
+            return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except Exception:
+        return False
+    return True
+
+def _clear_stale_lock_file():
+    if not os.path.exists(UPDATER_LOCK_FILE):
+        return
+    try:
+        with open(UPDATER_LOCK_FILE, "r", encoding="utf-8") as f:
+            pid_str = f.read().strip()
+    except Exception:
+        pid_str = ""
+    if not pid_str or not _pid_is_running(pid_str):
+        try:
+            os.remove(UPDATER_LOCK_FILE)
+        except Exception:
+            pass
 
 # Version types
 VERSION_RELEASE = "release"
@@ -2700,6 +2737,7 @@ def main():
     """Main entry point."""
     try:
         # Single-instance guard
+        _clear_stale_lock_file()
         if os.path.exists(UPDATER_LOCK_FILE):
             try:
                 if 'tk' in sys.modules:
