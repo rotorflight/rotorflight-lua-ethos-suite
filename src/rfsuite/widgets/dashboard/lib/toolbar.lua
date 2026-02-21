@@ -40,6 +40,10 @@ local DEFAULT_TOOLBAR_ITEMS = {
         order = 110,
         icon = "widgets/dashboard/gfx/toolbar_battery.png",
         iconSize = 55,
+        isConnected = true,
+        apiVersion = {12, 0, 9},
+        apiVersionOp = ">=",
+        flightModes = {"preflight"},
         onClick = function(dashboard)
             dashboard.chooseBatteryType()
         end

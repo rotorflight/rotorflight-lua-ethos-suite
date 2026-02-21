@@ -20,6 +20,8 @@ local fields = {
     {t = "@i18n(telemetry.group_profiles)@", type = 0, apikey = "profilesGroupHeader", value = ""},
     {t = "    @i18n(app.modules.power.selected)@", mspapi = 2, apikey = "batteryType", type = 1},
     {t = "    @i18n(app.modules.power.capacity)@", mspapi = 1, apikey = "batteryCapacityActive", min = CAPACITY_PROFILE_MIN, max = CAPACITY_PROFILE_MAX, step = 10, unit = "mAh"},
+    {t = "    @i18n(app.modules.power.show_battery_type_startup)@", apikey = "showBatteryTypeStartup", type = 4},
+    {t = "    @i18n(app.modules.power.show_confirmation_dialog)@", apikey = "showConfirmationDialog", type = 4},
     {t = "@i18n(telemetry.group_battery)@", type = 0, apikey = "batteryGroupHeader", value = ""},
     {t = "    @i18n(app.modules.power.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"},
     {t = "    @i18n(app.modules.power.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"},
@@ -124,6 +126,12 @@ local function postLoad(self)
         if f.apikey then fieldIndexByApiKey[f.apikey] = i end
     end
 
+    if rfsuite.session.showBatteryTypeStartup == nil then rfsuite.session.showBatteryTypeStartup = true end
+    if rfsuite.session.showConfirmationDialog == nil then rfsuite.session.showConfirmationDialog = true end
+
+    setFieldValue(self, "showBatteryTypeStartup", rfsuite.session.showBatteryTypeStartup and 1 or 0)
+    setFieldValue(self, "showConfirmationDialog", rfsuite.session.showConfirmationDialog and 1 or 0)
+
     for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "consumptionWarningPercentage" then
             local v = tonumber(f.value)
@@ -148,6 +156,16 @@ end
 
 local function wakeup(self)
     if enableWakeup == false then return end
+
+    local valStartup = getFieldValue(self, "showBatteryTypeStartup")
+    if valStartup ~= nil then
+        rfsuite.session.showBatteryTypeStartup = (tonumber(valStartup) == 1)
+    end
+
+    local valConfirm = getFieldValue(self, "showConfirmationDialog")
+    if valConfirm ~= nil then
+        rfsuite.session.showConfirmationDialog = (tonumber(valConfirm) == 1)
+    end
 
     local activeType = clampProfileIndex(rfsuite.session.activeBatteryType)
     local editingType = clampProfileIndex(getFieldValue(self, "batteryType"))

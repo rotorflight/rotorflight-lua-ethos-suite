@@ -85,8 +85,10 @@ function utils.session()
         originalModelName = nil,
 
         clockSet = nil,
-        resetMSP = nil
+        resetMSP = nil,
         
+        showBatteryTypeStartup = true,
+        showConfirmationDialog = true
     }
 
 end

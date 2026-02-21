@@ -39,7 +39,6 @@ local ceil = math.ceil
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
-local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 local progress
@@ -79,8 +78,6 @@ local function updateProgressMessage()
     end
 end
 
-local ADJUSTMENT_BATTERY_PROFILE = 34
-
 function render.invalidate(box) box._cfg = nil end
 
 function render.dirty(box)
@@ -97,17 +94,25 @@ function render.dirty(box)
 end
 
 local function isAdjustmentConfigured()
-    if not rfsuite.session.adjustmentRanges then return false end
-    for _, adj in ipairs(rfsuite.session.adjustmentRanges) do
-        if adj.adjFunction == ADJUSTMENT_BATTERY_PROFILE then
-            return true
-        end
-    end
+    -- The ajustment must be read via MSP fist, but this needs a lot of time, so this check is currently disabled until
+    -- we find a better way to determine if the adjustment is active without reading it first
     return false
 end
 
-local function setBatteryType(typeIndex)
-    if typeIndex == rfsuite.session.activeBatteryType then return end
+local function setBatteryType(typeIndex, profileName)
+    if not rfsuite.session.isConnected then return end
+
+    if typeIndex == rfsuite.session.activeBatteryType then
+        if rfsuite.session.showConfirmationDialog then
+            form.openDialog({
+                title = "@i18n(widgets.battery.title)@",
+                message = "@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName),
+                buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}},
+                options = TEXT_LEFT
+            })
+        end
+        return
+    end
 
     progress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
     progress:value(0)
@@ -122,13 +127,24 @@ local function setBatteryType(typeIndex)
     local api = rfsuite.tasks.msp.api.load("BATTERY_TYPE")
 
     api.setCompleteHandler(function()
-        progress:value(100)
-        progress:close()
-        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
-            rfsuite.app.ui.clearProgressDialog(progress)
-        end
-        progress = nil
         rfsuite.session.activeBatteryType = typeIndex
+
+        if rfsuite.session.showConfirmationDialog then
+            progress:value(100)
+            progress:message("@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName))
+            progress:closeAllowed(true)
+            if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
+                rfsuite.app.ui.clearProgressDialog(progress)
+            end
+            progress = nil
+        else
+            progress:value(100)
+            progress:close()
+            if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
+                rfsuite.app.ui.clearProgressDialog(progress)
+            end
+            progress = nil
+        end
     end)
 
     api.setErrorHandler(function()
@@ -186,7 +202,7 @@ local function chooseBatteryType(widget, box, x, y)
     end
 
     local buttons = {}
-    local message = "Please select the battery you what to use:\n\n"
+    local message = "@i18n(widgets.battery.msg_select_battery)@\n\n"
     for _, profile in ipairs(profileList) do
         local label = tostring(profile.idx + 1)
         message = message .. label .. " - " .. profile.name .. "\n"
@@ -198,7 +214,7 @@ local function chooseBatteryType(widget, box, x, y)
         table.insert(buttons, {
             label = label,
             action = function()
-                setBatteryType(profile.idx)
+                setBatteryType(profile.idx, profile.name)
                 return true
             end
         })
@@ -221,6 +237,8 @@ local function ensureCfg(box)
     local cfg = box._cfg
     if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
         cfg = {}
+
+        local getParam = utils.getParam
         
         cfg._theme_version = theme_version
         cfg._param_version = param_version
