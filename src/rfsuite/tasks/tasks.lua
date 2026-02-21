@@ -875,7 +875,15 @@ function tasks.resetProfile()
     utils.log("[profile] Cleared profiling stats", "info")
 end
 
-function tasks.event(widget, category, value, x, y) print("Event:", widget, category, value, x, y) end
+function tasks.event(widget, category, value, x, y)
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
+        local events = rfsuite.ethos_events
+        if events and events.debug then
+            local line = events.debug("tasks", category, value, x, y, {returnOnly = true})
+            if line then rfsuite.utils.log(line, "info") end
+        end
+    end
+end
 
 function tasks.init()
 
