@@ -5,7 +5,8 @@
 --
 --  PURPOSE
 --  -------
---  Converts Ethos event category/value numbers into readable names and
+--  Converts Ethos event category/value numbers into readable names by
+--  scanning runtime constants (EVT_*, KEY_*, TOUCH_*, ROTARY_*), and
 --  prints formatted debug output (or returns the formatted line).
 --
 --  Designed for:
@@ -38,7 +39,7 @@
 --      [tag] CATEGORY  VALUE  x=... y=...
 --
 --  Example:
---      [dashboard] EVT_KEY  KEY_PAGE_LONG  x=nil y=nil
+--      [dashboard] EVT_KEY (1)  KEY_PAGE_LONG (128)  x=nil y=nil
 --
 --
 --  OPTIONAL FILTERING
@@ -77,91 +78,32 @@
 --  NOTES
 --  -----
 --  • Safe to include in production; simply remove debug() calls.
---  • If a new key/event is not listed, its numeric value will be printed.
+--  • If a constant isn't found at runtime, its numeric value will be printed.
 --
 --=============================================================================
 
 local M = {}
 
 -- ---------------------------------------------------------------------------
--- Event category names
+-- Event/Key/Touch names (runtime scan)
 -- ---------------------------------------------------------------------------
 
-local EVT_NAMES = {
-  [EVT_KEY]      = "EVT_KEY",
-  [EVT_TOUCH]    = "EVT_TOUCH",
-  [EVT_SHUTDOWN] = "EVT_SHUTDOWN",
-  [EVT_CLOSE]    = "EVT_CLOSE",
-  [EVT_OPEN]     = "EVT_OPEN",
-}
+local EVT_NAMES = {}
+local KEY_NAMES = {}
+local TOUCH_NAMES = {}
 
--- ---------------------------------------------------------------------------
--- Key value names
--- ---------------------------------------------------------------------------
-
-local KEY_NAMES = {
-  [KEY_ENTER_BREAK]   = "KEY_ENTER_BREAK",
-  [KEY_ENTER_FIRST]   = "KEY_ENTER_FIRST",
-  [KEY_ENTER_LONG]    = "KEY_ENTER_LONG",
-
-  [KEY_UP_BREAK]      = "KEY_UP_BREAK",
-  [KEY_UP_FIRST]      = "KEY_UP_FIRST",
-  [KEY_UP_LONG]       = "KEY_UP_LONG",
-
-  [KEY_MDL_BREAK]     = "KEY_MDL_BREAK",
-  [KEY_MDL_FIRST]     = "KEY_MDL_FIRST",
-  [KEY_MDL_LONG]      = "KEY_MDL_LONG",
-
-  [KEY_RIGHT_BREAK]   = "KEY_RIGHT_BREAK",
-  [KEY_RIGHT_FIRST]   = "KEY_RIGHT_FIRST",
-  [KEY_RIGHT_LONG]    = "KEY_RIGHT_LONG",
-
-  [KEY_DISP_BREAK]    = "KEY_DISP_BREAK",
-  [KEY_DISP_FIRST]    = "KEY_DISP_FIRST",
-  [KEY_DISP_LONG]     = "KEY_DISP_LONG",
-
-  [KEY_DOWN_BREAK]    = "KEY_DOWN_BREAK",
-  [KEY_DOWN_FIRST]    = "KEY_DOWN_FIRST",
-  [KEY_DOWN_LONG]     = "KEY_DOWN_LONG",
-
-  [KEY_RTN_BREAK]     = "KEY_RTN_BREAK",
-  [KEY_RTN_FIRST]     = "KEY_RTN_FIRST",
-  [KEY_RTN_LONG]      = "KEY_RTN_LONG",
-
-  [KEY_LEFT_BREAK]    = "KEY_LEFT_BREAK",
-  [KEY_LEFT_FIRST]    = "KEY_LEFT_FIRST",
-  [KEY_LEFT_LONG]     = "KEY_LEFT_LONG",
-
-  [KEY_SYS_BREAK]     = "KEY_SYS_BREAK",
-  [KEY_SYS_FIRST]     = "KEY_SYS_FIRST",
-  [KEY_SYS_LONG]      = "KEY_SYS_LONG",
-
-  [KEY_PAGE_BREAK]    = "KEY_PAGE_BREAK",
-  [KEY_PAGE_FIRST]    = "KEY_PAGE_FIRST",
-  [KEY_PAGE_LONG]     = "KEY_PAGE_LONG",
-
-  [KEY_PAGE_UP]       = "KEY_PAGE_UP",
-  [KEY_PAGE_DOWN]     = "KEY_PAGE_DOWN",
-  [KEY_PAGE_PREVIOUS] = "KEY_PAGE_PREVIOUS",
-  [KEY_PAGE_NEXT]     = "KEY_PAGE_NEXT",
-
-  [KEY_EXIT_FIRST]    = "KEY_EXIT_FIRST",
-  [KEY_EXIT_LONG]     = "KEY_EXIT_LONG",
-  [KEY_EXIT_BREAK]    = "KEY_EXIT_BREAK",
-
-  [KEY_MODEL_FIRST]   = "KEY_MODEL_FIRST",
-  [KEY_MODEL_LONG]    = "KEY_MODEL_LONG",
-  [KEY_MODEL_BREAK]   = "KEY_MODEL_BREAK",
-
-  [KEY_SYSTEM_FIRST]  = "KEY_SYSTEM_FIRST",
-  [KEY_SYSTEM_LONG]   = "KEY_SYSTEM_LONG",
-  [KEY_SYSTEM_BREAK]  = "KEY_SYSTEM_BREAK",
-
-  [ROTARY_RIGHT]      = "ROTARY_RIGHT",
-  [ROTARY_LEFT]       = "ROTARY_LEFT",
-  [KEY_ROTARY_RIGHT]  = "KEY_ROTARY_RIGHT",
-  [KEY_ROTARY_LEFT]   = "KEY_ROTARY_LEFT",
-}
+-- Add any KEY_*/TOUCH_*/EVT_* constants exposed in the environment.
+for k, v in pairs(_G) do
+  if type(v) == "number" then
+    if (k:match("^KEY_") or k:match("^ROTARY_")) and KEY_NAMES[v] == nil then
+      KEY_NAMES[v] = k
+    elseif k:match("^TOUCH_") and TOUCH_NAMES[v] == nil then
+      TOUCH_NAMES[v] = k
+    elseif k:match("^EVT_") and EVT_NAMES[v] == nil then
+      EVT_NAMES[v] = k
+    end
+  end
+end
 
 -- ---------------------------------------------------------------------------
 -- Internal helpers
@@ -170,6 +112,15 @@ local KEY_NAMES = {
 local function nameOrNumber(map, n)
   if n == nil then return "nil" end
   return map[n] or tostring(n)
+end
+
+local function nameWithNumber(map, n)
+  if n == nil then return "nil" end
+  local name = map[n]
+  if name then
+    return string.format("%s (%s)", name, tostring(n))
+  end
+  return tostring(n)
 end
 
 local lastLine = nil
@@ -189,11 +140,13 @@ function M.debug(tag, category, value, x, y, options)
     return
   end
 
-  local catName = nameOrNumber(EVT_NAMES, category)
+  local catName = nameWithNumber(EVT_NAMES, category)
 
   local valName
   if category == EVT_KEY then
-    valName = nameOrNumber(KEY_NAMES, value)
+    valName = nameWithNumber(KEY_NAMES, value)
+  elseif category == EVT_TOUCH then
+    valName = nameWithNumber(TOUCH_NAMES, value)
   else
     valName = tostring(value)
   end
