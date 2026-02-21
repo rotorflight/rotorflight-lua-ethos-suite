@@ -619,8 +619,8 @@
         {
           "apiversion": [
             12,
-            10,
-            0
+            0,
+            9
           ],
           "image": "battery.png",
           "name": "Battery",
@@ -630,8 +630,8 @@
         {
           "apiversionlt": [
             12,
-            10,
-            0
+            0,
+            9
           ],
           "image": "battery.png",
           "name": "Battery",
