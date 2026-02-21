@@ -224,8 +224,15 @@ end
 
 function app.event(widget, category, value, x, y)
 
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
+        local events = rfsuite.ethos_events
+        if events and events.debug then
+            local line = events.debug("app", category, value, x, y, {returnOnly = true})
+            if line then rfsuite.utils.log(line, "info") end
+        end
+    end
 
-    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == 35) and value ~= KEY_ENTER_LONG
+    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == KEY_DOWN_BREAK) and value ~= KEY_ENTER_LONG
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")

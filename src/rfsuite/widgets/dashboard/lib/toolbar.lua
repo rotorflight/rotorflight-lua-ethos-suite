@@ -284,7 +284,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
         local count = #rects
         if count > 0 then
             local idx = dashboard.selectedToolbarIndex or 1
-            if value == 4099 then
+            if value == ROTARY_LEFT then
                 local start = idx
                 repeat
                     idx = idx - 1
@@ -294,7 +294,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                 dashboard._toolbarLastActive = os.clock()
                 lcd.invalidate(widget)
                 return true
-            elseif value == 4100 then
+            elseif value == KEY_ROTARY_RIGHT then
                 local start = idx
                 repeat
                     idx = idx + 1
@@ -304,7 +304,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                 dashboard._toolbarLastActive = os.clock()
                 lcd.invalidate(widget)
                 return true
-            elseif value == 33 then
+            elseif value == KEY_ENTER_BREAK then
                 local r = rects[idx]
                 if r and r.item and type(r.item.onClick) == "function" and enabled[idx] ~= false then
                     r.item.onClick(dashboard)
@@ -312,7 +312,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                     dashboard._toolbarCloseAt = os.clock() + 2
                     return true
                 end
-            elseif value == 35 then
+            elseif value == KEY_DOWN_BREAK then
                 dashboard.selectedToolbarIndex = nil
                 dashboard._toolbarLastActive = os.clock()
                 dashboard.toolbarVisible = false
@@ -323,7 +323,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
         end
     end
 
-    if category == 1 and (value == 16641 or value == 16640) and x and y then
+    if category == EVT_TOUCH and (value == TOUCH_END or value == TOUCH_START) and x and y then
         local rects = dashboard._toolbarRects or {}
         local enabled = dashboard._toolbarEnabled or {}
         for idx, r in ipairs(rects) do
