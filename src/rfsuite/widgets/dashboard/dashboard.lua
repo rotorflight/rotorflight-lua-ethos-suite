@@ -1728,7 +1728,6 @@ function dashboard.menu(widget)
     local items = {}
     local v = system and system.getVersion and system.getVersion() or nil
     local board = v and v.board or ""
-    -- X14/X14S toolbar menu path removed (redundant).
     return items
 end
 
