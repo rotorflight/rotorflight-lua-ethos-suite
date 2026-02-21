@@ -92,6 +92,7 @@ local userpref_defaults = {
         logmsp = false,
         logobjprof = false,
         logmspQueue = false,
+        logevents = false,
         memstats = false,
         taskprofiler = false,
         mspexpbytes = 8,
@@ -137,6 +138,7 @@ rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
+rfsuite.ethos_events = assert(loadfile("lib/ethos_events.lua", "t", _ENV))()
 
 rfsuite.app = assert(loadfile("app/app.lua"))(rfsuite.config)
 

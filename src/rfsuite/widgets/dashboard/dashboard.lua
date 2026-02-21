@@ -1228,6 +1228,14 @@ function dashboard.build(widget) return callStateFunc("build", widget) end
 
 function dashboard.event(widget, category, value, x, y)
 
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
+        local events = rfsuite.ethos_events
+        if events and events.debug then
+            local line = events.debug("dashboard", category, value, x, y, {returnOnly = true})
+            if line then rfsuite.utils.log(line, "info") end
+        end
+    end
+
     if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
         local now = clock()
         dashboard.toolbarVisible = true

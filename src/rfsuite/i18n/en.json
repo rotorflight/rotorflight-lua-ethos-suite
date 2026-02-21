@@ -8688,6 +8688,12 @@
           "needs_translation": false,
           "translation": "LARGE"
         },
+        "txt_logevents": {
+          "english": "Log events",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Log events"
+        },
         "txt_loglevel": {
           "english": "Log level",
           "max_length": 9,

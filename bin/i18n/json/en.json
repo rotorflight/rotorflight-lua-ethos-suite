@@ -8700,6 +8700,12 @@
           "needs_translation": false,
           "translation": "Log level"
         },
+        "txt_logevents": {
+          "english": "Log events",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Log events"
+        },
         "txt_memusage": {
           "english": "Log memory usage",
           "max_length": 16,

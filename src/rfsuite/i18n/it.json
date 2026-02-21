@@ -10111,6 +10111,13 @@
           "reverse_text": false,
           "translation": "GRANDE"
         },
+        "txt_logevents": {
+          "english": "Log events",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Log events"
+        },
         "txt_loglevel": {
           "english": "Log level",
           "max_length": 9,

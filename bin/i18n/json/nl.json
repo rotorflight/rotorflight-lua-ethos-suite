@@ -10125,6 +10125,13 @@
           "max_length": 9,
           "reverse_text": false
         },
+        "txt_logevents": {
+          "english": "Log events",
+          "translation": "Log events",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
         "txt_memusage": {
           "english": "Log memory usage",
           "translation": "Log geheugengebruik",
