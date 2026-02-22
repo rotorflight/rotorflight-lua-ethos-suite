@@ -4,12 +4,10 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-
+local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 
 local folder = "am32"
-local ESC = assert(loadfile("app/modules/esc_motors/tools/escmfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
+local ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 local simulatorResponse = ESC.simulatorResponse
 local activateWakeup = false
 
@@ -34,20 +32,7 @@ local apidata = {
 
 local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 
-local function onNavMenu(self)
-    rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage(pidx, folder, "esc_motors/tools/esc_tool.lua")
-end
-
-local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        if powercycleLoader then powercycleLoader:close() end
-        rfsuite.app.ui.openPage(pidx, folder, "esc_motors/tools/esc_tool.lua")
-        return true
-    end
-
-end
+local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 
 local foundEsc = false
 local foundEscDone = false
@@ -60,9 +45,9 @@ return {
     svFlags = 0,
     simulatorResponse = simulatorResponse,
     postLoad = postLoad,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
-    onNavMenu = onNavMenu,
-    event = event,
+    navButtons = navHandlers.navButtons,
+    onNavMenu = navHandlers.onNavMenu,
+    event = navHandlers.event,
     pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.advanced)@",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
