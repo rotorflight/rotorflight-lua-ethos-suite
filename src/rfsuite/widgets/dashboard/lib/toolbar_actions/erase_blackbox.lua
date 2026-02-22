@@ -50,7 +50,10 @@ local function updateProgressMessage()
 end
 
 local function doErase()
-    if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then return end
+    if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
+        logInfo("Dataflash erase: MSP queue not available")
+        return
+    end
     logInfo("Dataflash erase: queue MSP erase command")
     eraseProgress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
     eraseProgress:value(0)
@@ -89,7 +92,10 @@ local function doErase()
             readDataflashSummary()
         end
     }
-    rfsuite.tasks.msp.mspQueue:add(message)
+    local ok, reason = rfsuite.tasks.msp.mspQueue:add(message)
+    if ok == false then
+        logInfo("Dataflash erase: MSP queue rejected message (" .. tostring(reason) .. ")")
+    end
 end
 
 function M.eraseBlackboxAsk()
