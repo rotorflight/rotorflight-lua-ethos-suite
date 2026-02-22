@@ -28,6 +28,17 @@ local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
+local function setESC4WayMode(id)
+    local target = id or 1
+    local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+    API.setValue("target", target)
+    API.setCompleteHandler(function(self, buf)
+        rfsuite.session.esc4WaySetComplete = true
+    end)
+    API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
+    API.write()
+end
+
 local function openProgressDialog(...)
     if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
         local arg1 = select(1, ...)
@@ -276,6 +287,11 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
+    if ESC and ESC.esc4way then
+        rfsuite.session.esc4WaySet = nil
+        rfsuite.session.esc4WaySetComplete = nil
+        setESC4WayMode(100)
+    end
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
@@ -289,6 +305,8 @@ local function onReloadMenu()
     showPowerCycleLoaderFinished = false
     powercycleLoaderCounter = 0
     powercycleLoaderBaseMessage = nil
+    rfsuite.session.esc4WaySet = nil
+    rfsuite.session.esc4WaySetComplete = nil
     rfsuite.app.triggers.triggerReloadFull = true
     return true
 end
@@ -296,7 +314,16 @@ end
 local function wakeup()
 
     if foundESC == false then
-        getESCDetails()
+        if ESC and ESC.esc4way then
+            if not rfsuite.session.esc4WaySet then
+                rfsuite.session.esc4WaySet = true
+                setESC4WayMode(1)
+            elseif rfsuite.session.esc4WaySet == true then
+                getESCDetails()
+            end
+        else
+            getESCDetails()
+        end
     end
 
     if foundESC == true and foundESCupdateTag == false then

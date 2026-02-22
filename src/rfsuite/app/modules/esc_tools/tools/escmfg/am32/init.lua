@@ -49,6 +49,7 @@ return {
     mspapi="ESC_PARAMETERS_AM32",
     toolName = toolName,
     image = "am32.jpg",
+    esc4way = true,
     powerCycle = false,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
