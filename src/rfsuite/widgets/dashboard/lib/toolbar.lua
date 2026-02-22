@@ -9,6 +9,7 @@
 -- iconSize (number): desired mask size in pixels
 -- onClick (function(dashboard)): click handler
 -- isConnected (boolean): require session connected
+-- postConnectComplete (boolean): require postconnect completed
 -- apiVersion (table): API version tuple, e.g. {12, 0, 9}
 -- apiVersionOp (string): comparison op, e.g. ">=", "<=", "=="
 -- enableFunction (function(dashboard, rfsuite)): custom enable check
@@ -118,6 +119,10 @@ local function isItemEnabled(item, dashboard, rfsuite)
     if item.isConnected == true then
         local sess = rfsuite and rfsuite.session
         if not (sess and sess.isConnected) then return false end
+    end
+    if item.postConnectComplete == true then
+        local sess = rfsuite and rfsuite.session
+        if not (sess and sess.postConnectComplete) then return false end
     end
     if item.apiVersion and rfsuite and rfsuite.utils and rfsuite.utils.apiVersionCompare then
         local op = item.apiVersionOp or ">="
