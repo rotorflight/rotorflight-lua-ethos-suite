@@ -42,6 +42,18 @@
     "needs_translation": false
   },
   {
+    "file": "app/mpoverideen.wav",
+    "english": "Passthrough Mixer overide - enabled",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "app/mpoveridedis.wav",
+    "english": "Passthrough Mixer overide - disabled",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
     "file": "events/alerts/lowvoltage.wav",
     "english": "Low Voltage",
     "translation": "Niskie napiecie",

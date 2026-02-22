@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local system = system
 
 local config = {}
@@ -15,7 +16,11 @@ local function sensorNameMap(sensorList)
     return nameMap
 end
 
-local function openPage(pageIdx, title, script)
+local function openPage(opts)
+
+    local pageIdx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = true
     if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
@@ -70,8 +75,8 @@ local function openPage(pageIdx, title, script)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/tools/audio.lua")
+    pageRuntime.openMenuContext()
+    return true
 end
 
 local function onSaveMenu()
@@ -104,11 +109,7 @@ local function onSaveMenu()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/tools/audio.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {event = event, openPage = openPage, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = false}, API = {}}

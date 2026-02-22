@@ -4,11 +4,18 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local settings = {}
 local enableWakeup = false
 local system = system
+local DEVELOPER_MENU_SCRIPT = "developer/developer.lua"
+local DEVELOPER_MENU_TITLE = "Developer"
 
-local function openPage(pageIdx, title, script)
+local function openPage(opts)
+
+    local pageIdx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = true
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()
@@ -17,12 +24,14 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.txt_development)@")
+    rfsuite.app.ui.fieldHeader(DEVELOPER_MENU_TITLE .. " / " .. "@i18n(app.modules.settings.name)@")
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
 
-    settings = rfsuite.preferences.developer
+    settings = {}
+    local saved = rfsuite.preferences.developer or {}
+    for k, v in pairs(saved) do settings[k] = v end
 
 
     formFieldCount = formFieldCount + 1
@@ -76,6 +85,12 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_logevents)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() if rfsuite.preferences and rfsuite.preferences.developer then return settings['logevents'] end end, function(newValue) if rfsuite.preferences and rfsuite.preferences.developer then settings.logevents = newValue end end)
+
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_taskprofiler)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() if rfsuite.preferences and rfsuite.preferences.developer then return settings['taskprofiler'] end end, function(newValue) if rfsuite.preferences and rfsuite.preferences.developer then settings.taskprofiler = newValue end end)
 
@@ -102,8 +117,8 @@ local function openPage(pageIdx, title, script)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/settings.lua")
+    pageRuntime.openMenuContext()
+    return true
 end
 
 local function onSaveMenu()
@@ -111,6 +126,9 @@ local function onSaveMenu()
     local function doSave()
         local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        for key in pairs(rfsuite.preferences.developer) do
+            if settings[key] == nil then rfsuite.preferences.developer[key] = nil end
+        end
         for key, value in pairs(settings) do rfsuite.preferences.developer[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
 
@@ -137,11 +155,7 @@ local function onSaveMenu()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/settings.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = false}, API = {}}

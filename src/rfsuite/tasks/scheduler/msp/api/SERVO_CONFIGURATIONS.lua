@@ -48,7 +48,7 @@ local function generateMSPStructureRead(servoCount)
         {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
     }
 
-    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table_insert(MSP_API_STRUCTURE, {field = string_format("servo_%d_%s", i, field.field), type = field.type, apiVersion = 12.07}) end end
+    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table_insert(MSP_API_STRUCTURE, {field = string_format("servo_%d_%s", i, field.field), type = field.type, apiVersion = {12, 0, 7}}) end end
 
     return MSP_API_STRUCTURE
 end
@@ -123,7 +123,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -134,7 +134,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

@@ -82,7 +82,7 @@ local function eraseBlackboxAsk()
         {
             label = "@i18n(app.btn_ok)@",
             action = function()
-                eraseDataflashGo = true;
+                eraseDataflash()
                 return true
             end
         }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
@@ -196,8 +196,6 @@ function render.wakeup(box)
 
     box._dynamicTextColor = percentUsed ~= nil and utils.resolveThresholdColor(percentUsed, box, "textcolor", "textcolor") or cfg.defaultTextColor
 
-    if not box.onpress then box.onpress = eraseBlackboxAsk end
-
     if eraseDataflashGo then
         eraseDataflashGo = false
         eraseDataflash()
@@ -228,6 +226,8 @@ function render.paint(x, y, w, h, box)
 
     utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, unitForPaint, c.font, c.valuealign, textColor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
 end
+
+render.eraseBlackboxAsk = eraseBlackboxAsk
 
 return render
 

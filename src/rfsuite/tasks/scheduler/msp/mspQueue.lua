@@ -18,6 +18,9 @@ local tostring = tostring
 local pcall = pcall
 
 local DEFAULT_RETRY_BACKOFF_SECONDS = 1
+local DEFAULT_BUSY_WARNING_THRESHOLD = 8
+local DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS = 0.35
+local MAX_MSP_LOG_BYTES = 96
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
@@ -168,6 +171,13 @@ function MspQueueController.new(opts)
     self._nextProcessAt = 0
 
     self.copyOnAdd = opts.copyOnAdd == true -- optionally copy on enqueue
+    -- Enqueue pressure signaling:
+    -- - busyWarningThreshold: soft threshold (status + return code only, still enqueues)
+    -- - maxQueueDepth: hard cap (0 disables hard cap for backwards-compat)
+    self.busyWarningThreshold = opts.busyWarningThreshold or DEFAULT_BUSY_WARNING_THRESHOLD
+    self.maxQueueDepth = opts.maxQueueDepth or 0
+    self.busyStatusCooldown = opts.busyStatusCooldown or DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS
+    self._lastBusyStatusAt = 0
 
     self.mspBusyStart = nil -- watchdog start
 
@@ -354,19 +364,52 @@ function MspQueueController:processQueue()
                 end
                 local logPayload
                 if rwState == "WRITE" then
-                    logPayload = self.currentMessage.payload
+                    local tx = self.currentMessage.payload or {}
+                    local txCount = #tx
+                    logPayload = {}
+                    local limit = txCount
+                    if limit > MAX_MSP_LOG_BYTES then limit = MAX_MSP_LOG_BYTES end
+                    for i = 1, limit do logPayload[#logPayload + 1] = tx[i] end
+                    if txCount > limit then
+                        logPayload[#logPayload + 1] = "..."
+                        logPayload[#logPayload + 1] = "(" .. tostring(txCount) .. " bytes)"
+                    end
                 else
                     local tx = self.currentMessage.payload
                     if tx and #tx > 0 then
                         logPayload = {}
+                        local txCount = #tx
+                        local rxCount = #(buf or {})
+                        local remaining = MAX_MSP_LOG_BYTES
                         -- TX bytes first
-                        for i = 1, #tx do logPayload[#logPayload + 1] = tx[i] end
+                        local txLimit = txCount
+                        if txLimit > remaining then txLimit = remaining end
+                        for i = 1, txLimit do logPayload[#logPayload + 1] = tx[i] end
+                        remaining = remaining - txLimit
                         -- separator (non-byte) for readability; logMsp should print it as-is
-                        logPayload[#logPayload + 1] = "|"
+                        if remaining > 0 then
+                            logPayload[#logPayload + 1] = "|"
+                            remaining = remaining - 1
+                        end
                         -- RX bytes second
-                        for i = 1, #(buf or {}) do logPayload[#logPayload + 1] = buf[i] end
+                        local rxLimit = rxCount
+                        if rxLimit > remaining then rxLimit = remaining end
+                        for i = 1, rxLimit do logPayload[#logPayload + 1] = buf[i] end
+                        if (txCount + rxCount + 1) > MAX_MSP_LOG_BYTES then
+                            logPayload[#logPayload + 1] = "..."
+                            logPayload[#logPayload + 1] = "(" .. tostring(txCount) .. "+" .. tostring(rxCount) .. " bytes)"
+                        end
                     else
-                        logPayload = buf
+                        local rx = buf or {}
+                        local rxCount = #rx
+                        logPayload = {}
+                        local rxLimit = rxCount
+                        if rxLimit > MAX_MSP_LOG_BYTES then rxLimit = MAX_MSP_LOG_BYTES end
+                        for i = 1, rxLimit do logPayload[#logPayload + 1] = rx[i] end
+                        if rxCount > rxLimit then
+                            logPayload[#logPayload + 1] = "..."
+                            logPayload[#logPayload + 1] = "(" .. tostring(rxCount) .. " bytes)"
+                        end
                     end
                 end
 
@@ -381,7 +424,10 @@ function MspQueueController:processQueue()
 
         -- After a successful completion, briefly drain duplicate/late replies for this cmd
         if not system.getVersion().simulation then
-            drainAfterSuccess(self, self.currentMessage.command)
+            local completedCommand = self.currentMessage and self.currentMessage.command
+            if completedCommand ~= nil then
+                drainAfterSuccess(self, completedCommand)
+            end
         end
 
         self.currentMessage = nil
@@ -427,11 +473,17 @@ function MspQueueController:clear()
 end
 
 -- Add message to queue (skip duplicate UUIDs; optional clone)
+-- Returns:
+--   ok(boolean), reason(string), qid(number|nil), pending(number)
+-- where reason is one of:
+--   "queued", "queued_busy", "duplicate", "busy", "telemetry_off", "nil_message"
 function MspQueueController:add(message)
-    if not rfsuite.session.telemetryState then return end
+    if not rfsuite.session.telemetryState then
+        return false, "telemetry_off", nil, self:queueCount()
+    end
     if not message then
         if LOG_ENABLED_MSP() then utils.log("Unable to queue - nil message.", "debug") end
-        return
+        return false, "nil_message", nil, self:queueCount()
     end
     -- Reset per-transfer timeout stats when starting a fresh queue.
     local session = rfsuite.session
@@ -446,15 +498,37 @@ function MspQueueController:add(message)
 
     if key and self.uuid == key then
         if LOG_ENABLED_MSP() then utils.log("Skipping duplicate message with key " .. key, "info") end
-        return
+        setMspStatus("MSP duplicate request skipped (back off)")
+        return false, "duplicate", nil, self:queueCount()
     end
+
+    -- Pending count includes in-flight currentMessage.
+    local pending = self:queueCount() + (self.currentMessage and 1 or 0)
+    if self.maxQueueDepth and self.maxQueueDepth > 0 and pending >= self.maxQueueDepth then
+        local busyMsg = "MSP queue busy (" .. tostring(pending) .. " pending)"
+        local now = os_clock()
+        if (now - (self._lastBusyStatusAt or 0)) >= (self.busyStatusCooldown or 0) then
+            setMspStatus(busyMsg)
+            self._lastBusyStatusAt = now
+        end
+        return false, "busy", nil, pending
+    end
+
     if key then self.uuid = key end
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
     self._qidSeq = (self._qidSeq or 0) + 1
     toQueue._qid = self._qidSeq
     qpush(self.queue, toQueue)
+    pending = self:queueCount() + (self.currentMessage and 1 or 0)
+
+    local isBusy = self.busyWarningThreshold and self.busyWarningThreshold > 0 and pending >= self.busyWarningThreshold
+    if isBusy then
+        setMspStatus(formatMspStatus(toQueue, "queued (busy " .. tostring(pending) .. " pending)"))
+        return true, "queued_busy", toQueue._qid, pending
+    end
+
     setMspStatus(formatMspStatus(toQueue, "queued"))
-    return self
+    return true, "queued", toQueue._qid, pending
 end
 
 -- Estimate byte cost of pending messages

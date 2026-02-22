@@ -168,6 +168,35 @@
         "clear": true
       }
     },
+    {
+      "label": "Menu: Generate manifest.lua",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/bin/menu/generate.py"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "Menu: Verify generated manifest.lua",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/bin/menu/generate.py",
+        "--check"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
  {
       "label": "ethos.Start",
       "type": "process",

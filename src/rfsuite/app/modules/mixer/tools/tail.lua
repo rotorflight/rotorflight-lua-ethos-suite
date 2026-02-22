@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local triggerSave = false
@@ -20,10 +21,6 @@ local APIDATA = {}
 local FORMDATA = {}
 
 -- store loaded directions here to ensure writeback consistency
-local AIL_DIRECTION
-local ELE_DIRECTION
-local COL_DIRECTION
-
 -- -------------------------------------------------------
 -- -- Form layout
 -- -------------------------------------------------------
@@ -340,6 +337,9 @@ local function writeNext(i)
             needsReboot = false
         end
 
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.setPageDirty then
+            rfsuite.app.ui.setPageDirty(false)
+        end
         rfsuite.app.triggers.closeProgressLoader = true
         return
     end
@@ -372,7 +372,11 @@ end
 -- -------------------------------------------------------
 -- -- Page interface functions
 -- -------------------------------------------------------
-local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     local app = rfsuite.app
     local formLines = app.formLines
@@ -466,7 +470,7 @@ end
 
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage(pidx, title, "mixer/mixer.lua")
+    pageRuntime.openMenuContext()
 end
 
 local function onSaveMenu()
@@ -504,7 +508,7 @@ local function wakeup()
 
     -- we are compromised without this - go back to main
     if rfsuite.session.tailMode == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end    
 

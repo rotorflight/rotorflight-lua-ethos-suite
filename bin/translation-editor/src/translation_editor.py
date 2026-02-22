@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
-import os
 import shutil
+import ssl
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import filedialog
@@ -13,8 +13,6 @@ from pathlib import Path
 from collections import OrderedDict
 
 APP_TITLE = "RF Suite Translation Editor"
-# Allowed non-ASCII characters observed in existing translations.
-ALLOWED_NON_ASCII = set("­°µÄÑÜßàáâäèéêëíîïñóôöùúûü​–“”")
 
 REPO_OWNER = "rotorflight"
 REPO_NAME = "rotorflight-lua-ethos-suite"
@@ -24,9 +22,34 @@ DATA_ROOT = Path.home() / ".rfsuite-translation-editor"
 I18N_REL = Path("bin/i18n/json")
 SOUND_REL = Path("bin/sound-generator/json")
 
+def _candidate_roots():
+    seen = set()
+    roots = []
+    for start in (Path(__file__).resolve().parent, Path.cwd().resolve()):
+        for root in (start, *start.parents):
+            key = str(root)
+            if key in seen:
+                continue
+            seen.add(key)
+            roots.append(root)
+    return roots
+
+
+def _find_repo_root():
+    for root in _candidate_roots():
+        if (root / I18N_REL / "en.json").exists():
+            return root
+    file_path = Path(__file__).resolve()
+    if len(file_path.parents) > 3:
+        return file_path.parents[3]
+    return Path.cwd().resolve()
+
+
+REPO_ROOT = _find_repo_root()
+
 
 def repo_root():
-    return Path(__file__).resolve().parents[3]
+    return REPO_ROOT
 
 
 def data_root():
@@ -45,6 +68,14 @@ def sound_root():
     if data_path.exists():
         return data_path
     return repo_root() / SOUND_REL
+
+
+def _https_context():
+    return ssl._create_unverified_context()
+
+
+def _safe_urlopen(req_or_url, timeout=30):
+    return urlopen(req_or_url, timeout=timeout, context=_https_context())
 
 
 class DataStore:
@@ -109,7 +140,7 @@ class TranslationEditor(tk.Tk):
         ttk.Label(top, text="Filter:").pack(side=tk.LEFT, padx=(12, 0))
         self.filter_cb = ttk.Combobox(
             top,
-            values=["All", "Needs only", "Done only", "Disallowed chars", "Exceeds max"],
+            values=["All", "Needs only", "Done only", "Exceeds max"],
             state="readonly",
             width=14
         )
@@ -126,7 +157,6 @@ class TranslationEditor(tk.Tk):
         ttk.Button(btn_frame, text="Reload", command=self._load_data).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo", command=self._undo_last).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Edit translation", command=self._edit_selected).pack(side=tk.RIGHT, padx=4)
-        ttk.Button(btn_frame, text="Toggle needs", command=self._toggle_needs).pack(side=tk.RIGHT, padx=4)
         ttk.Button(btn_frame, text="Undo row", command=self._undo_row).pack(side=tk.RIGHT, padx=4)
 
         stats = ttk.LabelFrame(self, text="Summary")
@@ -144,7 +174,7 @@ class TranslationEditor(tk.Tk):
         table_frame = ttk.Frame(self)
         table_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
 
-        columns = ("key", "english", "translation", "needs")
+        columns = ("key", "english", "translation", "needs", "reverse")
         style = ttk.Style()
         style.configure("RFSuite.Treeview", rowheight=28)
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", style="RFSuite.Treeview")
@@ -152,11 +182,13 @@ class TranslationEditor(tk.Tk):
         self.tree.heading("english", text="English")
         self.tree.heading("translation", text="Translation")
         self.tree.heading("needs", text="Needs")
+        self.tree.heading("reverse", text="Reverse")
 
         self.tree.column("key", width=280, anchor=tk.W)
         self.tree.column("english", width=360, anchor=tk.W)
         self.tree.column("translation", width=360, anchor=tk.W)
         self.tree.column("needs", width=80, anchor=tk.CENTER)
+        self.tree.column("reverse", width=90, anchor=tk.CENTER)
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.bind("<Button-1>", self._on_click)
@@ -177,6 +209,7 @@ class TranslationEditor(tk.Tk):
         self._edit_item = None
         self._edit_field = None
         self._live_warn_active = False
+        self._update_reverse_column_visibility()
 
     def _load_dataset_options(self):
         self._refresh_locale_list()
@@ -201,6 +234,7 @@ class TranslationEditor(tk.Tk):
         else:
             self.locale_cb.set("en")
             self.store.locale = "en"
+        self._update_reverse_column_visibility()
 
     def _on_dataset_changed(self, _evt=None):
         self.store.set_dataset(self.dataset_cb.get())
@@ -219,6 +253,7 @@ class TranslationEditor(tk.Tk):
         self.store.original_by_key = {r["key"]: r.copy() for r in self.store.rows}
         self.store.undo_stack = []
         self._apply_filter()
+        self._update_reverse_column_visibility()
 
     def _load_i18n_rows(self):
         root = i18n_root()
@@ -246,15 +281,18 @@ class TranslationEditor(tk.Tk):
             if isinstance(en_val, dict) and "english" in en_val and "translation" in en_val:
                 translation = ""
                 needs = True
+                reverse_text = None
                 if isinstance(tgt_val, dict):
                     translation = tgt_val.get("translation", "")
                     needs = bool(tgt_val.get("needs_translation", translation == ""))
+                    reverse_text = tgt_val.get("reverse_text")
 
                 rows.append({
                     "key": full_key,
                     "english": en_val.get("english", ""),
                     "translation": translation or "",
                     "needs": needs,
+                    "reverse_text": reverse_text,
                     "max_length": en_val.get("max_length"),
                 })
             elif isinstance(en_val, dict):
@@ -305,10 +343,6 @@ class TranslationEditor(tk.Tk):
                 continue
             if mode == "Done only" and row["needs"]:
                 continue
-            if mode == "Disallowed chars":
-                translation = row.get("translation", "") or ""
-                if not self._has_disallowed_non_ascii(translation):
-                    continue
             if mode == "Exceeds max":
                 english = row.get("english", "")
                 translation = row.get("translation", "")
@@ -328,14 +362,23 @@ class TranslationEditor(tk.Tk):
         self.tree.delete(*self.tree.get_children())
         for idx, row in enumerate(self.store.filtered_rows):
             needs_text = "[x]" if row["needs"] else "[ ]"
-            self.tree.insert("", tk.END, iid=str(idx), values=(row["key"], row["english"], row["translation"], needs_text))
+            reverse_text = ""
+            if self._use_reverse_column():
+                reverse_val = row.get("reverse_text")
+                if reverse_val is True:
+                    reverse_text = "[x]"
+                elif reverse_val is False:
+                    reverse_text = "[ ]"
+            self.tree.insert(
+                "",
+                tk.END,
+                iid=str(idx),
+                values=(row["key"], row["english"], row["translation"], needs_text, reverse_text),
+            )
 
         total = len(self.store.rows)
         missing = sum(1 for r in self.store.rows if r["needs"])
         done = total - missing
-        disallowed = sum(
-            1 for r in self.store.rows if self._has_disallowed_non_ascii(r.get("translation", ""))
-        )
         exceeds = sum(
             1 for r in self.store.rows
             if self._length_warning(r.get("english", ""), r.get("translation", ""), r.get("max_length"))
@@ -347,9 +390,22 @@ class TranslationEditor(tk.Tk):
             edit_hint = "Edit: click Translation cell"
         self.status.configure(text=f"Rows: {shown}/{total}   Missing: {missing}   {edit_hint}   Toggle: click Needs")
         self.stats_label.configure(
-            text=f"Total: {total}  Done: {done}  Missing: {missing}  Exceeds: {exceeds}  Disallowed: {disallowed}"
+            text=f"Total: {total}  Done: {done}  Missing: {missing}  Exceeds: {exceeds}"
         )
         self._update_length_warnings()
+
+    def _use_reverse_column(self):
+        return self.store.dataset == "i18n" and self.store.locale == "he"
+
+    def _update_reverse_column_visibility(self):
+        if not hasattr(self, "tree"):
+            return
+        if self._use_reverse_column():
+            self.tree.heading("reverse", text="Reverse")
+            self.tree.column("reverse", width=90, minwidth=60, stretch=False)
+        else:
+            self.tree.heading("reverse", text="")
+            self.tree.column("reverse", width=0, minwidth=0, stretch=False)
 
     def _length_warning(self, english, translation, max_length=None):
         if translation is None:
@@ -361,14 +417,6 @@ class TranslationEditor(tk.Tk):
         if isinstance(max_length, int) and max_length > 0:
             return t > max_length
         return t > (e * 1.15)
-
-    def _has_disallowed_non_ascii(self, text):
-        if text is None:
-            return False
-        for ch in text:
-            if ord(ch) > 127 and ch not in ALLOWED_NON_ASCII:
-                return True
-        return False
 
     def _update_length_warnings(self):
         sel = self.tree.selection()
@@ -388,11 +436,6 @@ class TranslationEditor(tk.Tk):
                     self.warning_label.configure(
                         text=f"Warning: translation exceeds English by {diff} chars (>15%)"
                     )
-                self.bell()
-            elif self._has_disallowed_non_ascii(translation):
-                self.warning_label.configure(
-                    text="Warning: translation contains non-ASCII characters (blocked)"
-                )
                 self.bell()
             else:
                 self.warning_label.configure(text="")
@@ -427,13 +470,6 @@ class TranslationEditor(tk.Tk):
             if not self._live_warn_active:
                 self.bell()
             self._live_warn_active = True
-        elif self._has_disallowed_non_ascii(translation):
-            self.warning_label.configure(
-                text="Warning: translation contains non-ASCII characters (blocked)"
-            )
-            if not self._live_warn_active:
-                self.bell()
-            self._live_warn_active = True
         else:
             if self._live_warn_active:
                 self.warning_label.configure(text="")
@@ -457,6 +493,15 @@ class TranslationEditor(tk.Tk):
             row_index = int(item)
             row = self.store.filtered_rows[row_index]
             row["needs"] = not row["needs"]
+            self._render_rows()
+            return
+        if col == "#5" and self._use_reverse_column():
+            row_index = int(item)
+            row = self.store.filtered_rows[row_index]
+            prev = row.get("reverse_text")
+            new_val = False if prev is True else True
+            row["reverse_text"] = new_val
+            self.store.undo_stack.append((row.get("key"), "reverse_text", prev, new_val, None))
             self._render_rows()
 
     def _on_double_click(self, event):
@@ -588,6 +633,8 @@ class TranslationEditor(tk.Tk):
                     row["translation"] = prev
                 elif field == "needs":
                     row["needs"] = prev
+                elif field == "reverse_text":
+                    row["reverse_text"] = prev
                 break
         self._apply_filter()
 
@@ -608,6 +655,7 @@ class TranslationEditor(tk.Tk):
         self.store.undo_stack.append((key, "english", row.get("english", ""), original.get("english", ""), None))
         self.store.undo_stack.append((key, "translation", row.get("translation", ""), original.get("translation", ""), None))
         self.store.undo_stack.append((key, "needs", row.get("needs", False), original.get("needs", False), None))
+        self.store.undo_stack.append((key, "reverse_text", row.get("reverse_text"), original.get("reverse_text"), None))
         row.update(original)
         for base_row in self.store.rows:
             if base_row.get("key") == key:
@@ -698,14 +746,21 @@ class TranslationEditor(tk.Tk):
 
     def _download_folder(self, rel_path: Path):
         url = f"{API_BASE}/{rel_path.as_posix()}?ref={REPO_BRANCH}"
-        req = Request(url, headers={"Accept": "application/vnd.github+json"})
+        req = Request(
+            url,
+            headers={
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "rfsuite-translation-editor",
+            },
+        )
         try:
-            with urlopen(req) as resp:
+            with _safe_urlopen(req) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except HTTPError as e:
             raise RuntimeError(f"HTTP error {e.code} for {url}") from e
         except URLError as e:
-            raise RuntimeError(f"Network error for {url}") from e
+            reason = getattr(e, "reason", e)
+            raise RuntimeError(f"Network error for {url}: {reason}") from e
 
         if not isinstance(data, list):
             raise RuntimeError(f"Unexpected response for {url}")
@@ -723,8 +778,17 @@ class TranslationEditor(tk.Tk):
                 continue
             target = out_dir / name
             try:
-                with urlopen(download_url) as resp:
+                file_req = Request(
+                    download_url,
+                    headers={"User-Agent": "rfsuite-translation-editor"},
+                )
+                with _safe_urlopen(file_req) as resp:
                     target.write_bytes(resp.read())
+            except HTTPError as e:
+                raise RuntimeError(f"HTTP error {e.code} downloading {download_url}") from e
+            except URLError as e:
+                reason = getattr(e, "reason", e)
+                raise RuntimeError(f"Network error downloading {download_url}: {reason}") from e
             except Exception as e:
                 raise RuntimeError(f"Failed downloading {download_url}: {e}") from e
 
@@ -754,21 +818,7 @@ class TranslationEditor(tk.Tk):
             return
         self._sync()
 
-    def _has_non_ascii(self):
-        for row in self.store.rows:
-            text = row.get("translation", "")
-            if self._has_disallowed_non_ascii(text):
-                return True
-        return False
-
     def _save_i18n(self):
-        # Hard block non-ASCII translations to avoid Ethos issues.
-        if self._has_non_ascii():
-            messagebox.showerror(
-                "Non-ASCII blocked",
-                "Save blocked: translations contain non-ASCII characters."
-            )
-            return
         root = i18n_root()
         root.mkdir(parents=True, exist_ok=True)
         out_path = root / f"{self.store.locale}.json"
@@ -780,6 +830,7 @@ class TranslationEditor(tk.Tk):
 
         en_data = self._read_json(en_path)
         row_map = {r["key"]: r for r in self.store.rows}
+        tgt_existing = self._read_json(out_path) if out_path.exists() else {}
 
         def rebuild(node, prefix):
             if not isinstance(node, dict):
@@ -801,10 +852,25 @@ class TranslationEditor(tk.Tk):
                         "translation": translation,
                         "needs_translation": needs,
                     })
-                    if self.store.locale == "en":
-                        max_len = en_val.get("max_length")
-                        if isinstance(max_len, int):
-                            entry["max_length"] = max_len
+                    if self.store.locale != "en":
+                        row_reverse = row.get("reverse_text")
+                        if row_reverse is not None:
+                            entry["reverse_text"] = bool(row_reverse)
+                        else:
+                            existing_val = None
+                            if isinstance(tgt_existing, dict):
+                                existing_val = tgt_existing
+                                for part in full_key.split("."):
+                                    if isinstance(existing_val, dict) and part in existing_val:
+                                        existing_val = existing_val[part]
+                                    else:
+                                        existing_val = None
+                                        break
+                            if isinstance(existing_val, dict) and "reverse_text" in existing_val:
+                                entry["reverse_text"] = existing_val.get("reverse_text")
+                    max_len = en_val.get("max_length")
+                    if isinstance(max_len, int):
+                        entry["max_length"] = max_len
                     out[key] = entry
                 elif isinstance(en_val, dict):
                     out[key] = rebuild(en_val, full_key)
@@ -818,13 +884,6 @@ class TranslationEditor(tk.Tk):
         messagebox.showinfo("Saved", f"Saved {out_path}")
 
     def _save_sound(self):
-        # Hard block non-ASCII translations to avoid Ethos issues.
-        if self._has_non_ascii():
-            messagebox.showerror(
-                "Non-ASCII blocked",
-                "Save blocked: translations contain non-ASCII characters."
-            )
-            return
         root = sound_root()
         root.mkdir(parents=True, exist_ok=True)
         out_path = root / f"{self.store.locale}.json"

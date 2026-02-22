@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local arg = {...}
-local config = arg[1]
 
 local timer = {}
 local lastFlightMode = nil
@@ -31,15 +30,19 @@ end
 local function saveToEeprom()
     local mspEepromWrite = {
         command = 250, 
+        uuid = "eeprom.syncstats.timer",
         simulatorResponse = {}, 
         processReply = function() utils.log("EEPROM write command sent","info") end
     }
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    local ok, reason = rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    if not ok then
+        utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
+    end
 end
 
 local function writeStats()
     -- call is not present in older firmwares
-    if not utils.apiVersionCompare(">=", "12.09") then return end
+    if not utils.apiVersionCompare(">=", {12, 0, 9}) then return end
 
     local function toNumber(v, dflt)
         local n = tonumber(v)
@@ -79,7 +82,7 @@ end
 
 local function syncStatsToFBL()
     -- call is not present in older firmwares
-    if not utils.apiVersionCompare(">=", "12.09") then return end
+    if not utils.apiVersionCompare(">=", {12, 0, 9}) then return end
 
     local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
     API.setCompleteHandler(function()

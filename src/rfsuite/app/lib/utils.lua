@@ -185,7 +185,14 @@ function utils.settingsSaved()
             app.pageState = app.pageStatus.eepromWrite
             app.triggers.closeSave = true
             if session.isArmed then app.triggers.showSaveArmedWarning = true end
-            tasks.msp.mspQueue:add(mspEepromWrite)
+            local ok, reason = tasks.msp.mspQueue:add(mspEepromWrite)
+            if not ok then
+                utils.log("EEPROM enqueue rejected: " .. tostring(reason), "info")
+                app.pageState = app.pageStatus.display
+                app.triggers.closeSaveFake = true
+                app.triggers.isSaving = false
+                app.triggers.saveFailed = true
+            end
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
         app.utils.invalidatePages()

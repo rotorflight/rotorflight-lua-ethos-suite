@@ -13,8 +13,8 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "pitch", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.pitch)@" },
-    { field = "roll",  type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.roll)@" },
+    { field = "pitch", type = "S16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.pitch)@" },
+    { field = "roll",  type = "S16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help = "@i18n(api.ACC_TRIM.roll)@" },
 }
 -- LuaFormatter on
 
@@ -67,7 +67,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -77,7 +77,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

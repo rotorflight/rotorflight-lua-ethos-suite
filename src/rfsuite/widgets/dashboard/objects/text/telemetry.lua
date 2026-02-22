@@ -131,6 +131,9 @@ function render.wakeup(box)
     local cfg = ensureCfg(box)
 
     local telemetry = rfsuite.tasks.telemetry
+    local session = rfsuite.session
+    local telemetryActive = session and session.telemetryState and session.isConnected
+    local inPostflight = (rfsuite.flightmode and rfsuite.flightmode.current == "postflight")
 
     local source = cfg.source
     local thresholdsCfg = getParam(box, "thresholds")
@@ -148,6 +151,8 @@ function render.wakeup(box)
     local displayValue
     if value ~= nil then
         displayValue = cfg.transformFn(value)
+    elseif inPostflight and box._lastValidValue ~= nil then
+        displayValue = box._lastValidValue
     else
 
         local maxDots = 3
@@ -170,6 +175,21 @@ function render.wakeup(box)
     end
 
     if type(displayValue) == "string" and displayValue:match("^%.+$") then unit = nil end
+
+    if not telemetryActive and not inPostflight then
+        box._lastValidValue = nil
+        box._lastValidUnit = nil
+        box._lastValidTextcolor = nil
+    end
+
+    if telemetryActive and value ~= nil then
+        box._lastValidValue = displayValue
+        box._lastValidUnit = unit
+        box._lastValidTextcolor = textcolor
+    elseif inPostflight and box._lastValidValue ~= nil then
+        unit = box._lastValidUnit
+        textcolor = box._lastValidTextcolor
+    end
 
     box._currentDisplayValue = displayValue
 

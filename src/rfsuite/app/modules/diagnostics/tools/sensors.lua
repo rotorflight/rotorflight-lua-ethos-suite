@@ -4,15 +4,12 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 local app = rfsuite.app
 local tasks = rfsuite.tasks
-local prefs = rfsuite.preferences
 local rfutils = rfsuite.utils
 local session = rfsuite.session
-
-local fields = {}
-local labels = {}
 
 local enableWakeup = false
 
@@ -33,7 +30,6 @@ local progressLoader
 local progressLoaderCounter = 0
 local progressLoaderBaseMessage
 local progressLoaderMspStatusLast
-local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local doDiscoverNotify = false
 
 local function openProgressDialog(...)
@@ -57,7 +53,11 @@ end
 
 local sensorList = sortSensorListByName(tasks.telemetry.listSensors())
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = false
     app.triggers.closeProgressLoader = true
 
@@ -248,7 +248,7 @@ local function wakeup()
     end
 
     if app.formNavigationFields['tool'] then
-        if session and session.apiVersion and rfutils.apiVersionCompare("<", "12.08") then
+        if session and session.apiVersion and rfutils.apiVersionCompare("<", {12, 0, 8}) then
             app.formNavigationFields['tool']:enable(false)
         else
             app.formNavigationFields['tool']:enable(true)
@@ -293,16 +293,12 @@ local function onToolMenu(self)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local function onNavMenu()
-    app.ui.progressDisplay(nil, nil, true)
-    app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    pageRuntime.openMenuContext()
+    return true
 end
 
 return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

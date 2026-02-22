@@ -13,10 +13,10 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "flightcount",      type = "U32", apiVersion = 12.09, simResponse = {123, 1, 0, 0}, unit = nil, help = "@i18n(api.FLIGHT_STATS.flightcount)@" },
-    { field = "totalflighttime",  type = "U32", apiVersion = 12.09, simResponse = {0, 1, 2, 0},    unit = "s",  help = "@i18n(api.FLIGHT_STATS.totalflighttime)@" },
-    { field = "totaldistance",    type = "U32", apiVersion = 12.09, simResponse = {0, 0, 0, 0},    unit = nil, help = "@i18n(api.FLIGHT_STATS.totaldistance)@" },
-    { field = "minarmedtime",     type = "S8",  apiVersion = 12.09, simResponse = {15},           unit = "s",  help = "@i18n(api.FLIGHT_STATS.minarmedtime)@" },
+    { field = "flightcount",      type = "U32", apiVersion = {12, 0, 9}, simResponse = {123, 1, 0, 0}, unit = nil, help = "@i18n(api.FLIGHT_STATS.flightcount)@" },
+    { field = "totalflighttime",  type = "U32", apiVersion = {12, 0, 9}, simResponse = {0, 1, 2, 0},    unit = "s",  help = "@i18n(api.FLIGHT_STATS.totalflighttime)@" },
+    { field = "totaldistance",    type = "U32", apiVersion = {12, 0, 9}, simResponse = {0, 0, 0, 0},    unit = nil, help = "@i18n(api.FLIGHT_STATS.totaldistance)@" },
+    { field = "minarmedtime",     type = "S8",  apiVersion = {12, 0, 9}, simResponse = {15},           unit = "s",  help = "@i18n(api.FLIGHT_STATS.minarmedtime)@" },
 }
 -- LuaFormatter on
 
@@ -77,7 +77,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -88,7 +88,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

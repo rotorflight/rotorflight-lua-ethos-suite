@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local formFields = rfsuite.app.formFields
@@ -42,7 +43,7 @@ local function postLoad(self)
 end
 
 local function wakeup() 
-    if enableWakeup == true then end 
+    if not enableWakeup then return end
 
     local protocolValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.PROTOCOL].value
     if protocolValue == nil then
@@ -51,8 +52,7 @@ local function wakeup()
         protocolValue = math.floor(protocolValue)
     end
 
-    local unsyncedValue
-    unsyncedValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.UNSYNCED].value
+    local unsyncedValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.UNSYNCED].value
 
     -- if using things like dshot this comes back as nil - and that mangles the form drop downs so reset it to off
     if unsyncedValue == nil then
@@ -113,7 +113,7 @@ local function wakeup()
         formFields[FIELDKEY.MINTHROTTLE]:enable(false)
         formFields[FIELDKEY.MAXTHROTTLE]:enable(false)
         formFields[FIELDKEY.UNSYNCED]:enable(false)        
-    elseif(protocolValue == 9 and rfsuite.utils.apiVersionCompare(">=", "12.07")) then  -- CASTLE
+    elseif(protocolValue == 9 and rfsuite.utils.apiVersionCompare(">=", {12, 0, 7})) then  -- CASTLE
         formFields[FIELDKEY.PWM_RATE]:enable(true)
         formFields[FIELDKEY.MINCOMMAND]:enable(true)
         formFields[FIELDKEY.MINTHROTTLE]:enable(true)
@@ -131,7 +131,12 @@ local function wakeup()
 end
 
 local function onNavMenu(self)
-    rfsuite.app.ui.openPage(pidx, title, "esc_motors/esc_motors.lua")
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, title = title, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}
+local function event(_, category, value)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
+end
+
+return {apidata = apidata, reboot = true, eepromWrite = true, event = event, wakeup = wakeup, postLoad = postLoad, onNavMenu = onNavMenu}

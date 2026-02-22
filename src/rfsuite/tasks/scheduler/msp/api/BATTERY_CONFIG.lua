@@ -19,16 +19,16 @@ local tblBatterySource = {
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity", type = "U16", apiVersion = 12.06, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCellCount", type = "U8", apiVersion = 12.06, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6, help = "@i18n(api.BATTERY_CONFIG.batteryCellCount)@"},
-    {field = "voltageMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.voltageMeterSource)@"},
-    {field = "currentMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.currentMeterSource)@"},
-    {field = "vbatmincellvoltage", type = "U16", apiVersion = 12.06, simResponse = {74, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.3, help = "@i18n(api.BATTERY_CONFIG.vbatmincellvoltage)@"},
-    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {164, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.2, help = "@i18n(api.BATTERY_CONFIG.vbatmaxcellvoltage)@"},
-    {field = "vbatfullcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1, help = "@i18n(api.BATTERY_CONFIG.vbatfullcellvoltage)@"},
-    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5, help = "@i18n(api.BATTERY_CONFIG.vbatwarningcellvoltage)@"},
-    {field = "lvcPercentage", type = "U8", apiVersion = 12.06, simResponse = {100}, help = "@i18n(api.BATTERY_CONFIG.lvcPercentage)@"},
-    {field = "consumptionWarningPercentage", type = "U8", apiVersion = 12.06, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%", help = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@"}
+    {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCellCount", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6, help = "@i18n(api.BATTERY_CONFIG.batteryCellCount)@"},
+    {field = "voltageMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.voltageMeterSource)@"},
+    {field = "currentMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.currentMeterSource)@"},
+    {field = "vbatmincellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {74, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.3, help = "@i18n(api.BATTERY_CONFIG.vbatmincellvoltage)@"},
+    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {164, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.2, help = "@i18n(api.BATTERY_CONFIG.vbatmaxcellvoltage)@"},
+    {field = "vbatfullcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1, help = "@i18n(api.BATTERY_CONFIG.vbatfullcellvoltage)@"},
+    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5, help = "@i18n(api.BATTERY_CONFIG.vbatwarningcellvoltage)@"},
+    {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}, help = "@i18n(api.BATTERY_CONFIG.lvcPercentage)@"},
+    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%", help = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@"}
 }
 -- LuaFormatter on
 
@@ -81,7 +81,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -91,7 +91,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

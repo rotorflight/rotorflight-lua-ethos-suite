@@ -11,6 +11,27 @@ local app = {}
 local utils = rfsuite.utils
 local log = utils.log
 local compile = loadfile
+local lastNoOpSaveToneAt = 0
+local busyUiTick = 0
+-- Busy cadence: run app tasks on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_UI_RUN_NUM = 2
+local BUSY_UI_RUN_DEN = 3
+
+local function playNoOpSaveTone()
+    local now = os.clock()
+    if (now - lastNoOpSaveToneAt) < 0.25 then return end
+    lastNoOpSaveToneAt = now
+
+    if system and system.playTone then
+        pcall(system.playTone, 420, 180, 0)
+        return
+    end
+
+    if utils and utils.playFileCommon then
+        utils.playFileCommon("beep.wav")
+    end
+end
 
 local arg = {...}
 local config = arg[1]
@@ -21,16 +42,43 @@ app.guiIsRunning = false
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
-    if app.ui and app.ui.adminStatsOverlay then if not rfsuite.session.mspBusy then app.ui.adminStatsOverlay() end end
+    if app.ui and app.ui.adminStatsOverlay then app.ui.adminStatsOverlay() end
 
 end
 
 function app.wakeup_protected()
     app.guiIsRunning = true
 
-    if app.tasks then app.tasks.wakeup() end
+    -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
+    if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
 
-    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.overlaystatsadmin then if not rfsuite.session.mspBusy then lcd.invalidate() end end
+        local ok, err = pcall(app.ui.openMainMenu)
+        if ok then
+            app._pendingMainMenuOpen = false
+        else
+            local msg = tostring(err)
+            if msg:find("Max instructions count reached", 1, true) then
+                -- Retry on next wakeup tick when the VM budget resets.
+                return
+            end
+            error(err)
+        end
+    end
+
+    -- Defer opening main menu until post-connect processing 
+    if rfsuite.session.isConnected and not rfsuite.session.postConnectComplete then
+        return 
+    end
+
+    -- If MSP is busy, only run UI tasks every N ticks to allow background processing to complete and avoid UI freezes.
+    local runUiTasks = true
+    if rfsuite.session and rfsuite.session.mspBusy then
+        busyUiTick = (busyUiTick % BUSY_UI_RUN_DEN) + 1
+        runUiTasks = busyUiTick <= BUSY_UI_RUN_NUM
+    else
+        busyUiTick = 0
+    end
+    if runUiTasks and app.tasks then app.tasks.wakeup() end
 end
 
 function app.wakeup()
@@ -44,38 +92,43 @@ function app.create()
 
     if not app.initialized then
 
+        -- Initialize app state
         app.sensors = {}
         app.formFields = {}
         app.formLines = {}
         app.formNavigationFields = {}
         app.PageTmp = {}
         app.Page = {}
-        app.saveTS = 0
-        app.lastPage = nil
-        app.lastSection = nil
-        app.lastIdx = nil
-        app.lastTitle = nil
-        app.lastScript = nil
-        app.gfx_buttons = {}
-        app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
-        app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
-        app.uiState = app.uiStatus.init
-        app.pageState = app.pageStatus.display
-        app.lastLabel = nil
-        app.NewRateTable = nil
-        app.RateTable = nil
-        app.fieldHelpTxt = nil
         app.radio = {}
         app.sensor = {}
+        app.gfx_buttons = {}        
+
+        app.saveTS = 0 -- timestamp of last save trigger
+        app.lastPage = nil -- last opened page id
+        app.lastSection = nil -- last opened menu section id
+        app.lastIdx = nil -- last selected button index
+        app.lastTitle = nil -- last page title string
+        app.lastScript = nil -- last page script path
+        app.headerTitle = nil -- resolved large header title
+        app.headerParentBreadcrumb = nil -- resolved micro breadcrumb parent path
+        app.menuContextStack = {} -- submenu return stack (parent chain)
+        app.uiStatus = {init = 1, mainMenu = 2, pages = 3, confirm = 4}
+        app.pageStatus = {display = 1, editing = 2, saving = 3, eepromWrite = 4, rebooting = 5}
+        app.uiState = app.uiStatus.init -- current UI state machine
+        app.pageState = app.pageStatus.display -- current page state machine
+        app.lastLabel = nil -- last focused label id (for help text)
+        app.NewRateTable = nil -- staging rates table during edit
+        app.RateTable = nil -- active rates table
+        app.fieldHelpTxt = nil -- active help text for focused field
         app.init = nil
-        app.guiIsRunning = false
-        app.adjfunctions = nil
-        app.profileCheckScheduler = os.clock()
-        app.offlineMode = false
-        app.isOfflinePage = false
-        app.uiState = app.uiStatus.init
-        app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
-        app.escPowerCycleLoader = false
+        app.guiIsRunning = false  -- flag to indicate if the app is active (for event handling)
+        app.adjfunctions = nil -- assigned adjust functions (if any)
+        app.profileCheckScheduler = os.clock() -- last profile check time
+        app.offlineMode = false -- app-wide offline flag
+        app.isOfflinePage = false -- current page does not require FC link
+        app.uiState = app.uiStatus.init -- reset UI state (redundant safety)
+        app.lcdWidth, app.lcdHeight = lcd.getWindowSize() -- cached screen size
+        app.escPowerCycleLoader = false -- ESC power-cycle loader flag
 
         app.audio = {}
         app.audio.playTimeout = false
@@ -84,16 +137,18 @@ function app.create()
         app.audio.playServoOverideEnable = false
         app.audio.playMixerOverideDisable = false
         app.audio.playMixerOverideEnable = false
+        app.audio.playMixerPassthroughOverideDisable = false
+        app.audio.playMixerPassthroughOverideEnable = false
         app.audio.playEraseFlash = false
 
         app.dialogs = {}
         app.dialogs.progress = false
-        app.dialogs.progressDisplay = false
-        app.dialogs.progressWatchDog = nil
-        app.dialogs.progressCounter = 0
-        app.dialogs.progressSpeed = false
-        app.dialogs.progressRateLimit = os.clock()
-        app.dialogs.progressRate = 0.25
+        app.dialogs.progressDisplay = false -- loader active
+        app.dialogs.progressWatchDog = nil -- timeout watchdog start
+        app.dialogs.progressCounter = 0 -- loader progress value
+        app.dialogs.progressSpeed = nil -- loader speed multiplier
+        app.dialogs.progressRateLimit = os.clock() -- throttle loader updates
+        app.dialogs.progressRate = 0.25 -- loader update rate (s)
 
         app.dialogs.progressESC = false
         app.dialogs.progressDisplayEsc = false
@@ -103,11 +158,11 @@ function app.create()
         app.dialogs.progressESCRate = 2.5
 
         app.dialogs.save = false
-        app.dialogs.saveDisplay = false
-        app.dialogs.saveWatchDog = nil
-        app.dialogs.saveProgressCounter = 0
-        app.dialogs.saveRateLimit = os.clock()
-        app.dialogs.saveRate = 0.25
+        app.dialogs.saveDisplay = false -- save dialog active
+        app.dialogs.saveWatchDog = nil -- save timeout watchdog
+        app.dialogs.saveProgressCounter = 0 -- save progress value
+        app.dialogs.saveRateLimit = os.clock() -- throttle save updates
+        app.dialogs.saveRate = 0.25 -- save update rate (s)
 
         app.dialogs.nolinkDisplay = false
 
@@ -115,32 +170,39 @@ function app.create()
         app.dialogs.badversionDisplay = false
 
         app.triggers = {}
-        app.triggers.exitAPP = false
-        app.triggers.noRFMsg = false
-        app.triggers.triggerSave = false
-        app.triggers.triggerSaveNoProgress = false
-        app.triggers.triggerReload = false
-        app.triggers.triggerReloadFull = false
-        app.triggers.triggerReloadNoPrompt = false
-        app.triggers.reloadFull = false
-        app.triggers.isReady = false
-        app.triggers.isSaving = false
-        app.triggers.isSavingFake = false
-        app.triggers.saveFailed = false
-        app.triggers.profileswitchLast = nil
-        app.triggers.rateswitchLast = nil
-        app.triggers.closeSave = false
-        app.triggers.closeSaveFake = false
-        app.triggers.badMspVersion = false
-        app.triggers.badMspVersionDisplay = false
-        app.triggers.closeProgressLoader = false
-        app.triggers.closeProgressLoaderNoisProcessed = false
-        app.triggers.disableRssiTimeout = false
-        app.triggers.timeIsSet = false
-        app.triggers.invalidConnectionSetup = false
-        app.triggers.wasConnected = false
-        app.triggers.isArmed = false
-        app.triggers.showSaveArmedWarning = false
+        app.triggers.exitAPP = false -- request app exit
+        app.triggers.noRFMsg = false -- show no RF message
+        app.triggers.triggerSave = false -- start save workflow
+        app.triggers.triggerSaveNoProgress = false -- save without progress dialog
+        app.triggers.triggerReload = false -- reload current page
+        app.triggers.triggerReloadFull = false -- reload with full reset
+        app.triggers.triggerReloadNoPrompt = false -- reload without prompt
+        app.triggers.reloadFull = false -- force full reload
+        app.triggers.isReady = false -- page ready to interact
+        app.triggers.isSaving = false -- save in progress
+        app.triggers.isSavingFake = false -- fake save progress
+        app.triggers.saveFailed = false -- save failed flag
+        app.triggers.profileswitchLast = nil -- last profile switch id
+        app.triggers.rateswitchLast = nil -- last rate switch id
+        app.triggers.closeSave = false -- close save dialog
+        app.triggers.closeSaveFake = false -- close fake save dialog
+        app.triggers.badMspVersion = false -- bad MSP version detected
+        app.triggers.badMspVersionDisplay = false -- show bad MSP dialog
+        app.triggers.closeProgressLoader = false -- close loader dialog
+        app.triggers.closeProgressLoaderNoisProcessed = false -- close loader when queue not processed
+        app.triggers.disableRssiTimeout = false -- disable RSSI timeout
+        app.triggers.timeIsSet = false -- time sync flag
+        app.triggers.invalidConnectionSetup = false -- invalid connection state
+        app.triggers.wasConnected = false -- last connection state
+        app.triggers.isArmed = false -- model armed flag
+        app.triggers.showSaveArmedWarning = false -- warn when saving armed
+
+        -- default speeds for loaders (multipliers of default animation speed)
+        app.loaderSpeed = {
+            DEFAULT = 1.0,
+            FAST = 2.0,
+            SLOW = 0.75
+        }
 
         app.tasks = assert(compile("app/tasks.lua"))()
 
@@ -157,10 +219,20 @@ function app.create()
         app.initialized = true
     end
 
-    app.ui.openMainMenu()
+    app._pendingMainMenuOpen = true
 end
 
 function app.event(widget, category, value, x, y)
+
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
+        local events = rfsuite.ethos_events
+        if events and events.debug then
+            local line = events.debug("app", category, value, x, y, {returnOnly = true})
+            if line then rfsuite.utils.log(line, "info") end
+        end
+    end
+
+    local isCloseEvent = ((category == EVT_CLOSE and value == 0) or value == KEY_DOWN_BREAK) and value ~= KEY_ENTER_LONG
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
@@ -170,39 +242,61 @@ function app.event(widget, category, value, x, y)
     end
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
+        if (app._openedFromShortcuts or app._forceMenuToMain) and isCloseEvent then
+            app.ui.openMainMenu()
+            return true
+        end
         if app.Page.event then
             log("USING PAGES EVENTS", "debug")
             local ret = app.Page.event(widget, category, value, x, y)
-            if ret ~= nil then return ret end
+            if ret ~= nil and ret ~= false then return ret end
         end
     end
 
-    if app.uiState == app.uiStatus.mainMenu and app.lastMenu ~= nil and value == 35 then
-        app.ui.openMainMenu()
-        return true
-    end
-    if rfsuite.app.lastMenu ~= nil and category == 3 and value == 0 then
-        app.ui.openMainMenu()
+    if app.uiState == app.uiStatus.mainMenu and isCloseEvent then
+        if app.lastMenu and app.lastMenu ~= "mainmenu" then
+            app.ui.openMainMenu()
+        else
+            app.close()
+        end
         return true
     end
 
     if app.uiState == app.uiStatus.pages then
 
-        if category == EVT_CLOSE and value == 0 or value == 35 then
+        if isCloseEvent then
             log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-            if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            if app.lastMenu == nil then
+            if app._forceMenuToMain then
                 app.ui.openMainMenu()
+            elseif app.Page.onNavMenu then
+                app.Page.onNavMenu(app.Page)
             else
-                app.ui.openMainMenuSub(app.lastMenu)
+                app.ui.openMenuContext()
             end
             return true
         end
 
         if value == KEY_ENTER_LONG then
             if app.Page.navButtons and app.Page.navButtons.save == false then return true end
+            local dirtyPref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+            local requireDirty = not (dirtyPref == false or dirtyPref == "false")
+
+            -- Block long-press save when page is not dirty on standard API pages.
+            if app.Page and app.Page.canSave and app.Page.canSave(app.Page) == false then
+                playNoOpSaveTone()
+                system.killEvents(KEY_ENTER_BREAK)
+                return true
+            end
+            if requireDirty and not app._pageUsesCustomOpen and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
+                if app.pageDirty ~= true then
+                    playNoOpSaveTone()
+                    system.killEvents(KEY_ENTER_BREAK)
+                    return true
+                end
+            end
+
             log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
             if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end

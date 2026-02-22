@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 local system = system
 local app = rfsuite.app
@@ -11,9 +12,9 @@ local tasks = rfsuite.tasks
 local rfutils = rfsuite.utils
 local session = rfsuite.session
 local prefs = rfsuite.preferences
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware", showProgress = true})
 
 local formFields = app.formFields
-local formLines = app.formLines
 local radio = app.radio
 
 local enableWakeup = false
@@ -57,6 +58,9 @@ local function saveData()
         -- EEPROM commit
         local EAPI = tasks.msp.api.load("EEPROM_WRITE")
         EAPI.setCompleteHandler(function()
+            if app and app.ui and app.ui.setPageDirty then
+                app.ui.setPageDirty(false)
+            end
             app.triggers.closeProgressLoader = true
         end)
         EAPI.write()
@@ -113,7 +117,11 @@ local function loadData()
 end
 
 
-local function openPage(idx, title, script)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     app.uiState = app.uiStatus.pages
     app.triggers.isReady = false
@@ -129,7 +137,7 @@ local function openPage(idx, title, script)
 
     form.clear()
 
-    app.ui.fieldHeader("@i18n(app.modules.governor.menu_curves_long)@")
+    app.ui.fieldHeader(title or "@i18n(app.modules.governor.menu_curves_long)@")
 
 
     local res = system.getVersion()
@@ -202,7 +210,7 @@ local function wakeup()
 
     -- we are compromised if we don't have governor mode known
     if session.governorMode == nil then
-        app.ui.openMainMenu()
+        pageRuntime.openMenuContext({defaultSection = "hardware"})
         return
     end
 
@@ -226,17 +234,11 @@ local function wakeup()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        app.ui.openPage(pidx, title, "governor/governor.lua")
-        return true
-    end
+    return navHandlers.event(widget, category, value)
 end
 
 local function onNavMenu()
-    app.ui.progressDisplay()
-    app.ui.openPage(pidx, title, "governor/governor.lua")
-    return true
+    return navHandlers.onNavMenu()
 end
 
 local function paint()

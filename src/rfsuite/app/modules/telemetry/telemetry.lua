@@ -11,10 +11,16 @@ local apidata = nil
 local config = {}
 local triggerSave = false
 local configLoaded = false
+local configLoading = false
 local configApplied = false
 local setDefaultSensors = false
 local PREV_STATE = {}
+local SAVED_CONFIG = {}
+local saveDirtyOverride = false
+local pendingSaveStateRefresh = 0
 local FEATURE_CONFIG
+local lastSessionRef = nil
+local lastLinkReady = false
 
 local sensorList = {
     [1] = { name = "Heartbeat", group = "system" },
@@ -164,6 +170,66 @@ do
     for _, g in ipairs(extras) do table.insert(GROUP_ORDER, g) end
 end
 
+local function clearTable(tbl)
+    if type(tbl) ~= "table" then return end
+    for k in pairs(tbl) do tbl[k] = nil end
+end
+
+local function isLinkReady()
+    local liveSession = rfsuite.session
+    return (liveSession and liveSession.isConnected and liveSession.mcu_id and liveSession.postConnectComplete) and true or false
+end
+
+local function snapshotConfig(src, dst)
+    if type(src) ~= "table" or type(dst) ~= "table" then return end
+    saveDirtyOverride = false
+    clearTable(dst)
+    for id in pairs(TELEMETRY_SENSORS) do
+        dst[id] = (src[id] == true)
+    end
+end
+
+local function hasConfigChanges()
+    local changed = false
+    for id in pairs(TELEMETRY_SENSORS) do
+        if (config[id] == true) ~= (SAVED_CONFIG[id] == true) then
+            changed = true
+            break
+        end
+    end
+    return changed or saveDirtyOverride
+end
+
+local function refreshSaveState()
+    if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.setPageDirty then
+        rfsuite.app.ui.setPageDirty(hasConfigChanges())
+    end
+end
+
+local function setFormFieldsEnabled(enabled)
+    if not (rfsuite.app and rfsuite.app.formFields) then return end
+    for _, field in pairs(rfsuite.app.formFields) do
+        if field and field.enable then field:enable(enabled == true) end
+    end
+end
+
+local function resetConfigRuntimeState()
+    configLoading = false
+    triggerSave = false
+    setDefaultSensors = false
+    pendingSaveStateRefresh = 0
+    saveDirtyOverride = false
+    FEATURE_CONFIG = nil
+    clearTable(PREV_STATE)
+    clearTable(config)
+    clearTable(SAVED_CONFIG)
+    if rfsuite.app and rfsuite.app.Page then
+        rfsuite.app.Page.configLoaded = false
+    end
+    setFormFieldsEnabled(false)
+    refreshSaveState()
+end
+
 local function countEnabledSensors()
     local count = 0
     for _, v in pairs(config) do if v == true then count = count + 1 end end
@@ -176,14 +242,22 @@ local function alertIfTooManySensors()
     form.openDialog({width = nil, title = "@i18n(app.modules.telemetry.name)@", message = "@i18n(app.modules.telemetry.no_more_than_40)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
     form.clear()
 
     rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.telemetry.name)@")
+    local headerTitle = title
+    if type(headerTitle) ~= "string" or headerTitle == "" then
+        headerTitle = "@i18n(app.modules.telemetry.name)@"
+    end
+    rfsuite.app.ui.fieldHeader(headerTitle)
 
     rfsuite.app.formLineCnt = 0
 
@@ -191,7 +265,7 @@ local function openPage(pidx, title, script)
     if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
     if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
 
-    if rfsuite.utils.apiVersionCompare("<", "12.08") then
+    if rfsuite.utils.apiVersionCompare("<", {12, 0, 8}) then
         rfsuite.app.triggers.closeProgressLoader = true
 
         rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.telemetry.invalid_version)@")
@@ -245,6 +319,8 @@ local function openPage(pidx, title, script)
                         end
 
                         config[sensor.id] = val
+                        saveDirtyOverride = false
+                        refreshSaveState()
                     end)
                     rfsuite.app.formFields[formFieldCount]:enable(false)
                 end
@@ -253,6 +329,8 @@ local function openPage(pidx, title, script)
     end
 
     enableWakeup = true
+    lastSessionRef = rfsuite.session
+    lastLinkReady = isLinkReady()
 end
 
 local function rebootFC()
@@ -279,14 +357,41 @@ end
 
 local function getDefaultSensors(sensorListFromApi)
     local defaultSensors = {}
-    local i = 0
     for _, sensor in pairs(sensorListFromApi) do
         if sensor["mandatory"] == true and sensor["set_telemetry_sensors"] ~= nil then
-            defaultSensors[i] = sensor["set_telemetry_sensors"]
-            i = i + 1
+            local sensorId = tonumber(sensor["set_telemetry_sensors"])
+            if sensorId then
+                table.insert(defaultSensors, sensorId)
+            end
         end
     end
     return defaultSensors
+end
+
+local function applyDefaultSensors()
+    local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors() or {})
+    local defaultSet = {}
+
+    for _, v in ipairs(sensorListFromApi) do
+        local sensorId = tonumber(v)
+        if sensorId then
+            defaultSet[sensorId] = true
+        end
+    end
+
+    for id in pairs(TELEMETRY_SENSORS) do
+        local desired = defaultSet[id] == true
+        if (config[id] == true) ~= desired then
+            config[id] = desired
+        end
+    end
+
+    -- "Apply defaults" is treated as an explicit user action that should always
+    -- allow save/re-apply, even if values are already at defaults.
+    saveDirtyOverride = true
+    refreshSaveState()
+    if form and form.invalidate then form.invalidate() end
+    return true
 end
 
 -- shallow-copy helper (snapshots tables so API internals can’t mutate our cache)
@@ -302,7 +407,24 @@ end
 local function wakeup()
     if enableWakeup == false then return end
 
-    if not rfsuite.app.Page.configLoaded then
+    local linkReady = isLinkReady()
+    local liveSession = rfsuite.session
+
+    if liveSession ~= lastSessionRef then
+        lastSessionRef = liveSession
+        resetConfigRuntimeState()
+    elseif lastLinkReady ~= linkReady then
+        if not linkReady then
+            resetConfigRuntimeState()
+        elseif rfsuite.app and rfsuite.app.Page then
+            rfsuite.app.Page.configLoaded = false
+            configLoading = false
+        end
+    end
+    lastLinkReady = linkReady
+
+    if linkReady and not rfsuite.app.Page.configLoaded and not configLoading then
+        configLoading = true
 
         -- first load the feature config 
         local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
@@ -325,28 +447,54 @@ local function wakeup()
         -- now load the telemetry config
         local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
-            local hasData = API.readValue("telem_sensor_slot_40")
-            if hasData then
-                if rfsuite.app.Page then
+            if rfsuite.app.Page then
+                setFormFieldsEnabled(true)
 
-                    if rfsuite.app.formFields then for i, v in pairs(rfsuite.app.formFields) do if v and v.enable then v:enable(true) end end end
-
-                    local data = API.data()
+                local data = API.data()
+                if type(data) == "table" then
                     rfsuite.tasks.msp.api.apidata = data
                     rfsuite.tasks.msp.api.apidata.receivedBytes = {}
                     rfsuite.tasks.msp.api.apidata.receivedBytesCount = {}
-
-                    for _, value in pairs(data.parsed) do if value ~= 0 then rfsuite.app.Page.config[value] = true end end
                 end
 
-                rfsuite.utils.log("Telemetry config loaded", "info")
-                rfsuite.app.triggers.closeProgressLoader = true
+                clearTable(config)
+                if data and type(data.parsed) == "table" then
+                    for _, value in pairs(data.parsed) do
+                        local sensorId = tonumber(value)
+                        if sensorId and sensorId ~= 0 then
+                            rfsuite.app.Page.config[sensorId] = true
+                        end
+                    end
+                end
+
+                snapshotConfig(config, SAVED_CONFIG)
+                refreshSaveState()
+                rfsuite.app.Page.configLoaded = true
             end
+
+            configLoading = false
+            rfsuite.utils.log("Telemetry config loaded", "info")
+            rfsuite.app.triggers.closeProgressLoader = true
+        end)
+        API.setErrorHandler(function()
+            configLoading = false
+            if rfsuite.app and rfsuite.app.Page then
+                if isLinkReady() then
+                    rfsuite.app.Page.configLoaded = true
+                    snapshotConfig(config, SAVED_CONFIG)
+                else
+                    rfsuite.app.Page.configLoaded = false
+                    clearTable(config)
+                    clearTable(SAVED_CONFIG)
+                    setFormFieldsEnabled(false)
+                end
+                refreshSaveState()
+            end
+            rfsuite.utils.log("Telemetry config load failed", "error")
+            rfsuite.app.triggers.closeProgressLoader = true
         end)
         API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
         API.read()
-
-        rfsuite.app.Page.configLoaded = true
     end
 
     if triggerSave == true then
@@ -382,12 +530,19 @@ local function wakeup()
         -- write the sensors
         local selectedSensors = {}
 
-        for k, v in pairs(config) do if v == true then table.insert(selectedSensors, k) end end
+        for k, v in pairs(config) do
+            if v == true then
+                local sensorId = tonumber(k)
+                if sensorId then table.insert(selectedSensors, sensorId) end
+            end
+        end
 
         local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174120")
         WRITEAPI.setCompleteHandler(function(self, buf)
             rfsuite.utils.log("Telemetry config written, now writing to EEPROM", "info")
+            snapshotConfig(config, SAVED_CONFIG)
+            refreshSaveState()
             applySettings()
         end)
         WRITEAPI.setErrorHandler(function(self, buf) rfsuite.utils.log("Write to fbl failed.", "info") end)
@@ -424,16 +579,21 @@ local function wakeup()
         triggerSave = false
     end
 
-    if setDefaultSensors == true then
-        local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
-        for _, v in pairs(sensorListFromApi) do config[v] = true end
+    if setDefaultSensors == true and rfsuite.app.Page.configLoaded then
+        local changed = applyDefaultSensors()
+        if changed and rfsuite.app and rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields["save"] and rfsuite.app.formNavigationFields["save"].enable then
+            rfsuite.app.formNavigationFields["save"]:enable(true)
+            pendingSaveStateRefresh = 5
+        end
         setDefaultSensors = false
     end
 
-    if setDefaultSensors == true then
-        local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
-        for _, v in pairs(sensorListFromApi) do config[v] = true end
-        setDefaultSensors = false
+    if pendingSaveStateRefresh > 0 then
+        pendingSaveStateRefresh = pendingSaveStateRefresh - 1
+        refreshSaveState()
+        if hasConfigChanges() and rfsuite.app and rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields["save"] and rfsuite.app.formNavigationFields["save"].enable then
+            rfsuite.app.formNavigationFields["save"]:enable(true)
+        end
     end
 end
 
@@ -470,7 +630,6 @@ local function onToolMenu(self)
         {
             label = "@i18n(app.btn_ok)@",
             action = function()
-
                 setDefaultSensors = true
                 return true
             end
@@ -486,4 +645,4 @@ local function mspRetry() end
 
 local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
-return {apidata = apidata, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, onReloadMenu = onReloadMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}
+return {apidata = apidata, openPage = openPage, eepromWrite = true, mspSuccess = mspSuccess, mspRetry = mspRetry, onSaveMenu = onSaveMenu, onToolMenu = onToolMenu, onReloadMenu = onReloadMenu, reboot = false, wakeup = wakeup, API = {}, config = config, configLoaded = configLoaded, configApplied = configApplied, canSave = hasConfigChanges, navButtons = {menu = true, save = true, reload = true, tool = true, help = false}}

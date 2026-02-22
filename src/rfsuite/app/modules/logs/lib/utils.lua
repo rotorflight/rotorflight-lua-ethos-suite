@@ -14,7 +14,11 @@ function utils.resolveModelName(foldername)
     local iniName = "LOGS:rfsuite/telemetry/" .. foldername .. "/logs.ini"
     local iniData = rfsuite.ini.load_ini_file(iniName) or {}
 
-    if iniData["model"] and iniData["model"].name then return iniData["model"].name end
+    if iniData["model"] and iniData["model"].name then
+        local modelName = tostring(iniData["model"].name)
+        modelName = modelName:gsub("^%s+", ""):gsub("%s+$", "")
+        if modelName ~= "" then return modelName end
+    end
     return "Unknown"
 end
 
@@ -49,13 +53,14 @@ function utils.getLogs(logDir)
     return result
 end
 
-function utils.getLogPath()
+function utils.getLogPath(dirname)
 
     os.mkdir("LOGS:")
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/telemetry")
 
-    if rfsuite.app.activeLogDir then return string.format("LOGS:/rfsuite/telemetry/%s/", rfsuite.app.activeLogDir) end
+    local targetDir = dirname or rfsuite.app.activeLogDir
+    if targetDir then return string.format("LOGS:/rfsuite/telemetry/%s/", targetDir) end
     return "LOGS:/rfsuite/telemetry/"
 end
 

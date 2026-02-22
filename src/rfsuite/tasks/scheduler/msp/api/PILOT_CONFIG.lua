@@ -13,13 +13,13 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "model_id",               type = "U8",  apiVersion = 12.07, simResponse = {3},       help = "@i18n(api.PILOT_CONFIG.model_id)@" },
-    { field = "model_param1_type",      type = "U8",  apiVersion = 12.07, simResponse = {0},       help = "@i18n(api.PILOT_CONFIG.model_param1_type)@" },
-    { field = "model_param1_value",     type = "U16", apiVersion = 12.07, simResponse = {44, 1}, unit = "s", min = 0, max = 3600, help = "@i18n(api.PILOT_CONFIG.model_param1_value)@" },
-    { field = "model_param2_type",      type = "U8",  apiVersion = 12.07, simResponse = {0},       help = "@i18n(api.PILOT_CONFIG.model_param2_type)@" },
-    { field = "model_param2_value",     type = "U16", apiVersion = 12.07, simResponse = {20, 0},   help = "@i18n(api.PILOT_CONFIG.model_param2_value)@" },
-    { field = "model_param3_type",      type = "U8",  apiVersion = 12.07, simResponse = {20},      help = "@i18n(api.PILOT_CONFIG.model_param3_type)@" },
-    { field = "model_param3_value",     type = "U16", apiVersion = 12.07, simResponse = {0, 30},    help = "@i18n(api.PILOT_CONFIG.model_param3_value)@" },
+    { field = "model_id",               type = "U8",  apiVersion = {12, 0, 7}, simResponse = {3},       help = "@i18n(api.PILOT_CONFIG.model_id)@" },
+    { field = "model_param1_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0},       help = "@i18n(api.PILOT_CONFIG.model_param1_type)@" },
+    { field = "model_param1_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {44, 1}, unit = "s", min = 0, max = 3600, help = "@i18n(api.PILOT_CONFIG.model_param1_value)@" },
+    { field = "model_param2_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0},       help = "@i18n(api.PILOT_CONFIG.model_param2_type)@" },
+    { field = "model_param2_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {20, 0},   help = "@i18n(api.PILOT_CONFIG.model_param2_value)@" },
+    { field = "model_param3_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {20},      help = "@i18n(api.PILOT_CONFIG.model_param3_type)@" },
+    { field = "model_param3_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 30},    help = "@i18n(api.PILOT_CONFIG.model_param3_value)@" },
 }
 -- LuaFormatter on
 
@@ -79,7 +79,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -90,7 +90,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

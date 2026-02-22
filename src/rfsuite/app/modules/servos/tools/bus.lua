@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local servoTable = {}
 servoTable = {}
@@ -12,8 +13,11 @@ servoTable['sections'] = {}
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
+local onNavMenu
 
 local busServoCount = 16    -- how many bus servos we display
+-- Index translation for BUS read/write MSP commands is handled in `bus_tool.lua`.
+-- This page only controls BUS servo list UI and navigation.
 
 local function writeEeprom()
 
@@ -100,7 +104,11 @@ local function swashMixerType()
     return txt
 end
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     buildServoTable()
 
@@ -111,7 +119,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
@@ -132,7 +140,7 @@ local function openPage(pidx, title, script)
     local buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.name)@")
+    rfsuite.app.ui.fieldHeader(title or "@i18n(app.modules.servos.name)@ / @i18n(app.modules.servos.bus)@")
 
     local buttonW
     local buttonH
@@ -215,7 +223,13 @@ local function openPage(pidx, title, script)
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
 
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/tools/bus_tool.lua", servoTable)
+                    rfsuite.app.ui.openPage({
+                        idx = pidx,
+                        title = pvalue.title,
+                        script = "servos/tools/bus_tool.lua",
+                        servoTable = servoTable,
+                        returnContext = {idx = pidx, title = title, script = script}
+                    })
                 end
             })
 
@@ -239,7 +253,9 @@ local function openPage(pidx, title, script)
 end
 
 
-local function event(widget, category, value, x, y) end
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
+end
 
 local function onToolMenu(self)
 
@@ -286,7 +302,7 @@ local function wakeup()
 
     -- go back to main as this tool is compromised 
     if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end
 
@@ -313,7 +329,7 @@ local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
             local message = {command = 196, payload = {}}
             rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
             rfsuite.tasks.msp.mspQueue:add(message)
@@ -332,7 +348,7 @@ end
 
 local function servoCenterFocusAllOff(self)
 
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
             local message = {command = 196, payload = {}}
             rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
             rfsuite.tasks.msp.mspQueue:add(message)
@@ -347,7 +363,7 @@ local function servoCenterFocusAllOff(self)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
-local function onNavMenu(self)
+onNavMenu = function(self)
 
     if rfsuite.session.servoOverride == true or inFocus == true then
         rfsuite.app.audio.playServoOverideDisable = true
@@ -358,7 +374,8 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
-     rfsuite.app.ui.openPage(pidx, "@i18n(app.modules.servos.name)@", "servos/servos.lua")
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 
 end
 

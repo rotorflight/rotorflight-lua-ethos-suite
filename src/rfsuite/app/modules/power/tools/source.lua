@@ -4,13 +4,10 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
-local disableMultiplier
-local becAlert
-local rxBattAlert
-local formFields = rfsuite.app.formFields
-
+local onNavMenu
 local FIELDS = {
     voltageMeterSource = 1,
     currentMeterSource = 2
@@ -42,17 +39,12 @@ end
 
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "power/power.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
-local function onNavMenu(self)
-
-    rfsuite.app.ui.openPage(pidx, title, "power/power.lua")
-
+onNavMenu = function(self)
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
 end
 
 

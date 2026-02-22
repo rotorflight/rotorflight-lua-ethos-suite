@@ -6,10 +6,22 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
 
-local labels = {}
 local tables = {}
 
 local activateWakeup = false
+
+local function resolveScriptPath(script)
+    if type(script) ~= "string" then return nil, nil end
+    local relativeScript = script
+    if relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+    local modulePath = script
+    if modulePath:sub(1, 4) ~= "app/" then
+        modulePath = "app/modules/" .. modulePath
+    end
+    return modulePath, relativeScript
+end
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
@@ -54,21 +66,21 @@ local function rightAlignText(width, text)
     end
 end
 
-local function openPage(idx, title, script)
+local function openPage(opts)
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+
+    local modulePath, relativeScript = resolveScriptPath(script)
+    rfsuite.app.Page = assert(loadfile(modulePath))()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
-
-    local maxValue
-    local minValue
+    rfsuite.app.lastScript = relativeScript or script
+    rfsuite.session.lastPage = relativeScript or script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-
-    local longPage = false
 
     form.clear()
 
@@ -89,7 +101,6 @@ local function openPage(idx, title, script)
     local w = ((screenWidth * 70 / 100) / numCols)
     local paddingRight = 10
     local positions = {}
-    local positions_r = {}
     local pos
 
     local line = form.addLine("")
@@ -102,26 +113,23 @@ local function openPage(idx, title, script)
 
     rfsuite.session.colWidth = w - paddingRight
 
-    local c = 1
     while loc > 0 do
         local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
 
         positions[loc] = posX - w
-        positions_r[c] = posX - w
 
         lcd.font(FONT_STD)
 
         colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
 
-        local posTxt = positions_r[c] + paddingRight
+        local posTxt = positions[loc] + paddingRight
 
         pos = {x = posTxt, y = posY, w = w, h = h}
-        rfsuite.app.formFields['col_' .. tostring(c)] = form.addStaticText(line, pos, colLabel)
+        rfsuite.app.formFields['col_' .. tostring(numCols - loc + 1)] = form.addStaticText(line, pos, colLabel)
 
         posX = math.floor(posX - w)
 
         loc = loc - 1
-        c = c + 1
     end
 
     local rateRows = {}
@@ -129,17 +137,14 @@ local function openPage(idx, title, script)
 
     for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
         local f = rfsuite.app.Page.apidata.formdata.fields[i]
-        local l = rfsuite.app.Page.apidata.formdata.labels
-        local pageIdx = i
-        local currentField = i
 
         if f.hidden == nil or f.hidden == false then
             posX = positions[f.col]
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-            minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
-            maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
+            local minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
+            local maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
             if f.mult ~= nil then
                 minValue = minValue * f.mult
                 maxValue = maxValue * f.mult
@@ -157,7 +162,10 @@ local function openPage(idx, title, script)
                     value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
                 end
                 return value
-            end, function(value) f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value) end)
+            end, function(value)
+                rfsuite.app.ui.markPageDirty()
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            end)
             if f.default ~= nil then
                 local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
@@ -179,9 +187,19 @@ local function openPage(idx, title, script)
         end
     end
 
+    rfsuite.app.ui.setPageDirty(false)
 end
 
-local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeRateProfile ~= nil then if rfsuite.app.formFields['title'] then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile) end end end end
+local function wakeup()
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        local activeRateProfile = rfsuite.session and rfsuite.session.activeRateProfile
+        if activeRateProfile ~= nil and rfsuite.app.formFields['title'] then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            baseTitle = tostring(baseTitle):gsub("%s+#%d+$", "")
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeRateProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
+    end
+end
 
 local function onHelpMenu()
 
@@ -191,4 +209,10 @@ local function onHelpMenu()
 
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, API = {}}
+local function canSave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, canSave = canSave, API = {}}

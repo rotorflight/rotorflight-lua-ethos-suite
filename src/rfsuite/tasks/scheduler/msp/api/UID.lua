@@ -12,9 +12,9 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "U_ID_0", type = "U32", apiVersion = 12.06, simResponse = {43, 0, 34, 0}, help = "@i18n(api.UID.U_ID_0)@"},
-    {field = "U_ID_1", type = "U32", apiVersion = 12.06, simResponse = {9, 81, 51, 52}, help = "@i18n(api.UID.U_ID_1)@"},
-    {field = "U_ID_2", type = "U32", apiVersion = 12.06, simResponse = {52, 56, 53, 49}, help = "@i18n(api.UID.U_ID_2)@"}
+    {field = "U_ID_0", type = "U32", apiVersion = {12, 0, 6}, simResponse = {43, 0, 34, 0}, help = "@i18n(api.UID.U_ID_0)@"},
+    {field = "U_ID_1", type = "U32", apiVersion = {12, 0, 6}, simResponse = {9, 81, 51, 52}, help = "@i18n(api.UID.U_ID_1)@"},
+    {field = "U_ID_2", type = "U32", apiVersion = {12, 0, 6}, simResponse = {52, 56, 53, 49}, help = "@i18n(api.UID.U_ID_2)@"}
 }
 -- LuaFormatter on
 
@@ -50,7 +50,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

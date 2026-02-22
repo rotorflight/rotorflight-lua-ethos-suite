@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         # ←—— add/remove locales here
-        lang: [en, de , es, fr, it, nl, pt-br, no, cs, pl]
+        lang: [en, de, es, fr, it, nl, pt-br, no, cs, pl, he, zh-cn]
 
     steps:
       - name: Checkout code
@@ -23,6 +23,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Verify generated menu manifest
+        run: python bin/menu/generate.py --check
 
       - name: Set build variables (commit-based version)
         id: buildvars

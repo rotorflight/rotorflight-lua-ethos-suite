@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local arg = {...}
-local config = arg and arg[1]
 
 local performance = {}
 
@@ -18,11 +17,7 @@ local collectgarbage = collectgarbage
 local system_getMemoryUsage = system.getMemoryUsage
 
 local PROF_PERIOD_S = 0.05
-local CPU_TICK_HZ = 1 / PROF_PERIOD_S
 local SCHED_DT = PROF_PERIOD_S
-local OVERDUE_TOL = SCHED_DT * 0.25
-
-local CPU_TICK_BUDGET = SCHED_DT
 local CPU_TAU = 5.0
 local MEM_ALPHA = 0.8
 local MEM_PERIOD = 0.50

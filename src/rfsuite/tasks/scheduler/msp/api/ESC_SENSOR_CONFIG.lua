@@ -16,17 +16,17 @@ local onOff = {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@", "@i18n(api.ESC_SENSOR_CO
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "protocol", type = "U8", apiVersion = 12.06, simResponse = {0}, table = escTypes, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.protocol)@" },
-    { field = "half_duplex", type = "U8", apiVersion = 12.06, simResponse = {0}, default = 0, min = 1, max = 2, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.half_duplex)@" },
-    { field = "update_hz", type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help = "@i18n(api.ESC_SENSOR_CONFIG.update_hz)@" },
-    { field = "current_offset", type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.current_offset)@" },
-    { field = "hw4_current_offset", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_offset)@" },
-    { field = "hw4_current_gain", type = "U8", apiVersion = 12.06, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_gain)@" },
-    { field = "hw4_voltage_gain", type = "U8", apiVersion = 12.06, simResponse = {30}, min = 0, max = 250, default = 30, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_voltage_gain)@" },
-    { field = "pin_swap", type = "U8", apiVersion = 12.07, simResponse = {0}, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.pin_swap)@" },
-    { field = "voltage_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.voltage_correction)@" },
-    { field = "current_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.current_correction)@" },
-    { field = "consumption_correction", mandatory = false, type = "S8", apiVersion = 12.08, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.consumption_correction)@" },
+    { field = "protocol", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, table = escTypes, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.protocol)@" },
+    { field = "half_duplex", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, default = 0, min = 1, max = 2, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.half_duplex)@" },
+    { field = "update_hz", type = "U16", apiVersion = {12, 0, 6}, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help = "@i18n(api.ESC_SENSOR_CONFIG.update_hz)@" },
+    { field = "current_offset", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.current_offset)@" },
+    { field = "hw4_current_offset", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 1000, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_offset)@" },
+    { field = "hw4_current_gain", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, min = 0, max = 250, default = 0, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_current_gain)@" },
+    { field = "hw4_voltage_gain", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 250, default = 30, help = "@i18n(api.ESC_SENSOR_CONFIG.hw4_voltage_gain)@" },
+    { field = "pin_swap", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}, table = onOff, tableIdxInc = -1, help = "@i18n(api.ESC_SENSOR_CONFIG.pin_swap)@" },
+    { field = "voltage_correction", mandatory = false, type = "S8", apiVersion = {12, 0, 8}, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.voltage_correction)@" },
+    { field = "current_correction", mandatory = false, type = "S8", apiVersion = {12, 0, 8}, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.current_correction)@" },
+    { field = "consumption_correction", mandatory = false, type = "S8", apiVersion = {12, 0, 8}, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125, help = "@i18n(api.ESC_SENSOR_CONFIG.consumption_correction)@" },
 }
 -- LuaFormatter on
 
@@ -86,7 +86,7 @@ end
 
 local function read()
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -97,7 +97,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)

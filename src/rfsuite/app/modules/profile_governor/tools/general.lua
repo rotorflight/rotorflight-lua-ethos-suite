@@ -4,25 +4,16 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({showProgress = true})
 
 local activateWakeup = false
 local governorDisabledMsg = false
 
-local FIELD_FULL_HEADSPEED = 1
-local FIELD_MIN_THROTTLE = 2
-local FIELD_MAX_THROTTLE = 3
-local FIELD_FALLBACK_DROP = 4
-local FIELD_GAIN = 5
-local FIELD_P_GAIN = 6
-local FIELD_I_GAIN = 7
-local FIELD_D_GAIN = 8
 local FIELD_F_GAIN = 9
 local FIELD_YAW_WEIGHT = 10
 local FIELD_CYCLIC_WEIGHT = 11
 local FIELD_COLLECTIVE_WEIGHT = 12
-local FIELD_TTA_GAIN = 13
-local FIELD_TTA_LIMIT = 14
-
 local function decodeGovernorFlags(flags)
     local governor_flags_bitmap = {{field = "fc_throttle_curve"}, {field = "tx_precomp_curve"}, {field = "fallback_precomp"}, {field = "voltage_comp"}, {field = "pid_spoolup"}, {field = "hs_adjustment"}, {field = "dyn_min_throttle"}, {field = "autorotation"}, {field = "suspend"}, {field = "bypass"}}
 
@@ -61,14 +52,16 @@ local function wakeup()
 
      -- we are compromised if we don't have governor mode known
     if rfsuite.session.governorMode == nil then
-        rfsuite.app.ui.openMainMenu()
+        pageRuntime.openMenuContext()
         return
     end   
 
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
-
-        if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " / " .. "@i18n(app.modules.governor.menu_general)@" .. " #" .. rfsuite.session.activeProfile) end
-
+        local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+        if activeProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
         if rfsuite.session.governorMode == 0 then
             if governorDisabledMsg == false then
                 governorDisabledMsg = true
@@ -76,9 +69,7 @@ local function wakeup()
                 rfsuite.app.formNavigationFields['save']:enable(false)
 
                 rfsuite.app.formNavigationFields['reload']:enable(false)
-
-                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.profile_governor.disabled_message)@")
-
+    
             end
         end
 
@@ -103,17 +94,11 @@ local function wakeup()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
-        return true
-    end
+    return navHandlers.event(widget, category, value)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
-    return true
+    return navHandlers.onNavMenu()
 end
 
 return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

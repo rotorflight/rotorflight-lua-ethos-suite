@@ -6,8 +6,6 @@
 local rfsuite = require("rfsuite")
 
 local enableWakeup = false
-local syncStatsToFBLStart = false
-
 local FBL_STATS = {} -- holder for fbl stats to sync
 
 local apidata = {
@@ -84,7 +82,7 @@ end
 
 local function postLoad(self)
     enableWakeup = true
-    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
         --  load updated stats from FC after load
             local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
             API.setUUID("7a0a2f27-3ef6-4f2d-9dcf-8a1f4c4a6e88") 

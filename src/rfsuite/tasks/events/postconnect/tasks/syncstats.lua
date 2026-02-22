@@ -24,10 +24,14 @@ end
 local function saveToEeprom()
     local mspEepromWrite = {
         command = 250, 
+        uuid = "eeprom.syncstats.postconnect",
         simulatorResponse = {}, 
         processReply = function() rfsuite.utils.log("EEPROM write command sent","info") end
     }
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    local ok, reason = rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+    if not ok then
+        rfsuite.utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
+    end
 end
 
 local function toNumber(v, dflt)
@@ -52,7 +56,8 @@ function sync.wakeup()
     if not prefs then return end
 
     -- we dont support this feature on older firmwares
-    if rfsuite.utils.apiVersionCompare("<", "12.09") then
+    if rfsuite.utils.apiVersionCompare("<", {12, 0, 9}) then
+        rfsuite.utils.log("Skip stats sync as your firmware version is below 12.09", "info")
         isComplete = true
         return
     end
@@ -99,7 +104,6 @@ function sync.wakeup()
             rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, prefs)
 
             rfsuite.utils.log("Updated radio flight stats from FBL", "info")
-            rfsuite.utils.log("Updated radio flight stats from FBL", "console")
 
             isComplete = true
 
@@ -118,7 +122,6 @@ function sync.wakeup()
 
             API.setCompleteHandler(function()
                 rfsuite.utils.log("Updated FBL flight stats from radio", "info")
-                rfsuite.utils.log("Updated FBL flight stats from radio", "console")
                 saveToEeprom()
                 isComplete = true
             end)
