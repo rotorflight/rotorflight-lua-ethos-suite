@@ -58,13 +58,16 @@ local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dash
 local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
 local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
 local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
+local toolbarBatteryType = compile(dashboardLibPath .. "lib/toolbar_actions/battery_type.lua")()
 dashboard.toolbar_action_modules = {
     reset_flight = toolbarResetFlight,
-    erase_blackbox = toolbarEraseBlackbox
+    erase_blackbox = toolbarEraseBlackbox,
+    battery_type = toolbarBatteryType
 }
 dashboard.toolbar_actions = {
     resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
-    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil
+    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil,
+    chooseBatteryType = toolbarBatteryType and toolbarBatteryType.chooseBatteryType or nil
 }
 
 
@@ -81,17 +84,6 @@ dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
 
 
-
-function dashboard.chooseBatteryType()
-    local typ = "text/battery"
-    if not dashboard.objectsByType[typ] and dashboard._moduleCache and dashboard._moduleCache[typ] == nil then
-        dashboard.loadObjectType({type = typ})
-    end
-    local obj = dashboard.objectsByType[typ] or (dashboard._moduleCache and dashboard._moduleCache[typ])
-    if obj and type(obj.chooseBatteryType) == "function" then
-        obj.chooseBatteryType()
-    end
-end
 
 dashboard.DEFAULT_THEME = "system/default"
 
@@ -1433,10 +1425,6 @@ function dashboard.wakeup_protected(widget)
         lcd.invalidate(widget)
     end
 
-    if eraseDataflash and eraseDataflash.wakeup then
-        eraseDataflash.wakeup(dashboard, rfsuite)
-    end
-
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
     if not dashboard.utils then return end
@@ -1451,7 +1439,10 @@ function dashboard.wakeup_protected(widget)
                 end
             end
             if count > 1 then
-                dashboard.chooseBatteryType()
+                local actions = dashboard.toolbar_actions
+                if actions and type(actions.chooseBatteryType) == "function" then
+                    actions.chooseBatteryType()
+                end
             end
         end
     elseif not rfsuite.session.isConnected and rfsuite.session.batteryDialogShown then

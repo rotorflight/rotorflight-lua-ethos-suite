@@ -52,7 +52,10 @@ local DEFAULT_TOOLBAR_ITEMS = {
         apiVersionOp = ">=",
         flightModes = {"preflight"},
         onClick = function(dashboard)
-            dashboard.chooseBatteryType()
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.chooseBatteryType) == "function" then
+                actions.chooseBatteryType()
+            end
         end
     }
 }
