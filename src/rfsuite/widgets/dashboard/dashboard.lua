@@ -54,40 +54,19 @@ local isSlidingStart = 0
 local lastFocusReset = 0
 local toolbarOpenedAt = 0
 
-local function loadToolbarModule()
-    local bdir = baseDir or "default"
-    local path = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/lib/toolbar.lua"
-    local chunk = compile(path)
-    if not chunk then
-        log("Failed to compile toolbar module: " .. tostring(path), "info")
-        return nil
-    end
-    local mod = chunk()
-    if type(mod) ~= "table" then
-        log("Failed to load toolbar module: " .. tostring(path), "info")
-        return nil
-    end
-    return mod
-end
+local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dashboard/"
+local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
+local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
+local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
+dashboard.toolbar_action_modules = {
+    reset_flight = toolbarResetFlight,
+    erase_blackbox = toolbarEraseBlackbox
+}
+dashboard.toolbar_actions = {
+    resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
+    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil
+}
 
-local toolbar = loadToolbarModule()
-local function loadEraseModule()
-    local bdir = baseDir or "default"
-    local path = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/lib/erase_dataflash.lua"
-    local chunk = compile(path)
-    if not chunk then
-        log("Failed to compile erase module: " .. tostring(path), "info")
-        return nil
-    end
-    local mod = chunk()
-    if type(mod) ~= "table" then
-        log("Failed to load erase module: " .. tostring(path), "info")
-        return nil
-    end
-    return mod
-end
-
-local eraseDataflash = loadEraseModule()
 
 -- Simple gesture tracking (top-down / bottom-up only)
 local gestureActive = false
@@ -101,11 +80,7 @@ dashboard.toolbarVisible = dashboard.toolbarVisible or false
 dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
 
-function dashboard.eraseBlackboxAsk()
-    if eraseDataflash and eraseDataflash.ask then
-        eraseDataflash.ask(dashboard, rfsuite)
-    end
-end
+
 
 function dashboard.chooseBatteryType()
     local typ = "text/battery"
@@ -1237,6 +1212,17 @@ function dashboard.write(widget) return callStateFunc("write", widget) end
 
 function dashboard.build(widget) return callStateFunc("build", widget) end
 
+function dashboard.reset(widget)
+    local actionModules = dashboard.toolbar_action_modules
+    if actionModules then
+        for _, mod in pairs(actionModules) do
+            if mod and type(mod.reset) == "function" then
+                mod.reset()
+            end
+        end
+    end
+end
+
 function dashboard.event(widget, category, value, x, y)
 
     if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
@@ -1276,7 +1262,10 @@ function dashboard.event(widget, category, value, x, y)
 
     if state == "postflight" and category == EVT_KEY and value == KEY_RTN_LONG then
         rfsuite.widgets.dashboard.flightmode = "preflight"
-        dashboard.resetFlightModeAsk()
+                local actions = dashboard.toolbar_actions
+                if actions and type(actions.resetFlightModeAsk) == "function" then
+                    actions.resetFlightModeAsk()
+                end
     end
 
     if toolbar and toolbar.handleEvent and toolbar.handleEvent(dashboard, widget, category, value, x, y, lcd) then
@@ -1630,6 +1619,15 @@ function dashboard.wakeup_protected(widget)
     end
 
     if not dashboard._useSpreadSchedulingPaint then lcd.invalidate() end
+
+    local actionModules = dashboard.toolbar_action_modules
+    if actionModules then
+        for _, mod in pairs(actionModules) do
+            if mod and type(mod.wakeup) == "function" then
+                mod.wakeup()
+            end
+        end
+    end
 end
 
 function dashboard.wakeup()
@@ -1737,27 +1735,6 @@ function dashboard.savePreference(key, value)
         rfsuite.ini.setvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     end
-end
-
-function dashboard.resetFlightModeAsk()
-
-    local buttons = {
-        {
-            label = "@i18n(app.btn_ok)@",
-            action = function()
-                if tasks and tasks.events and tasks.events.flightmode and type(tasks.events.flightmode.reset) == "function" then
-                    tasks.events.flightmode.reset()
-                end
-                rfsuite.flightmode.current = "preflight"
-                dashboard.flightmode = "preflight"
-                lcd.invalidate()
-                return true
-            end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-    }
-
-    form.openDialog({width = nil, title = "@i18n(widgets.dashboard.reset_flight_ask_title)@", message = "@i18n(widgets.dashboard.reset_flight_ask_text)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
-
 end
 
 function dashboard.menu(widget)

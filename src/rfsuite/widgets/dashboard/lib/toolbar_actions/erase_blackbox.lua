@@ -1,5 +1,5 @@
 --[[
-  Dataflash erase helper for dashboard
+  Toolbar action: erase blackbox / dataflash
 ]] --
 
 local rfsuite = require("rfsuite")
@@ -25,34 +25,43 @@ local function logInfo(msg)
     end
 end
 
-local function updateProgressMessage(dashboard, rfsuite)
-    if not dashboard._eraseProgress or not dashboard._eraseProgressBaseMessage then return end
+local eraseProgress
+local eraseProgressBaseMessage
+local eraseProgressMspStatusLast
+local eraseProgressCounter
+local eraseProgressStart
+
+local function updateProgressMessage()
+    if not eraseProgress or not eraseProgressBaseMessage then return end
     local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
     local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
     if showMsp then
         local msg = mspStatus or "MSP Waiting"
-        if msg ~= dashboard._eraseProgressMspStatusLast then
-            dashboard._eraseProgress:message(msg)
-            dashboard._eraseProgressMspStatusLast = msg
+        if msg ~= eraseProgressMspStatusLast then
+            eraseProgress:message(msg)
+            eraseProgressMspStatusLast = msg
         end
     else
-        if dashboard._eraseProgressMspStatusLast ~= nil then
-            dashboard._eraseProgress:message(dashboard._eraseProgressBaseMessage)
-            dashboard._eraseProgressMspStatusLast = nil
+        if eraseProgressMspStatusLast ~= nil then
+            eraseProgress:message(eraseProgressBaseMessage)
+            eraseProgressMspStatusLast = nil
         end
     end
 end
 
-local function doErase(dashboard)
-    if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then return end
+local function doErase()
+    if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
+        logInfo("Dataflash erase: MSP queue not available")
+        return
+    end
     logInfo("Dataflash erase: queue MSP erase command")
-    dashboard._eraseProgress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
-    dashboard._eraseProgress:value(0)
-    dashboard._eraseProgress:closeAllowed(false)
-    dashboard._eraseProgressCounter = 0
-    dashboard._eraseProgressStart = os.clock()
-    dashboard._eraseProgressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
-    dashboard._eraseProgressMspStatusLast = nil
+    eraseProgress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+    eraseProgress:value(0)
+    eraseProgress:closeAllowed(false)
+    eraseProgressCounter = 0
+    eraseProgressStart = os.clock()
+    eraseProgressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+    eraseProgressMspStatusLast = nil
     local function readDataflashSummary()
         if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load) then return end
         local API = rfsuite.tasks.msp.api.load("DATAFLASH_SUMMARY")
@@ -73,43 +82,57 @@ local function doErase(dashboard)
         command = 72,
         processReply = function()
             logInfo("Dataflash erase: MSP erase reply received")
-            if dashboard._eraseProgress then
-                dashboard._eraseProgress:close()
+            if eraseProgress then
+                eraseProgress:close()
             end
-            dashboard._eraseProgress = nil
-            dashboard._eraseProgressBaseMessage = nil
-            dashboard._eraseProgressMspStatusLast = nil
-            dashboard._eraseProgressCounter = nil
+            eraseProgress = nil
+            eraseProgressBaseMessage = nil
+            eraseProgressMspStatusLast = nil
+            eraseProgressCounter = nil
             readDataflashSummary()
         end
     }
-    rfsuite.tasks.msp.mspQueue:add(message)
+    local ok, reason = rfsuite.tasks.msp.mspQueue:add(message)
+    if ok == false then
+        logInfo("Dataflash erase: MSP queue rejected message (" .. tostring(reason) .. ")")
+    end
 end
 
-function M.ask(dashboard, rfsuite)
+function M.eraseBlackboxAsk()
     local buttons = {
-        {label = "@i18n(app.btn_ok)@", action = function() doErase(dashboard); return true end},
+        {label = "@i18n(app.btn_ok)@", action = function() doErase(); return true end},
         {label = "@i18n(app.btn_cancel)@", action = function() return true end}
     }
     form.openDialog({title = "@i18n(widgets.bbl.erase_dataflash)@", message = "@i18n(widgets.bbl.erase_dataflash)@" .. "?", buttons = buttons, options = TEXT_LEFT})
 end
 
-function M.wakeup(dashboard, rfsuite)
-    if not dashboard._eraseProgress then return end
-    updateProgressMessage(dashboard, rfsuite)
-    local start = dashboard._eraseProgressStart or os.clock()
+function M.wakeup()
+    if not eraseProgress then return end
+    updateProgressMessage()
+    local start = eraseProgressStart or os.clock()
     local elapsed = os.clock() - start
     local pct = math.min(100, math.floor((elapsed / 5.0) * 100))
-    dashboard._eraseProgressCounter = pct
-    dashboard._eraseProgress:value(pct)
+    eraseProgressCounter = pct
+    eraseProgress:value(pct)
     if pct >= 100 then
-        dashboard._eraseProgress:close()
-        dashboard._eraseProgress = nil
-        dashboard._eraseProgressBaseMessage = nil
-        dashboard._eraseProgressMspStatusLast = nil
-        dashboard._eraseProgressCounter = nil
-        dashboard._eraseProgressStart = nil
+        eraseProgress:close()
+        eraseProgress = nil
+        eraseProgressBaseMessage = nil
+        eraseProgressMspStatusLast = nil
+        eraseProgressCounter = nil
+        eraseProgressStart = nil
     end
+end
+
+function M.reset()
+    if eraseProgress then
+        eraseProgress:close()
+    end
+    eraseProgress = nil
+    eraseProgressBaseMessage = nil
+    eraseProgressMspStatusLast = nil
+    eraseProgressCounter = nil
+    eraseProgressStart = nil
 end
 
 return M
