@@ -9621,6 +9621,20 @@
           "reverse_text": false,
           "translation": "音频"
         },
+        "battery_capacity_callout": {
+          "english": "Battery capacity",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery capacity"
+        },
+        "battery_type_event": {
+          "english": "Battery",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery"
+        },
         "celcius": {
           "english": "Celsius",
           "max_length": 7,
