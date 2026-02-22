@@ -54,25 +54,10 @@ local isSlidingStart = 0
 local lastFocusReset = 0
 local toolbarOpenedAt = 0
 
-local function loadDashboardModule(relPath, label)
-    local bdir = baseDir or "default"
-    local path = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/" .. relPath
-    local chunk = compile(path)
-    if not chunk then
-        log("Failed to compile " .. label .. " module: " .. tostring(path), "info")
-        return nil
-    end
-    local mod = chunk()
-    if type(mod) ~= "table" then
-        log("Failed to load " .. label .. " module: " .. tostring(path), "info")
-        return nil
-    end
-    return mod
-end
-
-local toolbar = loadDashboardModule("lib/toolbar.lua", "toolbar")
-local toolbarResetFlight = loadDashboardModule("lib/toolbar_actions/reset_flight.lua", "toolbar reset flight")
-local toolbarEraseBlackbox = loadDashboardModule("lib/toolbar_actions/erase_blackbox.lua", "toolbar erase blackbox")
+local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dashboard/"
+local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
+local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
+local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
 dashboard.toolbar_action_modules = {
     reset_flight = toolbarResetFlight,
     erase_blackbox = toolbarEraseBlackbox
