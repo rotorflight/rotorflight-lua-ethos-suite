@@ -97,6 +97,7 @@ local userpref_defaults = {
         taskprofiler = false,
         mspexpbytes = 8,
         apiversion = 2,
+        tailmode_override = 0,
         overlaystats = false,
         overlaygrid = false,
         overlaystatsadmin = false
