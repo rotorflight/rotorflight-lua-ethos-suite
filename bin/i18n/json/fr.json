@@ -9586,6 +9586,20 @@
           "reverse_text": false,
           "max_length": 19
         },
+        "txt_show_battery_type_connect": {
+          "english": "Battery Type on connect",
+          "translation": "Battery Type on connect",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "translation": "Battery Type confirmation",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
         "battery_type_event": {
           "english": "Battery",
           "translation": "Battery",

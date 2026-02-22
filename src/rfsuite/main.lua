@@ -58,7 +58,9 @@ local userpref_defaults = {
         reload_confirm = true,
         mspstatusdialog = true,
         save_armed_warning = true,
-        toolbar_timeout = 10
+        toolbar_timeout = 10,
+        show_battery_type_startup = true,
+        show_confirmation_dialog = false
     },
     localizations = {
         temperature_unit = 0,

@@ -10265,6 +10265,20 @@
           "reverse_text": false,
           "translation": "Save requires changes"
         },
+        "txt_show_battery_type_connect": {
+          "english": "Battery Type on connect",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery Type on connect"
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "max_length": 25,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery Type confirmation"
+        },
         "txt_small": {
           "english": "SMALL",
           "max_length": 5,

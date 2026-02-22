@@ -8238,6 +8238,18 @@
           "needs_translation": false,
           "translation": "Dash-bar auto-close"
         },
+        "txt_show_battery_type_connect": {
+          "english": "Battery Type on connect",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Battery Type on connect"
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "max_length": 25,
+          "needs_translation": false,
+          "translation": "Battery Type confirmation"
+        },
         "battery_type_event": {
           "english": "Battery",
           "max_length": 7,
