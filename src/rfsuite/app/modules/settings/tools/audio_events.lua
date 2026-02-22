@@ -152,6 +152,16 @@ local function openPage(opts)
     setFieldEnabled(rfsuite.app.formFields[becFields.enable], true)
     setFieldEnabled(rfsuite.app.formFields[fuelFields.enable], true)
 
+    local batteryTypeEnabled = config.battery_type == true
+    local batteryPanel = form.addExpansionPanel("@i18n(app.modules.settings.battery_type_event)@")
+    batteryPanel:open(batteryTypeEnabled)
+    local batteryLine = batteryPanel:addLine("@i18n(app.modules.settings.battery_capacity_callout)@")
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(batteryLine, nil, function() return config.battery_type end, function(val)
+        config.battery_type = val
+    end)
+
     local otherEnabled = config.otherSoundCfg == true
     local otherPanel = form.addExpansionPanel("@i18n(app.modules.settings.otherSoundSettings)@")
     otherPanel:open(otherEnabled)

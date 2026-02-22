@@ -30,6 +30,22 @@ local system_playHaptic = system.playHaptic
 local lastSmartfuelSel = nil
 local cachedSmartfuelThresholds = nil
 
+local function resolveBatteryCapacity(typeIndex)
+    local profiles = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
+    if not profiles then return nil end
+    local v = profiles[typeIndex]
+    if v == nil and type(typeIndex) == "number" then
+        v = profiles[typeIndex + 1]
+    end
+    if type(v) == "number" then return v end
+    if type(v) == "string" then return tonumber(v:match("(%d+)")) end
+    if type(v) == "table" then
+        if type(v.capacity) == "number" then return v.capacity end
+        if type(v.name) == "string" then return tonumber(v.name:match("(%d+)")) end
+    end
+    return nil
+end
+
 local function buildSmartfuelThresholds(sel)
     if sel == lastSmartfuelSel and cachedSmartfuelThresholds then return cachedSmartfuelThresholds end
 
@@ -258,6 +274,18 @@ local eventTable = {
             if value == lastValues[key] then return end
             utils.playFile("events", "alerts/rates.wav")
             system_playNumber(math_floor(value))
+        end
+    }, {
+        sensor = "battery_type",
+        debounce = 0.25,
+        event = function(value)
+            local key = "battery_type"
+            if value == lastValues[key] then return end
+            utils.playFile("events", "alerts/battery.wav")
+            local cap = resolveBatteryCapacity(math_floor(value))
+            if cap and system_playNumber then
+                system_playNumber(math_floor(cap + 0.5), UNIT_MILLIAMPERE_HOUR)
+            end
         end
     }
 }

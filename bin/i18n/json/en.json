@@ -8238,6 +8238,18 @@
           "needs_translation": false,
           "translation": "Dash-bar auto-close"
         },
+        "battery_type_event": {
+          "english": "Battery",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Battery"
+        },
+        "battery_capacity_callout": {
+          "english": "Battery capacity",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Battery capacity"
+        },
         "adj_callouts": {
           "english": "Adjustment Callouts",
           "max_length": 19,
