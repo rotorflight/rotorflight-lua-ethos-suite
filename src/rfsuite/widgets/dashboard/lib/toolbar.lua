@@ -22,7 +22,10 @@ local DEFAULT_TOOLBAR_ITEMS = {
         icon = "widgets/dashboard/gfx/toolbar_reset.png",
         iconSize = 55,
         onClick = function(dashboard)
-            dashboard.resetFlightModeAsk()
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.resetFlightModeAsk) == "function" then
+                actions.resetFlightModeAsk()
+            end
         end
     },
     {
@@ -32,7 +35,10 @@ local DEFAULT_TOOLBAR_ITEMS = {
         iconSize = 55,
         isConnected = true,
         onClick = function(dashboard)
-            dashboard.eraseBlackboxAsk()
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.eraseBlackboxAsk) == "function" then
+                actions.eraseBlackboxAsk()
+            end
         end
     }
 }
