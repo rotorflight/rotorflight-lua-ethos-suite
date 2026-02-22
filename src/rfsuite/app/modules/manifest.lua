@@ -347,6 +347,13 @@ return {
                     script = "rpm.lua",
                     shortcutId = "s_esc_motors_rpm_lua_19b6337da0",
                 },
+                {
+                    image = "app/modules/esc_tools/esc.png",
+                    name = "@i18n(app.modules.esc_tools.name)@",
+                    offline = false,
+                    script = "app/modules/esc_tools/tools/esc.lua",
+                    shortcutId = "s_powertrain_menu_esc_tools_tools_esc_0ded099fe9",
+                },
             },
             scriptPrefix = "esc_motors/tools/",
             title = "@i18n(app.modules.esc_motors.name)@",

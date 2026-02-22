@@ -400,6 +400,14 @@
           "name": "RPM",
           "script": "rpm.lua",
           "translation": "@i18n(app.modules.esc_motors.rpm)@"
+        },
+        {
+          "image": "app/modules/esc_tools/esc.png",
+          "name": "ESC Tools",
+          "offline": false,
+          "script": "app/modules/esc_tools/tools/esc.lua",
+          "shortcutId": "s_powertrain_menu_esc_tools_tools_esc_0ded099fe9",
+          "translation": "@i18n(app.modules.esc_tools.name)@"
         }
       ],
       "scriptPrefix": "esc_motors/tools/",

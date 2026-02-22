@@ -57,7 +57,8 @@ local userpref_defaults = {
         save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
-        save_armed_warning = true
+        save_armed_warning = true,
+        toolbar_timeout = 10
     },
     localizations = {
         temperature_unit = 0,
@@ -95,6 +96,7 @@ local userpref_defaults = {
         logmsp = false,
         logobjprof = false,
         logmspQueue = false,
+        logevents = false,
         memstats = false,
         taskprofiler = false,
         mspexpbytes = 8,
@@ -140,6 +142,7 @@ rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
+rfsuite.ethos_events = assert(loadfile("lib/ethos_events.lua", "t", _ENV))()
 
 rfsuite.app = assert(loadfile("app/app.lua"))(rfsuite.config)
 

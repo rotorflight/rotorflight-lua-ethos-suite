@@ -71,6 +71,15 @@ local function openPage(opts)
     line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_hs_loader)@")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.txt_hs_loader_fastclose)@", 0}, {"@i18n(app.modules.settings.txt_hs_loader_wait)@", 1}}, function() return config.hs_loader ~= nil and config.hs_loader or 1 end, function(newValue) config.hs_loader = newValue end)
 
+    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_toolbar_timeout)@")
+    rfsuite.app.formFields[formFieldCount] = form.addNumberField(line, nil, 5, 30, function()
+        if config.toolbar_timeout == nil then return 10 end
+        return config.toolbar_timeout
+    end, function(newValue) config.toolbar_timeout = newValue end)
+    rfsuite.app.formFields[formFieldCount]:suffix("s")
+    rfsuite.app.formFields[formFieldCount]:minimum(5)
+    rfsuite.app.formFields[formFieldCount]:maximum(30)
+
     line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_collapse_unused_menu_entries)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.collapse_unused_menu_entries, false)

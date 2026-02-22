@@ -69,6 +69,7 @@
         - Throttle (script `throttle.lua`)
         - Telemetry (script `telemetry.lua`)
         - RPM (script `rpm.lua`)
+        - ESC Tools (script `app/modules/esc_tools/tools/esc.lua`)
     - Governor (menuId `governor`)
       - menuId `governor`: Governor
         - General (script `general.lua`)

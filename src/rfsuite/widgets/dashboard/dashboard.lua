@@ -51,6 +51,36 @@ local busyWakeupTick = 0
 
 local isSliding = false
 local isSlidingStart = 0
+local lastFocusReset = 0
+local toolbarOpenedAt = 0
+
+local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dashboard/"
+local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
+local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
+local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
+dashboard.toolbar_action_modules = {
+    reset_flight = toolbarResetFlight,
+    erase_blackbox = toolbarEraseBlackbox
+}
+dashboard.toolbar_actions = {
+    resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
+    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil
+}
+
+
+-- Simple gesture tracking (top-down / bottom-up only)
+local gestureActive = false
+local gestureStartX = 0
+local gestureStartY = 0
+local gestureTriggered = false
+local GESTURE_MIN_DY = 20
+local GESTURE_MAX_DX = 40
+
+dashboard.toolbarVisible = dashboard.toolbarVisible or false
+dashboard.toolbarItems = dashboard.toolbarItems or nil
+dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
+
+
 
 dashboard.DEFAULT_THEME = "system/default"
 
@@ -574,11 +604,13 @@ function dashboard.renderLayout(widget, config)
 
     local function adjustDimension(dim, cells, padCount) return dim - ((dim - padCount * pad) % cells) end
 
-    if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then H_raw = H_raw - headerLayout.height end
+    local headerH = (isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number") and headerLayout.height or 0
+    if headerH > 0 then H_raw = H_raw - headerH end
 
     local W = adjustDimension(W_raw, cols, cols - 1)
     local H = adjustDimension(H_raw, rows, rows + 1)
     local xOffset = floor((W_raw - W) / 2)
+    dashboard._layoutBounds = {x = xOffset, y = headerH, w = W, h = H}
 
     local contentW = W - ((cols - 1) * pad)
     local contentH = H - ((rows + 1) * pad)
@@ -1154,6 +1186,10 @@ function dashboard.paint(widget)
         callStateFunc("paint", widget)
     end
 
+    if toolbar and toolbar.draw then
+        toolbar.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
+    end
+
     if objectProfiler then _profReportIfDue() end
 end
 
@@ -1165,7 +1201,46 @@ function dashboard.write(widget) return callStateFunc("write", widget) end
 
 function dashboard.build(widget) return callStateFunc("build", widget) end
 
+function dashboard.reset(widget)
+    local actionModules = dashboard.toolbar_action_modules
+    if actionModules then
+        for _, mod in pairs(actionModules) do
+            if mod and type(mod.reset) == "function" then
+                mod.reset()
+            end
+        end
+    end
+end
+
 function dashboard.event(widget, category, value, x, y)
+
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
+        local events = rfsuite.ethos_events
+        if events and events.debug then
+            local line = events.debug("dashboard", category, value, x, y, {returnOnly = true})
+            if line then rfsuite.utils.log(line, "info") end
+        end
+    end
+
+    if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
+        local now = clock()
+        dashboard.toolbarVisible = true
+        if not dashboard.selectedToolbarIndex then
+            dashboard.selectedToolbarIndex = 1
+        end
+        toolbarOpenedAt = now
+        dashboard._toolbarLastActive = now
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+        if system and system.killEvents then
+            system.killEvents(value)
+            if KEY_PAGE_UP ~= value then
+                system.killEvents(KEY_PAGE_UP)
+            end
+        end
+        return true
+    end
+
 
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
@@ -1174,17 +1249,66 @@ function dashboard.event(widget, category, value, x, y)
         dashboard.selectedBoxIndex = nil
     end
 
-    if state == "postflight" and category == EVT_KEY and value == 131 then
+    if state == "postflight" and category == EVT_KEY and value == KEY_RTN_LONG then
         rfsuite.widgets.dashboard.flightmode = "preflight"
-        dashboard.resetFlightModeAsk()
+                local actions = dashboard.toolbar_actions
+                if actions and type(actions.resetFlightModeAsk) == "function" then
+                    actions.resetFlightModeAsk()
+                end
     end
 
-    if category == 1 and value == TOUCH_MOVE then
+    if toolbar and toolbar.handleEvent and toolbar.handleEvent(dashboard, widget, category, value, x, y, lcd) then
+        return true
+    end
+
+    -- Gesture start (touch down) anywhere
+    if category == EVT_TOUCH and (value == TOUCH_END or value == TOUCH_START) and x and y then
+        local W, H = lcd.getWindowSize()
+        gestureActive = true
+        gestureStartX = x or 0
+        gestureStartY = y or 0
+        gestureTriggered = false
+    end
+
+    if category == EVT_TOUCH and value == TOUCH_MOVE then
         isSliding = true
         isSlidingStart = clock()
+
+        if not gestureActive and x and y then
+            gestureActive = true
+            gestureStartX = x or 0
+            gestureStartY = y or 0
+            gestureTriggered = false
+        end
+
+        if gestureActive and not gestureTriggered and x and y then
+            local dx = x - gestureStartX
+            local dy = y - gestureStartY
+            if math.abs(dx) <= GESTURE_MAX_DX then
+                if dy <= -GESTURE_MIN_DY then
+                    gestureTriggered = true
+                    dashboard.toolbarVisible = true
+                    if not dashboard.selectedToolbarIndex then
+                        dashboard.selectedToolbarIndex = 1
+                    end
+                    toolbarOpenedAt = now
+                    dashboard._toolbarLastActive = now
+                    dashboard._toolbarCloseAt = 0
+                    lcd.invalidate(widget)
+                    return true
+                elseif dy >= GESTURE_MIN_DY then
+                    gestureTriggered = true
+                    dashboard.toolbarVisible = false
+                    dashboard.selectedToolbarIndex = nil
+                    toolbarOpenedAt = 0
+                    lcd.invalidate(widget)
+                    return true
+                end
+            end
+        end
     end
 
-    if category == EVT_KEY and lcd.hasFocus() then
+    if (not dashboard.toolbarVisible) and category == EVT_KEY and lcd.hasFocus() then
         local indices = getOnpressBoxIndices()
         local count = #indices
         if count == 0 then
@@ -1201,19 +1325,19 @@ function dashboard.event(widget, category, value, x, y)
             end
         end
 
-        if value == 4099 then
+        if value == ROTARY_LEFT then
             pos = pos - 1
             if pos < 1 then pos = count end
             dashboard.selectedBoxIndex = indices[pos]
             lcd.invalidate(widget)
             return true
-        elseif value == 4100 then
+        elseif value == KEY_ROTARY_RIGHT then
             pos = pos + 1
             if pos > count then pos = 1 end
             dashboard.selectedBoxIndex = indices[pos]
             lcd.invalidate(widget)
             return true
-        elseif value == 33 and category == EVT_KEY then
+        elseif value == KEY_ENTER_BREAK and category == EVT_KEY then
             local inIndices = false
             for i = 1, #indices do
                 if indices[i] == dashboard.selectedBoxIndex then
@@ -1231,19 +1355,19 @@ function dashboard.event(widget, category, value, x, y)
                 local rect = rects[idx]
                 if rect and rect.box and rect.box.onpress then
                     rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
-                    system.killEvents(97)
+                    system.killEvents(KEY_ENTER_FIRST)
                     return true
                 end
             end
         end
     end
-    if value == 35 and dashboard.selectedBoxIndex then
+    if value == KEY_DOWN_BREAK and dashboard.selectedBoxIndex then
         dashboard.selectedBoxIndex = nil
         lcd.invalidate(widget)
         return true
     end
 
-    if category == 1 and value == 16641 and lcd.hasFocus() then
+    if (not dashboard.toolbarVisible) and category == EVT_TOUCH and value == TOUCH_END and lcd.hasFocus() then
         if x and y then
             for i, rect in ipairs(dashboard.boxRects or {}) do
                 if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
@@ -1251,7 +1375,7 @@ function dashboard.event(widget, category, value, x, y)
                         dashboard.selectedBoxIndex = i
                         lcd.invalidate(widget)
                         rect.box.onpress(widget, rect.box, x, y, category, value)
-                        system.killEvents(16640)
+                        system.killEvents(TOUCH_START)
                         return true
                     end
                 end
@@ -1266,6 +1390,41 @@ end
 function dashboard.wakeup_protected(widget)
 
     local now = clock()
+
+    if lcd and lcd.resetFocusTimeout and (now - lastFocusReset) >= 5 then
+        lcd.resetFocusTimeout()
+        lastFocusReset = now
+    end
+    if toolbarOpenedAt == nil then toolbarOpenedAt = 0 end
+    local lastActive = dashboard._toolbarLastActive or 0
+    if dashboard.toolbarVisible and toolbarOpenedAt == 0 then
+        toolbarOpenedAt = now
+    end
+    if dashboard.toolbarVisible and lastActive == 0 then
+        dashboard._toolbarLastActive = now
+        lastActive = now
+    end
+    local closeAt = dashboard._toolbarCloseAt or 0
+    if dashboard.toolbarVisible and closeAt > 0 and now >= closeAt then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+    end
+    local toolbarTimeout = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.toolbar_timeout) or 10
+    if toolbarTimeout > 0 and dashboard.toolbarVisible and (now - lastActive) >= toolbarTimeout then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        lcd.invalidate(widget)
+    end
+
+    if eraseDataflash and eraseDataflash.wakeup then
+        eraseDataflash.wakeup(dashboard, rfsuite)
+    end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
@@ -1432,6 +1591,15 @@ function dashboard.wakeup_protected(widget)
     end
 
     if not dashboard._useSpreadSchedulingPaint then lcd.invalidate() end
+
+    local actionModules = dashboard.toolbar_action_modules
+    if actionModules then
+        for _, mod in pairs(actionModules) do
+            if mod and type(mod.wakeup) == "function" then
+                mod.wakeup()
+            end
+        end
+    end
 end
 
 function dashboard.wakeup()
@@ -1541,28 +1709,12 @@ function dashboard.savePreference(key, value)
     end
 end
 
-function dashboard.resetFlightModeAsk()
-
-    local buttons = {
-        {
-            label = "@i18n(app.btn_ok)@",
-            action = function()
-                if tasks and tasks.events and tasks.events.flightmode and type(tasks.events.flightmode.reset) == "function" then
-                    tasks.events.flightmode.reset()
-                end
-                rfsuite.flightmode.current = "preflight"
-                dashboard.flightmode = "preflight"
-                lcd.invalidate()
-                return true
-            end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-    }
-
-    form.openDialog({width = nil, title = "@i18n(widgets.dashboard.reset_flight_ask_title)@", message = "@i18n(widgets.dashboard.reset_flight_ask_text)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
-
+function dashboard.menu(widget)
+    local items = {}
+    local v = system and system.getVersion and system.getVersion() or nil
+    local board = v and v.board or ""
+    return items
 end
-
-function dashboard.menu(widget) return {{"@i18n(widgets.dashboard.reset_flight)@", dashboard.resetFlightModeAsk}} end
 
 dashboard.renders = dashboard.renders or {}
 
