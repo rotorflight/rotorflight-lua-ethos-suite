@@ -4,6 +4,7 @@
 ]] --
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@"
+local MSP_API_VERSION = {12, 0, 6}
 
 local function getUInt(page, vals)
     if page.values == nil then return 0 end
@@ -30,5 +31,5 @@ local function getEscVersion(buffer) return getUInt(buffer, {61, 62}) end
 
 local function getEscFirmware(buffer) return string.format("%08X", getUInt(buffer, {55, 56, 57, 58})) end
 
-return {mspapi = "ESC_PARAMETERS_SCORPION", toolName = toolName, image = "scorpion.png", powerCycle = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
+return {mspapi = "ESC_PARAMETERS_SCORPION", apiversion = MSP_API_VERSION, toolName = toolName, image = "scorpion.png", powerCycle = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
 

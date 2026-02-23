@@ -4104,6 +4104,12 @@
         }
       },
       "esc_tools": {
+        "warning_remove_blades": {
+          "english": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC",
+          "max_length": 40,
+          "needs_translation": false,
+          "translation": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC"
+        },
         "mfg": {
           "flrtr": {
             "active_freewheel": {
