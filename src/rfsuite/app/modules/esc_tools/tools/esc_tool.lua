@@ -517,13 +517,7 @@ local function wakeup()
 
     if foundESC == false then
         if ESC and ESC.esc4way then
-            if not rfsuite.session.esc4WaySet then
-                rfsuite.session.esc4WaySet = true
-                local ok = setESC4WayMode(rfsuite.session.esc4WayTarget or 0)
-                if ok == false then
-                    rfsuite.session.esc4WaySet = nil
-                end
-            elseif rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
+            if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
                 getESCDetails()
             end
         else
