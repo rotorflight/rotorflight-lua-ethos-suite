@@ -607,4 +607,21 @@ function utils.stringInArray(array, s)
     return false
 end
 
+local uuidCounter = 0
+
+function utils.uuid(prefix)
+    uuidCounter = uuidCounter + 1
+    if uuidCounter > 2147483647 then uuidCounter = 1 end
+
+    local now = os.clock()
+    local seconds = math.floor(now)
+    local millis = math.floor((now - seconds) * 1000)
+
+    if prefix and prefix ~= "" then
+        return string.format("%s-%d-%03d-%d", prefix, seconds, millis, uuidCounter)
+    end
+
+    return string.format("%d-%03d-%d", seconds, millis, uuidCounter)
+end
+
 return utils
