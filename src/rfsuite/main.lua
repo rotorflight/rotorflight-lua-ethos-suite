@@ -30,6 +30,7 @@ local config = {
         v2MinApiVersion = {12, 0, 9},
     },
     mspProtocolVersion = 1,
+    maxModelImageBytes = 350 * 1024 -- 350KB, to prevent OOM crashes on models with very large images
 }
 -- LuaFormatter on
 
@@ -100,6 +101,7 @@ local userpref_defaults = {
         taskprofiler = false,
         mspexpbytes = 8,
         apiversion = 2,
+        tailmode_override = 0,
         overlaystats = false,
         overlaygrid = false,
         overlaystatsadmin = false

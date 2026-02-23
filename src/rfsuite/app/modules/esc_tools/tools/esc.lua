@@ -9,6 +9,7 @@ local lcd = lcd
 local system = system
 
 local pages = {}
+local WARNING_TEXT = "@i18n(app.modules.esc_tools.warning_remove_blades)@"
 
 local function resolveModulePath(script)
     if type(script) ~= "string" then return nil, nil end
@@ -43,6 +44,9 @@ local function findMFG()
                     rfsuite.utils.log("Invalid configuration in " .. init_path)
                 else
                     mconfig['folder'] = v
+                    if mconfig.apiversion and rfsuite.session.apiVersion and not rfsuite.utils.apiVersionCompare(">=", mconfig.apiversion) then
+                        mconfig.disabled = true
+                    end
                     table.insert(mfgsList, mconfig)
                 end
             end
@@ -78,6 +82,9 @@ local function openPage(opts)
     end
 
     rfsuite.app.ui.fieldHeader(title)
+
+    local warningLine = form.addLine("")
+    form.addStaticText(warningLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, WARNING_TEXT)
 
     local buttonW
     local buttonH

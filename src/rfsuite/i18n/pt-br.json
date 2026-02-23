@@ -4783,6 +4783,12 @@
         }
       },
       "esc_tools": {
+        "warning_remove_blades": {
+          "english": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC"
+        },
         "mfg": {
           "flrtr": {
             "active_freewheel": {
@@ -10187,6 +10193,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Log dados msp"
+        },
+        "txt_msprwlog": {
+          "english": "Log MSP read/write",
+          "max_length": 18,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Log MSP read/write"
         },
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",

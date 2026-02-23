@@ -4,6 +4,7 @@
 ]] --
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@"
+local MSP_API_VERSION = {12, 0, 6}
 local mspHeaderBytes = 2
 
 local function getText(buffer, st, en)
@@ -23,5 +24,5 @@ local function getEscVersion(buffer) return getText(buffer, 19, 34) end
 
 local function getEscFirmware(buffer) return getText(buffer, 3, 18) end
 
-return {mspapi = "ESC_PARAMETERS_HW5", toolName = toolName, image = "hobbywing.png", powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, mspHeaderBytes = mspHeaderBytes}
+return {mspapi = "ESC_PARAMETERS_HW5", apiversion = MSP_API_VERSION, toolName = toolName, image = "hobbywing.png", powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, mspHeaderBytes = mspHeaderBytes}
 
