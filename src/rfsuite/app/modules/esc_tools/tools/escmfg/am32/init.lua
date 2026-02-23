@@ -22,44 +22,27 @@ local function getText(buffer, st, en)
     return table.concat(tt)
 end
 
-local function getHeaderOffset()
-    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load and rfsuite.tasks.msp.api.load(MSP_API)
-    if api and api.mspHeaderBytes then
-        return api.mspHeaderBytes
-    end
-    return 0
-end
-
 -- required by framework
 local function getEscModel(self)
-    return "AM32"
+
+    local escModelName = ""
+    escModelName = getText(self, 8, 19)
+    return "AM32 " .. escModelName .. " "
+
 end
 
 
 -- required by framework
 local function getEscVersion(self)
-    local offset = getHeaderOffset()
-    local eepromVersion = getPageValue(self, offset + 2) or 0
-    return "EEPROM v" .. tostring(eepromVersion)
-end
-
-local function normalizeMinor(minor)
-    local value = tonumber(minor) or 0
-    if value < 0 then value = 0 end
-    if value > 99 then value = value % 100 end
-    if value < 10 then
-        return "0" .. tostring(value)
-    end
-    return tostring(value)
+    return " "
 end
 
 -- required by framework
 local function getEscFirmware(self)
-    local offset = getHeaderOffset()
-    local major = getPageValue(self, offset + 4) or 0
-    local minor = getPageValue(self, offset + 5) or 0
-    local version = "SW" .. major .. "." .. normalizeMinor(minor)
-    return version
+
+   local version = "SW" .. getPageValue(self, 6) .. "." .. getPageValue(self, 7)
+   return version
+
 end
 
 return {
