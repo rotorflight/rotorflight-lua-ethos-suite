@@ -6,7 +6,7 @@ This document highlights the touch points and workflow used to add or update loc
 1. Add i18n source file under `bin/i18n/json/<locale>.json`.
 2. Build/verify locale JSON into `src/rfsuite/i18n/<locale>.json`.
 3. Add locale to workflow matrices so per-locale ZIPs are built.
-4. Add locale to the updater GUI locale list.
+4. Add locale to the updater GUI locale list (in the updater repo).
 5. Add sound pack sources and generated audio (if applicable).
 6. (Optional) Update demo links or docs that mention locales.
 
@@ -37,7 +37,7 @@ These workflows:
 
 ### 4) Updater GUI (locale selection + asset naming)
 Update locale list in:
-- `bin/updater/src/update_radio_gui.py`
+- `rotorflight-lua-ethos-suite-updater/src/update_radio_gui.py`
 
 Specifically:
 - `AVAILABLE_LOCALES = ["en", ...]`

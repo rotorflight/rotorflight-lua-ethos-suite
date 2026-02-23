@@ -78,12 +78,12 @@ lua-format --version
 python bin/format_lua.py --help
 ```
 
-### 4) Updater GUI (optional)
+### 4) Updater GUI (optional, in updater repo)
 The updater uses Python + Tk and has its own requirements list:
 
 ```bash
-python -m pip install -r bin/updater/src/requirements_updater.txt
-python bin/updater/src/update_radio_gui.py
+python -m pip install -r rotorflight-lua-ethos-suite-updater/src/requirements_updater.txt
+python rotorflight-lua-ethos-suite-updater/src/update_radio_gui.py
 ```
 
 If Tk is missing, install your platform’s Tk package or Python build with Tk support.
@@ -95,7 +95,7 @@ Requires PyInstaller:
 python -m pip install pyinstaller
 ```
 
-See `bin/updater/README.md` for full build steps.
+See `rotorflight-lua-ethos-suite-updater/src/README.md` for full build steps.
 
 ### 6) Sound pack generation (optional)
 Requires additional Python modules and external service credentials:
