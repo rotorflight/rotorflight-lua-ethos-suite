@@ -36,28 +36,28 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "variable_pwm_frequency",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {2}, tableIdxInc = -1, table = onOff},
     {field = "stuck_rotor_protection",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
-    {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, unit = "µs", simResponse = {18}},
-    {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}, default = 100, min = 50, max = 150},
-    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, unit = "kv", simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
-    {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, default = 14, min = 2, max = 36},
+    {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, unit = "kHz", simResponse = {18}, min = 8, max = 144, step = 1},
+    {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 9}, unit = "%", simResponse = {50}, default = 100, min = 50, max = 150, step = 1},
+    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, unit = "KV", simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
+    {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, default = 14, min = 2, max = 36, step = 1},
     {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "stall_protection",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "beep_volume",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5}, default = 10, min = 0, max = 11},
+    {field = "beep_volume",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5}, default = 10, min = 0, max = 11, step = 1},
     {field = "interval_telemetry",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "servo_low_threshold",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {128}},
-    {field = "servo_high_threshold",      type = "U8",  apiVersion = {12, 0, 9}, simResponse = {128}},
-    {field = "servo_neutral",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {128}},
-    {field = "servo_dead_band",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}},
-    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 9}, unit = "v", simResponse = {0}},
-    {field = "low_voltage_threshold",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}},
+    {field = "servo_low_threshold",       type = "U8",  apiVersion = {12, 0, 9}, unit = "us", simResponse = {128}, min = 750, max = 1250, step = 2},
+    {field = "servo_high_threshold",      type = "U8",  apiVersion = {12, 0, 9}, unit = "us", simResponse = {128}, min = 1750, max = 2250, step = 2},
+    {field = "servo_neutral",             type = "U8",  apiVersion = {12, 0, 9}, unit = "us", simResponse = {128}, min = 1374, max = 1630, step = 1},
+    {field = "servo_dead_band",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}, min = 0, max = 100, step = 1},
+    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 2, step = 1},
+    {field = "low_voltage_threshold",     type = "U8",  apiVersion = {12, 0, 9}, unit = "cV", simResponse = {50}, min = 250, max = 350, step = 1},
     {field = "rc_car_reversing",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
     {field = "use_hall_sensors",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "sine_mode_range",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}},
-    {field = "brake_strength",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, default = 0, min = 0, max = 10},
-    {field = "running_brake_level",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, default = 0, min = 0, max = 10},
-    {field = "temperature_limit",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {145}},
-    {field = "current_limit",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {102}},
-    {field = "sine_mode_power",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {7}},
+    {field = "sine_mode_range",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, min = 5, max = 25, step = 1},
+    {field = "brake_strength",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, default = 0, min = 0, max = 10, step = 1},
+    {field = "running_brake_level",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, default = 0, min = 0, max = 10, step = 1},
+    {field = "temperature_limit",         type = "U8",  apiVersion = {12, 0, 9}, unit = "C", simResponse = {145}, min = 70, max = 141, step = 1},
+    {field = "current_limit",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {102}, min = 0, max = 202, step = 2},
+    {field = "sine_mode_power",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {7}, min = 1, max = 10, step = 1},
     {field = "esc_protocol",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {1}, tableIdxInc = -1, table = protocol},
     {field = "auto_advance",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},tableIdxInc = -1, table = onOff}
 }
@@ -121,6 +121,56 @@ local function encodeMotorKv(kv)
     return clamp(math_floor(((kv - 20) / 40) + 0.5), 0, 255)
 end
 
+local function normalizeServoLow(raw)
+    if raw == nil then return nil end
+    return (raw * 2) + 750
+end
+
+local function encodeServoLow(value)
+    if value == nil then return nil end
+    return clamp(math_floor(((value - 750) / 2) + 0.5), 0, 255)
+end
+
+local function normalizeServoHigh(raw)
+    if raw == nil then return nil end
+    return (raw * 2) + 1750
+end
+
+local function encodeServoHigh(value)
+    if value == nil then return nil end
+    return clamp(math_floor(((value - 1750) / 2) + 0.5), 0, 255)
+end
+
+local function normalizeServoNeutral(raw)
+    if raw == nil then return nil end
+    return raw + 1374
+end
+
+local function encodeServoNeutral(value)
+    if value == nil then return nil end
+    return clamp(math_floor((value - 1374) + 0.5), 0, 255)
+end
+
+local function normalizeLowVoltageThreshold(raw)
+    if raw == nil then return nil end
+    return raw + 250
+end
+
+local function encodeLowVoltageThreshold(value)
+    if value == nil then return nil end
+    return clamp(math_floor((value - 250) + 0.5), 0, 255)
+end
+
+local function normalizeCurrentLimit(raw)
+    if raw == nil then return nil end
+    return raw * 2
+end
+
+local function encodeCurrentLimit(value)
+    if value == nil then return nil end
+    return clamp(math_floor((value / 2) + 0.5), 0, 255)
+end
+
 local function resolveTimeout(isWrite)
     if MSP_API_MSG_TIMEOUT ~= nil then return MSP_API_MSG_TIMEOUT end
     local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol
@@ -145,6 +195,31 @@ local function processReplyStaticRead(self, buf)
             if rawKv ~= nil then
                 mspData.parsed.motor_kv = normalizeMotorKv(rawKv)
                 mspData.other.motor_kv_raw = rawKv
+            end
+            local rawServoLow = mspData.parsed.servo_low_threshold
+            if rawServoLow ~= nil then
+                mspData.parsed.servo_low_threshold = normalizeServoLow(rawServoLow)
+                mspData.other.servo_low_threshold_raw = rawServoLow
+            end
+            local rawServoHigh = mspData.parsed.servo_high_threshold
+            if rawServoHigh ~= nil then
+                mspData.parsed.servo_high_threshold = normalizeServoHigh(rawServoHigh)
+                mspData.other.servo_high_threshold_raw = rawServoHigh
+            end
+            local rawServoNeutral = mspData.parsed.servo_neutral
+            if rawServoNeutral ~= nil then
+                mspData.parsed.servo_neutral = normalizeServoNeutral(rawServoNeutral)
+                mspData.other.servo_neutral_raw = rawServoNeutral
+            end
+            local rawLowVoltage = mspData.parsed.low_voltage_threshold
+            if rawLowVoltage ~= nil then
+                mspData.parsed.low_voltage_threshold = normalizeLowVoltageThreshold(rawLowVoltage)
+                mspData.other.low_voltage_threshold_raw = rawLowVoltage
+            end
+            local rawCurrentLimit = mspData.parsed.current_limit
+            if rawCurrentLimit ~= nil then
+                mspData.parsed.current_limit = normalizeCurrentLimit(rawCurrentLimit)
+                mspData.other.current_limit_raw = rawCurrentLimit
             end
         end
         if #buf >= (self.minBytes or 0) then
@@ -196,7 +271,7 @@ local function write(suppliedPayload)
     local effectivePayload = payloadData
     if suppliedPayload == nil then
         local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
-        if effectivePayload and (effectivePayload.timing_advance ~= nil or effectivePayload.motor_kv ~= nil) then
+        if effectivePayload and (effectivePayload.timing_advance ~= nil or effectivePayload.motor_kv ~= nil or effectivePayload.servo_low_threshold ~= nil or effectivePayload.servo_high_threshold ~= nil or effectivePayload.servo_neutral ~= nil or effectivePayload.low_voltage_threshold ~= nil or effectivePayload.current_limit ~= nil) then
             local cloned = {}
             for k, v in pairs(effectivePayload) do cloned[k] = v end
             if cloned.timing_advance ~= nil then
@@ -204,6 +279,21 @@ local function write(suppliedPayload)
             end
             if cloned.motor_kv ~= nil then
                 cloned.motor_kv = encodeMotorKv(cloned.motor_kv)
+            end
+            if cloned.servo_low_threshold ~= nil then
+                cloned.servo_low_threshold = encodeServoLow(cloned.servo_low_threshold)
+            end
+            if cloned.servo_high_threshold ~= nil then
+                cloned.servo_high_threshold = encodeServoHigh(cloned.servo_high_threshold)
+            end
+            if cloned.servo_neutral ~= nil then
+                cloned.servo_neutral = encodeServoNeutral(cloned.servo_neutral)
+            end
+            if cloned.low_voltage_threshold ~= nil then
+                cloned.low_voltage_threshold = encodeLowVoltageThreshold(cloned.low_voltage_threshold)
+            end
+            if cloned.current_limit ~= nil then
+                cloned.current_limit = encodeCurrentLimit(cloned.current_limit)
             end
             effectivePayload = cloned
         end
