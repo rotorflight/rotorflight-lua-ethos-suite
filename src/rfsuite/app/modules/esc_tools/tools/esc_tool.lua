@@ -543,8 +543,23 @@ local function wakeup()
 
     if foundESC == false then
         if ESC and ESC.esc4way then
-            if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
-                getESCDetails()
+            local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
+            if tailMode >= 1 then
+                -- Multiple ESCs: wait for explicit selection.
+                if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
+                    getESCDetails()
+                end
+            else
+                -- Single ESC: auto-select target 0 once, then read details.
+                if not rfsuite.session.esc4WaySet then
+                    rfsuite.session.esc4WaySet = true
+                    local ok = setESC4WayMode(rfsuite.session.esc4WayTarget or 0)
+                    if ok == false then
+                        rfsuite.session.esc4WaySet = nil
+                    end
+                elseif rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
+                    getESCDetails()
+                end
             end
         else
             getESCDetails()
