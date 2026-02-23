@@ -38,7 +38,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
     {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {18}},
     {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}, default = 100, min = 50, max = 150},
-    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {12}, min = 20, max = 10220, scale = 40}, -- *40+20
+    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
     {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, default = 14, min = 2, max = 36},
     {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "stall_protection",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
@@ -111,6 +111,16 @@ local function encodeTimingAdvance(normalized, encoding)
     return n
 end
 
+local function normalizeMotorKv(raw)
+    if raw == nil then return nil end
+    return (raw * 40) + 20
+end
+
+local function encodeMotorKv(kv)
+    if kv == nil then return nil end
+    return clamp(math_floor(((kv - 20) / 40) + 0.5), 0, 255)
+end
+
 local function resolveTimeout(isWrite)
     if MSP_API_MSG_TIMEOUT ~= nil then return MSP_API_MSG_TIMEOUT end
     local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol
@@ -130,6 +140,11 @@ local function processReplyStaticRead(self, buf)
             mspData.other.timing_advance_raw = raw
             if encoding == "unknown" and raw ~= nil then
                 log("AM32 timing_advance raw value out of range: " .. tostring(raw), "info")
+            end
+            local rawKv = mspData.parsed.motor_kv
+            if rawKv ~= nil then
+                mspData.parsed.motor_kv = normalizeMotorKv(rawKv)
+                mspData.other.motor_kv_raw = rawKv
             end
         end
         if #buf >= (self.minBytes or 0) then
@@ -178,12 +193,22 @@ local function write(suppliedPayload)
         return
     end
 
-    local effectivePayload = suppliedPayload or payloadData
-    local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
-    if effectivePayload and effectivePayload.timing_advance ~= nil then
-        effectivePayload = {}
-        for k, v in pairs(suppliedPayload or payloadData) do effectivePayload[k] = v end
-        effectivePayload.timing_advance = encodeTimingAdvance(effectivePayload.timing_advance, encoding)
+    local effectivePayload = payloadData
+    if suppliedPayload == nil then
+        local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
+        if effectivePayload and (effectivePayload.timing_advance ~= nil or effectivePayload.motor_kv ~= nil) then
+            local cloned = {}
+            for k, v in pairs(effectivePayload) do cloned[k] = v end
+            if cloned.timing_advance ~= nil then
+                cloned.timing_advance = encodeTimingAdvance(cloned.timing_advance, encoding)
+            end
+            if cloned.motor_kv ~= nil then
+                cloned.motor_kv = encodeMotorKv(cloned.motor_kv)
+            end
+            effectivePayload = cloned
+        end
+    else
+        effectivePayload = suppliedPayload
     end
 
     local payload = suppliedPayload or core.buildWritePayload(API_NAME, effectivePayload, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
