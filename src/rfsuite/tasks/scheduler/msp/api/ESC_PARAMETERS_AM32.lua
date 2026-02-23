@@ -161,7 +161,7 @@ local function read()
     end
 
     local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -174,7 +174,7 @@ local function write(suppliedPayload)
     local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
     if effectivePayload and effectivePayload.timing_advance ~= nil then
         effectivePayload = {}
-        for k, v in pairs(payloadData) do effectivePayload[k] = v end
+        for k, v in pairs(suppliedPayload or payloadData) do effectivePayload[k] = v end
         effectivePayload.timing_advance = encodeTimingAdvance(effectivePayload.timing_advance, encoding)
     end
 
@@ -185,7 +185,7 @@ local function write(suppliedPayload)
 
     local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function readValue(fieldName)
