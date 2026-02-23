@@ -28,7 +28,7 @@ end
 local function getEscModel(self)
 
     local escModelName = ""
-    escModelName = getText(self, 8, 19)
+    escModelName = getText(self, 48, 79)
     return "AM32 " .. escModelName .. " "
 
 end
@@ -42,7 +42,7 @@ end
 -- required by framework
 local function getEscFirmware(self)
 
-   local version = "SW" .. getPageValue(self, 6) .. "." .. getPageValue(self, 7)
+   local version = "SW" .. getPageValue(self, 4) .. "." .. getPageValue(self, 5)
    return version
 
 end
