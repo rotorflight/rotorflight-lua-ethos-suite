@@ -17,7 +17,7 @@ local colorMode = utils.themeColors()
 
 local theme_section = "system/srbrc"
 
-local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, rssi_warn = 50}
+local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, esctemp_max = 200}
 
 local function getThemeValue(key)
     if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
@@ -278,10 +278,10 @@ local function buildBoxes(W)
             valuepaddingtop = opts.valuepaddingtop,
             title = "ESC TEMP",
             titlepos = "top",
-            textcolor = colorMode.textcolor,
+            textcolor = colorMode.fillcritcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
-            thresholds = {{}, {},{value = getThemeValue("esctemp_warn"), textcolor = colorMode.fillcritcolor}}
+            thresholds = {{value = getThemeValue("esctemp_warn"), textcolor = colorMode.textcolor}}
         },
         {
             col = 8,
@@ -295,12 +295,11 @@ local function buildBoxes(W)
             titlefont = opts.titlefont,
             titlepaddingtop = opts.titlepaddingtop,
             valuepaddingtop = opts.valuepaddingtop,
-            title = "RSSI",
+            title = "LQ",
             titlepos = "top",
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
-            thresholds = {{},{},{value = getThemeValue("rssi_warn"), textcolor = colorMode.fillcritcolor}}
         },
         {
             col = 8,

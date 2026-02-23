@@ -11,7 +11,7 @@ local tonumber = tonumber
 
 local config = {}
 
-local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, rssi_warn = 50}
+local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, esctemp_max = 200}
 
 local function clamp(val, min, max)
     if val < min then
@@ -42,23 +42,14 @@ local function configure()
 
     for k, v in pairs(THEME_DEFAULTS) do
         local val = tonumber(getPref(k))
-        if k == "bec_min" or k == "bec_max" then
-            if not val or val < 2 or val > 15 then
-                config[k] = v
-                setPref(k, v)
-            else
-                config[k] = val
-            end
-        else
-            config[k] = val or v
-        end
+        config[k] = val or v
     end
 
-
     local bec_panel = form.addExpansionPanel("@i18n(widgets.dashboard.bec_voltage)@")
-    bec_panel:open(false)
+    bec_panel:open(true)
+
     local bec_warn_line = bec_panel:addLine("@i18n(widgets.dashboard.warning)@")
-    formFields[#formFields + 1] = form.addNumberField(bec_warn_line, nil, 20, 150, function()
+    formFields[#formFields + 1] = form.addNumberField(bec_warn_line, nil, 65, 150, function()
         local v = config.bec_warn or THEME_DEFAULTS.bec_warn
         return floor((v * 10) + 0.5)
     end, function(val)
@@ -69,12 +60,11 @@ local function configure()
     formFields[#formFields]:suffix("V")
 
     local esc_panel = form.addExpansionPanel("@i18n(widgets.dashboard.esc_temp)@")
-    esc_panel:open(false)
+    esc_panel:open(true)
     local esc_warn_line = esc_panel:addLine("@i18n(widgets.dashboard.warning)@")
     formFields[#formFields + 1] = form.addNumberField(esc_warn_line, nil, 0, 200, function() return config.esctemp_warn end, function(val) config.esctemp_warn = clamp(tonumber(val) or THEME_DEFAULTS.esctemp_warn, 0, config.esctemp_max - 1) end, 1)
     formFields[#formFields]:suffix("°")
 end
-
 
 local function write()
     for k, v in pairs(config) do
