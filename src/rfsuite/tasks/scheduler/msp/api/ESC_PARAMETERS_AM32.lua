@@ -73,6 +73,8 @@ local mspData = nil
 local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
+local math_floor = math.floor
+local log = rfsuite.utils.log
 
 local handlers = core.createHandlers()
 
@@ -83,9 +85,45 @@ local lastWriteUUID = nil
 
 local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
 
+local function clamp(value, min, max)
+    if value < min then return min end
+    if value > max then return max end
+    return value
+end
+
+local function normalizeTimingAdvance(raw)
+    if raw == nil then return nil, "unknown", nil end
+    if raw >= 10 and raw <= 42 then
+        local norm = clamp(math_floor((raw - 10) / 8 + 0.5), 0, 3)
+        return norm, "new", raw
+    end
+    if raw >= 0 and raw <= 3 then
+        return raw, "legacy", raw
+    end
+    return clamp(math_floor(raw or 0), 0, 3), "unknown", raw
+end
+
+local function encodeTimingAdvance(normalized, encoding)
+    local n = clamp(math_floor((normalized or 0) + 0.5), 0, 3)
+    if encoding == "new" then
+        return 10 + (n * 8)
+    end
+    return n
+end
+
 local function processReplyStaticRead(self, buf)
     core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
         mspData = result
+        if mspData and mspData.parsed then
+            local norm, encoding, raw = normalizeTimingAdvance(mspData.parsed.timing_advance)
+            mspData.parsed.timing_advance = norm
+            mspData.other = mspData.other or {}
+            mspData.other.timing_advance_encoding = encoding
+            mspData.other.timing_advance_raw = raw
+            if encoding == "unknown" and raw ~= nil then
+                log("AM32 timing_advance raw value out of range: " .. tostring(raw), "info")
+            end
+        end
         if #buf >= (self.minBytes or 0) then
             local getComplete = self.getCompleteHandler
             if getComplete then
@@ -132,7 +170,15 @@ local function write(suppliedPayload)
         return
     end
 
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
+    local effectivePayload = suppliedPayload or payloadData
+    local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
+    if effectivePayload and effectivePayload.timing_advance ~= nil then
+        effectivePayload = {}
+        for k, v in pairs(payloadData) do effectivePayload[k] = v end
+        effectivePayload.timing_advance = encodeTimingAdvance(effectivePayload.timing_advance, encoding)
+    end
+
+    local payload = suppliedPayload or core.buildWritePayload(API_NAME, effectivePayload, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
