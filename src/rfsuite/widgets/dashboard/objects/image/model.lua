@@ -40,6 +40,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local loadImage = rfsuite.utils.loadImage
+local isImageTooLarge = rfsuite.utils.isImageTooLarge
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -63,19 +64,28 @@ local function resolveModelImage(cfg)
     if craftName and craftName ~= "" then
         local cached = _imgCache[craftName]
         if cached == nil then
-            local base = "/bitmaps/models/" .. craftName
+            local base = "BITMAPS:/models/" .. craftName
             local pngPath = base .. ".png"
             local bmpPath = base .. ".bmp"
-            cached = loadImage and (loadImage(pngPath) or loadImage(bmpPath))
+            local loaded
+            local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
+            if loadImage and not isImageTooLarge(pngPath, maxBytes) then
+                loaded = loadImage(pngPath)
+            end
+            if not loaded and loadImage and not isImageTooLarge(bmpPath, maxBytes) then
+                loaded = loadImage(bmpPath)
+            end
+            cached = loaded
             _imgCache[craftName] = cached or false
         end
         if cached then return cached end
     end
 
     if model and model.bitmap then
-        local bm = model.bitmap()
-        if bm and type(bm) == "string" and bm ~= "" and not string.find(bm, "default_") then
-            local loaded = loadImage(bm)
+        local bm = "BITMAPS:/models/" .. model.bitmap()
+        local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
+        if bm and type(bm) == "string" and bm ~= "" and not string.find(bm, "default_") and not isImageTooLarge(bm, maxBytes) then
+            local loaded = loadImage and loadImage(bm)
             if loaded then return loaded end
         end
     end
@@ -85,7 +95,16 @@ local function resolveModelImage(cfg)
         local base = paramImage:gsub("%.png$", ""):gsub("%.bmp$", "")
         local pngPath = base .. ".png"
         local bmpPath = base .. ".bmp"
-        return (loadImage and (loadImage(pngPath) or loadImage(bmpPath))) or paramImage
+        local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
+        if loadImage and not isImageTooLarge(pngPath, maxBytes) then
+            local loaded = loadImage(pngPath)
+            if loaded then return loaded end
+        end
+        if loadImage and not isImageTooLarge(bmpPath, maxBytes) then
+            local loaded = loadImage(bmpPath)
+            if loaded then return loaded end
+        end
+        return paramImage
     end
 
     return "widgets/dashboard/gfx/logo.png"

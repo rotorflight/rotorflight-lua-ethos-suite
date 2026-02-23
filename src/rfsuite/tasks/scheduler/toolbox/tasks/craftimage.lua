@@ -20,18 +20,22 @@ function craftimage.wakeup()
 
     local image1, image2, image3, image4
     if craftName then
-        image1 = "/bitmaps/models/" .. craftName .. ".png"
-        image2 = "/bitmaps/models/" .. craftName .. ".bmp"
+        image1 = "BITMAPS:/models/" .. craftName .. ".png"
+        image2 = "BITMAPS:/models/" .. craftName .. ".bmp"
     end
 
     local default_image = "widgets/toolbox/gfx/default_image.png"
 
     local utils = rfsuite.utils
+    if utils.isImageTooLarge(image1, rfsuite.config.maxModelImageBytes) then image1 = nil end
+    if utils.isImageTooLarge(image2, rfsuite.config.maxModelImageBytes) then image2 = nil end
     bitmapPtr = utils.loadImage(image1, image2, image3, image4)
 
     if not bitmapPtr and model and model.bitmap then
-        local ethosBitmap = model.bitmap()
-        if ethosBitmap and type(ethosBitmap) == "string" and not string.find(ethosBitmap, "default_") then bitmapPtr = ethosBitmap end
+        local ethosBitmap = "BITMAPS:/models/" .. model.bitmap()
+        if ethosBitmap and type(ethosBitmap) == "string" and not string.find(ethosBitmap, "default_") and not utils.isImageTooLarge(ethosBitmap, rfsuite.config.maxModelImageBytes) then
+            bitmapPtr = ethosBitmap
+        end
     end
 
     if not bitmapPtr then bitmapPtr = utils.loadImage(default_image) end
