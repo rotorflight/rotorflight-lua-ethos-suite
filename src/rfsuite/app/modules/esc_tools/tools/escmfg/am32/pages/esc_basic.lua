@@ -19,17 +19,17 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.direction)@", type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.motorkv)@", mspapi = 1, apikey = "motor_kv"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.motorpoles)@", mspapi = 1, apikey = "motor_poles"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.startuppower)@", mspapi = 1, apikey = "startup_power"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.complementary_pwm)@", type = 1, mspapi = 1, apikey = "complementary_pwm"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.brakestrength)@", mspapi = 1, apikey = "brake_strength"},
-            {t = "@i18n(app.modules.esc_tools.mfg.am32.runningbrake)@", mspapi = 1, apikey = "running_brake_level"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.direction)@", type = 1, mspapi = 1, apikey = "motor_direction", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.motorkv)@", mspapi = 1, apikey = "motor_kv", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.motorpoles)@", mspapi = 1, apikey = "motor_poles", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.startuppower)@", mspapi = 1, apikey = "startup_power", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.complementary_pwm)@", type = 1, mspapi = 1, apikey = "complementary_pwm", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.brakestrength)@", mspapi = 1, apikey = "brake_strength", minEepromVersion = 1},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.runningbrake)@", mspapi = 1, apikey = "running_brake_level", minEepromVersion = 1},
 
         }
-    }                 
+    }
 }
 
 local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end

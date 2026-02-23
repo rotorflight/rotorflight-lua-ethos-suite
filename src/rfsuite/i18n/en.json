@@ -4111,6 +4111,16 @@
               "needs_translation": false,
               "translation": "Advanced"
             },
+            "autopwmbyrpm": {
+              "english": "Auto PWM by RPM",
+              "needs_translation": false,
+              "translation": "Auto PWM by RPM"
+            },
+            "autotiming": {
+              "english": "Auto Timing",
+              "needs_translation": false,
+              "translation": "Auto Timing"
+            },
             "basic": {
               "english": "Basic",
               "needs_translation": false,
@@ -4195,6 +4205,11 @@
               "english": "Timing",
               "needs_translation": false,
               "translation": "Timing"
+            },
+            "variablepwm": {
+              "english": "Variable PWM",
+              "needs_translation": false,
+              "translation": "Variable PWM"
             }
           },
           "flrtr": {

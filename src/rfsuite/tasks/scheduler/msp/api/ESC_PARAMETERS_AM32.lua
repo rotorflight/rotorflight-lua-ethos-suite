@@ -6,11 +6,11 @@
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
 
-local API_NAME = "ESC_PARAMETERS_FLYROTOR"
+local API_NAME = "ESC_PARAMETERS_AM32"
 local MSP_API_CMD_READ = 217
 local MSP_API_CMD_WRITE = 218
 local MSP_REBUILD_ON_WRITE = false
-local MSP_SIGNATURE = 0xC2 
+local MSP_SIGNATURE = 0xC2
 local MSP_HEADER_BYTES = 2
 
 -- tables used in structure below
@@ -19,51 +19,68 @@ local timingAdvance = {"0°", "7.5°", "15°", "22.5°"}
 local onOff = {"off", "on"}
 local protocol = {"Auto", "Dshot 300-600", "Servo 1-2ms", "Serial", "BF Safe Arming"}
 
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature",             type = "U8",  apiVersion = 12.07, simResponse = {194}},
-    {field = "esc_command",               type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "boot_byte",                 type = "U8",  apiVersion = 12.07, simResponse = {1}},
-    {field = "layout_revision",           type = "U8",  apiVersion = 12.07, simResponse = {2}},
-    {field = "boot_loader_revision",      type = "U8",  apiVersion = 12.07, simResponse = {13}},
-    {field = "main_revision",             type = "U8",  apiVersion = 12.07, simResponse = {2}},
-    {field = "sub_revision",              type = "U8",  apiVersion = 12.07, simResponse = {17}},
-    {field = "name",                      type = "U96", apiVersion = 12.07, simResponse = {86,105,109,100,114,111,110,101,76,52,51,49}}, -- string
-    {field = "motor_direction",           type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = motorDirection},
-    {field = "bidirectional_mode",        type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "sinusoidal_startup",        type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "complementary_pwm",         type = "U8",  apiVersion = 12.07, simResponse = {1}, tableIdxInc = -1, table = onOff},
-    {field = "variable_pwm_frequency",    type = "U8",  apiVersion = 12.07, simResponse = {1}, tableIdxInc = -1, table = onOff},
-    {field = "stuck_rotor_protection",    type = "U8",  apiVersion = 12.07, simResponse = {1}, tableIdxInc = -1, table = onOff},
-    {field = "timing_advance",            type = "U8",  apiVersion = 12.07, simResponse = {2}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
-    {field = "pwm_frequency",             type = "U8",  apiVersion = 12.07, simResponse = {24}},
-    {field = "startup_power",             type = "U8",  apiVersion = 12.07, simResponse = {150}, default = 100, min = 50, max = 150},
-    {field = "motor_kv",                  type = "U8",  apiVersion = 12.07, simResponse = {107}, min = 20, max = 10220, scale = 40}, -- *40+20
-    {field = "motor_poles",               type = "U8",  apiVersion = 12.07, simResponse = {14}, default = 14, min = 2, max = 36},
-    {field = "brake_on_stop",             type = "U8",  apiVersion = 12.07, simResponse = {1}, tableIdxInc = -1, table = onOff},
-    {field = "stall_protection",          type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "beep_volume",               type = "U8",  apiVersion = 12.07, simResponse = {10}, default = 10, min = 0, max = 11},
-    {field = "interval_telemetry",        type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "servo_low_threshold",       type = "U8",  apiVersion = 12.07, simResponse = {128}},
-    {field = "servo_high_threshold",      type = "U8",  apiVersion = 12.07, simResponse = {128}},
-    {field = "servo_neutral",             type = "U8",  apiVersion = 12.07, simResponse = {128}},
-    {field = "servo_dead_band",           type = "U8",  apiVersion = 12.07, simResponse = {50}},
-    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "low_voltage_threshold",     type = "U8",  apiVersion = 12.07, simResponse = {50}},
-    {field = "rc_car_reversing",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "use_hall_sensors",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "sine_mode_range",           type = "U8",  apiVersion = 12.07, simResponse = {15}},
-    {field = "brake_strength",            type = "U8",  apiVersion = 12.07, simResponse = {10}, default = 0, min = 0, max = 10},
-    {field = "running_brake_level",       type = "U8",  apiVersion = 12.07, simResponse = {10}, default = 0, min = 0, max = 10},
-    {field = "temperature_limit",         type = "U8",  apiVersion = 12.07, simResponse = {145}},
-    {field = "current_limit",             type = "U8",  apiVersion = 12.07, simResponse = {102}},
-    {field = "sine_mode_power",           type = "U8",  apiVersion = 12.07, simResponse = {6}},
-    {field = "esc_protocol",              type = "U8",  apiVersion = 12.07, simResponse = {1}, tableIdxInc = -1, table = protocol},
-    {field = "auto_advance",              type = "U8",  apiVersion = 12.07, simResponse = {0},tableIdxInc = -1, table = onOff}
+    -- MSP header
+    {field = "esc_signature",             type = "U8",  apiVersion = {12, 0, 7}, simResponse = {194}},
+    {field = "esc_command",               type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0}},
+
+    -- EEPROM bytes 0..47 (AM32 EEPROM layout)
+    {field = "reserved_0",                type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "eeprom_version",            type = "U8",  apiVersion = {12, 0, 7}, simResponse = {3}},
+    {field = "reserved_1",                type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "fw_major",                  type = "U8",  apiVersion = {12, 0, 7}, simResponse = {2}},
+    {field = "fw_minor",                  type = "U8",  apiVersion = {12, 0, 7}, simResponse = {17}},
+    {field = "max_ramp",                  type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "minimum_duty_cycle",        type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "disable_stick_calibration", type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "absolute_voltage_cutoff",   type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "current_P",                 type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "current_I",                 type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "current_D",                 type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "active_brake_power",        type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "reserved_eeprom_3_0",       type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "reserved_eeprom_3_1",       type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "reserved_eeprom_3_2",       type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "reserved_eeprom_3_3",       type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "motor_direction",           type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = motorDirection},
+    {field = "bidirectional_mode",        type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "sinusoidal_startup",        type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "complementary_pwm",         type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "variable_pwm_frequency",    type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "stuck_rotor_protection",    type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = timingAdvance},
+    {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 7}, default = 100, min = 50, max = 150},
+    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 7}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
+    {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 7}, default = 14, min = 2, max = 36},
+    {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "stall_protection",          type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "beep_volume",               type = "U8",  apiVersion = {12, 0, 7}, default = 10, min = 0, max = 11},
+    {field = "interval_telemetry",        type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff},
+    {field = "servo_low_threshold",       type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "servo_high_threshold",      type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "servo_neutral",             type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "servo_dead_band",           type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "low_voltage_threshold",     type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "rc_car_reversing",          type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "use_hall_sensors",          type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "sine_mode_range",           type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "brake_strength",            type = "U8",  apiVersion = {12, 0, 7}, default = 0, min = 0, max = 10},
+    {field = "running_brake_level",       type = "U8",  apiVersion = {12, 0, 7}, default = 0, min = 0, max = 10},
+    {field = "temperature_limit",         type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "current_limit",             type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "sine_mode_power",           type = "U8",  apiVersion = {12, 0, 7}},
+    {field = "esc_protocol",              type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = protocol},
+    {field = "auto_advance",              type = "U8",  apiVersion = {12, 0, 7}, tableIdxInc = -1, table = onOff}
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+MSP_API_SIMULATOR_RESPONSE = {194, 64, 1, 3, 1, 2, 19, 200, 2, 0, 10, 100, 0, 100, 5, 255, 255, 255, 255, 0, 0, 0, 1, 2, 0, 24, 24, 100, 52, 12, 0, 0, 5, 0, 128, 128, 128, 50, 0, 50, 0, 0, 5, 10, 10, 145, 102, 6, 1, 0}
+local MSP_PARSER_OPTIONS = {chunked = true, fieldsPerTick = 4}
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
@@ -83,17 +100,96 @@ local lastWriteUUID = nil
 
 local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
 
+local function normalizeTimingAdvance(parsed)
+    if not parsed or parsed.timing_advance == nil then return end
+
+    local raw = tonumber(parsed.timing_advance) or 0
+    parsed.timing_advance_raw = raw
+
+    if raw >= 10 then
+        if raw < 10 then raw = 10 end
+        if raw > 42 then raw = 42 end
+        parsed.timing_advance_is_new = true
+        parsed.timing_advance = raw
+        return
+    end
+
+    parsed.timing_advance_is_new = false
+    if raw < 0 then raw = 0 end
+    if raw > 3 then raw = 3 end
+
+    parsed.timing_advance = raw
+end
+
+local function normalizeMotorKv(parsed)
+    if not parsed or parsed.motor_kv == nil then return end
+    local raw = tonumber(parsed.motor_kv) or 0
+    parsed.motor_kv = (raw * 40) + 20
+end
+
+local function normalizeAutoPWMSwitch(parsed)
+    if not parsed or parsed.pwm_frequency == nil then return end
+    local raw = tonumber(parsed.pwm_frequency) or 0
+    parsed.pwm_frequency_raw = raw
+    parsed.pwm_frequency = (raw == 2) and 1 or 0
+end
+
+local function normalizeVariablePWMSwitch(parsed)
+    if not parsed or parsed.variable_pwm_frequency == nil then return end
+    local raw = tonumber(parsed.variable_pwm_frequency) or 0
+    parsed.variable_pwm_frequency_raw = raw
+    parsed.variable_pwm_frequency = (raw == 1) and 1 or 0
+end
+
+local function encodeMotorKv(value)
+    local kv = tonumber(value) or 0
+    kv = math.floor(kv + 0.5)
+    local raw = math.floor((kv - 20) / 40 + 0.5)
+    if raw < 0 then raw = 0 end
+    if raw > 255 then raw = 255 end
+    return raw
+end
+
+local function encodeTimingAdvance(value)
+    local v = tonumber(value) or 0
+    if v >= 10 then return v end
+    if v < 0 then v = 0 end
+    if v > 3 then v = 3 end
+    return (v * 8) + 10
+end
+
+local function encodeAutoPWMSwitch(value)
+    local v = tonumber(value) or 0
+    if v <= 0 then return 0 end
+    return 2
+end
+
+local function encodeVariablePWMSwitch(value)
+    local v = tonumber(value) or 0
+    if v == 1 then return 1 end
+    return 0
+end
+
+
 local function processReplyStaticRead(self, buf)
-    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-        mspData = result
-        if #buf >= (self.minBytes or 0) then
-            local getComplete = self.getCompleteHandler
-            if getComplete then
-                local complete = getComplete()
-                if complete then complete(self, buf) end
+    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, {
+        chunked = MSP_PARSER_OPTIONS.chunked,
+        fieldsPerTick = MSP_PARSER_OPTIONS.fieldsPerTick,
+        completionCallback = function(result)
+            mspData = result
+            normalizeTimingAdvance(mspData and mspData.parsed)
+            normalizeMotorKv(mspData and mspData.parsed)
+            normalizeAutoPWMSwitch(mspData and mspData.parsed)
+            normalizeVariablePWMSwitch(mspData and mspData.parsed)
+            if #buf >= (self.minBytes or 0) then
+                local getComplete = self.getCompleteHandler
+                if getComplete then
+                    local complete = getComplete()
+                    if complete then complete(self, buf) end
+                end
             end
         end
-    end)
+    })
 end
 
 local function processReplyStaticWrite(self, buf)
@@ -126,13 +222,25 @@ local function read()
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
+local function buildEncodedPayloadData()
+    local encoded = {}
+    for key, value in pairs(payloadData) do
+        encoded[key] = value
+    end
+    if encoded.motor_kv ~= nil then encoded.motor_kv = encodeMotorKv(encoded.motor_kv) end
+    if encoded.timing_advance ~= nil then encoded.timing_advance = encodeTimingAdvance(encoded.timing_advance) end
+    if encoded.pwm_frequency ~= nil then encoded.pwm_frequency = encodeAutoPWMSwitch(encoded.pwm_frequency) end
+    if encoded.variable_pwm_frequency ~= nil then encoded.variable_pwm_frequency = encodeVariablePWMSwitch(encoded.variable_pwm_frequency) end
+    return encoded
+end
+
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
         rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
+    local payload = suppliedPayload or core.buildWritePayload(API_NAME, buildEncodedPayloadData(), MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
 
     local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
     lastWriteUUID = uuid
