@@ -26,10 +26,10 @@ local apidata = {
             {t = "@i18n(app.modules.esc_tools.mfg.am32.sinemoderange)@",  mspapi = 1, apikey = "sine_mode_range"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.bidirectionalmode)@",  mspapi = 1, type = 1, apikey = "bidirectional_mode"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.protocol)@",  mspapi = 1, type = 1, apikey = "esc_protocol"},
-            {t = "Variable PWM Frequency", mspapi = 1, type = 1, apikey = "variable_pwm_frequency"},
-            {t = "Stall Protection", mspapi = 1, type = 1, apikey = "stall_protection"},
-            {t = "Telemetry Interval", mspapi = 1, type = 1, apikey = "interval_telemetry"},
-            {t = "Auto Advance", mspapi = 1, type = 1, apikey = "auto_advance"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.variablepwmfrequency)@", mspapi = 1, type = 1, apikey = "variable_pwm_frequency"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.stallprotection)@", mspapi = 1, type = 1, apikey = "stall_protection"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.telemetryinterval)@", mspapi = 1, type = 1, apikey = "interval_telemetry"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.autoadvance)@", mspapi = 1, type = 1, apikey = "auto_advance"},
         }
     }                 
 }

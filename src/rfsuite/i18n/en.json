@@ -4111,10 +4111,20 @@
               "needs_translation": false,
               "translation": "Advanced"
             },
+            "autoadvance": {
+              "english": "Auto Advance",
+              "needs_translation": false,
+              "translation": "Auto Advance"
+            },
             "basic": {
               "english": "Basic",
               "needs_translation": false,
               "translation": "Basic"
+            },
+            "beepvolume": {
+              "english": "Beep Volume",
+              "needs_translation": false,
+              "translation": "Beep Volume"
             },
             "bidirectionalmode": {
               "english": "Bidirectional Mode",
@@ -4136,6 +4146,11 @@
               "needs_translation": false,
               "translation": "Complementary PWM"
             },
+            "currentlimit": {
+              "english": "Current Limit",
+              "needs_translation": false,
+              "translation": "Current Limit"
+            },
             "direction": {
               "english": "Direction",
               "needs_translation": false,
@@ -4145,6 +4160,16 @@
               "english": "Limits",
               "needs_translation": false,
               "translation": "Limits"
+            },
+            "lowvoltagecutoff": {
+              "english": "Low Voltage Cutoff",
+              "needs_translation": false,
+              "translation": "Low Voltage Cutoff"
+            },
+            "lowvoltagethreshold": {
+              "english": "Low Voltage Threshold",
+              "needs_translation": false,
+              "translation": "Low Voltage Threshold"
             },
             "motorkv": {
               "english": "Motor KV",
@@ -4166,10 +4191,40 @@
               "needs_translation": false,
               "translation": "Protocol"
             },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "needs_translation": false,
+              "translation": "PWM Frequency"
+            },
+            "rcarreversing": {
+              "english": "RC Car Reversing",
+              "needs_translation": false,
+              "translation": "RC Car Reversing"
+            },
             "runningbrake": {
               "english": "Running Brake",
               "needs_translation": false,
               "translation": "Running Brake"
+            },
+            "servodeadband": {
+              "english": "Servo Dead Band",
+              "needs_translation": false,
+              "translation": "Servo Dead Band"
+            },
+            "servohighthreshold": {
+              "english": "Servo High Threshold",
+              "needs_translation": false,
+              "translation": "Servo High Threshold"
+            },
+            "servolowthreshold": {
+              "english": "Servo Low Threshold",
+              "needs_translation": false,
+              "translation": "Servo Low Threshold"
+            },
+            "servoneutral": {
+              "english": "Servo Neutral",
+              "needs_translation": false,
+              "translation": "Servo Neutral"
             },
             "sinemoderange": {
               "english": "Sine Mode Range",
@@ -4185,6 +4240,11 @@
               "english": "Sinusoidal Startup",
               "needs_translation": false,
               "translation": "Sinusoidal Startup"
+            },
+            "stallprotection": {
+              "english": "Stall Protection",
+              "needs_translation": false,
+              "translation": "Stall Protection"
             },
             "startuppower": {
               "english": "Startup Power",
@@ -4241,10 +4301,30 @@
               "needs_translation": false,
               "translation": "Variable"
             },
+            "telemetryinterval": {
+              "english": "Telemetry Interval",
+              "needs_translation": false,
+              "translation": "Telemetry Interval"
+            },
+            "temperaturelimit": {
+              "english": "Temperature Limit",
+              "needs_translation": false,
+              "translation": "Temperature Limit"
+            },
             "timing": {
               "english": "Timing",
               "needs_translation": false,
               "translation": "Timing"
+            },
+            "usehallsensors": {
+              "english": "Use Hall Sensors",
+              "needs_translation": false,
+              "translation": "Use Hall Sensors"
+            },
+            "variablepwmfrequency": {
+              "english": "Variable PWM Frequency",
+              "needs_translation": false,
+              "translation": "Variable PWM Frequency"
             }
           },
           "flrtr": {

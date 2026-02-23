@@ -4820,6 +4820,24 @@
               "needs_translation": true,
               "reverse_text": false
             },
+            "currentlimit": {
+              "english": "Current Limit",
+              "translation": "Current Limit",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "lowvoltagecutoff": {
+              "english": "Low Voltage Cutoff",
+              "translation": "Low Voltage Cutoff",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "lowvoltagethreshold": {
+              "english": "Low Voltage Threshold",
+              "translation": "Low Voltage Threshold",
+              "needs_translation": true,
+              "reverse_text": false
+            },
             "limits": {
               "english": "Limits",
               "translation": "Limits",
@@ -4844,15 +4862,57 @@
               "needs_translation": true,
               "reverse_text": false
             },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "translation": "PWM Frequency",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "beepvolume": {
+              "english": "Beep Volume",
+              "translation": "Beep Volume",
+              "needs_translation": true,
+              "reverse_text": false
+            },
             "protocol": {
               "english": "Protocol",
               "translation": "Protocol",
               "needs_translation": true,
               "reverse_text": false
             },
+            "rcarreversing": {
+              "english": "RC Car Reversing",
+              "translation": "RC Car Reversing",
+              "needs_translation": true,
+              "reverse_text": false
+            },
             "runningbrake": {
               "english": "Running Brake",
               "translation": "Running Brake",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "servodeadband": {
+              "english": "Servo Dead Band",
+              "translation": "Servo Dead Band",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "servohighthreshold": {
+              "english": "Servo High Threshold",
+              "translation": "Servo High Threshold",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "servolowthreshold": {
+              "english": "Servo Low Threshold",
+              "translation": "Servo Low Threshold",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "servoneutral": {
+              "english": "Servo Neutral",
+              "translation": "Servo Neutral",
               "needs_translation": true,
               "reverse_text": false
             },
@@ -4880,9 +4940,27 @@
               "needs_translation": true,
               "reverse_text": false
             },
+            "stallprotection": {
+              "english": "Stall Protection",
+              "translation": "Stall Protection",
+              "needs_translation": true,
+              "reverse_text": false
+            },
             "stuckrotorprotection": {
               "english": "Stuck Rotor Protection",
               "translation": "Stuck Rotor Protection",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "telemetryinterval": {
+              "english": "Telemetry Interval",
+              "translation": "Telemetry Interval",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "temperaturelimit": {
+              "english": "Temperature Limit",
+              "translation": "Temperature Limit",
               "needs_translation": true,
               "reverse_text": false
             },
@@ -4943,6 +5021,24 @@
             "timing": {
               "english": "Timing",
               "translation": "Timing",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "usehallsensors": {
+              "english": "Use Hall Sensors",
+              "translation": "Use Hall Sensors",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "variablepwmfrequency": {
+              "english": "Variable PWM Frequency",
+              "translation": "Variable PWM Frequency",
+              "needs_translation": true,
+              "reverse_text": false
+            },
+            "autoadvance": {
+              "english": "Auto Advance",
+              "translation": "Auto Advance",
               "needs_translation": true,
               "reverse_text": false
             }

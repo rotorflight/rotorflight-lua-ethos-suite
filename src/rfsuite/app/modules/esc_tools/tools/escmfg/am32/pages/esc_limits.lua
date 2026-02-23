@@ -19,16 +19,16 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = "Temperature Limit", mspapi = 1, apikey = "temperature_limit"},
-            {t = "Current Limit", mspapi = 1, apikey = "current_limit"},
-            {t = "Low Voltage Cutoff", mspapi = 1, type = 1, apikey = "low_voltage_cutoff"},
-            {t = "Low Voltage Threshold", mspapi = 1, apikey = "low_voltage_threshold"},
-            {t = "Servo Low Threshold", mspapi = 1, apikey = "servo_low_threshold"},
-            {t = "Servo High Threshold", mspapi = 1, apikey = "servo_high_threshold"},
-            {t = "Servo Neutral", mspapi = 1, apikey = "servo_neutral"},
-            {t = "Servo Dead Band", mspapi = 1, apikey = "servo_dead_band"},
-            {t = "RC Car Reversing", mspapi = 1, type = 1, apikey = "rc_car_reversing"},
-            {t = "Use Hall Sensors", mspapi = 1, type = 1, apikey = "use_hall_sensors"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.temperaturelimit)@", mspapi = 1, apikey = "temperature_limit"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.currentlimit)@", mspapi = 1, apikey = "current_limit"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.lowvoltagecutoff)@", mspapi = 1, type = 1, apikey = "low_voltage_cutoff"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.lowvoltagethreshold)@", mspapi = 1, apikey = "low_voltage_threshold"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.servolowthreshold)@", mspapi = 1, apikey = "servo_low_threshold"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.servohighthreshold)@", mspapi = 1, apikey = "servo_high_threshold"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.servoneutral)@", mspapi = 1, apikey = "servo_neutral"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.servodeadband)@", mspapi = 1, apikey = "servo_dead_band"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.rcarreversing)@", mspapi = 1, type = 1, apikey = "rc_car_reversing"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.usehallsensors)@", mspapi = 1, type = 1, apikey = "use_hall_sensors"},
         }
     }                 
 }

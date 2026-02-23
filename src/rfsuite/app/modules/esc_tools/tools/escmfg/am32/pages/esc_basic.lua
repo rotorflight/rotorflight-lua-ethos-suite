@@ -23,12 +23,12 @@ local apidata = {
             {t = "@i18n(app.modules.esc_tools.mfg.am32.motorkv)@", mspapi = 1, apikey = "motor_kv"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.motorpoles)@", mspapi = 1, apikey = "motor_poles"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.startuppower)@", mspapi = 1, apikey = "startup_power"},
-            {t = "PWM Frequency", mspapi = 1, apikey = "pwm_frequency"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.pwmfrequency)@", mspapi = 1, apikey = "pwm_frequency"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.complementary_pwm)@", type = 1, mspapi = 1, apikey = "complementary_pwm"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.brakestrength)@", mspapi = 1, apikey = "brake_strength"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.runningbrake)@", mspapi = 1, apikey = "running_brake_level"},
-            {t = "Beep Volume", mspapi = 1, apikey = "beep_volume"},
+            {t = "@i18n(app.modules.esc_tools.mfg.am32.beepvolume)@", mspapi = 1, apikey = "beep_volume"},
 
         }
     }                 

@@ -4141,6 +4141,21 @@
               "needs_translation": false,
               "translation": "Direction"
             },
+            "currentlimit": {
+              "english": "Current Limit",
+              "needs_translation": false,
+              "translation": "Current Limit"
+            },
+            "lowvoltagecutoff": {
+              "english": "Low Voltage Cutoff",
+              "needs_translation": false,
+              "translation": "Low Voltage Cutoff"
+            },
+            "lowvoltagethreshold": {
+              "english": "Low Voltage Threshold",
+              "needs_translation": false,
+              "translation": "Low Voltage Threshold"
+            },
             "limits": {
               "english": "Limits",
               "needs_translation": false,
@@ -4161,15 +4176,50 @@
               "needs_translation": false,
               "translation": "AM32"
             },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "needs_translation": false,
+              "translation": "PWM Frequency"
+            },
+            "beepvolume": {
+              "english": "Beep Volume",
+              "needs_translation": false,
+              "translation": "Beep Volume"
+            },
             "protocol": {
               "english": "Protocol",
               "needs_translation": false,
               "translation": "Protocol"
             },
+            "rcarreversing": {
+              "english": "RC Car Reversing",
+              "needs_translation": false,
+              "translation": "RC Car Reversing"
+            },
             "runningbrake": {
               "english": "Running Brake",
               "needs_translation": false,
               "translation": "Running Brake"
+            },
+            "servodeadband": {
+              "english": "Servo Dead Band",
+              "needs_translation": false,
+              "translation": "Servo Dead Band"
+            },
+            "servohighthreshold": {
+              "english": "Servo High Threshold",
+              "needs_translation": false,
+              "translation": "Servo High Threshold"
+            },
+            "servolowthreshold": {
+              "english": "Servo Low Threshold",
+              "needs_translation": false,
+              "translation": "Servo Low Threshold"
+            },
+            "servoneutral": {
+              "english": "Servo Neutral",
+              "needs_translation": false,
+              "translation": "Servo Neutral"
             },
             "sinemoderange": {
               "english": "Sine Mode Range",
@@ -4191,10 +4241,25 @@
               "needs_translation": false,
               "translation": "Startup Power"
             },
+            "stallprotection": {
+              "english": "Stall Protection",
+              "needs_translation": false,
+              "translation": "Stall Protection"
+            },
             "stuckrotorprotection": {
               "english": "Stuck Rotor Protection",
               "needs_translation": false,
               "translation": "Stuck Rotor Protection"
+            },
+            "telemetryinterval": {
+              "english": "Telemetry Interval",
+              "needs_translation": false,
+              "translation": "Telemetry Interval"
+            },
+            "temperaturelimit": {
+              "english": "Temperature Limit",
+              "needs_translation": false,
+              "translation": "Temperature Limit"
             },
             "tbl_brake_active": {
               "english": "Active Brake",
@@ -4245,6 +4310,21 @@
               "english": "Timing",
               "needs_translation": false,
               "translation": "Timing"
+            },
+            "usehallsensors": {
+              "english": "Use Hall Sensors",
+              "needs_translation": false,
+              "translation": "Use Hall Sensors"
+            },
+            "variablepwmfrequency": {
+              "english": "Variable PWM Frequency",
+              "needs_translation": false,
+              "translation": "Variable PWM Frequency"
+            },
+            "autoadvance": {
+              "english": "Auto Advance",
+              "needs_translation": false,
+              "translation": "Auto Advance"
             }
           },
           "flrtr": {
