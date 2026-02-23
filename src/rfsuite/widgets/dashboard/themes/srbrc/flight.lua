@@ -17,6 +17,8 @@ local colorMode = utils.themeColors()
 
 local theme_section = "system/srbrc"
 
+local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, rssi_warn = 50}
+
 local function getThemeValue(key)
     if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
         if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
@@ -26,7 +28,7 @@ local function getThemeValue(key)
             end
         end
     end
-
+    
     if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
         local val = rfsuite.session.modelPreferences[theme_section][key]
         val = tonumber(val)
@@ -279,7 +281,7 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
-            thresholds = {{value = getThemeValue("esctemp_warn"), textcolor = colorMode.fillcritcolor}}
+            thresholds = {{}, {},{value = getThemeValue("esctemp_warn"), textcolor = colorMode.fillcritcolor}}
         },
         {
             col = 8,
@@ -298,7 +300,7 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
-            thresholds = {{value = getThemeValue("rssi_warn"), textcolor = colorMode.fillcritcolor}}
+            thresholds = {{},{},{value = getThemeValue("rssi_warn"), textcolor = colorMode.fillcritcolor}}
         },
         {
             col = 8,
