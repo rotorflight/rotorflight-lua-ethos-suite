@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local system = system
 
 
 -- Optimized locals to reduce global/table lookups
@@ -122,6 +123,15 @@ function helpers.mixerConfig(callback)
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
             rfsuite.session.swashMode = API.readValue("swash_type")
+            if system and system.getVersion and system.getVersion().simulation then
+                local dev = rfsuite.preferences and rfsuite.preferences.developer
+                local override = dev and dev.tailmode_override
+                override = tonumber(override)
+                if override == 0 or override == 1 then
+                    rfsuite.session.tailMode = override
+                    utils.log("Tail mode override (developer): " .. tostring(override), "debug")
+                end
+            end
             if rfsuite.session.tailMode and rfsuite.session.swashMode then
                 utils.log("Tail mode: " .. rfsuite.session.tailMode, "debug")
                 utils.log("Swash mode: " .. rfsuite.session.swashMode, "debug")
