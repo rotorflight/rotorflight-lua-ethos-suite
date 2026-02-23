@@ -29,14 +29,6 @@ local apidata = {
             {t = "Variable PWM Frequency", mspapi = 1, type = 1, apikey = "variable_pwm_frequency"},
             {t = "Stall Protection", mspapi = 1, type = 1, apikey = "stall_protection"},
             {t = "Telemetry Interval", mspapi = 1, type = 1, apikey = "interval_telemetry"},
-            {t = "Servo Low Threshold", mspapi = 1, apikey = "servo_low_threshold"},
-            {t = "Servo High Threshold", mspapi = 1, apikey = "servo_high_threshold"},
-            {t = "Servo Neutral", mspapi = 1, apikey = "servo_neutral"},
-            {t = "Servo Dead Band", mspapi = 1, apikey = "servo_dead_band"},
-            {t = "RC Car Reversing", mspapi = 1, type = 1, apikey = "rc_car_reversing"},
-            {t = "Use Hall Sensors", mspapi = 1, type = 1, apikey = "use_hall_sensors"},
-            {t = "Temperature Limit", mspapi = 1, apikey = "temperature_limit"},
-            {t = "Current Limit", mspapi = 1, apikey = "current_limit"},
             {t = "Auto Advance", mspapi = 1, type = 1, apikey = "auto_advance"},
         }
     }                 

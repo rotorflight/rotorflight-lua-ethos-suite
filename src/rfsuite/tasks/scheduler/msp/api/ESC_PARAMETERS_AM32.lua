@@ -18,6 +18,9 @@ local motorDirection = {"normal", "reversed"}
 local timingAdvance = {"0°", "7.5°", "15°", "22.5°"}
 local onOff = {"off", "on"}
 local protocol = {"Auto", "Dshot 300-600", "Servo 1-2ms", "Serial", "BF Safe Arming"}
+local brakeOnStop = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_off)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_brake)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_active)@"}
+local variablePwm = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_fixed)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_variable)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_rpm)@"}
+local lowVoltageCutoff = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_lvc_off)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_lvc_cell)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_lvc_abs)@"}
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
@@ -33,14 +36,14 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "bidirectional_mode",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "sinusoidal_startup",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "complementary_pwm",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "variable_pwm_frequency",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {2}, tableIdxInc = -1, table = onOff},
+    {field = "variable_pwm_frequency",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {2}, tableIdxInc = -1, table = variablePwm},
     {field = "stuck_rotor_protection",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
     {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, unit = "kHz", simResponse = {18}, min = 8, max = 144, step = 1},
     {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 9}, unit = "%", simResponse = {50}, default = 100, min = 50, max = 150, step = 1},
     {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, unit = "KV", simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
     {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, default = 14, min = 2, max = 36, step = 1},
-    {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
+    {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = brakeOnStop},
     {field = "stall_protection",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "beep_volume",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5}, default = 10, min = 0, max = 11, step = 1},
     {field = "interval_telemetry",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
@@ -48,10 +51,10 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "servo_high_threshold",      type = "U8",  apiVersion = {12, 0, 9}, unit = "us", simResponse = {128}, min = 1750, max = 2250, step = 2},
     {field = "servo_neutral",             type = "U8",  apiVersion = {12, 0, 9}, unit = "us", simResponse = {128}, min = 1374, max = 1630, step = 1},
     {field = "servo_dead_band",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}, min = 0, max = 100, step = 1},
-    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 2, step = 1},
+    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = lowVoltageCutoff},
     {field = "low_voltage_threshold",     type = "U8",  apiVersion = {12, 0, 9}, unit = "cV", simResponse = {50}, min = 250, max = 350, step = 1},
-    {field = "rc_car_reversing",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "use_hall_sensors",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
+    {field = "rc_car_reversing",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
+    {field = "use_hall_sensors",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "sine_mode_range",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, min = 5, max = 25, step = 1},
     {field = "brake_strength",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, default = 0, min = 0, max = 10, step = 1},
     {field = "running_brake_level",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10}, default = 0, min = 0, max = 10, step = 1},

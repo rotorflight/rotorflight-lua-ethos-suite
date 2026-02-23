@@ -4141,6 +4141,11 @@
               "needs_translation": false,
               "translation": "Direction"
             },
+            "limits": {
+              "english": "Limits",
+              "needs_translation": false,
+              "translation": "Limits"
+            },
             "motorkv": {
               "english": "Motor KV",
               "needs_translation": false,
@@ -4190,6 +4195,51 @@
               "english": "Stuck Rotor Protection",
               "needs_translation": false,
               "translation": "Stuck Rotor Protection"
+            },
+            "tbl_brake_active": {
+              "english": "Active Brake",
+              "needs_translation": false,
+              "translation": "Active Brake"
+            },
+            "tbl_brake_brake": {
+              "english": "Brake",
+              "needs_translation": false,
+              "translation": "Brake"
+            },
+            "tbl_brake_off": {
+              "english": "Off",
+              "needs_translation": false,
+              "translation": "Off"
+            },
+            "tbl_lvc_abs": {
+              "english": "Absolute",
+              "needs_translation": false,
+              "translation": "Absolute"
+            },
+            "tbl_lvc_cell": {
+              "english": "Cell Based",
+              "needs_translation": false,
+              "translation": "Cell Based"
+            },
+            "tbl_lvc_off": {
+              "english": "Off",
+              "needs_translation": false,
+              "translation": "Off"
+            },
+            "tbl_pwm_fixed": {
+              "english": "Fixed",
+              "needs_translation": false,
+              "translation": "Fixed"
+            },
+            "tbl_pwm_rpm": {
+              "english": "By RPM",
+              "needs_translation": false,
+              "translation": "By RPM"
+            },
+            "tbl_pwm_variable": {
+              "english": "Variable",
+              "needs_translation": false,
+              "translation": "Variable"
             },
             "timing": {
               "english": "Timing",

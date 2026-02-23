@@ -29,8 +29,6 @@ local apidata = {
             {t = "@i18n(app.modules.esc_tools.mfg.am32.brakestrength)@", mspapi = 1, apikey = "brake_strength"},
             {t = "@i18n(app.modules.esc_tools.mfg.am32.runningbrake)@", mspapi = 1, apikey = "running_brake_level"},
             {t = "Beep Volume", mspapi = 1, apikey = "beep_volume"},
-            {t = "Low Voltage Cutoff", mspapi = 1, apikey = "low_voltage_cutoff"},
-            {t = "Low Voltage Threshold", mspapi = 1, apikey = "low_voltage_threshold"},
 
         }
     }                 
