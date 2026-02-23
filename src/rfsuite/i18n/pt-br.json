@@ -10139,6 +10139,13 @@
           "reverse_text": false,
           "translation": "Log dados msp"
         },
+        "txt_msprwlog": {
+          "english": "Log MSP read/write",
+          "max_length": 18,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Log MSP read/write"
+        },
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",
           "max_length": 20,
