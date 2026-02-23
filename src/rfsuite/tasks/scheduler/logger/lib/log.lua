@@ -25,6 +25,7 @@ local function Ring(cap)
         t = 1,
         n = 0,
         c = cap or 64,
+        dropped = 0,
         push = function(self, x)
             self.d[self.t] = x
             self.t = (self.t % self.c) + 1
@@ -32,6 +33,7 @@ local function Ring(cap)
                 self.n = self.n + 1
             else
                 self.h = (self.h % self.c) + 1
+                self.dropped = self.dropped + 1
             end
         end,
         pop = function(self)
@@ -43,6 +45,11 @@ local function Ring(cap)
             return x
         end,
         empty = function(self) return self.n == 0 end,
+        takeDropped = function(self)
+            local v = self.dropped
+            self.dropped = 0
+            return v
+        end,
         items = function(self)
             local out = {}
             if self.n == 0 then return out end
@@ -62,7 +69,7 @@ local logs = {
         log_to_file = true,
         print_interval = system:getVersion().simulation and 0.025 or 0.5,
         disk_write_interval = 5.0,
-        max_line_length = 200,
+        max_line_length = 120,
         min_print_level = "info",
         log_file = "log.txt",
         prefix = "",
@@ -71,6 +78,8 @@ local logs = {
         disk_buffer_max = 4096,      -- flush if buffered bytes exceed this
         disk_flush_batch = 50,       -- max lines per flush
         disk_drain_budget_seconds = 0.003, -- time budget for draining qDisk when log_to_file is false
+        console_drain_budget_seconds = 0.002,
+        console_drain_max = 15,
     }
 }
 
@@ -81,12 +90,12 @@ local function getMinLevel(cfg)
     return LEVEL[cfg.min_print_level] or LEVEL.info
 end
 
-local qConsole = Ring(50)
+local qConsole = Ring(200)
 local qDisk = Ring(200) -- a little bigger so we can batch more effectively
-local qConnect = Ring(20)
+local qConnect = Ring(80)
 
 -- Separate rolling buffer for on-screen "connect" display.
-local qConnectView = Ring(80)
+local qConnectView = Ring(160)
 
 local lastPrint, lastDisk, lastConnect = os_clock(), os_clock(), os_clock()
 
@@ -217,7 +226,22 @@ local function drain_console(now, cfg)
     if (now - lastPrint) < cfg.print_interval or qConsole:empty() then return end
     lastPrint = now
 
-    for _ = 1, 5 do
+    local dropped = qConsole:takeDropped()
+    if dropped > 0 then
+        local p = getPrefix(cfg)
+        local pad = (#p > 0) and string_rep(" ", #p) or ""
+        local warn = p .. ("[logger] dropped " .. tostring(dropped) .. " console lines")
+        local parts = split(warn, cfg.max_line_length, pad)
+        for i = 1, #parts do
+            print(parts[i])
+        end
+    end
+
+    local budget = cfg.console_drain_budget_seconds or 0
+    local deadline = os_clock() + budget
+    local maxLines = cfg.console_drain_max or 10
+    local printed = 0
+    while printed < maxLines and (budget <= 0 or os_clock() < deadline) do
         local e = qConsole:pop()
         if not e then break end
         
@@ -227,6 +251,7 @@ local function drain_console(now, cfg)
         for i = 1, #parts do
             print(parts[i])
         end
+        printed = printed + 1
     end
 end
 
@@ -305,6 +330,15 @@ local function drain_connect(now, cfg)
 
     local pfx = getPrefix(cfg)
     local pad = (#pfx > 0) and string_rep(" ", #pfx) or ""
+
+    local dropped = qConnect:takeDropped()
+    if dropped > 0 then
+        local warn = pfx .. ("[logger] dropped " .. tostring(dropped) .. " connect lines")
+        local parts = split(warn, cfg.max_line_length, pad)
+        for i = 1, #parts do
+            print(parts[i])
+        end
+    end
 
     for _ = 1, 5 do
         local e = qConnect:pop()
