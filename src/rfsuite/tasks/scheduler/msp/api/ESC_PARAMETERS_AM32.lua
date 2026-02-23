@@ -73,8 +73,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "current_limit",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {102}, min = 0, max = 202, step = 2},
     {field = "sine_mode_power",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {7}, min = 1, max = 10, step = 1},
     {field = "esc_protocol",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {1}, tableIdxInc = -1, table = protocol},
-    {field = "auto_advance",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
-    {field = "esc_name",                  type = "U256", apiVersion = {12, 0, 9}, simResponse = {71, 79, 79, 83, 75, 89, 95, 51, 83, 95, 70, 52, 50, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
+    {field = "auto_advance",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff}
 }
 -- LuaFormatter on
 
