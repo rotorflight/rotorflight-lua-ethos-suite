@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
+local system = system
 
 local mspSignature
 local mspBytes
@@ -187,7 +188,32 @@ local function openPage(opts)
     rfsuite.app.lastScript = script
 
     if type(folder) ~= "string" or folder == "" then
-        folder = title
+        local lastSegment = type(title) == "string" and title:match("([^/]+)$") or nil
+        if lastSegment then
+            lastSegment = lastSegment:gsub("^%s+", ""):gsub("%s+$", "")
+        end
+        if lastSegment and system and system.listFiles then
+            local mfgs_path = "app/modules/esc_tools/tools/escmfg/"
+            for _, v in pairs(system.listFiles(mfgs_path)) do
+                local init_path = mfgs_path .. v .. "/init.lua"
+                local f = os.stat(init_path)
+                if f then
+                    local func = loadfile(init_path)
+                    if func then
+                        local ok, mconfig = pcall(func)
+                        if ok and type(mconfig) == "table" and type(mconfig.toolName) == "string" then
+                            if mconfig.toolName:lower() == lastSegment:lower() then
+                                folder = v
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if type(folder) ~= "string" or folder == "" then
+            folder = title
+        end
     end
 
     ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
