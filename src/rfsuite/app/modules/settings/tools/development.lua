@@ -87,6 +87,11 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_msprwlog)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() if rfsuite.preferences and rfsuite.preferences.developer then return settings['logmsprw'] end end, function(newValue) if rfsuite.preferences and rfsuite.preferences.developer then settings.logmsprw = newValue end end)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_queuesize)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() if rfsuite.preferences and rfsuite.preferences.developer then return settings['logmspQueue'] end end, function(newValue) if rfsuite.preferences and rfsuite.preferences.developer then settings.logmspQueue = newValue end end)
 
