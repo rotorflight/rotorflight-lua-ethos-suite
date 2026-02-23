@@ -259,6 +259,8 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
+            thresholds = {{value = getThemeValue("bec_warn"), textcolor = colorMode.fillcritcolor}}
+
         },
         {
             col = 5,
