@@ -36,9 +36,9 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "variable_pwm_frequency",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {2}, tableIdxInc = -1, table = onOff},
     {field = "stuck_rotor_protection",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
-    {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {18}},
+    {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, unit = "µs", simResponse = {18}},
     {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}, default = 100, min = 50, max = 150},
-    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
+    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, unit = "kv", simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
     {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, default = 14, min = 2, max = 36},
     {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "stall_protection",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
@@ -48,7 +48,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "servo_high_threshold",      type = "U8",  apiVersion = {12, 0, 9}, simResponse = {128}},
     {field = "servo_neutral",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {128}},
     {field = "servo_dead_band",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}},
-    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
+    {field = "low_voltage_cutoff",        type = "U8",  apiVersion = {12, 0, 9}, unit = "v", simResponse = {0}},
     {field = "low_voltage_threshold",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {50}},
     {field = "rc_car_reversing",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
     {field = "use_hall_sensors",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
