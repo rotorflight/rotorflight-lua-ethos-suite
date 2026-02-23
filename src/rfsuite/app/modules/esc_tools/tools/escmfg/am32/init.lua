@@ -6,6 +6,8 @@
 local rfsuite = require("rfsuite")
 
 local MSP_API = "ESC_PARAMETERS_AM32"
+local MSP_API_VERSION = {12, 0, 9}
+
 local toolName = "AM32"
 local moduleName = "am32"
 
@@ -55,4 +57,5 @@ return {
     getEscVersion = getEscVersion,
     getEscFirmware = getEscFirmware,
     mspHeaderBytes = mspHeaderBytes,
+    apiversion = MSP_API_VERSION
 }
