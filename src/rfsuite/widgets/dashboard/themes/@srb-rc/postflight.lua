@@ -27,7 +27,7 @@ local function maxVoltageToCellVoltage(value)
     return value
 end
 
-local theme_section = "system/srbrc"
+local theme_section = "system/@srb-rc"
 
 local THEME_DEFAULTS = {}
 

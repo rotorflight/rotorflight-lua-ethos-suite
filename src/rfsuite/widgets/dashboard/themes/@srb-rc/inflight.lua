@@ -15,7 +15,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local theme_section = "system/srbrc"
+local theme_section = "system/@srb-rc"
 
 local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, esctemp_max = 200}
 
