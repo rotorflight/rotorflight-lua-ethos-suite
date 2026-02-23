@@ -17,6 +17,8 @@ local colorMode = utils.themeColors()
 
 local theme_section = "system/srbrc"
 
+local THEME_DEFAULTS = {bec_warn = 6.5, esctemp_warn = 90, esctemp_max = 200}
+
 local function getThemeValue(key)
     if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
         if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
@@ -26,7 +28,7 @@ local function getThemeValue(key)
             end
         end
     end
-
+    
     if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
         local val = rfsuite.session.modelPreferences[theme_section][key]
         val = tonumber(val)
@@ -259,6 +261,8 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
+            thresholds = {{value = getThemeValue("bec_warn"), textcolor = colorMode.fillcritcolor}}
+
         },
         {
             col = 5,
@@ -274,9 +278,10 @@ local function buildBoxes(W)
             valuepaddingtop = opts.valuepaddingtop,
             title = "ESC TEMP",
             titlepos = "top",
-            textcolor = colorMode.textcolor,
+            textcolor = colorMode.fillcritcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
+            thresholds = {{value = getThemeValue("esctemp_warn"), textcolor = colorMode.textcolor}}
         },
         {
             col = 8,
@@ -290,7 +295,7 @@ local function buildBoxes(W)
             titlefont = opts.titlefont,
             titlepaddingtop = opts.titlepaddingtop,
             valuepaddingtop = opts.valuepaddingtop,
-            title = "RSSI",
+            title = "LQ",
             titlepos = "top",
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
