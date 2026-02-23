@@ -279,6 +279,7 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
+            thresholds = {{value = getThemeValue("esctemp_warn"), textcolor = colorMode.fillcritcolor}}
         },
         {
             col = 8,
@@ -297,6 +298,7 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
             bgcolor = colorMode.paneldarkbg,
+            thresholds = {{value = getThemeValue("rssi_warn"), textcolor = colorMode.fillcritcolor}}
         },
         {
             col = 8,
