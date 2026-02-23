@@ -14,9 +14,9 @@ local MSP_SIGNATURE = 0xC2
 local MSP_HEADER_BYTES = 2
 
 -- tables used in structure below
-local motorDirection = {"normal", "reversed"}
+local motorDirection = {"Normal", "Reversed"}
 local timingAdvance = {"0°", "7.5°", "15°", "22.5°"}
-local onOff = {"off", "on"}
+local onOff = {"Off", "On"}
 local protocol = {"Auto", "Dshot 300-600", "Servo 1-2ms", "Serial", "BF Safe Arming"}
 local brakeOnStop = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_off)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_brake)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_active)@"}
 local variablePwm = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_fixed)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_variable)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_rpm)@"}

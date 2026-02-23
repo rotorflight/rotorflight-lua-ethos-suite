@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
-local system = system
 
 local mspSignature
 local mspBytes
@@ -28,59 +27,6 @@ local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
-
-local openPage4Way
-local pending4WaySelect = false
-local pending4WaySelectOpts = nil
-local waitingTailMode = false
-local in4WaySelector = false
-
-local function peekReturnContext()
-    local stack = rfsuite.app and rfsuite.app.menuContextStack
-    if type(stack) ~= "table" then return nil end
-    return stack[#stack]
-end
-
-local function ensureTailMode(callback)
-    local helpers = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers
-    if helpers and helpers.mixerConfig then
-        waitingTailMode = true
-        helpers.mixerConfig(function(tailMode)
-            waitingTailMode = false
-            if callback then callback(tailMode) end
-        end)
-        return
-    end
-    if callback then callback(rfsuite.session and rfsuite.session.tailMode or nil) end
-end
-
-local function setESC4WayMode(id)
-    local target = id
-    if target == nil then target = 0 end
-    local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
-    if not API then return false, "api_missing" end
-    if rfsuite.utils and rfsuite.utils.log then
-        rfsuite.utils.log("ESC 4WIF set target: " .. tostring(target), "info")
-    end
-    rfsuite.session.esc4WayTarget = target
-    rfsuite.session.esc4WaySetComplete = false
-    API.setValue("target", target)
-    API.setCompleteHandler(function(self, buf)
-        rfsuite.session.esc4WaySetComplete = true
-    end)
-    API.setErrorHandler(function(self, err)
-        rfsuite.session.esc4WaySetComplete = false
-        if rfsuite.utils and rfsuite.utils.log then
-            rfsuite.utils.log("ESC 4WIF set target: " .. tostring(target) .. " failed", "info")
-        end        
-    end)
-    if rfsuite.utils and rfsuite.utils.uuid then
-        API.setUUID(rfsuite.utils.uuid())
-    else
-        API.setUUID(tostring(os.clock()))
-    end
-    return API.write()
-end
 
 local function openProgressDialog(...)
     if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
@@ -181,62 +127,16 @@ local function openPage(opts)
     local title = opts.title
     local folder = opts.folder
     local script = opts.script
-    in4WaySelector = false
-
-    rfsuite.app.lastIdx = parentIdx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
 
     if type(folder) ~= "string" or folder == "" then
-        local lastSegment = type(title) == "string" and title:match("([^/]+)$") or nil
-        if lastSegment then
-            lastSegment = lastSegment:gsub("^%s+", ""):gsub("%s+$", "")
-        end
-        if lastSegment and system and system.listFiles then
-            local mfgs_path = "app/modules/esc_tools/tools/escmfg/"
-            for _, v in pairs(system.listFiles(mfgs_path)) do
-                local init_path = mfgs_path .. v .. "/init.lua"
-                local f = os.stat(init_path)
-                if f then
-                    local func = loadfile(init_path)
-                    if func then
-                        local ok, mconfig = pcall(func)
-                        if ok and type(mconfig) == "table" and type(mconfig.toolName) == "string" then
-                            if mconfig.toolName:lower() == lastSegment:lower() then
-                                folder = v
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        if type(folder) ~= "string" or folder == "" then
-            folder = title
-        end
+        folder = title
     end
 
     ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 
-    if ESC.esc4way == true then
-        if opts.open4waySelector == true then
-            openPage4Way(opts)
-            return
-        end
-        local tailMode = rfsuite.session and rfsuite.session.tailMode
-        if tailMode == nil then
-            ensureTailMode(function()
-                pending4WaySelect = true
-                pending4WaySelectOpts = opts
-            end)
-        else
-            if tailMode >= 1 and not opts.skip4waySelect then
-                pending4WaySelect = true
-                pending4WaySelectOpts = opts
-            end
-        end
-        rfsuite.session.esc4WayTarget = rfsuite.session.esc4WayTarget or 0
-    end
+    rfsuite.app.lastIdx = parentIdx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
 
     if ESC.mspapi ~= nil then
 
@@ -349,8 +249,7 @@ local function openPage(opts)
                             idx = parentIdx,
                             title = title,
                             folder = folder,
-                            script = "esc_tools/tools/esc_tool.lua",
-                            skip4waySelect = true
+                            script = "esc_tools/tools/esc_tool.lua"
                         }
                     })
 
@@ -376,135 +275,7 @@ local function openPage(opts)
 
 end
 
-function openPage4Way(opts)
-
-    local parentIdx = opts.idx
-    local title = opts.title
-    local folder = opts.folder
-    local script = opts.script
-
-    in4WaySelector = true
-
-    rfsuite.app.lastIdx = parentIdx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-
-    local app = rfsuite.app
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
-    app.formFields = app.formFields or {}
-    app.formLines = app.formLines or {}
-
-    form.clear()
-
-    rfsuite.app.ui.fieldHeader(title)
-
-    local buttonW
-    local buttonH
-    local padding
-    local numPerRow
-
-    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
-        rfsuite.preferences.general.iconsize = 1
-    else
-        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
-    end
-
-    if rfsuite.preferences.general.iconsize == 0 then
-        padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
-        buttonH = rfsuite.app.radio.navbuttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
-    end
-
-    if rfsuite.preferences.general.iconsize == 1 then
-        padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = rfsuite.app.radio.buttonWidthSmall
-        buttonH = rfsuite.app.radio.buttonHeightSmall
-        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
-    end
-
-    if rfsuite.preferences.general.iconsize == 2 then
-        padding = rfsuite.app.radio.buttonPadding
-        buttonW = rfsuite.app.radio.buttonWidth
-        buttonH = rfsuite.app.radio.buttonHeight
-        numPerRow = rfsuite.app.radio.buttonsPerRow
-    end
-
-    local items = {
-        {title = "ESC1", image = "basic.png", target = 0},
-        {title = "ESC2", image = "advanced.png", target = 1},
-    }
-
-    if rfsuite.app.gfx_buttons["esc4way"] == nil then rfsuite.app.gfx_buttons["esc4way"] = {} end
-    if rfsuite.preferences.menulastselected["esc4way"] == nil then rfsuite.preferences.menulastselected["esc4way"] = 1 end
-
-    local lc = 0
-    local bx = 0
-    local y = 0
-
-    for childIdx, item in ipairs(items) do
-
-        if lc == 0 then
-            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
-        end
-
-        if lc >= 0 then bx = (buttonW + padding) * lc end
-
-        if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["esc4way"][childIdx] == nil then
-                rfsuite.app.gfx_buttons["esc4way"][childIdx] = lcd.loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. item.image)
-            end
-        else
-            rfsuite.app.gfx_buttons["esc4way"][childIdx] = nil
-        end
-
-        rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = item.title,
-            icon = rfsuite.app.gfx_buttons["esc4way"][childIdx],
-            options = FONT_S,
-            paint = function() end,
-            press = function()
-                in4WaySelector = false
-                rfsuite.preferences.menulastselected["esc4way"] = childIdx
-                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.SLOW)
-                rfsuite.session.esc4WayTarget = item.target
-                rfsuite.session.esc4WaySet = true
-                rfsuite.session.esc4WaySetComplete = false
-                local ok = setESC4WayMode(item.target)
-                if ok == false then
-                    rfsuite.session.esc4WaySet = nil
-                end
-                rfsuite.app.ui.openPage({
-                    idx = parentIdx,
-                    title = title,
-                    folder = folder,
-                    script = "esc_tools/tools/esc_tool.lua",
-                    skip4waySelect = true,
-                    returnContext = {idx = parentIdx, title = title, folder = folder, script = "esc_tools/tools/esc_tool.lua", open4waySelector = true, menuId = "esc4way_select"}
-                })
-            end
-        })
-
-        if rfsuite.preferences.menulastselected["esc4way"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
-
-        lc = lc + 1
-        if lc == numPerRow then lc = 0 end
-    end
-
-    rfsuite.app.triggers.closeProgressLoader = true
-end
-
 local function onNavMenu()
-    if ESC and ESC.esc4way then
-        if not in4WaySelector then
-            rfsuite.session.esc4WaySet = nil
-            rfsuite.session.esc4WaySetComplete = nil
-            setESC4WayMode(100)
-        end
-    end
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
@@ -518,68 +289,21 @@ local function onReloadMenu()
     showPowerCycleLoaderFinished = false
     powercycleLoaderCounter = 0
     powercycleLoaderBaseMessage = nil
-    rfsuite.session.esc4WaySet = nil
-    rfsuite.session.esc4WaySetComplete = nil
     rfsuite.app.triggers.triggerReloadFull = true
     return true
 end
 
 local function wakeup()
 
-    if ESC and ESC.esc4way and pending4WaySelect and not waitingTailMode then
-        local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
-        if tailMode >= 1 then
-            pending4WaySelect = false
-            local opts = pending4WaySelectOpts or {}
-            pending4WaySelectOpts = nil
-            openPage4Way(opts)
-            return
-        end
-        pending4WaySelect = false
-        pending4WaySelectOpts = nil
-    end
-
-    if waitingTailMode then return end
-
     if foundESC == false then
-        if ESC and ESC.esc4way then
-            local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
-            if tailMode >= 1 then
-                -- Multiple ESCs: wait for explicit selection.
-                if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
-                    getESCDetails()
-                end
-            else
-                -- Single ESC: auto-select target 0 once, then read details.
-                if not rfsuite.session.esc4WaySet then
-                    rfsuite.session.esc4WaySet = true
-                    local ok = setESC4WayMode(rfsuite.session.esc4WayTarget or 0)
-                    if ok == false then
-                        rfsuite.session.esc4WaySet = nil
-                    end
-                elseif rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
-                    getESCDetails()
-                end
-            end
-        else
-            getESCDetails()
-        end
+        getESCDetails()
     end
 
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
 
         if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
-            local prefix = ""
-            if ESC and ESC.esc4way then
-                local target = rfsuite.session and rfsuite.session.esc4WayTarget or 0
-                if target == 1 then
-                    prefix = "ESC2 - "
-                else
-                    prefix = "ESC1 - "
-                end
-            end
-            local text = prefix .. escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
+            local text = escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
             rfsuite.escHeaderLineText = text
             setModelHeaderText(text)
         end
