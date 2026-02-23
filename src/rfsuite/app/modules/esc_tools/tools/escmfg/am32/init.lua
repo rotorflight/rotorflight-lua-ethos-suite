@@ -27,9 +27,8 @@ end
 -- required by framework
 local function getEscModel(self)
 
-    local escModelName = ""
-    escModelName = getText(self, 48, 79)
-    return "AM32 " .. escModelName .. " "
+    -- we dont have a name for the am32, so we just return the tool name as the model
+    return "AM32 "
 
 end
 
