@@ -69,6 +69,7 @@ end
 
 -- Logging toggles
 local function LOG_ENABLED_MSP() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp end
+local function LOG_ENABLED_MSP_RW() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsprw end
 
 -- Lightweight status updates for UI progress loaders.
 local function setMspStatus(message)
@@ -327,6 +328,15 @@ function MspQueueController:processQueue()
     -- Per-message timeout
     if self.currentMessage and self.currentMessageStartTime and (now - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
         local msg = self.currentMessage
+        if msg and LOG_ENABLED_MSP_RW() then
+            local rwState
+            if msg.isWrite ~= nil then
+                rwState = msg.isWrite and "WRITE" or "READ"
+            else
+                rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+            end
+            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+        end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
@@ -416,6 +426,22 @@ function MspQueueController:processQueue()
                 utils.logMsp(cmd, rwState, logPayload, err)
             end
         end
+        do
+            local msg = self.currentMessage
+            if msg and LOG_ENABLED_MSP_RW() then
+                local rwState
+                if msg.isWrite ~= nil then
+                    rwState = msg.isWrite and "WRITE" or "READ"
+                else
+                    rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+                end
+                if err then
+                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " error" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+                else
+                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " ok" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+                end
+            end
+        end
         if err then
             setMspStatus(formatMspStatus(self.currentMessage, "error flag"))
         else
@@ -444,6 +470,15 @@ function MspQueueController:processQueue()
     -- Too many retries - reset
     elseif self.retryCount > self.maxRetries then
         local msg = self.currentMessage
+        if msg and LOG_ENABLED_MSP_RW() then
+            local rwState
+            if msg.isWrite ~= nil then
+                rwState = msg.isWrite and "WRITE" or "READ"
+            else
+                rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+            end
+            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " max retries" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+        end
         self:clear()
         setMspStatus(formatMspStatus(msg, "max retries"))
         if session then
