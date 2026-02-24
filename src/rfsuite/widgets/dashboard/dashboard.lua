@@ -34,6 +34,12 @@ local log = utils.log
 local tasks = rfsuite.tasks
 local objectProfiler = false
 
+local function clearArray(t)
+    for i = #t, 1, -1 do
+        t[i] = nil
+    end
+end
+
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
 -- Busy cadence: run dashboard wakeup on RUN_NUM of RUN_DEN ticks while MSP is busy.
 -- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
@@ -485,7 +491,9 @@ end
 
 
 local function getOnpressBoxIndices()
-    local indices = {}
+    local indices = dashboard._onpressIndices or {}
+    dashboard._onpressIndices = indices
+    clearArray(indices)
     for i, rect in ipairs(dashboard.boxRects or {}) do
         if rect and rect.box and rect.box.onpress then indices[#indices + 1] = i end
     end
@@ -607,7 +615,9 @@ function dashboard.renderLayout(widget, config)
     local thisSig = makeBoxesSig(boxes, headerBoxes)
 
     if ((#boxes + #headerBoxes) ~= lastLoadedBoxCount) or (thisSig ~= lastLoadedBoxSig) then
-        local allBoxes = {}
+        local allBoxes = dashboard._allBoxes or {}
+        dashboard._allBoxes = allBoxes
+        clearArray(allBoxes)
         for _, b in ipairs(boxes) do allBoxes[#allBoxes + 1] = b end
         for _, b in ipairs(headerBoxes) do allBoxes[#allBoxes + 1] = b end
         dashboard.loadAllObjects(allBoxes)
