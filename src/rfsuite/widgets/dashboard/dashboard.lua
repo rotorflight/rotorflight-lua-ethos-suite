@@ -508,12 +508,19 @@ end
 
 
 local function getOnpressBoxIndices()
+    if dashboard._onpressIndicesReady and dashboard._onpressIndices then
+        return dashboard._onpressIndices
+    end
+
     local indices = dashboard._onpressIndices or {}
     dashboard._onpressIndices = indices
     clearArray(indices)
     for i, rect in ipairs(dashboard.boxRects or {}) do
-        if rect and rect.box and rect.box.onpress then indices[#indices + 1] = i end
+        if rect and rect.box and rect.box.onpress then
+            indices[#indices + 1] = i
+        end
     end
+    dashboard._onpressIndicesReady = true
     return indices
 end
 
@@ -675,7 +682,10 @@ function dashboard.renderLayout(widget, config)
 
     local rectCount = 0
     local scheduledCount = 0
+    local onpressCount = 0
     local boxRects = dashboard.boxRects
+    local onpressIndices = dashboard._onpressIndices or {}
+    dashboard._onpressIndices = onpressIndices
 
     for _, box in ipairs(boxes) do
         if box then
@@ -706,6 +716,10 @@ function dashboard.renderLayout(widget, config)
                     scheduledCount = scheduledCount + 1
                     scheduledBoxIndices[scheduledCount] = rectIndex
                 end
+            end
+            if box.onpress then
+                onpressCount = onpressCount + 1
+                onpressIndices[onpressCount] = rectIndex
             end
         end
     end
@@ -763,10 +777,16 @@ function dashboard.renderLayout(widget, config)
                     scheduledBoxIndices[scheduledCount] = idx_rect
                 end
             end
+            if geom.box.onpress then
+                onpressCount = onpressCount + 1
+                onpressIndices[onpressCount] = idx_rect
+            end
         end
     end
     for i = rectCount + 1, #boxRects do boxRects[i] = nil end
     for i = scheduledCount + 1, #scheduledBoxIndices do scheduledBoxIndices[i] = nil end
+    for i = onpressCount + 1, #onpressIndices do onpressIndices[i] = nil end
+    dashboard._onpressIndicesReady = true
 
     if not objectWakeupsPerCycle or #dashboard.boxRects ~= lastBoxRectsCount then
         local count = #dashboard.boxRects
@@ -1107,6 +1127,7 @@ local function reload_state_only(state)
     else
         dashboard.boxRects = {}
     end
+    dashboard._onpressIndicesReady = false
     dashboard.selectedBoxIndex = nil
     lcd.invalidate()
 end
@@ -1132,6 +1153,7 @@ function dashboard.reload_active_theme_only(force)
     else
         dashboard.boxRects = {}
     end
+    dashboard._onpressIndicesReady = false
     dashboard.selectedBoxIndex = nil
     objectsThreadedWakeupCount = 0
     objectWakeupIndex = 1
@@ -1251,6 +1273,7 @@ function dashboard.create()
     else
         dashboard.boxRects = {}
     end
+    dashboard._onpressIndicesReady = false
     dashboard.selectedBoxIndex = nil
 
     lcd.invalidate()
