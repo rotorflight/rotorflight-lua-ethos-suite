@@ -4,6 +4,7 @@
 ]] --
 
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
+local MSP_API_VERSION = {12, 0, 7}
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@"
 
@@ -40,4 +41,4 @@ local function getEscFirmware(self)
     return version
 end
 
-return {mspapi = MSP_API, toolName = toolName, image = "flrtr.png", powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
+return {mspapi = MSP_API, apiversion = MSP_API_VERSION, toolName = toolName, image = "flrtr.png", powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}

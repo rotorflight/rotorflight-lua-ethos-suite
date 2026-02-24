@@ -30,6 +30,7 @@ local config = {
         v2MinApiVersion = {12, 0, 9},
     },
     mspProtocolVersion = 1,
+    maxModelImageBytes = 350 * 1024 -- 350KB, to prevent OOM crashes on models with very large images
 }
 -- LuaFormatter on
 

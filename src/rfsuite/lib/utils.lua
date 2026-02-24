@@ -214,6 +214,32 @@ function utils.dir_exists(base, name, noCache)
     return false
 end
 
+function utils.file_size(path)
+    if not path then return nil end
+
+    local stat = os.stat(path)
+    if not stat then return nil end
+
+    local size = stat.size or stat.length or stat.fileSize or stat.filesize
+    if type(size) ~= "number" then return nil end
+
+    return size
+end
+
+function utils.isImageTooLarge(path, maxBytes)
+    if type(path) ~= "string" or path == "" then return false end
+    local limit = maxBytes
+    if type(limit) ~= "number" then
+        limit = (rfsuite.config and rfsuite.config.maxModelImageBytes) or 350 * 1024
+    end
+    if type(limit) ~= "number" or limit <= 0 then return false end
+
+    local size = utils.file_size(path)
+    if not size then return false end
+
+    return size > limit
+end
+
 function utils.file_exists(path, noCache)
     if not path then return false end
 
