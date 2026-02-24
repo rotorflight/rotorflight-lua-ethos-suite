@@ -356,6 +356,8 @@ function app.close()
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
 
+    collectgarbage()
+
     system.exit()
 
     return true

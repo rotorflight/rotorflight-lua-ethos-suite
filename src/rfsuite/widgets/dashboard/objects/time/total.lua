@@ -132,7 +132,8 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cfg or {}
+    local c = box._cfg
+    if not c then return end
 
     local unitForPaint = c.unit
     if box._currentDisplayValue == "00:00:00" and (box._lastDisplayValue == nil or box._lastDisplayValue == "00:00:00") then unitForPaint = nil end

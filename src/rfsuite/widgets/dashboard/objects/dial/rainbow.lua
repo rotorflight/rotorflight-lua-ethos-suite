@@ -65,6 +65,8 @@ local resolveThresholdColor = utils.resolveThresholdColor
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThemeColorArray = utils.resolveThemeColorArray
 local lastDisplayValue = nil
+local DEFAULT_BAND_LABELS = {"Low", "Med", "High"}
+local DEFAULT_BAND_COLORS = {"red", "orange", "green"}
 
 function render.dirty(box)
 
@@ -153,51 +155,58 @@ function render.wakeup(box)
 
     box._currentDisplayValue = value
 
-    box._cache = {
-        value = value,
-        displayValue = displayValue,
-        percent = percent,
-        unit = unit,
-        min = min,
-        max = max,
-        showvalue = showvalue,
-        titlepos = "bottom",
-        font = getParam(box, "font") or "FONT_STD",
-        textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor")),
-        fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
-        bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        title = getParam(box, "title"),
-        titlefont = getParam(box, "titlefont"),
-        titlealign = getParam(box, "titlealign"),
-        titlespacing = getParam(box, "titlespacing") or 0,
-        titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding = getParam(box, "titlepadding"),
-        titlepaddingleft = getParam(box, "titlepaddingleft"),
-        titlepaddingright = getParam(box, "titlepaddingright"),
-        titlepaddingtop = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        valuealign = getParam(box, "valuealign"),
-        valuepadding = getParam(box, "valuepadding"),
-        valuepaddingleft = getParam(box, "valuepaddingleft"),
-        valuepaddingright = getParam(box, "valuepaddingright"),
-        valuepaddingtop = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        bandlabeloffset = getParam(box, "bandlabeloffset") or 14,
-        bandlabeloffsettop = getParam(box, "bandlabeloffsettop") or 8,
-        bandlabelfont = getParam(box, "bandlabelfont") or "FONT_XS",
-        bandlabels = getParam(box, "bandlabels") or {"Low", "Med", "High"},
-        bandcolors = resolveThemeColorArray("fillcolor", getParam(box, "bandcolors") or {"red", "orange", "green"}),
-        needlethickness = getParam(box, "needlethickness") or 5,
-        needlehubsize = getParam(box, "needlehubsize") or 7,
-        needlestartangle = getParam(box, "needlestartangle") or 150,
-        needlesweepangle = getParam(box, "needlesweepangle") or 240,
-        accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
-    }
+    local c = box._cache
+    if not c then
+        c = {}
+        box._cache = c
+    end
+    c.value = value
+    c.displayValue = displayValue
+    c.percent = percent
+    c.unit = unit
+    c.min = min
+    c.max = max
+    c.showvalue = showvalue
+    c.titlepos = "bottom"
+    c.font = getParam(box, "font") or "FONT_STD"
+    c.textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+    c.fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    c.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    c.title = getParam(box, "title")
+    c.titlefont = getParam(box, "titlefont")
+    c.titlealign = getParam(box, "titlealign")
+    c.titlespacing = getParam(box, "titlespacing") or 0
+    c.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+    c.titlepadding = getParam(box, "titlepadding")
+    c.titlepaddingleft = getParam(box, "titlepaddingleft")
+    c.titlepaddingright = getParam(box, "titlepaddingright")
+    c.titlepaddingtop = getParam(box, "titlepaddingtop")
+    c.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+    c.valuealign = getParam(box, "valuealign")
+    c.valuepadding = getParam(box, "valuepadding")
+    c.valuepaddingleft = getParam(box, "valuepaddingleft")
+    c.valuepaddingright = getParam(box, "valuepaddingright")
+    c.valuepaddingtop = getParam(box, "valuepaddingtop")
+    c.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+    c.bandlabeloffset = getParam(box, "bandlabeloffset") or 14
+    c.bandlabeloffsettop = getParam(box, "bandlabeloffsettop") or 8
+    c.bandlabelfont = getParam(box, "bandlabelfont") or "FONT_XS"
+    local bandlabels = getParam(box, "bandlabels")
+    c.bandlabels = type(bandlabels) == "table" and bandlabels or DEFAULT_BAND_LABELS
+    local bandcolors = getParam(box, "bandcolors")
+    if type(bandcolors) ~= "table" then bandcolors = DEFAULT_BAND_COLORS end
+    c.bandcolors = resolveThemeColorArray("fillcolor", bandcolors, c.bandcolors)
+    c.needlethickness = getParam(box, "needlethickness") or 5
+    c.needlehubsize = getParam(box, "needlehubsize") or 7
+    c.needlestartangle = getParam(box, "needlestartangle") or 150
+    c.needlesweepangle = getParam(box, "needlesweepangle") or 240
+    c.accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cache
+    if not c then return end
 
     lcd.font(_G[c.bandlabelfont] or FONT_XS)
     local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
