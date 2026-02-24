@@ -16,7 +16,6 @@ local format = string.format
 local insert = table.insert
 local remove = table.remove
 local sort = table.sort
-local concat = table.concat
 local clock = os.clock
 local ipairs = ipairs
 local pairs = pairs
@@ -38,6 +37,23 @@ local function clearArray(t)
     for i = #t, 1, -1 do
         t[i] = nil
     end
+end
+
+local function buildBoxTypeSig(bx, hbx, out)
+    local t = out or {}
+    clearArray(t)
+    for _, b in ipairs(bx or {}) do t[#t + 1] = tostring(b.type or "") end
+    for _, b in ipairs(hbx or {}) do t[#t + 1] = tostring(b.type or "") end
+    sort(t)
+    return t, #t
+end
+
+local function sigEquals(a, aN, b, bN)
+    if aN ~= bN then return false end
+    for i = 1, aN do
+        if a[i] ~= b[i] then return false end
+    end
+    return true
 end
 
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
@@ -107,7 +123,8 @@ local objectWakeupsPerCycle = nil
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 local lastBoxRectsCount = 0
-local lastLoadedBoxSig = nil
+local lastLoadedBoxSigParts = nil
+local lastLoadedBoxSigCount = 0
 
 local statePreloadQueue = {"inflight", "postflight"}
 local statePreloadIndex = 1
@@ -597,24 +614,15 @@ function dashboard.renderLayout(widget, config)
     local boxes = resolve(config.boxes or layout.boxes or {})
     local headerBoxes = resolve(config.header_boxes or {})
 
-    local function makeBoxesSig(bx, hbx)
-        local t = dashboard._boxSigParts
-        if not t then
-            t = {}
-            dashboard._boxSigParts = t
-        end
-        for i = #t, 1, -1 do
-            t[i] = nil
-        end
-        for _, b in ipairs(bx or {}) do t[#t + 1] = tostring(b.type or "") end
-        for _, b in ipairs(hbx or {}) do t[#t + 1] = tostring(b.type or "") end
-        sort(t)
-        return concat(t, "|")
+    local sigScratch = dashboard._boxSigScratch
+    if not sigScratch then
+        sigScratch = {}
+        dashboard._boxSigScratch = sigScratch
     end
+    local sigParts, sigCount = buildBoxTypeSig(boxes, headerBoxes, sigScratch)
+    local sigSame = lastLoadedBoxSigParts and sigEquals(sigParts, sigCount, lastLoadedBoxSigParts, lastLoadedBoxSigCount)
 
-    local thisSig = makeBoxesSig(boxes, headerBoxes)
-
-    if ((#boxes + #headerBoxes) ~= lastLoadedBoxCount) or (thisSig ~= lastLoadedBoxSig) then
+    if ((#boxes + #headerBoxes) ~= lastLoadedBoxCount) or (not sigSame) then
         local allBoxes = dashboard._allBoxes or {}
         dashboard._allBoxes = allBoxes
         clearArray(allBoxes)
@@ -622,7 +630,14 @@ function dashboard.renderLayout(widget, config)
         for _, b in ipairs(headerBoxes) do allBoxes[#allBoxes + 1] = b end
         dashboard.loadAllObjects(allBoxes)
         lastLoadedBoxCount = #boxes + #headerBoxes
-        lastLoadedBoxSig = thisSig
+        if not lastLoadedBoxSigParts then
+            lastLoadedBoxSigParts = {}
+        end
+        clearArray(lastLoadedBoxSigParts)
+        for i = 1, sigCount do
+            lastLoadedBoxSigParts[i] = sigParts[i]
+        end
+        lastLoadedBoxSigCount = sigCount
     end
 
     for k in pairs(dashboard._objectDirty) do dashboard._objectDirty[k] = nil end
@@ -1087,7 +1102,11 @@ local function reload_state_only(state)
     objectWakeupIndex = 1
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
-    dashboard.boxRects = {}
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
     dashboard.selectedBoxIndex = nil
     lcd.invalidate()
 end
@@ -1108,14 +1127,19 @@ function dashboard.reload_active_theme_only(force)
     firstWakeup = true
     lcd.invalidate()
 
-    dashboard.boxRects = {}
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
     dashboard.selectedBoxIndex = nil
     objectsThreadedWakeupCount = 0
     objectWakeupIndex = 1
     lastLoadedBoxCount = 0
     lastBoxRectsCount = 0
     objectWakeupsPerCycle = nil
-    lastLoadedBoxSig = nil
+    lastLoadedBoxSigParts = nil
+    lastLoadedBoxSigCount = 0
 
 end
 
@@ -1173,7 +1197,8 @@ function dashboard.reload_themes(force)
     objectWakeupIndex = 1
     objectWakeupsPerCycle = nil
     objectsThreadedWakeupCount = 0
-    lastLoadedBoxSig = nil
+    lastLoadedBoxSigParts = nil
+    lastLoadedBoxSigCount = 0
 
     local mod = loadedStateModules[dashboard.flightmode or "preflight"]
     if type(mod) == "table" and mod.layout and mod.boxes then
@@ -1216,8 +1241,16 @@ function dashboard.create()
     objectWakeupIndex = 1
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
-    scheduledBoxIndices = {}
-    dashboard.boxRects = {}
+    if scheduledBoxIndices then
+        clearArray(scheduledBoxIndices)
+    else
+        scheduledBoxIndices = {}
+    end
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
     dashboard.selectedBoxIndex = nil
 
     lcd.invalidate()
