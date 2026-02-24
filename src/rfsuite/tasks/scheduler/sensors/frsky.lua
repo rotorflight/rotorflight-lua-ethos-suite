@@ -71,6 +71,8 @@ createSensorList[0x5124] = {name = "Rescue State", unit = UNIT_RAW}
 createSensorList[0x5125] = {name = "Gov State", unit = UNIT_RAW}
 createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
+createSensorList[0x5132] = {name = "LED Profile", unit = UNIT_RAW}
+createSensorList[0x5133] = {name = "Battery Type", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
 createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
 createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals = 1}
@@ -242,7 +244,6 @@ local function ensureSensorsFromConfig()
         if apps then
             for _, appId in ipairs(apps) do
                 if appId then
-
                     local meta = createSensorList[appId]
                     if meta then
                         if frsky.createSensorCache[appId] == nil then frsky.createSensorCache[appId] = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId}) end
