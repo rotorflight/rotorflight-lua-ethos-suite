@@ -96,11 +96,8 @@ function render.wakeup(box)
 
     local telemetry = rfsuite.tasks.telemetry
 
-    local c = box._cache
-    if not c then
-        c = {}
-        box._cache = c
-    end
+    local c = box._cache or {}
+    box._cache = c
 
     local cfg = box._cfg
     if not cfg then
@@ -167,6 +164,7 @@ function render.wakeup(box)
         unit = box._lastValidUnit
     end
 
+    local fallbackText = getParam(box, "novalue") or "-"
     local displayValue
 
     if value == nil then
@@ -212,8 +210,7 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache
-    if not c then return end
+    local c = box._cache or {}
 
     utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
 end

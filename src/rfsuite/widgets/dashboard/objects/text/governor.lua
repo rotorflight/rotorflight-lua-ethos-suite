@@ -49,13 +49,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
-local function clearArray(t)
-    for i = #t, 1, -1 do t[i] = nil end
-end
-
-local function splitCSV(str, out)
-    local t = out or {}
-    clearArray(t)
+local function splitCSV(str)
+    local t = {}
     for part in gmatch(str, "([^,]+)") do
         t[#t + 1] = part:gsub("^%s*(.-)%s*$", "%1") -- trim
     end
@@ -136,7 +131,7 @@ function render.wakeup(box)
         -- Initialise CSV state if new or changed
         if box._csvRaw ~= displayValue then
             box._csvRaw = displayValue
-            box._csvParts = splitCSV(displayValue, box._csvParts)
+            box._csvParts = splitCSV(displayValue)
             box._csvIndex = 1
             box._csvLastTick = clock()
         end
@@ -152,7 +147,7 @@ function render.wakeup(box)
         end
     else
         -- Not CSV → clear state
-        if box._csvParts then clearArray(box._csvParts) end
+        box._csvParts = nil
         box._csvIndex = nil
         box._csvLastTick = nil
         box._csvRaw = nil
@@ -173,8 +168,7 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cfg
-    if not c then return end
+    local c = box._cfg or {}
 
     local unitForPaint = box._isLoadingDots and nil or c.unit
     local textColor = box._dynamicTextColor or c.defaultTextColor

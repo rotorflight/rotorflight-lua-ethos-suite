@@ -21,43 +21,6 @@ local tonumber = tonumber
 
 local loaders = {}
 
-local logoBitmapCachePath = nil
-local logoBitmapCacheValue = nil
-local DEFAULT_WRAP_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
-local FG_COLOR_DARK = lcd.RGB(255, 255, 255, 1.0)
-local FG_COLOR_LIGHT = lcd.RGB(0, 0, 0, 1.0)
-local PANEL_OUTER_DARK = lcd.RGB(255, 255, 255, 1.0)
-local PANEL_OUTER_LIGHT = lcd.GREY(64, 1.0)
-local PANEL_INNER_DARK = lcd.RGB(0, 0, 0, 1.0)
-local PANEL_INNER_LIGHT = lcd.RGB(128, 128, 128, 1.0)
-local PANEL_SEP_DARK = lcd.RGB(90, 90, 90, 1.0)
-local PANEL_SEP_LIGHT = lcd.RGB(110, 110, 110, 1.0)
-local WRAPPED_TEXT_LINES_BUFFER = {}
-local LOG_LINES_BUFFER = {}
-local EMPTY_OPTS = {}
-local INFO_LINES_CACHE = {lastUpdate = 0, line1 = nil, line2 = nil, line3 = nil}
-local INFO_LINES_UPDATE_INTERVAL = 0.5
-local SOURCE_DESC_SPORT = {appId = 0xF101}
-local SOURCE_DESC_CRSF = {crsfId = 0x14, subIdStart = 0, subIdEnd = 1}
-
-local function clearArray(t)
-    for i = #t, 1, -1 do t[i] = nil end
-end
-
-local function getLogoBitmap()
-    local baseDir = (rfsuite and rfsuite.config and rfsuite.config.baseDir) or "rfsuite"
-    local imageName = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/gfx/logo.png"
-
-    if logoBitmapCachePath ~= imageName then
-        logoBitmapCachePath = imageName
-        logoBitmapCacheValue = rfsuite.utils.loadImage(imageName)
-    elseif not logoBitmapCacheValue then
-        logoBitmapCacheValue = rfsuite.utils.loadImage(imageName)
-    end
-
-    return logoBitmapCacheValue
-end
-
 local function fmtRadioLinkType()
 
 
@@ -71,17 +34,17 @@ local function fmtRadioLinkType()
     local externalModule = model.getModule(1)
 
     if internalModule and internalModule:enable() then
-        currentSensor = system.getSource(SOURCE_DESC_SPORT)
+        currentSensor = system.getSource({appId = 0xF101})
         currentModuleId = internalModule
         currentModuleNumber = 0
         currentTelemetryType = "sport"
     elseif externalModule and externalModule:enable() then
-        currentSensor = system.getSource(SOURCE_DESC_CRSF)
+        currentSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
         currentModuleId = externalModule
         currentTelemetryType = "crsf"
         currentModuleNumber = 1
         if not currentSensor then
-            currentSensor = system.getSource(SOURCE_DESC_SPORT)
+            currentSensor = system.getSource({appId = 0xF101})
             currentTelemetryType = "sport"
         end
     else    
@@ -157,18 +120,6 @@ local function fmtEthosVersion()
     return format("%s %s", tostring(board), tostring(ver))
 end
 
-local function getInfoLinesCached()
-    local now = clock()
-    local cache = INFO_LINES_CACHE
-    if (cache.line1 == nil) or ((now - (cache.lastUpdate or 0)) >= INFO_LINES_UPDATE_INTERVAL) then
-        cache.lastUpdate = now
-        cache.line1 = fmtRfsuiteVersion()
-        cache.line2 = fmtEthosVersion()
-        cache.line3 = fmtRadioLinkType()
-    end
-    return cache.line1, cache.line2, cache.line3
-end
-
 
 -- Draw a filled rounded rectangle using primitives (no alpha blending).
 -- r is corner radius in pixels.
@@ -238,7 +189,8 @@ end
 
 
 local function drawLogoImage(cx, cy, w, h, scale)
-    local bmp = getLogoBitmap()
+    local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
+    local bmp = rfsuite.utils.loadImage(imageName)
     if bmp then
         -- scale is a ratio of the provided box size (min(w,h)).
         -- Default to 40% which works well for the rectangular loader panel.
@@ -258,17 +210,14 @@ local function ellipsizeRight(s, maxW)
     return t .. "…"
 end
 
-local function resolveLogLines(linesSrc, maxLines, out)
+local function resolveLogLines(linesSrc, maxLines)
     maxLines = maxLines or 4
-    local lines = out or {}
-    clearArray(lines)
-    if not linesSrc then return lines end
+    if not linesSrc then return {} end
 
     -- Function source
     if type(linesSrc) == "function" then
         local res = linesSrc(maxLines)
-        if type(res) == "table" then return res end
-        return lines
+        return (type(res) == "table") and res or {}
     end
 
     -- Table source
@@ -281,19 +230,19 @@ local function resolveLogLines(linesSrc, maxLines, out)
 
         -- Plain array of lines
         if #linesSrc > 0 then
+            local out = {}
             local start = max(1, #linesSrc - maxLines + 1)
-            for i = start, #linesSrc do lines[#lines + 1] = tostring(linesSrc[i]) end
+            for i = start, #linesSrc do out[#out + 1] = tostring(linesSrc[i]) end
+            return out
         end
     end
 
-    return lines
+    return {}
 end
 
 
-local function getWrappedTextLines(message, fonts, maxWidth, maxHeight, outLines)
-    local lines = outLines or {}
-    clearArray(lines)
-    fonts = fonts or DEFAULT_WRAP_FONTS
+local function getWrappedTextLines(message, fonts, maxWidth, maxHeight)
+    local lines = {}
     local chosenFont = fonts[1]
     local _, lineH = lcd.getTextSize("Ay")
 
@@ -307,33 +256,29 @@ local function getWrappedTextLines(message, fonts, maxWidth, maxHeight, outLines
         end
     end
 
-    local current = nil
-    for w in tostring(message or ""):gmatch("%S+") do
-        if not current then
-            current = w
-        else
-            local test = current .. " " .. w
+    local function wrap(str)
+        local words = {}
+        for w in str:gmatch("%S+") do insert(words, w) end
+        local current = words[1] or ""
+        for i = 2, #words do
+            local test = current .. " " .. words[i]
             if lcd.getTextSize(test) <= maxWidth then
                 current = test
             else
                 insert(lines, current)
-                current = w
+                current = words[i]
             end
         end
-    end
-    if current then
         insert(lines, current)
-    else
-        insert(lines, "")
     end
+
+    wrap(message)
     local maxLines = max(1, floor(maxHeight / lineH))
     if #lines > maxLines then
-        for i = #lines, maxLines + 1, -1 do
-            lines[i] = nil
-        end
-        local last = lines[maxLines] or ""
+        lines = {table.unpack(lines, 1, maxLines)}
+        local last = lines[#lines] or ""
         while lcd.getTextSize(last .. "…") > maxWidth and #last > 1 do last = last:sub(1, -2) end
-        lines[maxLines] = last .. "…"
+        lines[#lines] = last .. "…"
     end
 
     return lines, chosenFont, lineH
@@ -351,7 +296,7 @@ end
 local function renderOverlayText(dashboard, cx, cy, innerR, fg)
     local message = dashboard._overlay_text or "@i18n(widgets.dashboard.loading)@"
     local fonts = dashboard.utils.getFontListsForResolution().value_default
-    local lines, chosenFont, lineH = getWrappedTextLines(message, fonts, innerR * 2 * 0.9, innerR * 2 * 0.8, WRAPPED_TEXT_LINES_BUFFER)
+    local lines, chosenFont, lineH = getWrappedTextLines(message, fonts, innerR * 2 * 0.9, innerR * 2 * 0.8)
 
     lcd.color(fg)
     lcd.font(chosenFont)
@@ -363,7 +308,7 @@ local function renderOverlayText(dashboard, cx, cy, innerR, fg)
 end
 
 function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
-    opts = opts or EMPTY_OPTS
+    opts = opts or {}
 
     -- Panel size (roughly "50% screen area" by default)
     local panelW = floor(w * (opts.panelWidthRatio or 0.7))
@@ -381,9 +326,13 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     -- Frame like the circle: bright outer, dark inner.
     local isDark = lcd.darkMode()
 
-    local outer = isDark and PANEL_OUTER_DARK or PANEL_OUTER_LIGHT
+    local outer = isDark
+        and lcd.RGB(255, 255, 255, 1.0)
+        or  lcd.GREY(64, 1.0)
 
-    local inner = isDark and PANEL_INNER_DARK or PANEL_INNER_LIGHT
+    local inner = isDark
+        and lcd.RGB(0,   0,   0,   1.0)
+        or  lcd.RGB(128, 128, 128, 1.0)
 
     -- Outer frame
     lcd.color(outer)
@@ -435,7 +384,8 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local logoAreaH = logoH
 
      -- Draw logo in the top half
-    local bmp = getLogoBitmap()
+    local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
+    local bmp = rfsuite.utils.loadImage(imageName)
 
     -- Alignment: "center" (default) or "left"
     local align = "left" 
@@ -485,7 +435,8 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
     -- Right info column: separator + versions
     do
-        local txt = isDark and FG_COLOR_DARK or FG_COLOR_LIGHT
+        local isDark = lcd.darkMode()
+        local txt = isDark and lcd.RGB(255,255,255,1.0) or lcd.RGB(0,0,0,1.0)
 
         local padX = max(4, floor(infoW * 0.10))
         local padY = max(4, floor(infoH * 0.14))
@@ -493,7 +444,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
         -- Vertical separator line (kept)
         local sepW = max(1, floor(infoW * 0.02))
-        local sepCol = isDark and PANEL_SEP_DARK or PANEL_SEP_LIGHT
+        local sepCol = isDark and lcd.RGB(90,90,90,1.0) or lcd.RGB(110,110,110,1.0)
         lcd.color(sepCol)
         lcd.drawFilledRectangle(infoX + floor(sepW / 2), infoY + padY, sepW, max(1, infoH - 2 * padY))
 
@@ -502,7 +453,9 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
         local tx = infoX + padX + sepW + gap
         local tw = (infoX + infoW) - tx - padX
 
-        local t1, t2, t3 = getInfoLinesCached()
+        local t1 = fmtRfsuiteVersion()
+        local t2 = fmtEthosVersion()
+        local t3 = fmtRadioLinkType() 
 
         lcd.color(txt)
         local fontSize = opts.fontSize or FONT_XXS
@@ -523,7 +476,10 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
 
     -- Bottom side: log lines
-    lcd.color(isDark and FG_COLOR_DARK or FG_COLOR_LIGHT)
+    lcd.color(isDark
+        and lcd.RGB(255, 255, 255, 1.0)
+        or  lcd.RGB(0,   0,   0,   1.0)
+    )
 
     -- Prefer the smaller fonts so we get more lines in the console area.
     local fontSize = opts.fontSize or FONT_XXS
@@ -532,11 +488,11 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     lineH = max(1, lineH)
 
     local maxLines = max(1, floor((logH) / lineH))
-    local lines = resolveLogLines(linesSrc, maxLines, LOG_LINES_BUFFER)
+    local lines = resolveLogLines(linesSrc, maxLines)
 
     -- If caller didn't pass a source, try common dashboard fields.
     if (not lines or #lines == 0) and dashboard then
-        lines = resolveLogLines(dashboard._log_lines or dashboard.logLines or dashboard.logQueue or dashboard.startupQueue, maxLines, LOG_LINES_BUFFER)
+        lines = resolveLogLines(dashboard._log_lines or dashboard.logLines or dashboard.logQueue or dashboard.startupQueue, maxLines)
     end
 
     -- Draw bottom-aligned (console), with safe padding.
@@ -558,7 +514,7 @@ end
 -- Keeps the same panel sizing + styling as logsLoader, but avoids rendering
 -- the right-side version column and the console/log area.
 function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
-    opts = opts or EMPTY_OPTS
+    opts = opts or {}
 
     -- Panel size (mirrors logsLoader defaults)
     local panelW = floor(w * (opts.panelWidthRatio or 0.7))
@@ -574,8 +530,12 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
     local cornerR = opts.cornerR or floor(min(panelW, panelH) * 0.14)
 
     local isDark = lcd.darkMode()
-    local outer = isDark and PANEL_OUTER_DARK or PANEL_OUTER_LIGHT
-    local inner = isDark and PANEL_INNER_DARK or PANEL_INNER_LIGHT
+    local outer = isDark
+        and lcd.RGB(255, 255, 255, 1.0)
+        or  lcd.GREY(64, 1.0)
+    local inner = isDark
+        and lcd.RGB(0,   0,   0,   1.0)
+        or  lcd.RGB(128, 128, 128, 1.0)
 
     -- Outer frame
     lcd.color(outer)
@@ -614,7 +574,8 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
 
     -- Draw logo (same asset as logsLoader)
     do
-        local bmp = getLogoBitmap()
+        local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
+        local bmp = rfsuite.utils.loadImage(imageName)
 
         local cx = logoX + logoW * 0.5
         local cy = logoY + logoH * 0.5
@@ -651,7 +612,7 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
 
     -- Message area
     do
-        local fg = isDark and FG_COLOR_DARK or FG_COLOR_LIGHT
+        local fg = isDark and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0)
         lcd.color(fg)
 
         -- Provide a tiny bit of life without needing real log lines.
@@ -671,12 +632,12 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
         if not fonts and dashboard and dashboard.utils and type(dashboard.utils.getFontListsForResolution) == "function" then
             fonts = dashboard.utils.getFontListsForResolution().value_default
         end
-        fonts = fonts or DEFAULT_WRAP_FONTS
+        fonts = fonts or {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
 
         local padY = max(2, floor(msgH * 0.10))
         local textH = max(1, msgH - 2 * padY)
 
-        local lines, chosenFont, lineH = getWrappedTextLines(msg, fonts, msgW, textH, WRAPPED_TEXT_LINES_BUFFER)
+        local lines, chosenFont, lineH = getWrappedTextLines(msg, fonts, msgW, textH)
         lcd.font(chosenFont)
 
         local totalH = #lines * lineH

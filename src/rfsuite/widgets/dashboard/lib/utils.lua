@@ -24,110 +24,6 @@ local utils = {}
 
 local imageCache = {}
 local fontCache
-local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
-local NAMED_COLORS = {
-    red = {255, 0, 0},
-    green = {0, 188, 4},
-    blue = {0, 122, 255},
-    white = {255, 255, 255},
-    black = {0, 0, 0},
-    gray = {185, 185, 185},
-    grey = {185, 185, 185},
-    orange = {255, 165, 0},
-    yellow = {255, 255, 0},
-    cyan = {0, 255, 255},
-    magenta = {255, 0, 255},
-    pink = {255, 105, 180},
-    purple = {128, 0, 128},
-    violet = {143, 0, 255},
-    brown = {139, 69, 19},
-    lime = {0, 255, 0},
-    olive = {128, 128, 0},
-    gold = {255, 215, 0},
-    silver = {192, 192, 192},
-    teal = {0, 128, 128},
-    navy = {0, 0, 128},
-    maroon = {128, 0, 0},
-    beige = {245, 245, 220},
-    turquoise = {64, 224, 208},
-    indigo = {75, 0, 130},
-    coral = {255, 127, 80},
-    salmon = {250, 128, 114},
-    mint = {62, 180, 137},
-    lightgreen = {144, 238, 144},
-    darkgreen = {0, 100, 0},
-    lightred = {255, 102, 102},
-    darkred = {139, 0, 0},
-    lightorange = {255, 200, 100},
-    lightblue = {173, 216, 230},
-    darkblue = {0, 0, 139},
-    lightpurple = {216, 191, 216},
-    darkpurple = {48, 25, 52},
-    lightyellow = {255, 255, 224},
-    darkyellow = {204, 204, 0},
-    lightgrey = {211, 211, 211},
-    lightgray = {211, 211, 211},
-    darkgrey = {90, 90, 90},
-    darkgray = {90, 90, 90},
-    lmgrey = {80, 80, 80},
-    darkwhite = {245, 245, 245},
-    headergrey = {35, 35, 35}
-}
-local FONT_LISTS_BY_RES = {
-    ["800x480"] = {
-        value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL},
-        value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
-        value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}
-    },
-    ["480x320"] = {
-        value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL},
-        value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
-        value_title = {FONT_XXS, FONT_XS, FONT_S}
-    },
-    ["480x272"] = {
-        value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD},
-        value_reduced = {FONT_XXS, FONT_XS, FONT_S},
-        value_title = {FONT_XXS, FONT_XS, FONT_S}
-    },
-    ["640x360"] = {
-        value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL},
-        value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
-        value_title = {FONT_XXS, FONT_XS, FONT_S}
-    }
-}
-local THEME_FALLBACK_DARK = lcd.RGB(40, 40, 40)
-local THEME_FALLBACK_LIGHT = lcd.RGB(240, 240, 240)
-local THEME_FALLBACK_WHITE = lcd.RGB(255, 255, 255)
-local RESOLVED_COLOR_CACHE = {}
-local FALLBACK_VALUE_DEFAULT_FONTS = {FONT_STD}
-local FALLBACK_TITLE_FONTS = {FONT_XS}
-local SCREEN_ERROR_FONTS = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
-local SCREEN_ERROR_TEXT_COLOR_DARK = lcd.RGB(255, 255, 255, 1)
-local SCREEN_ERROR_TEXT_COLOR_LIGHT = lcd.RGB(90, 90, 90)
-local BACKGROUND_COLOR_DARK = lcd.RGB(16, 16, 16)
-local BACKGROUND_COLOR_LIGHT = lcd.RGB(209, 208, 208)
-local DECIMAL_FORMAT_CACHE = {}
-
-local function getThemeFallbackBaseColor()
-    if lcd.darkMode() then return THEME_FALLBACK_DARK end
-    return THEME_FALLBACK_LIGHT
-end
-
-local function clampByte(v)
-    if v < 0 then return 0 end
-    if v > 255 then return 255 end
-    return floor(v + 0.5)
-end
-
-local function getDecimalFormat(decimals)
-    local key = tostring(decimals)
-    local f = DECIMAL_FORMAT_CACHE[key]
-    if not f then
-        f = "%." .. key .. "f"
-        DECIMAL_FORMAT_CACHE[key] = f
-    end
-    return f
-end
 
 function utils.isFullScreen(w, h)
 
@@ -171,11 +67,21 @@ function utils.getFontListsForResolution()
     local LCD_H = version.lcdHeight
     local resolution = LCD_W .. "x" .. LCD_H
 
-    if not FONT_LISTS_BY_RES[resolution] then
+    local radios = {
+
+        ["800x480"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}},
+
+        ["480x320"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
+
+        ["480x272"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}, value_reduced = {FONT_XXS, FONT_XS, FONT_S}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
+
+        ["640x360"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}}
+    }
+    if not radios[resolution] then
         rfsuite.utils.log("Unsupported resolution: " .. resolution .. ". Using default fonts.", "info")
-        return FONT_LISTS_BY_RES["800x480"]
+        return radios["800x480"]
     end
-    return FONT_LISTS_BY_RES[resolution]
+    return radios[resolution]
 
 end
 
@@ -404,10 +310,12 @@ function utils.screenError(msg, border, pct, padX, padY)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+
     local maxW, maxH = w * pct, h * pct
     local bestFont, bestW, bestH = FONT_XXS, 0, 0
 
-    for _, font in ipairs(SCREEN_ERROR_FONTS) do
+    for _, font in ipairs(fonts) do
         lcd.font(font)
         local tsizeW, tsizeH = lcd.getTextSize(msg)
         if tsizeW <= maxW and tsizeH <= maxH then
@@ -420,7 +328,7 @@ function utils.screenError(msg, border, pct, padX, padY)
 
     lcd.font(bestFont)
 
-    local textColor = isDarkMode and SCREEN_ERROR_TEXT_COLOR_DARK or SCREEN_ERROR_TEXT_COLOR_LIGHT
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
     lcd.color(textColor)
 
     local x = (w - bestW) / 2
@@ -432,46 +340,83 @@ function utils.screenError(msg, border, pct, padX, padY)
 end
 
 function utils.resolveColor(value, variantFactor)
+
+    local namedColors = {
+        red = {255, 0, 0},
+        green = {0, 188, 4},
+        blue = {0, 122, 255},
+        white = {255, 255, 255},
+        black = {0, 0, 0},
+        gray = {185, 185, 185},
+        grey = {185, 185, 185},
+        orange = {255, 165, 0},
+        yellow = {255, 255, 0},
+        cyan = {0, 255, 255},
+        magenta = {255, 0, 255},
+        pink = {255, 105, 180},
+        purple = {128, 0, 128},
+        violet = {143, 0, 255},
+        brown = {139, 69, 19},
+        lime = {0, 255, 0},
+        olive = {128, 128, 0},
+        gold = {255, 215, 0},
+        silver = {192, 192, 192},
+        teal = {0, 128, 128},
+        navy = {0, 0, 128},
+        maroon = {128, 0, 0},
+        beige = {245, 245, 220},
+        turquoise = {64, 224, 208},
+        indigo = {75, 0, 130},
+        coral = {255, 127, 80},
+        salmon = {250, 128, 114},
+        mint = {62, 180, 137},
+        lightgreen = {144, 238, 144},
+        darkgreen = {0, 100, 0},
+        lightred = {255, 102, 102},
+        darkred = {139, 0, 0},
+        lightorange = {255, 200, 100},
+        lightblue = {173, 216, 230},
+        darkblue = {0, 0, 139},
+        lightpurple = {216, 191, 216},
+        darkpurple = {48, 25, 52},
+        lightyellow = {255, 255, 224},
+        darkyellow = {204, 204, 0},
+        lightgrey = {211, 211, 211},
+        lightgray = {211, 211, 211},
+        darkgrey = {90, 90, 90},
+        darkgray = {90, 90, 90},
+        lmgrey = {80, 80, 80},
+        darkwhite = {245, 245, 245},
+        headergrey = {35, 35, 35}
+    }
+
+    local VARIANT_FACTOR = type(variantFactor) == "number" and max(0, min(1, variantFactor)) or 0.3
+
+    local function clamp(v) return max(0, min(255, floor(v + 0.5))) end
+
+    local function lighten(rgb) return {clamp(rgb[1] + (255 - rgb[1]) * VARIANT_FACTOR), clamp(rgb[2] + (255 - rgb[2]) * VARIANT_FACTOR), clamp(rgb[3] + (255 - rgb[3]) * VARIANT_FACTOR)} end
+
+    local function darken(rgb) return {clamp(rgb[1] * (1 - VARIANT_FACTOR)), clamp(rgb[2] * (1 - VARIANT_FACTOR)), clamp(rgb[3] * (1 - VARIANT_FACTOR))} end
+
     if type(value) == "string" then
         local lower = value:lower()
-        if variantFactor == nil then
-            local cached = RESOLVED_COLOR_CACHE[lower]
-            if cached ~= nil then return cached or nil end
-        end
 
-        local color
-        local base = NAMED_COLORS[lower]
-        if base then
-            color = lcd.RGB(base[1], base[2], base[3], 1)
-        else
-            local prefix, baseName
-            if lower:sub(1, 6) == "bright" then
-                prefix = "bright"
-                baseName = lower:sub(7)
-            elseif lower:sub(1, 5) == "light" then
-                prefix = "light"
-                baseName = lower:sub(6)
-            elseif lower:sub(1, 4) == "dark" then
-                prefix = "dark"
-                baseName = lower:sub(5)
+        local prefix, baseName = lower:match("^(bright)(.+)"), lower:match("^bright(.+)")
+        if not prefix then prefix, baseName = lower:match("^(light)(.+)"), lower:match("^light(.+)") end
+        if not prefix then prefix, baseName = lower:match("^(dark)(.+)"), lower:match("^dark(.+)") end
+
+        if prefix and baseName then
+            local baseColor = namedColors[baseName]
+            if baseColor then
+                local rgb = (prefix == "dark") and darken(baseColor) or lighten(baseColor)
+                return lcd.RGB(rgb[1], rgb[2], rgb[3], 1)
             end
 
-            if prefix and baseName and baseName ~= "" then
-                local baseColor = NAMED_COLORS[baseName]
-                if baseColor then
-                    local f = type(variantFactor) == "number" and max(0, min(1, variantFactor)) or 0.3
-                    local r, g, b = baseColor[1], baseColor[2], baseColor[3]
-                    if prefix == "dark" then
-                        color = lcd.RGB(clampByte(r * (1 - f)), clampByte(g * (1 - f)), clampByte(b * (1 - f)), 1)
-                    else
-                        color = lcd.RGB(clampByte(r + (255 - r) * f), clampByte(g + (255 - g) * f), clampByte(b + (255 - b) * f), 1)
-                    end
-                end
-            end
-        end
+        elseif namedColors[lower] then
 
-        if variantFactor == nil then RESOLVED_COLOR_CACHE[lower] = color or false end
-        return color
+            local c = namedColors[lower]
+            return lcd.RGB(c[1], c[2], c[3], 1)
+        end
 
     elseif type(value) == "table" and #value >= 3 then
 
@@ -492,23 +437,26 @@ function utils.resolveThemeColor(colorkey, value)
         if resolved then return resolved end
     end
 
-    if colorkey == "textcolor" or colorkey == "titlecolor" or colorkey == "accentcolor" then
-        return THEME_FALLBACK_WHITE
+    if colorkey == "fillcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "fillbgcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "framecolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "textcolor" then
+        return lcd.RGB(255, 255, 255)
+    elseif colorkey == "titlecolor" then
+        return lcd.RGB(255, 255, 255)
+    elseif colorkey == "accentcolor" then
+        return lcd.RGB(255, 255, 255)
     end
 
-    return getThemeFallbackBaseColor()
+    return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
 end
 
-function utils.resolveThemeColorArray(colorkey, arr, out)
-    local resolved = out or {}
-    local n = 0
-    if type(arr) == "table" then
-        for i = 1, #arr do
-            resolved[i] = utils.resolveThemeColor(colorkey, arr[i])
-            n = i
-        end
-    end
-    for i = n + 1, #resolved do resolved[i] = nil end
+function utils.resolveThemeColorArray(colorkey, arr)
+    local resolved = {}
+    if type(arr) == "table" then for i = 1, #arr do resolved[i] = utils.resolveThemeColor(colorkey, arr[i]) end end
     return resolved
 end
 
@@ -539,10 +487,8 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
 
     local actualTitleFont, tsizeW, tsizeH = nil, 0, 0
     if title then
-        local valueFonts = fontCache.value_default or FALLBACK_VALUE_DEFAULT_FONTS
-        local titleFonts = fontCache.value_title or FALLBACK_TITLE_FONTS
         local minValueFontH = 9999
-        for _, vf in ipairs(valueFonts) do
+        for _, vf in ipairs(fontCache.value_default or {FONT_STD}) do
             lcd.font(vf)
             local _, vh = lcd.getTextSize("8")
             if vh < minValueFontH then minValueFontH = vh end
@@ -552,7 +498,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             lcd.font(actualTitleFont)
             tsizeW, tsizeH = lcd.getTextSize(title)
         else
-            for _, tryFont in ipairs(titleFonts) do
+            for _, tryFont in ipairs(fontCache.value_title or {FONT_XS}) do
                 lcd.font(tryFont)
                 local tW, tH = lcd.getTextSize(title)
                 local remH = h - titlepaddingtop - tH - titlepaddingbottom - valuepaddingtop - valuepaddingbottom
@@ -562,7 +508,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
                 end
             end
             if not actualTitleFont then
-                actualTitleFont = titleFonts[#titleFonts]
+                actualTitleFont = (fontCache.value_title or {FONT_XS})[#(fontCache.value_title or {FONT_XS})]
                 lcd.font(actualTitleFont)
                 tsizeW, tsizeH = lcd.getTextSize(title)
             end
@@ -717,7 +663,7 @@ function utils.transformValue(value, box)
     local decimals = utils.getParam(box, "decimals")
 
     if decimals ~= nil and value ~= nil then
-        value = format(getDecimalFormat(decimals), value)
+        value = format("%." .. decimals .. "f", value)
     elseif value ~= nil then
         value = tostring(value)
     end
@@ -727,14 +673,16 @@ end
 function utils.setBackgroundColourBasedOnTheme()
     local w, h = lcd.getWindowSize()
     if lcd.darkMode() then
-        lcd.color(BACKGROUND_COLOR_DARK)
+        lcd.color(lcd.RGB(16, 16, 16))
     else
-        lcd.color(BACKGROUND_COLOR_LIGHT)
+        lcd.color(lcd.RGB(209, 208, 208))
     end
     lcd.drawFilledRectangle(0, 0, w, h)
 end
 
 function utils.getParam(box, key, ...)
+    local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
+
     local v = box[key]
     if type(v) == "function" and not SKIP_CALL_KEYS[key] then
         return v(box, key, ...)

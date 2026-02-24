@@ -128,8 +128,7 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cfg
-    if not c then return end
+    local c = box._cfg or {}
 
     local unitForPaint = c.unit
 
