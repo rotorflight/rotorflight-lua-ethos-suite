@@ -39,6 +39,16 @@ local function clearArray(t)
     end
 end
 
+local EMPTY = {}
+
+local function resolveMaybe(val, ...)
+    return type(val) == "function" and val(...) or val
+end
+
+local function adjustDimension(dim, cells, padCount, pad)
+    return dim - ((dim - padCount * pad) % cells)
+end
+
 local function buildBoxTypeSig(bx, hbx, out)
     local t = out or {}
     clearArray(t)
@@ -614,12 +624,10 @@ function dashboard.renderLayout(widget, config)
     scheduledBoxIndices = scheduledBoxIndices or {}
     dashboard._objectDirty = dashboard._objectDirty or {}
 
-    local function resolve(val, ...) return type(val) == "function" and val(...) or val end
-
-    local layout = resolve(config.layout) or {}
-    local headerLayout = resolve(config.header_layout) or {}
-    local boxes = resolve(config.boxes or layout.boxes or {})
-    local headerBoxes = resolve(config.header_boxes or {})
+    local layout = resolveMaybe(config.layout) or EMPTY
+    local headerLayout = resolveMaybe(config.header_layout) or EMPTY
+    local boxes = resolveMaybe(config.boxes or layout.boxes or EMPTY) or EMPTY
+    local headerBoxes = resolveMaybe(config.header_boxes or EMPTY) or EMPTY
 
     local sigScratch = dashboard._boxSigScratch
     if not sigScratch then
@@ -655,13 +663,11 @@ function dashboard.renderLayout(widget, config)
     local rows = layout.rows or 1
     local pad = layout.padding or 0
 
-    local function adjustDimension(dim, cells, padCount) return dim - ((dim - padCount * pad) % cells) end
-
     local headerH = (isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number") and headerLayout.height or 0
     if headerH > 0 then H_raw = H_raw - headerH end
 
-    local W = adjustDimension(W_raw, cols, cols - 1)
-    local H = adjustDimension(H_raw, rows, rows + 1)
+    local W = adjustDimension(W_raw, cols, cols - 1, pad)
+    local H = adjustDimension(H_raw, rows, rows + 1, pad)
     local xOffset = floor((W_raw - W) / 2)
     local layoutBounds = dashboard._layoutBounds
     if not layoutBounds then
@@ -849,10 +855,8 @@ function dashboard.renderLayout(widget, config)
         local headerW = W_raw
         local headerH = header.height or 0
 
-        local function adjustHeaderDimension(dim, cells, padCount) return dim - ((dim - padCount * h_pad) % cells) end
-
-        local adjustedW = adjustHeaderDimension(headerW, h_cols, h_cols - 1)
-        local adjustedH = adjustHeaderDimension(headerH, h_rows, h_rows - 1)
+        local adjustedW = adjustDimension(headerW, h_cols, h_cols - 1, h_pad)
+        local adjustedH = adjustDimension(headerH, h_rows, h_rows - 1, h_pad)
 
         local contentW = adjustedW - ((h_cols - 1) * h_pad)
         local contentH = adjustedH - ((h_rows - 1) * h_pad)
