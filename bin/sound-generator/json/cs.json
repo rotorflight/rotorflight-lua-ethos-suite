@@ -484,5 +484,11 @@
     "english": "voltage",
     "translation": "voltage",
     "needs_translation": true
+  },
+  {
+    "file": "events/alerts/battery.wav",
+    "english": "Battery",
+    "translation": null,
+    "needs_translation": true
   }
 ]

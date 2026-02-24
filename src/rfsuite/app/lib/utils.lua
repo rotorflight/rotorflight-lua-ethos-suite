@@ -174,10 +174,6 @@ function utils.getCurrentBatteryType()
     if resolved == nil then resolved = mspValue end
     if resolved == nil then return end
 
-    if mspValue ~= nil and resolved >= 1 and resolved <= 6 and (resolved - 1) == mspValue then
-        resolved = resolved - 1
-    end
-
     session.activeBatteryTypeLast = session.activeBatteryType
     session.activeBatteryType = math.floor(resolved)
 end

@@ -32,7 +32,7 @@ local fields = {
 local apidata = {
     api = {
         [1] = "BATTERY_CONFIG",
-        [2] = "BATTERY_TYPE",
+        [2] = "BATTERY_TYPE"
     },
     formdata = {
         labels = {},
@@ -78,6 +78,22 @@ local function getProfileCapacity(profileIndex)
     local batteryValues = values and values.BATTERY_CONFIG
     if not batteryValues then return nil end
     return tonumber(batteryValues["batteryCapacity_" .. tostring(profileIndex)])
+end
+
+local function saveProfileCapacity(profileIndex, capacity)
+    if profileIndex == nil or capacity == nil then return end
+    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+    local batteryValues = values and values.BATTERY_CONFIG
+    if not batteryValues then return end
+    local v = tonumber(capacity)
+    if v < CAPACITY_PROFILE_MIN then v = CAPACITY_PROFILE_MIN end
+    if v > CAPACITY_PROFILE_MAX then v = CAPACITY_PROFILE_MAX end
+    local finalVal = math.floor(v + 0.5)
+    batteryValues["batteryCapacity_" .. tostring(profileIndex)] = finalVal
+
+    if rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles then
+        rfsuite.session.batteryConfig.profiles[profileIndex] = finalVal
+    end
 end
 
 local function updateDynamicUi(self, editingType, activeType)
@@ -135,28 +151,51 @@ local function wakeup(self)
 
     local activeType = clampProfileIndex(rfsuite.session.activeBatteryType)
     local editingType = clampProfileIndex(getFieldValue(self, "batteryType"))
+    local needsInvalidate = false
 
     -- If active battery changes while page is open, resync selection and value.
     if activeType ~= nil and activeType ~= lastActiveType then
-        -- Sensor changed while on this page: reload so selected profile resets to active source.
+        setFieldValue(self, "batteryType", activeType)
+        local idx = fieldIndexByApiKey["batteryType"]
+        if idx and rfsuite.app.formFields and rfsuite.app.formFields[idx] and rfsuite.app.formFields[idx].value then
+            rfsuite.app.formFields[idx]:value(activeType)
+            needsInvalidate = true
+        end
         lastActiveType = activeType
-        rfsuite.app.triggers.triggerReloadNoPrompt = true
-        return
+        editingType = activeType
     elseif activeType ~= lastActiveType then
         lastActiveType = activeType
     end
 
     if editingType ~= nil and editingType ~= lastEditingType then
+        if lastEditingType ~= nil then
+            local currentCapacity = getFieldValue(self, "batteryCapacityActive")
+            if currentCapacity then
+                saveProfileCapacity(lastEditingType, currentCapacity)
+            end
+        end
+
         local capacity = getProfileCapacity(editingType)
-        if capacity ~= nil then setFieldValue(self, "batteryCapacityActive", capacity) end
+        if capacity ~= nil then
+            setFieldValue(self, "batteryCapacityActive", capacity)
+            local idx = fieldIndexByApiKey["batteryCapacityActive"]
+            if idx and rfsuite.app.formFields and rfsuite.app.formFields[idx] and rfsuite.app.formFields[idx].value then
+                rfsuite.app.formFields[idx]:value(capacity)
+                needsInvalidate = true
+            end
+        end
         lastEditingType = editingType
     end
-
     local stateKey = tostring(editingType) .. ":" .. tostring(activeType)
-    if stateKey == lastHighlightStateKey then return end
-    lastHighlightStateKey = stateKey
+    if stateKey ~= lastHighlightStateKey then
+        lastHighlightStateKey = stateKey
+        updateDynamicUi(self, editingType, activeType)
+        needsInvalidate = true
+    end
 
-    updateDynamicUi(self, editingType, activeType)
+    if needsInvalidate then
+        lcd.invalidate()
+    end
 end
 
 local function preSave(self)
@@ -171,7 +210,12 @@ local function preSave(self)
     local batteryValues = values and values.BATTERY_CONFIG
     if not batteryValues then return end
 
-    batteryValues["batteryCapacity_" .. tostring(editingType)] = math.floor(capacityValue + 0.5)
+    local finalVal = math.floor(capacityValue + 0.5)
+    batteryValues["batteryCapacity_" .. tostring(editingType)] = finalVal
+
+    if rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles then
+        rfsuite.session.batteryConfig.profiles[editingType] = finalVal
+    end
 end
 
 local function event(widget, category, value, x, y)

@@ -7731,6 +7731,20 @@
           "reverse_text": false,
           "translation": "Selected"
         },
+        "show_battery_type_startup": {
+          "english": "Show battery type choose (startup)",
+          "max_length": 34,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Show battery type choose (startup)"
+        },
+        "show_confirmation_dialog": {
+          "english": "Show confirmation dialog",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Show confirmation dialog"
+        },
         "source_name": {
           "english": "Sources",
           "max_length": 7,
@@ -9607,6 +9621,20 @@
           "reverse_text": false,
           "translation": "Audio"
         },
+        "battery_capacity_callout": {
+          "english": "Battery capacity",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery capacity"
+        },
+        "battery_type_event": {
+          "english": "Battery",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery"
+        },
         "celcius": {
           "english": "Celsius",
           "max_length": 7,
@@ -10243,6 +10271,20 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Save requires changes"
+        },
+        "txt_show_battery_type_connect": {
+          "english": "Battery Type on connect",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery Type on connect"
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "max_length": 25,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery Type confirmation"
         },
         "txt_small": {
           "english": "SMALL",
@@ -11004,6 +11046,46 @@
     }
   },
   "widgets": {
+    "battery": {
+      "adjustment_active": {
+        "english": "Selection disabled because Battery Profile adjustment is configured.",
+        "max_length": 65,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "msg_battery_selected": {
+        "english": "Selected battery:",
+        "max_length": 17,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Selected battery:"
+      },
+      "msg_select_battery": {
+        "english": "Please select the battery you want to use:",
+        "max_length": 42,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Please select the battery you want to use:"
+      },
+      "no_profiles": {
+        "english": "No battery profiles configured.",
+        "max_length": 33,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "select_title": {
+        "english": "Select Battery",
+        "max_length": 18,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "title": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      }
+    },
     "bbl": {
       "erase_dataflash": {
         "english": "Erase dataflash",
@@ -11022,6 +11104,19 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "Altitudine Max"
+      },
+      "battery": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "battery_type": {
+        "english": "Battery Type",
+        "max_length": 12,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Battery Type"
       },
       "bec_voltage": {
         "english": "BEC Voltage",

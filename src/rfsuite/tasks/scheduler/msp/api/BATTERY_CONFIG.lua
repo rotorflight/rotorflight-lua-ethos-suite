@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "BATTERY_CONFIG"
 local MSP_API_CMD_READ = 32
 local MSP_API_CMD_WRITE = 33
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 local tblBatterySource = {
     [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
@@ -33,13 +33,13 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5, help = "@i18n(api.BATTERY_CONFIG.vbatwarningcellvoltage)@"},
     {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}, help = "@i18n(api.BATTERY_CONFIG.lvcPercentage)@"},
     {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%", help = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@"},
-    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 10, 0}, simResponse = {232, 3}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 10, 0}, simResponse = {20, 5}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 10, 0}, simResponse = {64, 6}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 10, 0}, simResponse = {108, 7}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 10, 0}, simResponse = {152, 8}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 10, 0}, simResponse = {196, 9}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryType", type = "U8", apiVersion = {12, 10, 0}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"},
+    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 0, 9}, simResponse = {232, 3}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 5}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 0, 9}, simResponse = {64, 6}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 0, 9}, simResponse = {108, 7}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 0, 9}, simResponse = {152, 8}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 0, 9}, simResponse = {196, 9}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
+    {field = "batteryType", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"},
 }
 -- LuaFormatter on
 
