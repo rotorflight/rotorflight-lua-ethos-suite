@@ -24,7 +24,8 @@ local supportedProtocols = {
     mspPollBudget      = 0.15,        -- Legacy max time per cycle to poll MSP replies before yielding
     mspNonBlocking     = true,        -- Poll in small slices each wakeup (lower CPU / smoother UI)
     mspPollSliceSeconds= 0.006,       -- Time slice per wakeup (seconds)
-    mspPollSlicePolls  = 4            -- Max poll iterations per wakeup
+    mspPollSlicePolls  = 4,           -- Max poll iterations per wakeup
+    mspQueueMaxDepth   = 20           -- Maximum number of pending MSP commands to queue before rejecting new ones
   },
 
   crsf = {
@@ -40,7 +41,8 @@ local supportedProtocols = {
     mspPollBudget      = 0.1,         -- Legacy max time per cycle to poll MSP replies
     mspNonBlocking     = true,        -- Non‑blocking slice polling is also beneficial on CRSF
     mspPollSliceSeconds= 0.004,       -- Smaller slice is fine (CRSF has more throughput)
-    mspPollSlicePolls  = 6            -- A few more polls per wakeup is still cheap
+    mspPollSlicePolls  = 6,           -- A few more polls per wakeup is still cheap
+    mspQueueMaxDepth   = 20           -- CRSF can handle a deeper command queue without issue
   },
 }
 
