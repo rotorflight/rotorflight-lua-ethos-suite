@@ -32,6 +32,7 @@ local switchState
 local escReadReadyAt
 local pendingChildOpen
 local switchLoadingActive = false
+local autoSwitchBlocked = false
 local writeSeq = 0
 local lastWriteSeq = 0
 local last4WayWriteTarget
@@ -183,6 +184,7 @@ end
 local function beginEscSwitch(target)
     if not lastOpts then return end
     if switchState and switchState.target == target then return end
+    autoSwitchBlocked = false
     if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.progressDisplay then
         rfsuite.app.ui.progressDisplay("@i18n(app.modules.esc_tools.name)@", "@i18n(app.msg_loading)@", rfsuite.app.loaderSpeed.SLOW)
         switchLoadingActive = true
@@ -200,7 +202,7 @@ local function beginEscSwitch(target)
         maxAttempts = 5,
         lastAttempt = 0,
         retryDelay = 0.8,
-        readDelay = 1,          -- Time to wait after setting esc target before attempting to read esc details, to allow fbl time to switch esc and respond to msp
+        readDelay = 2,          -- Time to wait after setting esc target before attempting to read esc details, to allow fbl time to switch esc and respond to msp
         writeInFlight = false,
         writeStartedAt = 0,
         writeTimeout = 2.5
@@ -248,11 +250,17 @@ local function processEscSwitch()
             rfsuite.utils.log("ESC 4WIF set target failed after retries", "info")
         end
         switchState = nil
+        local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
         if switchLoadingActive then
             switchLoadingActive = false
             rfsuite.app.triggers.closeProgressLoader = true
         end
-        openSelector()
+        if tailMode == 0 then
+            autoSwitchBlocked = true
+            renderToolPage(lastOpts)
+        else
+            openSelector()
+        end
         return true
     end
 
@@ -555,6 +563,7 @@ local function openPage(opts)
     end
 
     lastOpts = {idx = parentIdx, title = title, folder = folder, script = script}
+    autoSwitchBlocked = false
 
     rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
@@ -658,6 +667,7 @@ local function wakeup()
                 end
             else
                 if not rfsuite.session.esc4WaySelected then
+                    if autoSwitchBlocked then return end
                     beginEscSwitch(rfsuite.session.esc4WayTarget or 0)
                     return
                 elseif rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
