@@ -15,6 +15,7 @@
 -- enableFunction (function(dashboard, rfsuite)): custom enable check
 -- isArmed (boolean): require armed/disarmed state
 -- flightModes (table): allowed modes, e.g. {"preflight","inflight"}
+-- align (string): "right" to pin the item to the rightmost slots
     
 local DEFAULT_TOOLBAR_ITEMS = {
     {
@@ -47,6 +48,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
         order = 500,
         icon = "widgets/dashboard/gfx/toolbar_app.png",
         iconSize = 55,
+        align = "right",
         isConnected = false,
         enableFunction = function(dashboard, rfsuite)
             return system.gotoScreen ~= nil
@@ -192,6 +194,16 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
         sort(sorted, function(a, b) return (a.order or 0) < (b.order or 0) end)
         cache.itemsRef = items
         cache.sortedItems = sorted
+        cache.leftItems = {}
+        cache.rightItems = {}
+        for i = 1, #sorted do
+            local it = sorted[i]
+            if it and it.align == "right" then
+                cache.rightItems[#cache.rightItems + 1] = it
+            else
+                cache.leftItems[#cache.leftItems + 1] = it
+            end
+        end
         cache.w = w
         cache.h = barH
         cache.font = FONT_XS
@@ -211,7 +223,16 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local iconPad = 6
     lcd.font(FONT_XS)
     for i = 1, slots do
-        local item = (cache.sortedItems and cache.sortedItems[i]) or items[i]
+        local item
+        local rightCount = cache.rightItems and #cache.rightItems or 0
+        local rightShown = (rightCount > slots) and slots or rightCount
+        local rightStart = slots - rightShown + 1
+        local rightOffset = max(0, rightCount - rightShown)
+        if rightShown > 0 and i >= rightStart then
+            item = cache.rightItems[rightOffset + (i - rightStart + 1)]
+        else
+            item = cache.leftItems and cache.leftItems[i]
+        end
         if item then
             local ix = x + (i - 1) * itemW
             local iw = itemW
