@@ -37,6 +37,10 @@ local esc2CheckPending = false
 local esc2CheckLastAttempt = 0
 local esc2CheckRetryDelay = 0.6
 local selectorPostConnectReady = nil
+local selectorGuardPending = false
+local selectorGuardOk = nil
+local selectorGuardStartedAt = 0
+local selectorGuardTimeout = 2.5
 local writeSeq = 0
 local lastWriteSeq = 0
 local last4WayWriteTarget
@@ -188,7 +192,7 @@ local function applySelectorButtonStates()
     if not inSelector then return end
     local fields = rfsuite.app and rfsuite.app.formFields
     if not fields then return end
-    local ready = isPostConnectComplete()
+    local ready = isPostConnectComplete() and selectorGuardOk == true
     local fieldEsc1 = fields[1]
     local fieldEsc2 = fields[2]
     if fieldEsc1 and fieldEsc1.enable then
@@ -217,6 +221,7 @@ end
 local function requestEsc2AvailabilityCheck()
     if esc2Available ~= nil or esc2CheckPending then return end
     if not isPostConnectComplete() then return end
+    if selectorGuardOk ~= true then return end
     local app = rfsuite.app
     if app and app.dialogs and app.dialogs.progressDisplay then return end
     local now = os.clock()
@@ -601,7 +606,16 @@ openSelector = function()
     rfsuite.session.esc4WaySetComplete = nil
 
     clearEscState()
-    setESC4WayMode(100)
+    selectorGuardPending = false
+    selectorGuardOk = nil
+    selectorGuardStartedAt = 0
+    local modeResetRequested = setESC4WayMode(100)
+    if modeResetRequested then
+        selectorGuardPending = true
+        selectorGuardStartedAt = os.clock()
+    else
+        selectorGuardOk = false
+    end
 
     rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
@@ -663,6 +677,7 @@ openSelector = function()
             options = FONT_S,
             paint = function() end,
             press = function()
+                if selectorGuardOk ~= true then return end
                 if not isPostConnectComplete() then return end
                 if item.target == 1 and esc2Available ~= true then return end
                 inSelector = false
@@ -754,12 +769,27 @@ local function wakeup()
 
     if processEscSwitch() then return end
     if inSelector then
+        if selectorGuardPending then
+            local now = os.clock()
+            if last4WayWriteTarget == 100 and last4WayWriteOk ~= nil then
+                selectorGuardOk = (last4WayWriteOk == true)
+                selectorGuardPending = false
+                selectorGuardStartedAt = 0
+                last4WayWriteOk = nil
+                applySelectorButtonStates()
+            elseif selectorGuardStartedAt > 0 and (now - selectorGuardStartedAt) >= selectorGuardTimeout then
+                selectorGuardOk = false
+                selectorGuardPending = false
+                selectorGuardStartedAt = 0
+                applySelectorButtonStates()
+            end
+        end
         local postConnectReady = isPostConnectComplete()
         if selectorPostConnectReady ~= postConnectReady then
             selectorPostConnectReady = postConnectReady
             applySelectorButtonStates()
         end
-        if postConnectReady and esc2Available == nil then
+        if postConnectReady and selectorGuardOk == true and esc2Available == nil then
             requestEsc2AvailabilityCheck()
         end
     end
