@@ -32,11 +32,49 @@ local switchState
 local escReadReadyAt
 local pendingChildOpen
 local switchLoadingActive = false
-local autoSwitchBlocked = false
+local esc2Available = nil
+local esc2CheckPending = false
+local esc2CheckLastAttempt = 0
+local esc2CheckRetryDelay = 0.6
+local selectorPostConnectReady = nil
 local writeSeq = 0
 local lastWriteSeq = 0
 local last4WayWriteTarget
 local last4WayWriteOk
+
+local function trimText(value)
+    if type(value) ~= "string" then return value end
+    return value:gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function escInitPathForFolder(folder)
+    return "app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"
+end
+
+local function escFolderExists(folder)
+    if type(folder) ~= "string" or folder == "" then return false end
+    return os.stat(escInitPathForFolder(folder)) ~= nil
+end
+
+local function resolveEscFolder(folder, title)
+    if escFolderExists(folder) then return folder end
+
+    if type(title) == "string" then
+        local tail = trimText(title:match("([^/]+)$"))
+        if escFolderExists(tail) then return tail end
+        if type(tail) == "string" and tail ~= "" then
+            local lowerTail = tail:lower()
+            if escFolderExists(lowerTail) then return lowerTail end
+            local compactTail = lowerTail:gsub("%s+", "")
+            if escFolderExists(compactTail) then return compactTail end
+        end
+    end
+
+    if lastOpts and escFolderExists(lastOpts.folder) then
+        return lastOpts.folder
+    end
+    return nil
+end
 
 -- Update the model/version header without creating overlapping widgets.
 -- Ethos keeps old widgets; re-adding at the same position can overlay text (e.g. "UNKNOWN" over the real value).
@@ -142,6 +180,80 @@ local function ensureTailMode(callback)
     if callback then callback(rfsuite.session and rfsuite.session.tailMode or nil) end
 end
 
+local function isPostConnectComplete()
+    return rfsuite.session and rfsuite.session.postConnectComplete == true
+end
+
+local function applySelectorButtonStates()
+    if not inSelector then return end
+    local fields = rfsuite.app and rfsuite.app.formFields
+    if not fields then return end
+    local ready = isPostConnectComplete()
+    local fieldEsc1 = fields[1]
+    local fieldEsc2 = fields[2]
+    if fieldEsc1 and fieldEsc1.enable then
+        fieldEsc1:enable(ready)
+    end
+    if fieldEsc2 and fieldEsc2.enable then
+        fieldEsc2:enable(ready and esc2Available == true)
+    end
+end
+
+local function updateEsc2AvailabilityFromCount(count)
+    local n = tonumber(count)
+    if n == nil then return false end
+    if rfsuite.session then rfsuite.session.esc4WayMotorCount = n end
+    esc2Available = n >= 2
+    return true
+end
+
+local function resolveEsc2AvailabilityFromSession()
+    if rfsuite.session and updateEsc2AvailabilityFromCount(rfsuite.session.esc4WayMotorCount) then
+        return true
+    end
+    return false
+end
+
+local function requestEsc2AvailabilityCheck()
+    if esc2Available ~= nil or esc2CheckPending then return end
+    if not isPostConnectComplete() then return end
+    local app = rfsuite.app
+    if app and app.dialogs and app.dialogs.progressDisplay then return end
+    local now = os.clock()
+    if esc2CheckLastAttempt > 0 and (now - esc2CheckLastAttempt) < esc2CheckRetryDelay then return end
+    esc2CheckLastAttempt = now
+
+    if resolveEsc2AvailabilityFromSession() then
+        applySelectorButtonStates()
+        return
+    end
+
+    local mspApi = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if not (mspApi and mspApi.load) then return end
+    local API = mspApi.load("MOTOR_CONFIG")
+    if not API then return end
+
+    esc2CheckPending = true
+    API.setCompleteHandler(function(self, buf)
+        esc2CheckPending = false
+        local count = API.readValue("motor_count_blheli")
+        if not updateEsc2AvailabilityFromCount(count) then
+            esc2Available = false
+        end
+        applySelectorButtonStates()
+    end)
+    API.setErrorHandler(function(self, err)
+        esc2CheckPending = false
+    end)
+    if rfsuite.utils and rfsuite.utils.uuid then
+        API.setUUID(rfsuite.utils.uuid())
+    else
+        API.setUUID(tostring(os.clock()))
+    end
+    local ok = API.read()
+    if not ok then esc2CheckPending = false end
+end
+
 local function setESC4WayMode(id)
     local target = id
     if target == nil then target = 0 end
@@ -184,7 +296,6 @@ end
 local function beginEscSwitch(target)
     if not lastOpts then return end
     if switchState and switchState.target == target then return end
-    autoSwitchBlocked = false
     if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.progressDisplay then
         rfsuite.app.ui.progressDisplay("@i18n(app.modules.esc_tools.name)@", "@i18n(app.msg_loading)@", rfsuite.app.loaderSpeed.SLOW)
         switchLoadingActive = true
@@ -250,17 +361,11 @@ local function processEscSwitch()
             rfsuite.utils.log("ESC 4WIF set target failed after retries", "info")
         end
         switchState = nil
-        local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
         if switchLoadingActive then
             switchLoadingActive = false
             rfsuite.app.triggers.closeProgressLoader = true
         end
-        if tailMode == 0 then
-            autoSwitchBlocked = true
-            renderToolPage(lastOpts)
-        else
-            openSelector()
-        end
+        openSelector()
         return true
     end
 
@@ -314,7 +419,22 @@ local function getButtonLayout()
 end
 
 local function loadEscConfig(folder)
-    ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
+    local initPath = escInitPathForFolder(folder)
+    local chunk, err = loadfile(initPath)
+    if not chunk then
+        if rfsuite.utils and rfsuite.utils.log then
+            rfsuite.utils.log("ESC config load failed: " .. tostring(initPath) .. " (" .. tostring(err) .. ")", "info")
+        end
+        return false
+    end
+    local ok, moduleOrErr = pcall(chunk)
+    if not ok or type(moduleOrErr) ~= "table" then
+        if rfsuite.utils and rfsuite.utils.log then
+            rfsuite.utils.log("ESC config init failed: " .. tostring(initPath) .. " (" .. tostring(moduleOrErr) .. ")", "info")
+        end
+        return false
+    end
+    ESC = moduleOrErr
 
     if ESC.mspapi ~= nil then
         local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
@@ -326,6 +446,7 @@ local function loadEscConfig(folder)
         simulatorResponse = ESC.simulatorResponse
         mspBytes = ESC.mspBytes
     end
+    return true
 end
 
 renderLoading = function(title)
@@ -470,6 +591,7 @@ openSelector = function()
     local prevTarget = rfsuite.session and rfsuite.session.esc4WayTarget or nil
 
     inSelector = true
+    selectorPostConnectReady = isPostConnectComplete()
     if switchLoadingActive then
         switchLoadingActive = false
         rfsuite.app.triggers.closeProgressLoader = true
@@ -479,6 +601,7 @@ openSelector = function()
     rfsuite.session.esc4WaySetComplete = nil
 
     clearEscState()
+    setESC4WayMode(100)
 
     rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
@@ -502,9 +625,15 @@ openSelector = function()
         {title = "ESC1", image = "basic.png", target = 0},
         {title = "ESC2", image = "advanced.png", target = 1},
     }
+    if esc2Available == nil then
+        resolveEsc2AvailabilityFromSession()
+    end
 
     if rfsuite.app.gfx_buttons["esc4way"] == nil then rfsuite.app.gfx_buttons["esc4way"] = {} end
     if rfsuite.preferences.menulastselected["esc4way"] == nil then rfsuite.preferences.menulastselected["esc4way"] = 1 end
+    if esc2Available ~= true and rfsuite.preferences.menulastselected["esc4way"] == 2 then
+        rfsuite.preferences.menulastselected["esc4way"] = 1
+    end
 
     local lc = 0
     local bx = 0
@@ -534,6 +663,8 @@ openSelector = function()
             options = FONT_S,
             paint = function() end,
             press = function()
+                if not isPostConnectComplete() then return end
+                if item.target == 1 and esc2Available ~= true then return end
                 inSelector = false
                 rfsuite.preferences.menulastselected["esc4way"] = childIdx
                 rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.VSLOW)
@@ -548,6 +679,8 @@ openSelector = function()
         if lc == numPerRow then lc = 0 end
     end
 
+    applySelectorButtonStates()
+    requestEsc2AvailabilityCheck()
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
@@ -558,34 +691,29 @@ local function openPage(opts)
     local folder = opts.folder
     local script = opts.script
 
-    if type(folder) ~= "string" or folder == "" then
-        folder = title
+    folder = resolveEscFolder(folder, title)
+    if not folder then
+        if rfsuite.utils and rfsuite.utils.log then
+            rfsuite.utils.log("ESC folder resolution failed for title: " .. tostring(title), "info")
+        end
+        rfsuite.app.triggers.closeProgressLoader = true
+        return
     end
 
     lastOpts = {idx = parentIdx, title = title, folder = folder, script = script}
-    autoSwitchBlocked = false
 
     rfsuite.app.lastIdx = parentIdx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    loadEscConfig(folder)
+    if not loadEscConfig(folder) then
+        rfsuite.app.triggers.closeProgressLoader = true
+        return
+    end
 
     if ESC and ESC.esc4way then
-        if rfsuite.session.tailMode == nil then
-            pendingTailModeResolve = false
-            ensureTailMode()
-            renderLoading(title)
-            return
-        end
-
-        local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
-        if tailMode >= 1 and not rfsuite.session.esc4WaySelected then
+        if not rfsuite.session.esc4WaySelected then
             openSelector()
-            return
-        end
-        if tailMode == 0 and not rfsuite.session.esc4WaySelected then
-            beginEscSwitch(rfsuite.session.esc4WayTarget or 0)
             return
         end
     end
@@ -595,18 +723,13 @@ end
 
 local function onNavMenu()
     if ESC and ESC.esc4way then
-        local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
-        if tailMode >= 1 and not inSelector then
-            setESC4WayMode(100)
+        if not inSelector then
             rfsuite.session.esc4WaySelected = nil
             rfsuite.session.esc4WaySet = nil
             rfsuite.session.esc4WaySetComplete = nil
             rfsuite.session.esc4WayTarget = nil
             openSelector()
             return true
-        end
-        if not inSelector then
-            setESC4WayMode(100)
         end
         rfsuite.session.esc4WaySelected = nil
         rfsuite.session.esc4WaySet = nil
@@ -630,6 +753,16 @@ end
 local function wakeup()
 
     if processEscSwitch() then return end
+    if inSelector then
+        local postConnectReady = isPostConnectComplete()
+        if selectorPostConnectReady ~= postConnectReady then
+            selectorPostConnectReady = postConnectReady
+            applySelectorButtonStates()
+        end
+        if postConnectReady and esc2Available == nil then
+            requestEsc2AvailabilityCheck()
+        end
+    end
 
     if pendingChildOpen then
         if (not switchState) and (not escReadReadyAt or os.clock() >= escReadReadyAt) then
@@ -642,9 +775,8 @@ local function wakeup()
 
     if pendingTailModeResolve then
         pendingTailModeResolve = false
-        local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
-        if ESC and ESC.esc4way and tailMode >= 1 and not rfsuite.session.esc4WaySelected then
-            openSelector()
+        if ESC and ESC.esc4way and not rfsuite.session.esc4WaySelected then
+            if not inSelector then openSelector() end
             return
         end
         renderToolPage(lastOpts)
@@ -655,25 +787,13 @@ local function wakeup()
 
     if foundESC == false then
         if ESC and ESC.esc4way then
-            local tailMode = rfsuite.session and rfsuite.session.tailMode or 0
-            if tailMode >= 1 then
-                if not rfsuite.session.esc4WaySelected then
-                    if not inSelector then openSelector() end
-                    return
-                end
-                if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
-                    if escReadReadyAt and os.clock() < escReadReadyAt then return end
-                    getESCDetails()
-                end
-            else
-                if not rfsuite.session.esc4WaySelected then
-                    if autoSwitchBlocked then return end
-                    beginEscSwitch(rfsuite.session.esc4WayTarget or 0)
-                    return
-                elseif rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
-                    if escReadReadyAt and os.clock() < escReadReadyAt then return end
-                    getESCDetails()
-                end
+            if not rfsuite.session.esc4WaySelected then
+                if not inSelector then openSelector() end
+                return
+            end
+            if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
+                if escReadReadyAt and os.clock() < escReadReadyAt then return end
+                getESCDetails()
             end
         else
             getESCDetails()
