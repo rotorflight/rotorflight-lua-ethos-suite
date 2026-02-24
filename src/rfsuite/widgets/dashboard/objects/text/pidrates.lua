@@ -56,9 +56,9 @@ local lcd = lcd
 local min = math.min
 local max = math.max
 local rep = string.rep
+local ipairs = ipairs
 local tostring = tostring
 local tonumber = tonumber
-local PROFILE_LABELS = {"1", "2", "3", "4", "5", "6"}
 
 local render = {}
 
@@ -134,16 +134,6 @@ local function ensureCfg(box)
         cfg.novalue = getParam(box, "novalue") or "-"
         cfg.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
         cfg.fontList = (utils.getFontListsForResolution().value_default) or {}
-        cfg.rowBaseFont = _G[cfg.rowfont] or _G[cfg.font] or FONT_L
-        cfg.rowHighlightFont = cfg.rowBaseFont
-        if cfg.highlightlarger and type(cfg.fontList) == "table" and #cfg.fontList > 0 then
-            for i = 1, #cfg.fontList - 1 do
-                if cfg.fontList[i] == cfg.rowBaseFont then
-                    cfg.rowHighlightFont = cfg.fontList[i + 1]
-                    break
-                end
-            end
-        end
 
         box._cfg = cfg
     end
@@ -181,13 +171,22 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cfg
-    if not c then return end
+    local c = box._cfg or {}
 
     utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, nil, nil, c.font, c.valuealign, box._dynamicTextColor or c.defaultTextColor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
 
-    local baseFont = c.rowBaseFont or FONT_L
-    local largerFont = c.rowHighlightFont or baseFont
+    local fontList = c.fontList or {}
+    local baseFont = _G[c.rowfont] or _G[c.font] or FONT_L
+
+    local baseIndex
+    for i, f in ipairs(fontList) do
+        if f == baseFont then
+            baseIndex = i;
+            break
+        end
+    end
+    local largerFont = baseFont
+    if c.highlightlarger and baseIndex and baseIndex < #fontList then largerFont = fontList[baseIndex + 1] end
 
     lcd.font(baseFont)
     local _, baseHeight = lcd.getTextSize("8")
@@ -220,7 +219,7 @@ function render.paint(x, y, w, h, box)
 
     for i = 1, count do
         local cx = startX + (i - 1) * spacing
-        local text = PROFILE_LABELS[i] or tostring(i)
+        local text = tostring(i)
         local isActive = (activeIndex ~= nil) and (activeIndex == i)
         local currentFont = (isActive and c.highlightlarger and largerFont) or baseFont
 

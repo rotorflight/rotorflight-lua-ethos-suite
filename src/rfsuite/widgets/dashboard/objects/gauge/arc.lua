@@ -126,11 +126,8 @@ end
 function render.wakeup(box)
     local telemetry = rfsuite.tasks.telemetry
 
-    local c = box._cache
-    if not c then
-        c = {}
-        box._cache = c
-    end
+    local c = box._cache or {}
+    box._cache = c
 
     local cfg = box._cfg
     if not cfg then
@@ -281,8 +278,7 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache
-    if not c then return end
+    local c = box._cache or {}
 
     local g = box._geom
     local needGeo = (not g) or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.thickness ~= (c.thickness or 0) or g.gaugepadding ~= (c.gaugepadding or 0) or g.gaugepaddingbottom ~= (c.gaugepaddingbottom or 0)
