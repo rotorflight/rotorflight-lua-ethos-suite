@@ -272,4 +272,4 @@ Rotorflight is **open source** and available free of charge, with no warranties.
 
 ## Donate
 
-If you find Rotorflight useful, please consider [supporting the development by donating](https://www.paypal.com/donate/?hosted_button_id=LLP4MT8C8TPVJ) to the Rotorflight Project.
+If you find Rotorflight useful, please consider [supporting the development by donating](https://opencollective.com/rotorflight/donate) to the Rotorflight Project.
