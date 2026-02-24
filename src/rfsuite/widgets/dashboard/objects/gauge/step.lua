@@ -131,44 +131,48 @@ function render.wakeup(box)
 
     box._currentDisplayValue = percent
 
-    box._cache = {
-        value = value,
-        displayValue = displayValue,
-        unit = unit,
-        min = min,
-        max = max,
-        percent = percent,
-        title = getParam(box, "title"),
-        titlepos = getParam(box, "titlepos"),
-        titlefont = getParam(box, "titlefont"),
-        titlespacing = getParam(box, "titlespacing"),
-        titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding = getParam(box, "titlepadding"),
-        titlepaddingleft = getParam(box, "titlepaddingleft"),
-        titlepaddingright = getParam(box, "titlepaddingright"),
-        titlepaddingtop = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        stepcount = getParam(box, "stepcount") or 4,
-        fillcolor = fillcolor,
-        fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
-        bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        font = getParam(box, "font"),
-        valuealign = getParam(box, "valuealign"),
-        valuepadding = getParam(box, "valuepadding"),
-        valuepaddingleft = getParam(box, "valuepaddingleft"),
-        valuepaddingright = getParam(box, "valuepaddingright"),
-        valuepaddingtop = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        barpadding = getParam(box, "barpadding"),
-        barpaddingleft = getParam(box, "barpaddingleft"),
-        barpaddingright = getParam(box, "barpaddingright"),
-        barpaddingtop = getParam(box, "barpaddingtop"),
-        barpaddingbottom = getParam(box, "barpaddingbottom"),
-        textcolor = textcolor,
-        hidevalue = getParam(box, "hidevalue"),
-        thresholds = thresholds,
-        stepgap = getParam(box, "stepgap") or 1
-    }
+    local c = box._cache
+    if not c then
+        c = {}
+        box._cache = c
+    end
+
+    c.value = value
+    c.displayValue = displayValue
+    c.unit = unit
+    c.min = min
+    c.max = max
+    c.percent = percent
+    c.title = getParam(box, "title")
+    c.titlepos = getParam(box, "titlepos")
+    c.titlefont = getParam(box, "titlefont")
+    c.titlespacing = getParam(box, "titlespacing")
+    c.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+    c.titlepadding = getParam(box, "titlepadding")
+    c.titlepaddingleft = getParam(box, "titlepaddingleft")
+    c.titlepaddingright = getParam(box, "titlepaddingright")
+    c.titlepaddingtop = getParam(box, "titlepaddingtop")
+    c.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+    c.stepcount = getParam(box, "stepcount") or 4
+    c.fillcolor = fillcolor
+    c.fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    c.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    c.font = getParam(box, "font")
+    c.valuealign = getParam(box, "valuealign")
+    c.valuepadding = getParam(box, "valuepadding")
+    c.valuepaddingleft = getParam(box, "valuepaddingleft")
+    c.valuepaddingright = getParam(box, "valuepaddingright")
+    c.valuepaddingtop = getParam(box, "valuepaddingtop")
+    c.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+    c.barpadding = getParam(box, "barpadding")
+    c.barpaddingleft = getParam(box, "barpaddingleft")
+    c.barpaddingright = getParam(box, "barpaddingright")
+    c.barpaddingtop = getParam(box, "barpaddingtop")
+    c.barpaddingbottom = getParam(box, "barpaddingbottom")
+    c.textcolor = textcolor
+    c.hidevalue = getParam(box, "hidevalue")
+    c.thresholds = thresholds
+    c.stepgap = getParam(box, "stepgap") or 1
 end
 
 function render.paint(x, y, w, h, box)
