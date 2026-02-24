@@ -80,6 +80,8 @@ dashboard.toolbarVisible = dashboard.toolbarVisible or false
 dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
 
+local LOADER_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+
 
 
 dashboard.DEFAULT_THEME = "system/default"
@@ -310,19 +312,23 @@ function dashboard.overlaystatic(x, y, w, h, txt)
     end
 
     local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
-    local opts = {}
+    local opts = dashboard._overlayStaticOpts
+    if not opts then
+        opts = {}
+        dashboard._overlayStaticOpts = opts
+    end
     if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
         opts.panelHeightRatio = 0.5
-        opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+        opts.fonts = LOADER_FONTS
     elseif themeLoader == 1 then
         opts.panelWidthRatio = 0.7
         opts.panelHeightRatio = 0.5
-        opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+        opts.fonts = LOADER_FONTS
     elseif themeLoader == 2 then
         opts.panelWidthRatio = 0.9
         opts.panelHeightRatio = 0.8
-        opts.fonts = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+        opts.fonts = LOADER_FONTS
     end
 
     -- This loader is intended to be "static". Keep the subtle dots by default
@@ -341,7 +347,15 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     local q = dashboard._overlayQueue
 
     local logmsg = rfsuite.tasks and rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
-    if logmsg and type(logmsg) ~= "table" then logmsg = {tostring(logmsg)} end
+    if logmsg and type(logmsg) ~= "table" then
+        local single = dashboard._overlaySingleLine
+        if not single then
+            single = {}
+            dashboard._overlaySingleLine = single
+        end
+        single[1] = tostring(logmsg)
+        logmsg = single
+    end
     if not dashboard.loaders or not dashboard.loaders.logsLoader then return end
 
     if not logmsg then
@@ -367,7 +381,11 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     end
 
     local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
-    local opts = {}
+    local opts = dashboard._overlayLogOpts
+    if not opts then
+        opts = {}
+        dashboard._overlayLogOpts = opts
+    end
     if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
         opts.panelHeightRatio = 0.5   
@@ -430,7 +448,11 @@ end
 
 
 function dashboard.loadAllObjects(boxConfigs)
-    dashboard.objectsByType = {}
+    local objectsByType = dashboard.objectsByType or {}
+    for k in pairs(objectsByType) do
+        objectsByType[k] = nil
+    end
+    dashboard.objectsByType = objectsByType
 
     for _, box in ipairs(boxConfigs or {}) do
         local typ = box and box.type
@@ -455,7 +477,7 @@ function dashboard.loadAllObjects(boxConfigs)
             end
 
             if dashboard._moduleCache[typ] then
-                dashboard.objectsByType[typ] = dashboard._moduleCache[typ]
+                objectsByType[typ] = dashboard._moduleCache[typ]
             end
         end
     end
@@ -567,16 +589,15 @@ function dashboard.renderLayout(widget, config)
     local boxes = resolve(config.boxes or layout.boxes or {})
     local headerBoxes = resolve(config.header_boxes or {})
 
-    if (#boxes + #headerBoxes) ~= lastLoadedBoxCount then
-        local allBoxes = {}
-        for _, b in ipairs(boxes) do insert(allBoxes, b) end
-        for _, b in ipairs(headerBoxes) do insert(allBoxes, b) end
-        dashboard.loadAllObjects(allBoxes)
-        lastLoadedBoxCount = #boxes + #headerBoxes
-    end
-
     local function makeBoxesSig(bx, hbx)
-        local t = {}
+        local t = dashboard._boxSigParts
+        if not t then
+            t = {}
+            dashboard._boxSigParts = t
+        end
+        for i = #t, 1, -1 do
+            t[i] = nil
+        end
         for _, b in ipairs(bx or {}) do t[#t + 1] = tostring(b.type or "") end
         for _, b in ipairs(hbx or {}) do t[#t + 1] = tostring(b.type or "") end
         sort(t)
@@ -610,7 +631,15 @@ function dashboard.renderLayout(widget, config)
     local W = adjustDimension(W_raw, cols, cols - 1)
     local H = adjustDimension(H_raw, rows, rows + 1)
     local xOffset = floor((W_raw - W) / 2)
-    dashboard._layoutBounds = {x = xOffset, y = headerH, w = W, h = H}
+    local layoutBounds = dashboard._layoutBounds
+    if not layoutBounds then
+        layoutBounds = {}
+        dashboard._layoutBounds = layoutBounds
+    end
+    layoutBounds.x = xOffset
+    layoutBounds.y = headerH
+    layoutBounds.w = W
+    layoutBounds.h = H
 
     local contentW = W - ((cols - 1) * pad)
     local contentH = H - ((rows + 1) * pad)
@@ -619,8 +648,9 @@ function dashboard.renderLayout(widget, config)
 
     utils.setBackgroundColourBasedOnTheme()
 
-    for i = #dashboard.boxRects, 1, -1 do dashboard.boxRects[i] = nil end
-    for i = #scheduledBoxIndices, 1, -1 do scheduledBoxIndices[i] = nil end
+    local rectCount = 0
+    local scheduledCount = 0
+    local boxRects = dashboard.boxRects
 
     for _, box in ipairs(boxes) do
         if box then
@@ -629,49 +659,89 @@ function dashboard.renderLayout(widget, config)
             local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
             if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
 
-            local rect = {x = x, y = y, w = w, h = h, box = box, isHeader = false}
-            insert(dashboard.boxRects, rect)
+            rectCount = rectCount + 1
+            local rect = boxRects[rectCount]
+            if not rect then
+                rect = {}
+                boxRects[rectCount] = rect
+            end
+            rect.x = x
+            rect.y = y
+            rect.w = w
+            rect.h = h
+            rect.box = box
+            rect.isHeader = false
 
-            local rectIndex = #dashboard.boxRects
+            local rectIndex = rectCount
             dashboard._objectDirty[rectIndex] = nil
 
             if box.type then
                 local obj = dashboard.objectsByType[box.type]
-                if obj and obj.scheduler and obj.wakeup then insert(scheduledBoxIndices, rectIndex) end
+                if obj and obj.scheduler and obj.wakeup then
+                    scheduledCount = scheduledCount + 1
+                    scheduledBoxIndices[scheduledCount] = rectIndex
+                end
             end
         end
     end
 
     if isFullScreen then
-        local headerGeoms = {}
+        local headerGeoms = dashboard._headerGeoms or {}
+        dashboard._headerGeoms = headerGeoms
         local rightmost_idx, rightmost_x = 1, 0
+        local headerBoxesCount = #headerBoxes
         for idx, box in ipairs(headerBoxes) do
             if box then
                 local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
                 local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
-                headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
+                local geom = headerGeoms[idx]
+                if not geom then
+                    geom = {}
+                    headerGeoms[idx] = geom
+                end
+                geom.x = x
+                geom.y = y
+                geom.w = w
+                geom.h = h
+                geom.box = box
                 if x > rightmost_x then
                     rightmost_idx = idx
                     rightmost_x = x
                 end
             end
         end
+        for i = headerBoxesCount + 1, #headerGeoms do headerGeoms[i] = nil end
 
         for idx, geom in ipairs(headerGeoms) do
             local w = geom.w
             if idx == rightmost_idx then w = W_raw - geom.x end
 
-            local rect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
-            insert(dashboard.boxRects, rect)
-            local idx_rect = #dashboard.boxRects
+            rectCount = rectCount + 1
+            local rect = boxRects[rectCount]
+            if not rect then
+                rect = {}
+                boxRects[rectCount] = rect
+            end
+            rect.x = geom.x
+            rect.y = geom.y
+            rect.w = w
+            rect.h = geom.h
+            rect.box = geom.box
+            rect.isHeader = true
+            local idx_rect = rectCount
             dashboard._objectDirty[idx_rect] = nil
 
             if geom.box.type then
                 local obj = dashboard.objectsByType[geom.box.type]
-                if obj and obj.scheduler and obj.wakeup then insert(scheduledBoxIndices, idx_rect) end
+                if obj and obj.scheduler and obj.wakeup then
+                    scheduledCount = scheduledCount + 1
+                    scheduledBoxIndices[scheduledCount] = idx_rect
+                end
             end
         end
     end
+    for i = rectCount + 1, #boxRects do boxRects[i] = nil end
+    for i = scheduledCount + 1, #scheduledBoxIndices do scheduledBoxIndices[i] = nil end
 
     if not objectWakeupsPerCycle or #dashboard.boxRects ~= lastBoxRectsCount then
         local count = #dashboard.boxRects
@@ -745,16 +815,27 @@ function dashboard.renderLayout(widget, config)
         local h_boxH = contentH / h_rows
 
         local rightmost_idx, rightmost_x = 1, 0
-        local headerGeoms = {}
+        local headerGeoms = dashboard._headerGeomsPaint or {}
+        dashboard._headerGeomsPaint = headerGeoms
         for idx, box in ipairs(headerBoxes) do
             local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
             local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
-            headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
+            local geom = headerGeoms[idx]
+            if not geom then
+                geom = {}
+                headerGeoms[idx] = geom
+            end
+            geom.x = x
+            geom.y = y
+            geom.w = w
+            geom.h = h
+            geom.box = box
             if x > rightmost_x then
                 rightmost_idx = idx
                 rightmost_x = x
             end
         end
+        for i = (#headerBoxes) + 1, #headerGeoms do headerGeoms[i] = nil end
 
         for idx, geom in ipairs(headerGeoms) do
             local w = geom.w
