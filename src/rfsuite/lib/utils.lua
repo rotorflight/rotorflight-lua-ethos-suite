@@ -214,6 +214,32 @@ function utils.dir_exists(base, name, noCache)
     return false
 end
 
+function utils.file_size(path)
+    if not path then return nil end
+
+    local stat = os.stat(path)
+    if not stat then return nil end
+
+    local size = stat.size or stat.length or stat.fileSize or stat.filesize
+    if type(size) ~= "number" then return nil end
+
+    return size
+end
+
+function utils.isImageTooLarge(path, maxBytes)
+    if type(path) ~= "string" or path == "" then return false end
+    local limit = maxBytes
+    if type(limit) ~= "number" then
+        limit = (rfsuite.config and rfsuite.config.maxModelImageBytes) or 350 * 1024
+    end
+    if type(limit) ~= "number" or limit <= 0 then return false end
+
+    local size = utils.file_size(path)
+    if not size then return false end
+
+    return size > limit
+end
+
 function utils.file_exists(path, noCache)
     if not path then return false end
 
@@ -390,16 +416,36 @@ utils._imageBitmapCache = {}
 
 function utils.loadImage(image1, image2, image3)
 
-    local function getCachedBitmap(key, tryPaths)
-        if not key then return nil end
+    local function getCachedBitmap(key)
+        if type(key) ~= "string" or key == "" then return nil end
         if utils._imageBitmapCache[key] then return utils._imageBitmapCache[key] end
 
         local path = utils._imagePathCache[key]
         if not path then
-            for _, p in ipairs(tryPaths) do
-                if rfsuite.utils.file_exists(p) then
-                    path = p
-                    break
+            local p1 = key
+            if rfsuite.utils.file_exists(p1) then
+                path = p1
+            else
+                local p2 = "BITMAPS:" .. key
+                if rfsuite.utils.file_exists(p2) then
+                    path = p2
+                else
+                    local p3 = "SYSTEM:" .. key
+                    if rfsuite.utils.file_exists(p3) then
+                        path = p3
+                    else
+                        if key:match("%.png$") then
+                            local p4 = key:gsub("%.png$", ".bmp")
+                            if rfsuite.utils.file_exists(p4) then
+                                path = p4
+                            end
+                        elseif key:match("%.bmp$") then
+                            local p4 = key:gsub("%.bmp$", ".png")
+                            if rfsuite.utils.file_exists(p4) then
+                                path = p4
+                            end
+                        end
+                    end
                 end
             end
             utils._imagePathCache[key] = path
@@ -411,18 +457,7 @@ function utils.loadImage(image1, image2, image3)
         return bmp
     end
 
-    local function candidates(img)
-        if type(img) ~= "string" then return {} end
-        local out = {img, "BITMAPS:" .. img, "SYSTEM:" .. img}
-        if img:match("%.png$") then
-            out[#out + 1] = img:gsub("%.png$", ".bmp")
-        elseif img:match("%.bmp$") then
-            out[#out + 1] = img:gsub("%.bmp$", ".png")
-        end
-        return out
-    end
-
-    return getCachedBitmap(image1, candidates(image1)) or getCachedBitmap(image2, candidates(image2)) or getCachedBitmap(image3, candidates(image3))
+    return getCachedBitmap(image1) or getCachedBitmap(image2) or getCachedBitmap(image3)
 end
 
 function utils.simSensors(id)
@@ -605,6 +640,23 @@ end
 function utils.stringInArray(array, s)
     for i, value in ipairs(array) do if value == s then return true end end
     return false
+end
+
+local uuidCounter = 0
+
+function utils.uuid(prefix)
+    uuidCounter = uuidCounter + 1
+    if uuidCounter > 2147483647 then uuidCounter = 1 end
+
+    local now = os.clock()
+    local seconds = math.floor(now)
+    local millis = math.floor((now - seconds) * 1000)
+
+    if prefix and prefix ~= "" then
+        return string.format("%s-%d-%03d-%d", prefix, seconds, millis, uuidCounter)
+    end
+
+    return string.format("%d-%03d-%d", seconds, millis, uuidCounter)
 end
 
 return utils

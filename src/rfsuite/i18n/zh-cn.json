@@ -6942,12 +6942,40 @@
           "reverse_text": false,
           "translation": "周期桨距限制"
         },
+        "disable_swash_override": {
+          "english": "Disable swash setup mode",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disable swash setup mode"
+        },
+        "disable_swash_override_message": {
+          "english": "Disable swash setup mode and return mixer control to the flight controller.",
+          "max_length": 75,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disable swash setup mode and return mixer control to the flight controller."
+        },
         "elevator_direction": {
           "english": "Elevator Direction",
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "升降方向"
+        },
+        "enable_swash_override": {
+          "english": "Enable swash setup mode",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enable swash setup mode"
+        },
+        "enable_swash_override_message": {
+          "english": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller.",
+          "max_length": 159,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller."
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -6990,6 +7018,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "旋翼盘"
+        },
+        "swash_override": {
+          "english": "Swash Setup Mode",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Swash Setup Mode"
+        },
+        "swash_override_disabling": {
+          "english": "Disabling swash setup mode...",
+          "max_length": 29,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disabling swash setup mode..."
+        },
+        "swash_override_enabling": {
+          "english": "Enabling swash setup mode...",
+          "max_length": 28,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enabling swash setup mode..."
         },
         "swash_phase": {
           "english": "Phase Angle",
@@ -10083,6 +10132,13 @@
           "reverse_text": false,
           "translation": "大"
         },
+        "txt_logevents": {
+          "english": "Log events",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Log events"
+        },
         "txt_loglevel": {
           "english": "Log level",
           "max_length": 9,
@@ -10103,6 +10159,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "日志 MSP 数据"
+        },
+        "txt_msprwlog": {
+          "english": "Log MSP read/write",
+          "max_length": 18,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Log MSP read/write"
         },
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",
@@ -10208,6 +10271,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "文本"
+        },
+        "txt_toolbar_timeout": {
+          "english": "Dash-bar auto-close",
+          "max_length": 19,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Dash-bar auto-close"
         },
         "voltage": {
           "english": "Voltage",
@@ -10443,6 +10513,7 @@
       "reverse_text": false,
       "translation": "模型已更改，重置会话"
     },
+    "msg_not_available_now": "Not available right now.",
     "msg_please_disarm_to_save": {
       "english": "Please disarm to save",
       "max_length": 21,
@@ -10534,6 +10605,7 @@
       "reverse_text": false,
       "translation": "遥测类型更改为"
     },
+    "msg_unavailable": "Unavailable",
     "msg_waiting_for_connection": {
       "english": "Waiting for connection",
       "max_length": 22,
@@ -10808,6 +10880,13 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "油门 %"
+    },
+    "vfr": {
+      "english": "VFR",
+      "max_length": 3,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "VFR"
     },
     "voltage": {
       "english": "Voltage",

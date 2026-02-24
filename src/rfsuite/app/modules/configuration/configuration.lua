@@ -12,6 +12,8 @@ local FEATURE_BIT_LED_STRIP = 16
 local FEATURE_BIT_CMS = 19
 
 local PID_LOOP_DENOMS = {1, 2, 3, 4}
+local LOAD_STALL_TIMEOUT_SECONDS = 5.5
+local LOAD_MAX_RETRIES = 1
 
 local state = {
     title = "@i18n(app.modules.configuration.name)@",
@@ -23,6 +25,11 @@ local state = {
     loadError = nil,
     saveError = nil,
     pendingReads = 0,
+    loadStartedAt = 0,
+    loadProgressAt = 0,
+    loadRetryCount = 0,
+    loadGeneration = 0,
+    closeProgressPending = false,
     currentName = "",
     currentPidLoop = 1,
     currentFeatures = 0,
@@ -187,23 +194,77 @@ local function render()
 end
 
 local function onReadDone()
+    if state.pendingReads <= 0 then return end
     state.pendingReads = state.pendingReads - 1
+    state.loadProgressAt = os.clock()
     if state.pendingReads > 0 then return end
     state.loading = false
     state.loaded = true
+    state.loadStartedAt = 0
+    state.loadProgressAt = 0
+    state.loadRetryCount = 0
+    state.closeProgressPending = true
     state.needsRender = true
-    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function startRead(api, opts, generation)
+    local options = opts or {}
+    local settled = false
+    local requestGeneration = generation or state.loadGeneration
+
+    local function settle()
+        if settled then return end
+        settled = true
+        if requestGeneration ~= state.loadGeneration then return end
+        onReadDone()
+    end
+
+    if not api then
+        if requestGeneration ~= state.loadGeneration then return end
+        if options.apiUnavailableError then
+            state.loadError = state.loadError or options.apiUnavailableError
+        end
+        settle()
+        return
+    end
+
+    api.setCompleteHandler(function()
+        if requestGeneration ~= state.loadGeneration then return end
+        if options.onComplete then options.onComplete(api) end
+        settle()
+    end)
+
+    api.setErrorHandler(function()
+        if requestGeneration ~= state.loadGeneration then return end
+        if options.readError then
+            state.loadError = state.loadError or options.readError
+        end
+        settle()
+    end)
+
+    local ok = api.read()
+    if not ok then
+        if options.readError then
+            state.loadError = state.loadError or options.readError
+        end
+        settle()
+    end
 end
 
 local function startLoad()
     if state.loading or state.saving then return end
 
+    state.loadGeneration = state.loadGeneration + 1
+    local generation = state.loadGeneration
     state.loading = true
     state.loaded = false
     state.pendingReads = 4
+    state.loadStartedAt = os.clock()
+    state.loadProgressAt = state.loadStartedAt
     state.loadError = nil
     state.saveError = nil
     state.dirty = false
+    state.closeProgressPending = false
     state.currentName = ""
     state.currentPidLoop = 1
     state.currentFeatures = 0
@@ -213,85 +274,65 @@ local function startLoad()
 
     rfsuite.app.ui.progressDisplay("@i18n(app.modules.configuration.name)@", "@i18n(app.modules.configuration.progress_loading)@", 0.08)
 
-    local nameApi = rfsuite.tasks.msp.api.load("NAME")
-    if not nameApi then
-        state.loadError = "@i18n(app.modules.configuration.error_name_api_unavailable)@"
-        onReadDone()
-    else
-        nameApi.setCompleteHandler(function()
-            local parsed = nameApi.data() and nameApi.data().parsed or nil
+    startRead(rfsuite.tasks.msp.api.load("NAME"), {
+        apiUnavailableError = "@i18n(app.modules.configuration.error_name_api_unavailable)@",
+        readError = "@i18n(app.modules.configuration.error_name_read_failed)@",
+        onComplete = function(api)
+            local parsed = api.data() and api.data().parsed or nil
             state.currentName = parsed and tostring(parsed.name or "") or ""
-            onReadDone()
-        end)
-        nameApi.setErrorHandler(function()
-            state.loadError = state.loadError or "@i18n(app.modules.configuration.error_name_read_failed)@"
-            onReadDone()
-        end)
-        nameApi.read()
-    end
+        end
+    }, generation)
 
-    local advApi = rfsuite.tasks.msp.api.load("ADVANCED_CONFIG")
-    if not advApi then
-        state.loadError = state.loadError or "@i18n(app.modules.configuration.error_advanced_api_unavailable)@"
-        onReadDone()
-    else
-        advApi.setCompleteHandler(function()
-            local parsed = advApi.data() and advApi.data().parsed or nil
+    startRead(rfsuite.tasks.msp.api.load("ADVANCED_CONFIG"), {
+        apiUnavailableError = "@i18n(app.modules.configuration.error_advanced_api_unavailable)@",
+        readError = "@i18n(app.modules.configuration.error_advanced_read_failed)@",
+        onComplete = function(api)
+            local parsed = api.data() and api.data().parsed or nil
             state.currentPidLoop = tonumber(parsed and parsed.pid_process_denom or 1) or 1
-            onReadDone()
-        end)
-        advApi.setErrorHandler(function()
-            state.loadError = state.loadError or "@i18n(app.modules.configuration.error_advanced_read_failed)@"
-            onReadDone()
-        end)
-        advApi.read()
-    end
+        end
+    }, generation)
 
-    local featureApi = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
-    if not featureApi then
-        state.loadError = state.loadError or "@i18n(app.modules.configuration.error_feature_api_unavailable)@"
-        onReadDone()
-    else
-        featureApi.setCompleteHandler(function()
-            local parsed = featureApi.data() and featureApi.data().parsed or nil
+    startRead(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"), {
+        apiUnavailableError = "@i18n(app.modules.configuration.error_feature_api_unavailable)@",
+        readError = "@i18n(app.modules.configuration.error_feature_read_failed)@",
+        onComplete = function(api)
+            local parsed = api.data() and api.data().parsed or nil
             state.currentFeatures = tonumber(parsed and parsed.enabledFeatures or 0) or 0
-            onReadDone()
-        end)
-        featureApi.setErrorHandler(function()
-            state.loadError = state.loadError or "@i18n(app.modules.configuration.error_feature_read_failed)@"
-            onReadDone()
-        end)
-        featureApi.read()
-    end
+        end
+    }, generation)
 
-    local boardApi = rfsuite.tasks.msp.api.load("BOARD_INFO")
-    if not boardApi then
-        onReadDone()
-    else
-        boardApi.setCompleteHandler(function()
-            local parsed = boardApi.data() and boardApi.data().parsed or nil
-            local sampleRateHz = tonumber(parsed and parsed.gyro_sample_rate_hz or 0) or 0
-            if sampleRateHz > 0 then state.pidBaseHz = sampleRateHz end
-            onReadDone()
-        end)
-        boardApi.setErrorHandler(function() onReadDone() end)
-        boardApi.read()
-    end
-
-    state.pendingReads = state.pendingReads + 1
-    local statusApi = rfsuite.tasks.msp.api.load("STATUS")
-    if not statusApi then
-        onReadDone()
-    else
-        statusApi.setCompleteHandler(function()
-            local parsed = statusApi.data() and statusApi.data().parsed or nil
+    startRead(rfsuite.tasks.msp.api.load("STATUS"), {
+        onComplete = function(api)
+            local parsed = api.data() and api.data().parsed or nil
             local delta = tonumber(parsed and parsed.task_delta_time_gyro or 0) or 0
             if delta > 0 then state.gyroDeltaUs = delta end
-            onReadDone()
-        end)
-        statusApi.setErrorHandler(function() onReadDone() end)
-        statusApi.read()
+        end
+    }, generation)
+end
+
+local function recoverStalledLoad()
+    if not state.loading or state.pendingReads <= 0 then return end
+
+    local now = os.clock()
+    if state.loadProgressAt <= 0 then state.loadProgressAt = now end
+    if (now - state.loadProgressAt) < LOAD_STALL_TIMEOUT_SECONDS then return end
+
+    state.loading = false
+    state.loaded = false
+    state.pendingReads = 0
+    state.loadStartedAt = 0
+    state.loadProgressAt = 0
+
+    if state.loadRetryCount < LOAD_MAX_RETRIES then
+        state.loadRetryCount = state.loadRetryCount + 1
+        startLoad()
+        return
     end
+
+    state.loadGeneration = state.loadGeneration + 1
+    state.loadError = state.loadError or "MSP read timeout"
+    state.closeProgressPending = true
+    state.needsRender = true
 end
 
 local function saveDone()
@@ -411,13 +452,19 @@ local function openPage(opts)
     rfsuite.app.lastTitle = state.title
     rfsuite.app.lastScript = opts.script
     rfsuite.session.lastPage = opts.script
+    state.loadRetryCount = 0
     startLoad()
 end
 
 local function wakeup()
+    recoverStalledLoad()
     if state.needsRender then
         render()
         state.needsRender = false
+        if state.closeProgressPending then
+            state.closeProgressPending = false
+            rfsuite.app.triggers.closeProgressLoader = true
+        end
     end
     updateSaveButtonState()
 end

@@ -4,6 +4,7 @@
 ]] --
 
 local MSP_API = "ESC_PARAMETERS_XDFLY"
+local MSP_API_VERSION = {12, 0, 8}
 local toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@"
 
 local function getPageValue(page, index) return page[index] end
@@ -64,4 +65,4 @@ local function getActiveFields(inputTable)
 
 end
 
-return {mspapi = MSP_API, toolName = toolName, image = "xdfly.png", powerCycle = false, mspBufferCache = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, getActiveFields = getActiveFields}
+return {mspapi = MSP_API, apiversion = MSP_API_VERSION, toolName = toolName, image = "xdfly.png", powerCycle = false, mspBufferCache = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, getActiveFields = getActiveFields}

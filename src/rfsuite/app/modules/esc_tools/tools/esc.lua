@@ -43,6 +43,9 @@ local function findMFG()
                     rfsuite.utils.log("Invalid configuration in " .. init_path)
                 else
                     mconfig['folder'] = v
+                    if mconfig.apiversion and rfsuite.session.apiVersion and not rfsuite.utils.apiVersionCompare(">=", mconfig.apiversion) then
+                        mconfig.disabled = true
+                    end
                     table.insert(mfgsList, mconfig)
                 end
             end

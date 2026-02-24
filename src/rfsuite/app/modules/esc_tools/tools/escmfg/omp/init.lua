@@ -4,6 +4,7 @@
 ]] --
 
 local MSP_API = "ESC_PARAMETERS_OMP"
+local MSP_API_VERSION = {12, 0, 9}
 local toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@"
 
 local function getPageValue(page, index) return page[index] end
@@ -64,4 +65,4 @@ local function getActiveFields(inputTable)
 
 end
 
-return {mspapi = MSP_API, toolName = toolName, image = "omp.png", powerCycle = false, mspBufferCache = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, getActiveFields = getActiveFields}
+return {mspapi = MSP_API, apiversion = MSP_API_VERSION, toolName = toolName, image = "omp.png", powerCycle = false, mspBufferCache = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, getActiveFields = getActiveFields}

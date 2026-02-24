@@ -112,7 +112,7 @@ local function openPage(opts)
 end
 
 local function event(widget, category, value)
-    if value == 35 or category == 3 then
+    if value == KEY_DOWN_BREAK or category == EVT_CLOSE then
         pageRuntime.openMenuContext()
         return true
     end
