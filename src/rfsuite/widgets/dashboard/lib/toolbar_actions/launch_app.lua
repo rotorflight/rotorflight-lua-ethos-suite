@@ -7,9 +7,8 @@ local M = {}
 
 
 function M.launchApp()
-    rfsuite.utils.print_r(rfsuite.sysIndex)
     if system.gotoScreen then
-        system.gotoScreen(2, 1 )   --second param is the index - but what is it?
+        system.gotoScreen(2, 5 )   --second param is the index - but what is it?
     end
 end
 
