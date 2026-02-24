@@ -310,4 +310,10 @@ return {
         mandatory = false,
         stats = false,
     },
+
+    battery_type = {
+        name = "@i18n(sensors.battery_type)@",
+        mandatory = true,
+        stats = false,
+    },
 }

@@ -45,6 +45,7 @@ return {
     adj_v = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}},
     pid_profile = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}},
     rate_profile = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}},
+    batter_type = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1214}},
 
     -- Control
     throttle_percent = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}},
