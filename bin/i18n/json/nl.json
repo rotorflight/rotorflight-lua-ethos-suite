@@ -7413,6 +7413,162 @@
           "reverse_text": false
         }
       },
+      "power": {
+        "alert_name": {
+          "english": "Alerts",
+          "translation": "Alarmen",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "alert_type": {
+          "english": "Rx Voltage Alert",
+          "translation": "Rx Spanning Alarm",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "battery_capacity": {
+          "english": "Battery Capacity",
+          "translation": "Batterij Capaciteit",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "battery_name": {
+          "english": "Battery",
+          "translation": "Batterij",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bec_voltage_alert": {
+          "english": "BEC Alert Value",
+          "translation": "BEC Alarm Waarde",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "calcfuel_local": {
+          "english": "Calculate Fuel Using",
+          "translation": "Bereken Brandstof Met",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "cell_count": {
+          "english": "Cell Count",
+          "translation": "Cel Aantal",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "consumption_warning_percentage": {
+          "english": "Consumption Warning %",
+          "translation": "Consumption Waarschuwing %",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": false
+        },
+        "current_meter_source": {
+          "english": "Current Source",
+          "translation": "Stroom Bron",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "full_cell_voltage": {
+          "english": "Full Cell Voltage",
+          "translation": "Full Cel Spanning",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "help_p1": {
+          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "translation": "Batterij instellingen configureren de controller om spanning te volgen en te waarschuwen bij daling.",
+          "needs_translation": false,
+          "max_length": 162,
+          "reverse_text": false
+        },
+        "max_cell_voltage": {
+          "english": "Max Cell Voltage",
+          "translation": "Max Cel Spanning",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "min_cell_voltage": {
+          "english": "Min Cell Voltage",
+          "translation": "Min Cel Spanning",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "name": {
+          "english": "Power",
+          "translation": "Vermogen",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "selected": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "translation": "RxBatt Alarm Waarde",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "source_name": {
+          "english": "Sources",
+          "translation": "Bronnen",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "timer": {
+          "english": "Flight Time Alarm",
+          "translation": "Vliegtijd alarm",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "voltage_meter_source": {
+          "english": "Voltage Source",
+          "translation": "Spanning Bron",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "voltage_multiplier": {
+          "english": "Sag Compensation",
+          "translation": "Inzak Compensatie",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "warn_cell_voltage": {
+          "english": "Warn Cell Voltage",
+          "translation": "Waars Cel Spanning",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        }
+      },
       "ports": {
         "error_eeprom_write_failed": {
           "english": "EEPROM write failed",

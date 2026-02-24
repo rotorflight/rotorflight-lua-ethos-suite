@@ -6368,6 +6368,142 @@
           "english": "Yaw",
           "max_length": 3,
           "needs_translation": false,
+          "translation": "Yaw",
+          "max_length": 3
+        }
+      },
+      "power": {
+        "alert_name": {
+          "english": "Alerts",
+          "needs_translation": false,
+          "translation": "Alerts",
+          "max_length": 6
+        },
+        "alert_type": {
+          "english": "Rx Voltage Alert",
+          "needs_translation": false,
+          "translation": "Rx Voltage Alert",
+          "max_length": 16
+        },
+        "battery_capacity": {
+          "english": "Battery Capacity",
+          "needs_translation": false,
+          "translation": "Battery Capacity",
+          "max_length": 16
+        },
+        "battery_name": {
+          "english": "Battery",
+          "needs_translation": false,
+          "translation": "Battery",
+          "max_length": 7
+        },
+        "capacity": {
+          "english": "Capacity",
+          "needs_translation": false,
+          "translation": "Capacity",
+          "max_length": 8
+        },
+        "bec_voltage_alert": {
+          "english": "BEC Alert Value",
+          "needs_translation": false,
+          "translation": "BEC Alert Value",
+          "max_length": 15
+        },
+        "calcfuel_local": {
+          "english": "Calculate Fuel Using",
+          "needs_translation": false,
+          "translation": "Calculate Fuel Using",
+          "max_length": 20
+        },
+        "cell_count": {
+          "english": "Cell Count",
+          "needs_translation": false,
+          "translation": "Cell Count",
+          "max_length": 10
+        },
+        "consumption_warning_percentage": {
+          "english": "Consumption Warning %",
+          "needs_translation": false,
+          "translation": "Consumption Warning %",
+          "max_length": 21
+        },
+        "current_meter_source": {
+          "english": "Current Source",
+          "needs_translation": false,
+          "translation": "Current Source",
+          "max_length": 14
+        },
+        "full_cell_voltage": {
+          "english": "Full Cell Voltage",
+          "needs_translation": false,
+          "translation": "Full Cell Voltage",
+          "max_length": 17
+        },
+        "help_p1": {
+          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "needs_translation": false,
+          "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "max_length": 162
+        },
+        "max_cell_voltage": {
+          "english": "Max Cell Voltage",
+          "needs_translation": false,
+          "translation": "Max Cell Voltage",
+          "max_length": 16
+        },
+        "min_cell_voltage": {
+          "english": "Min Cell Voltage",
+          "needs_translation": false,
+          "translation": "Min Cell Voltage",
+          "max_length": 16
+        },
+        "name": {
+          "english": "Power",
+          "needs_translation": false,
+          "translation": "Power",
+          "max_length": 5
+        },
+        "selected": {
+          "english": "Selected",
+          "needs_translation": false,
+          "translation": "Selected",
+          "max_length": 8
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "needs_translation": false,
+          "translation": "RxBatt Alert Value",
+          "max_length": 18
+        },
+        "source_name": {
+          "english": "Sources",
+          "needs_translation": false,
+          "translation": "Sources",
+          "max_length": 7
+        },
+        "timer": {
+          "english": "Flight Time Alarm",
+          "needs_translation": false,
+          "translation": "Flight Time Alarm",
+          "max_length": 17
+        },
+        "voltage_meter_source": {
+          "english": "Voltage Source",
+          "needs_translation": false,
+          "translation": "Voltage Source",
+          "max_length": 14
+        },
+        "voltage_multiplier": {
+          "english": "Sag Compensation",
+          "needs_translation": false,
+          "translation": "Sag Compensation",
+          "max_length": 16
+        },
+        "warn_cell_voltage": {
+          "english": "Warn Cell Voltage",
+          "needs_translation": false,
+          "translation": "Warn Cell Voltage",
+          "max_length": 17
           "translation": "Yaw"
         }
       },

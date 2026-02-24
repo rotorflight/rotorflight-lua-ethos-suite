@@ -71,7 +71,6 @@ createSensorList[0x5124] = {name = "Rescue State", unit = UNIT_RAW}
 createSensorList[0x5125] = {name = "Gov State", unit = UNIT_RAW}
 createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
-createSensorList[0x5133] = {name = "Battery Type", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
 createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
 createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals = 1}

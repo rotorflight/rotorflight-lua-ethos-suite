@@ -7413,6 +7413,162 @@
           "max_length": 3
         }
       },
+      "power": {
+        "alert_name": {
+          "english": "Alerts",
+          "translation": "Alertas",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "alert_type": {
+          "english": "Rx Voltage Alert",
+          "translation": "Alerta Tensão Rx",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "battery_capacity": {
+          "english": "Battery Capacity",
+          "translation": "Capacidade Bateria",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "battery_name": {
+          "english": "Battery",
+          "translation": "Bateria",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bec_voltage_alert": {
+          "english": "BEC Alert Value",
+          "translation": "Valor Alerta BEC",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "calcfuel_local": {
+          "english": "Calculate Fuel Using",
+          "translation": "Calcular Combustível",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "cell_count": {
+          "english": "Cell Count",
+          "translation": "Células",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "consumption_warning_percentage": {
+          "english": "Consumption Warning %",
+          "translation": "Aviso Consumo %",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "current_meter_source": {
+          "english": "Current Source",
+          "translation": "Fonte Corrente",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "full_cell_voltage": {
+          "english": "Full Cell Voltage",
+          "translation": "Tensão Célula Cheia",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "help_p1": {
+          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "translation": "As configurações de bateria monitoram a tensão e alertam quando cai abaixo do nível definido.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 162
+        },
+        "max_cell_voltage": {
+          "english": "Max Cell Voltage",
+          "translation": "Tensão Máx. Célula",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "min_cell_voltage": {
+          "english": "Min Cell Voltage",
+          "translation": "Tensão Mín. Célula",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "name": {
+          "english": "Power",
+          "translation": "Potência",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "selected": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "translation": "Valor Alerta RxBatt",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "source_name": {
+          "english": "Sources",
+          "translation": "Fontes",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "timer": {
+          "english": "Flight Time Alarm",
+          "translation": "Alarme Tempo Voo",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "voltage_meter_source": {
+          "english": "Voltage Source",
+          "translation": "Fonte Tensão",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "voltage_multiplier": {
+          "english": "Sag Compensation",
+          "translation": "Compensação Sag",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "warn_cell_voltage": {
+          "english": "Warn Cell Voltage",
+          "translation": "Aviso Tensão Célula",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 17
+        }
+      },
       "ports": {
         "error_eeprom_write_failed": {
           "english": "EEPROM write failed",

@@ -7413,6 +7413,162 @@
           "reverse_text": true
         }
       },
+      "power": {
+        "alert_name": {
+          "english": "Alerts",
+          "max_length": 6,
+          "needs_translation": true,
+          "translation": "התראות",
+          "reverse_text": true
+        },
+        "alert_type": {
+          "english": "Rx Voltage Alert",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "התראת מתח Rx",
+          "reverse_text": true
+        },
+        "battery_capacity": {
+          "english": "Battery Capacity",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "קיבולת סוללה",
+          "reverse_text": true
+        },
+        "battery_name": {
+          "english": "Battery",
+          "max_length": 7,
+          "needs_translation": true,
+          "translation": "סוללה",
+          "reverse_text": true
+        },
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bec_voltage_alert": {
+          "english": "BEC Alert Value",
+          "max_length": 15,
+          "needs_translation": true,
+          "translation": "ערך התראת BEC",
+          "reverse_text": true
+        },
+        "calcfuel_local": {
+          "english": "Calculate Fuel Using",
+          "max_length": 20,
+          "needs_translation": true,
+          "translation": "חשב דלק באמצעות",
+          "reverse_text": true
+        },
+        "cell_count": {
+          "english": "Cell Count",
+          "max_length": 10,
+          "needs_translation": true,
+          "translation": "מספר תאים",
+          "reverse_text": true
+        },
+        "consumption_warning_percentage": {
+          "english": "Consumption Warning %",
+          "max_length": 21,
+          "needs_translation": true,
+          "translation": "אחוז אזהרת צריכה",
+          "reverse_text": true
+        },
+        "current_meter_source": {
+          "english": "Current Source",
+          "max_length": 14,
+          "needs_translation": true,
+          "translation": "מקור זרם",
+          "reverse_text": true
+        },
+        "full_cell_voltage": {
+          "english": "Full Cell Voltage",
+          "max_length": 17,
+          "needs_translation": true,
+          "translation": "מתח תא מלא",
+          "reverse_text": true
+        },
+        "help_p1": {
+          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "max_length": 162,
+          "needs_translation": true,
+          "translation": "הגדרות הסוללה משמשות לקונפיגורציה של בקר הטיסה לניטור מתח הסוללה ולהתריע כשהמתח יורד מתחת לרמה מסוימת.",
+          "reverse_text": true
+        },
+        "max_cell_voltage": {
+          "english": "Max Cell Voltage",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "מתח תא מרבי",
+          "reverse_text": true
+        },
+        "min_cell_voltage": {
+          "english": "Min Cell Voltage",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "מתח תא מינימלי",
+          "reverse_text": true
+        },
+        "name": {
+          "english": "Power",
+          "max_length": 5,
+          "needs_translation": true,
+          "translation": "חשמל",
+          "reverse_text": true
+        },
+        "selected": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "max_length": 18,
+          "needs_translation": true,
+          "translation": "ערך התראת RxBatt",
+          "reverse_text": true
+        },
+        "source_name": {
+          "english": "Sources",
+          "max_length": 7,
+          "needs_translation": true,
+          "translation": "מקורות",
+          "reverse_text": true
+        },
+        "timer": {
+          "english": "Flight Time Alarm",
+          "max_length": 17,
+          "needs_translation": true,
+          "translation": "התראת זמן טיסה",
+          "reverse_text": true
+        },
+        "voltage_meter_source": {
+          "english": "Voltage Source",
+          "max_length": 14,
+          "needs_translation": true,
+          "translation": "מקור מתח",
+          "reverse_text": true
+        },
+        "voltage_multiplier": {
+          "english": "Sag Compensation",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "פיצוי שקיעה",
+          "reverse_text": true
+        },
+        "warn_cell_voltage": {
+          "english": "Warn Cell Voltage",
+          "max_length": 17,
+          "needs_translation": true,
+          "translation": "מתח תא אזהרה",
+          "reverse_text": true
+        }
+      },
       "ports": {
         "error_eeprom_write_failed": {
           "english": "EEPROM write failed",
