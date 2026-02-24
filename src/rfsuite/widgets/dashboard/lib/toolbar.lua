@@ -41,7 +41,23 @@ local DEFAULT_TOOLBAR_ITEMS = {
                 actions.eraseBlackboxAsk()
             end
         end
-    }
+    },
+    {
+        name = "Rotorflight",
+        order = 500,
+        icon = "widgets/dashboard/gfx/toolbar_app.png",
+        iconSize = 55,
+        isConnected = false,
+        enableFunction = function(dashboard, rfsuite)
+            return system.gotoScreen ~= nil
+        end,
+        onClick = function(dashboard)
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.launchApp) == "function" then
+                actions.launchApp()
+            end
+        end
+    }    
 }
 
 local M = {}
