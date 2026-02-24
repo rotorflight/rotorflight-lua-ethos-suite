@@ -416,16 +416,36 @@ utils._imageBitmapCache = {}
 
 function utils.loadImage(image1, image2, image3)
 
-    local function getCachedBitmap(key, tryPaths)
-        if not key then return nil end
+    local function getCachedBitmap(key)
+        if type(key) ~= "string" or key == "" then return nil end
         if utils._imageBitmapCache[key] then return utils._imageBitmapCache[key] end
 
         local path = utils._imagePathCache[key]
         if not path then
-            for _, p in ipairs(tryPaths) do
-                if rfsuite.utils.file_exists(p) then
-                    path = p
-                    break
+            local p1 = key
+            if rfsuite.utils.file_exists(p1) then
+                path = p1
+            else
+                local p2 = "BITMAPS:" .. key
+                if rfsuite.utils.file_exists(p2) then
+                    path = p2
+                else
+                    local p3 = "SYSTEM:" .. key
+                    if rfsuite.utils.file_exists(p3) then
+                        path = p3
+                    else
+                        if key:match("%.png$") then
+                            local p4 = key:gsub("%.png$", ".bmp")
+                            if rfsuite.utils.file_exists(p4) then
+                                path = p4
+                            end
+                        elseif key:match("%.bmp$") then
+                            local p4 = key:gsub("%.bmp$", ".png")
+                            if rfsuite.utils.file_exists(p4) then
+                                path = p4
+                            end
+                        end
+                    end
                 end
             end
             utils._imagePathCache[key] = path
@@ -437,18 +457,7 @@ function utils.loadImage(image1, image2, image3)
         return bmp
     end
 
-    local function candidates(img)
-        if type(img) ~= "string" then return {} end
-        local out = {img, "BITMAPS:" .. img, "SYSTEM:" .. img}
-        if img:match("%.png$") then
-            out[#out + 1] = img:gsub("%.png$", ".bmp")
-        elseif img:match("%.bmp$") then
-            out[#out + 1] = img:gsub("%.bmp$", ".png")
-        end
-        return out
-    end
-
-    return getCachedBitmap(image1, candidates(image1)) or getCachedBitmap(image2, candidates(image2)) or getCachedBitmap(image3, candidates(image3))
+    return getCachedBitmap(image1) or getCachedBitmap(image2) or getCachedBitmap(image3)
 end
 
 function utils.simSensors(id)

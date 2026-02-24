@@ -257,8 +257,11 @@ function render.wakeup(box)
 
     local telemetry = rfsuite.tasks.telemetry
 
-    local c = box._cache or {}
-    box._cache = c
+    local c = box._cache
+    if not c then
+        c = {}
+        box._cache = c
+    end
 
     local cfg = box._cfg
     if not cfg then
@@ -401,9 +404,19 @@ function render.wakeup(box)
 
     local battadv = cfg.battadv
     if battadv then
-        box._batteryLines = {line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount), line2 = format("%d mah", consumed)}
+        local batteryLines = box._batteryLines
+        if not batteryLines then
+            batteryLines = {}
+            box._batteryLines = batteryLines
+        end
+        batteryLines.line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount)
+        batteryLines.line2 = format("%d mah", consumed)
     else
-        box._batteryLines = nil
+        local batteryLines = box._batteryLines
+        if batteryLines then
+            batteryLines.line1 = nil
+            batteryLines.line2 = nil
+        end
     end
 
     if type(displayValue) == "string" and displayValue:match("^%.+$") then unit = nil end
@@ -484,7 +497,8 @@ end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cache
+    if not c then return end
 
     if c.bgcolor then
         lcd.color(c.bgcolor)

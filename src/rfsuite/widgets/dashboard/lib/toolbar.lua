@@ -45,6 +45,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
 }
 
 local M = {}
+local EMPTY_TABLE = {}
 
 local toolbarMaskCache = {}
 
@@ -84,7 +85,7 @@ end
 
 function M.getItems(dashboard)
     local items = getToolbarItems(dashboard)
-    if type(items) ~= "table" then return {} end
+    if type(items) ~= "table" then return EMPTY_TABLE end
     return items
 end
 
@@ -109,6 +110,10 @@ end
 local function getToolbarCache(dashboard)
     dashboard._toolbarCache = dashboard._toolbarCache or {}
     return dashboard._toolbarCache
+end
+
+local function clearArray(t)
+    for i = #t, 1, -1 do t[i] = nil end
 end
 
 local function isItemEnabled(item, dashboard, rfsuite)
@@ -185,9 +190,12 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local itemW = w / slots
     local boxFill = themeFocusBg
     local selectedFill = themeFocus
-    local rects = {}
-    local visibleItems = {}
-    local enabledItems = {}
+    local rects = dashboard._toolbarRects or {}
+    local visibleItems = dashboard._toolbarItemsSorted or {}
+    local enabledItems = dashboard._toolbarEnabled or {}
+    clearArray(rects)
+    clearArray(visibleItems)
+    clearArray(enabledItems)
     local iconSize = 55
     local textPadTop = 6
     local slotPad = 12
@@ -203,8 +211,18 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
             local by = y + slotPad + groupPadTop
             local bw = iw - (slotPad * 2)
             local bh = barH - (slotPad * 2) - groupPadTop
-            rects[#rects + 1] = {x = ix, y = y, w = iw, h = barH, item = item}
-            visibleItems[#visibleItems + 1] = item
+            local rectIndex = #rects + 1
+            local rect = rects[rectIndex]
+            if not rect then
+                rect = {}
+                rects[rectIndex] = rect
+            end
+            rect.x = ix
+            rect.y = y
+            rect.w = iw
+            rect.h = barH
+            rect.item = item
+            visibleItems[rectIndex] = item
             local isEnabled = isItemEnabled(item, dashboard, rfsuite)
             enabledItems[i] = isEnabled
             local isSelected = (dashboard.selectedToolbarIndex == i)
@@ -281,8 +299,8 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
     if not dashboard.toolbarVisible then return false end
 
     if category == EVT_KEY and lcd.hasFocus() then
-        local rects = dashboard._toolbarRects or {}
-        local enabled = dashboard._toolbarEnabled or {}
+        local rects = dashboard._toolbarRects or EMPTY_TABLE
+        local enabled = dashboard._toolbarEnabled or EMPTY_TABLE
         local count = #rects
         if count > 0 then
             local idx = dashboard.selectedToolbarIndex or 1
@@ -326,8 +344,8 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
     end
 
     if category == EVT_TOUCH and (value == TOUCH_END or value == TOUCH_START) and x and y then
-        local rects = dashboard._toolbarRects or {}
-        local enabled = dashboard._toolbarEnabled or {}
+        local rects = dashboard._toolbarRects or EMPTY_TABLE
+        local enabled = dashboard._toolbarEnabled or EMPTY_TABLE
         for idx, r in ipairs(rects) do
             if x >= r.x and x < (r.x + r.w) and y >= r.y and y < (r.y + r.h) then
                 dashboard.selectedToolbarIndex = idx
