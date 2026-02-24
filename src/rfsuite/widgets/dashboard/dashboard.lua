@@ -889,7 +889,17 @@ function dashboard.renderLayout(widget, config)
                 local obj = dashboard.objectsByType[geom.box.type]
                 if obj and obj.paint then
                     if objectProfiler then
-                        local fakeRect = {x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true}
+                        local fakeRect = dashboard._profRectScratch
+                        if not fakeRect then
+                            fakeRect = {}
+                            dashboard._profRectScratch = fakeRect
+                        end
+                        fakeRect.x = geom.x
+                        fakeRect.y = geom.y
+                        fakeRect.w = w
+                        fakeRect.h = geom.h
+                        fakeRect.box = geom.box
+                        fakeRect.isHeader = true
                         local id = _profIdFromRect(fakeRect)
                         local t0 = _profStart()
                         obj.paint(geom.x, geom.y, w, geom.h, geom.box)
