@@ -1036,7 +1036,11 @@ function dashboard.renderLayout(widget, config)
     if dashboard.overlayMessage then dashboard._hg_cycles = dashboard._hg_cycles_required end
     if dashboard._hg_cycles > 0 then
         local loaderY = (isFullScreen and headerLayout.height) or 0
-        dashboard.overlaymessage(0, loaderY, W, H - loaderY, dashboard.overlayMessage)
+        if dashboard.overlayMessage then
+            dashboard.overlaymessage(0, loaderY, W, H - loaderY, dashboard.overlayMessage)
+        else
+            dashboard.overlaystatic(0, loaderY, W, H - loaderY, nil)
+        end
         dashboard._hg_cycles = dashboard._hg_cycles - 1
         _queueInvalidateRect(0, loaderY, W, H - loaderY)
         _flushInvalidatesRespectingBudget()
