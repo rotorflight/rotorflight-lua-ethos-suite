@@ -200,7 +200,7 @@ local function beginEscSwitch(target)
         maxAttempts = 5,
         lastAttempt = 0,
         retryDelay = 0.8,
-        readDelay = 2,
+        readDelay = 1,          -- Time to wait after setting esc target before attempting to read esc details, to allow fbl time to switch esc and respond to msp
         writeInFlight = false,
         writeStartedAt = 0,
         writeTimeout = 2.5
@@ -528,7 +528,7 @@ openSelector = function()
             press = function()
                 inSelector = false
                 rfsuite.preferences.menulastselected["esc4way"] = childIdx
-                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.SLOW)
+                rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.VSLOW)
                 beginEscSwitch(item.target)
                 return
             end
