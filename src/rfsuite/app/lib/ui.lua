@@ -994,7 +994,12 @@ function ui.cleanupCurrentPage()
         end
 
         if app.Page.apidata.api then for i = 1, #app.Page.apidata.api do app.Page.apidata.api[i] = nil end end
-        if app.Page.apidata.api_reversed then for i = 1, #app.Page.apidata.api_reversed do app.Page.apidata.api_reversed[i] = nil end end
+        if app.Page.apidata.api_reversed then
+            for k in pairs(app.Page.apidata.api_reversed) do app.Page.apidata.api_reversed[k] = nil end
+        end
+        if app.Page.apidata.api_by_id then
+            for k in pairs(app.Page.apidata.api_by_id) do app.Page.apidata.api_by_id[k] = nil end
+        end
 
         app.Page.apidata = nil
     end
@@ -2564,9 +2569,38 @@ function ui.mspApiUpdateFormAttributes()
     local fields = app.Page.apidata.formdata.fields
     local api = app.Page.apidata.api
 
+    local function apiEntryName(entry)
+        if type(entry) == "table" then return entry.name end
+        return entry
+    end
+
+    local function apiEntryId(entry, index)
+        if type(entry) == "table" and type(entry.id) == "number" then
+            return entry.id
+        end
+        return index
+    end
+
     if not app.Page.apidata.api_reversed then
         app.Page.apidata.api_reversed = {}
-        for index, value in pairs(app.Page.apidata.api) do app.Page.apidata.api_reversed[value] = index end
+        app.Page.apidata.api_by_id = {}
+        for index, value in pairs(app.Page.apidata.api) do
+            local name = apiEntryName(value)
+            if name then
+                local id = apiEntryId(value, index)
+                app.Page.apidata.api_reversed[name] = id
+                app.Page.apidata.api_by_id[id] = name
+            end
+        end
+    elseif not app.Page.apidata.api_by_id then
+        app.Page.apidata.api_by_id = {}
+        for index, value in pairs(app.Page.apidata.api) do
+            local name = apiEntryName(value)
+            if name then
+                local id = apiEntryId(value, index)
+                app.Page.apidata.api_by_id[id] = name
+            end
+        end
     end
 
     for i, f in ipairs(fields) do
@@ -2583,11 +2617,13 @@ function ui.mspApiUpdateFormAttributes()
 
             local apikey = f.apikey
             local mspapiID = f.mspapi
-            local mspapiNAME = api[mspapiID]
-            local target = structure[mspapiNAME]
+            local mspapiNAME = (app.Page.apidata.api_by_id and app.Page.apidata.api_by_id[mspapiID]) or apiEntryName(api[mspapiID])
+            local target = mspapiNAME and structure[mspapiNAME] or nil
 
             if mspapiID == nil or mspapiID == nil then
                 log("API field missing mspapi or apikey", "debug")
+            elseif not target then
+                log("API field missing structure: " .. tostring(mspapiNAME), "debug")
             else
                 for _, v in ipairs(target) do
                     if not v.bitmap then
@@ -2930,9 +2966,11 @@ function ui.saveSettings()
 
         local fieldMap = {}
         local fieldMapBitmap = {}
+        local apiId = apiID
+        if apiMeta and type(apiMeta.id) == "number" then apiId = apiMeta.id end
         for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
             if not f.bitmap then
-                if f.mspapi == apiID then fieldMap[f.apikey] = fidx end
+                if f.mspapi == apiId then fieldMap[f.apikey] = fidx end
             else
                 local p1, p2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
                 if not fieldMapBitmap[p1] then fieldMapBitmap[p1] = {} end

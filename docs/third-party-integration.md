@@ -89,14 +89,15 @@ Or per-page via `apidata`:
 ```lua
 local apidata = {
   api = {
-    {name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
+    {id = 1, name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
     {name = "RC_TUNING"}
   },
   formdata = {labels = {}, fields = {...}}
 }
 ```
 
-`rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
+* `rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
+* `id = <number>` lets `mspapi = <number>` map by id instead of list order.
 
 ### Utilities
 
