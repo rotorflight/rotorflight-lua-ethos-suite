@@ -748,11 +748,17 @@ function tasks.wakeup_protected()
     -- As soon as we have any MSP activity, prioritize MSP and callback tasks only.
     -- This ensures that the MSP queue is drained as fast as possible to reduce latency.
     if rfsuite.session.mspBusy then
-            if tasks.msp then
+            if tasks.msp and tasks.msp.wakeup then
+                local c0 = os_clock()
                 tasks.msp.wakeup()
+                local c1 = os_clock()
+                loopCpu = loopCpu + (c1 - c0)
             end
-            if tasks.callback then
+            if tasks.callback and tasks.callback.wakeup then
+                local c0 = os_clock()
                 tasks.callback.wakeup()
+                local c1 = os_clock()
+                loopCpu = loopCpu + (c1 - c0)
             end
     else
     -- Bulk task processing split across two cycles to reduce per-cycle load.
