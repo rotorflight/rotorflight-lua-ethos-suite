@@ -203,7 +203,7 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             titlepaddingtop = opts.titlepaddingtop,
             bgcolor = colorMode.panelbg,
-            bgcolor = "teal",
+            bgcolor = "olive",
         },
         {
             col = 1,
