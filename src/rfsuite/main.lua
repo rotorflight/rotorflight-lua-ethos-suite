@@ -132,10 +132,6 @@ if rfsuite.preferences then
     if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then
         gen.mspstatusdialog = dev.mspstatusdialog
     end
-    -- Remove retired developer preference.
-    if dev and dev.memleaktrace ~= nil then
-        dev.memleaktrace = nil
-    end
 end
 
 if not rfsuite.ini.ini_tables_equal(master_ini, updated_ini) then rfsuite.ini.save_ini_file(userpref_file, updated_ini) end

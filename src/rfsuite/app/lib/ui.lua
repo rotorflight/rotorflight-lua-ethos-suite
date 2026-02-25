@@ -23,7 +23,6 @@ local arg = {...}
 local config = arg[1]
 local preferences = rfsuite.preferences
 local utils = rfsuite.utils
-local memtrace = utils.memLeakTrace
 local tasks = rfsuite.tasks
 local apiCore
 local navigation = assert(loadfile("app/lib/navigation.lua"))()
@@ -920,13 +919,6 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
-    if memtrace then
-        memtrace("ui.cleanup.start", {
-            lastScript = app and app.lastScript or "",
-            hasPage = (app and app.Page) and 1 or 0
-        })
-    end
-
     if preferences and preferences.developer and preferences.developer.memstats then
         local mem_kb = collectgarbage("count")
         local function tcount(t)
@@ -1061,13 +1053,6 @@ function ui.cleanupCurrentPage()
             gfxMaskCount(),
             tcount(cbq)
         ), "debug")
-    end
-
-    if memtrace then
-        memtrace("ui.cleanup.end", {
-            lastScript = app and app.lastScript or "",
-            hasPage = (app and app.Page) and 1 or 0
-        })
     end
 end
 
@@ -2074,10 +2059,6 @@ function ui.openPage(opts)
         error("ui.openPage requires opts.script")
     end
 
-    if memtrace then
-        memtrace("ui.openPage.start", {script = script})
-    end
-
     if isManifestMenuRouterScript(script) then
         if type(opts.menuId) == "string" and opts.menuId ~= "" then
             app.pendingManifestMenuId = opts.menuId
@@ -2154,9 +2135,6 @@ function ui.openPage(opts)
         ui.setPageDirty(false)
         collectgarbage('collect')
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
-        if memtrace then
-            memtrace("ui.openPage.end", {script = script, custom = 1})
-        end
         return
     end
     app._pageUsesCustomOpen = false
@@ -2214,10 +2192,6 @@ function ui.openPage(opts)
     end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "end")
-
-    if memtrace then
-        memtrace("ui.openPage.end", {script = script, custom = 0})
-    end
 
     collectgarbage('collect')
     collectgarbage('collect')

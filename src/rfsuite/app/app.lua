@@ -89,7 +89,6 @@ function app.wakeup()
 end
 
 function app.create()
-    -- Reset close re-entry latch when the app is opened again.
     app._closing = false
 
     if not app.initialized then
@@ -222,7 +221,6 @@ function app.create()
     end
 
     app._pendingMainMenuOpen = true
-
 end
 
 function app.event(widget, category, value, x, y)

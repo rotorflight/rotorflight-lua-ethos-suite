@@ -49,26 +49,6 @@ local function qpop(q)
 end
 local function qcount(q) return q.last - q.first + 1 end
 
-local function traceQueue(self, action, extra)
-    if not (utils and utils.memLeakTrace) then return end
-    local q = self and self.queue
-    local data = {
-        qcount = q and qcount(q) or 0,
-        qfirst = q and q.first or 0,
-        qlast = q and q.last or 0,
-        retry = self and self.retryCount or 0
-    }
-    if self and self.currentMessage and self.currentMessage.command ~= nil then
-        data.current = self.currentMessage.command
-    end
-    if type(extra) == "table" then
-        for k, v in pairs(extra) do
-            data[k] = v
-        end
-    end
-    utils.memLeakTrace("msp.queue." .. action, data)
-end
-
 -- Shallow/array clone helpers
 local function cloneArray(src)
     local dst = {}
@@ -237,10 +217,6 @@ function MspQueueController:processQueue()
 
     -- Nothing to do
     if self:isProcessed() then
-        if self._traceActive then
-            traceQueue(self, "idle")
-            self._traceActive = false
-        end
         session.mspBusy = false
         self.mspBusyStart = nil
         if session and session.mspStatusMessage then
@@ -283,13 +259,6 @@ function MspQueueController:processQueue()
         self.lastTimeCommandSent = nil    -- per-message send timestamp
         self.currentMessage = qpop(self.queue)
         self.retryCount = 0
-        if self.currentMessage then
-            self._traceActive = true
-            traceQueue(self, "dequeue", {
-                cmd = self.currentMessage.command or "",
-                apiname = self.currentMessage.apiname or ""
-            })
-        end
     end
 
     -- We are now genuinely active (either working a current message or about to send one)
@@ -384,10 +353,6 @@ function MspQueueController:processQueue()
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
         end
         setMspStatus(formatMspStatus(self.currentMessage, "timeout"))
-        traceQueue(self, "timeout", {
-            cmd = msg and msg.command or "",
-            apiname = msg and msg.apiname or ""
-        })
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
@@ -524,10 +489,6 @@ function MspQueueController:processQueue()
             utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " max retries" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
         self:clear()
-        traceQueue(self, "max_retries", {
-            cmd = msg and msg.command or "",
-            apiname = msg and msg.apiname or ""
-        })
         setMspStatus(formatMspStatus(msg, "max retries"))
         if session then
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
@@ -541,7 +502,6 @@ end
 
 -- Reset queue + MSP state
 function MspQueueController:clear()
-    traceQueue(self, "clear.start")
     if rfsuite.session then rfsuite.session.mspBusy = false end
     self.mspBusyStart = nil
     self.queue = newQueue()
@@ -554,8 +514,6 @@ function MspQueueController:clear()
     if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common then
         rfsuite.tasks.msp.common.mspClearTxBuf()
     end
-    self._traceActive = false
-    traceQueue(self, "clear.end")
 end
 
 -- Add message to queue (skip duplicate UUIDs; optional clone)
@@ -565,12 +523,10 @@ end
 --   "queued", "queued_busy", "duplicate", "busy", "telemetry_off", "nil_message"
 function MspQueueController:add(message)
     if not rfsuite.session.telemetryState then
-        traceQueue(self, "reject", {reason = "telemetry_off"})
         return false, "telemetry_off", nil, self:queueCount()
     end
     if not message then
         if LOG_ENABLED_MSP() then utils.log("Unable to queue - nil message.", "debug") end
-        traceQueue(self, "reject", {reason = "nil_message"})
         return false, "nil_message", nil, self:queueCount()
     end
     -- Reset per-transfer timeout stats when starting a fresh queue.
@@ -587,7 +543,6 @@ function MspQueueController:add(message)
     if key and self.uuid == key then
         if LOG_ENABLED_MSP() then utils.log("Skipping duplicate message with key " .. key, "info") end
         setMspStatus("MSP duplicate request skipped (back off)")
-        traceQueue(self, "reject", {reason = "duplicate", key = key})
         return false, "duplicate", nil, self:queueCount()
     end
 
@@ -600,7 +555,6 @@ function MspQueueController:add(message)
             setMspStatus(busyMsg)
             self._lastBusyStatusAt = now
         end
-        traceQueue(self, "reject", {reason = "busy", pending = pending})
         return false, "busy", nil, pending
     end
 
@@ -610,11 +564,6 @@ function MspQueueController:add(message)
     toQueue._qid = self._qidSeq
     qpush(self.queue, toQueue)
     pending = self:queueCount() + (self.currentMessage and 1 or 0)
-    traceQueue(self, "enqueue", {
-        cmd = toQueue.command or "",
-        apiname = toQueue.apiname or "",
-        pending = pending
-    })
 
     local isBusy = self.busyWarningThreshold and self.busyWarningThreshold > 0 and pending >= self.busyWarningThreshold
     if isBusy then
