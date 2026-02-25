@@ -276,7 +276,7 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
     if not rfsuite.app.Page then
         utils.log("[buildWritePayload] No page context", "info")
         -- tasks have no UI context; always build a full payload
-        return core.buildFullPayload(apiname, payload, api_structure)        
+        return core.buildFullPayload(apiname, payload, api_structure)
     end
 
     local positionmap       = rfsuite.tasks.msp.api.apidata.positionmap and rfsuite.tasks.msp.api.apidata.positionmap[apiname]
@@ -286,11 +286,21 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
     local useDelta = positionmap and receivedBytes and receivedBytesCount
     if noDelta == true then useDelta = false end
 
+    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+
     if useDelta then
+        if apidata then
+            apidata._lastWriteMode = apidata._lastWriteMode or {}
+            apidata._lastWriteMode[apiname] = "delta"
+        end
         return core.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
-    else
-        return core.buildFullPayload(apiname, payload, api_structure)
     end
+
+    if apidata then
+        apidata._lastWriteMode = apidata._lastWriteMode or {}
+        apidata._lastWriteMode[apiname] = (noDelta == true) and "rebuild" or "full"
+    end
+    return core.buildFullPayload(apiname, payload, api_structure)
 end
 
 -- Build delta payload (patch only changed bytes)

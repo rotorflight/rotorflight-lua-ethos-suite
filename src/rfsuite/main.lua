@@ -93,6 +93,7 @@ local userpref_defaults = {
         logmsp = false,
         logobjprof = false,
         logmspQueue = false,
+        logmsprwmode = false,
         logevents = false,
         memstats = false,
         taskprofiler = false,
