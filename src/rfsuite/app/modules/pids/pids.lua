@@ -128,7 +128,9 @@ local function openPage(opts)
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
-            if rfsuite.app.Page and rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
+            local page = rfsuite.app.Page
+            local fields = page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields
+            if not fields or not fields[i] then
                 if rfsuite.app.ui then
                     rfsuite.app.ui.disableAllFields()
                     rfsuite.app.ui.disableAllNavigationFields()
@@ -136,13 +138,16 @@ local function openPage(opts)
                 end
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
+            return rfsuite.app.utils.getFieldValue(fields[i])
         end, function(value)
+            local page = rfsuite.app.Page
+            local fields = page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields
+            if not fields or not fields[i] then return end
             rfsuite.app.ui.markPageDirty()
-            if f.postEdit then f.postEdit(rfsuite.app.Page) end
-            if f.onChange then f.onChange(rfsuite.app.Page) end
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
 
-            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
         end)
     end
 

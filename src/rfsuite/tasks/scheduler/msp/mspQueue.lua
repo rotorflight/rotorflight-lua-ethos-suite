@@ -466,7 +466,7 @@ function MspQueueController:processQueue()
                 else
                     rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
                 end
-                local modeSuffix = getRwModeSuffix(msg, rwState, err == nil)
+                local modeSuffix = getRwModeSuffix(msg, rwState, not err)
                 if err then
                     utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " error" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
                 else
