@@ -2776,24 +2776,23 @@ function ui.requestPage()
                 return
             end
             log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
-            local cacheMode = nil
-            if type(v) == "table" and v.cacheMode then
-                cacheMode = v.cacheMode
-            elseif app.Page.apidata and app.Page.apidata.cacheMode then
-                cacheMode = app.Page.apidata.cacheMode
-            elseif tasks.msp.api.getCacheMode then
-                cacheMode = tasks.msp.api.getCacheMode(apiKey)
+            local enableDeltaCache = nil
+            if type(v) == "table" and v.enableDeltaCache ~= nil then
+                enableDeltaCache = v.enableDeltaCache
+            elseif app.Page.apidata and app.Page.apidata.enableDeltaCache ~= nil then
+                enableDeltaCache = app.Page.apidata.enableDeltaCache
+            elseif tasks.msp.api.isDeltaCacheEnabled then
+                enableDeltaCache = tasks.msp.api.isDeltaCacheEnabled(apiKey)
             end
-            if cacheMode ~= nil then
-                cacheMode = tostring(cacheMode):lower()
-                if cacheMode ~= "lite" and cacheMode ~= "full" then cacheMode = nil end
+            if enableDeltaCache ~= nil and type(enableDeltaCache) ~= "boolean" then
+                enableDeltaCache = nil
             end
-            if cacheMode == nil then cacheMode = "full" end
+            if enableDeltaCache == nil then enableDeltaCache = true end
 
             local data = API.data()
             tasks.msp.api.apidata.values[apiKey] = data.parsed
             tasks.msp.api.apidata.structure[apiKey] = data.structure
-            if cacheMode == "full" then
+            if enableDeltaCache == true then
                 tasks.msp.api.apidata.receivedBytes[apiKey] = data.buffer
                 tasks.msp.api.apidata.receivedBytesCount[apiKey] = data.receivedBytesCount
                 tasks.msp.api.apidata.positionmap[apiKey] = data.positionmap

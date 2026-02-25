@@ -117,12 +117,12 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         options = {}
     end
 
-    local cacheMode = "full"
+    local enableDeltaCache = true
     local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
-    if api and api.getCacheMode then
-        cacheMode = api.getCacheMode(API_NAME) or cacheMode
+    if api and api.isDeltaCacheEnabled then
+        enableDeltaCache = api.isDeltaCacheEnabled(API_NAME)
     end
-    local keepBuffers = (cacheMode ~= "lite")
+    local keepBuffers = (enableDeltaCache == true)
 
     local chunked            = options.chunked or false
     local fieldsPerTick      = options.fieldsPerTick or 10

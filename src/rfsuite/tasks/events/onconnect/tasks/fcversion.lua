@@ -19,7 +19,7 @@ function fcversion.wakeup()
         mspCallMade = true
 
         local API = rfsuite.tasks.msp.api.load("FC_VERSION")
-        if API and API.setCacheMode then API.setCacheMode("lite") end
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.fcVersion = API.readVersion()
             rfsuite.session.rfVersion = API.readRfVersion()

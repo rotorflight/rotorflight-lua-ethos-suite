@@ -18,7 +18,7 @@ function craftname.wakeup()
     if (rfsuite.session.craftName == nil) and (mspCallMade == false) then
         mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("NAME")
-        if API and API.setCacheMode then API.setCacheMode("lite") end
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.craftName = API.readValue("name")
             if rfsuite.preferences.general.syncname == true and model.name and rfsuite.session.craftName ~= nil then
