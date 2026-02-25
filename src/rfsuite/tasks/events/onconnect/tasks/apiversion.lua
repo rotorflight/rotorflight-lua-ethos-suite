@@ -67,6 +67,7 @@ function apiversion.wakeup()
         rfsuite.config.mspProtocolVersion = probeProto
 
         local API = rfsuite.tasks.msp.api.load("API_VERSION")
+        if API and API.setCacheMode then API.setCacheMode("lite") end
         API.setCompleteHandler(function(self, buf)
             local version = API.readVersion()
 
