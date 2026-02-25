@@ -95,7 +95,6 @@ local userpref_defaults = {
         logmspQueue = false,
         logevents = false,
         memstats = false,
-        memleaktrace = false,
         taskprofiler = false,
         mspexpbytes = 8,
         apiversion = 2,
@@ -132,6 +131,10 @@ if rfsuite.preferences then
     local dev = rfsuite.preferences.developer
     if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then
         gen.mspstatusdialog = dev.mspstatusdialog
+    end
+    -- Remove retired developer preference.
+    if dev and dev.memleaktrace ~= nil then
+        dev.memleaktrace = nil
     end
 end
 
