@@ -329,8 +329,13 @@ function tasks.telemetryCheckScheduler()
 
     local now = os_clock()
 
-    local telemetryState = (tlm and tlm:state()) or false
-    if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then telemetryState = false end
+    local telemetryState
+    if usingSimulator then
+        -- In simulator, rely on explicit sim event state to avoid TELEMETRY_ACTIVE flapping.
+        telemetryState = (rfsuite.simevent and rfsuite.simevent.telemetry_state) ~= false
+    else
+        telemetryState = (tlm and tlm:state()) or false
+    end
 
     if not telemetryState then
         -- Link is down.
