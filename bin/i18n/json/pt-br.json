@@ -10153,13 +10153,6 @@
           "reverse_text": false,
           "max_length": 18
         },
-        "txt_msprwmode": {
-          "english": "Log MSP write mode",
-          "translation": "Log MSP write mode",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 18
-        },
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",
           "translation": "Exibição Atividade MSP",

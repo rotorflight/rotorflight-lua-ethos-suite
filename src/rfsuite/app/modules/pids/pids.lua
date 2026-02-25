@@ -128,7 +128,7 @@ local function openPage(opts)
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
-            if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
+            if rfsuite.app.Page and rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
                 if rfsuite.app.ui then
                     rfsuite.app.ui.disableAllFields()
                     rfsuite.app.ui.disableAllNavigationFields()
