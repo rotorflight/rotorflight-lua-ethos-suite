@@ -353,21 +353,6 @@ function utils.log(msg, level)
     if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end 
 end
 
-function utils.registerProgressDialog(handle, baseMessage)
-    if not rfsuite.session then return end
-    rfsuite.session.progressDialog = {
-        handle = handle,
-        baseMessage = baseMessage or ""
-    }
-end
-
-function utils.clearProgressDialog(handle)
-    if not rfsuite.session or not rfsuite.session.progressDialog then return end
-    if handle == nil or rfsuite.session.progressDialog.handle == handle then
-        rfsuite.session.progressDialog = nil
-    end
-end
-
 function utils.print_r(node, maxDepth, currentDepth)
     maxDepth = maxDepth or 5
     currentDepth = currentDepth or 0

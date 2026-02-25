@@ -39,46 +39,7 @@ local config = arg[1]
 -- Make sure this is set - even if not initialised
 app.guiIsRunning = false
 
-local function releaseAppState()
-    -- Release app-only runtime state so GC can reclaim memory while the tool is closed.
-    app.Page = nil
-    app.PageTmp = nil
-    app.formFields = nil
-    app.formLines = nil
-    app.formNavigationFields = nil
-    app.gfx_buttons = nil
-    app.audio = nil
-    app.dialogs = nil
-    app.triggers = nil
-    app.menuContextStack = nil
-
-    app.MainMenu = nil
-    app.radio = nil
-    app.ui = nil
-    app.utils = nil
-    app.tasks = nil
-
-    app.sensors = nil
-    app.sensor = nil
-    app.adjfunctions = nil
-    app.RateTable = nil
-    app.NewRateTable = nil
-    app.fieldHelpTxt = nil
-
-    app.lastPage = nil
-    app.lastSection = nil
-    app.lastIdx = nil
-    app.lastTitle = nil
-    app.lastScript = nil
-    app.headerTitle = nil
-    app.headerParentBreadcrumb = nil
-    app._pendingMainMenuOpen = false
-
-    app.initialized = false
-end
-
 function app.paint()
-    if not app.initialized then return end
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
     if app.ui and app.ui.adminStatsOverlay then app.ui.adminStatsOverlay() end
@@ -86,7 +47,6 @@ function app.paint()
 end
 
 function app.wakeup_protected()
-    if not app.initialized then return end
     app.guiIsRunning = true
 
     -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
@@ -264,7 +224,6 @@ function app.create()
 end
 
 function app.event(widget, category, value, x, y)
-    if not app.initialized then return false end
 
     if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
         local events = rfsuite.ethos_events
@@ -368,10 +327,6 @@ function app.close()
         return true
     end
     app._closing = true
-    if not app.initialized then
-        system.exit()
-        return true
-    end
 
     rfsuite.utils.reportMemoryUsage("app.close", "start")
 
@@ -396,27 +351,22 @@ function app.close()
     if app.dialogs.progress then app.dialogs.progress:close() end
     if app.dialogs.save then app.dialogs.save:close() end
     if app.dialogs.noLink then app.dialogs.noLink:close() end
-    if rfsuite.session and rfsuite.session.progressDialog and rfsuite.session.progressDialog.handle then
-        local handle = rfsuite.session.progressDialog.handle
-        if handle and handle.close then
-            pcall(function() handle:close() end)
-        end
-    end
-    if rfsuite.utils and rfsuite.utils.clearProgressDialog then
-        rfsuite.utils.clearProgressDialog()
-    end
 
     config.useCompiler = true
     rfsuite.config.useCompiler = true
 
-    if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
-    if app.tasks and app.tasks.reset then
-        pcall(app.tasks.reset)
-    end
+    config.useCompiler = true
+    app.triggers.exitAPP = false
+    app.triggers.noRFMsg = false
+    app.dialogs.nolinkDisplay = false
+    app.dialogs.nolinkValueCounter = 0
+    app.triggers.telemetryState = nil
+    app.dialogs.progressDisplayEsc = false
+    app.triggers.wasConnected = false
+    app.triggers.invalidConnectionSetup = false
+    app.triggers.profileswitchLast = nil
 
-    releaseAppState()
-    collectgarbage('collect')
-    collectgarbage('collect')
+    if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
 
