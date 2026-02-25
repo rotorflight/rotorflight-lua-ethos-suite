@@ -33,9 +33,18 @@ local function newQueue() return {first = 1, last = 0, data = {}} end
 local function qpush(q, v) q.last = q.last + 1; q.data[q.last] = v end
 local function qpop(q)
     if q.first > q.last then return nil end
-    local v = q.data[q.first]
-    q.data[q.first] = nil
-    q.first = q.first + 1
+    local idx = q.first
+    local v = q.data[idx]
+    q.data[idx] = nil
+    idx = idx + 1
+    if idx > q.last then
+        -- Reset indices/data when drained so queue tables do not grow forever.
+        q.first = 1
+        q.last = 0
+        q.data = {}
+    else
+        q.first = idx
+    end
     return v
 end
 local function qcount(q) return q.last - q.first + 1 end

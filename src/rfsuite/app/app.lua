@@ -94,6 +94,9 @@ function app.create()
         memtrace("app.create.start", {initialized = app.initialized and 1 or 0})
     end
 
+    -- Reset close re-entry latch when the app is opened again.
+    app._closing = false
+
     if not app.initialized then
 
         -- Initialize app state
@@ -330,6 +333,11 @@ function app.event(widget, category, value, x, y)
 end
 
 function app.close()
+    if app._closing then
+        return true
+    end
+    app._closing = true
+
     if memtrace then
         memtrace("app.close.start", {uiState = app.uiState or 0})
     end
@@ -341,10 +349,18 @@ function app.close()
 
     app.guiIsRunning = false
     app.offlineMode = false
-    app.uiState = app.uiStatus.init
     app.escPowerCycleLoader = false
 
-    if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then app.Page.close() end
+    if app.ui and app.ui.cleanupCurrentPage then
+        local ok, err = pcall(app.ui.cleanupCurrentPage)
+        if not ok then
+            log("app.close cleanupCurrentPage failed: " .. tostring(err), "debug")
+        end
+    elseif app.Page and app.Page.close then
+        app.Page.close()
+    end
+
+    app.uiState = app.uiStatus.init
 
     if app.dialogs.progress then app.dialogs.progress:close() end
     if app.dialogs.save then app.dialogs.save:close() end
