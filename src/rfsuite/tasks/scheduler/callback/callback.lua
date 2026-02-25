@@ -9,6 +9,7 @@ local arg = {...}
 local config = arg[1]
 
 local callback = {}
+local utils = rfsuite.utils
 
 -- Localize globals for performance
 local os_clock = os.clock
@@ -20,11 +21,31 @@ callback._queue = {}
 local MAX_PER_WAKEUP = (config and config.callbackMaxPerWakeup) or 16
 local BUDGET_SECONDS = (config and config.callbackBudgetSeconds) or 0.004
 
-function callback.now(callbackParam) table_insert(callback._queue, {time = nil, func = callbackParam, repeat_interval = nil}) end
+local function traceCallback(action, extra)
+    if not (utils and utils.memLeakTrace) then return end
+    local data = {size = #callback._queue}
+    if type(extra) == "table" then
+        for k, v in pairs(extra) do
+            data[k] = v
+        end
+    end
+    utils.memLeakTrace("callback." .. action, data)
+end
 
-function callback.inSeconds(seconds, callbackParam) table_insert(callback._queue, {time = os_clock() + seconds, func = callbackParam, repeat_interval = nil}) end
+function callback.now(callbackParam)
+    table_insert(callback._queue, {time = nil, func = callbackParam, repeat_interval = nil})
+    traceCallback("now")
+end
 
-function callback.every(seconds, callbackParam) table_insert(callback._queue, {time = os_clock() + seconds, func = callbackParam, repeat_interval = seconds}) end
+function callback.inSeconds(seconds, callbackParam)
+    table_insert(callback._queue, {time = os_clock() + seconds, func = callbackParam, repeat_interval = nil})
+    traceCallback("inSeconds", {delay = seconds})
+end
+
+function callback.every(seconds, callbackParam)
+    table_insert(callback._queue, {time = os_clock() + seconds, func = callbackParam, repeat_interval = seconds})
+    traceCallback("every", {delay = seconds})
+end
 
 function callback.wakeup()
     local now = os_clock()
@@ -52,18 +73,31 @@ function callback.wakeup()
             i = i + 1
         end
     end
+
+    if processed > 0 then
+        traceCallback("wakeup", {processed = processed})
+    end
 end
 
 function callback.clear(callbackParam)
     local queue = callback._queue
+    local removed = 0
     for i = #queue, 1, -1 do
         if queue[i].func == callbackParam then
             table_remove(queue, i)
+            removed = removed + 1
         end
+    end
+    if removed > 0 then
+        traceCallback("clear", {removed = removed})
     end
 end
 
-function callback.clearAll() callback._queue = {} end
+function callback.clearAll()
+    local removed = #callback._queue
+    callback._queue = {}
+    traceCallback("clearAll", {removed = removed})
+end
 
 function callback.reset() callback.clearAll() end
 

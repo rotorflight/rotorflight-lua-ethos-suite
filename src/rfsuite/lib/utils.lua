@@ -91,6 +91,67 @@ function utils.session()
 
 end
 
+local function tracePrefEnabled(value)
+    return value == true or value == "true" or value == 1 or value == "1"
+end
+
+local function traceTableCount(t)
+    if type(t) ~= "table" then return 0 end
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n
+end
+
+function utils.memLeakTraceEnabled()
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    return dev and tracePrefEnabled(dev.memleaktrace) or false
+end
+
+function utils.memLeakTrace(tag, extra)
+    if not utils.memLeakTraceEnabled() then return end
+
+    local memInfo = system.getMemoryUsage() or {}
+    local perf = rfsuite.performance or {}
+    local mspq = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    local q = mspq and mspq.queue
+    local cbq = rfsuite.tasks and rfsuite.tasks.callback and rfsuite.tasks.callback._queue
+    local app = rfsuite.app
+
+    local parts = {
+        "[memtrace]",
+        tostring(tag or "event"),
+        string.format("t=%.3f", os.clock()),
+        "used=" .. tostring(perf.usedram or 0),
+        "free=" .. tostring(perf.freeram or 0),
+        string.format("lua=%.2f", (memInfo.luaRamAvailable or 0) / 1024),
+        string.format("gc=%.1f", collectgarbage("count")),
+        "mspq=" .. tostring((mspq and mspq.queueCount and mspq:queueCount()) or 0),
+        "qfirst=" .. tostring(q and q.first or 0),
+        "qlast=" .. tostring(q and q.last or 0),
+        "cbq=" .. tostring(type(cbq) == "table" and #cbq or 0),
+        "page=" .. tostring(app and app.lastScript or "")
+    }
+
+    if type(extra) == "table" then
+        local keys = {}
+        for k in pairs(extra) do keys[#keys + 1] = k end
+        table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+        for i = 1, #keys do
+            local key = keys[i]
+            local val = extra[key]
+            if type(val) == "table" then
+                parts[#parts + 1] = tostring(key) .. "=" .. tostring(traceTableCount(val))
+            else
+                parts[#parts + 1] = tostring(key) .. "=" .. tostring(val)
+            end
+        end
+    elseif extra ~= nil then
+        parts[#parts + 1] = tostring(extra)
+    end
+
+    utils.log(table.concat(parts, " "), "debug")
+end
+
 function utils.rxmapReady()
     if rfsuite.session.rx and rfsuite.session.rx.map and (rfsuite.session.rx.map.collective or rfsuite.session.rx.map.elevator or rfsuite.session.rx.map.throttle or rfsuite.session.rx.map.rudder) then return true end
     return false

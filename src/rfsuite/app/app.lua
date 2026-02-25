@@ -10,6 +10,7 @@ local system = system
 local app = {}
 local utils = rfsuite.utils
 local log = utils.log
+local memtrace = utils.memLeakTrace
 local compile = loadfile
 local lastNoOpSaveToneAt = 0
 local busyUiTick = 0
@@ -89,6 +90,9 @@ function app.wakeup()
 end
 
 function app.create()
+    if memtrace then
+        memtrace("app.create.start", {initialized = app.initialized and 1 or 0})
+    end
 
     if not app.initialized then
 
@@ -220,6 +224,10 @@ function app.create()
     end
 
     app._pendingMainMenuOpen = true
+
+    if memtrace then
+        memtrace("app.create.end", {initialized = app.initialized and 1 or 0})
+    end
 end
 
 function app.event(widget, category, value, x, y)
@@ -322,6 +330,10 @@ function app.event(widget, category, value, x, y)
 end
 
 function app.close()
+    if memtrace then
+        memtrace("app.close.start", {uiState = app.uiState or 0})
+    end
+
     rfsuite.utils.reportMemoryUsage("app.close", "start")
 
     local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
@@ -355,6 +367,10 @@ function app.close()
     if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
+
+    if memtrace then
+        memtrace("app.close.end", {uiState = app.uiState or 0})
+    end
 
     system.exit()
 
