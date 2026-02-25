@@ -131,7 +131,7 @@ local themeOptions = {
         valuepaddingtop = 15,
         gaugevaluepadding = 30,
     },
-    ss_std = {
+        ss_std = {
         font = "FONT_XL",
         fontl = "FONT_XL",
         fontm = "FONT_M",
@@ -199,7 +199,6 @@ local function buildBoxes(W)
             titlealign = "center",
             titlefont = opts.titlefont,
             font = opts.font,
-            --textcolor = colorMode.textcolor,
             textcolor = "orange",
             titlecolor = colorMode.titlecolor,
             titlepaddingtop = opts.titlepaddingtop,
@@ -374,7 +373,6 @@ local function buildBoxes(W)
             battadv = false,
             battadvfont = opts.titlefont,
             valuealign = "center",
-            --batteryframethickness = opts.batteryframethickness,
             battadvpaddingright = 320,
             battadvgap = 35,
             fillcolor = colorMode.fillcolor,

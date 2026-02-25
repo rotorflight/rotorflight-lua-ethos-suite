@@ -202,7 +202,6 @@ local function buildBoxes(W)
             textcolor = "colorMode.textcolor",
             titlecolor = colorMode.titlecolor,
             titlepaddingtop = opts.titlepaddingtop,
-            bgcolor = colorMode.panelbg,
             bgcolor = "olive",
         },
         {
@@ -374,7 +373,6 @@ local function buildBoxes(W)
             battadv = false,
             battadvfont = opts.titlefont,
             valuealign = "center",
-            --batteryframethickness = opts.batteryframethickness,
             battadvpaddingright = 320,
             battadvgap = 35,
             fillcolor = colorMode.fillcolor,

@@ -91,7 +91,7 @@ local themeOptions = {
         fontl = "FONT_XL",
         fontm = "FONT_M",
         titlefont = "FONT_XS",
-        titlepaddingtop = 3,
+        titlepaddingtop = 20,
         valuepaddingbottom = -10,
     },
     ms_std = {
@@ -99,15 +99,15 @@ local themeOptions = {
         fontl = "FONT_L",
         fontm = "FONT_M",
         titlefont = "FONT_XS",
-        titlepaddingtop = 3,
-        valuepaddingbottom = -10,
+        titlepaddingtop = 10,
+        valuepaddingbottom = -5,
     },
     ss_full = {
         font = "FONT_XL",
         fontl = "FONT_XL",
         fontm = "FONT_M",
         titlefont = "FONT_XS",
-        titlepaddingtop = 5,
+        titlepaddingtop = 15,
         valuepaddingbottom = -10,
     },
     ss_std = {
