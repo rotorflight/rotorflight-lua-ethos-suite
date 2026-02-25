@@ -46,6 +46,14 @@ local function setFieldEnabled(index, enabled)
     if field and field.enable then field:enable(enabled) end
 end
 
+local function canSave()
+    local govEnabled = (rfsuite.session.governorMode ~= nil and rfsuite.session.governorMode ~= 0)
+    if not govEnabled then return false end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
+
 local function wakeup()
 
     -- we are compromised if we don't have governor mode known
@@ -70,7 +78,7 @@ local function wakeup()
     local adcVoltage = (rfsuite.session.batteryConfig ~= nil and rfsuite.session.batteryConfig.voltageMeterSource == 1)
 
     -- Navigation buttons (if present)
-    setNavEnabled("save", govEnabled)
+    setNavEnabled("save", canSave())
     setNavEnabled("reload", govEnabled)
 
     -- If governor is disabled in firmware, lock the page.
@@ -99,4 +107,4 @@ local function onNavMenu()
     return navHandlers.onNavMenu()
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, canSave = canSave, API = {}}
