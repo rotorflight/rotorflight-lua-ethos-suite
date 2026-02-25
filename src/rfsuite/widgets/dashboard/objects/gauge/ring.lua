@@ -162,49 +162,55 @@ function render.wakeup(box)
 
     box._currentDisplayValue = value
 
-    box._cache = {
-        value = value,
-        displayValue = displayValue,
-        unit = unit,
-        ringbatt = ringbatt,
-        percent = percent,
-        mahUnit = mahUnit,
-        novalue = getParam(box, "novalue") or "-",
-        fillcolor = resolveThresholdColor(value, box, "fillcolor", "fillcolor", getParam(box, "thresholds")),
-        textcolor = resolveThresholdColor(value, box, "textcolor", "textcolor", thresholds),
-        fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
-        bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        thresholds = getParam(box, "thresholds"),
-        title = getParam(box, "title"),
-        titlepos = getParam(box, "titlepos") or (getParam(box, "title") and "top"),
-        titlealign = getParam(box, "titlealign"),
-        titlefont = getParam(box, "titlefont"),
-        titlespacing = getParam(box, "titlespacing"),
-        titlepadding = getParam(box, "titlepadding"),
-        titlepaddingleft = getParam(box, "titlepaddingleft"),
-        titlepaddingright = getParam(box, "titlepaddingright"),
-        titlepaddingtop = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font = getParam(box, "font") or "FONT_STD",
-        decimals = getParam(box, "decimals"),
-        valuealign = getParam(box, "valuealign"),
-        valuepadding = getParam(box, "valuepadding"),
-        valuepaddingleft = getParam(box, "valuepaddingleft"),
-        valuepaddingright = getParam(box, "valuepaddingright"),
-        valuepaddingtop = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        thickness = getParam(box, "thickness"),
-        innerringcolor = resolveThemeColor("innerringcolor", getParam(box, "innerringcolor") or "white"),
-        innerringthickness = getParam(box, "innerringthickness") or 8,
-        ringbattsubalign = getParam(box, "ringbattsubalign"),
-        ringbattsubpadding = getParam(box, "ringbattsubpadding") or 2,
-        ringbattsubpaddingleft = getParam(box, "ringbattsubpaddingleft"),
-        ringbattsubpaddingright = getParam(box, "ringbattsubpaddingright"),
-        ringbattsubpaddingtop = getParam(box, "ringbattsubpaddingtop"),
-        ringbattsubpaddingbottom = getParam(box, "ringbattsubpaddingbottom"),
-        ringbattsubfont = getParam(box, "ringbattsubfont") or "FONT_XS"
-    }
+    local c = box._cache
+    if not c then
+        c = {}
+        box._cache = c
+    end
+
+    local thresholds = getParam(box, "thresholds")
+
+    c.value = value
+    c.displayValue = displayValue
+    c.unit = unit
+    c.ringbatt = ringbatt
+    c.percent = percent
+    c.mahUnit = mahUnit
+    c.novalue = getParam(box, "novalue") or "-"
+    c.fillcolor = resolveThresholdColor(value, box, "fillcolor", "fillcolor", thresholds)
+    c.textcolor = resolveThresholdColor(value, box, "textcolor", "textcolor", thresholds)
+    c.fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    c.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    c.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+    c.thresholds = thresholds
+    c.title = getParam(box, "title")
+    c.titlepos = getParam(box, "titlepos") or (getParam(box, "title") and "top")
+    c.titlealign = getParam(box, "titlealign")
+    c.titlefont = getParam(box, "titlefont")
+    c.titlespacing = getParam(box, "titlespacing")
+    c.titlepadding = getParam(box, "titlepadding")
+    c.titlepaddingleft = getParam(box, "titlepaddingleft")
+    c.titlepaddingright = getParam(box, "titlepaddingright")
+    c.titlepaddingtop = getParam(box, "titlepaddingtop")
+    c.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+    c.font = getParam(box, "font") or "FONT_STD"
+    c.decimals = getParam(box, "decimals")
+    c.valuealign = getParam(box, "valuealign")
+    c.valuepadding = getParam(box, "valuepadding")
+    c.valuepaddingleft = getParam(box, "valuepaddingleft")
+    c.valuepaddingright = getParam(box, "valuepaddingright")
+    c.valuepaddingtop = getParam(box, "valuepaddingtop")
+    c.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+    c.thickness = getParam(box, "thickness")
+    c.innerringcolor = resolveThemeColor("innerringcolor", getParam(box, "innerringcolor") or "white")
+    c.innerringthickness = getParam(box, "innerringthickness") or 8
+    c.ringbattsubalign = getParam(box, "ringbattsubalign")
+    c.ringbattsubpadding = getParam(box, "ringbattsubpadding") or 2
+    c.ringbattsubpaddingleft = getParam(box, "ringbattsubpaddingleft")
+    c.ringbattsubpaddingright = getParam(box, "ringbattsubpaddingright")
+    c.ringbattsubpaddingtop = getParam(box, "ringbattsubpaddingtop")
+    c.ringbattsubpaddingbottom = getParam(box, "ringbattsubpaddingbottom")
+    c.ringbattsubfont = getParam(box, "ringbattsubfont") or "FONT_XS"
 
 end
 

@@ -49,8 +49,11 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
-local function splitCSV(str)
-    local t = {}
+local function splitCSV(str, out)
+    local t = out or {}
+    for i = #t, 1, -1 do
+        t[i] = nil
+    end
     for part in gmatch(str, "([^,]+)") do
         t[#t + 1] = part:gsub("^%s*(.-)%s*$", "%1") -- trim
     end
@@ -131,7 +134,7 @@ function render.wakeup(box)
         -- Initialise CSV state if new or changed
         if box._csvRaw ~= displayValue then
             box._csvRaw = displayValue
-            box._csvParts = splitCSV(displayValue)
+            box._csvParts = splitCSV(displayValue, box._csvParts)
             box._csvIndex = 1
             box._csvLastTick = clock()
         end
