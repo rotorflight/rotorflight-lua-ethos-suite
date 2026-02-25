@@ -21,6 +21,8 @@ apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
 apiLoader._chunkCache      = apiLoader._chunkCache or {}      -- apiName -> compiled loader function
 apiLoader._chunkCacheOrder = apiLoader._chunkCacheOrder or {} -- MRU list (optional)
 apiLoader._chunkCacheMax   = apiLoader._chunkCacheMax or 5    -- optional cap
+apiLoader._cacheModeDefault = apiLoader._cacheModeDefault or "full"
+apiLoader._cacheModeByApi   = apiLoader._cacheModeByApi or {}
 
 local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
 local api_path = apidir
@@ -30,6 +32,41 @@ local firstLoadAPI = true -- Used to lazily bind helper references
 local mspHelper
 local utils
 local callback
+
+local function normalizeCacheMode(mode)
+    if mode == nil then return nil end
+    mode = tostring(mode):lower()
+    if mode == "lite" or mode == "full" then return mode end
+    return nil
+end
+
+function apiLoader.setCacheMode(mode)
+    local normalized = normalizeCacheMode(mode)
+    if normalized then
+        apiLoader._cacheModeDefault = normalized
+    end
+end
+
+function apiLoader.setApiCacheMode(apiName, mode)
+    if not apiName then return end
+    local normalized = normalizeCacheMode(mode)
+    if normalized then
+        apiLoader._cacheModeByApi[apiName] = normalized
+    else
+        apiLoader._cacheModeByApi[apiName] = nil
+    end
+end
+
+function apiLoader.getCacheMode(apiName)
+    if apiName and apiLoader._cacheModeByApi[apiName] then
+        return apiLoader._cacheModeByApi[apiName]
+    end
+    local app = rfsuite and rfsuite.app
+    if not (app and app.guiIsRunning) then
+        return "lite"
+    end
+    return apiLoader._cacheModeDefault
+end
 
 -- Retrieve (and cache) compiled chunk for an API module
 local function getChunk(apiName, apiFilePath)
@@ -101,6 +138,8 @@ local function loadAPI(apiName)
     if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
 
         apiModule.__apiName = apiName
+        apiModule.setCacheMode = function(mode) apiLoader.setApiCacheMode(apiName, mode) end
+        apiModule.getCacheMode = function() return apiLoader.getCacheMode(apiName) end
 
         -- Wrap read/write/setValue/readValue if present (currently no-op wrappers, but kept as-is)
         if apiModule.read then

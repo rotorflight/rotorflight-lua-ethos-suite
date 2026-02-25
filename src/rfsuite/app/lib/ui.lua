@@ -2776,12 +2776,33 @@ function ui.requestPage()
                 return
             end
             log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
-            tasks.msp.api.apidata.values[apiKey] = API.data().parsed
-            tasks.msp.api.apidata.structure[apiKey] = API.data().structure
-            tasks.msp.api.apidata.receivedBytes[apiKey] = API.data().buffer
-            tasks.msp.api.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-            tasks.msp.api.apidata.positionmap[apiKey] = API.data().positionmap
-            tasks.msp.api.apidata.other[apiKey] = API.data().other or {}
+            local cacheMode = nil
+            if type(v) == "table" and v.cacheMode then
+                cacheMode = v.cacheMode
+            elseif app.Page.apidata and app.Page.apidata.cacheMode then
+                cacheMode = app.Page.apidata.cacheMode
+            elseif tasks.msp.api.getCacheMode then
+                cacheMode = tasks.msp.api.getCacheMode(apiKey)
+            end
+            if cacheMode ~= nil then
+                cacheMode = tostring(cacheMode):lower()
+                if cacheMode ~= "lite" and cacheMode ~= "full" then cacheMode = nil end
+            end
+            if cacheMode == nil then cacheMode = "full" end
+
+            local data = API.data()
+            tasks.msp.api.apidata.values[apiKey] = data.parsed
+            tasks.msp.api.apidata.structure[apiKey] = data.structure
+            if cacheMode == "full" then
+                tasks.msp.api.apidata.receivedBytes[apiKey] = data.buffer
+                tasks.msp.api.apidata.receivedBytesCount[apiKey] = data.receivedBytesCount
+                tasks.msp.api.apidata.positionmap[apiKey] = data.positionmap
+            else
+                tasks.msp.api.apidata.receivedBytes[apiKey] = nil
+                tasks.msp.api.apidata.receivedBytesCount[apiKey] = nil
+                tasks.msp.api.apidata.positionmap[apiKey] = nil
+            end
+            tasks.msp.api.apidata.other[apiKey] = data.other or {}
             app.Page.apidata.retryCount[apiKey] = 0
             state.currentIndex = state.currentIndex + 1
             API = nil

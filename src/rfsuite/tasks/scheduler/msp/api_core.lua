@@ -117,6 +117,13 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         options = {}
     end
 
+    local cacheMode = "full"
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and api.getCacheMode then
+        cacheMode = api.getCacheMode(API_NAME) or cacheMode
+    end
+    local keepBuffers = (cacheMode ~= "lite")
+
     local chunked            = options.chunked or false
     local fieldsPerTick      = options.fieldsPerTick or 10
     local completionCallback = options.completionCallback
@@ -128,7 +135,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         local state = {
             index = 1,
             parsedData = {},
-            positionmap = {},
+            positionmap = keepBuffers and {} or nil,
             processed = processed or {},
             other = other or {},
             currentByte = 1,
@@ -158,7 +165,9 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
                 local startByte = state.currentByte
                 local endByte = startByte + size - 1
 
-                state.positionmap[field.field] = {start = startByte, size = size}
+                if keepBuffers then
+                    state.positionmap[field.field] = {start = startByte, size = size}
+                end
                 state.currentByte = endByte + 1
 
                 processedFields = processedFields + 1
@@ -171,12 +180,12 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
                 -- All fields parsed
                 local final = {
                     parsed = state.parsedData,
-                    buffer = buf,
+                    buffer = keepBuffers and buf or nil,
                     structure = structure,
-                    positionmap = state.positionmap,
+                    positionmap = keepBuffers and state.positionmap or nil,
                     processed = state.processed,
                     other = state.other,
-                    receivedBytesCount = math_floor((buf.offset or 1) - 1)
+                    receivedBytesCount = keepBuffers and math_floor((buf.offset or 1) - 1) or nil
                 }
                 if completionCallback then completionCallback(final) end
             else
@@ -196,7 +205,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
     buf.offset = 1
 
     local typeSizes = get_type_size()
-    local position_map = {}
+    local position_map = keepBuffers and {} or nil
     local current_byte = 1
 
     for _, field in ipairs(structure) do
@@ -212,7 +221,9 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         parsedData[field.field] = data
 
         local size = typeSizes[field.type]
-        position_map[field.field] = {start = current_byte, size = size}
+        if keepBuffers then
+            position_map[field.field] = {start = current_byte, size = size}
+        end
         current_byte = current_byte + size
 
         ::continue::
@@ -220,12 +231,12 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
 
     local final = {
         parsed = parsedData,
-        buffer = buf,
+        buffer = keepBuffers and buf or nil,
         structure = structure,
-        positionmap = position_map,
+        positionmap = keepBuffers and position_map or nil,
         processed = processed,
         other = other,
-        receivedBytesCount = math_floor(buf.offset - 1)
+        receivedBytesCount = keepBuffers and math_floor(buf.offset - 1) or nil
     }
 
     completionCallback(final)

@@ -81,6 +81,47 @@ Modules leverage the `app.Page.apidata` object to generate forms and interact wi
    * On form submission, modules call `app.Page.apidata.api.write()` to push updates.
    * Use `rfsuite.tasks.callback.now()` via `api.scheduleWakeup()` for asynchronous operations.
 
+### MSP API Cache Modes (full/lite)
+
+MSP API reads can cache full buffer state or use a lightweight mode to reduce RAM:
+
+* **`full`**: stores parsed values plus raw buffer, position map, and byte counts (enables delta payloads).
+* **`lite`**: stores parsed values only. Raw buffers/position maps are dropped (no delta writes).
+
+Defaults:
+
+* When the app GUI is running: `full`
+* When the app GUI is not running: `lite`
+
+Per-page override:
+
+```lua
+local apidata = {
+  cacheMode = "lite",
+  api = {"STATUS", "RC_TUNING"},
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
+Per-API override in a page:
+
+```lua
+local apidata = {
+  api = {
+    {name = "STATUS", cacheMode = "lite"},
+    {name = "RC_TUNING"}
+  },
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
+Direct API override:
+
+```lua
+local API = rfsuite.tasks.msp.api.load("STATUS")
+API.setCacheMode("lite")
+```
+
 ### Integration with MSP Tasks
 
 * Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/scheduler/msp/api` loader to fetch parsed data structures and buffer states.

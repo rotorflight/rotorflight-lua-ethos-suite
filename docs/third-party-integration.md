@@ -67,6 +67,30 @@ API.read()
   * Treat `duplicate` / `busy` as explicit "back off and retry later".
   * For direct queue usage (outside API wrappers), check `ok, reason` and avoid advancing state when enqueue fails.
 
+**MSP API cache modes (RAM vs delta writes)**:
+
+* `full` keeps raw buffers and position maps (enables delta payloads).
+* `lite` keeps only parsed values (no delta payloads, lower RAM).
+
+Defaults to `lite` when the app GUI is not running. Override per API:
+
+```lua
+local API = rfsuite.tasks.msp.api.load("STATUS")
+API.setCacheMode("lite")
+```
+
+Or per-page via `apidata`:
+
+```lua
+local apidata = {
+  api = {
+    {name = "STATUS", cacheMode = "lite"},
+    {name = "RC_TUNING"}
+  },
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
 ### Utilities
 
 * **Logging**: `rfsuite.utils.log(message, level)` where `level` is `"info"`, `"warn"`, or `"error"`.
