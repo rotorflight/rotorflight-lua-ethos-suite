@@ -89,12 +89,14 @@ Or per-page via `apidata`:
 ```lua
 local apidata = {
   api = {
-    {name = "STATUS", enableDeltaCache = false},
+    {name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
     {name = "RC_TUNING"}
   },
   formdata = {labels = {}, fields = {...}}
 }
 ```
+
+`rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
 
 ### Utilities
 

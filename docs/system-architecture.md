@@ -108,12 +108,16 @@ Per-API override in a page:
 ```lua
 local apidata = {
   api = {
-    {name = "STATUS", enableDeltaCache = false},
+    {name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
     {name = "RC_TUNING"}
   },
   formdata = {labels = {}, fields = {...}}
 }
 ```
+
+Optional per-API write override:
+
+* `rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
 
 Direct API override:
 
