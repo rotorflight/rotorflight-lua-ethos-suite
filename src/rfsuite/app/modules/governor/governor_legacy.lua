@@ -10,7 +10,7 @@ local session = rfsuite.session
 
 local apidata = {
     api = {
-        [1] = 'GOVERNOR_CONFIG'
+        {id = 1, name = "GOVERNOR_CONFIG", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

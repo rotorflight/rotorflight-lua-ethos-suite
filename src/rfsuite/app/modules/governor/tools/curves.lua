@@ -27,6 +27,14 @@ local APIDATA = {}
 
 local FORMDATA = {}
 
+local function loadApiNoDelta(apiName)
+    local api = tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function saveData()
     local snap = APIDATA["GOVERNOR_CONFIG"]
     local form = FORMDATA["GOVERNOR_CONFIG"]
@@ -36,7 +44,7 @@ local function saveData()
         return
     end
 
-    local API = tasks.msp.api.load("GOVERNOR_CONFIG")
+    local API = loadApiNoDelta("GOVERNOR_CONFIG")
     API.setRebuildOnWrite(true)
 
     -- restore snapshot values
@@ -56,7 +64,7 @@ local function saveData()
 
     API.setCompleteHandler(function()
         -- EEPROM commit
-        local EAPI = tasks.msp.api.load("EEPROM_WRITE")
+        local EAPI = loadApiNoDelta("EEPROM_WRITE")
         EAPI.setCompleteHandler(function()
             if app and app.ui and app.ui.setPageDirty then
                 app.ui.setPageDirty(false)
@@ -81,7 +89,7 @@ local function loadData()
             return dst
         end
 
-        local API = tasks.msp.api.load("GOVERNOR_CONFIG")
+        local API = loadApiNoDelta("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
 
             -- store form data

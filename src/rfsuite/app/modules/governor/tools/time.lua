@@ -8,7 +8,9 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware", showProgress = true})
 
 local apidata = {
-    api = {[1] = 'GOVERNOR_CONFIG'},
+    api = {
+        {id = 1, name = "GOVERNOR_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+    },
     formdata = {
         labels = {},
         fields = {

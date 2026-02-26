@@ -21,7 +21,9 @@ local FIELDS = {
 }
 
 local apidata = {
-    api = {[1] = 'GOVERNOR_CONFIG'},
+    api = {
+        {id = 1, name = "GOVERNOR_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+    },
     formdata = {
         labels = {},
         fields = {
