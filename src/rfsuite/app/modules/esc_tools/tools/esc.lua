@@ -9,7 +9,6 @@ local lcd = lcd
 local system = system
 
 local pages = {}
-local WARNING_TEXT = "@i18n(app.modules.esc_tools.warning_remove_blades)@"
 
 local function resolveModulePath(script)
     if type(script) ~= "string" then return nil, nil end
@@ -65,6 +64,7 @@ local function openPage(opts)
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
+    rfsuite.session.escBuffer = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -82,9 +82,6 @@ local function openPage(opts)
     end
 
     rfsuite.app.ui.fieldHeader(title)
-
-    local warningLine = form.addLine("")
-    form.addStaticText(warningLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, WARNING_TEXT)
 
     local buttonW
     local buttonH
@@ -144,14 +141,18 @@ local function openPage(opts)
             icon = rfsuite.app.gfx_buttons["escmain"][childIdx],
             options = FONT_S,
             paint = function() end,
-            press = function()
-                rfsuite.preferences.menulastselected["escmain"] = childIdx
-                rfsuite.app.ui.progressDisplay(nil,nil,0.5)
+                press = function()
+                    rfsuite.preferences.menulastselected["escmain"] = childIdx
+                    rfsuite.app.ui.progressDisplay(nil,nil,0.5)
+                    local toolScript = "esc_tools/tools/esc_tool.lua"
+                    if pvalue.esc4way == true then
+                        toolScript = "esc_tools/tools/esc_tool_4way.lua"
+                    end
                     rfsuite.app.ui.openPage({
                         idx = childIdx,
                         title = title .. " / " .. pvalue.toolName,
                         folder = pvalue.folder,
-                        script = "esc_tools/tools/esc_tool.lua",
+                        script = toolScript,
                         returnContext = {idx = parentIdx, title = title, script = relativeScript or script}
                     })
                 end

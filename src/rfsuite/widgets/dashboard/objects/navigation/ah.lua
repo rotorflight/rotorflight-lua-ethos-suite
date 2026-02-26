@@ -42,6 +42,9 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
+local ARC_ANGLES = {-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60}
+local COMPASS_LABELS = {[0] = "N", [45] = "NE", [90] = "E", [135] = "SE", [180] = "S", [225] = "SW", [270] = "W", [315] = "NW"}
+
 function render.invalidate(box) box._cfg = nil end
 
 local function rotate(px, py, cx, cy, angle)
@@ -93,8 +96,16 @@ function render.dirty(box)
     local d = box._dyn
     if not d then return false end
     local l = box._last
-    if not l or d.pitch ~= l.pitch or d.roll ~= l.roll or d.yaw ~= l.yaw or d.altitude ~= l.altitude or d.groundspeed ~= l.groundspeed then
-        box._last = {pitch = d.pitch, roll = d.roll, yaw = d.yaw, altitude = d.altitude, groundspeed = d.groundspeed}
+    if not l then
+        l = {}
+        box._last = l
+    end
+    if d.pitch ~= l.pitch or d.roll ~= l.roll or d.yaw ~= l.yaw or d.altitude ~= l.altitude or d.groundspeed ~= l.groundspeed then
+        l.pitch = d.pitch
+        l.roll = d.roll
+        l.yaw = d.yaw
+        l.altitude = d.altitude
+        l.groundspeed = d.groundspeed
         return true
     end
     return false
@@ -113,7 +124,16 @@ function render.wakeup(box)
     local altitude = getSensor("altitude") or 20
     local groundspeed = getSensor("groundspeed") or 20
 
-    box._dyn = {pitch = pitch, roll = roll, yaw = yaw, altitude = altitude, groundspeed = groundspeed}
+    local d = box._dyn
+    if not d then
+        d = {}
+        box._dyn = d
+    end
+    d.pitch = pitch
+    d.roll = roll
+    d.yaw = yaw
+    d.altitude = altitude
+    d.groundspeed = groundspeed
 end
 
 function render.paint(x, y, w, h, box)
@@ -169,7 +189,7 @@ function render.paint(x, y, w, h, box)
     if c.showarc then
         lcd.color(c.arccolor)
         local arcR = w * 0.4
-        for _, ang in ipairs({-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60}) do
+        for _, ang in ipairs(ARC_ANGLES) do
             local rad = math.rad(ang)
             local x1 = cx + arcR * sin(rad)
             local y1 = y + 10 + arcR * (1 - cos(rad))
@@ -206,14 +226,13 @@ function render.paint(x, y, w, h, box)
         lcd.color(c.compasscolor)
         local heading = floor((yaw + 360) % 360)
         local compassY = y + h - 24
-        local labels = {[0] = "N", [45] = "NE", [90] = "E", [135] = "SE", [180] = "S", [225] = "SW", [270] = "W", [315] = "NW"}
         for ang = -90, 90, 10 do
             local hdg = (heading + ang + 360) % 360
             local px = cx + ang * ppd
             if px > x and px < x + w then
                 local th = (hdg % 30 == 0) and 8 or 4
                 lcd.drawLine(px, compassY, px, compassY - th)
-                if hdg % 30 == 0 then lcd.drawText(px, compassY - th - 8, labels[hdg] or tostring(hdg), CENTERED + FONT_XS) end
+                if hdg % 30 == 0 then lcd.drawText(px, compassY - th - 8, COMPASS_LABELS[hdg] or tostring(hdg), CENTERED + FONT_XS) end
             end
         end
         lcd.drawFilledTriangle(cx, compassY + 1, cx - 5, compassY - 7, cx + 5, compassY - 7)
@@ -225,7 +244,7 @@ function render.paint(x, y, w, h, box)
             lcd.drawFilledRectangle(bx, by, bw, bh)
             lcd.color(c.compasscolor);
             lcd.drawRectangle(bx, by, bw, bh)
-            lcd.drawText(cx, by + 1, format("%03d° %s", heading, labels[heading - (heading % 45)] or (heading .. "°")), CENTERED + FONT_XS)
+            lcd.drawText(cx, by + 1, format("%03d° %s", heading, COMPASS_LABELS[heading - (heading % 45)] or (heading .. "°")), CENTERED + FONT_XS)
         end
     end
 

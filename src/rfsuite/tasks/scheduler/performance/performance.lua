@@ -68,33 +68,33 @@ function performance.wakeup()
 
         local m
         if system_getMemoryUsage then m = system_getMemoryUsage() end
-        if type(m) ~= "table" then m = {} end
+        if type(m) == "table" then
+            local free_lua_kb = clamp(((m.luaRamAvailable or 0) / 1024), 0, 1e12)
+            local free_bmp_kb = clamp(((m.luaBitmapsRamAvailable or 0) / 1024), 0, 1e12)
 
-        local free_lua_kb = clamp(((m.luaRamAvailable or 0) / 1024), 0, 1e12)
-        local free_bmp_kb = clamp(((m.luaBitmapsRamAvailable or 0) / 1024), 0, 1e12)
+            if mem_avg_kb == nil then
+                mem_avg_kb = free_lua_kb
+            else
+                mem_avg_kb = clamp(MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb, 0, 1e12)
+            end
+            perf.freeram = mem_avg_kb
 
-        if mem_avg_kb == nil then
-            mem_avg_kb = free_lua_kb
-        else
-            mem_avg_kb = clamp(MEM_ALPHA * free_lua_kb + (1 - MEM_ALPHA) * mem_avg_kb, 0, 1e12)
+            local gc_total_kb = clamp(collectgarbage("count") or 0, 0, 1e12)
+            if usedram_avg_kb == nil then
+                usedram_avg_kb = gc_total_kb
+            else
+                usedram_avg_kb = clamp(MEM_ALPHA * gc_total_kb + (1 - MEM_ALPHA) * usedram_avg_kb, 0, 1e12)
+            end
+            perf.usedram = usedram_avg_kb
+
+            if free_bmp_kb > bitmap_pool_est_kb then bitmap_pool_est_kb = free_bmp_kb end
+            perf.luaBitmapsRamKB = free_bmp_kb
+
+            perf.mainStackKB = (m.mainStackAvailable or 0) / 1024
+            perf.ramKB = (m.ramAvailable or 0) / 1024
+            perf.luaRamKB = (m.luaRamAvailable or 0) / 1024
+            perf.luaBitmapsRamKB = (m.luaBitmapsRamAvailable or 0) / 1024
         end
-        perf.freeram = mem_avg_kb
-
-        local gc_total_kb = clamp(collectgarbage("count") or 0, 0, 1e12)
-        if usedram_avg_kb == nil then
-            usedram_avg_kb = gc_total_kb
-        else
-            usedram_avg_kb = clamp(MEM_ALPHA * gc_total_kb + (1 - MEM_ALPHA) * usedram_avg_kb, 0, 1e12)
-        end
-        perf.usedram = usedram_avg_kb
-
-        if free_bmp_kb > bitmap_pool_est_kb then bitmap_pool_est_kb = free_bmp_kb end
-        perf.luaBitmapsRamKB = free_bmp_kb
-
-        perf.mainStackKB = (m.mainStackAvailable or 0) / 1024
-        perf.ramKB = (m.ramAvailable or 0) / 1024
-        perf.luaRamKB = (m.luaRamAvailable or 0) / 1024
-        perf.luaBitmapsRamKB = (m.luaBitmapsRamAvailable or 0) / 1024
     end
 
     local loop_ms = tonumber(perf.taskLoopCpuMs) or tonumber(perf.taskLoopTime) or 0
