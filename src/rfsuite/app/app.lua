@@ -202,7 +202,8 @@ function app.create()
         app.loaderSpeed = {
             DEFAULT = 1.0,
             FAST = 2.0,
-            SLOW = 0.75
+            SLOW = 0.75,
+            VSLOW = 0.5
         }
 
         app.tasks = assert(compile("app/tasks.lua"))()

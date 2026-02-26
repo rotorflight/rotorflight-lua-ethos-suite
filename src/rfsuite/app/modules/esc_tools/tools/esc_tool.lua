@@ -149,10 +149,6 @@ local function openPage(opts)
     local folder = opts.folder
     local script = opts.script
 
-    rfsuite.app.lastIdx = parentIdx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-
     if type(folder) ~= "string" or folder == "" then
         folder = title
     end

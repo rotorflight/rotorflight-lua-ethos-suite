@@ -141,14 +141,18 @@ local function openPage(opts)
             icon = rfsuite.app.gfx_buttons["escmain"][childIdx],
             options = FONT_S,
             paint = function() end,
-            press = function()
-                rfsuite.preferences.menulastselected["escmain"] = childIdx
-                rfsuite.app.ui.progressDisplay(nil,nil,0.5)
+                press = function()
+                    rfsuite.preferences.menulastselected["escmain"] = childIdx
+                    rfsuite.app.ui.progressDisplay(nil,nil,0.5)
+                    local toolScript = "esc_tools/tools/esc_tool.lua"
+                    if pvalue.esc4way == true then
+                        toolScript = "esc_tools/tools/esc_tool_4way.lua"
+                    end
                     rfsuite.app.ui.openPage({
                         idx = childIdx,
                         title = title .. " / " .. pvalue.toolName,
                         folder = pvalue.folder,
-                        script = "esc_tools/tools/esc_tool.lua",
+                        script = toolScript,
                         returnContext = {idx = parentIdx, title = title, script = relativeScript or script}
                     })
                 end

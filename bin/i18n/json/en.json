@@ -4105,6 +4105,228 @@
       },
       "esc_tools": {
         "mfg": {
+          "am32": {
+            "advanced": {
+              "english": "Advanced",
+              "needs_translation": false,
+              "translation": "Advanced"
+            },
+            "basic": {
+              "english": "Basic",
+              "needs_translation": false,
+              "translation": "Basic"
+            },
+            "bidirectionalmode": {
+              "english": "Bidirectional Mode",
+              "needs_translation": false,
+              "translation": "Bidirectional Mode"
+            },
+            "brakeonstop": {
+              "english": "Brake on Stop",
+              "needs_translation": false,
+              "translation": "Brake on Stop"
+            },
+            "brakestrength": {
+              "english": "Brake Strength",
+              "needs_translation": false,
+              "translation": "Brake Strength"
+            },
+            "complementary_pwm": {
+              "english": "Complementary PWM",
+              "needs_translation": false,
+              "translation": "Complementary PWM"
+            },
+            "direction": {
+              "english": "Direction",
+              "needs_translation": false,
+              "translation": "Direction"
+            },
+            "currentlimit": {
+              "english": "Current Limit",
+              "needs_translation": false,
+              "translation": "Current Limit"
+            },
+            "lowvoltagecutoff": {
+              "english": "Low Voltage Cutoff",
+              "needs_translation": false,
+              "translation": "Low Voltage Cutoff"
+            },
+            "lowvoltagethreshold": {
+              "english": "Low Voltage Threshold",
+              "needs_translation": false,
+              "translation": "Low Voltage Threshold"
+            },
+            "limits": {
+              "english": "Limits",
+              "needs_translation": false,
+              "translation": "Limits"
+            },
+            "motorkv": {
+              "english": "Motor KV",
+              "needs_translation": false,
+              "translation": "Motor KV"
+            },
+            "motorpoles": {
+              "english": "Motor Poles",
+              "needs_translation": false,
+              "translation": "Motor Poles"
+            },
+            "name": {
+              "english": "AM32",
+              "needs_translation": false,
+              "translation": "AM32"
+            },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "needs_translation": false,
+              "translation": "PWM Frequency"
+            },
+            "beepvolume": {
+              "english": "Beep Volume",
+              "needs_translation": false,
+              "translation": "Beep Volume"
+            },
+            "protocol": {
+              "english": "Protocol",
+              "needs_translation": false,
+              "translation": "Protocol"
+            },
+            "rcarreversing": {
+              "english": "RC Car Reversing",
+              "needs_translation": false,
+              "translation": "RC Car Reversing"
+            },
+            "runningbrake": {
+              "english": "Running Brake",
+              "needs_translation": false,
+              "translation": "Running Brake"
+            },
+            "servodeadband": {
+              "english": "Servo Dead Band",
+              "needs_translation": false,
+              "translation": "Servo Dead Band"
+            },
+            "servohighthreshold": {
+              "english": "Servo High Threshold",
+              "needs_translation": false,
+              "translation": "Servo High Threshold"
+            },
+            "servolowthreshold": {
+              "english": "Servo Low Threshold",
+              "needs_translation": false,
+              "translation": "Servo Low Threshold"
+            },
+            "servoneutral": {
+              "english": "Servo Neutral",
+              "needs_translation": false,
+              "translation": "Servo Neutral"
+            },
+            "sinemoderange": {
+              "english": "Sine Mode Range",
+              "needs_translation": false,
+              "translation": "Sine Mode Range"
+            },
+            "sinepowermode": {
+              "english": "Sine Power Mode",
+              "needs_translation": false,
+              "translation": "Sine Power Mode"
+            },
+            "sinusoidalstartup": {
+              "english": "Sinusoidal Startup",
+              "needs_translation": false,
+              "translation": "Sinusoidal Startup"
+            },
+            "startuppower": {
+              "english": "Startup Power",
+              "needs_translation": false,
+              "translation": "Startup Power"
+            },
+            "stallprotection": {
+              "english": "Stall Protection",
+              "needs_translation": false,
+              "translation": "Stall Protection"
+            },
+            "stuckrotorprotection": {
+              "english": "Stuck Rotor Protection",
+              "needs_translation": false,
+              "translation": "Stuck Rotor Protection"
+            },
+            "telemetryinterval": {
+              "english": "Telemetry Interval",
+              "needs_translation": false,
+              "translation": "Telemetry Interval"
+            },
+            "temperaturelimit": {
+              "english": "Temperature Limit",
+              "needs_translation": false,
+              "translation": "Temperature Limit"
+            },
+            "tbl_brake_active": {
+              "english": "Active Brake",
+              "needs_translation": false,
+              "translation": "Active Brake"
+            },
+            "tbl_brake_brake": {
+              "english": "Brake",
+              "needs_translation": false,
+              "translation": "Brake"
+            },
+            "tbl_brake_off": {
+              "english": "Off",
+              "needs_translation": false,
+              "translation": "Off"
+            },
+            "tbl_lvc_abs": {
+              "english": "Absolute",
+              "needs_translation": false,
+              "translation": "Absolute"
+            },
+            "tbl_lvc_cell": {
+              "english": "Cell Based",
+              "needs_translation": false,
+              "translation": "Cell Based"
+            },
+            "tbl_lvc_off": {
+              "english": "Off",
+              "needs_translation": false,
+              "translation": "Off"
+            },
+            "tbl_pwm_fixed": {
+              "english": "Fixed",
+              "needs_translation": false,
+              "translation": "Fixed"
+            },
+            "tbl_pwm_rpm": {
+              "english": "By RPM",
+              "needs_translation": false,
+              "translation": "By RPM"
+            },
+            "tbl_pwm_variable": {
+              "english": "Variable",
+              "needs_translation": false,
+              "translation": "Variable"
+            },
+            "timing": {
+              "english": "Timing",
+              "needs_translation": false,
+              "translation": "Timing"
+            },
+            "usehallsensors": {
+              "english": "Use Hall Sensors",
+              "needs_translation": false,
+              "translation": "Use Hall Sensors"
+            },
+            "variablepwmfrequency": {
+              "english": "Variable PWM Frequency",
+              "needs_translation": false,
+              "translation": "Variable PWM Frequency"
+            },
+            "autoadvance": {
+              "english": "Auto Advance",
+              "needs_translation": false,
+              "translation": "Auto Advance"
+            }
+          },
           "flrtr": {
             "active_freewheel": {
               "english": "Active Freewheeling",
