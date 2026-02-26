@@ -21,6 +21,14 @@ local tonumber = tonumber
 
 local loaders = {}
 
+local DEFAULT_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
+
+local function clearArray(t)
+    for i = #t, 1, -1 do
+        t[i] = nil
+    end
+end
+
 local function fmtRadioLinkType()
 
 
@@ -210,14 +218,20 @@ local function ellipsizeRight(s, maxW)
     return t .. "…"
 end
 
-local function resolveLogLines(linesSrc, maxLines)
+local function resolveLogLines(linesSrc, maxLines, out)
     maxLines = maxLines or 4
-    if not linesSrc then return {} end
+    local dst = out or {}
+    clearArray(dst)
+    if not linesSrc then return dst end
 
     -- Function source
     if type(linesSrc) == "function" then
         local res = linesSrc(maxLines)
-        return (type(res) == "table") and res or {}
+        if type(res) == "table" then
+            for i = 1, #res do dst[i] = tostring(res[i]) end
+            return dst
+        end
+        return dst
     end
 
     -- Table source
@@ -225,24 +239,32 @@ local function resolveLogLines(linesSrc, maxLines)
         -- Object style: getLines(max)
         if type(linesSrc.getLines) == "function" then
             local res = linesSrc:getLines(maxLines)
-            if type(res) == "table" then return res end
+            if type(res) == "table" then
+                for i = 1, #res do dst[i] = tostring(res[i]) end
+                return dst
+            end
         end
 
         -- Plain array of lines
         if #linesSrc > 0 then
-            local out = {}
             local start = max(1, #linesSrc - maxLines + 1)
-            for i = start, #linesSrc do out[#out + 1] = tostring(linesSrc[i]) end
-            return out
+            local n = 0
+            for i = start, #linesSrc do
+                n = n + 1
+                dst[n] = tostring(linesSrc[i])
+            end
+            return dst
         end
     end
 
-    return {}
+    return dst
 end
 
 
-local function getWrappedTextLines(message, fonts, maxWidth, maxHeight)
-    local lines = {}
+local function getWrappedTextLines(message, fonts, maxWidth, maxHeight, out)
+    local lines = out or {}
+    clearArray(lines)
+    message = tostring(message or "")
     local chosenFont = fonts[1]
     local _, lineH = lcd.getTextSize("Ay")
 
@@ -256,29 +278,34 @@ local function getWrappedTextLines(message, fonts, maxWidth, maxHeight)
         end
     end
 
-    local function wrap(str)
-        local words = {}
-        for w in str:gmatch("%S+") do insert(words, w) end
-        local current = words[1] or ""
-        for i = 2, #words do
-            local test = current .. " " .. words[i]
+    local current = nil
+    for w in message:gmatch("%S+") do
+        if not current then
+            current = w
+        else
+            local test = current .. " " .. w
             if lcd.getTextSize(test) <= maxWidth then
                 current = test
             else
-                insert(lines, current)
-                current = words[i]
+                lines[#lines + 1] = current
+                current = w
             end
         end
-        insert(lines, current)
     end
-
-    wrap(message)
+    if current then
+        lines[#lines + 1] = current
+    end
+    if #lines == 0 then
+        lines[1] = ""
+    end
     local maxLines = max(1, floor(maxHeight / lineH))
     if #lines > maxLines then
-        lines = {table.unpack(lines, 1, maxLines)}
-        local last = lines[#lines] or ""
+        for i = #lines, maxLines + 1, -1 do
+            lines[i] = nil
+        end
+        local last = lines[maxLines] or ""
         while lcd.getTextSize(last .. "…") > maxWidth and #last > 1 do last = last:sub(1, -2) end
-        lines[#lines] = last .. "…"
+        lines[maxLines] = last .. "…"
     end
 
     return lines, chosenFont, lineH
@@ -296,7 +323,9 @@ end
 local function renderOverlayText(dashboard, cx, cy, innerR, fg)
     local message = dashboard._overlay_text or "@i18n(widgets.dashboard.loading)@"
     local fonts = dashboard.utils.getFontListsForResolution().value_default
-    local lines, chosenFont, lineH = getWrappedTextLines(message, fonts, innerR * 2 * 0.9, innerR * 2 * 0.8)
+    local linesOut = dashboard and dashboard._overlayWrapLines
+    local lines, chosenFont, lineH = getWrappedTextLines(message, fonts, innerR * 2 * 0.9, innerR * 2 * 0.8, linesOut)
+    if dashboard then dashboard._overlayWrapLines = lines end
 
     lcd.color(fg)
     lcd.font(chosenFont)
@@ -488,11 +517,14 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     lineH = max(1, lineH)
 
     local maxLines = max(1, floor((logH) / lineH))
-    local lines = resolveLogLines(linesSrc, maxLines)
+    local linesOut = dashboard and dashboard._logLinesScratch
+    local lines = resolveLogLines(linesSrc, maxLines, linesOut)
+    if dashboard then dashboard._logLinesScratch = lines end
 
     -- If caller didn't pass a source, try common dashboard fields.
     if (not lines or #lines == 0) and dashboard then
-        lines = resolveLogLines(dashboard._log_lines or dashboard.logLines or dashboard.logQueue or dashboard.startupQueue, maxLines)
+        lines = resolveLogLines(dashboard._log_lines or dashboard.logLines or dashboard.logQueue or dashboard.startupQueue, maxLines, linesOut)
+        if dashboard then dashboard._logLinesScratch = lines end
     end
 
     -- Draw bottom-aligned (console), with safe padding.
@@ -632,12 +664,14 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
         if not fonts and dashboard and dashboard.utils and type(dashboard.utils.getFontListsForResolution) == "function" then
             fonts = dashboard.utils.getFontListsForResolution().value_default
         end
-        fonts = fonts or {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
+        fonts = fonts or DEFAULT_FONTS
 
         local padY = max(2, floor(msgH * 0.10))
         local textH = max(1, msgH - 2 * padY)
 
-        local lines, chosenFont, lineH = getWrappedTextLines(msg, fonts, msgW, textH)
+        local wrapOut = dashboard and dashboard._staticWrapLines
+        local lines, chosenFont, lineH = getWrappedTextLines(msg, fonts, msgW, textH, wrapOut)
+        if dashboard then dashboard._staticWrapLines = lines end
         lcd.font(chosenFont)
 
         local totalH = #lines * lineH

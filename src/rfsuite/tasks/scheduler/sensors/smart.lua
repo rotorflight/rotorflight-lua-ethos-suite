@@ -30,7 +30,7 @@ local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
 
-local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
 local function calculateFuel()
     local prefs = rfsuite.session.modelPreferences

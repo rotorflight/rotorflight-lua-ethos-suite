@@ -9,8 +9,8 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "PID_PROFILE"
-    },
+        {id = 1, name = "PID_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },  
     formdata = {
         labels = {
             {t = "@i18n(app.modules.profile_pidbandwidth.name)@", inline_size = 8.15, label = 1, type = 1},

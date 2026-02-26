@@ -70,7 +70,7 @@ local SAMPLE_RATE = 1
 local function secondsToSamples(sec) return math.floor(sec * SAMPLE_RATE) end
 
 local function openProgressDialog(...)
-    if rfutils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+    if rfutils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
         local arg1 = select(1, ...)
         if type(arg1) == "table" then
             arg1.progress = true

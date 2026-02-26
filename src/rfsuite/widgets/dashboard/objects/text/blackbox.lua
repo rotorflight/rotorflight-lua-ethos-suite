@@ -49,7 +49,7 @@ local progressMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 
 local function openProgressDialog(...)
-    if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+    if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
         local arg1 = select(1, ...)
         if type(arg1) == "table" then
             arg1.progress = true

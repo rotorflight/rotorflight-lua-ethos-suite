@@ -16,7 +16,7 @@ local log
 local tasks
 local firstWakeup = true
 
-local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 local lastInFlight = nil
  
 
@@ -327,6 +327,7 @@ local function getApi(api_name, fields)
 
     -- First load can be expensive (disk + compile). Keep it around.
     local API = tasks.msp.api.load(api_name)
+    if API and API.enableDeltaCache then API.enableDeltaCache(false) end
     apiCache[api_name] = API
 
     -- Stable UUID per API (set once)

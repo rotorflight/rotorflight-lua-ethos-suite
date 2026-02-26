@@ -20,6 +20,7 @@ function uid.wakeup()
         mspCallMade = true
 
         local API = rfsuite.tasks.msp.api.load("UID")
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             local U_ID_0 = API.readValue("U_ID_0")
             local U_ID_1 = API.readValue("U_ID_1")

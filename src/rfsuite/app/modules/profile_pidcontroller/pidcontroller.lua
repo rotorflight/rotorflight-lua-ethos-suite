@@ -12,8 +12,8 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "PID_PROFILE"
-    },
+        {id = 1, name = "PID_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },    
     formdata = {
         labels = {
             {t = "@i18n(app.modules.profile_pidcontroller.inflight_error_decay)@", label = 2, inline_size = 13.6},

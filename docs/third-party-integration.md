@@ -67,6 +67,38 @@ API.read()
   * Treat `duplicate` / `busy` as explicit "back off and retry later".
   * For direct queue usage (outside API wrappers), check `ok, reason` and avoid advancing state when enqueue fails.
 
+**MSP API delta cache (RAM vs delta writes)**:
+
+* Enabled: keeps raw buffers and position maps (allows delta payloads).
+* Disabled: keeps only parsed values (no delta payloads, lower RAM).
+
+Defaults to disabled when the app GUI is not running. Override per API:
+
+```lua
+local API = rfsuite.tasks.msp.api.load("STATUS")
+API.enableDeltaCache(false)
+```
+
+Boolean semantics:
+
+* `API.enableDeltaCache(true)` → delta cache enabled
+* `API.enableDeltaCache(false)` → delta cache disabled
+
+Or per-page via `apidata`:
+
+```lua
+local apidata = {
+  api = {
+    {id = 1, name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
+    {name = "RC_TUNING"}
+  },
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
+* `rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
+* `id = <number>` lets `mspapi = <number>` map by id instead of list order.
+
 ### Utilities
 
 * **Logging**: `rfsuite.utils.log(message, level)` where `level` is `"info"`, `"warn"`, or `"error"`.

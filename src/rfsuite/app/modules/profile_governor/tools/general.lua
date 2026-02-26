@@ -14,6 +14,25 @@ local FIELD_F_GAIN = 9
 local FIELD_YAW_WEIGHT = 10
 local FIELD_CYCLIC_WEIGHT = 11
 local FIELD_COLLECTIVE_WEIGHT = 12
+local apidata
+
+local function getApiEntryName(entry)
+    if type(entry) == "table" then return entry.name end
+    return entry
+end
+
+local function getGovernorFlags()
+    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+    if not values then return nil end
+
+    local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1]) or "GOVERNOR_PROFILE"
+    local governorProfile = values[apiName] or values["GOVERNOR_PROFILE"]
+    if governorProfile and governorProfile.governor_flags ~= nil then
+        return tonumber(governorProfile.governor_flags) or governorProfile.governor_flags
+    end
+    return nil
+end
+
 local function decodeGovernorFlags(flags)
     local governor_flags_bitmap = {{field = "fc_throttle_curve"}, {field = "tx_precomp_curve"}, {field = "fallback_precomp"}, {field = "voltage_comp"}, {field = "pid_spoolup"}, {field = "hs_adjustment"}, {field = "dyn_min_throttle"}, {field = "autorotation"}, {field = "suspend"}, {field = "bypass"}}
 
@@ -25,8 +44,10 @@ local function decodeGovernorFlags(flags)
     return decoded
 end
 
-local apidata = {
-    api = {[1] = 'GOVERNOR_PROFILE'},
+apidata = {
+    api = {
+        {id = 1, name = "GOVERNOR_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },    
     formdata = {
         labels = {
             {t = "@i18n(app.modules.profile_governor.gains)@", label = 1, inline_size = 8.15}, 
@@ -73,7 +94,8 @@ local function wakeup()
             end
         end
 
-        local flags = rfsuite.tasks.msp.api.apidata.values['GOVERNOR_PROFILE'].governor_flags
+        local flags = getGovernorFlags()
+        if flags == nil then return end
         local decodedFlags = decodeGovernorFlags(flags)
 
         if decodedFlags["tx_precomp_curve"] then

@@ -98,6 +98,7 @@ local userpref_defaults = {
         logmspQueue = false,
         logevents = false,
         memstats = false,
+        logcachestats = false,
         taskprofiler = false,
         mspexpbytes = 8,
         apiversion = 2,
@@ -154,6 +155,8 @@ rfsuite.utils.session()
 
 rfsuite.simevent = {telemetry_state = true}
 
+rfsuite.sysIndex = {}
+
 function rfsuite.version()
     local v = rfsuite.config.version
     return {version = string.format("%d.%d.%d-%s", v.major, v.minor, v.revision, v.suffix), major = v.major, minor = v.minor, revision = v.revision, suffix = v.suffix}
@@ -196,7 +199,7 @@ local function unsupported_i18n()
 end
 
 local function register_main_tool()
-    system.registerSystemTool({
+    rfsuite.sysIndex['app'] = system.registerSystemTool({
         event  = rfsuite.app.event,
         name   = rfsuite.config.toolName,
         icon   = rfsuite.config.icon,
@@ -208,7 +211,7 @@ local function register_main_tool()
 end
 
 local function register_bg_task()
-    system.registerTask({
+    rfsuite.sysIndex['task'] = system.registerTask({
         name  = rfsuite.config.bgTaskName,
         key   = rfsuite.config.bgTaskKey,
         wakeup = rfsuite.tasks.wakeup,
@@ -253,7 +256,7 @@ local function register_widgets()
                 end
                 rfsuite.widgets[base] = scriptModule
 
-                system.registerWidget({
+                rfsuite.sysIndex['widget_' .. v.folder] = system.registerWidget({
                     name = v.name,
                     key = v.key,
                     event = scriptModule.event,

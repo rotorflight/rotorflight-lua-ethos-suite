@@ -71,6 +71,7 @@ function sync.wakeup()
         LOCAL_STATS['flightcount']     = toNumber(rfsuite.ini.getvalue(prefs, "general", "flightcount"), 0)
 
         local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setUUID("7a5a2f27-2ef6-4f2d-9ecf-8a1f4c4a6e28") 
         API.setCompleteHandler(function(self, buf)
             FBL_STATS = copyTable(API.data().parsed) 
@@ -110,6 +111,7 @@ function sync.wakeup()
         elseif totalflighttimeRemote < totalflighttimeLocal or flightcountRemote < flightcountLocal then
             -- local is higher, update remote
             local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+            if API and API.enableDeltaCache then API.enableDeltaCache(false) end
             API.setRebuildOnWrite(true)
             API.setUUID("7a5a2f27-2ef6-4f2d-7egf-8a1f4c4a6e28") 
 

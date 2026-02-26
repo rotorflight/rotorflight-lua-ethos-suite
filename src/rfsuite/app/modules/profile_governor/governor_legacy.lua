@@ -25,7 +25,9 @@ local FIELDS = {
 }
 
 local apidata = {
-    api = {[1] = 'GOVERNOR_PROFILE'},
+    api = {
+        {id = 1, name = "GOVERNOR_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },    
     formdata = {
         labels = {
             {t = "@i18n(app.modules.profile_governor.gains)@", label = 1, inline_size = 8.15},

@@ -22,6 +22,8 @@ local tonumber = tonumber
 
 local utils = {}
 
+local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
+
 local imageCache = {}
 local fontCache
 
@@ -174,8 +176,8 @@ end
 
 function utils.themeColors()
     local colorMode = {
-        dark = {textcolor = "white", titlecolor = "white", bgcolor = "black", fillcolor = "green", fillwarncolor = "orange", fillcritcolor = "red", fillbgcolor = "grey", accentcolor = "white", rssifillcolor = "green", rssifillbgcolor = "darkgrey", txaccentcolor = "grey", txfillcolor = "green", txbgfillcolor = "darkgrey", tbbgcolor = "headergrey", cntextcolor = "white", tbtextcolor = "white"},
-        light = {textcolor = "lmgrey", titlecolor = "lmgrey", bgcolor = "white", fillcolor = "lightgreen", fillwarncolor = "lightorange", fillcritcolor = "lightred", fillbgcolor = "lightgrey", accentcolor = "darkgrey", rssifillcolor = "lightgreen", rssifillbgcolor = "grey", txaccentcolor = "white", txfillcolor = "lightgreen", txbgfillcolor = "grey", tbbgcolor = "darkgrey", cntextcolor = "white", tbtextcolor = "white"}
+        dark = {textcolor = "white", titlecolor = "white", bgcolor = "black", fillcolor = "green", fillwarncolor = "orange", fillcritcolor = "red", fillbgcolor = "grey", accentcolor = "white", rssifillcolor = "green", rssifillbgcolor = "darkgrey", txaccentcolor = "grey", txfillcolor = "green", txbgfillcolor = "darkgrey", tbbgcolor = "headergrey", cntextcolor = "white", tbtextcolor = "white", panelbg = "bggrey", paneldarkbg = "bgdarkgrey", panelbgline = "bglines"},
+        light = {textcolor = "lmgrey", titlecolor = "lmgrey", bgcolor = "white", fillcolor = "lightgreen", fillwarncolor = "lightorange", fillcritcolor = "lightred", fillbgcolor = "lightgrey", accentcolor = "darkgrey", rssifillcolor = "lightgreen", rssifillbgcolor = "grey", txaccentcolor = "white", txfillcolor = "lightgreen", txbgfillcolor = "grey", tbbgcolor = "darkgrey", cntextcolor = "white", tbtextcolor = "white", panelbg = "darkgrey", paneldarkbg = "grey", panelbgline = "lmgrey"}
     }
     return lcd.darkMode() and colorMode.dark or colorMode.light
 end
@@ -387,7 +389,10 @@ function utils.resolveColor(value, variantFactor)
         darkgray = {90, 90, 90},
         lmgrey = {80, 80, 80},
         darkwhite = {245, 245, 245},
-        headergrey = {35, 35, 35}
+        headergrey = {35, 35, 35},
+        bggrey = {40, 40, 40},
+        bgdarkgrey = {25, 25, 25},
+        bglines = {65, 65, 65},
     }
 
     local VARIANT_FACTOR = type(variantFactor) == "number" and max(0, min(1, variantFactor)) or 0.3
@@ -454,9 +459,16 @@ function utils.resolveThemeColor(colorkey, value)
     return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
 end
 
-function utils.resolveThemeColorArray(colorkey, arr)
-    local resolved = {}
-    if type(arr) == "table" then for i = 1, #arr do resolved[i] = utils.resolveThemeColor(colorkey, arr[i]) end end
+function utils.resolveThemeColorArray(colorkey, arr, out)
+    local resolved = out or {}
+    for i = #resolved, 1, -1 do
+        resolved[i] = nil
+    end
+    if type(arr) == "table" then
+        for i = 1, #arr do
+            resolved[i] = utils.resolveThemeColor(colorkey, arr[i])
+        end
+    end
     return resolved
 end
 
@@ -685,8 +697,6 @@ function utils.setBackgroundColourBasedOnTheme()
 end
 
 function utils.getParam(box, key, ...)
-    local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
-
     local v = box[key]
     if type(v) == "function" and not SKIP_CALL_KEYS[key] then
         return v(box, key, ...)

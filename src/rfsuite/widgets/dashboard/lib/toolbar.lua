@@ -18,6 +18,25 @@
     
 local DEFAULT_TOOLBAR_ITEMS = {
     {
+        name = "Setup",
+        order = 5000,
+        icon = "widgets/dashboard/gfx/toolbar_app.png",
+        iconSize = 55,
+        postConnectComplete = true,
+        enableFunction = function(dashboard, rfsuite)
+            if rfsuite.sysIndex['app'] and system.openPage ~= nil then
+                return true
+            end
+            return false
+        end,
+        onClick = function(dashboard)
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.launchApp) == "function" then
+                actions.launchApp()
+            end
+        end
+    },      
+    {
         name = "@i18n(widgets.dashboard.reset_flight)@",
         order = 100,
         icon = "widgets/dashboard/gfx/toolbar_reset.png",
@@ -210,6 +229,7 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local groupPadTop = 6
     local iconPad = 6
     lcd.font(FONT_XS)
+
     for i = 1, slots do
         local item = (cache.sortedItems and cache.sortedItems[i]) or items[i]
         if item then
