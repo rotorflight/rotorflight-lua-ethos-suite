@@ -8,9 +8,17 @@ local rfsuite = require("rfsuite")
 local enableWakeup = false
 local FBL_STATS = {} -- holder for fbl stats to sync
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local apidata = {
   api = {
-    [1] = "FLIGHT_STATS_INI"
+    {id = 1, name = "FLIGHT_STATS_INI", enableDeltaCache = false, rebuildOnWrite = true}
   },
   formdata = {
     labels = {},
@@ -56,7 +64,7 @@ local function postSave()
     local totalflighttime = toNumber(rfsuite.ini.getvalue(prefs, "general", "totalflighttime"), 0)
     local flightcount     = toNumber(rfsuite.ini.getvalue(prefs, "general", "flightcount"), 0)
 
-    local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+    local API = loadApiNoDelta("FLIGHT_STATS")
         API.setUUID("stats-postsave-sync")
         API.setRebuildOnWrite(true)
 
@@ -84,7 +92,7 @@ local function postLoad(self)
     enableWakeup = true
     if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
         --  load updated stats from FC after load
-            local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+            local API = loadApiNoDelta("FLIGHT_STATS")
             API.setUUID("7a0a2f27-3ef6-4f2d-9dcf-8a1f4c4a6e88") 
             API.setCompleteHandler(function(self, buf)
                 FBL_STATS = copyTable(API.data().parsed) 
