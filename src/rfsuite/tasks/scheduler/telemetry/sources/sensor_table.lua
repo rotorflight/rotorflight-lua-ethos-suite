@@ -315,5 +315,6 @@ return {
         name = "@i18n(sensors.battery_type)@",
         mandatory = true,
         stats = false,
+        set_telemetry_sensors = 97,
     },
 }
