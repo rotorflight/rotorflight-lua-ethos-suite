@@ -13,9 +13,9 @@ local calibrateComplete = false
 local calibrateQueued = false
 
 local apidata = {
-    api = {
-        [1] = 'ACC_TRIM'
-    },
+        api = {
+            {id = 1, name = "ACC_TRIM", enableDeltaCache = false, rebuildOnWrite = true},
+        },
     formdata = {
         labels = {},
         fields = {
