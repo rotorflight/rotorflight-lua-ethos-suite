@@ -89,6 +89,14 @@ local function queueDirect(message, uuid)
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function shallowCopy(tbl)
     local out = {}
     for k, v in pairs(tbl) do out[k] = v end
@@ -267,7 +275,7 @@ local function parseSerialConfig(serialApi)
 end
 
 local function readRxConfig(done)
-    local rxApi = rfsuite.tasks.msp.api.load("RX_CONFIG")
+    local rxApi = loadApiNoDelta("RX_CONFIG")
     if not rxApi then
         state.rxSerialProvider = 0
         done()
@@ -297,7 +305,7 @@ local function startLoad()
 
     rfsuite.app.ui.progressDisplay("@i18n(app.modules.ports.name)@", "@i18n(app.modules.ports.progress_loading)@", 0.08)
 
-    local serialApi = rfsuite.tasks.msp.api.load("SERIAL_CONFIG")
+    local serialApi = loadApiNoDelta("SERIAL_CONFIG")
     if not serialApi then
         setLoadError("@i18n(app.modules.ports.error_serial_api_unavailable)@")
         return
