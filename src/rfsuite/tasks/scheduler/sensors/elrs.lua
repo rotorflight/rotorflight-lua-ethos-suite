@@ -34,7 +34,7 @@ local elrs = {}
 
 elrs.name = "elrs"
 
-local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor(...)

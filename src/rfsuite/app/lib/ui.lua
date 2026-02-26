@@ -620,7 +620,7 @@ function ui.openMenuContext(defaultSectionId, showProgress, speed)
 end
 
 local function openProgressDialog(opts)
-    if utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+    if utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
         opts.progress = true
         return form.openWaitDialog(opts)
     end
@@ -648,7 +648,7 @@ function ui.progressDisplay(title, message, speed)
     app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressBaseMessage = message
     app.dialogs.progressMspStatusLast = nil
-    local useWaitDialog = utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog
+    local useWaitDialog = utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog
     app.dialogs.progressIsWait = useWaitDialog or false
     app.dialogs.progress = openProgressDialog({
         title = title,
@@ -777,7 +777,7 @@ function ui.progressDisplaySave(message)
     local title = "@i18n(app.msg_saving)@"
     app.dialogs.saveBaseMessage = resolvedMessage
 
-    local useWaitDialog = utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog
+    local useWaitDialog = utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog
     app.dialogs.saveIsWait = useWaitDialog or false
     app.dialogs.save = openProgressDialog({
         title = title,

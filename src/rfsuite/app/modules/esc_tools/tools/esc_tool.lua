@@ -29,7 +29,7 @@ local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
 local function openProgressDialog(...)
-    if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
+    if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
         local arg1 = select(1, ...)
         if type(arg1) == "table" then
             arg1.progress = true

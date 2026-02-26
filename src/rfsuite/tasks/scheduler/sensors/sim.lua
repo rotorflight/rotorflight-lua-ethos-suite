@@ -21,7 +21,7 @@ local lastWakeupTimeDrop = 0
 local wakeupIntervalDrop = 120
 local firstRun = true
 
-local useRawValue = rfsuite.utils.ethosVersionAtLeast({1, 7, 0})
+local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
 local sim = {}
 sim.name = "sim"
