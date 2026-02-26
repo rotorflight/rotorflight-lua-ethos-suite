@@ -13,6 +13,14 @@ local beepersConfigReady = false
 local beepersFocused = false
 local beepersConfigParsed = {}
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function copyTable(src)
     if type(src) ~= "table" then return src end
     local dst = {}
@@ -61,7 +69,7 @@ local function requestPrereqs()
     beepersFocused = false
     beepersConfigParsed = {}
 
-    local API = rfsuite.tasks.msp.api.load("BEEPER_CONFIG")
+    local API = loadApiNoDelta("BEEPER_CONFIG")
     API.setUUID("beepers-menu-config")
     API.setCompleteHandler(function()
         local d = API.data()

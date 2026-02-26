@@ -10,6 +10,14 @@ local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"}
 local app = rfsuite.app
 local tasks = rfsuite.tasks
 
+local function loadApiNoDelta(apiName)
+    local api = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local DSHOT_FIELDS = {
     { bit = 1, label = "@i18n(app.modules.beepers.field_rx_lost)@" },
     { bit = 9, label = "@i18n(app.modules.beepers.field_rx_set)@" }
@@ -174,7 +182,7 @@ local function requestData(forceApiRead)
 
     state.pendingReads = 1
 
-    local API = tasks.msp.api.load("BEEPER_CONFIG")
+    local API = loadApiNoDelta("BEEPER_CONFIG")
     API.setUUID("beepers-dshot-main")
     API.setCompleteHandler(function()
         local d = API.data()
@@ -203,8 +211,11 @@ local function performSave()
     state.saving = true
     app.ui.progressDisplaySave("@i18n(app.modules.beepers.saving)@")
 
-    local API = tasks.msp.api.load("BEEPER_CONFIG")
+    local API = loadApiNoDelta("BEEPER_CONFIG")
     API.setUUID("beepers-dshot-write")
+    if API.setRebuildOnWrite then
+        API.setRebuildOnWrite(true)
+    end
     API.setErrorHandler(function()
         state.saving = false
         app.triggers.closeSave = true
