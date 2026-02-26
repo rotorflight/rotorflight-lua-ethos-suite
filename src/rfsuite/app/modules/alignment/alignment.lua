@@ -185,6 +185,12 @@ local function clearMspQueue()
     if q and q.clear then q:clear() end
 end
 
+local function loadApiNoDelta(apiName)
+    local api = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then api.enableDeltaCache(false) end
+    return api
+end
+
 local requestRebootAfterSave
 
 local function pauseMovement()
@@ -204,8 +210,8 @@ end
 local function readData()
     state.dataLoaded = false
 
-    local boardAPI = tasks.msp.api.load("BOARD_ALIGNMENT_CONFIG")
-    local sensorAPI = tasks.msp.api.load("SENSOR_ALIGNMENT")
+    local boardAPI = loadApiNoDelta("BOARD_ALIGNMENT_CONFIG")
+    local sensorAPI = loadApiNoDelta("SENSOR_ALIGNMENT")
     if not boardAPI or not sensorAPI then
         rfsuite.utils.log("Alignment read failed: API unavailable", "error")
         return
@@ -248,9 +254,9 @@ local function writeData()
     app.ui.progressDisplay("@i18n(app.msg_saving_settings)@", "@i18n(app.msg_saving_to_fbl)@")
     clearMspQueue()
 
-    local boardAPI = tasks.msp.api.load("BOARD_ALIGNMENT_CONFIG")
-    local sensorAPI = tasks.msp.api.load("SENSOR_ALIGNMENT")
-    local eepromAPI = tasks.msp.api.load("EEPROM_WRITE")
+    local boardAPI = loadApiNoDelta("BOARD_ALIGNMENT_CONFIG")
+    local sensorAPI = loadApiNoDelta("SENSOR_ALIGNMENT")
+    local eepromAPI = loadApiNoDelta("EEPROM_WRITE")
 
     if not boardAPI or not sensorAPI or not eepromAPI then
         state.saving = false
@@ -300,7 +306,7 @@ local function writeData()
 end
 
 requestRebootAfterSave = function()
-    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("REBOOT")
+    local rebootAPI = loadApiNoDelta("REBOOT")
     if not rebootAPI then
         if app and app.utils and app.utils.invalidatePages then app.utils.invalidatePages() end
         return
