@@ -9,7 +9,7 @@ local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 local folder = "hw5"
 local apidata = {
     api = {
-        {id = 1, name = "ESC_PARAMETERS_HW5", enableDeltaCache = false, rebuildOnWrite = true}
+        {id = 1, name = "ESC_PARAMETERS_HW5", enableDeltaCache = true, rebuildOnWrite = false}
     },
     formdata = {
         labels = {
