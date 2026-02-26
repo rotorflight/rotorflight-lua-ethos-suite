@@ -19,6 +19,7 @@ local SAVED_CONFIG = {}
 local saveDirtyOverride = false
 local pendingSaveStateRefresh = 0
 local FEATURE_CONFIG
+local TELEMETRY_CONFIG_VALUES
 local lastSessionRef = nil
 local lastLinkReady = false
 
@@ -175,6 +176,14 @@ local function clearTable(tbl)
     for k in pairs(tbl) do tbl[k] = nil end
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function isLinkReady()
     local liveSession = rfsuite.session
     return (liveSession and liveSession.isConnected and liveSession.mcu_id and liveSession.postConnectComplete) and true or false
@@ -220,6 +229,7 @@ local function resetConfigRuntimeState()
     pendingSaveStateRefresh = 0
     saveDirtyOverride = false
     FEATURE_CONFIG = nil
+    TELEMETRY_CONFIG_VALUES = nil
     clearTable(PREV_STATE)
     clearTable(config)
     clearTable(SAVED_CONFIG)
@@ -334,7 +344,7 @@ local function openPage(opts)
 end
 
 local function rebootFC()
-    local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    local RAPI = loadApiNoDelta("REBOOT")
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC", "info")
@@ -344,7 +354,7 @@ local function rebootFC()
 end
 
 local function applySettings()
-    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local EAPI = loadApiNoDelta("EEPROM_WRITE")
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM", "info")
@@ -427,7 +437,7 @@ local function wakeup()
         configLoading = true
 
         -- first load the feature config 
-        local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+        local FAPI = loadApiNoDelta("FEATURE_CONFIG")
         FAPI.setCompleteHandler(function(self, buf)
                 -- store the snapshot of the feature config
                 local d = FAPI.data()
@@ -445,17 +455,13 @@ local function wakeup()
         FAPI.read()
 
         -- now load the telemetry config
-        local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        local API = loadApiNoDelta("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
             if rfsuite.app.Page then
                 setFormFieldsEnabled(true)
 
                 local data = API.data()
-                if type(data) == "table" then
-                    rfsuite.tasks.msp.api.apidata = data
-                    rfsuite.tasks.msp.api.apidata.receivedBytes = {}
-                    rfsuite.tasks.msp.api.apidata.receivedBytesCount = {}
-                end
+                TELEMETRY_CONFIG_VALUES = (type(data) == "table" and type(data.parsed) == "table") and copyTable(data.parsed) or nil
 
                 clearTable(config)
                 if data and type(data.parsed) == "table" then
@@ -478,6 +484,7 @@ local function wakeup()
         end)
         API.setErrorHandler(function()
             configLoading = false
+            TELEMETRY_CONFIG_VALUES = nil
             if rfsuite.app and rfsuite.app.Page then
                 if isLinkReady() then
                     rfsuite.app.Page.configLoaded = true
@@ -516,7 +523,7 @@ local function wakeup()
 
                 local newBitmap = bitmap | FEATURE_TELEMETRY_MASK
 
-                local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+                local FAPI = loadApiNoDelta("FEATURE_CONFIG")
                 FAPI.setUUID("enable-telemetry-feature")
                 FAPI.setValue("enabledFeatures", newBitmap)
                 FAPI.write()
@@ -537,7 +544,7 @@ local function wakeup()
             end
         end
 
-        local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        local WRITEAPI = loadApiNoDelta("TELEMETRY_CONFIG")
         WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174120")
         WRITEAPI.setCompleteHandler(function(self, buf)
             rfsuite.utils.log("Telemetry config written, now writing to EEPROM", "info")
@@ -547,34 +554,29 @@ local function wakeup()
         end)
         WRITEAPI.setErrorHandler(function(self, buf) rfsuite.utils.log("Write to fbl failed.", "info") end)
 
-        local buffer = rfsuite.tasks.msp.api.apidata["buffer"]
-
-        local slotsStrBefore = table.concat(buffer, ",")
-
-        local sensorIndex = 13
-
-        local appliedSensors = {}
-
-        for _, sensor_id in ipairs(selectedSensors) do
-            if sensorIndex <= 52 then
-                buffer[sensorIndex] = sensor_id
-                table.insert(appliedSensors, sensor_id)
-                sensorIndex = sensorIndex + 1
-            else
-                break
-            end
+        if type(TELEMETRY_CONFIG_VALUES) ~= "table" then
+            rfsuite.utils.log("Telemetry config write skipped: missing read snapshot", "error")
+            rfsuite.app.triggers.closeProgressLoader = true
+            triggerSave = false
+            return
         end
 
-        local slotsStrAfter = table.concat(buffer, ",")
-
-        for i = sensorIndex, 52 do buffer[i] = 0 end
+        local appliedSensors = {}
+        for i = 1, 40 do
+            local sensor_id = selectedSensors[i] or 0
+            TELEMETRY_CONFIG_VALUES["telem_sensor_slot_" .. i] = sensor_id
+            if sensor_id ~= 0 then table.insert(appliedSensors, sensor_id) end
+        end
 
         rfsuite.session = rfsuite.session or {}
         rfsuite.session.telemetryConfig = appliedSensors
 
         rfsuite.utils.log("Applied telemetry sensors: " .. table.concat(appliedSensors, ", "), "info")
 
-        WRITEAPI.write(buffer)        
+        for k, v in pairs(TELEMETRY_CONFIG_VALUES) do
+            WRITEAPI.setValue(k, v)
+        end
+        WRITEAPI.write()
 
         triggerSave = false
     end
