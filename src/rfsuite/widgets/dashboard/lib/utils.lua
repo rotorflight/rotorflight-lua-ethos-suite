@@ -22,6 +22,8 @@ local tonumber = tonumber
 
 local utils = {}
 
+local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
+
 local imageCache = {}
 local fontCache
 
@@ -457,9 +459,16 @@ function utils.resolveThemeColor(colorkey, value)
     return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
 end
 
-function utils.resolveThemeColorArray(colorkey, arr)
-    local resolved = {}
-    if type(arr) == "table" then for i = 1, #arr do resolved[i] = utils.resolveThemeColor(colorkey, arr[i]) end end
+function utils.resolveThemeColorArray(colorkey, arr, out)
+    local resolved = out or {}
+    for i = #resolved, 1, -1 do
+        resolved[i] = nil
+    end
+    if type(arr) == "table" then
+        for i = 1, #arr do
+            resolved[i] = utils.resolveThemeColor(colorkey, arr[i])
+        end
+    end
     return resolved
 end
 
@@ -684,8 +693,6 @@ function utils.setBackgroundColourBasedOnTheme()
 end
 
 function utils.getParam(box, key, ...)
-    local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
-
     local v = box[key]
     if type(v) == "function" and not SKIP_CALL_KEYS[key] then
         return v(box, key, ...)

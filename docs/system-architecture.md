@@ -81,6 +81,59 @@ Modules leverage the `app.Page.apidata` object to generate forms and interact wi
    * On form submission, modules call `app.Page.apidata.api.write()` to push updates.
    * Use `rfsuite.tasks.callback.now()` via `api.scheduleWakeup()` for asynchronous operations.
 
+### MSP API Delta Cache
+
+MSP API reads can keep raw buffers for delta payloads or drop them to reduce RAM:
+
+* **Enabled**: stores parsed values plus raw buffer, position map, and byte counts (allows delta payloads).
+* **Disabled**: stores parsed values only. Raw buffers/position maps are dropped (no delta writes).
+
+Defaults:
+
+* When the app GUI is running: delta cache enabled
+* When the app GUI is not running: delta cache disabled
+
+Per-page override:
+
+```lua
+local apidata = {
+  enableDeltaCache = false,
+  api = {"STATUS", "RC_TUNING"},
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
+Per-API override in a page:
+
+```lua
+local apidata = {
+  api = {
+    {id = 1, name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
+    {name = "RC_TUNING"}
+  },
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
+Optional per-API write override:
+
+* `rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
+* `id = <number>` lets `mspapi = <number>` map by id instead of list order.
+
+Direct API override:
+
+```lua
+local API = rfsuite.tasks.msp.api.load("STATUS")
+API.enableDeltaCache(false)
+```
+
+Boolean semantics:
+
+* `API.enableDeltaCache(true)` → delta cache enabled (buffers/position maps kept)
+* `API.enableDeltaCache(false)` → delta cache disabled (parsed values only)
+
+`setCacheMode(...)` has been removed in favor of `enableDeltaCache(...)`.
+
 ### Integration with MSP Tasks
 
 * Modules do **not** parse raw MSP data directly. Instead, they rely on the `tasks/scheduler/msp/api` loader to fetch parsed data structures and buffer states.

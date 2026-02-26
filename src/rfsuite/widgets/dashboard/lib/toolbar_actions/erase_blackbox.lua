@@ -65,6 +65,7 @@ local function doErase()
     local function readDataflashSummary()
         if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load) then return end
         local API = rfsuite.tasks.msp.api.load("DATAFLASH_SUMMARY")
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         if not API then return end
         API.setCompleteHandler(function()
             local total = API.readValue("total")

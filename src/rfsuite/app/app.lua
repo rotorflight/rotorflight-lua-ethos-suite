@@ -89,6 +89,7 @@ function app.wakeup()
 end
 
 function app.create()
+    app._closing = false
 
     if not app.initialized then
 
@@ -322,6 +323,11 @@ function app.event(widget, category, value, x, y)
 end
 
 function app.close()
+    if app._closing then
+        return true
+    end
+    app._closing = true
+
     rfsuite.utils.reportMemoryUsage("app.close", "start")
 
     local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
@@ -329,10 +335,18 @@ function app.close()
 
     app.guiIsRunning = false
     app.offlineMode = false
-    app.uiState = app.uiStatus.init
     app.escPowerCycleLoader = false
 
-    if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then app.Page.close() end
+    if app.ui and app.ui.cleanupCurrentPage then
+        local ok, err = pcall(app.ui.cleanupCurrentPage)
+        if not ok then
+            log("app.close cleanupCurrentPage failed: " .. tostring(err), "debug")
+        end
+    elseif app.Page and app.Page.close then
+        app.Page.close()
+    end
+
+    app.uiState = app.uiStatus.init
 
     if app.dialogs.progress then app.dialogs.progress:close() end
     if app.dialogs.save then app.dialogs.save:close() end

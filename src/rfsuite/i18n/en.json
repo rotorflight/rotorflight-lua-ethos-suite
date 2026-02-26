@@ -4104,12 +4104,6 @@
         }
       },
       "esc_tools": {
-        "warning_remove_blades": {
-          "english": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC",
-          "max_length": 40,
-          "needs_translation": false,
-          "translation": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC"
-        },
         "mfg": {
           "flrtr": {
             "active_freewheel": {
@@ -8622,6 +8616,12 @@
           "needs_translation": false,
           "translation": "Tx Battery Options"
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Log cache stats"
+        },
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
           "max_length": 19,
@@ -9664,6 +9664,12 @@
         "max_length": 7,
         "needs_translation": false,
         "translation": "RPM Min"
+      },
+      "setup": {
+        "english": "Setup",
+        "max_length": 5,
+        "needs_translation": false,
+        "translation": "Setup"
       },
       "throttle": {
         "english": "Throttle",

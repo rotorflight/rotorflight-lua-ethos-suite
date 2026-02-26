@@ -4776,12 +4776,6 @@
         }
       },
       "esc_tools": {
-        "warning_remove_blades": {
-          "english": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC",
-          "max_length": 40,
-          "needs_translation": true,
-          "translation": "REMOVE BLADES BEFORE PROGRAMING YOUR ESC"
-        },
         "mfg": {
           "flrtr": {
             "active_freewheel": {
@@ -10145,6 +10139,13 @@
           "max_length": 16,
           "reverse_text": false
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Log cache stats"
+        },
         "txt_mspdata": {
           "english": "Log msp data",
           "translation": "Log dati MSP",
@@ -11245,6 +11246,13 @@
         "needs_translation": false,
         "max_length": 7,
         "reverse_text": false
+      },
+      "setup": {
+        "english": "Setup",
+        "translation": "Setup",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 5
       },
       "throttle": {
         "english": "Throttle",

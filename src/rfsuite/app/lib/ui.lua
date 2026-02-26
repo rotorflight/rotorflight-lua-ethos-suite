@@ -930,6 +930,7 @@ function ui.cleanupCurrentPage()
         local apidata = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata
         local apiLoader = tasks and tasks.msp and tasks.msp.api
         local cbq = tasks and tasks.callback and tasks.callback._queue
+        local cacheStats = utils and utils.getCacheStats and utils.getCacheStats() or nil
         local pageLabel = (app and app.lastScript) or (app and app.Page and app.Page.pageTitle) or "?"
         local function gfxMaskCount()
             if not app or type(app.gfx_buttons) ~= "table" then return 0 end
@@ -994,7 +995,12 @@ function ui.cleanupCurrentPage()
         end
 
         if app.Page.apidata.api then for i = 1, #app.Page.apidata.api do app.Page.apidata.api[i] = nil end end
-        if app.Page.apidata.api_reversed then for i = 1, #app.Page.apidata.api_reversed do app.Page.apidata.api_reversed[i] = nil end end
+        if app.Page.apidata.api_reversed then
+            for k in pairs(app.Page.apidata.api_reversed) do app.Page.apidata.api_reversed[k] = nil end
+        end
+        if app.Page.apidata.api_by_id then
+            for k in pairs(app.Page.apidata.api_by_id) do app.Page.apidata.api_by_id[k] = nil end
+        end
 
         app.Page.apidata = nil
     end
@@ -1016,8 +1022,10 @@ function ui.cleanupCurrentPage()
 
     collectgarbage('collect')
 
-    if preferences and preferences.developer and preferences.developer.memstats then
-        local mem_kb = collectgarbage("count")
+    local dev = preferences and preferences.developer
+    local logMem = dev and dev.memstats == true
+    local logCache = dev and dev.logcachestats == true
+    if logMem or logCache then
         local function tcount(t)
             if type(t) ~= "table" then return 0 end
             local n = 0
@@ -1027,6 +1035,7 @@ function ui.cleanupCurrentPage()
         local apidata = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata
         local apiLoader = tasks and tasks.msp and tasks.msp.api
         local cbq = tasks and tasks.callback and tasks.callback._queue
+        local cacheStats = (logCache and utils and utils.getCacheStats and utils.getCacheStats()) or nil
         local pageLabel = (app and app.lastScript) or (app and app.Page and app.Page.pageTitle) or "?"
         local function gfxMaskCount()
             if not app or type(app.gfx_buttons) ~= "table" then return 0 end
@@ -1038,21 +1047,44 @@ function ui.cleanupCurrentPage()
             end
             return total
         end
-        utils.log(string.format(
-            "[mem] cleanup end: %.1f KB | page=%s | apidata v=%d s=%d b=%d bc=%d p=%d o=%d | apiCache file=%d chunk=%d | help=%d gfx=%d cbq=%d",
-            mem_kb, tostring(pageLabel),
-            tcount(apidata and apidata.values),
-            tcount(apidata and apidata.structure),
-            tcount(apidata and apidata.receivedBytes),
-            tcount(apidata and apidata.receivedBytesCount),
-            tcount(apidata and apidata.positionmap),
-            tcount(apidata and apidata.other),
-            tcount(apiLoader and apiLoader._fileExistsCache),
-            tcount(apiLoader and apiLoader._chunkCache),
-            tcount(ui._helpCache),
-            gfxMaskCount(),
-            tcount(cbq)
-        ), "debug")
+        if logMem then
+            local mem_kb = collectgarbage("count")
+            local cacheSuffix = ""
+            if logCache then
+                cacheSuffix = string.format(
+                    " | caches imgBmp=%d imgPath=%d file=%d dir=%d",
+                    (cacheStats and cacheStats.imageBitmap) or 0,
+                    (cacheStats and cacheStats.imagePath) or 0,
+                    (cacheStats and cacheStats.fileExists) or 0,
+                    (cacheStats and cacheStats.dirExists) or 0
+                )
+            end
+            utils.log(string.format(
+                "[mem] cleanup end: %.1f KB | page=%s | apidata v=%d s=%d b=%d bc=%d p=%d o=%d | apiCache file=%d chunk=%d | help=%d gfx=%d cbq=%d%s",
+                mem_kb, tostring(pageLabel),
+                tcount(apidata and apidata.values),
+                tcount(apidata and apidata.structure),
+                tcount(apidata and apidata.receivedBytes),
+                tcount(apidata and apidata.receivedBytesCount),
+                tcount(apidata and apidata.positionmap),
+                tcount(apidata and apidata.other),
+                tcount(apiLoader and apiLoader._fileExistsCache),
+                tcount(apiLoader and apiLoader._chunkCache),
+                tcount(ui._helpCache),
+                gfxMaskCount(),
+                tcount(cbq),
+                cacheSuffix
+            ), "info")
+        elseif logCache then
+            utils.log(string.format(
+                "[cache] cleanup end: page=%s | imgBmp=%d imgPath=%d file=%d dir=%d",
+                tostring(pageLabel),
+                (cacheStats and cacheStats.imageBitmap) or 0,
+                (cacheStats and cacheStats.imagePath) or 0,
+                (cacheStats and cacheStats.fileExists) or 0,
+                (cacheStats and cacheStats.dirExists) or 0
+            ), "info")
+        end
     end
 end
 
@@ -2564,9 +2596,38 @@ function ui.mspApiUpdateFormAttributes()
     local fields = app.Page.apidata.formdata.fields
     local api = app.Page.apidata.api
 
+    local function apiEntryName(entry)
+        if type(entry) == "table" then return entry.name end
+        return entry
+    end
+
+    local function apiEntryId(entry, index)
+        if type(entry) == "table" and type(entry.id) == "number" then
+            return entry.id
+        end
+        return index
+    end
+
     if not app.Page.apidata.api_reversed then
         app.Page.apidata.api_reversed = {}
-        for index, value in pairs(app.Page.apidata.api) do app.Page.apidata.api_reversed[value] = index end
+        app.Page.apidata.api_by_id = {}
+        for index, value in pairs(app.Page.apidata.api) do
+            local name = apiEntryName(value)
+            if name then
+                local id = apiEntryId(value, index)
+                app.Page.apidata.api_reversed[name] = id
+                app.Page.apidata.api_by_id[id] = name
+            end
+        end
+    elseif not app.Page.apidata.api_by_id then
+        app.Page.apidata.api_by_id = {}
+        for index, value in pairs(app.Page.apidata.api) do
+            local name = apiEntryName(value)
+            if name then
+                local id = apiEntryId(value, index)
+                app.Page.apidata.api_by_id[id] = name
+            end
+        end
     end
 
     for i, f in ipairs(fields) do
@@ -2583,11 +2644,13 @@ function ui.mspApiUpdateFormAttributes()
 
             local apikey = f.apikey
             local mspapiID = f.mspapi
-            local mspapiNAME = api[mspapiID]
-            local target = structure[mspapiNAME]
+            local mspapiNAME = (app.Page.apidata.api_by_id and app.Page.apidata.api_by_id[mspapiID]) or apiEntryName(api[mspapiID])
+            local target = mspapiNAME and structure[mspapiNAME] or nil
 
             if mspapiID == nil or mspapiID == nil then
                 log("API field missing mspapi or apikey", "debug")
+            elseif not target then
+                log("API field missing structure: " .. tostring(mspapiNAME), "debug")
             else
                 for _, v in ipairs(target) do
                     if not v.bitmap then
@@ -2727,7 +2790,8 @@ function ui.requestPage()
         end
 
         local v = apiList[state.currentIndex]
-        local apiKey = type(v) == "string" and v or v.name
+        local apiMeta = type(v) == "table" and v or nil
+        local apiKey = type(v) == "string" and v or (apiMeta and apiMeta.name or nil)
         local retryCount = app.Page.apidata.retryCount and app.Page.apidata.retryCount[apiKey] or 0
         if not apiKey then
             log("API key is missing for index " .. tostring(state.currentIndex), "warning")
@@ -2739,7 +2803,20 @@ function ui.requestPage()
             return
         end
 
-        local API = tasks.msp.api.load(v)
+        local enableDeltaCache = nil
+        if apiMeta and apiMeta.enableDeltaCache ~= nil then
+            enableDeltaCache = apiMeta.enableDeltaCache
+        elseif app.Page.apidata and app.Page.apidata.enableDeltaCache ~= nil then
+            enableDeltaCache = app.Page.apidata.enableDeltaCache
+        end
+        if enableDeltaCache ~= nil and type(enableDeltaCache) ~= "boolean" then
+            enableDeltaCache = nil
+        end
+
+        local API = tasks.msp.api.load(apiKey)
+        if API and API.enableDeltaCache and enableDeltaCache ~= nil then
+            API.enableDeltaCache(enableDeltaCache)
+        end
 
         if app and app.Page and app.Page.apidata then app.Page.apidata.retryCount = app.Page.apidata.retryCount or {} end
 
@@ -2776,12 +2853,26 @@ function ui.requestPage()
                 return
             end
             log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
-            tasks.msp.api.apidata.values[apiKey] = API.data().parsed
-            tasks.msp.api.apidata.structure[apiKey] = API.data().structure
-            tasks.msp.api.apidata.receivedBytes[apiKey] = API.data().buffer
-            tasks.msp.api.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-            tasks.msp.api.apidata.positionmap[apiKey] = API.data().positionmap
-            tasks.msp.api.apidata.other[apiKey] = API.data().other or {}
+            local cacheEnabled = enableDeltaCache
+            if cacheEnabled == nil and tasks.msp.api.isDeltaCacheEnabled then
+                cacheEnabled = tasks.msp.api.isDeltaCacheEnabled(apiKey)
+            end
+            if type(cacheEnabled) ~= "boolean" then cacheEnabled = nil end
+            if cacheEnabled == nil then cacheEnabled = true end
+
+            local data = API.data()
+            tasks.msp.api.apidata.values[apiKey] = data.parsed
+            tasks.msp.api.apidata.structure[apiKey] = data.structure
+            if cacheEnabled == true then
+                tasks.msp.api.apidata.receivedBytes[apiKey] = data.buffer
+                tasks.msp.api.apidata.receivedBytesCount[apiKey] = data.receivedBytesCount
+                tasks.msp.api.apidata.positionmap[apiKey] = data.positionmap
+            else
+                tasks.msp.api.apidata.receivedBytes[apiKey] = nil
+                tasks.msp.api.apidata.receivedBytesCount[apiKey] = nil
+                tasks.msp.api.apidata.positionmap[apiKey] = nil
+            end
+            tasks.msp.api.apidata.other[apiKey] = data.other or {}
             app.Page.apidata.retryCount[apiKey] = 0
             state.currentIndex = state.currentIndex + 1
             API = nil
@@ -2847,7 +2938,15 @@ function ui.saveSettings()
 
     if app.Page.preSave then app.Page.preSave(app.Page) end
 
-    for apiID, apiNAME in ipairs(apiList) do
+    for apiID, apiEntry in ipairs(apiList) do
+
+        local apiMeta = type(apiEntry) == "table" and apiEntry or nil
+        local apiNAME = type(apiEntry) == "string" and apiEntry or (apiMeta and apiMeta.name or nil)
+        if not apiNAME then
+            log("saveSettings skipped entry with missing API name at index " .. tostring(apiID), "warning")
+            completedRequests = completedRequests + 1
+            goto continue
+        end
 
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "start")
 
@@ -2855,6 +2954,22 @@ function ui.saveSettings()
         local payloadStructure = tasks.msp.api.apidata.structure[apiNAME]
 
         local API = tasks.msp.api.load(apiNAME)
+        if API and API.enableDeltaCache then
+            local enableDeltaCache = nil
+            if apiMeta and apiMeta.enableDeltaCache ~= nil then
+                enableDeltaCache = apiMeta.enableDeltaCache
+            elseif app.Page.apidata and app.Page.apidata.enableDeltaCache ~= nil then
+                enableDeltaCache = app.Page.apidata.enableDeltaCache
+            end
+            if type(enableDeltaCache) == "boolean" then
+                API.enableDeltaCache(enableDeltaCache)
+            end
+        end
+        if API and API.setRebuildOnWrite and apiMeta and apiMeta.rebuildOnWrite ~= nil then
+            if type(apiMeta.rebuildOnWrite) == "boolean" then
+                API.setRebuildOnWrite(apiMeta.rebuildOnWrite)
+            end
+        end
         API.setErrorHandler(function(self, buf) app.triggers.saveFailed = true end)
         API.setCompleteHandler(function(self, buf)
             completedRequests = completedRequests + 1
@@ -2878,9 +2993,11 @@ function ui.saveSettings()
 
         local fieldMap = {}
         local fieldMapBitmap = {}
+        local apiId = apiID
+        if apiMeta and type(apiMeta.id) == "number" then apiId = apiMeta.id end
         for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
             if not f.bitmap then
-                if f.mspapi == apiID then fieldMap[f.apikey] = fidx end
+                if f.mspapi == apiId then fieldMap[f.apikey] = fidx end
             else
                 local p1, p2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
                 if not fieldMapBitmap[p1] then fieldMapBitmap[p1] = {} end
@@ -2944,6 +3061,8 @@ function ui.saveSettings()
         end
 
         utils.reportMemoryUsage("ui.saveSettings " .. apiNAME, "end")
+
+        ::continue::
 
     end
 

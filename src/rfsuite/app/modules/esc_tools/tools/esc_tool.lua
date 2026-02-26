@@ -121,6 +121,27 @@ local function updatePowercycleLoaderMessage()
     end
 end
 
+local function clearPowercycleLoader()
+    if powercycleLoader then
+        pcall(function() powercycleLoader:close() end)
+        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
+            rfsuite.app.ui.clearProgressDialog(powercycleLoader)
+        end
+    end
+    powercycleLoader = nil
+    powercycleLoaderBaseMessage = nil
+    showPowerCycleLoader = false
+    showPowerCycleLoaderInProgress = false
+    showPowerCycleLoaderFinished = false
+end
+
+local function clearEscSessionCache()
+    if rfsuite.session then
+        rfsuite.session.escDetails = nil
+        rfsuite.session.escBuffer = nil
+    end
+end
+
 local function openPage(opts)
 
     local parentIdx = opts.idx
@@ -137,6 +158,11 @@ local function openPage(opts)
     end
 
     ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
+
+    if rfsuite.app and rfsuite.app.Page and ESC and ESC.mspapi then
+        rfsuite.app.Page.apidata = rfsuite.app.Page.apidata or {}
+        rfsuite.app.Page.apidata.api = {ESC.mspapi}
+    end
 
     if ESC.mspapi ~= nil then
 
@@ -276,6 +302,8 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
+    clearPowercycleLoader()
+    clearEscSessionCache()
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
@@ -284,11 +312,9 @@ local function onReloadMenu()
     rfsuite.app.Page = nil
     foundESC = false
     foundESCupdateTag = false
-    showPowerCycleLoader = false
-    showPowerCycleLoaderInProgress = false
-    showPowerCycleLoaderFinished = false
+    clearPowercycleLoader()
+    clearEscSessionCache()
     powercycleLoaderCounter = 0
-    powercycleLoaderBaseMessage = nil
     rfsuite.app.triggers.triggerReloadFull = true
     return true
 end
@@ -384,11 +410,8 @@ end
 
 local function event(widget, category, value, x, y)
     return pageRuntime.handleCloseEvent(category, value, {onClose = function()
-        if powercycleLoader then
-            powercycleLoader:close()
-            powercycleLoaderBaseMessage = nil
-            rfsuite.app.ui.clearProgressDialog(powercycleLoader)
-        end
+        clearPowercycleLoader()
+        clearEscSessionCache()
         onNavMenu()
     end})
 

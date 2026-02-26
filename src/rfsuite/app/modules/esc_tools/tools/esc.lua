@@ -9,7 +9,6 @@ local lcd = lcd
 local system = system
 
 local pages = {}
-local WARNING_TEXT = "@i18n(app.modules.esc_tools.warning_remove_blades)@"
 
 local function resolveModulePath(script)
     if type(script) ~= "string" then return nil, nil end
@@ -65,6 +64,7 @@ local function openPage(opts)
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
+    rfsuite.session.escBuffer = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -82,9 +82,6 @@ local function openPage(opts)
     end
 
     rfsuite.app.ui.fieldHeader(title)
-
-    local warningLine = form.addLine("")
-    form.addStaticText(warningLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, WARNING_TEXT)
 
     local buttonW
     local buttonH

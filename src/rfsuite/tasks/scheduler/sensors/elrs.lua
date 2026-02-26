@@ -3,6 +3,22 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+--[[
+ELRS sensor memory strategy:
+- Keep the large full SID definition table in `elrs_sensors.lua`.
+- Keep telemetry slot->SID mapping in `elrs_sid_lookup.lua`.
+- Rebuild a runtime table on demand:
+  - relevant SIDs keep full metadata + decoder
+  - non-relevant SIDs keep decoder only (for parser alignment)
+- Drop the full table after rebuild and rebuild again after reset/session restart.
+
+Flow summary:
+1. Build relevant SID set from telemetry config slots.
+2. Load full SID map, reduce to runtime map, then release full table.
+3. Decode all incoming SIDs to preserve parser alignment.
+4. Publish values only for runtime entries that still include metadata (`name`).
+]]
+
 local rfsuite = require("rfsuite")
 
 local arg = {...}
@@ -12,6 +28,7 @@ local math_floor = math.floor
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor
 local string_format = string.format
+local load_file = loadfile
 
 local elrs = {}
 
@@ -52,95 +69,23 @@ local META_UID = {
 
 elrs.strictUntilConfig = false
 
-local sidLookup = {
-    [1] = {'0x1001'},
-    [3] = {'0x1011'},
-    [4] = {'0x1012'},
-    [5] = {'0x1013'},
-    [6] = {'0x1014'},
-    [7] = {'0x1020'},
-    [8] = {'0x1021'},
-    [9] = {'0x102F'},
-    [10] = {'0x1030'},
-    [11] = {'0x1031'},
-    [12] = {'0x1032'},
-    [13] = {'0x1033'},
-    [14] = {'0x1034'},
-    [15] = {'0x1035'},
-    [17] = {'0x1041'},
-    [18] = {'0x1042'},
-    [19] = {'0x1043'},
-    [20] = {'0x1044'},
-    [21] = {'0x1045'},
-    [22] = {'0x1046'},
-    [23] = {'0x1047'},
-    [24] = {'0x1048'},
-    [25] = {'0x1049'},
-    [26] = {'0x104A'},
-    [27] = {'0x104E'},
-    [28] = {'0x104F'},
-    [30] = {'0x1051'},
-    [31] = {'0x1052'},
-    [32] = {'0x1053'},
-    [33] = {'0x1054'},
-    [36] = {'0x1057'},
-    [41] = {'0x105F'},
-    [42] = {'0x1080'},
-    [43] = {'0x1081'},
-    [44] = {'0x1082'},
-    [45] = {'0x1083'},
-    [46] = {'0x1090'},
-    [47] = {'0x1091'},
-    [48] = {'0x1092'},
-    [49] = {'0x1093'},
-    [50] = {'0x10A0'},
-    [51] = {'0x10A1'},
-    [52] = {'0x10A3'},
-    [57] = {'0x10B1'},
-    [58] = {'0x10B2'},
-    [59] = {'0x10B3'},
-    [60] = {'0x10C0'},
-    [61] = {'0x10C1'},
-    [64] = {'0x1100', '0x1101', '0x1102', '0x1103'},
-    [65] = {'0x1101'},
-    [66] = {'0x1102'},
-    [67] = {'0x1103'},
-    [68] = {'0x1110', '0x1111', '0x1112', '0x1113'},
-    [69] = {'0x1111'},
-    [70] = {'0x1112'},
-    [71] = {'0x1113'},
-    [73] = {'0x1121'},
-    [74] = {'0x1122'},
-    [75] = {'0x1123'},
-    [76] = {'0x1124'},
-    [77] = {'0x1125', '0x112B'},
-    [78] = {'0x1126'},
-    [79] = {'0x1127'},
-    [80] = {'0x1128'},
-    [81] = {'0x1129'},
-    [82] = {'0x112A'},
-    [85] = {'0x1141'},
-    [86] = {'0x1142'},
-    [87] = {'0x1143'},
-    [88] = {'0x1200'},
-    [89] = {'0x1201'},
-    [90] = {'0x1202'},
-    [91] = {'0x1203'},
-    [92] = {'0x1204'},
-    [93] = {'0x1205'},
-    [95] = {'0x1211'},
-    [96] = {'0x1212'},
-    [98] = {'0x1213'},
-    [99] = {'0x1220', '0x1221', '0x1222'},
-    [100] = {'0xDB00'},
-    [101] = {'0xDB01'},
-    [102] = {'0xDB02'},
-    [103] = {'0xDB03'},
-    [104] = {'0xDB04'},
-    [105] = {'0xDB05'},
-    [106] = {'0xDB06'},
-    [107] = {'0xDB07'}
-}
+local function loadSidLookup()
+    local lookupLoader, lookupErr = load_file("tasks/scheduler/sensors/elrs_sid_lookup.lua")
+    if not lookupLoader then
+        if rfsuite.utils and rfsuite.utils.log then rfsuite.utils.log("[elrs] Failed to load SID lookup table: " .. tostring(lookupErr), "error") end
+        return {}
+    end
+
+    local lookupTable = lookupLoader()
+    if type(lookupTable) ~= "table" then
+        if rfsuite.utils and rfsuite.utils.log then rfsuite.utils.log("[elrs] SID lookup file did not return a table", "error") end
+        return {}
+    end
+
+    return lookupTable
+end
+
+local sidLookup = loadSidLookup()
 
 elrs._relevantSig = nil
 elrs._relevantSidSet = nil
@@ -176,8 +121,7 @@ local function rebuildRelevantSidSet()
     for _, slotId in ipairs(cfg) do
         local apps = sidLookup[slotId]
         if apps then
-            for _, hex in ipairs(apps) do
-                local sid = tonumber(hex)
+            for _, sid in ipairs(apps) do
                 if sid then elrs._relevantSidSet[sid] = true end
             end
         end
@@ -386,177 +330,70 @@ local function decAdjFunc(data, pos)
     return nil, pos
 end
 
-local sensorsList = {
-
-    [0x1000] = {name = "NULL", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decNil},
-
-    [0x1001] = {name = "Heartbeat", unit = UNIT_RAW, prec = 0, min = 0, max = 60000, dec = decU16},
-
-    [0x1011] = {name = "Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 6500, dec = decU16},
-
-    [0x1012] = {name = "Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 65000, dec = decU16},
-
-    [0x1013] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR, prec = 0, min = 0, max = 65000, dec = decU16},
-
-    [0x1014] = {name = "Charge Level", unit = UNIT_PERCENT, prec = 0, min = 0, max = 100, dec = decU8},
-
-    [0x1020] = {name = "Cell Count", unit = UNIT_RAW, prec = 0, min = 0, max = 16, dec = decU8},
-
-    [0x1021] = {name = "Cell Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 455, dec = decCellV},
-
-    [0x102F] = {name = "Cell Voltages", unit = UNIT_VOLT, prec = 2, min = nil, max = nil, dec = decCells},
-
-    [0x1030] = {name = "Ctrl", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decControl},
-
-    [0x1031] = {name = "Pitch Control", unit = UNIT_DEGREE, prec = 1, min = -450, max = 450, dec = decS16},
-
-    [0x1032] = {name = "Roll Control", unit = UNIT_DEGREE, prec = 1, min = -450, max = 450, dec = decS16},
-
-    [0x1033] = {name = "Yaw Control", unit = UNIT_DEGREE, prec = 1, min = -900, max = 900, dec = decS16},
-
-    [0x1034] = {name = "Coll Control", unit = UNIT_DEGREE, prec = 1, min = -450, max = 450, dec = decS16},
-
-    [0x1035] = {name = "Throttle %", unit = UNIT_PERCENT, prec = 0, min = -100, max = 100, dec = decS8},
-
-    [0x1041] = {name = "ESC1 Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 6500, dec = decU16},
-
-    [0x1042] = {name = "ESC1 Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 65000, dec = decU16},
-
-    [0x1043] = {name = "ESC1 Consump", unit = UNIT_MILLIAMPERE_HOUR, prec = 0, min = 0, max = 65000, dec = decU16},
-
-    [0x1044] = {name = "ESC1 eRPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU24},
-
-    [0x1045] = {name = "ESC1 PWM", unit = UNIT_PERCENT, prec = 1, min = 0, max = 1000, dec = decU16},
-
-    [0x1046] = {name = "ESC1 Throttle", unit = UNIT_PERCENT, prec = 1, min = 0, max = 1000, dec = decU16},
-
-    [0x1047] = {name = "ESC1 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1048] = {name = "ESC1 Temp 2", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1049] = {name = "ESC1 BEC Volt", unit = UNIT_VOLT, prec = 2, min = 0, max = 1500, dec = decU16},
-
-    [0x104A] = {name = "ESC1 BEC Curr", unit = UNIT_AMPERE, prec = 2, min = 0, max = 10000, dec = decU16},
-
-    [0x104E] = {name = "ESC1 Status", unit = UNIT_RAW, prec = 0, min = 0, max = 2147483647, dec = decU32},
-
-    [0x104F] = {name = "ESC1 Model ID", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1051] = {name = "ESC2 Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 6500, dec = decU16},
-
-    [0x1052] = {name = "ESC2 Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 65000, dec = decU16},
-
-    [0x1053] = {name = "ESC2 Consump", unit = UNIT_MILLIAMPERE_HOUR, prec = 0, min = 0, max = 65000, dec = decU16},
-
-    [0x1054] = {name = "ESC2 eRPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU24},
-
-    [0x1057] = {name = "ESC2 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x105F] = {name = "ESC2 Model ID", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1080] = {name = "ESC Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 6500, dec = decU16},
-
-    [0x1081] = {name = "BEC Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 1600, dec = decU16},
-
-    [0x1082] = {name = "BUS Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 1200, dec = decU16},
-
-    [0x1083] = {name = "MCU Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 500, dec = decU16},
-
-    [0x1090] = {name = "ESC Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 65000, dec = decU16},
-
-    [0x1091] = {name = "BEC Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 10000, dec = decU16},
-
-    [0x1092] = {name = "BUS Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 1000, dec = decU16},
-
-    [0x1093] = {name = "MCU Current", unit = UNIT_AMPERE, prec = 2, min = 0, max = 1000, dec = decU16},
-
-    [0x10A0] = {name = "ESC Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x10A1] = {name = "BEC Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x10A3] = {name = "MCU Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x10B1] = {name = "Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
-
-    [0x10B2] = {name = "Altitude", unit = UNIT_METER, prec = 2, min = -100000, max = 100000, dec = decS24},
-
-    [0x10B3] = {name = "VSpeed", unit = UNIT_METER_PER_SECOND, prec = 2, min = -10000, max = 10000, dec = decS16},
-
-    [0x10C0] = {name = "Headspeed", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
-
-    [0x10C1] = {name = "Tailspeed", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
-
-    [0x1100] = {name = "Attd", unit = UNIT_DEGREE, prec = 1, min = nil, max = nil, dec = decAttitude},
-
-    [0x1101] = {name = "Pitch Attitude", unit = UNIT_DEGREE, prec = 0, min = -180, max = 360, dec = decS16},
-
-    [0x1102] = {name = "Roll Attitude", unit = UNIT_DEGREE, prec = 0, min = -180, max = 360, dec = decS16},
-
-    [0x1103] = {name = "Yaw Attitude", unit = UNIT_DEGREE, prec = 0, min = -180, max = 360, dec = decS16},
-
-    [0x1110] = {name = "Accl", unit = UNIT_G, prec = 2, min = nil, max = nil, dec = decAccel},
-
-    [0x1111] = {name = "Accel X", unit = UNIT_G, prec = 1, min = -4000, max = 4000, dec = decS16},
-
-    [0x1112] = {name = "Accel Y", unit = UNIT_G, prec = 1, min = -4000, max = 4000, dec = decS16},
-
-    [0x1113] = {name = "Accel Z", unit = UNIT_G, prec = 1, min = -4000, max = 4000, dec = decS16},
-
-    [0x1121] = {name = "GPS Sats", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1122] = {name = "GPS PDOP", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1123] = {name = "GPS HDOP", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1124] = {name = "GPS VDOP", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1125] = {name = "GPS Coord", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decLatLong},
-
-    [0x1126] = {name = "GPS Altitude", unit = UNIT_METER, prec = 2, min = -100000000, max = 100000000, dec = decS16},
-
-    [0x1127] = {name = "GPS Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
-
-    [0x1128] = {name = "GPS Speed", unit = UNIT_METER_PER_SECOND, prec = 2, min = 0, max = 10000, dec = decU16},
-
-    [0x1129] = {name = "GPS Home Dist", unit = UNIT_METER, prec = 1, min = 0, max = 65535, dec = decU16},
-
-    [0x112A] = {name = "GPS Home Dir", unit = UNIT_METER, prec = 1, min = 0, max = 3600, dec = decU16},
-
-    [0x1141] = {name = "CPU Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 100, dec = decU8},
-
-    [0x1142] = {name = "SYS Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 10, dec = decU8},
-
-    [0x1143] = {name = "RT Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 200, dec = decU8},
-
-    [0x1200] = {name = "Model ID", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1201] = {name = "Flight Mode", unit = UNIT_RAW, prec = 0, min = 0, max = 65535, dec = decU16},
-
-    [0x1202] = {name = "Arming Flags", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1203] = {name = "Arming Disable", unit = UNIT_RAW, prec = 0, min = 0, max = 2147483647, dec = decU32},
-
-    [0x1204] = {name = "Rescue", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1205] = {name = "Governor", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
-
-    [0x1211] = {name = "PID Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
-
-    [0x1212] = {name = "Rate Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
-
-    [0x1213] = {name = "LED Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
-
-    [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decAdjFunc},
-
-    [0xDB00] = {name = "Debug 0", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB01] = {name = "Debug 1", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB02] = {name = "Debug 2", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB03] = {name = "Debug 3", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB04] = {name = "Debug 4", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB05] = {name = "Debug 5", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB06] = {name = "Debug 6", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB07] = {name = "Debug 7", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32}
-}
+local sensorsList = {}
+local activeSensorsListSig = nil
+
+local function rebuildActiveSensorsList(force)
+    local sig = elrs._relevantSig or "__all__"
+    if not force and activeSensorsListSig == sig and next(sensorsList) ~= nil then return end
+
+    local listLoader, listErr = load_file("tasks/scheduler/sensors/elrs_sensors.lua")
+    if not listLoader then
+        if rfsuite.utils and rfsuite.utils.log then rfsuite.utils.log("[elrs] Failed to load sensor list: " .. tostring(listErr), "error") end
+        sensorsList = {}
+        activeSensorsListSig = sig
+        return
+    end
+
+    local listFactory = listLoader()
+    if type(listFactory) ~= "function" then
+        if rfsuite.utils and rfsuite.utils.log then rfsuite.utils.log("[elrs] Sensor list file did not return a factory function", "error") end
+        sensorsList = {}
+        activeSensorsListSig = sig
+        return
+    end
+
+    local fullList = listFactory({
+        decNil = decNil,
+        decU8 = decU8,
+        decS8 = decS8,
+        decU16 = decU16,
+        decS16 = decS16,
+        decU24 = decU24,
+        decS24 = decS24,
+        decU32 = decU32,
+        decS32 = decS32,
+        decCellV = decCellV,
+        decCells = decCells,
+        decControl = decControl,
+        decAttitude = decAttitude,
+        decAccel = decAccel,
+        decLatLong = decLatLong,
+        decAdjFunc = decAdjFunc
+    })
+
+    if type(fullList) ~= "table" then
+        if rfsuite.utils and rfsuite.utils.log then rfsuite.utils.log("[elrs] Sensor list factory did not return a table", "error") end
+        sensorsList = {}
+        activeSensorsListSig = sig
+        return
+    end
+
+    local nextList = {}
+    for sid, sensor in pairs(fullList) do
+        if sidIsRelevant(sid) then
+            nextList[sid] = sensor
+        else
+            nextList[sid] = {dec = sensor.dec}
+        end
+    end
+
+    sensorsList = nextList
+    activeSensorsListSig = sig
+
+    fullList = nil
+    collectgarbage("collect")
+end
 
 elrs.telemetryFrameId = 0
 elrs.telemetryFrameSkip = 0
@@ -606,6 +443,7 @@ function elrs.crossfirePop()
             local ptr = 3
 
             rebuildRelevantSidSet()
+            rebuildActiveSensorsList()
 
             fid, ptr = decU8(data, ptr)
             if elrs._haveFrameId then
@@ -650,7 +488,7 @@ function elrs.crossfirePop()
                         break
                     end
 
-                    if v then
+                    if v and sensor.name ~= nil then
                         if published < (elrs.publishBudgetPerFrame or 40) then
                             setTelemetryValue(sid, 0, 0, v, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
                             published = published + 1
@@ -733,6 +571,8 @@ function elrs.reset()
     elrs._relevantSidSet = nil
     elrs._relevantSig = nil
     _lastSlotsSig = nil
+    sensorsList = {}
+    activeSensorsListSig = nil
     elrs.telemetryFrameId = 0
     elrs.telemetryFrameSkip = 0
     elrs.telemetryFrameCount = 0

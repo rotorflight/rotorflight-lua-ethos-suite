@@ -401,9 +401,16 @@ function render.wakeup(box)
 
     local battadv = cfg.battadv
     if battadv then
-        box._batteryLines = {line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount), line2 = format("%d mah", consumed)}
-    else
-        box._batteryLines = nil
+        local lines = box._batteryLines
+        if not lines then
+            lines = {}
+            box._batteryLines = lines
+        end
+        lines.line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount)
+        lines.line2 = format("%d mah", consumed)
+    elseif box._batteryLines then
+        box._batteryLines.line1 = nil
+        box._batteryLines.line2 = nil
     end
 
     if type(displayValue) == "string" and displayValue:match("^%.+$") then unit = nil end

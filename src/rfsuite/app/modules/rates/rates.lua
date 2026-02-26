@@ -135,8 +135,11 @@ local function openPage(opts)
     local rateRows = {}
     for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do rateRows[ri] = form.addLine(rv) end
 
-    for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
-        local f = rfsuite.app.Page.apidata.formdata.fields[i]
+    local page = rfsuite.app.Page
+    local fields = page.apidata.formdata.fields
+
+    for i = 1, #fields do
+        local f = fields[i]
 
         if f.hidden == nil or f.hidden == false then
             posX = positions[f.col]
@@ -155,16 +158,27 @@ local function openPage(opts)
             end
 
             rfsuite.app.formFields[i] = form.addNumberField(rateRows[f.row], pos, minValue, maxValue, function()
+                if not fields or not fields[i] then
+                    if rfsuite.app.ui then
+                        rfsuite.app.ui.disableAllFields()
+                        rfsuite.app.ui.disableAllNavigationFields()
+                        rfsuite.app.ui.enableNavigationField('menu')
+                    end
+                    return nil
+                end
                 local value
                 if rfsuite.session.activeRateProfile == 0 then
                     value = 0
                 else
-                    value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
+                    value = rfsuite.app.utils.getFieldValue(fields[i])
                 end
                 return value
             end, function(value)
+                if not fields or not fields[i] then return end
                 rfsuite.app.ui.markPageDirty()
-                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+                if f.postEdit and page then f.postEdit(page) end
+                if f.onChange and page then f.onChange(page) end
+                f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
             end)
             if f.default ~= nil then
                 local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)

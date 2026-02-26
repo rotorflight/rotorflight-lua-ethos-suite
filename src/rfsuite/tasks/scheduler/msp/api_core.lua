@@ -117,6 +117,18 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         options = {}
     end
 
+    local enableDeltaCache = true
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and api.isDeltaCacheEnabled then
+        enableDeltaCache = api.isDeltaCacheEnabled(API_NAME)
+    end
+    local keepBuffers = (enableDeltaCache == true)
+    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+    if apidata then
+        apidata._lastReadMode = apidata._lastReadMode or {}
+        apidata._lastReadMode[API_NAME] = keepBuffers and "delta" or "no-delta"
+    end
+
     local chunked            = options.chunked or false
     local fieldsPerTick      = options.fieldsPerTick or 10
     local completionCallback = options.completionCallback
@@ -128,7 +140,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         local state = {
             index = 1,
             parsedData = {},
-            positionmap = {},
+            positionmap = keepBuffers and {} or nil,
             processed = processed or {},
             other = other or {},
             currentByte = 1,
@@ -158,7 +170,9 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
                 local startByte = state.currentByte
                 local endByte = startByte + size - 1
 
-                state.positionmap[field.field] = {start = startByte, size = size}
+                if keepBuffers then
+                    state.positionmap[field.field] = {start = startByte, size = size}
+                end
                 state.currentByte = endByte + 1
 
                 processedFields = processedFields + 1
@@ -171,12 +185,12 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
                 -- All fields parsed
                 local final = {
                     parsed = state.parsedData,
-                    buffer = buf,
+                    buffer = keepBuffers and buf or nil,
                     structure = structure,
-                    positionmap = state.positionmap,
+                    positionmap = keepBuffers and state.positionmap or nil,
                     processed = state.processed,
                     other = state.other,
-                    receivedBytesCount = math_floor((buf.offset or 1) - 1)
+                    receivedBytesCount = keepBuffers and math_floor((buf.offset or 1) - 1) or nil
                 }
                 if completionCallback then completionCallback(final) end
             else
@@ -196,7 +210,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
     buf.offset = 1
 
     local typeSizes = get_type_size()
-    local position_map = {}
+    local position_map = keepBuffers and {} or nil
     local current_byte = 1
 
     for _, field in ipairs(structure) do
@@ -212,7 +226,9 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         parsedData[field.field] = data
 
         local size = typeSizes[field.type]
-        position_map[field.field] = {start = current_byte, size = size}
+        if keepBuffers then
+            position_map[field.field] = {start = current_byte, size = size}
+        end
         current_byte = current_byte + size
 
         ::continue::
@@ -220,12 +236,12 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
 
     local final = {
         parsed = parsedData,
-        buffer = buf,
+        buffer = keepBuffers and buf or nil,
         structure = structure,
-        positionmap = position_map,
+        positionmap = keepBuffers and position_map or nil,
         processed = processed,
         other = other,
-        receivedBytesCount = math_floor(buf.offset - 1)
+        receivedBytesCount = keepBuffers and math_floor(buf.offset - 1) or nil
     }
 
     completionCallback(final)
@@ -265,7 +281,7 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
     if not rfsuite.app.Page then
         utils.log("[buildWritePayload] No page context", "info")
         -- tasks have no UI context; always build a full payload
-        return core.buildFullPayload(apiname, payload, api_structure)        
+        return core.buildFullPayload(apiname, payload, api_structure)
     end
 
     local positionmap       = rfsuite.tasks.msp.api.apidata.positionmap and rfsuite.tasks.msp.api.apidata.positionmap[apiname]
@@ -275,11 +291,21 @@ function core.buildWritePayload(apiname, payload, api_structure, noDelta)
     local useDelta = positionmap and receivedBytes and receivedBytesCount
     if noDelta == true then useDelta = false end
 
+    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+
     if useDelta then
+        if apidata then
+            apidata._lastWriteMode = apidata._lastWriteMode or {}
+            apidata._lastWriteMode[apiname] = "delta"
+        end
         return core.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
-    else
-        return core.buildFullPayload(apiname, payload, api_structure)
     end
+
+    if apidata then
+        apidata._lastWriteMode = apidata._lastWriteMode or {}
+        apidata._lastWriteMode[apiname] = (noDelta == true) and "rebuild" or "full"
+    end
+    return core.buildFullPayload(apiname, payload, api_structure)
 end
 
 -- Build delta payload (patch only changed bytes)
