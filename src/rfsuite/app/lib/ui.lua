@@ -930,6 +930,7 @@ function ui.cleanupCurrentPage()
         local apidata = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata
         local apiLoader = tasks and tasks.msp and tasks.msp.api
         local cbq = tasks and tasks.callback and tasks.callback._queue
+        local cacheStats = utils and utils.getCacheStats and utils.getCacheStats() or nil
         local pageLabel = (app and app.lastScript) or (app and app.Page and app.Page.pageTitle) or "?"
         local function gfxMaskCount()
             if not app or type(app.gfx_buttons) ~= "table" then return 0 end
@@ -1021,8 +1022,10 @@ function ui.cleanupCurrentPage()
 
     collectgarbage('collect')
 
-    if preferences and preferences.developer and preferences.developer.memstats then
-        local mem_kb = collectgarbage("count")
+    local dev = preferences and preferences.developer
+    local logMem = dev and dev.memstats == true
+    local logCache = dev and dev.logcachestats == true
+    if logMem or logCache then
         local function tcount(t)
             if type(t) ~= "table" then return 0 end
             local n = 0
@@ -1032,6 +1035,7 @@ function ui.cleanupCurrentPage()
         local apidata = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata
         local apiLoader = tasks and tasks.msp and tasks.msp.api
         local cbq = tasks and tasks.callback and tasks.callback._queue
+        local cacheStats = (logCache and utils and utils.getCacheStats and utils.getCacheStats()) or nil
         local pageLabel = (app and app.lastScript) or (app and app.Page and app.Page.pageTitle) or "?"
         local function gfxMaskCount()
             if not app or type(app.gfx_buttons) ~= "table" then return 0 end
@@ -1043,21 +1047,44 @@ function ui.cleanupCurrentPage()
             end
             return total
         end
-        utils.log(string.format(
-            "[mem] cleanup end: %.1f KB | page=%s | apidata v=%d s=%d b=%d bc=%d p=%d o=%d | apiCache file=%d chunk=%d | help=%d gfx=%d cbq=%d",
-            mem_kb, tostring(pageLabel),
-            tcount(apidata and apidata.values),
-            tcount(apidata and apidata.structure),
-            tcount(apidata and apidata.receivedBytes),
-            tcount(apidata and apidata.receivedBytesCount),
-            tcount(apidata and apidata.positionmap),
-            tcount(apidata and apidata.other),
-            tcount(apiLoader and apiLoader._fileExistsCache),
-            tcount(apiLoader and apiLoader._chunkCache),
-            tcount(ui._helpCache),
-            gfxMaskCount(),
-            tcount(cbq)
-        ), "debug")
+        if logMem then
+            local mem_kb = collectgarbage("count")
+            local cacheSuffix = ""
+            if logCache then
+                cacheSuffix = string.format(
+                    " | caches imgBmp=%d imgPath=%d file=%d dir=%d",
+                    (cacheStats and cacheStats.imageBitmap) or 0,
+                    (cacheStats and cacheStats.imagePath) or 0,
+                    (cacheStats and cacheStats.fileExists) or 0,
+                    (cacheStats and cacheStats.dirExists) or 0
+                )
+            end
+            utils.log(string.format(
+                "[mem] cleanup end: %.1f KB | page=%s | apidata v=%d s=%d b=%d bc=%d p=%d o=%d | apiCache file=%d chunk=%d | help=%d gfx=%d cbq=%d%s",
+                mem_kb, tostring(pageLabel),
+                tcount(apidata and apidata.values),
+                tcount(apidata and apidata.structure),
+                tcount(apidata and apidata.receivedBytes),
+                tcount(apidata and apidata.receivedBytesCount),
+                tcount(apidata and apidata.positionmap),
+                tcount(apidata and apidata.other),
+                tcount(apiLoader and apiLoader._fileExistsCache),
+                tcount(apiLoader and apiLoader._chunkCache),
+                tcount(ui._helpCache),
+                gfxMaskCount(),
+                tcount(cbq),
+                cacheSuffix
+            ), "info")
+        elseif logCache then
+            utils.log(string.format(
+                "[cache] cleanup end: page=%s | imgBmp=%d imgPath=%d file=%d dir=%d",
+                tostring(pageLabel),
+                (cacheStats and cacheStats.imageBitmap) or 0,
+                (cacheStats and cacheStats.imagePath) or 0,
+                (cacheStats and cacheStats.fileExists) or 0,
+                (cacheStats and cacheStats.dirExists) or 0
+            ), "info")
+        end
     end
 end
 

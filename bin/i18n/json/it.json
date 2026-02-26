@@ -10139,6 +10139,13 @@
           "max_length": 16,
           "reverse_text": false
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Log cache stats"
+        },
         "txt_mspdata": {
           "english": "Log msp data",
           "translation": "Log dati MSP",

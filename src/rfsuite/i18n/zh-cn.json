@@ -10027,6 +10027,13 @@
           "reverse_text": false,
           "translation": "发射机电池选项"
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "记录缓存统计"
+        },
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
           "max_length": 19,

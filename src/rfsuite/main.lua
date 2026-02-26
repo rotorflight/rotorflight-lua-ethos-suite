@@ -95,6 +95,7 @@ local userpref_defaults = {
         logmspQueue = false,
         logevents = false,
         memstats = false,
+        logcachestats = false,
         taskprofiler = false,
         mspexpbytes = 8,
         apiversion = 2,

@@ -10139,6 +10139,13 @@
           "translation": "日志内存使用",
           "reverse_text": false
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "记录缓存统计"
+        },
         "txt_mspdata": {
           "english": "Log msp data",
           "max_length": 12,
