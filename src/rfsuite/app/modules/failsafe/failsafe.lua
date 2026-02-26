@@ -67,8 +67,8 @@ end
 
 local apidata = {
     api = {
-        [1] = "RXFAIL_CONFIG",
-        [2] = "FAILSAFE_CONFIG"
+        {id = 1, name = "RXFAIL_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+        {id = 2, name = "FAILSAFE_CONFIG", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = labels,
