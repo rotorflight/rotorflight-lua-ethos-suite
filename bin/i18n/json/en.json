@@ -9665,6 +9665,12 @@
         "needs_translation": false,
         "translation": "RPM Min"
       },
+      "setup": {
+        "english": "Setup",
+        "max_length": 5,
+        "needs_translation": false,
+        "translation": "Setup"
+      },
       "throttle": {
         "english": "Throttle",
         "max_length": 8,

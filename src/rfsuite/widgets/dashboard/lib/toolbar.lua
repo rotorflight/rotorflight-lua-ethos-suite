@@ -18,8 +18,8 @@
     
 local DEFAULT_TOOLBAR_ITEMS = {
     {
-        name = "Rotorflight",
-        order = 10,
+        name = "Setup",
+        order = 5000,
         icon = "widgets/dashboard/gfx/toolbar_app.png",
         iconSize = 55,
         postConnectComplete = true,
@@ -35,7 +35,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
                 actions.launchApp()
             end
         end
-    },
+    },      
     {
         name = "@i18n(widgets.dashboard.reset_flight)@",
         order = 100,
@@ -60,7 +60,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
                 actions.eraseBlackboxAsk()
             end
         end
-    }
+    }  
 }
 
 local M = {}

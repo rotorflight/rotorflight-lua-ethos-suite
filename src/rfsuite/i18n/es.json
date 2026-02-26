@@ -11247,6 +11247,13 @@
         "reverse_text": false,
         "translation": "Mín RPM"
       },
+      "setup": {
+        "english": "Setup",
+        "max_length": 5,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Setup"
+      },
       "throttle": {
         "english": "Throttle",
         "max_length": 8,

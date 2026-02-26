@@ -11247,6 +11247,13 @@
         "reverse_text": false,
         "max_length": 7
       },
+      "setup": {
+        "english": "Setup",
+        "translation": "Setup",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 5
+      },
       "throttle": {
         "english": "Throttle",
         "translation": "Acelerador",
