@@ -33,9 +33,18 @@ local function newQueue() return {first = 1, last = 0, data = {}} end
 local function qpush(q, v) q.last = q.last + 1; q.data[q.last] = v end
 local function qpop(q)
     if q.first > q.last then return nil end
-    local v = q.data[q.first]
-    q.data[q.first] = nil
-    q.first = q.first + 1
+    local idx = q.first
+    local v = q.data[idx]
+    q.data[idx] = nil
+    idx = idx + 1
+    if idx > q.last then
+        -- Reset indices/data when drained so queue tables do not grow forever.
+        q.first = 1
+        q.last = 0
+        q.data = {}
+    else
+        q.first = idx
+    end
     return v
 end
 local function qcount(q) return q.last - q.first + 1 end
@@ -70,6 +79,27 @@ end
 -- Logging toggles
 local function LOG_ENABLED_MSP() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp end
 local function LOG_ENABLED_MSP_RW() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsprw end
+
+local function getRwModeSuffix(msg, rwState, ok)
+    if not LOG_ENABLED_MSP_RW() then return "" end
+    if not msg or not msg.apiname or not rwState then return "" end
+    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+    if not apidata then return "" end
+
+    if rwState == "WRITE" then
+        local mode = apidata._lastWriteMode and apidata._lastWriteMode[msg.apiname]
+        if not mode then return "" end
+        return " mode=" .. tostring(mode)
+    end
+
+    if rwState == "READ" and ok == true then
+        local mode = apidata._lastReadMode and apidata._lastReadMode[msg.apiname]
+        if not mode then return "" end
+        return " mode=" .. tostring(mode)
+    end
+
+    return ""
+end
 
 -- Lightweight status updates for UI progress loaders.
 local function setMspStatus(message)
@@ -335,7 +365,8 @@ function MspQueueController:processQueue()
             else
                 rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
             end
-            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+            local modeSuffix = getRwModeSuffix(msg, rwState, false)
+            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
@@ -435,10 +466,11 @@ function MspQueueController:processQueue()
                 else
                     rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
                 end
+                local modeSuffix = getRwModeSuffix(msg, rwState, not err)
                 if err then
-                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " error" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " error" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
                 else
-                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " ok" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " ok" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
                 end
             end
         end
@@ -477,7 +509,8 @@ function MspQueueController:processQueue()
             else
                 rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
             end
-            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " max retries" .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+            local modeSuffix = getRwModeSuffix(msg, rwState, false)
+            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " max retries" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
         self:clear()
         setMspStatus(formatMspStatus(msg, "max retries"))

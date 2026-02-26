@@ -1,5 +1,5 @@
 {
-  "ethos.firmware": "X20S_FCC",
+  "ethos.firmware": "X20S_EU",
   "ethos.root": "simulator/${config:ethos.firmware}",
   "rfsuite.deploy.language": "en"
 }

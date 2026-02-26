@@ -10027,6 +10027,13 @@
           "reverse_text": false,
           "translation": "Opzioni Batteria Tx"
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Log cache stats"
+        },
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
           "max_length": 19,

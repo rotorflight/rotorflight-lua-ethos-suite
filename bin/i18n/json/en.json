@@ -8712,6 +8712,12 @@
           "needs_translation": false,
           "translation": "Log memory usage"
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Log cache stats"
+        },
         "txt_mspdata": {
           "english": "Log msp data",
           "max_length": 12,
