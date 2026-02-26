@@ -44,7 +44,7 @@ local status = {
 
 local apidata = {
     api = {
-        [1] = "BLACKBOX_CONFIG"
+        {id = 1, name = "BLACKBOX_CONFIG", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

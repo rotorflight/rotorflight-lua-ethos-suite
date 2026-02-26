@@ -10,6 +10,14 @@ local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"}
 local app = rfsuite.app
 local tasks = rfsuite.tasks
 
+local function loadApiNoDelta(apiName)
+    local api = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local FEATURE_BITS = {
     gps = 7,
     governor = 26,
@@ -215,7 +223,7 @@ local function requestData(forceApiRead)
 
     state.pendingReads = 2
 
-    local FAPI = tasks.msp.api.load("FEATURE_CONFIG")
+    local FAPI = loadApiNoDelta("FEATURE_CONFIG")
     FAPI.setUUID("blackbox-logging-feature")
     FAPI.setCompleteHandler(function()
         local d = FAPI.data()
@@ -226,7 +234,7 @@ local function requestData(forceApiRead)
     FAPI.setErrorHandler(function() onReadDone() end)
     FAPI.read()
 
-    local BAPI = tasks.msp.api.load("BLACKBOX_CONFIG")
+    local BAPI = loadApiNoDelta("BLACKBOX_CONFIG")
     BAPI.setUUID("blackbox-logging-config")
     BAPI.setCompleteHandler(function()
         local d = BAPI.data()
@@ -259,7 +267,7 @@ local function performSave()
     state.saving = true
     app.ui.progressDisplaySave("@i18n(app.modules.blackbox.saving)@")
 
-    local API = tasks.msp.api.load("BLACKBOX_CONFIG")
+    local API = loadApiNoDelta("BLACKBOX_CONFIG")
     API.setUUID("blackbox-logging-write")
     API.setErrorHandler(function()
         state.saving = false

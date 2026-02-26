@@ -16,6 +16,14 @@ local blackboxFocused = false
 local featureBitmap = 0
 local blackboxConfigParsed = {}
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function copyTable(src)
     if type(src) ~= "table" then return src end
     local dst = {}
@@ -68,7 +76,7 @@ local function requestBlackboxPrereqs()
     blackboxConfigParsed = {}
     blackboxFocused = false
 
-    local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+    local FAPI = loadApiNoDelta("FEATURE_CONFIG")
     FAPI.setUUID("blackbox-menu-feature")
     FAPI.setCompleteHandler(function()
         local d = FAPI.data()
@@ -83,7 +91,7 @@ local function requestBlackboxPrereqs()
     end)
     FAPI.read()
 
-    local BAPI = rfsuite.tasks.msp.api.load("BLACKBOX_CONFIG")
+    local BAPI = loadApiNoDelta("BLACKBOX_CONFIG")
     BAPI.setUUID("blackbox-menu-config")
     BAPI.setCompleteHandler(function()
         local d = BAPI.data()
