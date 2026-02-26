@@ -22,7 +22,7 @@ end
 
 local apidata = {
     api = {
-        {id = 1, name = "PID_TUNING", enableDeltaCache = true, rebuildOnWrite = false},
+        {id = 1, name = "PID_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {},
