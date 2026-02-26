@@ -150,6 +150,14 @@ local function syncNavButtonsForState()
     page.navButtons = {menu = true, save = true, reload = true, tool = false, help = true}
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 -- Forward declaration: used by helpers defined before the function body.
 local buildModesFromRaw
 
@@ -422,7 +430,7 @@ local function setLoadError(reason)
 end
 
 local function readModeRangesExtra()
-    local API = rfsuite.tasks.msp.api.load("MODE_RANGES_EXTRA")
+    local API = loadApiNoDelta("MODE_RANGES_EXTRA")
     if not API then
         setLoadError("MODE_RANGES_EXTRA API unavailable")
         return
@@ -447,7 +455,7 @@ local function readModeRangesExtra()
 end
 
 local function readModeRanges()
-    local API = rfsuite.tasks.msp.api.load("MODE_RANGES")
+    local API = loadApiNoDelta("MODE_RANGES")
     if not API then
         setLoadError("MODE_RANGES API unavailable")
         return
@@ -466,7 +474,7 @@ local function readModeRanges()
 end
 
 local function readBoxNames()
-    local API = rfsuite.tasks.msp.api.load("BOXNAMES")
+    local API = loadApiNoDelta("BOXNAMES")
     if not API then
         setLoadError("BOXNAMES API unavailable")
         return
@@ -485,7 +493,7 @@ local function readBoxNames()
 end
 
 local function readBoxIds()
-    local API = rfsuite.tasks.msp.api.load("BOXIDS")
+    local API = loadApiNoDelta("BOXIDS")
     if not API then
         setLoadError("BOXIDS API unavailable")
         return
