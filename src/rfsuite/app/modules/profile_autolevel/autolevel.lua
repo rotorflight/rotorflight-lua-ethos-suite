@@ -9,8 +9,8 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = 'PID_PROFILE'
-    },
+        {id = 1, name = "PID_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },  
     formdata = {
         labels = {
             { t = "@i18n(app.modules.profile_autolevel.acro_trainer)@", inline_size = 13.6, label = 1 },
