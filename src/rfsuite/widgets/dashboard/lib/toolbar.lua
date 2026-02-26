@@ -24,7 +24,10 @@ local DEFAULT_TOOLBAR_ITEMS = {
         iconSize = 55,
         isConnected = false,
         enableFunction = function(dashboard, rfsuite)
-            return system.gotoScreen ~= nil
+            if rfsuite.sysIndex['app'] and system.gotoScreen ~= nil then
+                return true
+            end
+            return false
         end,
         onClick = function(dashboard)
             local actions = dashboard.toolbar_actions
