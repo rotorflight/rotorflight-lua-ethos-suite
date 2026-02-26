@@ -553,6 +553,14 @@ local function syncNavButtonsForState()
     end
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function countActiveRanges()
     local used = 0
     for i = 1, #state.adjustmentRanges do
@@ -673,7 +681,7 @@ local function readAdjustmentFunctions(onComplete, onError)
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load("GET_ADJUSTMENT_FUNCTION_IDS")
+    local API = loadApiNoDelta("GET_ADJUSTMENT_FUNCTION_IDS")
     if not API then
         state.supportsAdjustmentFunctions = false
         if onError then onError("GET_ADJUSTMENT_FUNCTION_IDS API unavailable") end
@@ -712,7 +720,7 @@ local function applyAdjustmentFunctions(functions)
 end
 
 local function readAdjustmentRangesBulk(onComplete, onError)
-    local API = rfsuite.tasks.msp.api.load("ADJUSTMENT_RANGES")
+    local API = loadApiNoDelta("ADJUSTMENT_RANGES")
     if not API then
         if onError then onError("ADJUSTMENT_RANGES API unavailable") end
         return
