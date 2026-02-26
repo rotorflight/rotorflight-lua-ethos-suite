@@ -2716,6 +2716,35 @@ function ui.mspApiUpdateFormAttributes()
     end
 end
 
+local function resolveDeltaPolicy(apiMeta, pageApidata)
+    local enableDeltaCache = nil
+    if apiMeta and apiMeta.enableDeltaCache ~= nil then
+        enableDeltaCache = apiMeta.enableDeltaCache
+    elseif pageApidata and pageApidata.enableDeltaCache ~= nil then
+        enableDeltaCache = pageApidata.enableDeltaCache
+    end
+    if type(enableDeltaCache) ~= "boolean" then
+        enableDeltaCache = nil
+    end
+
+    local riskPutDelta = nil
+    if apiMeta and apiMeta.riskPutDelta ~= nil then
+        riskPutDelta = apiMeta.riskPutDelta
+    elseif pageApidata and pageApidata.riskPutDelta ~= nil then
+        riskPutDelta = pageApidata.riskPutDelta
+    end
+    if type(riskPutDelta) ~= "boolean" then
+        riskPutDelta = nil
+    end
+
+    -- Only opt into delta when explicitly requested for risky/partial-write APIs.
+    if enableDeltaCache == nil and riskPutDelta == true then
+        enableDeltaCache = true
+    end
+
+    return enableDeltaCache
+end
+
 function ui.requestPage()
     local log = utils.log
 
@@ -2803,15 +2832,7 @@ function ui.requestPage()
             return
         end
 
-        local enableDeltaCache = nil
-        if apiMeta and apiMeta.enableDeltaCache ~= nil then
-            enableDeltaCache = apiMeta.enableDeltaCache
-        elseif app.Page.apidata and app.Page.apidata.enableDeltaCache ~= nil then
-            enableDeltaCache = app.Page.apidata.enableDeltaCache
-        end
-        if enableDeltaCache ~= nil and type(enableDeltaCache) ~= "boolean" then
-            enableDeltaCache = nil
-        end
+        local enableDeltaCache = resolveDeltaPolicy(apiMeta, app.Page.apidata)
 
         local API = tasks.msp.api.load(apiKey)
         if API and API.enableDeltaCache and enableDeltaCache ~= nil then
@@ -2858,7 +2879,7 @@ function ui.requestPage()
                 cacheEnabled = tasks.msp.api.isDeltaCacheEnabled(apiKey)
             end
             if type(cacheEnabled) ~= "boolean" then cacheEnabled = nil end
-            if cacheEnabled == nil then cacheEnabled = true end
+            if cacheEnabled == nil then cacheEnabled = false end
 
             local data = API.data()
             tasks.msp.api.apidata.values[apiKey] = data.parsed
@@ -2955,12 +2976,7 @@ function ui.saveSettings()
 
         local API = tasks.msp.api.load(apiNAME)
         if API and API.enableDeltaCache then
-            local enableDeltaCache = nil
-            if apiMeta and apiMeta.enableDeltaCache ~= nil then
-                enableDeltaCache = apiMeta.enableDeltaCache
-            elseif app.Page.apidata and app.Page.apidata.enableDeltaCache ~= nil then
-                enableDeltaCache = app.Page.apidata.enableDeltaCache
-            end
+            local enableDeltaCache = resolveDeltaPolicy(apiMeta, app.Page.apidata)
             if type(enableDeltaCache) == "boolean" then
                 API.enableDeltaCache(enableDeltaCache)
             end

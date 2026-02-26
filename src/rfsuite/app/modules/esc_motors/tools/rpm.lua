@@ -47,8 +47,17 @@ local apidata = {
             [FIELDS.TAIL_GEAR] = {t = "@i18n(app.modules.esc_motors.front)@",               api = "MOTOR_CONFIG:tail_rotor_gear_ratio_1", label = 2, inline = 1},
             [FIELDS.MOTOR_POLE_COUNT] = {t = "@i18n(app.modules.esc_motors.motor_pole_count)@",    api = "MOTOR_CONFIG:motor_pole_count_0"},
         }
-    }
+	}
 }
+
+local function readApiField(apiName, fieldName)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load and rfsuite.tasks.msp.api.load(apiName)
+    if api and api.readValue then
+        local value = api.readValue(fieldName)
+        if value ~= nil then return value end
+    end
+    return nil
+end
 
 local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
@@ -56,6 +65,11 @@ local function postLoad(self)
 end
 
 local function getMotorPwmProtocol()
+    local fromApi = readApiField("MOTOR_CONFIG", "motor_pwm_protocol")
+    if fromApi ~= nil then
+        return math.floor(tonumber(fromApi) or 0)
+    end
+
     local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
     local values = apidata and apidata.values or nil
     local motorConfig = values and values["MOTOR_CONFIG"] or nil

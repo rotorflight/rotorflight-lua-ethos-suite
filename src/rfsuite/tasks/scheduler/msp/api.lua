@@ -22,7 +22,7 @@ apiLoader._chunkCache      = apiLoader._chunkCache or {}      -- apiName -> comp
 apiLoader._chunkCacheOrder = apiLoader._chunkCacheOrder or {} -- MRU list (optional)
 apiLoader._chunkCacheMax   = apiLoader._chunkCacheMax or 5    -- optional cap
 apiLoader._deltaCacheDefault = apiLoader._deltaCacheDefault
-if apiLoader._deltaCacheDefault == nil then apiLoader._deltaCacheDefault = true end
+if apiLoader._deltaCacheDefault == nil then apiLoader._deltaCacheDefault = false end
 apiLoader._deltaCacheByApi   = apiLoader._deltaCacheByApi or {}
 
 local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"

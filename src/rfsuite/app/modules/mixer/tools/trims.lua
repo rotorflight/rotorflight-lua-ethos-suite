@@ -41,10 +41,24 @@ local apidata = {
             {t = "@i18n(app.modules.trim.collective_trim)@",    mspapi = 1, apikey = "swash_trim_2"},
             {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end},
         }
-    }
+	}
 }
 
+local function readApiField(apiName, fieldName)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load and rfsuite.tasks.msp.api.load(apiName)
+    if api and api.readValue then
+        local value = api.readValue(fieldName)
+        if value ~= nil then return value end
+    end
+    return nil
+end
+
 local function getTailRotorMode()
+    local fromApi = readApiField("MIXER_CONFIG", "tail_rotor_mode")
+    if fromApi ~= nil then
+        return tonumber(fromApi) or fromApi
+    end
+
     local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
     local mixerConfig = values and values["MIXER_CONFIG"]
     if mixerConfig and mixerConfig.tail_rotor_mode ~= nil then

@@ -21,11 +21,29 @@ local function getApiEntryName(entry)
     return entry
 end
 
+local function readApiField(apiName, fieldName)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load and rfsuite.tasks.msp.api.load(apiName)
+    if api and api.readValue then
+        local value = api.readValue(fieldName)
+        if value ~= nil then return value end
+    end
+    return nil
+end
+
 local function getGovernorFlags()
+    local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1]) or "GOVERNOR_PROFILE"
+
+    local fromApi = readApiField(apiName, "governor_flags")
+    if fromApi == nil and apiName ~= "GOVERNOR_PROFILE" then
+        fromApi = readApiField("GOVERNOR_PROFILE", "governor_flags")
+    end
+    if fromApi ~= nil then
+        return tonumber(fromApi) or fromApi
+    end
+
     local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
     if not values then return nil end
 
-    local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1]) or "GOVERNOR_PROFILE"
     local governorProfile = values[apiName] or values["GOVERNOR_PROFILE"]
     if governorProfile and governorProfile.governor_flags ~= nil then
         return tonumber(governorProfile.governor_flags) or governorProfile.governor_flags
