@@ -72,7 +72,22 @@ local userpref_defaults = {
     },
     activelook = {
         offset_x = 0,
-        offset_y = 0
+        offset_y = 0,
+        layout_preflight = "stacked_three",
+        layout_inflight = "one_top_two_bottom",
+        layout_postflight = "two_top_two_bottom",
+        preflight_1 = "governor",
+        preflight_2 = "armed",
+        preflight_3 = "flightmode",
+        preflight_4 = "off",
+        inflight_1 = "current",
+        inflight_2 = "voltage",
+        inflight_3 = "fuel",
+        inflight_4 = "timer",
+        postflight_1 = "current",
+        postflight_2 = "voltage",
+        postflight_3 = "fuel",
+        postflight_4 = "timer"
     },
     events = {
         armflags = true,
