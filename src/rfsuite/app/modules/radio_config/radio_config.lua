@@ -12,7 +12,9 @@ local throttleValidated = false
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
 
     apidata = {
-        api = {[1] = "RC_CONFIG"},
+        api = {
+            {id = 1, name = "RC_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+        },
         formdata = {
             labels = {
                 {t = "@i18n(app.modules.radio_config.stick)@",           label = 1, inline_size = 16},
@@ -33,7 +35,9 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
 else
 
     apidata = {
-        api = {[1] = "RC_CONFIG"},
+        api = {
+            {id = 1, name = "RC_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+        },
         formdata = {
             labels = {
                 {t = "@i18n(app.modules.radio_config.stick)@",           label = 1, inline_size = 16},
