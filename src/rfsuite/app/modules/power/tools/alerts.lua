@@ -14,7 +14,7 @@ local rxBattAlert
 
 local apidata = {
     api = {
-        [1] = 'BATTERY_INI'
+        {id = 1, name = "BATTERY_INI", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

@@ -10,7 +10,7 @@ local enableWakeup = false
 local onNavMenu
 local apidata = {
     api = {
-        [1] = 'BATTERY_CONFIG',
+        {id = 1, name = "BATTERY_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {},
