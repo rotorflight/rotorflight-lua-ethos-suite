@@ -30,7 +30,9 @@ local function queueDirect(message, uuid)
 end
 
 local apidata = {
-    api = {[1] = "MIXER_CONFIG"},
+    api = {
+        {id = 1, name = "MIXER_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+    },
     formdata = {
         labels = {},
         fields = {

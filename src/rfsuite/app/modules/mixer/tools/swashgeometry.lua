@@ -77,6 +77,12 @@ local function queueDirect(message, uuid)
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then api.enableDeltaCache(false) end
+    return api
+end
+
 local function formDigest()
     local digest = {}
     for i = 1, LAYOUTINDEX.COL_TILT_COR_NEG do
@@ -368,7 +374,7 @@ local function loadNext(i)
     return
   end
 
-  local API = rfsuite.tasks.msp.api.load(IDX)
+  local API = loadApiNoDelta(IDX)
   API.setCompleteHandler(function(self, buf)
         APIDATA[IDX] = {}
 
@@ -470,7 +476,7 @@ local function writeNext(i, commitToEeprom)
     local apikey = sequence[i]
     if not apikey then
         if commitToEeprom then
-            local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+            local EAPI = loadApiNoDelta("EEPROM_WRITE")
             EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
             EAPI.setCompleteHandler(function(self)
                 rfsuite.utils.log("Writing to EEPROM", "info")
@@ -502,7 +508,7 @@ local function writeNext(i, commitToEeprom)
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load(apikey)
+    local API = loadApiNoDelta(apikey)
     API.setRebuildOnWrite(true)
 
     API.setCompleteHandler(function(self, buf)

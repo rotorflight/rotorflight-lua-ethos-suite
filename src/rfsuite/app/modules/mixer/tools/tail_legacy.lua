@@ -8,7 +8,7 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local apidata = {
     api = {
-        [1] = 'MIXER_CONFIG',
+        {id = 1, name = "MIXER_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {

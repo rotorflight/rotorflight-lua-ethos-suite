@@ -85,6 +85,12 @@ else
         }    
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then api.enableDeltaCache(false) end
+    return api
+end
+
 -- -------------------------------------------------------
 -- -- Helper functions
 -- -------------------------------------------------------
@@ -264,7 +270,7 @@ local function loadNext(i)
     return
   end
 
-  local API = rfsuite.tasks.msp.api.load(IDX)
+  local API = loadApiNoDelta(IDX)
   API.setCompleteHandler(function(self, buf)
         APIDATA[IDX] = {}
 
@@ -318,7 +324,7 @@ local function writeNext(i)
         -- all done
 
         -- commit the change
-        local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+        local EAPI = loadApiNoDelta("EEPROM_WRITE")
         EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
         EAPI.setCompleteHandler(function(self)
             rfsuite.utils.log("Writing to EEPROM", "info")
@@ -327,7 +333,7 @@ local function writeNext(i)
 
         -- reboot if required
         if needsReboot then
-            local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+            local RAPI = loadApiNoDelta("REBOOT")
             RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
             RAPI.setCompleteHandler(function(self)
                 rfsuite.utils.log("Rebooting FC", "info")
@@ -344,7 +350,7 @@ local function writeNext(i)
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load(apikey)
+    local API = loadApiNoDelta(apikey)
     API.setRebuildOnWrite(true)
 
     API.setCompleteHandler(function(self, buf)
