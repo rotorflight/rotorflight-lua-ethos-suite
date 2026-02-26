@@ -17,7 +17,9 @@ local FIELD_DYN_MIN_THROTTLE = 4
 
 
 local apidata = {
-    api = {[1] = 'GOVERNOR_PROFILE'},
+    api = {
+        {id = 1, name = "GOVERNOR_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },    
     formdata = {
         labels = {},
         fields = {
