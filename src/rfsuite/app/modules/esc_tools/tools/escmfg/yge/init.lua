@@ -33,17 +33,26 @@ local escType = {
 
 local escFlags = {spinDirection = 0, f3cAuto = 1, keepMah = 2, bec12v = 3}
 
+local function getByte(page, index, default)
+    if type(page) ~= "table" then return default end
+    local v = tonumber(page[index])
+    if v == nil then return default end
+    v = math.floor(v)
+    if v < 0 or v > 255 then return default end
+    return v
+end
+
 local function getEscTypeLabel(values)
-    local idx = (values[mspHeaderBytes + 24] * 256) + values[mspHeaderBytes + 23]
+    local idx = (getByte(values, mspHeaderBytes + 24, 0) * 256) + getByte(values, mspHeaderBytes + 23, 0)
     return escType[idx] or "YGE ESC (" .. idx .. ")"
 end
 
 local function getUInt(page, vals)
     local v = 0
     for idx = 1, #vals do
-        local raw_val = page[vals[idx] + mspHeaderBytes] or 0
-        raw_val = raw_val * (256 ^ (idx - 1))
-        v = v + raw_val
+        local raw_val = getByte(page, vals[idx] + mspHeaderBytes, 0)
+        raw_val = raw_val << ((idx - 1) * 8)
+        v = v | raw_val
     end
     return v
 end

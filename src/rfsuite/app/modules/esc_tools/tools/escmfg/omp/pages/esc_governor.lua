@@ -14,7 +14,7 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_OMP"
+        {id = 1, name = "ESC_PARAMETERS_OMP", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

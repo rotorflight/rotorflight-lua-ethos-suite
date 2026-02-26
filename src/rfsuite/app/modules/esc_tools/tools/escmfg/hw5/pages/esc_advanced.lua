@@ -11,7 +11,7 @@ local powercycleLoader
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_HW5"
+        {id = 1, name = "ESC_PARAMETERS_HW5", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {

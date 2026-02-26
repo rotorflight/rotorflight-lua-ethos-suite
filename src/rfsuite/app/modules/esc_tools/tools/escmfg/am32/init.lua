@@ -7,22 +7,20 @@ local rfsuite = require("rfsuite")
 
 local MSP_API = "ESC_PARAMETERS_AM32"
 local MSP_API_VERSION = {12, 0, 9}
+local mspHeaderBytes = 0
 
 local toolName = "AM32"
-local moduleName = "am32"
 
-local function getPageValue(page, index) return page[index] end
-
-local function getText(buffer, st, en)
-
-    local tt = {}
-    for i = st, en do
-        local v = buffer[i]
-        if v == 0 then break end
-        table.insert(tt, string.char(v))
-    end
-    return table.concat(tt)
+local function getByte(page, index, default)
+    if type(page) ~= "table" then return default end
+    local v = tonumber(page[index])
+    if v == nil then return default end
+    v = math.floor(v)
+    if v < 0 or v > 255 then return default end
+    return v
 end
+
+local function getPageValue(page, index, default) return getByte(page, index, default) end
 
 -- required by framework
 local function getEscModel(self)
@@ -41,13 +39,13 @@ end
 -- required by framework
 local function getEscFirmware(self)
 
-   local version = "SW" .. getPageValue(self, 6) .. "." .. getPageValue(self, 7)
+   local version = "SW" .. getPageValue(self, 6, 0) .. "." .. getPageValue(self, 7, 0)
    return version
 
 end
 
 return {
-    mspapi="ESC_PARAMETERS_AM32",
+    mspapi = MSP_API,
     toolName = toolName,
     image = "am32.jpg",
     esc4way = true,

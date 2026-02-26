@@ -9,7 +9,7 @@ local folder = "flrtr"
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_FLYROTOR"
+        {id = 1, name = "ESC_PARAMETERS_FLYROTOR", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

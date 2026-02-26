@@ -46,6 +46,14 @@ local lastWriteSeq = 0
 local last4WayWriteTarget
 local last4WayWriteOk
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function trimText(value)
     if type(value) ~= "string" then return value end
     return value:gsub("^%s+", ""):gsub("%s+$", "")
@@ -139,7 +147,7 @@ local function getESCDetails()
 
     mspBusy = true
 
-    local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    local API = loadApiNoDelta(ESC.mspapi)
     API.setCompleteHandler(function(self, buf)
 
         local signature = API.readValue("esc_signature")
@@ -235,7 +243,7 @@ local function requestEsc2AvailabilityCheck()
 
     local mspApi = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
     if not (mspApi and mspApi.load) then return end
-    local API = mspApi.load("MOTOR_CONFIG")
+    local API = loadApiNoDelta("MOTOR_CONFIG")
     if not API then return end
 
     esc2CheckPending = true
@@ -267,7 +275,7 @@ local function setESC4WayMode(id)
     lastWriteSeq = seq
     last4WayWriteTarget = target
     last4WayWriteOk = nil
-    local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+    local API = loadApiNoDelta("4WIF_ESC_FWD_PROG")
     if not API then return false, "api_missing" end
     if rfsuite.utils and rfsuite.utils.log then
         rfsuite.utils.log("ESC 4WIF set target: " .. tostring(target), "info")
@@ -442,7 +450,7 @@ local function loadEscConfig(folder)
     ESC = moduleOrErr
 
     if ESC.mspapi ~= nil then
-        local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+        local API = loadApiNoDelta(ESC.mspapi)
         mspSignature = API.mspSignature
         simulatorResponse = API.simulatorResponse or {0}
         mspBytes = #simulatorResponse

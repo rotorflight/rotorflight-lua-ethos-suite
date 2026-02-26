@@ -60,6 +60,14 @@ end
 
 local mspBusy = false
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function getESCDetails()
     if not ESC then return end
     if not ESC.mspapi then return end
@@ -83,7 +91,7 @@ local function getESCDetails()
 
     mspBusy = true
 
-    local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    local API = loadApiNoDelta(ESC.mspapi)
     API.setCompleteHandler(function(self, buf)
 
         local signature = API.readValue("esc_signature")
@@ -157,12 +165,14 @@ local function openPage(opts)
 
     if rfsuite.app and rfsuite.app.Page and ESC and ESC.mspapi then
         rfsuite.app.Page.apidata = rfsuite.app.Page.apidata or {}
-        rfsuite.app.Page.apidata.api = {ESC.mspapi}
+        rfsuite.app.Page.apidata.api = {
+            {id = 1, name = ESC.mspapi, enableDeltaCache = false, rebuildOnWrite = true}
+        }
     end
 
     if ESC.mspapi ~= nil then
 
-        local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+        local API = loadApiNoDelta(ESC.mspapi)
         mspSignature = API.mspSignature
         simulatorResponse = API.simulatorResponse or {0}
         mspBytes = #simulatorResponse

@@ -14,7 +14,7 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_XDFLY"
+        {id = 1, name = "ESC_PARAMETERS_XDFLY", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

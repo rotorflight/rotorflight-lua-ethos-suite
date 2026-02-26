@@ -7,12 +7,23 @@ local toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@"
 local MSP_API_VERSION = {12, 0, 6}
 local mspHeaderBytes = 2
 
+local function getByte(buffer, index, default)
+    if type(buffer) ~= "table" then return default end
+    local v = tonumber(buffer[index])
+    if v == nil then return default end
+    v = math.floor(v)
+    if v < 0 or v > 255 then return default end
+    return v
+end
+
 local function getText(buffer, st, en)
 
     local tt = {}
     for i = st, en do
-        local v = buffer[i]
+        local v = getByte(buffer, i, nil)
+        if v == nil then break end
         if v == 0 then break end
+        if v < 32 or v > 126 then break end
         table.insert(tt, string.char(v))
     end
     return table.concat(tt)

@@ -10,7 +10,7 @@ local folder = "scorp"
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_SCORPION"
+        {id = 1, name = "ESC_PARAMETERS_SCORPION", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

@@ -6,11 +6,19 @@
 local toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@"
 local MSP_API_VERSION = {12, 0, 6}
 
+local function getByte(page, index, default)
+    if type(page) ~= "table" then return default end
+    local v = tonumber(page[index])
+    if v == nil then return default end
+    v = math.floor(v)
+    if v < 0 or v > 255 then return default end
+    return v
+end
+
 local function getUInt(page, vals)
-    if page.values == nil then return 0 end
     local v = 0
     for idx = 1, #vals do
-        local raw_val = page.value[vals[idx]] or 0
+        local raw_val = getByte(page, vals[idx], 0)
         raw_val = raw_val << (idx - 1) * 8
         v = (v | raw_val) << 0
     end
@@ -20,9 +28,12 @@ end
 local function getEscModel(buffer)
     local tt = {}
     for i = 1, 32 do
-        local v = buffer[i + 2]
+        local v = getByte(buffer, i + 2, nil)
+        if v == nil then break end
         if v == 0 then break end
-        if v ~= nil then table.insert(tt, string.char(v)) end
+        if v >= 32 and v <= 126 then
+            table.insert(tt, string.char(v))
+        end
     end
     return table.concat(tt)
 end

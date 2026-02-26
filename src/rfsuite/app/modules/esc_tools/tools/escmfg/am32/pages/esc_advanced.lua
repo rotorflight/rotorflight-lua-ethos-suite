@@ -13,7 +13,7 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_AM32",
+        {id = 1, name = "ESC_PARAMETERS_AM32", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {

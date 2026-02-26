@@ -11,7 +11,7 @@ local folder = "yge"
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_YGE"
+        {id = 1, name = "ESC_PARAMETERS_YGE", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {},

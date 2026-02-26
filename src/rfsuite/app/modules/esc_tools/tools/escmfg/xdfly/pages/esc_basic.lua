@@ -12,7 +12,7 @@ local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
 local apidata = {
-    api = {[1] = "ESC_PARAMETERS_XDFLY"},
+    api = {{id = 1, name = "ESC_PARAMETERS_XDFLY", enableDeltaCache = false, rebuildOnWrite = true}},
     formdata = {
         labels = {},
         fields = {

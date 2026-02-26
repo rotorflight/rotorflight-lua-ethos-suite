@@ -8,24 +8,33 @@ local MSP_API_VERSION = {12, 0, 7}
 
 local toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@"
 
+local function getByte(page, index, default)
+    if type(page) ~= "table" then return default end
+    local v = tonumber(page[index])
+    if v == nil then return default end
+    v = math.floor(v)
+    if v < 0 or v > 255 then return default end
+    return v
+end
+
 local function getUInt(page, vals)
     local v = 0
     for idx = 1, #vals do
-        local raw_val = page[vals[idx]] or 0
+        local raw_val = getByte(page, vals[idx], 0)
         raw_val = raw_val << ((idx - 1) * 8)
         v = v | raw_val
     end
     return v
 end
 
-local function getPageValue(page, index) return page[index] end
+local function getPageValue(page, index, default) return getByte(page, index, default) end
 
 local function getEscModel(self)
 
-    local hw = "1." .. getPageValue(self, 20) .. '/' .. getPageValue(self, 14) .. "." .. getPageValue(self, 15) .. "." .. getPageValue(self, 16)
-    local result = self[4] * 256 + self[5]
+    local hw = "1." .. getPageValue(self, 20, 0) .. '/' .. getPageValue(self, 14, 0) .. "." .. getPageValue(self, 15, 0) .. "." .. getPageValue(self, 16, 0)
+    local result = (getPageValue(self, 4, 0) * 256) + getPageValue(self, 5, 0)
 
-    return "FLYROTOR " .. string.format(result) .. "A " .. hw .. " "
+    return "FLYROTOR " .. tostring(result) .. "A " .. hw .. " "
 end
 
 local function getEscVersion(self)
@@ -36,7 +45,7 @@ local function getEscVersion(self)
 end
 
 local function getEscFirmware(self)
-    local version = getPageValue(self, 17) .. "." .. getPageValue(self, 18) .. "." .. getPageValue(self, 19)
+    local version = getPageValue(self, 17, 0) .. "." .. getPageValue(self, 18, 0) .. "." .. getPageValue(self, 19, 0)
 
     return version
 end
