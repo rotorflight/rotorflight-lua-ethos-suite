@@ -9,6 +9,32 @@ local lcd = lcd
 local tables = {}
 
 local activateWakeup = false
+local apidata
+
+local function getApiEntryName(entry)
+    if type(entry) == "table" then return entry.name end
+    return entry
+end
+
+local function getRateType()
+    local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1])
+    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+
+    if values and apiName and values[apiName] and values[apiName].rates_type ~= nil then
+        return values[apiName].rates_type
+    end
+
+    local fields = rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata and rfsuite.app.Page.apidata.formdata.fields
+    if fields then
+        for i = 1, #fields do
+            if fields[i] and fields[i].apikey == "rates_type" then
+                return fields[i].value
+            end
+        end
+    end
+
+    return nil
+end
 
 local function resolveScriptPath(script)
     if type(script) ~= "string" then return nil, nil end
@@ -34,19 +60,29 @@ tables[6] = "app/modules/rates/ratetables/rotorflight.lua"
 if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end
 
 rfsuite.utils.log("Loading Rate Table: " .. tables[rfsuite.session.activeRateTable], "debug")
-local apidata = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
+apidata = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
 local mytable = apidata.formdata
 
 local function postLoad(self)
 
-    local v = rfsuite.tasks.msp.api.apidata.values[apidata.api[1]].rates_type
+    local v = getRateType()
 
-    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable, "debug")
+    if v == nil then
+        rfsuite.utils.log("Unable to resolve rates_type from RC_TUNING data", "warning")
+        rfsuite.app.triggers.closeProgressLoader = true
+        activateWakeup = true
+        return
+    end
 
-    if v ~= rfsuite.session.activeRateTable then
-        rfsuite.utils.log("Switching Rate Table: " .. v, "info")
+    local activeRateTable = tonumber(rfsuite.session.activeRateTable) or rfsuite.session.activeRateTable
+    local requestedRateTable = tonumber(v) or v
+
+    rfsuite.utils.log("Active Rate Table: " .. tostring(activeRateTable), "debug")
+
+    if requestedRateTable ~= activeRateTable then
+        rfsuite.utils.log("Switching Rate Table: " .. tostring(requestedRateTable), "info")
         rfsuite.app.triggers.reloadFull = true
-        rfsuite.session.activeRateTable = v
+        rfsuite.session.activeRateTable = requestedRateTable
         return
     end
 
