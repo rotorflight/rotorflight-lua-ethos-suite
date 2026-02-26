@@ -44,6 +44,11 @@ local function errorHandlerStatic(self, buf)
     end
 end
 
+local function read()
+    -- Write-only API: expose a read stub so generic callers do not crash.
+    return false, "read_not_supported"
+end
+
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then return false, "write_not_supported" end
     if suppliedPayload == nil and #MSP_API_STRUCTURE_WRITE == 0 then
@@ -59,6 +64,9 @@ local function write(suppliedPayload)
     return rfsuite.tasks.msp.mspQueue:add(message)
 end
 
+local function readValue(_fieldName) return nil end
+local function readComplete() return false end
+local function data() return nil end
 local function setValue(fieldName, value) payloadData[fieldName] = value end
 local function writeComplete() return mspWriteComplete end
 local function resetWriteStatus() mspWriteComplete = false end
@@ -66,4 +74,4 @@ local function setUUID(uuid) MSP_API_UUID = uuid end
 local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
 local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
 
-return {write = write, setRebuildOnWrite = setRebuildOnWrite, writeComplete = writeComplete, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, setUUID = setUUID, setTimeout = setTimeout}
+return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, data = data, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, setUUID = setUUID, setTimeout = setTimeout}
