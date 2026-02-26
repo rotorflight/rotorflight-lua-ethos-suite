@@ -21,7 +21,7 @@ local FIELDKEY = {
 
 local apidata = {
     api = {
-        [1] = 'MOTOR_CONFIG',
+        {id = 1, name = "MOTOR_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {

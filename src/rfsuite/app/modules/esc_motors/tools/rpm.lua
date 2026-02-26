@@ -30,8 +30,8 @@ local FIELDS = {
 
 local apidata = {
     api = {
-        [1] = 'MOTOR_CONFIG',
-        [2] = 'FEATURE_CONFIG'
+        {id = 1, name = "MOTOR_CONFIG", enableDeltaCache = false, rebuildOnWrite = true},
+        {id = 2, name = "FEATURE_CONFIG", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {
@@ -55,9 +55,19 @@ local function postLoad(self)
     enableWakeup = true
 end
 
+local function getMotorPwmProtocol()
+    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+    local values = apidata and apidata.values or nil
+    local motorConfig = values and values["MOTOR_CONFIG"] or nil
+    local protocol = motorConfig and motorConfig.motor_pwm_protocol
+    if protocol == nil then return nil end
+    return math.floor(tonumber(protocol) or 0)
+end
+
 local function wakeup() 
     if enableWakeup == true then
-        if rfsuite.tasks.msp.api.apidata.values["MOTOR_CONFIG"].motor_pwm_protocol >=5 and rfsuite.tasks.msp.api.apidata.values["MOTOR_CONFIG"].motor_pwm_protocol <= 8 then
+        local protocol = getMotorPwmProtocol()
+        if protocol and protocol >= 5 and protocol <= 8 then
             -- dshot compatable
             formFields[FIELDS.DSHOT_TELEMETRY]:enable(true)
         else

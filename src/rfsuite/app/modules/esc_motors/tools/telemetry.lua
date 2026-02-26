@@ -21,7 +21,7 @@ local FIELDKEY = {
 
 local apidata = {
     api = {
-        [1] = 'ESC_SENSOR_CONFIG'
+        {id = 1, name = "ESC_SENSOR_CONFIG", enableDeltaCache = false, rebuildOnWrite = true}
     },
     formdata = {
         labels = {
