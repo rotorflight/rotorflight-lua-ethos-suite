@@ -22,7 +22,7 @@ end
 
 local apidata = {
     api = {
-        [1] = 'PID_TUNING'
+        {id = 1, name = "PID_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {},
@@ -118,17 +118,18 @@ local function openPage(opts)
         loc = loc - 1
     end
 
+    local fields = rfsuite.app.Page.apidata.formdata.fields
     local pidRows = {}
     for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do pidRows[ri] = form.addLine(rv) end
 
-    for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
-        local f = rfsuite.app.Page.apidata.formdata.fields[i]
+    for i = 1, #fields do
+        local f = fields[i]
         posX = positions[f.col]
 
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
-            if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
+            if not fields or not fields[i] then
                 if rfsuite.app.ui then
                     rfsuite.app.ui.disableAllFields()
                     rfsuite.app.ui.disableAllNavigationFields()
@@ -136,13 +137,14 @@ local function openPage(opts)
                 end
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
+            return rfsuite.app.utils.getFieldValue(fields[i])
         end, function(value)
+            if not fields or not fields[i] then return end
             rfsuite.app.ui.markPageDirty()
             if f.postEdit then f.postEdit(rfsuite.app.Page) end
             if f.onChange then f.onChange(rfsuite.app.Page) end
 
-            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
         end)
     end
 

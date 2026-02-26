@@ -10293,6 +10293,13 @@
           "reverse_text": true,
           "translation": "אפשרויות סוללת משדר"
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": true,
+          "translation": "לוג סטטיסטיקת מטמון"
+        },
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
           "max_length": 19,
@@ -11505,6 +11512,13 @@
         "needs_translation": true,
         "reverse_text": true,
         "translation": "RPM מינ"
+      },
+      "setup": {
+        "english": "Setup",
+        "max_length": 5,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Setup"
       },
       "throttle": {
         "english": "Throttle",

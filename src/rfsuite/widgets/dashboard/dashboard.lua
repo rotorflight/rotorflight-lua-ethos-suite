@@ -90,13 +90,16 @@ local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dash
 local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
 local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
 local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
+local toolbarLaunchApp = compile(dashboardLibPath .. "lib/toolbar_actions/launch_app.lua")()
 dashboard.toolbar_action_modules = {
     reset_flight = toolbarResetFlight,
-    erase_blackbox = toolbarEraseBlackbox
+    erase_blackbox = toolbarEraseBlackbox,
+    launch_app = toolbarLaunchApp
 }
 dashboard.toolbar_actions = {
     resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
-    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil
+    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil,
+    launchApp = toolbarLaunchApp and toolbarLaunchApp.launchApp or nil
 }
 
 

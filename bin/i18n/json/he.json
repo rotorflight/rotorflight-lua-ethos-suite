@@ -10405,6 +10405,13 @@
           "translation": "לוג שימוש בזיכרון",
           "reverse_text": true
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": true,
+          "translation": "לוג סטטיסטיקת מטמון"
+        },
         "txt_mspdata": {
           "english": "Log msp data",
           "max_length": 12,
@@ -11505,6 +11512,13 @@
         "needs_translation": true,
         "translation": "RPM מינ",
         "reverse_text": true
+      },
+      "setup": {
+        "english": "Setup",
+        "translation": "Setup",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 5
       },
       "throttle": {
         "english": "Throttle",

@@ -16,6 +16,7 @@ function clocksync.wakeup()
     if rfsuite.session.clockSet == nil then
 
         local API = rfsuite.tasks.msp.api.load("RTC", 1)
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.clockSet = true
             rfsuite.utils.log("Sync clock: " .. os.date("%c"), "info")

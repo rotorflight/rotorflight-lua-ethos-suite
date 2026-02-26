@@ -21,6 +21,9 @@ apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
 apiLoader._chunkCache      = apiLoader._chunkCache or {}      -- apiName -> compiled loader function
 apiLoader._chunkCacheOrder = apiLoader._chunkCacheOrder or {} -- MRU list (optional)
 apiLoader._chunkCacheMax   = apiLoader._chunkCacheMax or 5    -- optional cap
+apiLoader._deltaCacheDefault = apiLoader._deltaCacheDefault
+if apiLoader._deltaCacheDefault == nil then apiLoader._deltaCacheDefault = true end
+apiLoader._deltaCacheByApi   = apiLoader._deltaCacheByApi or {}
 
 local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
 local api_path = apidir
@@ -30,6 +33,31 @@ local firstLoadAPI = true -- Used to lazily bind helper references
 local mspHelper
 local utils
 local callback
+
+function apiLoader.enableDeltaCache(enable)
+    if enable == nil then return end
+    apiLoader._deltaCacheDefault = (enable == true)
+end
+
+function apiLoader.setApiDeltaCache(apiName, enable)
+    if not apiName then return end
+    if enable == nil then
+        apiLoader._deltaCacheByApi[apiName] = nil
+        return
+    end
+    apiLoader._deltaCacheByApi[apiName] = (enable == true)
+end
+
+function apiLoader.isDeltaCacheEnabled(apiName)
+    if apiName and apiLoader._deltaCacheByApi[apiName] ~= nil then
+        return apiLoader._deltaCacheByApi[apiName]
+    end
+    local app = rfsuite and rfsuite.app
+    if not (app and app.guiIsRunning) then
+        return false
+    end
+    return apiLoader._deltaCacheDefault == true
+end
 
 -- Retrieve (and cache) compiled chunk for an API module
 local function getChunk(apiName, apiFilePath)
@@ -101,6 +129,8 @@ local function loadAPI(apiName)
     if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
 
         apiModule.__apiName = apiName
+        apiModule.enableDeltaCache = function(enable) apiLoader.setApiDeltaCache(apiName, enable) end
+        apiModule.isDeltaCacheEnabled = function() return apiLoader.isDeltaCacheEnabled(apiName) end
 
         -- Wrap read/write/setValue/readValue if present (currently no-op wrappers, but kept as-is)
         if apiModule.read then

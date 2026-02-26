@@ -197,6 +197,13 @@ end
 local directoryExistenceCache = {}
 local fileExistenceCache = {}
 
+local function countTable(t)
+    if type(t) ~= "table" then return 0 end
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n
+end
+
 function utils.dir_exists(base, name, noCache)
     base = base or "./"
     if not name then return false end
@@ -252,6 +259,15 @@ function utils.file_exists(path, noCache)
     end
 
     return false
+end
+
+function utils.getCacheStats()
+    return {
+        fileExists = countTable(fileExistenceCache),
+        dirExists = countTable(directoryExistenceCache),
+        imageBitmap = countTable(utils._imageBitmapCache),
+        imagePath = countTable(utils._imagePathCache)
+    }
 end
 
 function utils.playFile(pkg, file)

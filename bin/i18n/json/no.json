@@ -10405,6 +10405,13 @@
           "max_length": 16,
           "reverse_text": false
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Log cache stats"
+        },
         "txt_mspdata": {
           "english": "Log msp data",
           "translation": "Log msp data",
@@ -11505,6 +11512,13 @@
         "needs_translation": true,
         "max_length": 7,
         "reverse_text": false
+      },
+      "setup": {
+        "english": "Setup",
+        "translation": "Setup",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 5
       },
       "throttle": {
         "english": "Throttle",

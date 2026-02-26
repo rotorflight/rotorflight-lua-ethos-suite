@@ -9,8 +9,8 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "RESCUE_PROFILE"
-    },
+        {id = 1, name = "RESCUE_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },  
     formdata = {
         labels = {
             {t = "@i18n(app.modules.profile_rescue.pull_up)@",   label = 1, inline_size = 13.6},
