@@ -58,6 +58,14 @@ local line = {}
 local fields = {}
 local resultsPanel = nil
 
+local function loadApiNoDelta(apiName)
+    local api = tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function sortAsc(a, b) return a < b end
 
 local function truncateText(text)
@@ -166,7 +174,7 @@ local function runTest()
         return
     end
 
-    local api = tasks.msp.api.load(apiName)
+    local api = loadApiNoDelta(apiName)
     if not api then
         state.rows = {{label = T.LABEL_ERROR, value = T.MSG_UNABLE_TO_LOAD .. ": " .. apiName}}
         setStatus(T.STATUS_LOAD_FAILED)

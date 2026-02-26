@@ -32,6 +32,14 @@ local progressLoaderBaseMessage
 local progressLoaderMspStatusLast
 local doDiscoverNotify = false
 
+local function loadApiNoDelta(apiName)
+    local api = tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function openProgressDialog(...)
     if rfutils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
         local arg1 = select(1, ...)
@@ -98,7 +106,7 @@ local function postRead(self) rfutils.log("postRead", "debug") end
 
 local function rebootFC()
 
-    local RAPI = tasks.msp.api.load("REBOOT")
+    local RAPI = loadApiNoDelta("REBOOT")
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfutils.log("Rebooting FC", "info")
@@ -111,7 +119,7 @@ local function rebootFC()
 end
 
 local function applySettings()
-    local EAPI = tasks.msp.api.load("EEPROM_WRITE")
+    local EAPI = loadApiNoDelta("EEPROM_WRITE")
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
         rfutils.log("Writing to EEPROM", "info")
@@ -145,30 +153,31 @@ local function runRepair(data)
         end
     end
 
-    local WRITEAPI = tasks.msp.api.load("TELEMETRY_CONFIG")
+    local WRITEAPI = loadApiNoDelta("TELEMETRY_CONFIG")
     WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     WRITEAPI.setCompleteHandler(function(self, buf) applySettings() end)
-
-    local buffer = data['buffer']
-    local sensorIndex = 13
 
     local sortedSensorIds = {}
     for sensor_id, _ in pairs(newSensorList) do table.insert(sortedSensorIds, sensor_id) end
 
     table.sort(sortedSensorIds)
 
-    for _, sensor_id in ipairs(sortedSensorIds) do
-        if sensorIndex <= 52 then
-            buffer[sensorIndex] = sensor_id
-            sensorIndex = sensorIndex + 1
-        else
-            break
+    if type(data) == "table" and type(data.parsed) == "table" then
+        for key, value in pairs(data.parsed) do
+            WRITEAPI.setValue(key, value)
         end
     end
 
-    for i = sensorIndex, 52 do buffer[i] = 0 end
+    for slot = 1, 40 do
+        WRITEAPI.setValue("telem_sensor_slot_" .. slot, 0)
+    end
 
-    WRITEAPI.write(buffer)
+    for slot, sensor_id in ipairs(sortedSensorIds) do
+        if slot > 40 then break end
+        WRITEAPI.setValue("telem_sensor_slot_" .. slot, sensor_id)
+    end
+
+    WRITEAPI.write()
 
 end
 
@@ -237,7 +246,7 @@ local function wakeup()
         updateProgressLoaderMessage()
         app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage)
 
-        API = tasks.msp.api.load("TELEMETRY_CONFIG")
+        local API = loadApiNoDelta("TELEMETRY_CONFIG")
         API.setUUID("550e8400-e29b-41d4-a716-446655440000")
         API.setCompleteHandler(function(self, buf)
             local data = API.data()

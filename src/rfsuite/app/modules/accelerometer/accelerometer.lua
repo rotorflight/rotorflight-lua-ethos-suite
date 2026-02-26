@@ -25,6 +25,14 @@ local apidata = {
     }
 }
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function onToolMenu(self)
 
     local buttons = {
@@ -45,7 +53,7 @@ local function onToolMenu(self)
 end
 
 local function applySettings()
-    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local EAPI = loadApiNoDelta("EEPROM_WRITE")
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM", "info")

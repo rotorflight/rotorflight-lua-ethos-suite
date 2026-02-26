@@ -65,22 +65,30 @@ local function updateTestLoaderMessage()
     end
 end
 
+local function loadApiNoDelta(apiName)
+    local api = tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function getMSPBattery()
-    local API = tasks.msp.api.load("BATTERY_CONFIG")
+    local API = loadApiNoDelta("BATTERY_CONFIG")
     API.setCompleteHandler(function(self, buf) doNextMsp = true end)
     API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
     API.read()
 end
 
 local function getMSPGovernor()
-    local API = tasks.msp.api.load("GOVERNOR_CONFIG")
+    local API = loadApiNoDelta("GOVERNOR_CONFIG")
     API.setCompleteHandler(function(self, buf) doNextMsp = true end)
     API.setUUID("e2a1c5b3-7f4a-4c8e-9d2a-3b6f8e2d9a1c")
     API.read()
 end
 
 local function getMSPMixer()
-    local API = tasks.msp.api.load("MIXER_CONFIG")
+    local API = loadApiNoDelta("MIXER_CONFIG")
     API.setCompleteHandler(function(self, buf) doNextMsp = true end)
     API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
     API.read()

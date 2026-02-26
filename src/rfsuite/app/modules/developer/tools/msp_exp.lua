@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local fields = {}
-local total_bytes = rfsuite.preferences.developer.mspexpbytes
+local total_bytes = tonumber(rfsuite.preferences.developer.mspexpbytes) or 0
 local fieldMap = {}
 
 local int8_dirty = false
@@ -57,7 +57,12 @@ local function generateMSPAPI(numLabels)
 
     if numLabels > 16 then numLabels = 16 end
 
-    local apidata = {api = {'EXPERIMENTAL'}, formdata = {labels = {}, fields = {}}}
+    local apidata = {
+        api = {
+            {id = 1, name = "EXPERIMENTAL", enableDeltaCache = false, rebuildOnWrite = true}
+        },
+        formdata = {labels = {}, fields = {}}
+    }
 
     for i = 1, numLabels do
         table.insert(apidata.formdata.labels, {t = tostring(i), inline_size = 17, label = i})
@@ -68,6 +73,30 @@ local function generateMSPAPI(numLabels)
     end
 
     return apidata
+end
+
+local function getExperimentalByteCount()
+    local mspApiData = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+    local count = mspApiData and mspApiData.receivedBytesCount and mspApiData.receivedBytesCount["EXPERIMENTAL"]
+    if type(count) == "number" then
+        return count
+    end
+
+    local values = mspApiData and mspApiData.values and mspApiData.values["EXPERIMENTAL"]
+    if type(values) == "table" then
+        local maxIndex = 0
+        for key in pairs(values) do
+            local index = tonumber(tostring(key):match("^exp_uint(%d+)$"))
+            if index and index > maxIndex then
+                maxIndex = index
+            end
+        end
+        if maxIndex > 0 then
+            return maxIndex
+        end
+    end
+
+    return total_bytes
 end
 
 local apidata = generateMSPAPI(rfsuite.preferences.developer.mspexpbytes)
@@ -84,7 +113,9 @@ local function postLoad()
     uint8_dirty = true
     enableWakeup = false
 
-    if rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL'] == 0 then
+    local receivedBytes = getExperimentalByteCount()
+
+    if receivedBytes == 0 then
         rfsuite.app.triggers.closeProgressLoader = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.ui.disableAllNavigationFields()
@@ -92,9 +123,9 @@ local function postLoad()
         return
     end
 
-    if total_bytes ~= rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL'] then
+    if total_bytes ~= receivedBytes then
 
-        rfsuite.preferences.developer.mspexpbytes = rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL']
+        rfsuite.preferences.developer.mspexpbytes = receivedBytes
         rfsuite.app.triggers.reloadFull = true
     end
 

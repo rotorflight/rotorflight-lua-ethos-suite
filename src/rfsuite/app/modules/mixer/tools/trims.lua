@@ -44,6 +44,15 @@ local apidata = {
     }
 }
 
+local function getTailRotorMode()
+    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+    local mixerConfig = values and values["MIXER_CONFIG"]
+    if mixerConfig and mixerConfig.tail_rotor_mode ~= nil then
+        return tonumber(mixerConfig.tail_rotor_mode) or mixerConfig.tail_rotor_mode
+    end
+    return nil
+end
+
 local function saveData()
     clear2send = true
     rfsuite.app.triggers.triggerSaveNoProgress = true
@@ -93,8 +102,13 @@ end
 local function postLoad(self)
 
     if rfsuite.session.tailMode == nil then
-        local v = rfsuite.app.Page.values['MIXER_CONFIG']["tail_rotor_mode"]
-        rfsuite.session.tailMode = math.floor(v)
+        local v = getTailRotorMode()
+        if v == nil then
+            rfsuite.utils.log("Unable to resolve tail_rotor_mode from MIXER_CONFIG", "warning")
+            rfsuite.app.triggers.closeProgressLoader = true
+            return
+        end
+        rfsuite.session.tailMode = math.floor(tonumber(v) or 0)
         rfsuite.app.triggers.reload = true
         return
     end
