@@ -74,6 +74,14 @@ local function updateSaveButtonState()
     if saveField and saveField.enable then saveField:enable(canSave()) end
 end
 
+local function loadApiNoDelta(apiName)
+    local api = rfsuite.tasks.msp.api.load(apiName)
+    if api and api.enableDeltaCache then
+        api.enableDeltaCache(false)
+    end
+    return api
+end
+
 local function getPidLoopChoices(currentValue)
     local rawGyroHz = (state.pidBaseHz > 0 and state.pidBaseHz) or (1000000 / (state.gyroDeltaUs > 0 and state.gyroDeltaUs or 250))
     local gyroHz = math.floor((rawGyroHz / 1000) + 0.5) * 1000
@@ -274,7 +282,7 @@ local function startLoad()
 
     rfsuite.app.ui.progressDisplay("@i18n(app.modules.configuration.name)@", "@i18n(app.modules.configuration.progress_loading)@", 0.08)
 
-    startRead(rfsuite.tasks.msp.api.load("NAME"), {
+    startRead(loadApiNoDelta("NAME"), {
         apiUnavailableError = "@i18n(app.modules.configuration.error_name_api_unavailable)@",
         readError = "@i18n(app.modules.configuration.error_name_read_failed)@",
         onComplete = function(api)
@@ -283,7 +291,7 @@ local function startLoad()
         end
     }, generation)
 
-    startRead(rfsuite.tasks.msp.api.load("ADVANCED_CONFIG"), {
+    startRead(loadApiNoDelta("ADVANCED_CONFIG"), {
         apiUnavailableError = "@i18n(app.modules.configuration.error_advanced_api_unavailable)@",
         readError = "@i18n(app.modules.configuration.error_advanced_read_failed)@",
         onComplete = function(api)
@@ -292,7 +300,7 @@ local function startLoad()
         end
     }, generation)
 
-    startRead(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"), {
+    startRead(loadApiNoDelta("FEATURE_CONFIG"), {
         apiUnavailableError = "@i18n(app.modules.configuration.error_feature_api_unavailable)@",
         readError = "@i18n(app.modules.configuration.error_feature_read_failed)@",
         onComplete = function(api)
@@ -301,7 +309,7 @@ local function startLoad()
         end
     }, generation)
 
-    startRead(rfsuite.tasks.msp.api.load("STATUS"), {
+    startRead(loadApiNoDelta("STATUS"), {
         onComplete = function(api)
             local parsed = api.data() and api.data().parsed or nil
             local delta = tonumber(parsed and parsed.task_delta_time_gyro or 0) or 0
@@ -357,25 +365,25 @@ local function performSave()
     state.saveError = nil
     rfsuite.app.ui.progressDisplaySave("@i18n(app.modules.configuration.progress_saving)@")
 
-    local nameApi = rfsuite.tasks.msp.api.load("NAME")
+    local nameApi = loadApiNoDelta("NAME")
     if not nameApi then
         saveFailed("@i18n(app.modules.configuration.error_name_api_unavailable)@")
         return
     end
 
-    local advApi = rfsuite.tasks.msp.api.load("ADVANCED_CONFIG")
+    local advApi = loadApiNoDelta("ADVANCED_CONFIG")
     if not advApi then
         saveFailed("@i18n(app.modules.configuration.error_advanced_api_unavailable)@")
         return
     end
 
-    local featureApi = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+    local featureApi = loadApiNoDelta("FEATURE_CONFIG")
     if not featureApi then
         saveFailed("@i18n(app.modules.configuration.error_feature_api_unavailable)@")
         return
     end
 
-    local eepromApi = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local eepromApi = loadApiNoDelta("EEPROM_WRITE")
     if not eepromApi then
         saveFailed("@i18n(app.modules.configuration.error_eeprom_api_unavailable)@")
         return
