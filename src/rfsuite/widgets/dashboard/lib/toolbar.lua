@@ -22,9 +22,9 @@ local DEFAULT_TOOLBAR_ITEMS = {
         order = 10,
         icon = "widgets/dashboard/gfx/toolbar_app.png",
         iconSize = 55,
-        isConnected = false,
+        postConnectComplete = true,
         enableFunction = function(dashboard, rfsuite)
-            if rfsuite.sysIndex['app'] and system.gotoScreen ~= nil then
+            if rfsuite.sysIndex['app'] and system.openPage ~= nil then
                 return true
             end
             return false

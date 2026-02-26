@@ -7,8 +7,8 @@ local M = {}
 
 
 function M.launchApp()
-    if system.gotoScreen and rfsuite.sysIndex['app'] then
-        system.gotoScreen(2,  rfsuite.sysIndex['app'] )   --second param is the index - but what is it?
+    if (system.openPage) and rfsuite.sysIndex['app'] then
+        system.openPage(2,  rfsuite.sysIndex['app'] )   --second param is the index - but what is it?
     end
 end
 
