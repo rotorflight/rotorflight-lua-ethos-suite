@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "ESC_SENSOR_CONFIG"
 local MSP_API_CMD_READ = 123
 local MSP_API_CMD_WRITE = 216
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 local escTypes = {"NONE", "BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMP", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY", "RECORD"}
 local onOff = {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@", "@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"}

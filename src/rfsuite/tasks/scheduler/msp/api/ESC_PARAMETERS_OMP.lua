@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "ESC_PARAMETERS_OMP"
 local MSP_API_CMD_READ = 217
 local MSP_API_CMD_WRITE = 218
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 local MSP_SIGNATURE = 0xD0
 local MSP_HEADER_BYTES = 2
 

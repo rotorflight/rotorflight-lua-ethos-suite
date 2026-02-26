@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "GOVERNOR_CONFIG"
 local MSP_API_CMD_READ = 142
 local MSP_API_CMD_WRITE = 143
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 local MSP_API_STRUCTURE_READ_DATA
 

@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "PID_PROFILE"
 local MSP_API_CMD_READ = 94
 local MSP_API_CMD_WRITE = 95
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {

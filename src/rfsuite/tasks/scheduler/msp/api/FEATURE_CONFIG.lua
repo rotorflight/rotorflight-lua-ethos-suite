@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "FEATURE_CONFIG"
 local MSP_API_CMD_READ = 36
 local MSP_API_CMD_WRITE = 37
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 
 local pwmProtocol

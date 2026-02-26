@@ -9,7 +9,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 local API_NAME = "FILTER_CONFIG"
 local MSP_API_CMD_READ = 92
 local MSP_API_CMD_WRITE = 93
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 local gyroFilterType = {[0] = "@i18n(api.FILTER_CONFIG.tbl_none)@", [1] = "@i18n(api.FILTER_CONFIG.tbl_1st)@", [2] = "@i18n(api.FILTER_CONFIG.tbl_2nd)@"}
 local rpmPreset = {"@i18n(api.FILTER_CONFIG.tbl_custom)@", "@i18n(api.FILTER_CONFIG.tbl_low)@", "@i18n(api.FILTER_CONFIG.tbl_medium)@", "@i18n(api.FILTER_CONFIG.tbl_high)@"}

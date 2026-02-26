@@ -10,7 +10,7 @@ local tasks = rfsuite.tasks
 
 local API_NAME = "REBOOT"
 local MSP_API_CMD_WRITE = 68
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_WRITE = {

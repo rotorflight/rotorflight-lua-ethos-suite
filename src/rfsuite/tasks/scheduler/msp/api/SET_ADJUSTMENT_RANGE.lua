@@ -8,7 +8,7 @@ local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/sc
 
 local API_NAME = "SET_ADJUSTMENT_RANGE"
 local MSP_API_CMD_WRITE = 53
-local MSP_REBUILD_ON_WRITE = false
+local MSP_REBUILD_ON_WRITE = true
 
 local mspWriteComplete = false
 local payloadData = {}
