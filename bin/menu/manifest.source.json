@@ -858,7 +858,7 @@
           "translation": "@i18n(app.modules.settings.audio)@"
         }
       ],
-      "scriptPrefix": "settings/",
+      "scriptPrefix": "settings/tools/",
       "title": "Settings",
       "translation": "@i18n(app.modules.settings.name)@"
     },
