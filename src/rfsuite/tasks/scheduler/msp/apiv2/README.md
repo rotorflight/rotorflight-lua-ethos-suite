@@ -1,14 +1,14 @@
 # MSP API v2 Migration
 
-`msp.apiv2` is a compatibility engine for migrating API modules one at a time.
+`msp.apiv2` is now a standalone API engine (no `apiv1` fallback).
 
 ## How it works
 
 - `msp.api` remains the single runtime API entrypoint used by the app.
 - Engine selection is done by `msp.setApiEngine("v1" | "v2")`.
 - In `v2` mode:
-  - If `tasks/scheduler/msp/apiv2/api/<API_NAME>.lua` exists, it is used.
-  - Otherwise it transparently falls back to `msp.apiv1`.
+  - `tasks/scheduler/msp/apiv2/api/<API_NAME>.lua` is loaded directly.
+  - Missing modules fail fast and are reported in logs.
 
 ## Porting a module
 
@@ -23,14 +23,8 @@ Optional explicit registration:
 - `msp.apiv2.register("API_NAME", "custom_file.lua")`
 - `msp.apiv2.unregister("API_NAME")`
 
-## Initial v2 startup coverage
+## Baseline coverage
 
-The following APIs are already ported for connection/bootstrap flows:
-
-- `API_VERSION`
-- `FC_VERSION`
-- `UID`
-- `NAME`
-- `RTC`
-- `RX_MAP`
-- `FLIGHT_STATS`
+- All API module files from `tasks/scheduler/msp/api/` are now mirrored under `tasks/scheduler/msp/apiv2/api/`.
+- Core helpers are local to v2 at `tasks/scheduler/msp/apiv2/core.lua`.
+- You can optimize/replace modules incrementally while keeping API contracts stable.

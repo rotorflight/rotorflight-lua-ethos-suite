@@ -5,23 +5,31 @@
 
 local rfsuite = require("rfsuite")
 
-local arg = {...}
-local apiv1 = arg[1]
-
 local loadfile = loadfile
-local type = type
+local table_insert = table.insert
+local table_remove = table.remove
 local tostring = tostring
+local type = type
 local pairs = pairs
+local ipairs = ipairs
 local string_format = string.format
 
 local utils = rfsuite.utils
 
 local api2 = {}
 
+api2._fileExistsCache = {}
+api2._chunkCache = {}
+api2._chunkCacheOrder = {}
+api2._chunkCacheMax = 12
+api2._deltaCacheDefault = true
+api2._deltaCacheByApi = {}
 api2._ported = {}
-api2._chunks = {}
+api2.apidata = {}
+api2._core = nil
 
 local defaultApiPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apiv2/api/"
+local defaultCorePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apiv2/core.lua"
 
 local function currentApiEngine()
     local tasks = rfsuite and rfsuite.tasks
@@ -46,10 +54,86 @@ local function logApiIo(apiName, op, source)
     )
 end
 
-local function wrapModuleIO(apiName, module, source)
-    if type(module) ~= "table" then return module end
+local function normalizePath(value)
+    if type(value) ~= "string" or value == "" then return nil end
+    if value:sub(1, 8) == "SCRIPTS:/" then
+        return value
+    end
+    return defaultApiPath .. value
+end
+
+local function resolvePath(apiName)
+    return normalizePath(api2._ported[apiName]) or (defaultApiPath .. apiName .. ".lua")
+end
+
+local function ensureCore()
+    if api2._core then return api2._core end
+
+    local coreLoader, err = loadfile(defaultCorePath)
+    if not coreLoader then
+        utils.log("[apiv2] core compile failed: " .. tostring(err), "info")
+        return nil
+    end
+
+    local core = coreLoader()
+    api2._core = core
+
+    local tasks = rfsuite and rfsuite.tasks
+    local msp = tasks and tasks.msp
+    if msp then
+        msp.apiv2core = core
+    end
+
+    return core
+end
+
+local function cachedFileExists(path)
+    if api2._fileExistsCache[path] == nil then
+        api2._fileExistsCache[path] = utils.file_exists(path)
+    end
+    return api2._fileExistsCache[path]
+end
+
+local function getChunk(apiName, path)
+    local chunk = api2._chunkCache[apiName]
+    if chunk then
+        for i, name in ipairs(api2._chunkCacheOrder) do
+            if name == apiName then
+                table_remove(api2._chunkCacheOrder, i)
+                break
+            end
+        end
+        table_insert(api2._chunkCacheOrder, apiName)
+        return chunk
+    end
+
+    local loaderFn, err = loadfile(path)
+    if not loaderFn then
+        utils.log("[apiv2] compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
+        return nil
+    end
+
+    api2._chunkCache[apiName] = loaderFn
+    table_insert(api2._chunkCacheOrder, apiName)
+
+    if #api2._chunkCacheOrder > api2._chunkCacheMax then
+        local oldest = table_remove(api2._chunkCacheOrder, 1)
+        api2._chunkCache[oldest] = nil
+    end
+
+    return loaderFn
+end
+
+local function validateModule(apiName, module)
+    if type(module) ~= "table" then
+        return nil, "module_not_table"
+    end
+    if not module.read and not module.write then
+        return nil, "module_missing_read_write"
+    end
+
     module.__apiName = apiName
-    module.__apiSource = source or module.__apiSource or "apiv2"
+    module.__apiSource = module.__apiSource or "apiv2"
 
     if module.read and not module.__rfWrappedRead then
         local original = module.read
@@ -72,163 +156,116 @@ local function wrapModuleIO(apiName, module, source)
     return module
 end
 
-local function ensureApiv1()
-    if apiv1 then return apiv1 end
-    local tasks = rfsuite and rfsuite.tasks
-    local msp = tasks and tasks.msp
-    apiv1 = msp and msp.apiv1
-    return apiv1
+function api2.enableDeltaCache(enable)
+    if enable == nil then return end
+    api2._deltaCacheDefault = (enable == true)
 end
 
-local function normalizePath(value)
-    if type(value) ~= "string" or value == "" then return nil end
-    if value:sub(1, 8) == "SCRIPTS:/" then
-        return value
+function api2.setApiDeltaCache(apiName, enable)
+    if type(apiName) ~= "string" or apiName == "" then return end
+    if enable == nil then
+        api2._deltaCacheByApi[apiName] = nil
+        return
     end
-    return defaultApiPath .. value
+    api2._deltaCacheByApi[apiName] = (enable == true)
 end
 
-local function validateModule(apiName, module)
-    if type(module) ~= "table" then
-        return nil, "module_not_table"
+function api2.isDeltaCacheEnabled(apiName)
+    if apiName and api2._deltaCacheByApi[apiName] ~= nil then
+        return api2._deltaCacheByApi[apiName]
     end
-    if not module.read and not module.write then
-        return nil, "module_missing_read_write"
+    local app = rfsuite and rfsuite.app
+    if not (app and app.guiIsRunning) then
+        return false
     end
-    return wrapModuleIO(apiName, module, "apiv2")
-end
-
-local function loadPortedApi(apiName)
-    local path = normalizePath(api2._ported[apiName]) or (defaultApiPath .. apiName .. ".lua")
-    if not utils.file_exists(path) then
-        return nil, "not_ported"
-    end
-
-    local fn = api2._chunks[apiName]
-    local err
-    if not fn then
-        fn, err = loadfile(path)
-        if not fn then
-            utils.log("[apiv2] compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
-            return nil, "compile_failed"
-        end
-        api2._chunks[apiName] = fn
-    end
-
-    local ok, moduleOrErr = pcall(fn)
-    if not ok then
-        utils.log("[apiv2] load failed for " .. tostring(apiName) .. ": " .. tostring(moduleOrErr), "info")
-        return nil, "load_failed"
-    end
-
-    local module, reason = validateModule(apiName, moduleOrErr)
-    if not module then
-        utils.log("[apiv2] invalid module for " .. tostring(apiName) .. ": " .. tostring(reason), "info")
-        return nil, reason
-    end
-
-    return module
+    return api2._deltaCacheDefault == true
 end
 
 function api2.register(apiName, modulePath)
     if type(apiName) ~= "string" or apiName == "" then return false end
     if type(modulePath) ~= "string" or modulePath == "" then return false end
     api2._ported[apiName] = modulePath
-    api2._chunks[apiName] = nil
+    api2._chunkCache[apiName] = nil
     return true
 end
 
 function api2.unregister(apiName)
     if type(apiName) ~= "string" or apiName == "" then return false end
     api2._ported[apiName] = nil
-    api2._chunks[apiName] = nil
+    api2._chunkCache[apiName] = nil
     return true
 end
 
 function api2.isPorted(apiName)
     if type(apiName) ~= "string" or apiName == "" then return false end
-    local path = normalizePath(api2._ported[apiName]) or (defaultApiPath .. apiName .. ".lua")
-    return utils.file_exists(path) == true
-end
-
-function api2.clearPortedCache()
-    for k in pairs(api2._chunks) do api2._chunks[k] = nil end
+    return cachedFileExists(resolvePath(apiName)) == true
 end
 
 function api2.load(apiName)
-    local module = loadPortedApi(apiName)
-    if module then return module end
-
-    local legacy = ensureApiv1()
-    if legacy and legacy.load then
-        return legacy.load(apiName)
+    if type(apiName) ~= "string" or apiName == "" then
+        utils.log("[apiv2] invalid api name", "info")
+        return nil
     end
 
-    utils.log("[apiv2] no fallback loader for " .. tostring(apiName), "info")
-    return nil
-end
-
--- Compatibility shims (existing code expects these on tasks.msp.api)
-function api2.enableDeltaCache(enable)
-    local legacy = ensureApiv1()
-    if legacy and legacy.enableDeltaCache then
-        return legacy.enableDeltaCache(enable)
+    if not ensureCore() then
+        utils.log("[apiv2] core unavailable; cannot load " .. tostring(apiName), "info")
+        return nil
     end
-end
 
-function api2.setApiDeltaCache(apiName, enable)
-    local legacy = ensureApiv1()
-    if legacy and legacy.setApiDeltaCache then
-        return legacy.setApiDeltaCache(apiName, enable)
+    local path = resolvePath(apiName)
+    if not cachedFileExists(path) then
+        utils.log("[apiv2] API file not found: " .. tostring(path), "info")
+        return nil
     end
-end
 
-function api2.isDeltaCacheEnabled(apiName)
-    local legacy = ensureApiv1()
-    if legacy and legacy.isDeltaCacheEnabled then
-        return legacy.isDeltaCacheEnabled(apiName)
+    local chunk = getChunk(apiName, path)
+    if not chunk then return nil end
+
+    local apiModule = chunk()
+    local module, reason = validateModule(apiName, apiModule)
+    if not module then
+        utils.log("[apiv2] invalid module for " .. tostring(apiName) .. ": " .. tostring(reason), "info")
+        return nil
     end
-    return false
+
+    module.enableDeltaCache = function(enable) api2.setApiDeltaCache(apiName, enable) end
+    module.isDeltaCacheEnabled = function() return api2.isDeltaCacheEnabled(apiName) end
+
+    return module
 end
 
 function api2.resetApidata()
-    local legacy = ensureApiv1()
-    if legacy and legacy.resetApidata then
-        return legacy.resetApidata()
+    local d = api2.apidata
+
+    if d.values then
+        for k in pairs(d.values) do d.values[k] = nil end
     end
+    if d.structure then
+        for k in pairs(d.structure) do d.structure[k] = nil end
+    end
+    if d.receivedBytesCount then
+        for k in pairs(d.receivedBytesCount) do d.receivedBytesCount[k] = nil end
+    end
+    if d.receivedBytes then
+        for k in pairs(d.receivedBytes) do d.receivedBytes[k] = nil end
+    end
+    if d.positionmap then
+        for k in pairs(d.positionmap) do d.positionmap[k] = nil end
+    end
+    if d.other then
+        for k in pairs(d.other) do d.other[k] = nil end
+    end
+
+    api2.apidata = {}
 end
 
 function api2.clearChunkCache()
-    api2.clearPortedCache()
-    local legacy = ensureApiv1()
-    if legacy and legacy.clearChunkCache then
-        return legacy.clearChunkCache()
-    end
+    api2._chunkCache = {}
+    api2._chunkCacheOrder = {}
 end
 
 function api2.clearFileExistsCache()
-    local legacy = ensureApiv1()
-    if legacy and legacy.clearFileExistsCache then
-        return legacy.clearFileExistsCache()
-    end
+    api2._fileExistsCache = {}
 end
-
-setmetatable(api2, {
-    __index = function(_, k)
-        local legacy = ensureApiv1()
-        if legacy then return legacy[k] end
-    end
-})
-
-local function syncApidataRef()
-    local legacy = ensureApiv1()
-    if legacy then
-        api2.apidata = legacy.apidata
-    else
-        api2.apidata = api2.apidata or {}
-    end
-end
-
-syncApidataRef()
 
 return api2
