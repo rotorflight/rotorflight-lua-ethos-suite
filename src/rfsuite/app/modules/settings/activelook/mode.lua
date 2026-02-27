@@ -6,8 +6,6 @@
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local common = assert(loadfile("app/modules/settings/activelook/common.lua"))()
-local lcd = lcd
-
 local modePage = {}
 
 local function makePage(modeKey, modeLabel)
@@ -71,30 +69,38 @@ local function makePage(modeKey, modeLabel)
         end
 
         local layoutLine, fieldIdx = addFieldLine("Layout")
-        rfsuite.app.formFields[fieldIdx] = form.addChoiceField(layoutLine, nil, common.LAYOUT_CHOICES, function()
+        local w = rfsuite.app.lcdWidth
+        local rightPad = 8
+        local gap = 6
+        local fieldW = math.floor(w * 0.55)
+        local fieldX = w - rightPad - fieldW
+        local dropW = math.floor(fieldW * 0.5)
+        local previewW = fieldW - dropW - gap
+        local dropX = fieldX
+        local previewX = dropX + dropW + gap
+        local layoutPos = {x = dropX, y = rfsuite.app.radio.linePaddingTop, w = dropW, h = rfsuite.app.radio.navbuttonHeight}
+        rfsuite.app.formFields[fieldIdx] = form.addChoiceField(layoutLine, layoutPos, common.LAYOUT_CHOICES, function()
             return common.layoutKeyToChoice(config["layout_" .. modeKey])
         end, function(newValue)
             config["layout_" .. modeKey] = common.layoutChoiceToKey(newValue)
             applyLayoutToFields()
         end)
 
-        local function addPreviewLine(label, text)
-            rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-            local line = form.addLine(label or "")
-            rfsuite.app.formLines[rfsuite.app.formLineCnt] = line
-            local w = lcd.getWindowSize()
-            local x = math.floor(w * 0.55)
-            local pos = {x = x, y = rfsuite.app.radio.linePaddingTop, w = w - x, h = rfsuite.app.radio.navbuttonHeight}
-            return form.addStaticText(line, pos, text or "")
-        end
+        local previewTextW = math.max(40, math.floor(previewW * 0.6))
+        local previewTextX = previewX + math.floor((previewW - previewTextW) / 2)
+        local previewPos = {x = previewTextX, y = rfsuite.app.radio.linePaddingTop, w = previewTextW, h = rfsuite.app.radio.navbuttonHeight}
+        previewFields[1] = form.addStaticText(layoutLine, previewPos, "")
 
-        previewFields[1] = addPreviewLine("Layout Preview", "")
-        previewFields[2] = addPreviewLine("", "")
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        local previewLine = form.addLine("")
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = previewLine
+        previewFields[2] = form.addStaticText(previewLine, previewPos, "")
 
         for i = 1, 4 do
             local key = modeKey .. "_" .. i
             local line, idx = addFieldLine("Slot " .. i)
-            slotFields[i] = form.addChoiceField(line, nil, common.SENSOR_CHOICES, function()
+            local slotPos = {x = fieldX, y = rfsuite.app.radio.linePaddingTop, w = fieldW, h = rfsuite.app.radio.navbuttonHeight}
+            slotFields[i] = form.addChoiceField(line, slotPos, common.SENSOR_CHOICES, function()
                 return common.keyToChoice(config[key] or common.DEFAULT_LAYOUT[modeKey][i])
             end, function(newValue) config[key] = common.choiceToKey(newValue) end)
             rfsuite.app.formFields[idx] = slotFields[i]

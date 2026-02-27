@@ -143,7 +143,7 @@ function common.layoutPreview(layoutKey)
     elseif layoutKey == "one_top_two_bottom" then
         return "      [1]", "[3]     [4]"
     elseif layoutKey == "stacked_three" then
-        return "      [1]", "      [2]", "      [3]"
+        return "     [1/2]", "        [3]"
     end
     return "[1]     [2]", "[3]     [4]"
 end
