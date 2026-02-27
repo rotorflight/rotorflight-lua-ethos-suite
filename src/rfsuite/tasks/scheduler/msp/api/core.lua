@@ -54,7 +54,9 @@ end
 function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
     -- Normalize options
     if type(options) == "function" then
-        options = {chunked = true, completionCallback = options}
+        -- Default to direct parsing (no deferred callback queue churn).
+        -- APIs can still force chunked mode via options={chunked=true,...}.
+        options = {chunked = false, completionCallback = options}
     elseif type(options) ~= "table" then
         options = {}
     end
@@ -71,7 +73,7 @@ function core.parseMSPData(API_NAME, buf, structure, processed, other, options)
         apidata._lastReadMode[API_NAME] = keepBuffers and "delta" or "no-delta"
     end
 
-    local chunked            = options.chunked or false
+    local chunked            = (options.chunked == true)
     local fieldsPerTick      = options.fieldsPerTick or 10
     local completionCallback = options.completionCallback
 
