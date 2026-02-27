@@ -4,7 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local core = (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
 
 local API_NAME = "FLIGHT_STATS_INI"
 local INI_FILE = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"

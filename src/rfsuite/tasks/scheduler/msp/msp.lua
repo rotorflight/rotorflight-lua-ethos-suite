@@ -60,8 +60,8 @@ mspQueue.busyStatusCooldown = msp.protocol.mspQueueBusyStatusCooldown or 0.35
 
 -- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
-msp.apiv2     = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apiv2.lua"))()
-msp.api       = msp.apiv2
+local apiLoader = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
+msp.api       = apiLoader
 msp.apiEngine = "v2"
 msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
 -- Snapshot protocol version at load; later changes should call setProtocolVersion.
@@ -85,7 +85,7 @@ function msp.setApiEngine(name)
             utils.log("[msp] apiv1 removed; forcing v2", "info")
         end
     end
-    msp.api = msp.apiv2
+    msp.api = apiLoader
     msp.apiEngine = "v2"
     utils.log("[msp] API engine set to " .. tostring(msp.apiEngine), "info")
     return msp.apiEngine
