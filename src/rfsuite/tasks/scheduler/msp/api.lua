@@ -13,6 +13,7 @@ local tostring = tostring
 local type = type
 local pairs = pairs
 local ipairs = ipairs
+local string_format = string.format
 
 local apiLoader = {}
 
@@ -33,6 +34,29 @@ local firstLoadAPI = true -- Used to lazily bind helper references
 local mspHelper
 local utils
 local callback
+
+local function currentApiEngine()
+    local tasks = rfsuite and rfsuite.tasks
+    local msp = tasks and tasks.msp
+    if msp and msp.getApiEngine then
+        return msp.getApiEngine()
+    end
+    return "v1"
+end
+
+local function logApiIo(apiName, op, source)
+    if not (utils and utils.log) then return end
+    utils.log(
+        string_format(
+            "[msp] %s %s via engine=%s source=%s",
+            tostring(op),
+            tostring(apiName),
+            tostring(currentApiEngine()),
+            tostring(source or "unknown")
+        ),
+        "info"
+    )
+end
 
 function apiLoader.enableDeltaCache(enable)
     if enable == nil then return end
@@ -129,18 +153,25 @@ local function loadAPI(apiName)
     if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
 
         apiModule.__apiName = apiName
+        apiModule.__apiSource = apiModule.__apiSource or "apiv1"
         apiModule.enableDeltaCache = function(enable) apiLoader.setApiDeltaCache(apiName, enable) end
         apiModule.isDeltaCacheEnabled = function() return apiLoader.isDeltaCacheEnabled(apiName) end
 
-        -- Wrap read/write/setValue/readValue if present (currently no-op wrappers, but kept as-is)
+        -- Wrap read/write to make API routing visible in runtime logs.
         if apiModule.read then
             local original = apiModule.read
-            apiModule.read = function(...) return original(...) end
+            apiModule.read = function(...)
+                logApiIo(apiName, "read", apiModule.__apiSource)
+                return original(...)
+            end
         end
 
         if apiModule.write then
             local original = apiModule.write
-            apiModule.write = function(...) return original(...) end
+            apiModule.write = function(...)
+                logApiIo(apiName, "write", apiModule.__apiSource)
+                return original(...)
+            end
         end
 
         if apiModule.setValue then

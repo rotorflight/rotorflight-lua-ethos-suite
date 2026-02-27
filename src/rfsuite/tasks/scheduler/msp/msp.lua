@@ -10,6 +10,9 @@ local rfsuite = require("rfsuite")
 local os_clock = os.clock
 local utils = rfsuite.utils
 local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
+local API_ENGINE_PREF = (rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.api_engine) or nil
+local API_ENGINE_CONFIG = (rfsuite.config and rfsuite.config.mspApiEngine) or nil
+local API_ENGINE_DEFAULT = API_ENGINE_PREF or API_ENGINE_CONFIG or "v1"
 
 local msp = {}
 
@@ -59,7 +62,10 @@ mspQueue.busyStatusCooldown = msp.protocol.mspQueueBusyStatusCooldown or 0.35
 
 -- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
-msp.api       = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
+msp.apiv1     = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
+msp.apiv2     = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apiv2.lua"))(msp.apiv1)
+msp.api       = msp.apiv1
+msp.apiEngine = "v1"
 msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
 -- Snapshot protocol version at load; later changes should call setProtocolVersion.
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
@@ -74,6 +80,40 @@ function msp.enableProtoLog(on)
     end
     return false
 end
+
+local function normalizeApiEngine(name)
+    if type(name) ~= "string" then return "v1" end
+    name = string.lower(name)
+    if name == "2" or name == "v2" or name == "apiv2" or name == "lite" or name == "light" then
+        return "v2"
+    end
+    return "v1"
+end
+
+function msp.setApiEngine(name)
+    local target = normalizeApiEngine(name)
+    if target == "v2" and msp.apiv2 then
+        msp.api = msp.apiv2
+        msp.apiEngine = "v2"
+    else
+        msp.api = msp.apiv1
+        msp.apiEngine = "v1"
+    end
+    utils.log("[msp] API engine set to " .. tostring(msp.apiEngine), "info")
+    return msp.apiEngine
+end
+
+function msp.getApiEngine()
+    return msp.apiEngine
+end
+
+utils.log(
+    "[msp] API engine request pref=" .. tostring(API_ENGINE_PREF) ..
+    " config=" .. tostring(API_ENGINE_CONFIG) ..
+    " selected=" .. tostring(API_ENGINE_DEFAULT),
+    "info"
+)
+msp.setApiEngine(API_ENGINE_DEFAULT)
 
 
 -- Delay handling for clean protocol reset

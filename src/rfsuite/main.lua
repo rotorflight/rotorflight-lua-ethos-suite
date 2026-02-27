@@ -29,6 +29,7 @@ local config = {
         allowAutoUpgrade = true,
         v2MinApiVersion = {12, 0, 9},
     },
+    mspApiEngine = "v2",
     mspProtocolVersion = 1,
     maxModelImageBytes = 350 * 1024 -- 350KB, to prevent OOM crashes on models with very large images
 }
@@ -117,6 +118,7 @@ local userpref_defaults = {
         logcachestats = false,
         taskprofiler = false,
         mspexpbytes = 8,
+        api_engine = "v2",
         apiversion = 2,
         tailmode_override = 0,
         overlaystats = false,
