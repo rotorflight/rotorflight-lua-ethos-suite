@@ -814,21 +814,21 @@
           "image": "general.png",
           "name": "General",
           "offline": true,
-          "script": "tools/general.lua",
+          "script": "general.lua",
           "translation": "@i18n(app.modules.settings.txt_general)@"
         },
         {
           "image": "shortcuts.png",
           "name": "Shortcuts",
           "offline": true,
-          "script": "tools/shortcuts.lua",
+          "script": "shortcuts.lua",
           "translation": "@i18n(app.modules.settings.shortcuts)@"
         },
         {
           "image": "dashboard.png",
           "name": "Dashboard",
           "offline": true,
-          "script": "tools/dashboard.lua",
+          "script": "dashboard.lua",
           "translation": "@i18n(app.modules.settings.dashboard)@"
         },
         {
