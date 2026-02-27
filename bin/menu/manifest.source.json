@@ -847,14 +847,14 @@
           "image": "localizations.png",
           "name": "Localization",
           "offline": true,
-          "script": "tools/localizations.lua",
+          "script": "localizations.lua",
           "translation": "@i18n(app.modules.settings.localizations)@"
         },
         {
           "image": "audio.png",
           "name": "Audio",
           "offline": true,
-          "script": "tools/audio.lua",
+          "script": "audio.lua",
           "translation": "@i18n(app.modules.settings.audio)@"
         }
       ],
