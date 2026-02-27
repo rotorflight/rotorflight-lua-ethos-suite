@@ -19,6 +19,16 @@ local session = rfsuite.session
 
 local ui = {}
 
+local function wipeTable(t)
+    if type(t) ~= "table" then return end
+    for k in pairs(t) do t[k] = nil end
+end
+
+function ui.loadMask(path)
+    if type(path) ~= "string" or path == "" then return nil end
+    return lcdLoadMask(path)
+end
+
 local arg = {...}
 local config = arg[1]
 local preferences = rfsuite.preferences
@@ -880,8 +890,7 @@ end
 function ui.disableAllFields()
 
 
-    for i = 1, #app.formFields do
-        local field = app.formFields[i]
+    for _, field in pairs(app.formFields) do
         if type(field) == "userdata" then field:enable(false) end
     end
 end
@@ -889,7 +898,7 @@ end
 function ui.enableAllFields()
 
 
-    for _, field in ipairs(app.formFields) do if type(field) == "userdata" then field:enable(true) end end
+    for _, field in pairs(app.formFields) do if type(field) == "userdata" then field:enable(true) end end
 end
 
 function ui.disableAllNavigationFields()
@@ -1005,9 +1014,9 @@ function ui.cleanupCurrentPage()
         app.Page.apidata = nil
     end
 
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
-    if app.formNavigationFields then for k in pairs(app.formNavigationFields) do app.formNavigationFields[k] = nil end end
+    wipeTable(app.formFields)
+    wipeTable(app.formLines)
+    wipeTable(app.formNavigationFields)
     if app.gfx_buttons then
         for k in pairs(app.gfx_buttons) do
             app.gfx_buttons[k] = nil
@@ -1092,9 +1101,9 @@ function ui.resetPageState(activesection)
 
     ui.cleanupCurrentPage()
 
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
+    wipeTable(app.formFields)
 
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    wipeTable(app.formLines)
 
     app.formFieldsOffline = {}
     app.formFieldsBGTask = {}
@@ -1300,7 +1309,7 @@ function ui.openMainMenu(activesection)
                 bx = (buttonW + padding) * lc
 
                 if preferences.general.iconsize ~= 0 then
-                    app.gfx_buttons["mainmenu"][menuIndex] = app.gfx_buttons["mainmenu"][menuIndex] or lcdLoadMask(menuItem.image)
+                    app.gfx_buttons["mainmenu"][menuIndex] = ui.loadMask(menuItem.image)
                 else
                     app.gfx_buttons["mainmenu"][menuIndex] = nil
                 end
@@ -2117,8 +2126,8 @@ function ui.openPage(opts)
     app.triggers.isReady = false
     app.lastLabel = nil
 
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    wipeTable(app.formFields)
+    wipeTable(app.formLines)
 
     local modulePath = script
     if type(modulePath) ~= "string" then

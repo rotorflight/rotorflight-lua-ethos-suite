@@ -10,6 +10,12 @@ local navHandlers = pageRuntime.createMenuHandlers()
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
+local function loadMask(path)
+    local ui = rfsuite.app and rfsuite.app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
+end
+
 local enableWakeup = false
 
 local function openPage(opts)
@@ -73,7 +79,7 @@ local function openPage(opts)
             local modelName = utils.resolveModelName(item.foldername)
 
             if icons ~= 0 then
-                rfsuite.app.gfx_buttons.logs[i] = rfsuite.app.gfx_buttons.logs[i] or lcd.loadMask("app/modules/logs/gfx/folder.png")
+                rfsuite.app.gfx_buttons.logs[i] = rfsuite.app.gfx_buttons.logs[i] or loadMask("app/modules/logs/gfx/folder.png")
             else
                 rfsuite.app.gfx_buttons.logs[i] = nil
             end

@@ -67,6 +67,11 @@ local M = {}
 
 local toolbarMaskCache = {}
 
+local function clearToolbarMaskCache(dashboard)
+    for k in pairs(toolbarMaskCache) do toolbarMaskCache[k] = nil end
+    if dashboard then dashboard._toolbarCache = nil end
+end
+
 local function loadToolbarMask(path, lcd)
     if not path or not lcd or not lcd.loadMask then return nil end
     local mask = toolbarMaskCache[path]
@@ -164,9 +169,15 @@ local function isItemEnabled(item, dashboard, rfsuite)
 end
 
 function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
-    if not dashboard.toolbarVisible then return end
+    if not dashboard.toolbarVisible then
+        clearToolbarMaskCache(dashboard)
+        return
+    end
     local x, y, w, barH = getToolbarBounds(dashboard, lcd)
-    if not x then return end
+    if not x then
+        clearToolbarMaskCache(dashboard)
+        return
+    end
 
     local themeDefault = lcd.themeColor(THEME_DEFAULT_COLOR)
     local themeFocus = lcd.themeColor(THEME_FOCUS_COLOR)
@@ -184,7 +195,10 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     lcd.drawFilledRectangle(x, y, w, 4)
 
     local items = getToolbarItems(dashboard)
-    if #items == 0 then return end
+    if #items == 0 then
+        clearToolbarMaskCache(dashboard)
+        return
+    end
 
     local cache = getToolbarCache(dashboard)
     local slots = 6
@@ -207,6 +221,7 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local rects = {}
     local visibleItems = {}
     local enabledItems = {}
+    local visibleIcons = {}
     local iconSize = 55
     local textPadTop = 6
     local slotPad = 12
@@ -240,6 +255,7 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
                 lcd.drawRectangle(bx, by, bw, bh, 2)
             end
             if item.icon then
+                visibleIcons[item.icon] = true
                 local sz = item.iconSize or iconSize
                 local tw = 0
                 local th = 0
@@ -291,6 +307,12 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     dashboard._toolbarRects = rects
     dashboard._toolbarItemsSorted = visibleItems
     dashboard._toolbarEnabled = enabledItems
+
+    for path in pairs(toolbarMaskCache) do
+        if not visibleIcons[path] then
+            toolbarMaskCache[path] = nil
+        end
+    end
 end
 
 function M.isItemEnabled(item, dashboard, rfsuite)
@@ -339,6 +361,7 @@ function M.handleEvent(dashboard, widget, category, value, x, y, lcd)
                 dashboard._toolbarLastActive = os.clock()
                 dashboard.toolbarVisible = false
                 dashboard._toolbarCloseAt = 0
+                clearToolbarMaskCache(dashboard)
                 lcd.invalidate(widget)
                 return true
             end
