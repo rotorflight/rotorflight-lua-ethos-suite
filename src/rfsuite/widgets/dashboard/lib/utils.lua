@@ -26,6 +26,8 @@ local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
 
 local imageCache = {}
 local fontCache
+local progressDialog
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 
 function utils.isFullScreen(w, h)
 
@@ -705,6 +707,32 @@ function utils.applyOffset(x, y, box)
     local ox = utils.getParam(box, "offsetx") or 0
     local oy = utils.getParam(box, "offsety") or 0
     return x + ox, y + oy
+end
+
+function utils.registerProgressDialog(handle, baseMessage)
+    if not handle then return end
+    progressDialog = {
+        handle = handle,
+        baseMessage = baseMessage or ""
+    }
+end
+
+function utils.clearProgressDialog(handle)
+    if not progressDialog then return end
+    if handle == nil or progressDialog.handle == handle then
+        progressDialog = nil
+    end
+end
+
+function utils.updateProgressDialogMessage(statusOverride)
+    if not progressDialog or not progressDialog.handle then return end
+    local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+    local mspStatus = statusOverride or (rfsuite.session and rfsuite.session.mspStatusMessage) or nil
+    local msg = progressDialog.baseMessage or ""
+    if showDebug then
+        msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+    end
+    pcall(function() progressDialog.handle:message(msg) end)
 end
 
 return utils
