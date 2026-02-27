@@ -814,21 +814,21 @@
           "image": "general.png",
           "name": "General",
           "offline": true,
-          "script": "general.lua",
+          "script": "tools/general.lua",
           "translation": "@i18n(app.modules.settings.txt_general)@"
         },
         {
           "image": "shortcuts.png",
           "name": "Shortcuts",
           "offline": true,
-          "script": "shortcuts.lua",
+          "script": "tools/shortcuts.lua",
           "translation": "@i18n(app.modules.settings.shortcuts)@"
         },
         {
           "image": "dashboard.png",
           "name": "Dashboard",
           "offline": true,
-          "script": "dashboard.lua",
+          "script": "tools/dashboard.lua",
           "translation": "@i18n(app.modules.settings.dashboard)@"
         },
         {
@@ -847,18 +847,18 @@
           "image": "localizations.png",
           "name": "Localization",
           "offline": true,
-          "script": "localizations.lua",
+          "script": "tools/localizations.lua",
           "translation": "@i18n(app.modules.settings.localizations)@"
         },
         {
           "image": "audio.png",
           "name": "Audio",
           "offline": true,
-          "script": "audio.lua",
+          "script": "tools/audio.lua",
           "translation": "@i18n(app.modules.settings.audio)@"
         }
       ],
-      "scriptPrefix": "settings/tools/",
+      "scriptPrefix": "settings/",
       "title": "Settings",
       "translation": "@i18n(app.modules.settings.name)@"
     },
