@@ -5,18 +5,15 @@
 ## How it works
 
 - `msp.api` remains the single runtime API entrypoint used by the app.
-- Engine selection is done by `msp.setApiEngine("v1" | "v2")`.
-- In `v2` mode:
-  - `tasks/scheduler/msp/apiv2/api/<API_NAME>.lua` is loaded directly.
-  - Missing modules fail fast and are reported in logs.
+- Runtime is fixed to `apiv2`; `v1` selection requests are ignored.
+- `tasks/scheduler/msp/apiv2/api/<API_NAME>.lua` is loaded directly.
+- Missing modules fail fast and are reported in logs.
 
 ## Porting a module
 
 1. Create `tasks/scheduler/msp/apiv2/api/<API_NAME>.lua`.
 2. Return a module table compatible with current API contract (`read` and/or `write`, plus existing handler helpers as needed).
-3. Enable engine:
-   - `msp.setApiEngine("v2")`
-4. Validate behavior and memory.
+3. Validate behavior and memory.
 
 Optional explicit registration:
 

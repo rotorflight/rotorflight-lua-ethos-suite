@@ -10,9 +10,7 @@ local rfsuite = require("rfsuite")
 local os_clock = os.clock
 local utils = rfsuite.utils
 local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
-local API_ENGINE_PREF = (rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.api_engine) or nil
-local API_ENGINE_CONFIG = (rfsuite.config and rfsuite.config.mspApiEngine) or nil
-local API_ENGINE_DEFAULT = API_ENGINE_PREF or API_ENGINE_CONFIG or "v2"
+local API_ENGINE_DEFAULT = "v2"
 
 local msp = {}
 
@@ -80,17 +78,12 @@ function msp.enableProtoLog(on)
     return false
 end
 
-local function normalizeApiEngine(name)
-    if type(name) ~= "string" then return "v2" end
-    name = string.lower(name)
-    if name == "1" or name == "v1" or name == "apiv1" then return "v1" end
-    return "v2"
-end
-
 function msp.setApiEngine(name)
-    local target = normalizeApiEngine(name)
-    if target == "v1" then
-        utils.log("[msp] apiv1 removed; forcing v2", "info")
+    if type(name) == "string" then
+        local requested = string.lower(name)
+        if requested == "1" or requested == "v1" or requested == "apiv1" then
+            utils.log("[msp] apiv1 removed; forcing v2", "info")
+        end
     end
     msp.api = msp.apiv2
     msp.apiEngine = "v2"
@@ -102,12 +95,6 @@ function msp.getApiEngine()
     return msp.apiEngine
 end
 
-utils.log(
-    "[msp] API engine request pref=" .. tostring(API_ENGINE_PREF) ..
-    " config=" .. tostring(API_ENGINE_CONFIG) ..
-    " selected=" .. tostring(API_ENGINE_DEFAULT),
-    "info"
-)
 msp.setApiEngine(API_ENGINE_DEFAULT)
 
 
