@@ -313,7 +313,9 @@ function factory.create(spec)
         setErrorHandler = setErrorHandler,
         setUUID = setUUID,
         setTimeout = setTimeout,
-        setRebuildOnWrite = setRebuildOnWrite
+        setRebuildOnWrite = setRebuildOnWrite,
+        __rfReadStructure = spec.readStructure,
+        __rfWriteStructure = spec.writeStructure
     }
 
     local methods = spec.methods

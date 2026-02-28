@@ -22,6 +22,10 @@ api._fileExistsCache = {}
 api._chunkCache = {}
 api._chunkCacheOrder = {}
 api._chunkCacheMax = 5
+api._helpChunkCache = {}
+api._helpChunkCacheOrder = {}
+api._helpChunkCacheMax = 5
+api._helpDataCache = {}
 api._deltaCacheDefault = true
 api._deltaCacheByApi = {}
 api._ported = {}
@@ -29,6 +33,7 @@ api.apidata = {}
 api._core = nil
 
 local defaultApiPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
+local defaultApiHelpPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apihelp/"
 local defaultCorePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"
 
 local function currentApiEngine()
@@ -64,6 +69,11 @@ end
 
 local function resolvePath(apiName)
     return normalizePath(api._ported[apiName]) or (defaultApiPath .. apiName .. ".lua")
+end
+
+local function resolveHelpPath(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return nil end
+    return defaultApiHelpPath .. apiName .. ".lua"
 end
 
 local function ensureCore()
@@ -122,6 +132,116 @@ local function getChunk(apiName, path)
     end
 
     return loaderFn
+end
+
+local function getHelpChunk(apiName, path)
+    local chunk = api._helpChunkCache[apiName]
+    if chunk then
+        for i, name in ipairs(api._helpChunkCacheOrder) do
+            if name == apiName then
+                table_remove(api._helpChunkCacheOrder, i)
+                break
+            end
+        end
+        table_insert(api._helpChunkCacheOrder, apiName)
+        return chunk
+    end
+
+    local loaderFn, err = loadfile(path)
+    if not loaderFn then
+        utils.log("[apihelp] compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
+        return nil
+    end
+
+    api._helpChunkCache[apiName] = loaderFn
+    table_insert(api._helpChunkCacheOrder, apiName)
+
+    if #api._helpChunkCacheOrder > api._helpChunkCacheMax then
+        local oldest = table_remove(api._helpChunkCacheOrder, 1)
+        api._helpChunkCache[oldest] = nil
+    end
+
+    return loaderFn
+end
+
+local function shouldLoadHelp(loadOpts)
+    if type(loadOpts) == "table" and loadOpts.loadHelp ~= nil then
+        return loadOpts.loadHelp == true
+    end
+    if type(loadOpts) == "boolean" then
+        return loadOpts == true
+    end
+    return false
+end
+
+local function getHelpFields(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return nil end
+
+    local cached = api._helpDataCache[apiName]
+    if cached ~= nil then
+        return cached or nil
+    end
+
+    local helpPath = resolveHelpPath(apiName)
+    if not helpPath or not cachedFileExists(helpPath) then
+        api._helpDataCache[apiName] = false
+        return nil
+    end
+
+    local chunk = getHelpChunk(apiName, helpPath)
+    if not chunk then
+        api._helpDataCache[apiName] = false
+        return nil
+    end
+
+    local ok, helpData = pcall(chunk)
+    if not ok or type(helpData) ~= "table" then
+        utils.log("[apihelp] invalid help data for " .. tostring(apiName), "info")
+        api._helpDataCache[apiName] = false
+        return nil
+    end
+
+    local fields = type(helpData.fields) == "table" and helpData.fields or helpData
+    if type(fields) ~= "table" then
+        api._helpDataCache[apiName] = false
+        return nil
+    end
+
+    api._helpDataCache[apiName] = fields
+    return fields
+end
+
+local function injectHelpIntoStructure(apiName, structure)
+    if type(structure) ~= "table" then return end
+
+    local helpFields = getHelpFields(apiName)
+    if type(helpFields) ~= "table" then return end
+
+    for _, entry in ipairs(structure) do
+        if type(entry) ~= "table" then
+            goto continue
+        end
+
+        local fieldName = entry.field
+        if entry.help == nil and type(fieldName) == "string" then
+            entry.help = helpFields[fieldName]
+        end
+
+        local bitmap = entry.bitmap
+        if type(bitmap) == "table" then
+            for _, bit in ipairs(bitmap) do
+                if type(bit) == "table" then
+                    local bitName = bit.field
+                    if bit.help == nil and type(bitName) == "string" then
+                        local composite = (type(fieldName) == "string") and (fieldName .. "->" .. bitName) or nil
+                        bit.help = (composite and helpFields[composite]) or helpFields[bitName]
+                    end
+                end
+            end
+        end
+
+        ::continue::
+    end
 end
 
 local function validateModule(apiName, module)
@@ -201,7 +321,7 @@ function api.isPorted(apiName)
     return cachedFileExists(resolvePath(apiName)) == true
 end
 
-function api.load(apiName)
+function api.load(apiName, loadOpts)
     if type(apiName) ~= "string" or apiName == "" then
         utils.log("[api] invalid api name", "info")
         return nil
@@ -222,6 +342,13 @@ function api.load(apiName)
     if not chunk then return nil end
 
     local apiModule = chunk()
+    if shouldLoadHelp(loadOpts) and type(apiModule) == "table" then
+        injectHelpIntoStructure(apiName, apiModule.__rfReadStructure)
+        if apiModule.__rfWriteStructure ~= apiModule.__rfReadStructure then
+            injectHelpIntoStructure(apiName, apiModule.__rfWriteStructure)
+        end
+    end
+
     local module, reason = validateModule(apiName, apiModule)
     if not module then
         utils.log("[api] invalid module for " .. tostring(apiName) .. ": " .. tostring(reason), "info")
@@ -259,9 +386,24 @@ function api.resetApidata()
     api.apidata = {}
 end
 
+function api.getFieldHelp(apiName, fieldName)
+    if type(apiName) ~= "string" or apiName == "" then return nil end
+    if type(fieldName) ~= "string" or fieldName == "" then return nil end
+
+    local helpFields = getHelpFields(apiName)
+    if not helpFields then return nil end
+    return helpFields[fieldName]
+end
+
 function api.clearChunkCache()
     api._chunkCache = {}
     api._chunkCacheOrder = {}
+end
+
+function api.clearHelpCache()
+    api._helpChunkCache = {}
+    api._helpChunkCacheOrder = {}
+    api._helpDataCache = {}
 end
 
 function api.clearFileExistsCache()

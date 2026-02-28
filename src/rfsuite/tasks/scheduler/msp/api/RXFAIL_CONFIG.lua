@@ -26,8 +26,7 @@ for i = 1, MAX_SUPPORTED_RC_CHANNEL_COUNT do
             [0] = "@i18n(api.RXFAIL_CONFIG.tbl_auto)@",
             [1] = "@i18n(api.RXFAIL_CONFIG.tbl_hold)@",
             [2] = "@i18n(api.RXFAIL_CONFIG.tbl_set)@"
-        },
-        help = "@i18n(api.RXFAIL_CONFIG.channel_mode)@"
+        }
     }
     MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = {
         field = "channel_" .. i .. "_value",
@@ -38,8 +37,7 @@ for i = 1, MAX_SUPPORTED_RC_CHANNEL_COUNT do
         min = 885,
         max = 2115,
         default = 1500,
-        unit = "us",
-        help = "@i18n(api.RXFAIL_CONFIG.channel_value)@"
+        unit = "us"
     }
 end
 

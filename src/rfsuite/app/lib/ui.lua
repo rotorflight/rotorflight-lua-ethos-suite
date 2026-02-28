@@ -1026,6 +1026,9 @@ function ui.cleanupCurrentPage()
     app.fieldHelpTxt = nil
     app._fieldHelpSection = nil
     ui._helpCache = {}
+    if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.clearHelpCache then
+        tasks.msp.api.clearHelpCache()
+    end
 
     app.Page = nil
     app.PageTmp = nil
@@ -2893,7 +2896,7 @@ function ui.requestPage()
             enableDeltaCache = nil
         end
 
-        local API = tasks.msp.api.load(apiKey)
+        local API = tasks.msp.api.load(apiKey, {loadHelp = true})
         if API and API.enableDeltaCache and enableDeltaCache ~= nil then
             API.enableDeltaCache(enableDeltaCache)
         end

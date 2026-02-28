@@ -23,12 +23,12 @@ local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "calc_local",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn,      help = "@i18n(api.BATTERY_INI.calcfuel_local)@" },
-    { field = "sag_multiplier", type = "U8", simResponse = {0}, decimals = 1, default = 0.5, min = 0, max = 10, help = "@i18n(api.BATTERY_INI.sag_multiplier)@" },
-    { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2, help = "@i18n(api.BATTERY_INI.alert_type)@" },
-    { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 6.5, help = "@i18n(api.BATTERY_INI.becalertvalue)@" },
-    { field = "rxalertvalue",   type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 7.5, help = "@i18n(api.BATTERY_INI.rxalertvalue)@" },
-    { field = "flighttime",     type = "U8", simResponse = {0}, min = 0, max = 3600, unit = "s", default = 300, help = "@i18n(api.BATTERY_INI.flighttime)@" },
+    { field = "calc_local",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn},
+    { field = "sag_multiplier", type = "U8", simResponse = {0}, decimals = 1, default = 0.5, min = 0, max = 10},
+    { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
+    { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 6.5},
+    { field = "rxalertvalue",   type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 7.5},
+    { field = "flighttime",     type = "U8", simResponse = {0}, min = 0, max = 3600, unit = "s", default = 300},
 }
 -- LuaFormatter on
 

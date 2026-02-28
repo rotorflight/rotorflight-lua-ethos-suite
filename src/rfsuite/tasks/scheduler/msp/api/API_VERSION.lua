@@ -14,9 +14,9 @@ local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(
 )
 
 local MSP_API_STRUCTURE_READ = {
-    {field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@"},
-    {field = "version_major",   type = "U8", help = "@i18n(api.API_VERSION.version_major)@"},
-    {field = "version_minor",   type = "U8", help = "@i18n(api.API_VERSION.version_minor)@"}
+    {field = "version_command", type = "U8"},
+    {field = "version_major",   type = "U8"},
+    {field = "version_minor",   type = "U8"}
 }
 
 local function parseRead(buf, helper)

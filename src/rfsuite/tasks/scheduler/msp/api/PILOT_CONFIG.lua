@@ -17,13 +17,13 @@ local MSP_REBUILD_ON_WRITE = false
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "model_id",               type = "U8",  apiVersion = {12, 0, 7}, simResponse = {3},       help = "@i18n(api.PILOT_CONFIG.model_id)@" },
-    { field = "model_param1_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0},       help = "@i18n(api.PILOT_CONFIG.model_param1_type)@" },
-    { field = "model_param1_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {44, 1}, unit = "s", min = 0, max = 3600, help = "@i18n(api.PILOT_CONFIG.model_param1_value)@" },
-    { field = "model_param2_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0},       help = "@i18n(api.PILOT_CONFIG.model_param2_type)@" },
-    { field = "model_param2_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {20, 0},   help = "@i18n(api.PILOT_CONFIG.model_param2_value)@" },
-    { field = "model_param3_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {20},      help = "@i18n(api.PILOT_CONFIG.model_param3_type)@" },
-    { field = "model_param3_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 30},    help = "@i18n(api.PILOT_CONFIG.model_param3_value)@" },
+    { field = "model_id",               type = "U8",  apiVersion = {12, 0, 7}, simResponse = {3}},
+    { field = "model_param1_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0}},
+    { field = "model_param1_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {44, 1}, unit = "s", min = 0, max = 3600},
+    { field = "model_param2_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {0}},
+    { field = "model_param2_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {20, 0}},
+    { field = "model_param3_type",      type = "U8",  apiVersion = {12, 0, 7}, simResponse = {20}},
+    { field = "model_param3_value",     type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 30}},
 }
 -- LuaFormatter on
 

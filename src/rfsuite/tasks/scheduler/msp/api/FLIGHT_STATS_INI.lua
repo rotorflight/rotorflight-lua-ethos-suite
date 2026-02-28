@@ -21,9 +21,9 @@ local pairs = pairs
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "flightcount",     type = "U32", simResponse = {0}, min = 0, max = 1000000000, help = "@i18n(api.FLIGHT_STATS_INI.flightcount)@" },
-    { field = "lastflighttime",  type = "U32", simResponse = {0}, min = 0, max = 1000000000, unit = "s", help = "@i18n(api.FLIGHT_STATS_INI.lastflighttime)@" },
-    { field = "totalflighttime", type = "U32", simResponse = {0}, min = 0, max = 1000000000, unit = "s", help = "@i18n(api.FLIGHT_STATS_INI.totalflighttime)@" },
+    { field = "flightcount",     type = "U32", simResponse = {0}, min = 0, max = 1000000000},
+    { field = "lastflighttime",  type = "U32", simResponse = {0}, min = 0, max = 1000000000, unit = "s"},
+    { field = "totalflighttime", type = "U32", simResponse = {0}, min = 0, max = 1000000000, unit = "s"},
 }
 -- LuaFormatter on
 
