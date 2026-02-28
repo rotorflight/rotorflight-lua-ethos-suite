@@ -15,10 +15,65 @@ local uiTaskPercent = 100
 local lastMainMenuBuildApiVersion = nil
 local MAIN_MENU_ENABLE_INTERVAL = 0.05
 local mainMenuLastEnableState = {}
-local mainMenuLastModeKey = nil
+local mainMenuLastModeTag = nil
+local mainMenuLastMenuId = nil
 local mainMenuLastFocusEpoch = nil
 local mainMenuLastPassAt = 0
 local mainMenuWasActive = false
+local mainMenuFocusModeTag = nil
+local mainMenuFocusMenuId = nil
+local mainMenuFocusIndex = nil
+local mainMenuFocusEpoch = nil
+local mainMenuFocusApplied = false
+
+local function resetMainMenuFocusLatch()
+    mainMenuFocusModeTag = nil
+    mainMenuFocusMenuId = nil
+    mainMenuFocusIndex = nil
+    mainMenuFocusEpoch = nil
+    mainMenuFocusApplied = false
+end
+
+local function desiredFocusIndex(app)
+    local lm = (app.uiState == app.uiStatus.mainMenu) and "mainmenu" or (app.lastMenu or "mainmenu")
+    return rfsuite.preferences.menulastselected[lm] or rfsuite.preferences.menulastselected["mainmenu"]
+end
+
+local function focusOnce(app, modeTag)
+    local idx = desiredFocusIndex(app)
+    if not idx or not app.formFields then return end
+    local field = app.formFields[idx]
+    if not (field and field.focus) then return end
+
+    local lm = (app.uiState == app.uiStatus.mainMenu) and "mainmenu" or (app.lastMenu or "mainmenu")
+    local focusEpoch = app._menuFocusEpoch or 0
+    if mainMenuFocusModeTag ~= modeTag or mainMenuFocusMenuId ~= lm or mainMenuFocusIndex ~= idx or mainMenuFocusEpoch ~= focusEpoch then
+        mainMenuFocusModeTag = modeTag
+        mainMenuFocusMenuId = lm
+        mainMenuFocusIndex = idx
+        mainMenuFocusEpoch = focusEpoch
+        mainMenuFocusApplied = false
+    end
+
+    if not mainMenuFocusApplied then
+        mainMenuFocusApplied = true
+        field:focus()
+    end
+end
+
+local function setMainMenuFieldEnabled(app, index, shouldEnable)
+    local fields = app.formFields
+    local field = fields and fields[index]
+    if field and field.enable then
+        if mainMenuLastEnableState[index] ~= shouldEnable then
+            field:enable(shouldEnable)
+            mainMenuLastEnableState[index] = shouldEnable
+        end
+        return true
+    end
+    mainMenuLastEnableState[index] = nil
+    return false
+end
 
 local function exitApp()
     local app = rfsuite.app
@@ -62,9 +117,11 @@ local function mainMenuIconEnableDisable()
     elseif mainMenuWasActive then
         mainMenuWasActive = false
         mainMenuLastEnableState = {}
-        mainMenuLastModeKey = nil
+        mainMenuLastModeTag = nil
+        mainMenuLastMenuId = nil
         mainMenuLastFocusEpoch = nil
         mainMenuLastPassAt = 0
+        resetMainMenuFocusLatch()
     end
 
     local currentApiVersion = rfsuite.session and rfsuite.session.apiVersion
@@ -73,49 +130,6 @@ local function mainMenuIconEnableDisable()
     elseif currentApiVersion ~= lastMainMenuBuildApiVersion then
         lastMainMenuBuildApiVersion = currentApiVersion
         app.MainMenu = assert(loadfile("app/modules/init.lua"))()
-    end
-
-    -- Focus handling:
-    -- Calling :focus() repeatedly breaks keyboard navigation (it keeps snapping back).
-    -- So we compute the desired focus target, and only apply focus once per "menu state key".
-    local function desiredFocusIndex()
-        local lm = (app.uiState == app.uiStatus.mainMenu) and "mainmenu" or (app.lastMenu or "mainmenu")
-        local idx = rfsuite.preferences.menulastselected[lm] or rfsuite.preferences.menulastselected["mainmenu"]
-        return idx
-    end
-
-    local function focusOnce(modeTag)
-        local idx = desiredFocusIndex()
-        if not idx or not app.formFields or not app.formFields[idx] then return end
-
-        local lm = (app.uiState == app.uiStatus.mainMenu) and "mainmenu" or (app.lastMenu or "mainmenu")
-        local focusEpoch = tostring(app._menuFocusEpoch or 0)
-        local key = tostring(modeTag) .. "|" .. tostring(lm) .. "|" .. tostring(idx) .. "|" .. focusEpoch
-
-        -- Reset focus latch if we have entered a new menu/mode/form combination
-        if app._mainMenuFocusKey ~= key then
-            app._mainMenuFocusKey = key
-            app._mainMenuFocusApplied = false
-        end
-
-        if not app._mainMenuFocusApplied then
-            app._mainMenuFocusApplied = true
-            app.formFields[idx]:focus()
-        end
-    end
-
-    local function setMainMenuFieldEnabled(index, shouldEnable)
-        local fields = app.formFields
-        local field = fields and fields[index]
-        if field and field.enable then
-            if mainMenuLastEnableState[index] ~= shouldEnable then
-                field:enable(shouldEnable)
-                mainMenuLastEnableState[index] = shouldEnable
-            end
-            return true
-        end
-        mainMenuLastEnableState[index] = nil
-        return false
     end
 
     if app.uiState == app.uiStatus.mainMenu then
@@ -142,13 +156,16 @@ local function mainMenuIconEnableDisable()
             mainMenuLastFocusEpoch = focusEpoch
             mainMenuLastEnableState = {}
             mainMenuLastPassAt = 0
+            resetMainMenuFocusLatch()
         end
 
-        local modeKey = modeTag .. "|" .. tostring(app.lastMenu or "mainmenu")
-        if mainMenuLastModeKey ~= modeKey then
-            mainMenuLastModeKey = modeKey
+        local menuId = app.lastMenu or "mainmenu"
+        if mainMenuLastModeTag ~= modeTag or mainMenuLastMenuId ~= menuId then
+            mainMenuLastModeTag = modeTag
+            mainMenuLastMenuId = menuId
             mainMenuLastEnableState = {}
             mainMenuLastPassAt = 0
+            resetMainMenuFocusLatch()
         end
 
         local now = os.clock()
@@ -158,45 +175,45 @@ local function mainMenuIconEnableDisable()
         -- Offline: only allow items explicitly marked offline.
         if not connected then
             for i, v in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(i, v == true) then
+                if setMainMenuFieldEnabled(app, i, v == true) then
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
-            focusOnce("offline")
+            focusOnce(app, "offline")
 
         -- Connected but still in post-connect: still honor offline-only accessibility.
         elseif not postConnectComplete then
             for i, v in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(i, v == true) then
+                if setMainMenuFieldEnabled(app, i, v == true) then
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
-            focusOnce("postconnect")
+            focusOnce(app, "postconnect")
 
         -- Fully connected + supported API: enable everything.
         elseif supportedApi then
             app.offlineMode = false
             for i in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(i, true) then
+                if setMainMenuFieldEnabled(app, i, true) then
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
-            focusOnce("online")
+            focusOnce(app, "online")
 
         else
             -- Fallback: if we are connected and post-connect complete, never leave icons latched disabled.
             -- This avoids a rare dead-end where menu icons stay disabled until restart.
             app.offlineMode = false
             for i in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(i, true) then
+                if setMainMenuFieldEnabled(app, i, true) then
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
-            focusOnce("online-fallback")
+            focusOnce(app, "online-fallback")
         end
 
     elseif not app.isOfflinePage and not app.triggers.escPowerCycleLoader then
@@ -477,10 +494,12 @@ function tasks.reset()
     taskAccumulator = 0
     lastMainMenuBuildApiVersion = nil
     mainMenuLastEnableState = {}
-    mainMenuLastModeKey = nil
+    mainMenuLastModeTag = nil
+    mainMenuLastMenuId = nil
     mainMenuLastFocusEpoch = nil
     mainMenuLastPassAt = 0
     mainMenuWasActive = false
+    resetMainMenuFocusLatch()
 end
 
 return tasks

@@ -63,7 +63,12 @@ function callback.clear(callbackParam)
     end
 end
 
-function callback.clearAll() callback._queue = {} end
+function callback.clearAll()
+    local queue = callback._queue
+    for i = #queue, 1, -1 do
+        queue[i] = nil
+    end
+end
 
 function callback.reset() callback.clearAll() end
 
