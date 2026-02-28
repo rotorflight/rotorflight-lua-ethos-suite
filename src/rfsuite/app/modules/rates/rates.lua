@@ -37,19 +37,6 @@ local function getRateType()
     return nil
 end
 
-local function resolveScriptPath(script)
-    if type(script) ~= "string" then return nil, nil end
-    local relativeScript = script
-    if relativeScript:sub(1, 12) == "app/modules/" then
-        relativeScript = relativeScript:sub(13)
-    end
-    local modulePath = script
-    if modulePath:sub(1, 4) ~= "app/" then
-        modulePath = "app/modules/" .. modulePath
-    end
-    return modulePath, relativeScript
-end
-
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
 tables[2] = "app/modules/rates/ratetables/raceflight.lua"
@@ -109,8 +96,10 @@ local function openPage(opts)
     local title = opts.title
     local script = opts.script
 
-    local modulePath, relativeScript = resolveScriptPath(script)
-    rfsuite.app.Page = assert(loadfile(modulePath))()
+    local relativeScript = script
+    if type(relativeScript) == "string" and relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
