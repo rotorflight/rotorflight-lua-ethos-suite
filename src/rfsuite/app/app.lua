@@ -18,6 +18,38 @@ local busyUiTick = 0
 local BUSY_UI_RUN_NUM = 2
 local BUSY_UI_RUN_DEN = 3
 
+local function closeTransientDialogs()
+    if not app or not app.dialogs then return end
+
+    local progressHandle = app.dialogs.progress
+    local saveHandle = app.dialogs.save
+
+    if app.dialogs.progressDisplay and progressHandle and progressHandle.close then
+        pcall(function() progressHandle:close() end)
+    end
+    if app.dialogs.saveDisplay and saveHandle and saveHandle.close then
+        pcall(function() saveHandle:close() end)
+    end
+
+    if app.ui and app.ui.clearProgressDialog then
+        app.ui.clearProgressDialog(progressHandle)
+        app.ui.clearProgressDialog(saveHandle)
+    end
+
+    app.dialogs.progressDisplay = false
+    app.dialogs.saveDisplay = false
+    app.dialogs.progressWatchDog = nil
+    app.dialogs.saveWatchDog = nil
+    app.dialogs.progressSpeed = nil
+    app.dialogs.progressCounter = 0
+    app.dialogs.saveProgressCounter = 0
+    app.triggers.closeProgressLoader = false
+    app.triggers.closeProgressLoaderNoisProcessed = false
+    app.triggers.closeSave = false
+    app.triggers.closeSaveFake = false
+    app.triggers.isSaving = false
+end
+
 local function playNoOpSaveTone()
     local now = os.clock()
     if (now - lastNoOpSaveToneAt) < 0.25 then return end
@@ -268,8 +300,7 @@ function app.event(widget, category, value, x, y)
 
         if isCloseEvent then
             log("EVT_CLOSE", "info")
-            if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-            if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+            closeTransientDialogs()
             if app._forceMenuToMain then
                 app.ui.openMainMenu()
             elseif app.Page and app.Page.onNavMenu then
@@ -300,8 +331,7 @@ function app.event(widget, category, value, x, y)
             end
 
             log("EVT_ENTER_LONG (PAGES)", "info")
-            if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-            if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+            closeTransientDialogs()
             if app.Page and app.Page.onSaveMenu then
                 app.Page.onSaveMenu(app.Page)
             else
@@ -314,8 +344,7 @@ function app.event(widget, category, value, x, y)
 
     if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
         log("EVT_ENTER_LONG (MAIN MENU)", "info")
-        if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-        if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+        closeTransientDialogs()
         system.killEvents(KEY_ENTER_BREAK)
         return true
     end
@@ -349,8 +378,7 @@ function app.close()
 
     app.uiState = app.uiStatus.init
 
-    if app.dialogs.progress then app.dialogs.progress:close() end
-    if app.dialogs.save then app.dialogs.save:close() end
+    closeTransientDialogs()
     if app.dialogs.noLink then app.dialogs.noLink:close() end
 
     config.useCompiler = true

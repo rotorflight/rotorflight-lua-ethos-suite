@@ -9,6 +9,7 @@ local submenu = {}
 local manifestPath = "app/modules/manifest.lua"
 local menuSpecPathPrefix = "app/modules/manifest_menus/"
 local manifestCache = nil
+local manifestMenuSpecCache = {}
 
 local function cloneShallow(src)
     local out = {}
@@ -56,10 +57,24 @@ end
 
 local function loadManifestMenuSpec(menuId)
     if type(menuId) ~= "string" or menuId == "" then return nil end
+
+    local cached = manifestMenuSpecCache[menuId]
+    if cached ~= nil then
+        if cached == false then return nil end
+        return cached
+    end
+
     local chunk = loadfile(menuSpecPathPrefix .. menuId .. ".lua")
-    if not chunk then return nil end
+    if not chunk then
+        manifestMenuSpecCache[menuId] = false
+        return nil
+    end
     local ok, spec = pcall(chunk)
-    if not ok or type(spec) ~= "table" then return nil end
+    if not ok or type(spec) ~= "table" then
+        manifestMenuSpecCache[menuId] = false
+        return nil
+    end
+    manifestMenuSpecCache[menuId] = spec
     return spec
 end
 

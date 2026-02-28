@@ -9,6 +9,7 @@ local lcd = lcd
 
 local container = {}
 local MENU_ONLY_NAV_BUTTONS = {menu = true, save = false, reload = false, tool = false, help = false}
+local NOOP_PAINT = function() end
 
 local function wipeTable(t)
     if type(t) ~= "table" then return end
@@ -109,12 +110,74 @@ function container.create(cfg)
     local app = rfsuite.app
     local prefs = rfsuite.preferences
     local tasks = rfsuite.tasks
+    local moduleKey = tostring(cfg.moduleKey or "_menu_container")
 
     local pages = cfg.pages or {}
     local navHandlers = pageRuntime.createMenuHandlers(cfg.navOptions or {})
     local enableWakeup = false
     local lastLinkState = nil
     local lastFieldEnabled = {}
+    app._menuContainerPressSpecs = app._menuContainerPressSpecs or {}
+    app._menuContainerPressHandlers = app._menuContainerPressHandlers or {}
+
+    local function onNavMenuPress()
+        if app.Page and app.Page.onNavMenu then
+            app.Page.onNavMenu(app.Page)
+        else
+            navHandlers.onNavMenu()
+        end
+    end
+
+    local function getPagePressHandler(index)
+        local handlersByModule = app._menuContainerPressHandlers
+        handlersByModule[moduleKey] = handlersByModule[moduleKey] or {}
+        local handlers = handlersByModule[moduleKey]
+        if handlers[index] then return handlers[index] end
+
+        handlers[index] = function()
+            local specsByModule = app._menuContainerPressSpecs
+            local specs = specsByModule and specsByModule[moduleKey]
+            local spec = specs and specs[index]
+            if type(spec) ~= "table" then return end
+
+            local item = spec.item
+            if type(item) ~= "table" then return end
+
+            prefs.menulastselected[moduleKey] = index
+
+            local resolvedScript, speedOverride
+            if type(item.menuId) == "string" and item.menuId ~= "" then
+                speedOverride = item.loaderspeed
+            else
+                resolvedScript, speedOverride = resolveItemScript(item)
+            end
+            local loaderSpeed = speedOverride or cfg.loaderSpeed or app.loaderSpeed.FAST
+            if type(loaderSpeed) == "string" and app.loaderSpeed then
+                loaderSpeed = app.loaderSpeed[loaderSpeed] or app.loaderSpeed.FAST
+            end
+            local targetScript
+            if type(item.menuId) == "string" and item.menuId ~= "" then
+                app.pendingManifestMenuId = item.menuId
+                targetScript = "manifest_menu/menu.lua"
+            else
+                targetScript = scriptPathFor(cfg, item, resolvedScript)
+                app.ui.progressDisplay(nil, nil, loaderSpeed)
+            end
+            app.ui.openPage({
+                idx = index,
+                title = titleForChild(cfg, spec.pageTitle, item),
+                script = targetScript,
+                menuId = item.menuId,
+                returnContext = copyReturnContext({
+                    idx = spec.parentIdx,
+                    title = spec.pageTitle,
+                    script = spec.parentScript
+                }, spec.currentMenuId)
+            })
+        end
+
+        return handlers[index]
+    end
 
     local function openPage(opts)
         if cfg.onOpenPre then cfg.onOpenPre(opts) end
@@ -143,7 +206,7 @@ function container.create(cfg)
         app.lastScript = script
 
         for k in pairs(app.gfx_buttons) do
-            if k ~= cfg.moduleKey then app.gfx_buttons[k] = nil end
+            if k ~= moduleKey then app.gfx_buttons[k] = nil end
         end
 
         prefs.general.iconsize = tonumber(prefs.general.iconsize) or 1
@@ -174,14 +237,8 @@ function container.create(cfg)
                 text = "@i18n(app.navigation_menu)@",
                 icon = nil,
                 options = FONT_S,
-                paint = function() end,
-                press = function()
-                    if app.Page and app.Page.onNavMenu then
-                        app.Page.onNavMenu(app.Page)
-                    else
-                        navHandlers.onNavMenu()
-                    end
-                end
+                paint = NOOP_PAINT,
+                press = onNavMenuPress
             })
             app.formNavigationFields["menu"]:focus()
         end
@@ -208,8 +265,10 @@ function container.create(cfg)
             numPerRow = app.radio.buttonsPerRow
         end
 
-        app.gfx_buttons[cfg.moduleKey] = app.gfx_buttons[cfg.moduleKey] or {}
-        prefs.menulastselected[cfg.moduleKey] = prefs.menulastselected[cfg.moduleKey] or 1
+        app.gfx_buttons[moduleKey] = app.gfx_buttons[moduleKey] or {}
+        prefs.menulastselected[moduleKey] = prefs.menulastselected[moduleKey] or 1
+        app._menuContainerPressSpecs[moduleKey] = app._menuContainerPressSpecs[moduleKey] or {}
+        wipeTable(app._menuContainerPressSpecs[moduleKey])
 
         wipeTable(app.formFields)
         wipeTable(app.formLines)
@@ -238,52 +297,32 @@ function container.create(cfg)
                 if prefs.general.iconsize ~= 0 then
                     local iconPath = iconPathFor(cfg, item)
                     if iconPath then
-                        app.gfx_buttons[cfg.moduleKey][i] = loadMaskCached(app, iconPath)
+                        app.gfx_buttons[moduleKey][i] = loadMaskCached(app, iconPath)
                     else
-                        app.gfx_buttons[cfg.moduleKey][i] = nil
+                        app.gfx_buttons[moduleKey][i] = nil
                     end
                 else
-                    app.gfx_buttons[cfg.moduleKey][i] = nil
+                    app.gfx_buttons[moduleKey][i] = nil
                 end
 
+                app._menuContainerPressSpecs[moduleKey][i] = {
+                    item = item,
+                    pageTitle = pageTitle,
+                    parentIdx = pidx,
+                    parentScript = script,
+                    currentMenuId = currentMenuId
+                }
                 app.formFields[i] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
                     text = item.name,
-                    icon = app.gfx_buttons[cfg.moduleKey][i],
+                    icon = app.gfx_buttons[moduleKey][i],
                     options = FONT_S,
-                    paint = function() end,
-                    press = function()
-                        prefs.menulastselected[cfg.moduleKey] = i
-                        local resolvedScript, speedOverride
-                        if type(item.menuId) == "string" and item.menuId ~= "" then
-                            speedOverride = item.loaderspeed
-                        else
-                            resolvedScript, speedOverride = resolveItemScript(item)
-                        end
-                        local loaderSpeed = speedOverride or cfg.loaderSpeed or app.loaderSpeed.FAST
-                        if type(loaderSpeed) == "string" and app.loaderSpeed then
-                            loaderSpeed = app.loaderSpeed[loaderSpeed] or app.loaderSpeed.FAST
-                        end
-                        local targetScript
-                        if type(item.menuId) == "string" and item.menuId ~= "" then
-                            app.pendingManifestMenuId = item.menuId
-                            targetScript = "manifest_menu/menu.lua"
-                        else
-                            targetScript = scriptPathFor(cfg, item, resolvedScript)
-                        end
-                        app.ui.progressDisplay(nil, nil, loaderSpeed)
-                        app.ui.openPage({
-                            idx = i,
-                            title = titleForChild(cfg, pageTitle, item),
-                            script = targetScript,
-                            menuId = item.menuId,
-                            returnContext = copyReturnContext({idx = pidx, title = pageTitle, script = script}, currentMenuId)
-                        })
-                    end
+                    paint = NOOP_PAINT,
+                    press = getPagePressHandler(i)
                 })
 
                 if item.disabled == true then app.formFields[i]:enable(false) end
 
-                if prefs.menulastselected[cfg.moduleKey] == i then app.formFields[i]:focus() end
+                if prefs.menulastselected[moduleKey] == i then app.formFields[i]:focus() end
 
                 lc = lc + 1
                 if lc == numPerRow then lc = 0 end

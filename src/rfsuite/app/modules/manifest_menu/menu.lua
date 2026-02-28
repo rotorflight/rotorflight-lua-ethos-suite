@@ -4,7 +4,6 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local submenuBuilder = assert(loadfile("app/lib/submenu_builder.lua"))()
 
 -- Shared manifest submenu router.
 -- Why this exists:
@@ -13,6 +12,12 @@ local submenuBuilder = assert(loadfile("app/lib/submenu_builder.lua"))()
 -- 3) This single module reads that pending `menuId` and builds the target menu.
 -- Result: menu structure stays centralized in `manifest.lua` with no per-menu wrappers.
 local app = rfsuite.app
+
+local function getSubmenuBuilder()
+    if app._submenuBuilder then return app._submenuBuilder end
+    app._submenuBuilder = assert(loadfile("app/lib/submenu_builder.lua"))()
+    return app._submenuBuilder
+end
 
 local function findSectionMenuIdFromMainMenu(sectionId)
     if type(app) ~= "table" or type(sectionId) ~= "string" or sectionId == "" then return nil end
@@ -112,4 +117,4 @@ end
 
 app.pendingManifestMenuId = nil
 app.activeManifestMenuId = menuId
-return submenuBuilder.createFromManifest(menuId)
+return getSubmenuBuilder().createFromManifest(menuId)
