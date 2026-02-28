@@ -1024,6 +1024,7 @@ function ui.cleanupCurrentPage()
     end
 
     app.fieldHelpTxt = nil
+    app._fieldHelpSection = nil
     ui._helpCache = {}
 
     app.Page = nil
@@ -1610,7 +1611,8 @@ function ui.fieldSlider(i,lf)
 
     if f.help or f.apikey then
         if not f.help and f.apikey then f.help = f.apikey end
-        if app.fieldHelpTxt and app.fieldHelpTxt[f.help] and app.fieldHelpTxt[f.help].t then currentField:help(app.fieldHelpTxt[f.help].t) end
+        local fieldHelpTxt = ui.getFieldHelpTxt()
+        if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t then currentField:help(fieldHelpTxt[f.help].t) end
     end
 
 end
@@ -1673,7 +1675,8 @@ function ui.fieldNumber(i,lf)
 
     if f.help or f.apikey then
         if not f.help and f.apikey then f.help = f.apikey end
-        if app.fieldHelpTxt and app.fieldHelpTxt[f.help] and app.fieldHelpTxt[f.help].t then currentField:help(app.fieldHelpTxt[f.help].t) end
+        local fieldHelpTxt = ui.getFieldHelpTxt()
+        if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t then currentField:help(fieldHelpTxt[f.help].t) end
     end
 
     if f.instantChange == false then
@@ -1909,7 +1912,10 @@ function ui.fieldText(i,lf)
     if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
     if f.disable then currentField:enable(false) end
 
-    if f.help and app.fieldHelpTxt and app.fieldHelpTxt[f.help] and app.fieldHelpTxt[f.help].t then currentField:help(app.fieldHelpTxt[f.help].t) end
+    if f.help then
+        local fieldHelpTxt = ui.getFieldHelpTxt()
+        if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t then currentField:help(fieldHelpTxt[f.help].t) end
+    end
 
     if f.instantChange == false then
         currentField:enableInstantChange(false)
@@ -2064,13 +2070,40 @@ function ui.openPageRefresh(opts)
     app.triggers.isReady = false
 end
 
+
 ui._helpCache = ui._helpCache or {}
+ui._helpExistsCache = ui._helpExistsCache or {}
+
+local function resolveHelpContext(scriptPath)
+    if type(scriptPath) ~= "string" then return nil, nil end
+
+    local normalized = scriptPath
+    if normalized:sub(1, 12) == "app/modules/" then
+        normalized = normalized:sub(13)
+    end
+
+    local section = normalized:match("([^/]+)")
+    local script = normalized:match("/([^/]+)%.lua$")
+    return section, script
+end
+
+local function sectionHasHelpFile(section)
+    if type(section) ~= "string" or section == "" then return false end
+
+    if ui._helpExistsCache[section] == nil then
+        local helpPath = "app/modules/" .. section .. "/help.lua"
+        ui._helpExistsCache[section] = (utils.file_exists(helpPath) == true)
+    end
+
+    return ui._helpExistsCache[section] == true
+end
 
 local function getHelpData(section)
-    if ui._helpCache[section] == nil then
-        local helpPath = "app/modules/" .. section .. "/help.lua"
+    if type(section) ~= "string" or section == "" then return nil end
 
-        if utils.file_exists(helpPath) then
+    if ui._helpCache[section] == nil then
+        if sectionHasHelpFile(section) then
+            local helpPath = "app/modules/" .. section .. "/help.lua"
             local chunk = loadfile(helpPath)
             local helpData = chunk and chunk() or nil
 
@@ -2082,6 +2115,40 @@ local function getHelpData(section)
     end
 
     return ui._helpCache[section] or nil
+end
+
+function ui.getFieldHelpTxt()
+    local section = resolveHelpContext(app.lastScript)
+    if not section then
+        app.fieldHelpTxt = nil
+        app._fieldHelpSection = nil
+        return nil
+    end
+
+    if app._fieldHelpSection ~= section then
+        local helpData = getHelpData(section)
+        app.fieldHelpTxt = helpData and helpData.fields or nil
+        app._fieldHelpSection = section
+    end
+
+    return app.fieldHelpTxt
+end
+
+local function openSectionHelp(section, script)
+    local helpData = getHelpData(section)
+    if not (helpData and type(helpData.help) == "table") then return false end
+
+    if script and helpData.help[script] then
+        app.ui.openPageHelp(helpData.help[script])
+        return true
+    end
+
+    if helpData.help["default"] then
+        app.ui.openPageHelp(helpData.help["default"])
+        return true
+    end
+
+    return false
 end
 
 
@@ -2154,13 +2221,8 @@ function ui.openPage(opts)
         end
     end
 
-    local sectionScript = script
-    if type(sectionScript) == "string" and sectionScript:sub(1, 12) == "app/modules/" then
-        sectionScript = sectionScript:sub(13)
-    end
-    local section = tostring(sectionScript):match("([^/]+)")
-    local helpData = getHelpData(section)
-    app.fieldHelpTxt = helpData and helpData.fields or nil
+    app.fieldHelpTxt = nil
+    app._fieldHelpSection = nil
 
     if app.Page.openPage then
         app._pageUsesCustomOpen = true
@@ -2267,10 +2329,8 @@ function ui.navigationButtons(x, y, w, h, opts)
         helpEnabled = (navButtons.help == true)
     end
 
-    local section = (type(app.lastScript) == "string") and app.lastScript:match("([^/]+)") or nil
-    local script = (type(app.lastScript) == "string") and app.lastScript:match("/([^/]+)%.lua$") or nil
-    local help = section and getHelpData(section) or nil
-    local hasHelpData = (help and help.help and (help.help[script] or help.help['default'])) and true or false
+    local section, script = resolveHelpContext(app.lastScript)
+    local hasHelpData = sectionHasHelpFile(section)
     if not collapseNavigation then
         helpOffset = x - (wS + padding)
         toolOffset = helpOffset - (wS + padding)
@@ -2345,12 +2405,8 @@ function ui.navigationButtons(x, y, w, h, opts)
             press = function()
                 if app.Page and app.Page.onHelpMenu then
                     app.Page.onHelpMenu(app.Page)
-                elseif help then
-                    if script and help.help[script] then
-                        app.ui.openPageHelp(help.help[script])
-                    else
-                        app.ui.openPageHelp(help.help['default'])
-                    end
+                else
+                    openSectionHelp(section, script)
                 end
             end
         })
@@ -2398,12 +2454,8 @@ function ui.navigationButtons(x, y, w, h, opts)
             {key = "help", width = wS, enabled = enabledState.help, text = "@i18n(app.navigation_help)@", press = function()
                 if app.Page and app.Page.onHelpMenu then
                     app.Page.onHelpMenu(app.Page)
-                elseif help then
-                    if script and help.help[script] then
-                        app.ui.openPageHelp(help.help[script])
-                    else
-                        app.ui.openPageHelp(help.help['default'])
-                    end
+                else
+                    openSectionHelp(section, script)
                 end
             end}
         }
@@ -2476,7 +2528,26 @@ function ui.openPageHelp(txtData, title)
 
     if not title then title = "@i18n(app.header_help)@ - " .. (app.lastTitle or "") end
 
-    form.openDialog({width = app.lcdWidth, title = title, message = message, buttons = {{label = "@i18n(app.btn_close)@", action = function() return true end}}, options = TEXT_LEFT})
+    form.openDialog({
+        width = app.lcdWidth,
+        title = title,
+        message = message,
+        buttons = {{
+            label = "@i18n(app.btn_close)@",
+            action = function()
+                local section = resolveHelpContext(app.lastScript)
+                if section then
+                    ui._helpCache[section] = nil
+                else
+                    ui._helpCache = {}
+                end
+                app.fieldHelpTxt = nil
+                app._fieldHelpSection = nil
+                return true
+            end
+        }},
+        options = TEXT_LEFT
+    })
 end
 
 function ui.injectApiAttributes(formField, f, v)

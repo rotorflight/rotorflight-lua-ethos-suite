@@ -413,6 +413,12 @@ local function openPage(opts)
 
     form.clear()
 
+    local fieldHelpTxt = rfsuite.app.ui.getFieldHelpTxt()
+    local function getFieldHelpText(key)
+        if not fieldHelpTxt or not fieldHelpTxt[key] then return nil end
+        return fieldHelpTxt[key]['t']
+    end
+
 
     rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.pwm)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
     rfsuite.app.ui.setPageDirty(false)
@@ -431,7 +437,7 @@ local function openPage(opts)
         local maxValue = 2250
         local defaultValue = 1500
         local suffix = nil
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoMid']['t']
+        local helpTxt = getFieldHelpText('servoMid')
 
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.center)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value)
@@ -450,7 +456,7 @@ local function openPage(opts)
         local defaultValue = -700
         local suffix = nil
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoMin']['t']
+        local helpTxt = getFieldHelpText('servoMin')
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value)
             configs[servoIndex]['min'] = value
             rfsuite.app.ui.markPageDirty()
@@ -467,7 +473,7 @@ local function openPage(opts)
         local maxValue = 1000
         local defaultValue = 700
         local suffix = nil
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoMax']['t']
+        local helpTxt = getFieldHelpText('servoMax')
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value)
             configs[servoIndex]['max'] = value
@@ -485,7 +491,7 @@ local function openPage(opts)
         local maxValue = 1000
         local defaultValue = 500
         local suffix = nil
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoScaleNeg']['t']
+        local helpTxt = getFieldHelpText('servoScaleNeg')
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_negative)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scaleNeg'] end, function(value)
             configs[servoIndex]['scaleNeg'] = value
@@ -503,7 +509,7 @@ local function openPage(opts)
         local maxValue = 1000
         local defaultValue = 500
         local suffix = nil
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoScalePos']['t']
+        local helpTxt = getFieldHelpText('servoScalePos')
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_positive)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scalePos'] end, function(value)
             configs[servoIndex]['scalePos'] = value
@@ -521,7 +527,7 @@ local function openPage(opts)
         local maxValue = 5000
         local defaultValue = 333
         local suffix = "@i18n(app.unit_hertz)@"
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoRate']['t']
+        local helpTxt = getFieldHelpText('servoRate')
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.rate)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['rate'] end, function(value)
             configs[servoIndex]['rate'] = value
@@ -539,7 +545,7 @@ local function openPage(opts)
         local maxValue = 60000
         local defaultValue = 0
         local suffix = "ms"
-        local helpTxt = rfsuite.app.fieldHelpTxt['servoSpeed']['t']
+        local helpTxt = getFieldHelpText('servoSpeed')
         rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.speed)@")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['speed'] end, function(value)
             configs[servoIndex]['speed'] = value

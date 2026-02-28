@@ -173,6 +173,7 @@ local function openPage(opts)
 
     local page = rfsuite.app.Page
     local fields = page.apidata.formdata.fields
+    local fieldHelpTxt = rfsuite.app.ui.getFieldHelpTxt()
 
     for i = 1, #fields do
         local f = fields[i]
@@ -228,8 +229,8 @@ local function openPage(opts)
             if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
             if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
             if f.help ~= nil then
-                if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
-                    local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
+                if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help]['t'] ~= nil then
+                    local helpTxt = fieldHelpTxt[f.help]['t']
                     rfsuite.app.formFields[i]:help(helpTxt)
                 end
             end
