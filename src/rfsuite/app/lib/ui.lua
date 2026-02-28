@@ -732,8 +732,6 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progress:closeAllowed(true)
                 app.dialogs.progress:value(100)
                 ui.clearProgressDialog(app.dialogs.progress)
-                app.Page = app.PageTmp
-                app.PageTmp = nil
                 app.dialogs.progressCounter = 0
                 app.dialogs.progressSpeed = nil
                 app.dialogs.progressDisplay = false
@@ -863,8 +861,6 @@ function ui.progressDisplaySave(message)
                 app.dialogs.saveDisplay = false
                 app.triggers.isSaving = false
                 ui.clearProgressDialog(app.dialogs.save)
-                app.Page = app.PageTmp
-                app.PageTmp = nil
 
             end
 
@@ -1031,7 +1027,6 @@ function ui.cleanupCurrentPage()
     end
 
     app.Page = nil
-    app.PageTmp = nil
 
     collectgarbage('collect')
 

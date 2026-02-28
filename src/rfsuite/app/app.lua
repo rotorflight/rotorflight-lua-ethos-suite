@@ -98,7 +98,6 @@ function app.create()
         app.formFields = {}
         app.formLines = {}
         app.formNavigationFields = {}
-        app.PageTmp = {}
         app.Page = {}
         app.radio = {}
         app.sensor = {}

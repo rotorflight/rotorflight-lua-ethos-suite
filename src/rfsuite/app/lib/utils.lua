@@ -165,12 +165,13 @@ function utils.settingsSaved()
     local mspEepromWrite = {
         command = 250,
         processReply = function(self, buf)
+            local page = app.Page
             app.triggers.closeSave = true
-            if app.Page.postEepromWrite then app.Page.postEepromWrite() end
-            if app.Page.reboot then
+            if page and page.postEepromWrite then page.postEepromWrite() end
+            if page and page.reboot then
                 app.ui.rebootFc()
             else
-                app.utils.invalidatePages()
+                app.utils.invalidatePages({preserveCurrentPage = true})
             end
         end,
         errorHandler = function(self) 
@@ -195,14 +196,20 @@ function utils.settingsSaved()
             end
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
-        app.utils.invalidatePages()
+        app.utils.invalidatePages({preserveCurrentPage = true})
         app.triggers.closeSave = true
     end
 
 end
 
-function utils.invalidatePages()
-    app.Page = nil
+function utils.invalidatePages(opts)
+    local preserveCurrentPage = (type(opts) == "table" and opts.preserveCurrentPage == true)
+    local keepCurrentPage = preserveCurrentPage and app.uiState == app.uiStatus.pages and app.Page
+
+    if not keepCurrentPage then
+        app.Page = nil
+    end
+
     app.pageState = app.pageStatus.display
     app.saveTS = 0
 

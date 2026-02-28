@@ -220,7 +220,6 @@ local function triggerSaveDialogs()
                     {
                         label = "@i18n(app.btn_ok)@",
                         action = function()
-                            app.PageTmp = app.Page
                             app.triggers.isSaving = true
                             app.ui.saveSettings()
                             return true
@@ -232,13 +231,11 @@ local function triggerSaveDialogs()
                 options = TEXT_LEFT
             })
         else    
-                app.PageTmp = app.Page
                 app.triggers.isSaving = true
                 app.ui.saveSettings()            
         end    
     elseif app.triggers.triggerSaveNoProgress then
         app.triggers.triggerSaveNoProgress = false
-        app.PageTmp = app.Page
         app.ui.saveSettings()
     end
 
@@ -421,7 +418,6 @@ local function requestPage()
     local app = rfsuite.app
 
     if app.uiState == app.uiStatus.pages then
-        if not app.Page and app.PageTmp then app.Page = app.PageTmp end
         if app.ui and app.Page and app.Page.apidata and app.pageState == app.pageStatus.display and not app.triggers.isReady then app.ui.requestPage() end
     end
 end
