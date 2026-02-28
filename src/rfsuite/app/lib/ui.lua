@@ -948,8 +948,6 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
-    utils.reportMemoryUsage("ui.cleanupCurrentPage", "start")
-
     if preferences and preferences.developer and preferences.developer.memstats then
         local mem_kb = collectgarbage("count")
         local function tcount(t)
@@ -1120,8 +1118,6 @@ function ui.cleanupCurrentPage()
             ), "info")
         end
     end
-
-    utils.reportMemoryUsage("ui.cleanupCurrentPage", "end")
 end
 
 function ui.resetPageState(activesection)

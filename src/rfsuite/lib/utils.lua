@@ -511,201 +511,20 @@ end
 
 utils._memProfile = utils._memProfile or {}
 
-local function safeCollectGarbage(command, arg)
-    if type(collectgarbage) ~= "function" then return nil end
-    local ok, value
-    if arg == nil then
-        ok, value = pcall(collectgarbage, command)
-    else
-        ok, value = pcall(collectgarbage, command, arg)
-    end
-    if ok then return value end
-    return nil
-end
-
-local function sortedKeys(t)
-    local keys = {}
-    if type(t) ~= "table" then return keys end
-    for key in pairs(t) do keys[#keys + 1] = key end
-    table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
-    return keys
-end
-
-local function formatCoreBytes(coreBytes)
-    local keys = sortedKeys(coreBytes)
-    if #keys == 0 then return "none" end
-
-    local parts = {}
-    for _, key in ipairs(keys) do
-        local raw = tonumber(coreBytes[key]) or 0
-        parts[#parts + 1] = string.format("%s=%.2fKB", tostring(key), raw / 1024)
-    end
-    return table.concat(parts, " | ")
-end
-
-local function formatCoreBytesDelta(startCore, endCore)
-    local all = {}
-    if type(startCore) == "table" then
-        for key in pairs(startCore) do
-            all[key] = true
-        end
-    end
-    if type(endCore) == "table" then
-        for key in pairs(endCore) do
-            all[key] = true
-        end
-    end
-
-    local keys = sortedKeys(all)
-    if #keys == 0 then return "none" end
-
-    local parts = {}
-    for _, key in ipairs(keys) do
-        local startBytes = (type(startCore) == "table" and tonumber(startCore[key])) or 0
-        local endBytes = (type(endCore) == "table" and tonumber(endCore[key])) or 0
-        local deltaKB = (endBytes - startBytes) / 1024
-        if deltaKB ~= 0 then
-            parts[#parts + 1] = string.format("%s=%+.2fKB", tostring(key), deltaKB)
-        end
-    end
-
-    if #parts == 0 then return "no changes" end
-    return table.concat(parts, " | ")
-end
-
-local function formatCacheStats(cache)
-    cache = cache or {}
-    return string.format(
-        "utils[file=%d dir=%d imgBmp=%d imgPath=%d] msp[file=%d chunk=%d helpChunk=%d helpData=%d delta=%d] apidata[v=%d s=%d b=%d bc=%d p=%d o=%d] cbq=%d telemetry[h=%d m=%d hot=%d]",
-        cache.fileExists or 0,
-        cache.dirExists or 0,
-        cache.imageBitmap or 0,
-        cache.imagePath or 0,
-        cache.mspFile or 0,
-        cache.mspChunk or 0,
-        cache.mspHelpChunk or 0,
-        cache.mspHelpData or 0,
-        cache.mspDelta or 0,
-        cache.apidataValues or 0,
-        cache.apidataStructure or 0,
-        cache.apidataBytes or 0,
-        cache.apidataBytesCount or 0,
-        cache.apidataPos or 0,
-        cache.apidataOther or 0,
-        cache.callbackQueue or 0,
-        cache.telemetryHits or 0,
-        cache.telemetryMisses or 0,
-        cache.telemetryHot or 0
-    )
-end
-
-local function formatCacheDelta(startCache, endCache)
-    startCache = startCache or {}
-    endCache = endCache or {}
-
-    local function d(key)
-        return (tonumber(endCache[key]) or 0) - (tonumber(startCache[key]) or 0)
-    end
-
-    return string.format(
-        "utils[file=%+d dir=%+d imgBmp=%+d imgPath=%+d] msp[file=%+d chunk=%+d helpChunk=%+d helpData=%+d delta=%+d] apidata[v=%+d s=%+d b=%+d bc=%+d p=%+d o=%+d] cbq=%+d telemetry[h=%+d m=%+d hot=%+d]",
-        d("fileExists"),
-        d("dirExists"),
-        d("imageBitmap"),
-        d("imagePath"),
-        d("mspFile"),
-        d("mspChunk"),
-        d("mspHelpChunk"),
-        d("mspHelpData"),
-        d("mspDelta"),
-        d("apidataValues"),
-        d("apidataStructure"),
-        d("apidataBytes"),
-        d("apidataBytesCount"),
-        d("apidataPos"),
-        d("apidataOther"),
-        d("callbackQueue"),
-        d("telemetryHits"),
-        d("telemetryMisses"),
-        d("telemetryHot")
-    )
-end
-
-local function takeMemorySnapshot()
-    local perf = rfsuite.performance or {}
-    local memInfo = (system and system.getMemoryUsage and system.getMemoryUsage()) or {}
-    if type(memInfo) ~= "table" then memInfo = {} end
-
-    local tasks = rfsuite.tasks
-    local mspApi = tasks and tasks.msp and tasks.msp.api
-    local apidata = mspApi and mspApi.apidata
-    local callbackQueue = tasks and tasks.callback and tasks.callback._queue
-    local telemetryStats = tasks and tasks.telemetry and tasks.telemetry._debugStats and tasks.telemetry._debugStats() or nil
-
-    local coreBytes = {}
-    for key, value in pairs(memInfo) do
-        if type(value) == "number" then coreBytes[key] = value end
-    end
-
-    return {
-        cpu = tonumber(perf.cpuload) or 0,
-        free = tonumber(perf.freeram) or 0,
-        used = tonumber(perf.usedram) or 0,
-        gc = tonumber(safeCollectGarbage("count")) or 0,
-        gcRunning = safeCollectGarbage("isrunning"),
-        main = (tonumber(memInfo.mainStackAvailable) or 0) / 1024,
-        ram = (tonumber(memInfo.ramAvailable) or 0) / 1024,
-        lua = (tonumber(memInfo.luaRamAvailable) or 0) / 1024,
-        bmp = (tonumber(memInfo.luaBitmapsRamAvailable) or 0) / 1024,
-        perfMain = tonumber(perf.mainStackKB) or 0,
-        perfRam = tonumber(perf.ramKB) or 0,
-        perfLua = tonumber(perf.luaRamKB) or 0,
-        perfBmp = tonumber(perf.luaBitmapsRamKB) or 0,
-        coreBytes = coreBytes,
-        cache = {
-            fileExists = countTable(fileExistenceCache),
-            dirExists = countTable(directoryExistenceCache),
-            imageBitmap = countTable(utils._imageBitmapCache),
-            imagePath = countTable(utils._imagePathCache),
-            mspFile = countTable(mspApi and mspApi._fileExistsCache),
-            mspChunk = countTable(mspApi and mspApi._chunkCache),
-            mspHelpChunk = countTable(mspApi and mspApi._helpChunkCache),
-            mspHelpData = countTable(mspApi and mspApi._helpDataCache),
-            mspDelta = countTable(mspApi and mspApi._deltaCacheByApi),
-            apidataValues = countTable(apidata and apidata.values),
-            apidataStructure = countTable(apidata and apidata.structure),
-            apidataBytes = countTable(apidata and apidata.receivedBytes),
-            apidataBytesCount = countTable(apidata and apidata.receivedBytesCount),
-            apidataPos = countTable(apidata and apidata.positionmap),
-            apidataOther = countTable(apidata and apidata.other),
-            callbackQueue = countTable(callbackQueue),
-            telemetryHits = (type(telemetryStats) == "table" and tonumber(telemetryStats.hits)) or 0,
-            telemetryMisses = (type(telemetryStats) == "table" and tonumber(telemetryStats.misses)) or 0,
-            telemetryHot = (type(telemetryStats) == "table" and tonumber(telemetryStats.hot_size)) or 0
-        },
-        time = os.clock()
-    }
-end
-
-local function logMemorySnapshot(location, label, snapshot)
-    utils.log(string.format("[mem][%s] %s cpu=%.0f%% gc=%.2fKB gcAvg=%.2fKB gcRunning=%s", location, label, snapshot.cpu, snapshot.gc, snapshot.used, tostring(snapshot.gcRunning)), "info")
-    utils.log(string.format("[mem][%s] %s luaFree=%.2fKB sysFree=%.2fKB mainStack=%.2fKB bmpFree=%.2fKB", location, label, snapshot.lua, snapshot.ram, snapshot.main, snapshot.bmp), "info")
-    utils.log(string.format("[mem][%s] %s perfLua=%.2fKB perfSys=%.2fKB perfMain=%.2fKB perfBmp=%.2fKB", location, label, snapshot.perfLua, snapshot.perfRam, snapshot.perfMain, snapshot.perfBmp), "info")
-    utils.log(string.format("[mem][%s] %s core=%s", location, label, formatCoreBytes(snapshot.coreBytes)), "info")
-    utils.log(string.format("[mem][%s] %s cache=%s", location, label, formatCacheStats(snapshot.cache)), "info")
-end
-
 function utils.reportMemoryUsage(location, phase)
-    local dev = rfsuite.preferences and rfsuite.preferences.developer
-    if not (dev and dev.memstats) then return end
+    if not rfsuite.preferences.developer.memstats then return end
     location = location or "Unknown"
 
-    local snapshot = takeMemorySnapshot()
+    local cpuInfo = (rfsuite.performance and rfsuite.performance.cpuload) or 0
+    local ramFree = (rfsuite.performance and rfsuite.performance.freeram) or 0
+    local ramUsed = (rfsuite.performance and rfsuite.performance.usedram) or 0
+    local memInfo = system.getMemoryUsage() or {}
+
+    local snapshot = {cpu = cpuInfo, free = ramFree, used = ramUsed, main = (memInfo.mainStackAvailable or 0) / 1024, ram = (memInfo.ramAvailable or 0) / 1024, lua = (memInfo.luaRamAvailable or 0) / 1024, bmp = (memInfo.luaBitmapsRamAvailable or 0) / 1024, time = os.clock()}
 
     if phase == "start" then
         utils._memProfile[location] = snapshot
         rfsuite.utils.log(string.format("[%s] Profiling started", location), "info")
-        logMemorySnapshot(location, "start", snapshot)
         return
     elseif phase == "end" then
         local startSnap = utils._memProfile[location]
@@ -715,13 +534,6 @@ function utils.reportMemoryUsage(location, phase)
             utils.log(string.format("[%s] CPU diff: %.0f -> %.0f", location, startSnap.cpu, snapshot.cpu), "info")
             utils.log(string.format("[%s] RAM Used diff: %.0f -> %.0f kB", location, startSnap.used, snapshot.used), "info")
             utils.log(string.format("[%s] Lua RAM diff: %.2f -> %.2f KB", location, startSnap.lua, snapshot.lua), "info")
-            utils.log(string.format("[%s] GC Heap diff: %.2f -> %.2f KB", location, startSnap.gc, snapshot.gc), "info")
-            utils.log(string.format("[%s] System RAM diff: %.2f -> %.2f KB", location, startSnap.ram, snapshot.ram), "info")
-            utils.log(string.format("[%s] Main stack diff: %.2f -> %.2f KB", location, startSnap.main, snapshot.main), "info")
-            utils.log(string.format("[%s] Bitmap RAM diff: %.2f -> %.2f KB", location, startSnap.bmp, snapshot.bmp), "info")
-            utils.log(string.format("[mem][%s] Delta core: %s", location, formatCoreBytesDelta(startSnap.coreBytes, snapshot.coreBytes)), "info")
-            utils.log(string.format("[mem][%s] Delta cache: %s", location, formatCacheDelta(startSnap.cache, snapshot.cache)), "info")
-            logMemorySnapshot(location, "end", snapshot)
 
             utils._memProfile[location] = nil
         else
@@ -737,12 +549,6 @@ function utils.reportMemoryUsage(location, phase)
     rfsuite.utils.log(string.format("[%s] System RAM available: %.2f KB", location, snapshot.ram), "info")
     rfsuite.utils.log(string.format("[%s] Lua RAM available: %.2f KB", location, snapshot.lua), "info")
     rfsuite.utils.log(string.format("[%s] Lua Bitmap RAM available: %.2f KB", location, snapshot.bmp), "info")
-    rfsuite.utils.log(string.format("[%s] GC Heap Used: %.2f KB", location, snapshot.gc), "info")
-    if snapshot.gcRunning ~= nil then
-        rfsuite.utils.log(string.format("[%s] GC Running: %s", location, tostring(snapshot.gcRunning)), "info")
-    end
-    rfsuite.utils.log(string.format("[%s] Core memory: %s", location, formatCoreBytes(snapshot.coreBytes)), "info")
-    rfsuite.utils.log(string.format("[%s] Cache stats: %s", location, formatCacheStats(snapshot.cache)), "info")
 end
 
 function utils.onReboot()
