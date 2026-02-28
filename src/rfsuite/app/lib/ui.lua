@@ -2989,12 +2989,13 @@ function ui.requestPage()
     processNextAPI()
 end
 
-function ui.saveSettings()
+function ui.saveSettings(sourcePage)
 
     local log = utils.log
+    local page = sourcePage or app.Page
 
     if app.pageState == app.pageStatus.saving then return end
-    if not (app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields and app.Page.apidata.api) then
+    if not (page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields and page.apidata.api) then
         log("saveSettings called without valid apidata; skipping.", "info")
         app.pageState = app.pageStatus.display
         app.triggers.isSaving = false
@@ -3008,7 +3009,7 @@ function ui.saveSettings()
 
     log("Saving data", "debug")
 
-    local mspapi = app.Page.apidata
+    local mspapi = page.apidata
     local apiList = mspapi.api
     local values = tasks.msp.api.apidata.values
 
@@ -3016,9 +3017,9 @@ function ui.saveSettings()
     local completedRequests = 0
     local enqueueFailures = 0
 
-    app.Page.apidata.apiState.isProcessing = true
+    page.apidata.apiState.isProcessing = true
 
-    if app.Page.preSave then app.Page.preSave(app.Page) end
+    if page.preSave then page.preSave(page) end
 
     for apiID, apiEntry in ipairs(apiList) do
 
@@ -3040,8 +3041,8 @@ function ui.saveSettings()
             local enableDeltaCache = nil
             if apiMeta and apiMeta.enableDeltaCache ~= nil then
                 enableDeltaCache = apiMeta.enableDeltaCache
-            elseif app.Page.apidata and app.Page.apidata.enableDeltaCache ~= nil then
-                enableDeltaCache = app.Page.apidata.enableDeltaCache
+            elseif page.apidata and page.apidata.enableDeltaCache ~= nil then
+                enableDeltaCache = page.apidata.enableDeltaCache
             end
             if type(enableDeltaCache) == "boolean" then
                 API.enableDeltaCache(enableDeltaCache)
@@ -3060,15 +3061,17 @@ function ui.saveSettings()
 
             if completedRequests == totalRequests then
                 log("All API requests have been completed!", "debug")
-                app.Page.apidata.apiState.isProcessing = false
+                if page and page.apidata and page.apidata.apiState then
+                    page.apidata.apiState.isProcessing = false
+                end
                 if enqueueFailures > 0 or app.triggers.saveFailed then
                     app.pageState = app.pageStatus.display
                     app.triggers.closeSaveFake = true
                     app.triggers.isSaving = false
                 else
                     ui.setPageDirty(false)
-                    if app.Page.postSave then app.Page.postSave(app.Page) end
-                    app.utils.settingsSaved()
+                    if page and page.postSave then page.postSave(page) end
+                    app.utils.settingsSaved(page)
                 end
             end
         end)
@@ -3077,7 +3080,7 @@ function ui.saveSettings()
         local fieldMapBitmap = {}
         local apiId = apiID
         if apiMeta and type(apiMeta.id) == "number" then apiId = apiMeta.id end
-        for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
+        for fidx, f in ipairs(page.apidata.formdata.fields) do
             if not f.bitmap then
                 if f.mspapi == apiId then fieldMap[f.apikey] = fidx end
             else
@@ -3090,12 +3093,12 @@ function ui.saveSettings()
         for k, v in pairs(payloadData) do
             local fieldIndex = fieldMap[k]
             if fieldIndex then
-                payloadData[k] = app.Page.apidata.formdata.fields[fieldIndex].value
+                payloadData[k] = page.apidata.formdata.fields[fieldIndex].value
             elseif fieldMapBitmap[k] then
                 local originalValue = tonumber(v) or 0
                 local newValue = originalValue
                 for bit, idx in pairs(fieldMapBitmap[k]) do
-                    local fieldVal = mathFloor(tonumber(app.Page.apidata.formdata.fields[idx].value) or 0)
+                    local fieldVal = mathFloor(tonumber(page.apidata.formdata.fields[idx].value) or 0)
                     local mask = 1 << (bit)
                     if fieldVal ~= 0 then
                         newValue = newValue | mask
@@ -3113,11 +3116,11 @@ function ui.saveSettings()
         end
 
         local payload = nil
-        if app.Page.preSavePayload and payloadStructure then
+        if page.preSavePayload and payloadStructure then
             local core = getApiCore()
             if core and core.buildWritePayload then
                 payload = core.buildWritePayload(apiNAME, payloadData, payloadStructure, false)
-                local adjusted = app.Page.preSavePayload(payload)
+                local adjusted = page.preSavePayload(payload)
                 if adjusted ~= nil then payload = adjusted end
             end
         end
@@ -3135,7 +3138,9 @@ function ui.saveSettings()
             app.triggers.saveFailed = true
             log("API " .. apiNAME .. " enqueue rejected: " .. tostring(reason), "info")
             if completedRequests == totalRequests then
-                app.Page.apidata.apiState.isProcessing = false
+                if page and page.apidata and page.apidata.apiState then
+                    page.apidata.apiState.isProcessing = false
+                end
                 app.pageState = app.pageStatus.display
                 app.triggers.closeSaveFake = true
                 app.triggers.isSaving = false
@@ -3150,9 +3155,10 @@ function ui.saveSettings()
 
 end
 
-function ui.rebootFc()
+function ui.rebootFc(sourcePage)
     local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
     local armedByFlags = (armflags == 1 or armflags == 3)
+    local rebootPage = sourcePage or app.Page
     if (session and session.isArmed) or armedByFlags then
         utils.log("Blocked reboot while armed", "info")
         app.pageState = app.pageStatus.display
@@ -3167,7 +3173,13 @@ function ui.rebootFc()
         command = 68,
         uuid = "ui.reboot",
         processReply = function(self, buf)
-            app.utils.invalidatePages()
+            if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
+                app.Page = rebootPage
+            end
+            -- Keep the current page object alive across reboot transitions;
+            -- loader/request logic will refresh live values when connection resumes.
+            app.utils.invalidatePages({preserveCurrentPage = true})
+            app.triggers.isReady = false
             utils.onReboot()
         end,
         simulatorResponse = {}

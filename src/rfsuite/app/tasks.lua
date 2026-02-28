@@ -211,17 +211,37 @@ local function triggerSaveDialogs()
     local app = rfsuite.app
     if app.triggers.triggerSave then
         app.triggers.triggerSave = false
+        local page = app.Page
+        if not page then
+            log("triggerSave ignored: no active page", "debug")
+            app.triggers.isSaving = false
+            return
+        end
+
+        local saveMessage = "@i18n(app.msg_save_current_page)@"
+        if page.extraMsgOnSave then
+            saveMessage = saveMessage .. "\n\n" .. page.extraMsgOnSave
+        end
+
         if rfsuite.preferences.general.save_confirm == true or rfsuite.preferences.general.save_confirm == "true" then
             form.openDialog({
                 width = nil,
                 title = "@i18n(app.msg_save_settings)@",
-                message = (app.Page.extraMsgOnSave and "@i18n(app.msg_save_current_page)@" .. "\n\n" .. app.Page.extraMsgOnSave or "@i18n(app.msg_save_current_page)@"),
+                message = saveMessage,
                 buttons = {
                     {
                         label = "@i18n(app.btn_ok)@",
                         action = function()
+                            if not app.Page and app.uiState == app.uiStatus.pages and page then
+                                app.Page = page
+                            end
+                            if not app.Page then
+                                log("Save confirm ignored: page closed before confirmation", "debug")
+                                app.triggers.isSaving = false
+                                return true
+                            end
                             app.triggers.isSaving = true
-                            app.ui.saveSettings()
+                            app.ui.saveSettings(page)
                             return true
                         end
                     }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
@@ -232,11 +252,16 @@ local function triggerSaveDialogs()
             })
         else    
                 app.triggers.isSaving = true
-                app.ui.saveSettings()            
+                app.ui.saveSettings(page)            
         end    
     elseif app.triggers.triggerSaveNoProgress then
         app.triggers.triggerSaveNoProgress = false
-        app.ui.saveSettings()
+        if not app.Page then
+            log("triggerSaveNoProgress ignored: no active page", "debug")
+            app.triggers.isSaving = false
+            return
+        end
+        app.ui.saveSettings(app.Page)
     end
 
     if app.triggers.isSaving then
