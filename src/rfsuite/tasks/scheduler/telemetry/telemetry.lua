@@ -46,9 +46,11 @@ local cache_hits, cache_misses = 0, 0
 local HOT_SIZE = 20
 local hot_list, hot_index = {}, {}
 
-local function rebuild_hot_index()
-    hot_index = {}
-    for i, k in t_ipairs(hot_list) do hot_index[k] = i end
+local function reindex_hot_from(startIndex)
+    local start = startIndex or 1
+    for i = start, #hot_list do
+        hot_index[hot_list[i]] = i
+    end
 end
 
 local function mark_hot(key)
@@ -56,7 +58,7 @@ local function mark_hot(key)
 
     if idx and idx >= 1 and idx <= #hot_list then
         t_remove(hot_list, idx)
-        rebuild_hot_index()
+        reindex_hot_from(idx)
 
     elseif #hot_list >= HOT_SIZE then
         local old = t_remove(hot_list, 1)
@@ -64,7 +66,7 @@ local function mark_hot(key)
             hot_index[old] = nil
             sensors[old] = nil
         end
-        rebuild_hot_index()
+        reindex_hot_from(1)
     end
 
     t_insert(hot_list, key)
