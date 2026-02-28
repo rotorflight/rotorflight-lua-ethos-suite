@@ -7,6 +7,12 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
+local function loadMask(path)
+    local ui = rfsuite.app and rfsuite.app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
+end
+
 local mspSignature
 local mspBytes
 local simulatorResponse
@@ -526,7 +532,7 @@ renderToolPage = function(opts)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. pvalue.image) end
+                if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. pvalue.image) end
             else
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
             end
@@ -665,7 +671,7 @@ openSelector = function()
 
         if rfsuite.preferences.general.iconsize ~= 0 then
             if rfsuite.app.gfx_buttons["esc4way"][childIdx] == nil then
-                rfsuite.app.gfx_buttons["esc4way"][childIdx] = lcd.loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. item.image)
+                rfsuite.app.gfx_buttons["esc4way"][childIdx] = loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. item.image)
             end
         else
             rfsuite.app.gfx_buttons["esc4way"][childIdx] = nil

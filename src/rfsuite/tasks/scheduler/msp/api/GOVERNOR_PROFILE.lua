@@ -4,7 +4,11 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then msp.apicore = core end
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "GOVERNOR_PROFILE"
 local MSP_API_CMD_READ = 148
@@ -24,47 +28,47 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     local governor_flags_bitmap = {
         { field = "bit0_spare" }, -- bit 0
         { field = "bit1_spare" }, -- bit 1
-        { field = "fallback_precomp",   table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.fallback_precomp)@" }, -- bit 2
-        { field = "voltage_comp",       table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.voltage_comp)@" },     -- bit 3
-        { field = "pid_spoolup",        table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.pid_spoolup)@" },      -- bit 4
+        { field = "fallback_precomp",   table = offOn, tableIdxInc = -1}, -- bit 2
+        { field = "voltage_comp",       table = offOn, tableIdxInc = -1},     -- bit 3
+        { field = "pid_spoolup",        table = offOn, tableIdxInc = -1},      -- bit 4
         { field = "bit5_spare" }, -- bit 5
-        { field = "dyn_min_throttle",   table = offOn, tableIdxInc = -1, help = "@i18n(api.GOVERNOR_PROFILE.dyn_min_throttle)@" }, -- bit 6
+        { field = "dyn_min_throttle",   table = offOn, tableIdxInc = -1}, -- bit 6
     }
 
     MSP_API_STRUCTURE_READ_DATA = {
-        { field = "governor_headspeed",        type = "U16", apiVersion = {12, 0, 9}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "@i18n(api.GOVERNOR_PROFILE.governor_headspeed)@" },
-        { field = "governor_gain",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_gain)@" },
-        { field = "governor_p_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_p_gain)@" },
-        { field = "governor_i_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {125},      min = 0,   max = 250,   default = 50,  help = "@i18n(api.GOVERNOR_PROFILE.governor_i_gain)@" },
-        { field = "governor_d_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_d_gain)@" },
-        { field = "governor_f_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_f_gain)@" },
-        { field = "governor_tta_gain",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_gain)@" },
-        { field = "governor_tta_limit",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_limit)@" },
-        { field = "governor_yaw_weight",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_yaw_weight)@" },
-        { field = "governor_cyclic_weight",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {40},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_cyclic_weight)@" },
-        { field = "governor_collective_weight",type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 100, help = "@i18n(api.GOVERNOR_PROFILE.governor_collective_weight)@" },
-        { field = "governor_max_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_max_throttle)@" },
-        { field = "governor_min_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_min_throttle)@" },
-        { field = "governor_fallback_drop",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 50,    default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_fallback_drop)@" },
-        { field = "governor_flags",            type = "U16", apiVersion = {12, 0, 9}, simResponse = {251, 3}, bitmap = governor_flags_bitmap, help = "@i18n(api.GOVERNOR_PROFILE.governor_flags)@" }
+        { field = "governor_headspeed",        type = "U16", apiVersion = {12, 0, 9}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
+        { field = "governor_gain",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 40},
+        { field = "governor_p_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 40},
+        { field = "governor_i_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {125},      min = 0,   max = 250,   default = 50},
+        { field = "governor_d_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5},        min = 0,   max = 250,   default = 0},
+        { field = "governor_f_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 10},
+        { field = "governor_tta_gain",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},        min = 0,   max = 250,   default = 0},
+        { field = "governor_tta_limit",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%"},
+        { field = "governor_yaw_weight",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 0},
+        { field = "governor_cyclic_weight",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {40},       min = 0,   max = 250,   default = 10},
+        { field = "governor_collective_weight",type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 100},
+        { field = "governor_max_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%"},
+        { field = "governor_min_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%"},
+        { field = "governor_fallback_drop",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 50,    default = 10,  unit = "%"},
+        { field = "governor_flags",            type = "U16", apiVersion = {12, 0, 9}, simResponse = {251, 3}, bitmap = governor_flags_bitmap}
     }
 
 else
 
     MSP_API_STRUCTURE_READ_DATA = {
-        { field = "governor_headspeed",           type = "U16", apiVersion = {12, 0, 6}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "@i18n(api.GOVERNOR_PROFILE.governor_headspeed)@" },
-        { field = "governor_gain",                type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_gain)@" },
-        { field = "governor_p_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 40,  help = "@i18n(api.GOVERNOR_PROFILE.governor_p_gain)@" },
-        { field = "governor_i_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {125},      min = 0,   max = 250,   default = 50,  help = "@i18n(api.GOVERNOR_PROFILE.governor_i_gain)@" },
-        { field = "governor_d_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {5},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_d_gain)@" },
-        { field = "governor_f_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_f_gain)@" },
-        { field = "governor_tta_gain",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0},        min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_gain)@" },
-        { field = "governor_tta_limit",           type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_tta_limit)@" },
-        { field = "governor_yaw_ff_weight",       type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 0,   help = "@i18n(api.GOVERNOR_PROFILE.governor_yaw_ff_weight)@" },
-        { field = "governor_cyclic_ff_weight",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {40},       min = 0,   max = 250,   default = 10,  help = "@i18n(api.GOVERNOR_PROFILE.governor_cyclic_ff_weight)@" },
-        { field = "governor_collective_ff_weight",type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 100, help = "@i18n(api.GOVERNOR_PROFILE.governor_collective_ff_weight)@" },
-        { field = "governor_max_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_max_throttle)@" },
-        { field = "governor_min_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%", help = "@i18n(api.GOVERNOR_PROFILE.governor_min_throttle)@" }
+        { field = "governor_headspeed",           type = "U16", apiVersion = {12, 0, 6}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
+        { field = "governor_gain",                type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 40},
+        { field = "governor_p_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 40},
+        { field = "governor_i_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {125},      min = 0,   max = 250,   default = 50},
+        { field = "governor_d_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {5},        min = 0,   max = 250,   default = 0},
+        { field = "governor_f_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 10},
+        { field = "governor_tta_gain",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0},        min = 0,   max = 250,   default = 0},
+        { field = "governor_tta_limit",           type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%"},
+        { field = "governor_yaw_ff_weight",       type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 0},
+        { field = "governor_cyclic_ff_weight",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {40},       min = 0,   max = 250,   default = 10},
+        { field = "governor_collective_ff_weight",type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 100},
+        { field = "governor_max_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%"},
+        { field = "governor_min_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%"}
     }
 
 end
@@ -74,90 +78,39 @@ local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.p
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
-local mspData = nil
-local mspWriteComplete = false
-local payloadData = {}
-local defaultData = {}
-local os_clock = os.clock
-local tostring = tostring
-
-local handlers = core.createHandlers()
-
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
-
-local lastWriteUUID = nil
-
-local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
-
-local function processReplyStaticRead(self, buf)
-    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-        mspData = result
-        if #buf >= (self.minBytes or 0) then
-            local getComplete = self.getCompleteHandler
-            if getComplete then
-                local complete = getComplete()
-                if complete then complete(self, buf) end
-            end
-        end
+local function parseRead(buf)
+    local result = nil
+    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
+        result = parsed
     end)
-end
-
-local function processReplyStaticWrite(self, buf)
-    mspWriteComplete = true
-
-    if self.uuid then writeDoneRegistry[self.uuid] = true end
-
-    local getComplete = self.getCompleteHandler
-    if getComplete then
-        local complete = getComplete()
-        if complete then complete(self, buf) end
+    if result == nil then
+        return nil, "parse_failed"
     end
+    return result
 end
 
-local function errorHandlerStatic(self, buf)
-    local getError = self.getErrorHandler
-    if getError then
-        local err = getError()
-        if err then err(self, buf) end
-    end
+local function buildWritePayload(payloadData, _, _, state)
+    local writeStructure = MSP_API_STRUCTURE_WRITE
+    if writeStructure == nil then return {} end
+    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
 end
 
-local function read()
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function write(suppliedPayload)
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
-
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
-    lastWriteUUID = uuid
-
-    local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
-
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function readValue(fieldName)
-    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
-    return nil
-end
-
-local function setValue(fieldName, value) payloadData[fieldName] = value end
-
-local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
-
-local function writeComplete() return mspWriteComplete end
-
-local function resetWriteStatus() mspWriteComplete = false end
-
-local function data() return mspData end
-
-local function setUUID(uuid) MSP_API_UUID = uuid end
-
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-
-local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
-
-return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}
+return factory.create({
+    name = API_NAME,
+    readCmd = MSP_API_CMD_READ,
+    writeCmd = MSP_API_CMD_WRITE,
+    minBytes = MSP_MIN_BYTES or 0,
+    readStructure = MSP_API_STRUCTURE_READ,
+    writeStructure = MSP_API_STRUCTURE_WRITE,
+    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
+    parseRead = parseRead,
+    buildWritePayload = buildWritePayload,
+    writeUuidFallback = true,
+    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end,
+    exports = {
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+    }
+})

@@ -4,12 +4,16 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then msp.apicore = core end
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "BATTERY_CONFIG"
 local MSP_API_CMD_READ = 32
 local MSP_API_CMD_WRITE = 33
-local MSP_REBUILD_ON_WRITE = true
+local MSP_REBUILD_ON_WRITE = false
 
 local tblBatterySource = {
     [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
@@ -23,112 +27,64 @@ local tblBatteryType = {
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCellCount", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6, help = "@i18n(api.BATTERY_CONFIG.batteryCellCount)@"},
-    {field = "voltageMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.voltageMeterSource)@"},
-    {field = "currentMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.currentMeterSource)@"},
-    {field = "vbatmincellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {74, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.3, help = "@i18n(api.BATTERY_CONFIG.vbatmincellvoltage)@"},
-    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {164, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.2, help = "@i18n(api.BATTERY_CONFIG.vbatmaxcellvoltage)@"},
-    {field = "vbatfullcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1, help = "@i18n(api.BATTERY_CONFIG.vbatfullcellvoltage)@"},
-    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5, help = "@i18n(api.BATTERY_CONFIG.vbatwarningcellvoltage)@"},
-    {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}, help = "@i18n(api.BATTERY_CONFIG.lvcPercentage)@"},
-    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%", help = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@"},
-    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 0, 9}, simResponse = {232, 3}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 5}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 0, 9}, simResponse = {64, 6}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 0, 9}, simResponse = {108, 7}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 0, 9}, simResponse = {152, 8}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 0, 9}, simResponse = {196, 9}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0, help = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@"},
-    {field = "batteryType", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"},
+    {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6},
+    {field = "voltageMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1},
+    {field = "currentMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1},
+    {field = "vbatmincellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {74, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.3},
+    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {164, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.2},
+    {field = "vbatfullcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1},
+    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5},
+    {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}},
+    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%"},
+    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 0, 9}, simResponse = {232, 3}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 5}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 0, 9}, simResponse = {64, 6}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 0, 9}, simResponse = {108, 7}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 0, 9}, simResponse = {152, 8}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 0, 9}, simResponse = {196, 9}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryType", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1},
+
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
-local MSP_API_STRUCTURE_WRITE = {}
-for _, v in ipairs(MSP_API_STRUCTURE_READ) do
-    if v.field ~= "batteryType" then
-        MSP_API_STRUCTURE_WRITE[#MSP_API_STRUCTURE_WRITE + 1] = v
-    end
-end
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
-local mspData = nil
-local mspWriteComplete = false
-local payloadData = {}
-local os_clock = os.clock
-local tostring = tostring
-local log = rfsuite.utils.log
-
-local handlers = core.createHandlers()
-
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
-
-local function processReplyStaticRead(self, buf)
-    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-        mspData = result
-        if #buf >= (self.minBytes or 0) then
-            local getComplete = self.getCompleteHandler
-            if getComplete then
-                local complete = getComplete()
-                if complete then complete(self, buf) end
-            end
-        end
+local function parseRead(buf)
+    local result = nil
+    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
+        result = parsed
     end)
-end
-
-local function processReplyStaticWrite(self, buf)
-    mspWriteComplete = true
-
-    local getComplete = self.getCompleteHandler
-    if getComplete then
-        local complete = getComplete()
-        if complete then complete(self, buf) end
+    if result == nil then
+        return nil, "parse_failed"
     end
+    return result
 end
 
-local function errorHandlerStatic(self, buf)
-    local getError = self.getErrorHandler
-    if getError then
-        local err = getError()
-        if err then err(self, buf) end
-    end
+local function buildWritePayload(payloadData, _, _, state)
+    local writeStructure = MSP_API_STRUCTURE_WRITE
+    if writeStructure == nil then return {} end
+    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
 end
 
-local function read()
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function write(suppliedPayload)
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
-
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
-
-    local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
-
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function readValue(fieldName)
-    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
-    return nil
-end
-
-local function setValue(fieldName, value) payloadData[fieldName] = value end
-
-local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
-
-local function writeComplete() return mspWriteComplete end
-
-local function resetWriteStatus() mspWriteComplete = false end
-
-local function data() return mspData end
-
-local function setUUID(uuid) MSP_API_UUID = uuid end
-
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-
-local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
-
-return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}
+return factory.create({
+    name = API_NAME,
+    readCmd = MSP_API_CMD_READ,
+    writeCmd = MSP_API_CMD_WRITE,
+    minBytes = MSP_MIN_BYTES or 0,
+    readStructure = MSP_API_STRUCTURE_READ,
+    writeStructure = MSP_API_STRUCTURE_WRITE,
+    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
+    parseRead = parseRead,
+    buildWritePayload = buildWritePayload,
+    writeUuidFallback = true,
+    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end,
+    exports = {
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+    }
+})

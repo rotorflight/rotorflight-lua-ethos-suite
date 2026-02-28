@@ -72,6 +72,25 @@ local userpref_defaults = {
         theme_inflight = "system/default",
         theme_postflight = "system/default"
     },
+    activelook = {
+        offset_x = 0,
+        offset_y = 0,
+        layout_preflight = "stacked_three",
+        layout_inflight = "one_top_two_bottom",
+        layout_postflight = "two_top_two_bottom",
+        preflight_1 = "governor",
+        preflight_2 = "armed",
+        preflight_3 = "flightmode",
+        preflight_4 = "off",
+        inflight_1 = "current",
+        inflight_2 = "voltage",
+        inflight_3 = "fuel",
+        inflight_4 = "timer",
+        postflight_1 = "current",
+        postflight_2 = "voltage",
+        postflight_3 = "fuel",
+        postflight_4 = "timer"
+    },
     events = {
         armflags = true,
         voltage = true,
@@ -256,22 +275,35 @@ local function register_widgets()
                 end
                 rfsuite.widgets[base] = scriptModule
 
-                rfsuite.sysIndex['widget_' .. v.folder] = system.registerWidget({
-                    name = v.name,
-                    key = v.key,
-                    event = scriptModule.event,
-                    create = scriptModule.create,
-                    paint = scriptModule.paint,
-                    wakeup = scriptModule.wakeup,
-                    build = scriptModule.build,
-                    close = scriptModule.close,
-                    configure = scriptModule.configure,
-                    read = scriptModule.read,
-                    write = scriptModule.write,
-                    persistent = scriptModule.persistent or false,
-                    menu = scriptModule.menu,
-                    title = scriptModule.title
-                })
+                if v.type == "glasses" then
+                    -- we only register glasses widgets if the system supports them
+                    if system.registerGlassesWidget then
+                        rfsuite.sysIndex['widget_' .. v.folder] = system.registerGlassesWidget({
+                            key = v.key,
+                            name = v.name,
+                            create = scriptModule.create,
+                            build = scriptModule.build,
+                            wakeup = scriptModule.wakeup
+                        })
+                    end
+                else
+                    rfsuite.sysIndex['widget_' .. v.folder] = system.registerWidget({
+                        name = v.name,
+                        key = v.key,
+                        event = scriptModule.event,
+                        create = scriptModule.create,
+                        paint = scriptModule.paint,
+                        wakeup = scriptModule.wakeup,
+                        build = scriptModule.build,
+                        close = scriptModule.close,
+                        configure = scriptModule.configure,
+                        read = scriptModule.read,
+                        write = scriptModule.write,
+                        persistent = scriptModule.persistent or false,
+                        menu = scriptModule.menu,
+                        title = scriptModule.title
+                    })
+                end    
             else
                 rfsuite.utils.log("[widgets] widget did not return a module table: " .. path, "info")
             end

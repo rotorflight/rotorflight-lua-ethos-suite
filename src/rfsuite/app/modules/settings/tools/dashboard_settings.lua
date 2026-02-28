@@ -9,6 +9,12 @@ local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashbo
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
 local lcd = lcd
 
+local function loadMask(path)
+    local ui = rfsuite.app and rfsuite.app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
+end
+
 local enableWakeup = false
 local prevConnectedState = nil
 local onNavMenu
@@ -78,7 +84,7 @@ local function openPage(opts)
                 else
                     icon = themesUserPath .. theme.folder .. "/icon.png"
                 end
-                rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] = lcd.loadMask(icon)
+                rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] = loadMask(icon)
             end
 
             rfsuite.app.formFields[idx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {

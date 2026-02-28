@@ -10,6 +10,18 @@ local lcd = lcd
 local container = {}
 local MENU_ONLY_NAV_BUTTONS = {menu = true, save = false, reload = false, tool = false, help = false}
 
+local function wipeTable(t)
+    if type(t) ~= "table" then return end
+    for k in pairs(t) do t[k] = nil end
+end
+
+local function loadMaskCached(app, path)
+    if type(path) ~= "string" or path == "" then return nil end
+    local ui = app and app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
+end
+
 local function isManifestMenuRouterScript(script)
     return type(script) == "string" and (script == "manifest_menu/menu.lua" or script == "app/modules/manifest_menu/menu.lua")
 end
@@ -199,8 +211,8 @@ function container.create(cfg)
         app.gfx_buttons[cfg.moduleKey] = app.gfx_buttons[cfg.moduleKey] or {}
         prefs.menulastselected[cfg.moduleKey] = prefs.menulastselected[cfg.moduleKey] or 1
 
-        if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-        if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+        wipeTable(app.formFields)
+        wipeTable(app.formLines)
 
         app.formFieldsOffline = {}
         app.formFieldsBGTask = {}
@@ -226,7 +238,7 @@ function container.create(cfg)
                 if prefs.general.iconsize ~= 0 then
                     local iconPath = iconPathFor(cfg, item)
                     if iconPath then
-                        app.gfx_buttons[cfg.moduleKey][i] = app.gfx_buttons[cfg.moduleKey][i] or lcd.loadMask(iconPath)
+                        app.gfx_buttons[cfg.moduleKey][i] = loadMaskCached(app, iconPath)
                     else
                         app.gfx_buttons[cfg.moduleKey][i] = nil
                     end

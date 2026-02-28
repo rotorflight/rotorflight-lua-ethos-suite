@@ -1,19 +1,19 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
+  Copyright (C) 2026 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then msp.apicore = core end
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "ESC_PARAMETERS_AM32"
-local MSP_API_CMD_READ = 217
-local MSP_API_CMD_WRITE = 218
-local MSP_REBUILD_ON_WRITE = false
-local MSP_SIGNATURE = 0xC2 
+local MSP_SIGNATURE = 0xC2
 local MSP_HEADER_BYTES = 2
 
--- tables used in structure below
 local motorDirection = {"Normal", "Reversed"}
 local timingAdvance = {"0°", "7.5°", "15°", "22.5°"}
 local onOff = {"Off", "On"}
@@ -49,10 +49,10 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "complementary_pwm",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "variable_pwm_frequency",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = variablePwm},
     {field = "stuck_rotor_protection",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {1}, tableIdxInc = -1, table = onOff},
-    {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {26}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
+    {field = "timing_advance",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {26}, tableIdxInc = -1, table = timingAdvance},
     {field = "pwm_frequency",             type = "U8",  apiVersion = {12, 0, 9}, unit = "kHz", simResponse = {16}, min = 8, max = 144, step = 1},
     {field = "startup_power",             type = "U8",  apiVersion = {12, 0, 9}, unit = "%", simResponse = {50}, default = 100, min = 50, max = 150, step = 1},
-    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, unit = "KV", simResponse = {12}, min = 20, max = 10220, step = 40}, -- stored as byte; decode as (byte*40)+20
+    {field = "motor_kv",                  type = "U8",  apiVersion = {12, 0, 9}, unit = "KV", simResponse = {12}, min = 20, max = 10220, step = 40},
     {field = "motor_poles",               type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}, default = 14, min = 2, max = 36, step = 1},
     {field = "brake_on_stop",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}, tableIdxInc = -1, table = brakeOnStop},
     {field = "stall_protection",          type = "U8",  apiVersion = {12, 0, 9}, simResponse = {1}, tableIdxInc = -1, table = onOff},
@@ -78,26 +78,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function processedData() rfsuite.utils.log("Processed data", "debug") end
-
-local mspData = nil
-local mspWriteComplete = false
-local payloadData = {}
-local defaultData = {}
-local math_floor = math.floor
-local log = rfsuite.utils.log
-
-local handlers = core.createHandlers()
-
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
-
-local lastWriteUUID = nil
-
-local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
 
 local function clamp(value, min, max)
     if value < min then return min end
@@ -108,17 +89,17 @@ end
 local function normalizeTimingAdvance(raw)
     if raw == nil then return nil, "unknown", nil end
     if raw >= 10 and raw <= 42 then
-        local norm = clamp(math_floor((raw - 10) / 8 + 0.5), 0, 3)
+        local norm = clamp(math.floor((raw - 10) / 8 + 0.5), 0, 3)
         return norm, "new", raw
     end
     if raw >= 0 and raw <= 3 then
         return raw, "legacy", raw
     end
-    return clamp(math_floor(raw or 0), 0, 3), "unknown", raw
+    return clamp(math.floor(raw or 0), 0, 3), "unknown", raw
 end
 
 local function encodeTimingAdvance(normalized, encoding)
-    local n = clamp(math_floor((normalized or 0) + 0.5), 0, 3)
+    local n = clamp(math.floor((normalized or 0) + 0.5), 0, 3)
     if encoding == "new" then
         return 10 + (n * 8)
     end
@@ -132,7 +113,7 @@ end
 
 local function encodeMotorKv(kv)
     if kv == nil then return nil end
-    return clamp(math_floor(((kv - 20) / 40) + 0.5), 0, 255)
+    return clamp(math.floor(((kv - 20) / 40) + 0.5), 0, 255)
 end
 
 local function normalizeServoLow(raw)
@@ -142,7 +123,7 @@ end
 
 local function encodeServoLow(value)
     if value == nil then return nil end
-    return clamp(math_floor(((value - 750) / 2) + 0.5), 0, 255)
+    return clamp(math.floor(((value - 750) / 2) + 0.5), 0, 255)
 end
 
 local function normalizeServoHigh(raw)
@@ -152,7 +133,7 @@ end
 
 local function encodeServoHigh(value)
     if value == nil then return nil end
-    return clamp(math_floor(((value - 1750) / 2) + 0.5), 0, 255)
+    return clamp(math.floor(((value - 1750) / 2) + 0.5), 0, 255)
 end
 
 local function normalizeServoNeutral(raw)
@@ -162,7 +143,7 @@ end
 
 local function encodeServoNeutral(value)
     if value == nil then return nil end
-    return clamp(math_floor((value - 1374) + 0.5), 0, 255)
+    return clamp(math.floor((value - 1374) + 0.5), 0, 255)
 end
 
 local function normalizeLowVoltageThreshold(raw)
@@ -172,7 +153,7 @@ end
 
 local function encodeLowVoltageThreshold(value)
     if value == nil then return nil end
-    return clamp(math_floor((value - 250) + 0.5), 0, 255)
+    return clamp(math.floor((value - 250) + 0.5), 0, 255)
 end
 
 local function normalizeCurrentLimit(raw)
@@ -182,168 +163,147 @@ end
 
 local function encodeCurrentLimit(value)
     if value == nil then return nil end
-    return clamp(math_floor((value / 2) + 0.5), 0, 255)
+    return clamp(math.floor((value / 2) + 0.5), 0, 255)
 end
 
-local function resolveTimeout(isWrite)
-    if MSP_API_MSG_TIMEOUT ~= nil then return MSP_API_MSG_TIMEOUT end
-    local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol
-    if not protocol then return nil end
-    if isWrite then return protocol.saveTimeout end
-    return protocol.pageReqTimeout
+local function resolveTimeout(state, isWrite)
+    if state.timeout ~= nil then return state.timeout end
+    local protocolRef = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol
+    if not protocolRef then return nil end
+    if isWrite then return protocolRef.saveTimeout end
+    return protocolRef.pageReqTimeout
 end
 
-local function processReplyStaticRead(self, buf)
-    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-        mspData = result
-        if mspData and mspData.parsed then
-            local norm, encoding, raw = normalizeTimingAdvance(mspData.parsed.timing_advance)
-            mspData.parsed.timing_advance = norm
-            mspData.other = mspData.other or {}
-            mspData.other.timing_advance_encoding = encoding
-            mspData.other.timing_advance_raw = raw
-            if encoding == "unknown" and raw ~= nil then
-                log("AM32 timing_advance raw value out of range: " .. tostring(raw), "info")
-            end
-            local rawKv = mspData.parsed.motor_kv
-            if rawKv ~= nil then
-                mspData.parsed.motor_kv = normalizeMotorKv(rawKv)
-                mspData.other.motor_kv_raw = rawKv
-            end
-            local rawServoLow = mspData.parsed.servo_low_threshold
-            if rawServoLow ~= nil then
-                mspData.parsed.servo_low_threshold = normalizeServoLow(rawServoLow)
-                mspData.other.servo_low_threshold_raw = rawServoLow
-            end
-            local rawServoHigh = mspData.parsed.servo_high_threshold
-            if rawServoHigh ~= nil then
-                mspData.parsed.servo_high_threshold = normalizeServoHigh(rawServoHigh)
-                mspData.other.servo_high_threshold_raw = rawServoHigh
-            end
-            local rawServoNeutral = mspData.parsed.servo_neutral
-            if rawServoNeutral ~= nil then
-                mspData.parsed.servo_neutral = normalizeServoNeutral(rawServoNeutral)
-                mspData.other.servo_neutral_raw = rawServoNeutral
-            end
-            local rawLowVoltage = mspData.parsed.low_voltage_threshold
-            if rawLowVoltage ~= nil then
-                mspData.parsed.low_voltage_threshold = normalizeLowVoltageThreshold(rawLowVoltage)
-                mspData.other.low_voltage_threshold_raw = rawLowVoltage
-            end
-            local rawCurrentLimit = mspData.parsed.current_limit
-            if rawCurrentLimit ~= nil then
-                mspData.parsed.current_limit = normalizeCurrentLimit(rawCurrentLimit)
-                mspData.other.current_limit_raw = rawCurrentLimit
-            end
-        end
-        if #buf >= (self.minBytes or 0) then
-            local getComplete = self.getCompleteHandler
-            if getComplete then
-                local complete = getComplete()
-                if complete then complete(self, buf) end
-            end
-        end
+local function parseRead(buf)
+    local result = nil
+
+    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
+        result = parsed
     end)
-end
 
-local function processReplyStaticWrite(self, buf)
-    mspWriteComplete = true
-
-    if self.uuid then writeDoneRegistry[self.uuid] = true end
-
-    local getComplete = self.getCompleteHandler
-    if getComplete then
-        local complete = getComplete()
-        if complete then complete(self, buf) end
-    end
-end
-
-local function errorHandlerStatic(self, buf)
-    local getError = self.getErrorHandler
-    if getError then
-        local err = getError()
-        if err then err(self, buf) end
-    end
-end
-
-local function read()
-    if MSP_API_CMD_READ == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
-        return
+    if not (result and result.parsed) then
+        return nil, "parse_failed"
     end
 
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = resolveTimeout(false), getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
+    local parsed = result.parsed
+    local norm, encoding, raw = normalizeTimingAdvance(parsed.timing_advance)
+    parsed.timing_advance = norm
 
-local function write(suppliedPayload)
-    if MSP_API_CMD_WRITE == nil then
-        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
-        return
+    result.other = result.other or {}
+    result.other.timing_advance_encoding = encoding
+    result.other.timing_advance_raw = raw
+
+    if encoding == "unknown" and raw ~= nil and rfsuite.utils and rfsuite.utils.log then
+        rfsuite.utils.log("AM32 timing_advance raw value out of range: " .. tostring(raw), "info")
     end
 
+    local rawKv = parsed.motor_kv
+    if rawKv ~= nil then
+        parsed.motor_kv = normalizeMotorKv(rawKv)
+        result.other.motor_kv_raw = rawKv
+    end
+
+    local rawServoLow = parsed.servo_low_threshold
+    if rawServoLow ~= nil then
+        parsed.servo_low_threshold = normalizeServoLow(rawServoLow)
+        result.other.servo_low_threshold_raw = rawServoLow
+    end
+
+    local rawServoHigh = parsed.servo_high_threshold
+    if rawServoHigh ~= nil then
+        parsed.servo_high_threshold = normalizeServoHigh(rawServoHigh)
+        result.other.servo_high_threshold_raw = rawServoHigh
+    end
+
+    local rawServoNeutral = parsed.servo_neutral
+    if rawServoNeutral ~= nil then
+        parsed.servo_neutral = normalizeServoNeutral(rawServoNeutral)
+        result.other.servo_neutral_raw = rawServoNeutral
+    end
+
+    local rawLowVoltage = parsed.low_voltage_threshold
+    if rawLowVoltage ~= nil then
+        parsed.low_voltage_threshold = normalizeLowVoltageThreshold(rawLowVoltage)
+        result.other.low_voltage_threshold_raw = rawLowVoltage
+    end
+
+    local rawCurrentLimit = parsed.current_limit
+    if rawCurrentLimit ~= nil then
+        parsed.current_limit = normalizeCurrentLimit(rawCurrentLimit)
+        result.other.current_limit_raw = rawCurrentLimit
+    end
+
+    return result
+end
+
+local function buildWritePayload(payloadData, mspData, _, state)
     local effectivePayload = payloadData
-    if suppliedPayload == nil then
-        local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
-        if effectivePayload and (effectivePayload.timing_advance ~= nil or effectivePayload.motor_kv ~= nil or effectivePayload.servo_low_threshold ~= nil or effectivePayload.servo_high_threshold ~= nil or effectivePayload.servo_neutral ~= nil or effectivePayload.low_voltage_threshold ~= nil or effectivePayload.current_limit ~= nil) then
-            local cloned = {}
-            for k, v in pairs(effectivePayload) do cloned[k] = v end
-            if cloned.timing_advance ~= nil then
-                cloned.timing_advance = encodeTimingAdvance(cloned.timing_advance, encoding)
-            end
-            if cloned.motor_kv ~= nil then
-                cloned.motor_kv = encodeMotorKv(cloned.motor_kv)
-            end
-            if cloned.servo_low_threshold ~= nil then
-                cloned.servo_low_threshold = encodeServoLow(cloned.servo_low_threshold)
-            end
-            if cloned.servo_high_threshold ~= nil then
-                cloned.servo_high_threshold = encodeServoHigh(cloned.servo_high_threshold)
-            end
-            if cloned.servo_neutral ~= nil then
-                cloned.servo_neutral = encodeServoNeutral(cloned.servo_neutral)
-            end
-            if cloned.low_voltage_threshold ~= nil then
-                cloned.low_voltage_threshold = encodeLowVoltageThreshold(cloned.low_voltage_threshold)
-            end
-            if cloned.current_limit ~= nil then
-                cloned.current_limit = encodeCurrentLimit(cloned.current_limit)
-            end
-            effectivePayload = cloned
+
+    local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
+    if effectivePayload and (
+        effectivePayload.timing_advance ~= nil or
+        effectivePayload.motor_kv ~= nil or
+        effectivePayload.servo_low_threshold ~= nil or
+        effectivePayload.servo_high_threshold ~= nil or
+        effectivePayload.servo_neutral ~= nil or
+        effectivePayload.low_voltage_threshold ~= nil or
+        effectivePayload.current_limit ~= nil
+    ) then
+        local cloned = {}
+        for k, v in pairs(effectivePayload) do cloned[k] = v end
+
+        if cloned.timing_advance ~= nil then
+            cloned.timing_advance = encodeTimingAdvance(cloned.timing_advance, encoding)
         end
-    else
-        effectivePayload = suppliedPayload
+        if cloned.motor_kv ~= nil then
+            cloned.motor_kv = encodeMotorKv(cloned.motor_kv)
+        end
+        if cloned.servo_low_threshold ~= nil then
+            cloned.servo_low_threshold = encodeServoLow(cloned.servo_low_threshold)
+        end
+        if cloned.servo_high_threshold ~= nil then
+            cloned.servo_high_threshold = encodeServoHigh(cloned.servo_high_threshold)
+        end
+        if cloned.servo_neutral ~= nil then
+            cloned.servo_neutral = encodeServoNeutral(cloned.servo_neutral)
+        end
+        if cloned.low_voltage_threshold ~= nil then
+            cloned.low_voltage_threshold = encodeLowVoltageThreshold(cloned.low_voltage_threshold)
+        end
+        if cloned.current_limit ~= nil then
+            cloned.current_limit = encodeCurrentLimit(cloned.current_limit)
+        end
+
+        effectivePayload = cloned
     end
 
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, effectivePayload, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
-
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock())
-    lastWriteUUID = uuid
-
-    local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = resolveTimeout(true), getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
-
-    return rfsuite.tasks.msp.mspQueue:add(message)
+    return core.buildWritePayload(API_NAME, effectivePayload, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
 end
 
-local function readValue(fieldName)
-    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
-    return nil
-end
-
-local function setValue(fieldName, value) payloadData[fieldName] = value end
-
-local function readComplete() return mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES end
-
-local function writeComplete() return mspWriteComplete end
-
-local function resetWriteStatus() mspWriteComplete = false end
-
-local function data() return mspData end
-
-local function setUUID(uuid) MSP_API_UUID = uuid end
-
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-
-local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
-
-return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout, mspSignature = MSP_SIGNATURE, mspHeaderBytes = MSP_HEADER_BYTES, simulatorResponse = MSP_API_SIMULATOR_RESPONSE}
+return factory.create({
+    name = API_NAME,
+    readCmd = 217,
+    writeCmd = 218,
+    minBytes = MSP_MIN_BYTES,
+    readStructure = MSP_API_STRUCTURE_READ,
+    writeStructure = MSP_API_STRUCTURE_WRITE,
+    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE,
+    parseRead = parseRead,
+    buildWritePayload = buildWritePayload,
+    writeUuidFallback = true,
+    initialRebuildOnWrite = false,
+    resolveReadTimeout = function(state)
+        return resolveTimeout(state, false)
+    end,
+    resolveWriteTimeout = function(state)
+        return resolveTimeout(state, true)
+    end,
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end,
+    exports = {
+        mspSignature = MSP_SIGNATURE,
+        mspHeaderBytes = MSP_HEADER_BYTES,
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+    }
+})
