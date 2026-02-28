@@ -959,14 +959,26 @@ function ui.disableAllFields()
 
 
     for _, field in pairs(app.formFields) do
-        if type(field) == "userdata" then field:enable(false) end
+        if type(field) == "userdata" then
+            local ok, enableFn = pcall(function() return field.enable end)
+            if ok and type(enableFn) == "function" then
+                field:enable(false)
+            end
+        end
     end
 end
 
 function ui.enableAllFields()
 
 
-    for _, field in pairs(app.formFields) do if type(field) == "userdata" then field:enable(true) end end
+    for _, field in pairs(app.formFields) do
+        if type(field) == "userdata" then
+            local ok, enableFn = pcall(function() return field.enable end)
+            if ok and type(enableFn) == "function" then
+                field:enable(true)
+            end
+        end
+    end
 end
 
 function ui.disableAllNavigationFields()
