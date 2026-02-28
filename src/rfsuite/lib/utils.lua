@@ -335,6 +335,16 @@ function utils.round(num, places)
     end
 end
 
+function utils.decimalInc(dec)
+    if dec == nil then
+        return 1
+    elseif dec > 0 and dec <= 10 then
+        return 10 ^ dec
+    else
+        return nil
+    end
+end
+
 function utils.joinTableItems(tbl, delimiter, maxItems)
     if type(tbl) ~= "table" then
         if tbl == nil then return "" end

@@ -16,6 +16,7 @@ local tableConcat = table.concat
 local mathFloor = math.floor
 local app = rfsuite.app
 local session = rfsuite.session
+local rfutils = rfsuite.utils
 
 local ui = {}
 
@@ -1681,7 +1682,7 @@ function ui.fieldNumber(i,lf)
 
     if f.default then
         if f.offset then f.default = f.default + f.offset end
-        local default = f.default * app.utils.decimalInc(f.decimals)
+        local default = f.default * rfutils.decimalInc(f.decimals)
         if f.mult then default = default * f.mult end
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end
@@ -2632,7 +2633,7 @@ function ui.injectApiAttributes(formField, f, v)
     if v.default and not f.default then
         f.default = v.default
         if f.offset then f.default = f.default + f.offset end
-        local default = f.default * app.utils.decimalInc(f.decimals)
+        local default = f.default * rfutils.decimalInc(f.decimals)
         if f.mult then default = default * f.mult end
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end

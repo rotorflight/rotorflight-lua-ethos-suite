@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local lcd = lcd
+local rfutils = rfsuite.utils
 
 local tables = {}
 
@@ -183,8 +184,8 @@ local function openPage(opts)
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-            local minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
-            local maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
+            local minValue = f.min * rfutils.decimalInc(f.decimals)
+            local maxValue = f.max * rfutils.decimalInc(f.decimals)
             if f.mult ~= nil then
                 minValue = minValue * f.mult
                 maxValue = maxValue * f.mult
@@ -218,7 +219,7 @@ local function openPage(opts)
                 f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
             end)
             if f.default ~= nil then
-                local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
+                local default = f.default * rfutils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
                 if f.scale ~= nil then default = math.floor(default / f.scale) end
                 rfsuite.app.formFields[i]:default(default)

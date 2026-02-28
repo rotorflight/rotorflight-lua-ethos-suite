@@ -52,7 +52,7 @@ end
 function utils.getFieldValue(f)
     local v = f.value or 0
 
-    if f.decimals then v = rfutils.round(v * app.utils.decimalInc(f.decimals), 2) end
+    if f.decimals then v = rfutils.round(v * rfutils.decimalInc(f.decimals), 2) end
 
     if f.offset then v = v + f.offset end
 
@@ -65,7 +65,7 @@ function utils.saveFieldValue(f, value)
     if value then
         if f.offset then value = value - f.offset end
         if f.decimals then
-            f.value = value / app.utils.decimalInc(f.decimals)
+            f.value = value / rfutils.decimalInc(f.decimals)
         else
             f.value = value
         end
@@ -79,20 +79,11 @@ end
 
 function utils.scaleValue(value, f)
     if not value then return nil end
-    local v = value * app.utils.decimalInc(f.decimals)
+    local v = value * rfutils.decimalInc(f.decimals)
     if f.scale then v = v / f.scale end
     return rfutils.round(v)
 end
 
-function utils.decimalInc(dec)
-    if dec == nil then
-        return 1
-    elseif dec > 0 and dec <= 10 then
-        return 10 ^ dec
-    else
-        return nil
-    end
-end
 
 function utils.getInlinePositions(f)
 
