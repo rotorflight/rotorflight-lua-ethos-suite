@@ -1,11 +1,10 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
 
--- Optimized locals
 local loadfile = loadfile
 local table_insert = table.insert
 local table_remove = table.remove
@@ -13,213 +12,260 @@ local tostring = tostring
 local type = type
 local pairs = pairs
 local ipairs = ipairs
+local string_format = string.format
 
-local apiLoader = {}
+local utils = rfsuite.utils
 
--- Caches to avoid repeated disk checks and module loads
-apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
-apiLoader._chunkCache      = apiLoader._chunkCache or {}      -- apiName -> compiled loader function
-apiLoader._chunkCacheOrder = apiLoader._chunkCacheOrder or {} -- MRU list (optional)
-apiLoader._chunkCacheMax   = apiLoader._chunkCacheMax or 5    -- optional cap
-apiLoader._deltaCacheDefault = apiLoader._deltaCacheDefault
-if apiLoader._deltaCacheDefault == nil then apiLoader._deltaCacheDefault = true end
-apiLoader._deltaCacheByApi   = apiLoader._deltaCacheByApi or {}
+local api = {}
 
-local apidir   = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
-local api_path = apidir
+api._fileExistsCache = {}
+api._chunkCache = {}
+api._chunkCacheOrder = {}
+api._chunkCacheMax = 5
+api._deltaCacheDefault = true
+api._deltaCacheByApi = {}
+api._ported = {}
+api.apidata = {}
+api._core = nil
 
-local firstLoadAPI = true -- Used to lazily bind helper references
+local defaultApiPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
+local defaultCorePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"
 
-local mspHelper
-local utils
-local callback
-
-function apiLoader.enableDeltaCache(enable)
-    if enable == nil then return end
-    apiLoader._deltaCacheDefault = (enable == true)
+local function currentApiEngine()
+    local tasks = rfsuite and rfsuite.tasks
+    local msp = tasks and tasks.msp
+    if msp and msp.getApiEngine then
+        return msp.getApiEngine()
+    end
+    return "v2"
 end
 
-function apiLoader.setApiDeltaCache(apiName, enable)
-    if not apiName then return end
-    if enable == nil then
-        apiLoader._deltaCacheByApi[apiName] = nil
-        return
-    end
-    apiLoader._deltaCacheByApi[apiName] = (enable == true)
+local function logApiIo(apiName, op, source)
+    if not (utils and utils.log) then return end
+    utils.log(
+        string_format(
+            "[msp] %s %s via engine=%s source=%s",
+            tostring(op),
+            tostring(apiName),
+            tostring(currentApiEngine()),
+            tostring(source or "unknown")
+        ),
+        "info"
+    )
 end
 
-function apiLoader.isDeltaCacheEnabled(apiName)
-    if apiName and apiLoader._deltaCacheByApi[apiName] ~= nil then
-        return apiLoader._deltaCacheByApi[apiName]
+local function normalizePath(value)
+    if type(value) ~= "string" or value == "" then return nil end
+    if value:sub(1, 8) == "SCRIPTS:/" then
+        return value
     end
-    local app = rfsuite and rfsuite.app
-    if not (app and app.guiIsRunning) then
-        return false
-    end
-    return apiLoader._deltaCacheDefault == true
+    return defaultApiPath .. value
 end
 
--- Retrieve (and cache) compiled chunk for an API module
-local function getChunk(apiName, apiFilePath)
-    local chunk = apiLoader._chunkCache[apiName]
-    if chunk then
-        -- MRU touch (optional)
-        for i, name in ipairs(apiLoader._chunkCacheOrder) do
-            if name == apiName then table_remove(apiLoader._chunkCacheOrder, i); break end
-        end
-        table_insert(apiLoader._chunkCacheOrder, apiName)
-        return chunk
-    end
+local function resolvePath(apiName)
+    return normalizePath(api._ported[apiName]) or (defaultApiPath .. apiName .. ".lua")
+end
 
-    -- Compile from disk once
-    local loaderFn, err = loadfile(apiFilePath)
-    if not loaderFn then
-        utils.log("Error compiling API '" .. apiName .. "': " .. tostring(err), "debug")
+local function ensureCore()
+    if api._core then return api._core end
+
+    local coreLoader, err = loadfile(defaultCorePath)
+    if not coreLoader then
+        utils.log("[api] core compile failed: " .. tostring(err), "info")
         return nil
     end
 
-    apiLoader._chunkCache[apiName] = loaderFn
-    table_insert(apiLoader._chunkCacheOrder, apiName)
+    local core = coreLoader()
+    api._core = core
 
-    -- Enforce max (optional)
-    if #apiLoader._chunkCacheOrder > apiLoader._chunkCacheMax then
-        local oldest = table_remove(apiLoader._chunkCacheOrder, 1)
-        apiLoader._chunkCache[oldest] = nil
+    local tasks = rfsuite and rfsuite.tasks
+    local msp = tasks and tasks.msp
+    if msp then
+        msp.apicore = core
+    end
+
+    return core
+end
+
+local function cachedFileExists(path)
+    if api._fileExistsCache[path] == nil then
+        api._fileExistsCache[path] = utils.file_exists(path)
+    end
+    return api._fileExistsCache[path]
+end
+
+local function getChunk(apiName, path)
+    local chunk = api._chunkCache[apiName]
+    if chunk then
+        for i, name in ipairs(api._chunkCacheOrder) do
+            if name == apiName then
+                table_remove(api._chunkCacheOrder, i)
+                break
+            end
+        end
+        table_insert(api._chunkCacheOrder, apiName)
+        return chunk
+    end
+
+    local loaderFn, err = loadfile(path)
+    if not loaderFn then
+        utils.log("[api] compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
+        return nil
+    end
+
+    api._chunkCache[apiName] = loaderFn
+    table_insert(api._chunkCacheOrder, apiName)
+
+    if #api._chunkCacheOrder > api._chunkCacheMax then
+        local oldest = table_remove(api._chunkCacheOrder, 1)
+        api._chunkCache[oldest] = nil
     end
 
     return loaderFn
 end
 
--- Cached file-exists wrapper
-local function cached_file_exists(path)
-    if apiLoader._fileExistsCache[path] == nil then
-        apiLoader._fileExistsCache[path] = utils.file_exists(path)
+local function validateModule(apiName, module)
+    if type(module) ~= "table" then
+        return nil, "module_not_table"
     end
-    return apiLoader._fileExistsCache[path]
+    if not module.read and not module.write then
+        return nil, "module_missing_read_write"
+    end
+
+    module.__apiName = apiName
+    module.__apiSource = "api"
+
+    if module.read and not module.__rfWrappedRead then
+        local original = module.read
+        module.read = function(...)
+            logApiIo(apiName, "read", "api")
+            return original(...)
+        end
+        module.__rfWrappedRead = true
+    end
+
+    if module.write and not module.__rfWrappedWrite then
+        local original = module.write
+        module.write = function(...)
+            logApiIo(apiName, "write", "api")
+            return original(...)
+        end
+        module.__rfWrappedWrite = true
+    end
+
+    return module
 end
 
--- Load an API module by name
-local function loadAPI(apiName)
+function api.enableDeltaCache(enable)
+    if enable == nil then return end
+    api._deltaCacheDefault = (enable == true)
+end
 
-    local apiFilePath = api_path .. apiName .. ".lua"
-
-    -- Lazy init of helpers on first module load
-    if firstLoadAPI then
-        mspHelper = rfsuite.tasks.msp.mspHelper
-        utils     = rfsuite.utils
-        callback  = rfsuite.tasks.callback
-        firstLoadAPI = false
+function api.setApiDeltaCache(apiName, enable)
+    if type(apiName) ~= "string" or apiName == "" then return end
+    if enable == nil then
+        api._deltaCacheByApi[apiName] = nil
+        return
     end
+    api._deltaCacheByApi[apiName] = (enable == true)
+end
 
-    -- Check file before loading
-    if not cached_file_exists(apiFilePath) then
-        utils.log("Error: API file '" .. apiFilePath .. "' not found.", "debug")
+function api.isDeltaCacheEnabled(apiName)
+    if apiName and api._deltaCacheByApi[apiName] ~= nil then
+        return api._deltaCacheByApi[apiName]
+    end
+    local app = rfsuite and rfsuite.app
+    if not (app and app.guiIsRunning) then
+        return false
+    end
+    return api._deltaCacheDefault == true
+end
+
+function api.register(apiName, modulePath)
+    if type(apiName) ~= "string" or apiName == "" then return false end
+    if type(modulePath) ~= "string" or modulePath == "" then return false end
+    api._ported[apiName] = modulePath
+    api._chunkCache[apiName] = nil
+    return true
+end
+
+function api.unregister(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return false end
+    api._ported[apiName] = nil
+    api._chunkCache[apiName] = nil
+    return true
+end
+
+function api.isPorted(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return false end
+    return cachedFileExists(resolvePath(apiName)) == true
+end
+
+function api.load(apiName)
+    if type(apiName) ~= "string" or apiName == "" then
+        utils.log("[api] invalid api name", "info")
         return nil
     end
 
-    local chunk = getChunk(apiName, apiFilePath)
-    if not chunk then
+    if not ensureCore() then
+        utils.log("[api] core unavailable; cannot load " .. tostring(apiName), "info")
         return nil
     end
 
-    -- Let any errors in the API module bubble to the global handler (better traceback)
+    local path = resolvePath(apiName)
+    if not cachedFileExists(path) then
+        utils.log("[api] API file not found: " .. tostring(path), "info")
+        return nil
+    end
+
+    local chunk = getChunk(apiName, path)
+    if not chunk then return nil end
+
     local apiModule = chunk()
-
-    -- Valid API modules must expose read or write
-    if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
-
-        apiModule.__apiName = apiName
-        apiModule.enableDeltaCache = function(enable) apiLoader.setApiDeltaCache(apiName, enable) end
-        apiModule.isDeltaCacheEnabled = function() return apiLoader.isDeltaCacheEnabled(apiName) end
-
-        -- Wrap read/write/setValue/readValue if present (currently no-op wrappers, but kept as-is)
-        if apiModule.read then
-            local original = apiModule.read
-            apiModule.read = function(...) return original(...) end
-        end
-
-        if apiModule.write then
-            local original = apiModule.write
-            apiModule.write = function(...) return original(...) end
-        end
-
-        if apiModule.setValue then
-            local original = apiModule.setValue
-            apiModule.setValue = function(...) return original(...) end
-        end
-
-        if apiModule.readValue then
-            local original = apiModule.readValue
-            apiModule.readValue = function(...) return original(...) end
-        end
-
-        if apiModule.setRebuildOnWrite then
-            local original = apiModule.setRebuildOnWrite
-            apiModule.setRebuildOnWrite = function(...) return original(...) end
-        end
-
-        utils.log("Loaded API: " .. apiName, "debug")
-        return apiModule
-    end
-
-    utils.log("Error: API file '" .. apiName .. "' missing read/write.", "debug")
-    return nil
-end
-
-
--- Clear cached file-exists checks
-function apiLoader.clearFileExistsCache()
-    apiLoader._fileExistsCache = {}
-end
-
--- Load an API module
-function apiLoader.load(apiName)
-
-    -- Load from disk
-    local api = loadAPI(apiName)
-    if api == nil then
-        utils.log("Unable to load " .. apiName, "debug")
+    local module, reason = validateModule(apiName, apiModule)
+    if not module then
+        utils.log("[api] invalid module for " .. tostring(apiName) .. ": " .. tostring(reason), "info")
         return nil
     end
 
-    return api
+    module.enableDeltaCache = function(enable) api.setApiDeltaCache(apiName, enable) end
+    module.isDeltaCacheEnabled = function() return api.isDeltaCacheEnabled(apiName) end
+
+    return module
 end
 
--- Reset stored API data fields
-function apiLoader.resetApidata()
-    if apiLoader.apidata.values then
-        for i in pairs(apiLoader.apidata.values) do apiLoader.apidata.values[i] = nil end
+function api.resetApidata()
+    local d = api.apidata
+
+    if d.values then
+        for k in pairs(d.values) do d.values[k] = nil end
+    end
+    if d.structure then
+        for k in pairs(d.structure) do d.structure[k] = nil end
+    end
+    if d.receivedBytesCount then
+        for k in pairs(d.receivedBytesCount) do d.receivedBytesCount[k] = nil end
+    end
+    if d.receivedBytes then
+        for k in pairs(d.receivedBytes) do d.receivedBytes[k] = nil end
+    end
+    if d.positionmap then
+        for k in pairs(d.positionmap) do d.positionmap[k] = nil end
+    end
+    if d.other then
+        for k in pairs(d.other) do d.other[k] = nil end
     end
 
-    if apiLoader.apidata.structure then
-        for i in pairs(apiLoader.apidata.structure) do apiLoader.apidata.structure[i] = nil end
-    end
-
-    if apiLoader.apidata.receivedBytesCount then
-        for i in pairs(apiLoader.apidata.receivedBytesCount) do apiLoader.apidata.receivedBytesCount[i] = nil end
-    end
-
-    if apiLoader.apidata.receivedBytes then
-        for i in pairs(apiLoader.apidata.receivedBytes) do apiLoader.apidata.receivedBytes[i] = nil end
-    end
-
-    if apiLoader.apidata.positionmap then
-        for i in pairs(apiLoader.apidata.positionmap) do apiLoader.apidata.positionmap[i] = nil end
-    end
-
-    if apiLoader.apidata.other then
-        for i in pairs(apiLoader.apidata.other) do apiLoader.apidata.other[i] = nil end
-    end
-
-    apiLoader.apidata = {}
+    api.apidata = {}
 end
 
--- Clear cached compiled chunks
-function apiLoader.clearChunkCache()
-    apiLoader._chunkCache = {}
-    apiLoader._chunkCacheOrder = {}
+function api.clearChunkCache()
+    api._chunkCache = {}
+    api._chunkCacheOrder = {}
 end
 
-apiLoader.apidata = {}
+function api.clearFileExistsCache()
+    api._fileExistsCache = {}
+end
 
-return apiLoader
+return api

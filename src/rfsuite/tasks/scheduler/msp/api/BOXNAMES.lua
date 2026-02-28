@@ -4,21 +4,18 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "BOXNAMES"
-local MSP_API_CMD_READ = 116
-local MSP_MIN_BYTES = 0
 local SEMICOLON = 59
 local NUL = 0
 
-local mspData = nil
-local handlers = core.createHandlers()
+local function parseRead(buf)
+    local helper = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspHelper
+    if not helper then return nil, "msp_helper_missing" end
 
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
-
-local function parseBoxNames(buf)
     local parsed = {}
     local names = {}
     local chars = {}
@@ -31,17 +28,12 @@ local function parseBoxNames(buf)
 
     buf.offset = 1
     while true do
-        local b = rfsuite.tasks.msp.mspHelper.readU8(buf)
+        local b = helper.readU8(buf)
         if b == nil then break end
-        -- Rotorflight/BF commonly use ';', but some stacks/paths can include
-        -- NUL separators, so support both.
         if b == SEMICOLON or b == NUL then
             flushName()
-        else
-            -- Keep only printable ASCII bytes for UI labels.
-            if b >= 32 and b <= 126 then
-                chars[#chars + 1] = string.char(b)
-            end
+        elseif b >= 32 and b <= 126 then
+            chars[#chars + 1] = string.char(b)
         end
     end
 
@@ -50,46 +42,13 @@ local function parseBoxNames(buf)
     return {parsed = parsed, buffer = buf}
 end
 
-local function read()
-    local message = {
-        command = MSP_API_CMD_READ,
-        apiname = API_NAME,
-        processReply = function(self, buf)
-            mspData = parseBoxNames(buf)
-            local completeHandler = handlers.getCompleteHandler()
-            if completeHandler then completeHandler(self, buf) end
-        end,
-        errorHandler = function(self, buf)
-            local errorHandler = handlers.getErrorHandler()
-            if errorHandler then errorHandler(self, buf) end
-        end,
-        simulatorResponse = {},
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT
-    }
-
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function readValue(fieldName)
-    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
-    return nil
-end
-
-local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
-local function data() return mspData end
-local function setUUID(uuid) MSP_API_UUID = uuid end
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-local function setRebuildOnWrite(_) end
-
-return {
-    read = read,
-    setRebuildOnWrite = setRebuildOnWrite,
-    readComplete = readComplete,
-    readValue = readValue,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return factory.create({
+    name = API_NAME,
+    readCmd = 116,
+    minBytes = 0,
+    simulatorResponseRead = {},
+    parseRead = parseRead,
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end
+})

@@ -4,7 +4,11 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then msp.apicore = core end
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "SERVO_CONFIGURATIONS"
 local MSP_API_CMD_READ = 120
@@ -15,147 +19,39 @@ local MSP_MIN_BYTES = 1
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
-local mspData = nil
-local mspWriteComplete = false
-local payloadData = {}
-local defaultData = {}
-
-local os_clock = os.clock
-local tostring = tostring
-local ipairs = ipairs
-local table_insert = table.insert
-local string_format = string.format
-local tonumber = tonumber
-local log = rfsuite.utils.log
-
-local handlers = core.createHandlers()
-
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
-
--- LuaFormatter off
-local function generateMSPStructureRead(servoCount)
-    local MSP_API_STRUCTURE = {{field = "servo_count", type = "U8"}}
-
-    local servo_fields = {
-        {field = "mid",   type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.mid)@"},
-        {field = "min",   type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.min)@"},
-        {field = "max",   type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.max)@"},
-        {field = "rneg",  type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rneg)@"},
-        {field = "rpos",  type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rpos)@"},
-        {field = "rate",  type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.rate)@"},
-        {field = "speed", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.speed)@"},
-        {field = "flags", type = "U16", help = "@i18n(api.SERVO_CONFIGURATIONS.flags)@"}
-    }
-
-    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table_insert(MSP_API_STRUCTURE, {field = string_format("servo_%d_%s", i, field.field), type = field.type, apiVersion = {12, 0, 7}}) end end
-
-    return MSP_API_STRUCTURE
-end
--- LuaFormatter on
-
-local function processMSPData(buf, MSP_API_STRUCTURE_READ)
-    local data = {servos = {}}
-
-    if not buf or type(buf) ~= "table" then return nil end
-
-    for i, field in ipairs(MSP_API_STRUCTURE_READ) do
-        local baseName, servoIndex = field.field:match("servo_(%d+)_(.+)")
-        local value = 0
-
-        if field.type == "U8" then
-            value = buf[i] or 0
-        elseif field.type == "U16" then
-            value = (buf[i] or 0) + ((buf[i + 1] or 0) * 256)
-        end
-
-        if baseName and servoIndex then
-            local keyIndex = tonumber(baseName) - 1
-
-            if not data.servos[keyIndex] then data.servos[keyIndex] = {} end
-
-            data.servos[keyIndex][servoIndex] = value
-        else
-
-            data[field.field] = value
-        end
-    end
-
-    return data
-end
-
-local lastWriteUUID = nil
-
-local writeDoneRegistry = setmetatable({}, {__mode = "kv"})
-
-local function processReplyStaticRead(self, buf)
-    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-        mspData = result
-        if #buf >= (self.minBytes or 0) then
-            local getComplete = self.getCompleteHandler
-            if getComplete then
-                local complete = getComplete()
-                if complete then complete(self, buf) end
-            end
-        end
+local function parseRead(buf)
+    local result = nil
+    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
+        result = parsed
     end)
-end
-
-local function processReplyStaticWrite(self, buf)
-    mspWriteComplete = true
-
-    if self.uuid then writeDoneRegistry[self.uuid] = true end
-
-    local getComplete = self.getCompleteHandler
-    if getComplete then
-        local complete = getComplete()
-        if complete then complete(self, buf) end
+    if result == nil then
+        return nil, "parse_failed"
     end
+    return result
 end
 
-local function errorHandlerStatic(self, buf)
-    local getError = self.getErrorHandler
-    if getError then
-        local err = getError()
-        if err then err(self, buf) end
-    end
+local function buildWritePayload(payloadData, _, _, state)
+    local writeStructure = MSP_API_STRUCTURE_WRITE
+    if writeStructure == nil then return {} end
+    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
 end
 
-local function read()
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function write(suppliedPayload)
-    local payload = suppliedPayload or core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE)
-
-    local uuid = MSP_API_UUID or rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os_clock())
-    lastWriteUUID = uuid
-
-    local message = {command = MSP_API_CMD_WRITE, apiname = API_NAME, payload = payload, processReply = processReplyStaticWrite, errorHandler = errorHandlerStatic, simulatorResponse = {}, uuid = uuid, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler}
-
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function readValue(fieldName)
-    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
-    return nil
-end
-
-local function setValue(fieldName, value) payloadData[fieldName] = value end
-
-local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
-
-local function writeComplete() return mspWriteComplete end
-
-local function resetWriteStatus() mspWriteComplete = false end
-
-local function data() return mspData end
-
-local function setUUID(uuid) MSP_API_UUID = uuid end
-
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-
-local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
-
-return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data, setUUID = setUUID, setTimeout = setTimeout}
+return factory.create({
+    name = API_NAME,
+    readCmd = MSP_API_CMD_READ,
+    writeCmd = MSP_API_CMD_WRITE,
+    minBytes = MSP_MIN_BYTES or 0,
+    readStructure = MSP_API_STRUCTURE_READ,
+    writeStructure = MSP_API_STRUCTURE_WRITE,
+    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
+    parseRead = parseRead,
+    buildWritePayload = buildWritePayload,
+    writeUuidFallback = true,
+    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end,
+    exports = {
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+    }
+})

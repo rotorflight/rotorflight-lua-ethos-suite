@@ -1,23 +1,22 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
+  Copyright (C) 2026 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then msp.apicore = core end
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "BATTERY_INI"
 local INI_FILE = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
 local INI_SECTION = "battery"
 
 local ini = rfsuite.ini
-local mspModule = rfsuite.tasks.msp.api
-
-local math_floor = math.floor
 local tonumber = tonumber
 local ipairs = ipairs
-
-local handlers = core.createHandlers()
 
 local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
 local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
@@ -33,15 +32,12 @@ local MSP_API_STRUCTURE_READ_DATA = {
 }
 -- LuaFormatter on
 
-local READ_STRUCT, MIN_BYTES, SIM_RESP = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local mspData = nil
-local mspWriteDone = false
-local payloadData = {}
+local READ_STRUCT = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 local function loadParsedFromINI()
     local tbl = ini.load_ini_file(INI_FILE) or {}
     local parsed = {}
+
     for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do
         local raw = ini.getvalue(tbl, INI_SECTION, entry.field)
         if raw ~= nil then
@@ -54,59 +50,69 @@ local function loadParsedFromINI()
             parsed[entry.field] = entry.default and ((entry.field == "becalertvalue" or entry.field == "rxalertvalue") and (entry.default * 10) or entry.default)
         end
     end
+
     return parsed
 end
 
-local function read()
-    local parsed = loadParsedFromINI()
-    mspData = {parsed = parsed, structure = READ_STRUCT, buffer = parsed, positionmap = {}, other = {}, receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA}
-    mspWriteDone = false
+return factory.create({
+    name = API_NAME,
+    customRead = function(state, emitComplete)
+        local parsed = loadParsedFromINI()
+        state.mspData = {
+            parsed = parsed,
+            structure = READ_STRUCT,
+            buffer = parsed,
+            positionmap = {},
+            other = {},
+            receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA
+        }
+        state.mspWriteComplete = false
+        emitComplete(nil, parsed)
+        return true
+    end,
+    customWrite = function(_, state, emitComplete, emitError)
+        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
-    local cb = handlers.getCompleteHandler()
-    if cb then cb(nil, parsed) end
-end
+        local tbl = ini.load_ini_file(INI_FILE) or {}
 
-local function write()
-    local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
-    rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        for k, v in pairs(state.payloadData) do
+            if k == "calc_local" then v = math.floor(v) end
+            ini.setvalue(tbl, INI_SECTION, k, v)
+            if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then
+                rfsuite.session.modelPreferences[INI_SECTION][k] = v
+            end
+        end
 
-    local tbl = ini.load_ini_file(INI_FILE) or {}
+        local ok, err = ini.save_ini_file(INI_FILE, tbl)
+        if not ok then
+            emitError(nil, err or ("Failed to save INI: " .. INI_FILE))
+            return false, err
+        end
 
-    for k, v in pairs(payloadData) do
-        if k == "calc_local" then v = math_floor(v) end
+        state.mspWriteComplete = true
+        local parsed = loadParsedFromINI()
+        state.mspData = {
+            parsed = parsed,
+            structure = READ_STRUCT,
+            buffer = parsed,
+            positionmap = {},
+            other = {},
+            receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA
+        }
 
-        ini.setvalue(tbl, INI_SECTION, k, v)
-
-        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then rfsuite.session.modelPreferences[INI_SECTION][k] = v end
-    end
-
-    local ok, err = ini.save_ini_file(INI_FILE, tbl)
-    if not ok then
-        local cbErr = handlers.getErrorHandler()
-        if cbErr then cbErr(err or "Failed to save INI: " .. INI_FILE) end
-        return
-    end
-
-    mspWriteDone = true
-    local parsed = loadParsedFromINI()
-    mspData = {parsed = parsed, structure = READ_STRUCT, buffer = parsed, positionmap = {}, other = {}, receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA}
-
-    local cb = handlers.getCompleteHandler()
-    if cb then cb(nil, parsed) end
-    payloadData = {}
-end
-
-local function readComplete() return mspData ~= nil end
-local function writeComplete() return mspWriteDone end
-local function readValue(field) return mspData and mspData.parsed[field] end
-local function setValue(field, v) payloadData[field] = v end
-local function resetWriteStatus()
-    mspWriteDone = false
-    payloadData = {}
-    mspData = nil
-end
-local function data() return mspData end
-
-local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
-
-return {read = read, write = write, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+        emitComplete(nil, parsed)
+        state.payloadData = {}
+        return true
+    end,
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end,
+    methods = {
+        resetWriteStatus = function(state)
+            state.mspWriteComplete = false
+            state.payloadData = {}
+            state.mspData = nil
+        end
+    }
+})

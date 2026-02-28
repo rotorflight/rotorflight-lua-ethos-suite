@@ -10,6 +10,7 @@ local rfsuite = require("rfsuite")
 local os_clock = os.clock
 local utils = rfsuite.utils
 local MSP_PROTOCOL_VERSION = rfsuite.config.mspProtocolVersion or 1
+local API_ENGINE_DEFAULT = "v2"
 
 local msp = {}
 
@@ -59,7 +60,9 @@ mspQueue.busyStatusCooldown = msp.protocol.mspQueueBusyStatusCooldown or 0.35
 
 -- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
-msp.api       = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
+local apiLoader = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
+msp.api       = apiLoader
+msp.apiEngine = "v2"
 msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
 -- Snapshot protocol version at load; later changes should call setProtocolVersion.
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
@@ -74,6 +77,25 @@ function msp.enableProtoLog(on)
     end
     return false
 end
+
+function msp.setApiEngine(name)
+    if type(name) == "string" then
+        local requested = string.lower(name)
+        if requested == "1" or requested == "v1" or requested == "apiv1" then
+            utils.log("[msp] apiv1 removed; forcing v2", "info")
+        end
+    end
+    msp.api = apiLoader
+    msp.apiEngine = "v2"
+    utils.log("[msp] API engine set to " .. tostring(msp.apiEngine), "info")
+    return msp.apiEngine
+end
+
+function msp.getApiEngine()
+    return msp.apiEngine
+end
+
+msp.setApiEngine(API_ENGINE_DEFAULT)
 
 
 -- Delay handling for clean protocol reset

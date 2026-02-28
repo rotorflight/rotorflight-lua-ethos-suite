@@ -1,70 +1,58 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
+  Copyright (C) 2026 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "API_VERSION"
-local MSP_API_CMD_READ = 1
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(
+    rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion]
+)
 
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion])
-
--- LuaFormatter off
 local MSP_API_STRUCTURE_READ = {
-    { field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@" },
-    { field = "version_major",   type = "U8", help = "@i18n(api.API_VERSION.version_major)@" },
-    { field = "version_minor",   type = "U8", help = "@i18n(api.API_VERSION.version_minor)@" },
+    {field = "version_command", type = "U8", help = "@i18n(api.API_VERSION.version_command)@"},
+    {field = "version_major",   type = "U8", help = "@i18n(api.API_VERSION.version_major)@"},
+    {field = "version_minor",   type = "U8", help = "@i18n(api.API_VERSION.version_minor)@"}
 }
--- LuaFormatter on
 
-local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ
+local function parseRead(buf, helper)
+    if not helper then return nil, "msp_helper_missing" end
 
-local mspData = nil
-local log = rfsuite.utils.log
+    buf.offset = 1
+    local version_command = helper.readU8(buf)
+    local version_major = helper.readU8(buf)
+    local version_minor = helper.readU8(buf)
+    if version_command == nil or version_major == nil or version_minor == nil then
+        return nil, "parse_failed"
+    end
 
-local handlers = core.createHandlers()
+    return {
+        parsed = {
+            version_command = version_command,
+            version_major = version_major,
+            version_minor = version_minor
+        },
+        buffer = buf,
+        receivedBytesCount = #buf
+    }
+end
 
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
-
-local function processReplyStaticRead(self, buf)
-    core.parseMSPData(API_NAME, buf, self.structure, nil, nil, function(result)
-        mspData = result
-        if #buf >= (self.minBytes or 0) then
-            local getComplete = self.getCompleteHandler
-            if getComplete then
-                local complete = getComplete()
-                if complete then complete(self, buf) end
-            end
+return factory.create({
+    name = API_NAME,
+    readCmd = 1,
+    minBytes = 3,
+    readStructure = MSP_API_STRUCTURE_READ,
+    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE,
+    parseRead = parseRead,
+    methods = {
+        readVersion = function(state)
+            local parsed = state.mspData and state.mspData.parsed
+            if not parsed then return nil end
+            return parsed.version_major + (parsed.version_minor / 100)
         end
-    end)
-end
-
-local function read()
-    local message = {command = MSP_API_CMD_READ, apiname=API_NAME, structure = MSP_API_STRUCTURE_READ, minBytes = MSP_MIN_BYTES, processReply = processReplyStaticRead, errorHandler = errorHandlerStatic, simulatorResponse = MSP_API_SIMULATOR_RESPONSE, uuid = MSP_API_UUID, timeout = MSP_API_MSG_TIMEOUT, getCompleteHandler = handlers.getCompleteHandler, getErrorHandler = handlers.getErrorHandler, mspData = nil}
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function data() return mspData end
-
-local function readComplete()
-    if mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES then return true end
-    return false
-end
-
-local function readVersion() if mspData then return mspData.parsed.version_major + mspData.parsed.version_minor / 100 end end
-
-local function readValue(fieldName)
-    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
-    return nil
-end
-
-local function setUUID(uuid) MSP_API_UUID = uuid end
-
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-
-local function setRebuildOnWrite(rebuild) MSP_REBUILD_ON_WRITE = rebuild end
-
-return {data = data, read = read, setRebuildOnWrite = setRebuildOnWrite, readComplete = readComplete, readVersion = readVersion, readValue = readValue, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, setUUID = setUUID, setTimeout = setTimeout}
+    }
+})

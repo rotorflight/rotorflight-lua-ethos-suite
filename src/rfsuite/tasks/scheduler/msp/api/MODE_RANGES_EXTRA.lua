@@ -4,17 +4,11 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
+if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "MODE_RANGES_EXTRA"
-local MSP_API_CMD_READ = 238
-local MSP_MIN_BYTES = 0
-
-local mspData = nil
-local handlers = core.createHandlers()
-
-local MSP_API_UUID
-local MSP_API_MSG_TIMEOUT
 
 local function buildSimulatorResponse()
     local response = {20, 1, 0, 0}
@@ -28,16 +22,19 @@ end
 
 local SIMULATOR_RESPONSE = buildSimulatorResponse()
 
-local function parseModeRangesExtra(buf)
+local function parseRead(buf)
+    local helper = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspHelper
+    if not helper then return nil, "msp_helper_missing" end
+
     local parsed = {}
     local extras = {}
 
     buf.offset = 1
-    local count = rfsuite.tasks.msp.mspHelper.readU8(buf) or 0
+    local count = helper.readU8(buf) or 0
     for _ = 1, count do
-        local modeId = rfsuite.tasks.msp.mspHelper.readU8(buf)
-        local modeLogic = rfsuite.tasks.msp.mspHelper.readU8(buf)
-        local linkedTo = rfsuite.tasks.msp.mspHelper.readU8(buf)
+        local modeId = helper.readU8(buf)
+        local modeLogic = helper.readU8(buf)
+        local linkedTo = helper.readU8(buf)
         if modeId == nil or modeLogic == nil or linkedTo == nil then break end
         extras[#extras + 1] = {id = modeId, modeLogic = modeLogic, linkedTo = linkedTo}
     end
@@ -46,46 +43,13 @@ local function parseModeRangesExtra(buf)
     return {parsed = parsed, buffer = buf}
 end
 
-local function read()
-    local message = {
-        command = MSP_API_CMD_READ,
-        apiname = API_NAME,
-        processReply = function(self, buf)
-            mspData = parseModeRangesExtra(buf)
-            local completeHandler = handlers.getCompleteHandler()
-            if completeHandler then completeHandler(self, buf) end
-        end,
-        errorHandler = function(self, buf)
-            local errorHandler = handlers.getErrorHandler()
-            if errorHandler then errorHandler(self, buf) end
-        end,
-        simulatorResponse = SIMULATOR_RESPONSE,
-        uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT
-    }
-
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function readValue(fieldName)
-    if mspData and mspData.parsed then return mspData.parsed[fieldName] end
-    return nil
-end
-
-local function readComplete() return mspData ~= nil and #mspData.buffer >= MSP_MIN_BYTES end
-local function data() return mspData end
-local function setUUID(uuid) MSP_API_UUID = uuid end
-local function setTimeout(timeout) MSP_API_MSG_TIMEOUT = timeout end
-local function setRebuildOnWrite(_) end
-
-return {
-    read = read,
-    setRebuildOnWrite = setRebuildOnWrite,
-    readComplete = readComplete,
-    readValue = readValue,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout
-}
+return factory.create({
+    name = API_NAME,
+    readCmd = 238,
+    minBytes = 0,
+    simulatorResponseRead = SIMULATOR_RESPONSE,
+    parseRead = parseRead,
+    readCompleteFn = function(state)
+        return state.mspData ~= nil
+    end
+})
