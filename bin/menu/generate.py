@@ -282,10 +282,7 @@ def validate_manifest(data: dict[str, Any]) -> None:
                 raise ValueError(f"menus.{menu_id}.pages[{idx}].translation must be a string")
 
 
-def render_manifest(manifest: dict[str, Any], source_rel: str) -> str:
-    runtime_manifest = copy.deepcopy(manifest)
-    apply_runtime_translation_fields(runtime_manifest)
-    body = to_lua(runtime_manifest, indent=0, path=())
+def generated_header(source_rel: str) -> str:
     return (
         "--[[\n"
         "  Copyright (C) 2026 Rotorflight Project\n"
@@ -296,11 +293,67 @@ def render_manifest(manifest: dict[str, Any], source_rel: str) -> str:
         "  or: python bin/menu/editor/src/menu_editor.py\n"
         f"  Source of truth: {source_rel}\n"
         "  Regenerate with: python bin/menu/generate.py\n"
-        "]] --\n"
-        "\n"
-        "return "
-        f"{body}\n"
+        "]] --\n\n"
     )
+
+
+def render_manifest(runtime_manifest: dict[str, Any], source_rel: str) -> str:
+    body = to_lua(runtime_manifest, indent=0, path=())
+    return generated_header(source_rel) + f"return {body}\n"
+
+
+def render_menu_specs(runtime_manifest: dict[str, Any], source_rel: str) -> dict[str, str]:
+    menus = runtime_manifest.get("menus")
+    if not isinstance(menus, dict):
+        return {}
+
+    out: dict[str, str] = {}
+    header = generated_header(source_rel)
+    for menu_id, menu_spec in menus.items():
+        if not isinstance(menu_id, str) or not isinstance(menu_spec, dict):
+            continue
+        out[f"{menu_id}.lua"] = header + f"return {to_lua(menu_spec, indent=0, path=('menus', menu_id))}\n"
+    return out
+
+
+def sync_menu_spec_files(output_dir: Path, expected_files: dict[str, str], check: bool) -> bool:
+    ok = True
+    if check:
+        if not output_dir.exists():
+            print(f"[menu] Generated menu spec directory is missing: {output_dir}")
+            return False
+    else:
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+    existing = {p.name: p for p in output_dir.glob("*.lua")}
+    expected_names = set(expected_files.keys())
+
+    stale_names = sorted(set(existing.keys()) - expected_names)
+    for name in stale_names:
+        stale_path = existing[name]
+        if check:
+            print(f"[menu] Stale generated menu spec: {stale_path}")
+            ok = False
+        else:
+            stale_path.unlink()
+            print(f"[menu] Removed {stale_path}")
+
+    for name in sorted(expected_names):
+        expected = expected_files[name]
+        path = output_dir / name
+        current = None
+        if path.is_file():
+            current = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+
+        if current != expected:
+            if check:
+                print(f"[menu] Generated menu spec is out of date: {path}")
+                ok = False
+            else:
+                path.write_text(expected, encoding="utf-8")
+                print(f"[menu] Wrote {path}")
+
+    return ok
 
 
 def print_diff(expected: str, actual: str, expected_name: str, actual_name: str) -> None:
@@ -363,7 +416,13 @@ def main() -> int:
     except ValueError:
         source_rel = source_path.as_posix()
 
-    generated = render_manifest(data, source_rel)
+    runtime_manifest = copy.deepcopy(data)
+    apply_runtime_translation_fields(runtime_manifest)
+
+    generated = render_manifest(runtime_manifest, source_rel)
+    generated_menu_specs = render_menu_specs(runtime_manifest, source_rel)
+    menu_specs_dir = output_path.parent / "manifest_menus"
+
     current = None
     preferred_eol = "\n"
     current_raw = None
@@ -374,9 +433,12 @@ def main() -> int:
         current = current_raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
 
     if args.check:
+        menu_specs_ok = sync_menu_spec_files(menu_specs_dir, generated_menu_specs, check=True)
         if current != generated:
             print(f"[menu] Generated manifest is out of date: {output_path}")
             print_diff(generated, current or "", "expected", "current")
+            return 1
+        if not menu_specs_ok:
             return 1
         print(f"[menu] OK: {output_path} is up to date")
         return 0
@@ -388,6 +450,8 @@ def main() -> int:
         print(f"[menu] Wrote {output_path}")
     else:
         print(f"[menu] No changes: {output_path}")
+
+    sync_menu_spec_files(menu_specs_dir, generated_menu_specs, check=False)
     return 0
 
 
