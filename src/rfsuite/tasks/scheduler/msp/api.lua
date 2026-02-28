@@ -36,23 +36,13 @@ local defaultApiPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/schedule
 local defaultApiHelpPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apihelp/"
 local defaultCorePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"
 
-local function currentApiEngine()
-    local tasks = rfsuite and rfsuite.tasks
-    local msp = tasks and tasks.msp
-    if msp and msp.getApiEngine then
-        return msp.getApiEngine()
-    end
-    return "v2"
-end
-
 local function logApiIo(apiName, op, source)
     if not (utils and utils.log) then return end
     utils.log(
         string_format(
-            "[msp] %s %s via engine=%s source=%s",
+            "[msp] %s %s source=%s",
             tostring(op),
             tostring(apiName),
-            tostring(currentApiEngine()),
             tostring(source or "unknown")
         ),
         "info"
