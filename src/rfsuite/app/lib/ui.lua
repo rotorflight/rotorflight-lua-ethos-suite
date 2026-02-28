@@ -27,7 +27,7 @@ end
 
 local function NOOP_PAINT() end
 
-local MASK_CACHE_MAX = 192
+local MASK_CACHE_MAX = 32
 ui._maskCache = ui._maskCache or {}
 ui._maskCacheOrder = ui._maskCacheOrder or {}
 
