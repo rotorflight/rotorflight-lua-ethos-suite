@@ -196,6 +196,7 @@ function app.create()
         app.triggers.wasConnected = false -- last connection state
         app.triggers.isArmed = false -- model armed flag
         app.triggers.showSaveArmedWarning = false -- warn when saving armed
+        app.triggers.rebootInProgress = false -- expected reboot/link drop in progress
 
         -- default speeds for loaders (multipliers of default animation speed)
         app.loaderSpeed = {

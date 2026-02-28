@@ -278,6 +278,9 @@ function tasks.wakeup()
             end
 
             rfsuite.session.isConnected = true
+            if rfsuite.app and rfsuite.app.triggers then
+                rfsuite.app.triggers.rebootInProgress = false
+            end
             rfsuite.utils.log("Connection [established].", "info")
             rfsuite.utils.log("Connection [established].", "connect")
         end

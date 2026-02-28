@@ -727,6 +727,17 @@ function ui.progressDisplay(title, message, speed)
 
             if app.dialogs.progressWatchDog and tasks.msp and (osClock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and reachedTimeout == false then
                 reachedTimeout = true
+                if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) or (session and session.resetMSP) then
+                    app.dialogs.progressCounter = 0
+                    app.dialogs.progressSpeed = nil
+                    app.dialogs.progressDisplay = false
+                    app.dialogs.progressWatchDog = nil
+                    app.triggers.closeProgressLoader = false
+                    app.triggers.closeProgressLoaderNoisProcessed = false
+                    pcall(function() app.dialogs.progress:close() end)
+                    ui.clearProgressDialog(app.dialogs.progress)
+                    return
+                end
                 app.audio.playTimeout = true
                 app.dialogs.progress:message("@i18n(app.error_timed_out)@")
                 app.dialogs.progress:closeAllowed(true)
@@ -851,8 +862,21 @@ function ui.progressDisplaySave(message)
             end
 
             local timeout = tonumber(tasks.msp.protocol.saveTimeout + 5)
-            if (app.dialogs.saveWatchDog and (osClock() - app.dialogs.saveWatchDog) > timeout) and reachedTimeout == false or (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed()) and app.dialogs.saveDisplay == true and reachedTimeout == false then
+            local watchdogExceeded = app.dialogs.saveWatchDog and (osClock() - app.dialogs.saveWatchDog) > timeout
+            local progressExceeded = (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed())
+            if (watchdogExceeded or progressExceeded) and app.dialogs.saveDisplay == true and reachedTimeout == false then
                 reachedTimeout = true
+                if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) then
+                    app.dialogs.saveProgressCounter = 0
+                    app.dialogs.saveDisplay = false
+                    app.dialogs.saveWatchDog = nil
+                    app.triggers.isSaving = false
+                    app.triggers.closeSave = false
+                    app.triggers.closeSaveFake = false
+                    pcall(function() app.dialogs.save:close() end)
+                    ui.clearProgressDialog(app.dialogs.save)
+                    return
+                end
                 app.audio.playTimeout = true
                 app.dialogs.save:message("@i18n(app.error_timed_out)@")
                 app.dialogs.save:closeAllowed(true)
@@ -2858,6 +2882,7 @@ function ui.requestPage()
                 state.isProcessing = false
                 state.currentIndex = 1
                 app.triggers.isReady = true
+                app.triggers.rebootInProgress = false
                 if app.Page.postRead then app.Page.postRead(app.Page) end
                 app.ui.mspApiUpdateFormAttributes()
                 if app.Page.postLoad then
@@ -3168,6 +3193,7 @@ function ui.rebootFc(sourcePage)
         return false, "armed_blocked"
     end
 
+    app.triggers.rebootInProgress = true
     app.pageState = app.pageStatus.rebooting
     local ok, reason = tasks.msp.mspQueue:add({
         command = 68,
@@ -3184,8 +3210,32 @@ function ui.rebootFc(sourcePage)
         end,
         simulatorResponse = {}
     })
+    if ok and app.dialogs then
+        if app.dialogs.saveDisplay then
+            app.triggers.closeSaveFake = true
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveWatchDog = nil
+            app.dialogs.saveProgressCounter = 0
+            app.triggers.isSaving = false
+            app.triggers.closeSave = false
+            app.triggers.closeSaveFake = false
+            pcall(function() app.dialogs.save:close() end)
+            ui.clearProgressDialog(app.dialogs.save)
+        end
+        if app.dialogs.progressDisplay then
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressCounter = 0
+            app.dialogs.progressSpeed = nil
+            app.triggers.closeProgressLoader = false
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            pcall(function() app.dialogs.progress:close() end)
+            ui.clearProgressDialog(app.dialogs.progress)
+        end
+    end
     if not ok then
         utils.log("Reboot enqueue rejected: " .. tostring(reason), "info")
+        app.triggers.rebootInProgress = false
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
