@@ -57,6 +57,8 @@ return {
     preSwitchDelay = 0.8,
     switchWriteCount = 1,
     switchReadDelay = 3.0,
+    escDetailsPollInterval = 0.6,
+    escDetailsRetryInterval = 1.2,
     retrySwitchOnReadFail = true,
     readSwitchRetryCount = 3,
     readSwitchRetryDelay = 0.25,

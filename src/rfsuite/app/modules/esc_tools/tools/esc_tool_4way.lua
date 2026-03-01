@@ -55,6 +55,10 @@ local last4WayWriteOk
 local escReadRecoverRequested = false
 local escReadRecoverAt = 0
 local escReadRecoverCount = 0
+local escDetailsNextReadAt = 0
+local escDetailsApiName
+local escDetailsApi
+local escSwitchApi
 
 local function trimText(value)
     if type(value) ~= "string" then return value end
@@ -109,6 +113,30 @@ local function resetUiState()
     foundESC = false
     foundESCupdateTag = false
     findTimeoutClock = os.clock()
+    escDetailsNextReadAt = 0
+end
+
+local function getEscDetailsPollInterval()
+    local interval = tonumber(ESC and ESC.escDetailsPollInterval)
+    if interval == nil then interval = 0.35 end
+    if interval < 0 then interval = 0 end
+    return interval
+end
+
+local function getEscDetailsRetryInterval()
+    local interval = tonumber(ESC and ESC.escDetailsRetryInterval)
+    if interval == nil then interval = 0.9 end
+    if interval < 0 then interval = 0 end
+    return interval
+end
+
+local function scheduleEscDetailsReadAt(delaySeconds)
+    local delay = tonumber(delaySeconds) or 0
+    if delay < 0 then delay = 0 end
+    local nextAt = os.clock() + delay
+    if nextAt > escDetailsNextReadAt then
+        escDetailsNextReadAt = nextAt
+    end
 end
 
 local function clearEscSession()
@@ -151,11 +179,26 @@ end
 
 local mspBusy = false
 
+local function getEscDetailsAPI()
+    if not ESC or not ESC.mspapi then return nil end
+    if escDetailsApi and escDetailsApiName == ESC.mspapi then
+        return escDetailsApi
+    end
+    escDetailsApi = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    if escDetailsApi then
+        escDetailsApiName = ESC.mspapi
+    else
+        escDetailsApiName = nil
+    end
+    return escDetailsApi
+end
+
 local function getESCDetails()
     if not ESC then return end
     if not ESC.mspapi then return end
     if not mspSignature then return end
     if not mspBytes then return end
+    if os.clock() < escDetailsNextReadAt then return end
     if mspBusy == true then
        if rfsuite.tasks.msp.mspQueue:isProcessed() then
            mspBusy = false
@@ -174,7 +217,12 @@ local function getESCDetails()
 
     mspBusy = true
 
-    local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    local API = getEscDetailsAPI()
+    if not API then
+        mspBusy = false
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+        return
+    end
     API.setCompleteHandler(function(self, buf)
 
         local signature = API.readValue("esc_signature")
@@ -192,8 +240,10 @@ local function getESCDetails()
             if escDetails.model ~= nil then
                 foundESC = true
                 resetEscReadRecovery()
+                escDetailsNextReadAt = 0
             end
         else
+            scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
             scheduleEscReadRecovery()
         end
         mspBusy = false
@@ -201,12 +251,19 @@ local function getESCDetails()
     end)
 
     API.setErrorHandler(function(self, err)
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
         scheduleEscReadRecovery()
         mspBusy = false
     end)
 
     API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
-    API.read()
+    local ok = API.read()
+    if ok then
+        scheduleEscDetailsReadAt(getEscDetailsPollInterval())
+    else
+        mspBusy = false
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+    end
 
 end
 
@@ -307,7 +364,10 @@ local function setESC4WayMode(id)
     lastWriteSeq = seq
     last4WayWriteTarget = target
     last4WayWriteOk = nil
-    local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+    if not escSwitchApi then
+        escSwitchApi = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+    end
+    local API = escSwitchApi
     if not API then return false, "api_missing" end
     if rfsuite.utils and rfsuite.utils.log then
         rfsuite.utils.log("ESC 4WIF set target: " .. tostring(target), "info")
@@ -554,9 +614,12 @@ local function loadEscConfig(folder)
         return false
     end
     ESC = moduleOrErr
+    escDetailsApi = nil
+    escDetailsApiName = nil
 
     if ESC.mspapi ~= nil then
-        local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+        local API = getEscDetailsAPI()
+        if not API then return false end
         mspSignature = API.mspSignature
         simulatorResponse = API.simulatorResponse or {0}
         mspBytes = #simulatorResponse
