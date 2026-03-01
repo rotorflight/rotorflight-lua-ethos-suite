@@ -163,7 +163,7 @@ function container.create(cfg)
                 targetScript = scriptPathFor(cfg, item, resolvedScript)
                 app.ui.progressDisplay(nil, nil, loaderSpeed)
             end
-            app.ui.openPage({
+            local openOpts = {
                 idx = index,
                 title = titleForChild(cfg, spec.pageTitle, item),
                 script = targetScript,
@@ -173,7 +173,18 @@ function container.create(cfg)
                     title = spec.pageTitle,
                     script = spec.parentScript
                 }, spec.currentMenuId)
-            })
+            }
+
+            local ok, err = pcall(app.ui.openPage, openOpts)
+            if not ok then
+                local msg = tostring(err)
+                if msg:find("Max instructions count", 1, true) then
+                    -- Retry on next wakeup tick when the VM budget resets.
+                    app._pendingOpenPageOpts = openOpts
+                    return
+                end
+                error(err)
+            end
         end
 
         return handlers[index]
