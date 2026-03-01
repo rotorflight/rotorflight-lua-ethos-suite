@@ -719,8 +719,14 @@ function ui.progressDisplay(title, message, speed)
         close = function() end,
         wakeup = function()
             local now = osClock()
+            local progress = app.dialogs.progress
+            if not progress then
+                app.dialogs.progressDisplay = false
+                app.dialogs.progressSpeed = nil
+                return
+            end
 
-            app.dialogs.progress:value(app.dialogs.progressCounter)
+            progress:value(app.dialogs.progressCounter)
 
             local mult = app.dialogs.progressSpeed or 1.0
 
@@ -734,8 +740,8 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
             elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then
                 if app.dialogs.progressIsWait then
-                    app.dialogs.progress:close()
-                    ui.clearProgressDialog(app.dialogs.progress)
+                    progress:close()
+                    ui.clearProgressDialog(progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
@@ -746,17 +752,19 @@ function ui.progressDisplay(title, message, speed)
                 if preferences.general.hs_loader == 0 then mult = mult * 2 end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
-                    app.dialogs.progress:close()
-                    ui.clearProgressDialog(app.dialogs.progress)
+                    progress:close()
+                    ui.clearProgressDialog(progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
                     app.dialogs.progressSpeed = nil
+                    app.triggers.closeProgressLoaderNoisProcessed = false
+                    return
                 end
             elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
                 if app.dialogs.progressIsWait then
-                    app.dialogs.progress:close()
-                    ui.clearProgressDialog(app.dialogs.progress)
+                    progress:close()
+                    ui.clearProgressDialog(progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
@@ -767,14 +775,14 @@ function ui.progressDisplay(title, message, speed)
                 if preferences.general.hs_loader == 0 then mult = mult * 1.5 end
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
-                    app.dialogs.progress:close()
-                    ui.clearProgressDialog(app.dialogs.progress)
+                    progress:close()
+                    ui.clearProgressDialog(progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
                     app.dialogs.progressSpeed = nil
                     app.triggers.closeProgressLoaderNoisProcessed = false
-
+                    return
                 end
             end
 
@@ -787,34 +795,35 @@ function ui.progressDisplay(title, message, speed)
                     app.dialogs.progressWatchDog = nil
                     app.triggers.closeProgressLoader = false
                     app.triggers.closeProgressLoaderNoisProcessed = false
-                    pcall(function() app.dialogs.progress:close() end)
-                    ui.clearProgressDialog(app.dialogs.progress)
+                    pcall(function() progress:close() end)
+                    ui.clearProgressDialog(progress)
                     return
                 end
                 app.audio.playTimeout = true
-                app.dialogs.progress:message("@i18n(app.error_timed_out)@")
-                app.dialogs.progress:closeAllowed(true)
-                app.dialogs.progress:value(100)
-                ui.clearProgressDialog(app.dialogs.progress)
+                progress:message("@i18n(app.error_timed_out)@")
+                progress:closeAllowed(true)
+                progress:value(100)
+                ui.clearProgressDialog(progress)
                 app.dialogs.progressCounter = 0
                 app.dialogs.progressSpeed = nil
                 app.dialogs.progressDisplay = false
 
                 ui.disableAllFields()
                 ui.disableAllNavigationFields()
-                ui.enableNavigationField('menu')                
+                ui.enableNavigationField('menu')
+                return
 
             end
 
             if not tasks.msp then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
                 if app.dialogs.progressCounter >= 100 then
-                    app.dialogs.progress:close()
-                    ui.clearProgressDialog(app.dialogs.progress)
+                    progress:close()
+                    ui.clearProgressDialog(progress)
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.dialogs.progressSpeed = nil
-
+                    return
                 end
             end
 
@@ -822,7 +831,7 @@ function ui.progressDisplay(title, message, speed)
             local showDebug = preferences and preferences.general and preferences.general.mspstatusdialog
             local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.progressBaseMessage or "")
             if showDebug and mspStatus then msg = mspStatus end
-            app.dialogs.progress:message(msg)
+            pcall(function() progress:message(msg) end)
 
         end
     })
