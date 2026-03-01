@@ -87,8 +87,8 @@ local function openPage(opts)
     app.formLineCnt = 0
     app.formFieldCount = 0
 
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
+    if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
     addStatusLine("@i18n(app.modules.fblstatus.cpu_load)@", string.format("%.1f%%", rfsuite.performance.cpuload or 0))
 
