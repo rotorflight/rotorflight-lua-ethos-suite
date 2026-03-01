@@ -194,7 +194,7 @@ function render.wakeup(box)
     c.bandlabeloffsettop = getParam(box, "bandlabeloffsettop") or 8
     c.bandlabelfont = getParam(box, "bandlabelfont") or "FONT_XS"
     c.bandlabels = getParam(box, "bandlabels") or DEFAULT_BAND_LABELS
-    c.bandcolors = resolveThemeColorArray("fillcolor", getParam(box, "bandcolors") or DEFAULT_BAND_COLORS)
+    c.bandcolors = resolveThemeColorArray("fillcolor", getParam(box, "bandcolors") or DEFAULT_BAND_COLORS, c.bandcolors)
     c.needlethickness = getParam(box, "needlethickness") or 5
     c.needlehubsize = getParam(box, "needlehubsize") or 7
     c.needlestartangle = getParam(box, "needlestartangle") or 150
