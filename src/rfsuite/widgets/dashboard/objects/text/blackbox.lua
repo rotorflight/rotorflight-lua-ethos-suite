@@ -36,7 +36,6 @@
 local rfsuite = require("rfsuite")
 
 local format = string.format
-local rep = string.rep
 
 local render = {}
 
@@ -47,6 +46,8 @@ local eraseDataflashGo = false
 local progressBaseMessage
 local progressMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+local LOADING_DOTS = {".", "..", "...", "."}
+local BLACKBOX_UNIT_LABEL = "@i18n(app.modules.fblstatus.megabyte)@"
 
 local function openProgressDialog(...)
     if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
@@ -146,6 +147,7 @@ local function ensureCfg(box)
         cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
 
         cfg.decimals = getParam(box, "decimals") or 1
+        cfg.valueFormat = "%." .. cfg.decimals .. "f/%." .. cfg.decimals .. "f %s"
         cfg.novalue = getParam(box, "novalue") or "-"
         cfg.unit = getParam(box, "unit")
         cfg.font = getParam(box, "font")
@@ -178,20 +180,26 @@ function render.wakeup(box)
         local totalMB = totalSize / (1024 * 1024)
         percentUsed = totalSize > 0 and (usedSize / totalSize) * 100 or 0
 
-        local transformedUsed = utils.transformValue(usedMB, box)
-        local transformedTotal = utils.transformValue(totalMB, box)
-        displayValue = format("%." .. cfg.decimals .. "f/%." .. cfg.decimals .. "f %s", transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
+        if box._lastUsedSize ~= usedSize or box._lastTotalSize ~= totalSize or box._lastDisplayFormat ~= cfg.valueFormat then
+            local transformedUsed = utils.transformValue(usedMB, box)
+            local transformedTotal = utils.transformValue(totalMB, box)
+            box._formattedDisplayValue = format(cfg.valueFormat, transformedUsed, transformedTotal, BLACKBOX_UNIT_LABEL)
+            box._lastUsedSize = usedSize
+            box._lastTotalSize = totalSize
+            box._lastDisplayFormat = cfg.valueFormat
+        end
+        displayValue = box._formattedDisplayValue
     else
         if totalSize == nil and usedSize == nil then
 
-            local maxDots = 3
-            box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-            displayValue = rep(".", box._dotCount)
-            if displayValue == "" then displayValue = "." end
+            box._dotCount = ((box._dotCount or 0) + 1) % 4
+            displayValue = LOADING_DOTS[box._dotCount + 1]
         else
             displayValue = cfg.novalue
         end
         percentUsed = nil
+        box._lastUsedSize = nil
+        box._lastTotalSize = nil
     end
 
     box._isLoadingDots = type(displayValue) == "string" and displayValue:match("^%.+$") ~= nil

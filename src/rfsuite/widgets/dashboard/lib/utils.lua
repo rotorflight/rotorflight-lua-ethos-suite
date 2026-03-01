@@ -83,6 +83,7 @@ local NAMED_COLORS = {
 }
 
 local resolveColorCache = {}
+local resolveColorTableCache = setmetatable({}, {__mode = "k"})
 local themeFallbackPaletteCache = {dark = nil, light = nil}
 
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
@@ -462,8 +463,11 @@ function utils.resolveColor(value, variantFactor)
         end
 
     elseif type(value) == "table" and #value >= 3 then
-
-        return lcd.RGB(value[1], value[2], value[3], 1)
+        local cached = resolveColorTableCache[value]
+        if cached ~= nil then return cached end
+        local color = lcd.RGB(value[1], value[2], value[3], 1)
+        resolveColorTableCache[value] = color
+        return color
     end
 
     return nil
