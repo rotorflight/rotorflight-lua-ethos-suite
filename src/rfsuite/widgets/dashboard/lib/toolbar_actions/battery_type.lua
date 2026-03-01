@@ -73,7 +73,7 @@ local function setBatteryType(typeIndex, profileName)
         rfsuite.app.ui.registerProgressDialog(progress, progressBaseMessage)
     end
 
-    local api = rfsuite.tasks.msp.api.load("BATTERY_TYPE")
+    local api = rfsuite.tasks.msp.api.load("BATTERY_PROFILE")
 
     api.setCompleteHandler(function()
         rfsuite.session.activeBatteryType = typeIndex

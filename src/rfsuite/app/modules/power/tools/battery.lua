@@ -32,7 +32,7 @@ local fields = {
 local apidata = {
     api = {
         [1] = "BATTERY_CONFIG",
-        [2] = "BATTERY_TYPE"
+        [2] = "BATTERY_PROFILE"
     },
     formdata = {
         labels = {},

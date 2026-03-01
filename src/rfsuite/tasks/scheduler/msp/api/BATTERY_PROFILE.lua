@@ -6,7 +6,7 @@
 local rfsuite = require("rfsuite")
 local core = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api_core.lua"))()
 
-local API_NAME = "BATTERY_TYPE"
+local API_NAME = "BATTERY_PROFILE"
 local MSP_API_CMD_READ = 175
 local MSP_API_CMD_WRITE = 176
 local MSP_REBUILD_ON_WRITE = false
