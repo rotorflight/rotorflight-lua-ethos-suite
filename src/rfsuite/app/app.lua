@@ -134,6 +134,8 @@ function app.wakeup_protected()
         busyUiTick = 0
     end
     if runUiTasks and app.tasks then app.tasks.wakeup() end
+
+    if app.ui and app.ui.wakeupAdminStatsOverlay then app.ui.wakeupAdminStatsOverlay() end
 end
 
 function app.wakeup()

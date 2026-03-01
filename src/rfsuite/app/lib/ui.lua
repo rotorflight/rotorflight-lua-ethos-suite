@@ -84,6 +84,17 @@ local HEADER_NAV_Y_SHIFT = 6
 local HEADER_OVERLAY_Y_OFFSET = 5
 local MENU_TRANSITION_PROGRESS = false
 local NAV_FOCUS_ORDER = {"menu", "save", "reload", "tool", "help"}
+local ADMIN_OVERLAY_REFRESH_S = 0.50
+local ADMIN_OVERLAY_INVALIDATE_H = 20
+
+ui._adminOverlayState = ui._adminOverlayState or {
+    lastInvalidateAt = 0,
+    lastCpu = nil,
+    lastRamUsed = nil,
+    lastLuaRam = nil,
+    lastPageScript = nil,
+    wasVisible = false
+}
 
 local function isManifestMenuRouterScript(script)
     return type(script) == "string" and (script == "manifest_menu/menu.lua" or script == "app/modules/manifest_menu/menu.lua")
@@ -3378,6 +3389,54 @@ function ui.adminStatsOverlay()
         lcdDrawText(x + block.width - block.valueW, y, block.value)
         x = x + block.width + blockGap
     end
+end
+
+function ui.wakeupAdminStatsOverlay()
+    local state = ui._adminOverlayState
+    if not state then return end
+
+    local showStats = preferences and preferences.developer and preferences.developer.overlaystatsadmin and not (session and session.mspBusy)
+    local currentScript = (app and app.lastScript) or ""
+
+    if not showStats then
+        if state.wasVisible then
+            local screenW = app.lcdWidth
+            if not screenW or screenW <= 0 then screenW = lcdGetWindowSize() end
+            if screenW and screenW > 0 then
+                local y = getHeaderNavAreaBottom() + HEADER_OVERLAY_Y_OFFSET
+                lcd.invalidate(0, y, screenW, ADMIN_OVERLAY_INVALIDATE_H)
+            end
+        end
+        state.wasVisible = false
+        state.lastPageScript = currentScript
+        state.lastCpu = nil
+        state.lastRamUsed = nil
+        state.lastLuaRam = nil
+        return
+    end
+
+    local perf = rfsuite.performance or EMPTY
+    local cpu = mathFloor((perf.cpuload or 0) + 0.5)
+    local ramUsed = mathFloor((perf.usedram or 0) + 0.5)
+    local luaRam = mathFloor((perf.luaRamKB or 0) + 0.5)
+
+    local changed = (cpu ~= state.lastCpu) or (ramUsed ~= state.lastRamUsed) or (luaRam ~= state.lastLuaRam) or (currentScript ~= state.lastPageScript) or (not state.wasVisible)
+    local now = osClock()
+    if not changed and (now - (state.lastInvalidateAt or 0)) < ADMIN_OVERLAY_REFRESH_S then return end
+
+    local screenW = app.lcdWidth
+    if not screenW or screenW <= 0 then screenW = lcdGetWindowSize() end
+    if not screenW or screenW <= 0 then return end
+
+    local y = getHeaderNavAreaBottom() + HEADER_OVERLAY_Y_OFFSET
+    lcd.invalidate(0, y, screenW, ADMIN_OVERLAY_INVALIDATE_H)
+
+    state.lastInvalidateAt = now
+    state.lastCpu = cpu
+    state.lastRamUsed = ramUsed
+    state.lastLuaRam = luaRam
+    state.lastPageScript = currentScript
+    state.wasVisible = true
 end
 
 return ui
