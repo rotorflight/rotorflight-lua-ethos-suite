@@ -201,6 +201,8 @@ return function(decoders)
 
     [0x1213] = {name = "LED Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
 
+    [0x1214] = {name = "Battery Profile", unit = UNIT_RAW, prec = 0, min = 0, max = 5, dec = decU8},    
+
     [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decAdjFunc},
 
     [0xDB00] = {name = "Debug 0", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},

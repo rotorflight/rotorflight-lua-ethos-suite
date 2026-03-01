@@ -103,6 +103,16 @@ local function openPage(opts)
     line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_reload_confirm)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.reload_confirm or false end, function(newValue) config.reload_confirm = newValue end)
 
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_show_battery_profile_connect)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
+        return prefBool(config.show_battery_profile_startup, true)
+    end, function(newValue) config.show_battery_profile_startup = newValue end)
+
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_show_confirmation_dialog)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
+        return prefBool(config.show_confirmation_dialog, true)
+    end, function(newValue) config.show_confirmation_dialog = newValue end)
+
     line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_syncname)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
 

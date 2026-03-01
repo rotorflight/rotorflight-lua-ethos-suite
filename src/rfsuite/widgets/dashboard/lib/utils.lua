@@ -503,6 +503,10 @@ end
 
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
 
+    if type(title) ~= "string" and type(title) ~= "number" then
+        title = nil
+    end
+
     local DEFAULT_TITLE_PADDING = 0
     local DEFAULT_VALUE_PADDING = 6
     local DEFAULT_TITLE_SPACING = 6
@@ -615,7 +619,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
         local value_str = tostring(displayValue) .. (unit or "")
 
         local value_str_calc = string.gsub(value_str, "[%%]", "W")
-        value_str_calc = string.gsub(value_str, "[°]", ".")
+        value_str_calc = string.gsub(value_str_calc, "[°]", ".")
 
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
         if font and _G[font] then

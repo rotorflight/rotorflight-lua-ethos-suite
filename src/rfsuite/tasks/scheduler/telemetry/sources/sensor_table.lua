@@ -310,4 +310,11 @@ return {
         mandatory = false,
         stats = false,
     },
+
+    battery_profile = {
+        name = "@i18n(sensors.battery_profile)@",
+        mandatory = true,
+        stats = false,
+        set_telemetry_sensors = 97,
+    },
 }

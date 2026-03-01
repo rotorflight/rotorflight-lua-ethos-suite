@@ -91,14 +91,17 @@ local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
 local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
 local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
 local toolbarLaunchApp = compile(dashboardLibPath .. "lib/toolbar_actions/launch_app.lua")()
+local toolbarBatteryType = compile(dashboardLibPath .. "lib/toolbar_actions/battery_profile.lua")()
 dashboard.toolbar_action_modules = {
     reset_flight = toolbarResetFlight,
     erase_blackbox = toolbarEraseBlackbox,
-    launch_app = toolbarLaunchApp
+    launch_app = toolbarLaunchApp,
+    battery_profile = toolbarBatteryType
 }
 dashboard.toolbar_actions = {
     resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
     eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil,
+    chooseBatteryType = toolbarBatteryType and toolbarBatteryType.chooseBatteryType or nil,
     launchApp = toolbarLaunchApp and toolbarLaunchApp.launchApp or nil
 }
 
@@ -1590,13 +1593,29 @@ function dashboard.wakeup_protected(widget)
         lcd.invalidate(widget)
     end
 
-    if eraseDataflash and eraseDataflash.wakeup then
-        eraseDataflash.wakeup(dashboard, rfsuite)
-    end
-
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
     if not dashboard.utils then return end
+
+    if rfsuite.session.isConnected and rfsuite.session.showBatteryTypeStartup and not rfsuite.session.batteryDialogShown then
+        if rfsuite.session.batteryConfig and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
+            rfsuite.session.batteryDialogShown = true
+            local count = 0
+            if rfsuite.session.batteryConfig.profiles then
+                for _, capacity in pairs(rfsuite.session.batteryConfig.profiles) do
+                    if capacity > 0 then count = count + 1 end
+                end
+            end
+            if count > 1 then
+                local actions = dashboard.toolbar_actions
+                if actions and type(actions.chooseBatteryType) == "function" then
+                    actions.chooseBatteryType()
+                end
+            end
+        end
+    elseif not rfsuite.session.isConnected and rfsuite.session.batteryDialogShown then
+        rfsuite.session.batteryDialogShown = false
+    end
 
     local W, H = lcd.getWindowSize()
 

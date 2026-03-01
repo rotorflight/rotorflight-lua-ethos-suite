@@ -14,4 +14,11 @@ return {
     ["vbatwarningcellvoltage"] = "@i18n(api.BATTERY_CONFIG.vbatwarningcellvoltage)@",
     ["lvcPercentage"] = "@i18n(api.BATTERY_CONFIG.lvcPercentage)@",
     ["consumptionWarningPercentage"] = "@i18n(api.BATTERY_CONFIG.consumptionWarningPercentage)@",
+    ["batteryCapacity_0"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
+    ["batteryCapacity_1"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
+    ["batteryCapacity_2"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
+    ["batteryCapacity_3"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
+    ["batteryCapacity_4"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
+    ["batteryCapacity_5"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
+    ["batteryProfile"] = "@i18n(api.BATTERY_CONFIG.batteryProfile)@",
 }

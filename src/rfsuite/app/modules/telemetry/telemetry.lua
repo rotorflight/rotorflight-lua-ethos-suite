@@ -105,6 +105,7 @@ if not TELEMETRY_STATIC_CACHE then
         [93] = {name = "Governor", group = "status"},
         [95] = {name = "PID Profile", group = "profiles"},
         [96] = {name = "Rate Profile", group = "profiles"},
+        [97] = { name = "Battery Profile", group = "profiles" },
         [98] = {name = "LED Profile", group = "profiles"},
         [99] = {name = "ADJ", group = "status"},
         [100] = {name = "DBG0", group = "debug"},

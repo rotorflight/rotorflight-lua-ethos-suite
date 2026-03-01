@@ -43,6 +43,14 @@ function battery.wakeup()
             rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
 
+            rfsuite.session.batteryConfig.profiles = {}
+            for i = 0, 5 do
+                local val = API.readValue("batteryCapacity_" .. i)
+                if val then
+                    rfsuite.session.batteryConfig.profiles[i] = val
+                end
+            end
+
             log("Capacity: " .. batteryCapacity .. "mAh", "info")
             log("Cell Count: " .. batteryCellCount, "info")
             log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "info")

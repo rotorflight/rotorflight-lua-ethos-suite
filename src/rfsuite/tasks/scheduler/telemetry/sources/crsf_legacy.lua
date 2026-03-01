@@ -44,4 +44,5 @@ return {
     attroll = {nil},
     attpitch = {nil},
     groundspeed = {nil},
+    batter_type = {nil},
 }

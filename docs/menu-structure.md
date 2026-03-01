@@ -62,6 +62,9 @@
     - Power (menuId `power`)
       - menuId `power`: Power
         - Battery (script `battery.lua`)
+          - variants: >= 12.0.9 => `battery.lua`
+        - Battery (script `battery_legacy.lua`)
+          - variants: < 12.0.9 => `battery_legacy.lua`
         - Alerts (script `alerts.lua`)
         - Sources (script `source.lua`)
     - ESC & Motors (menuId `esc_motors`)

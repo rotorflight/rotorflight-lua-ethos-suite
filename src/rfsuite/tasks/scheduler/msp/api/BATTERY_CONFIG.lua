@@ -21,6 +21,10 @@ local tblBatterySource = {
     [3] = "@i18n(api.BATTERY_CONFIG.source_esc)@",
 }
 
+local tblBatteryType = {
+    "1", "2", "3", "4", "5", "6"
+}
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0},
@@ -32,7 +36,15 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "vbatfullcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1},
     {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5},
     {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}},
-    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%"}
+    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%"},
+    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 0, 9}, simResponse = {232, 3}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 5}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 0, 9}, simResponse = {64, 6}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 0, 9}, simResponse = {108, 7}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 0, 9}, simResponse = {152, 8}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 0, 9}, simResponse = {196, 9}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+    {field = "batteryProfile", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1},
+
 }
 -- LuaFormatter on
 

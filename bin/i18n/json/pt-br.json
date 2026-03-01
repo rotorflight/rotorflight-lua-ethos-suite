@@ -31,6 +31,13 @@
         "reverse_text": false,
         "max_length": 36
       },
+      "batteryProfile": {
+        "english": "Selected battery profile (0-5)",
+        "translation": "Selected battery profile (0-5)",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 27
+      },
       "source_adc": {
         "english": "Battery ADC",
         "translation": "Battery ADC",
@@ -7672,6 +7679,162 @@
           "max_length": 3
         }
       },
+      "power": {
+        "alert_name": {
+          "english": "Alerts",
+          "translation": "Alertas",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "alert_type": {
+          "english": "Rx Voltage Alert",
+          "translation": "Alerta Tensão Rx",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "battery_capacity": {
+          "english": "Battery Capacity",
+          "translation": "Capacidade Bateria",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "battery_name": {
+          "english": "Battery",
+          "translation": "Bateria",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bec_voltage_alert": {
+          "english": "BEC Alert Value",
+          "translation": "Valor Alerta BEC",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "calcfuel_local": {
+          "english": "Calculate Fuel Using",
+          "translation": "Calcular Combustível",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 20
+        },
+        "cell_count": {
+          "english": "Cell Count",
+          "translation": "Células",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "consumption_warning_percentage": {
+          "english": "Consumption Warning %",
+          "translation": "Aviso Consumo %",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "current_meter_source": {
+          "english": "Current Source",
+          "translation": "Fonte Corrente",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "full_cell_voltage": {
+          "english": "Full Cell Voltage",
+          "translation": "Tensão Célula Cheia",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "help_p1": {
+          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+          "translation": "As configurações de bateria monitoram a tensão e alertam quando cai abaixo do nível definido.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 162
+        },
+        "max_cell_voltage": {
+          "english": "Max Cell Voltage",
+          "translation": "Tensão Máx. Célula",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "min_cell_voltage": {
+          "english": "Min Cell Voltage",
+          "translation": "Tensão Mín. Célula",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "name": {
+          "english": "Power",
+          "translation": "Potência",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "selected": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "translation": "Valor Alerta RxBatt",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "source_name": {
+          "english": "Sources",
+          "translation": "Fontes",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "timer": {
+          "english": "Flight Time Alarm",
+          "translation": "Alarme Tempo Voo",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "voltage_meter_source": {
+          "english": "Voltage Source",
+          "translation": "Fonte Tensão",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "voltage_multiplier": {
+          "english": "Sag Compensation",
+          "translation": "Compensação Sag",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "warn_cell_voltage": {
+          "english": "Warn Cell Voltage",
+          "translation": "Aviso Tensão Célula",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 17
+        }
+      },
       "ports": {
         "error_eeprom_write_failed": {
           "english": "EEPROM write failed",
@@ -7913,6 +8076,13 @@
           "reverse_text": false,
           "max_length": 20
         },
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
         "cell_count": {
           "english": "Cell Count",
           "translation": "Células",
@@ -7975,6 +8145,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 18
+        },
+        "selected": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "show_battery_profile_startup": {
+          "english": "Show battery type choose (startup)",
+          "translation": "Show battery type choose (startup)",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 34
+        },
+        "show_confirmation_dialog": {
+          "english": "Show confirmation dialog",
+          "translation": "Show confirmation dialog",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 24
         },
         "source_name": {
           "english": "Sources",
@@ -9817,6 +10008,34 @@
           "reverse_text": false,
           "max_length": 19
         },
+        "txt_show_battery_profile_connect": {
+          "english": "Battery Type on connect",
+          "translation": "Battery Type on connect",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "translation": "Battery Type confirmation",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
+        "battery_profile_event": {
+          "english": "Battery",
+          "translation": "Battery",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "battery_capacity_callout": {
+          "english": "Battery capacity",
+          "translation": "Battery capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
         "adj_callouts": {
           "english": "Adjustment Callouts",
           "translation": "Ajustes Áudio",
@@ -11007,6 +11226,13 @@
       "reverse_text": false,
       "max_length": 7
     },
+    "battery_profile": {
+      "english": "Battery Profile",
+      "translation": "Battery Profile",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 12
+    },
     "bec_voltage": {
       "english": "Bec voltage",
       "translation": "Tensão BEC",
@@ -11249,6 +11475,46 @@
     }
   },
   "widgets": {
+    "battery": {
+      "adjustment_active": {
+        "english": "Selection disabled because Battery Profile adjustment is configured.",
+        "max_length": 65,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "no_profiles": {
+        "english": "No battery profiles configured.",
+        "max_length": 33,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "msg_battery_selected": {
+        "english": "Selected battery:",
+        "translation": "Selected battery:",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 17
+      },
+      "msg_select_battery": {
+        "english": "Please select the battery you want to use:",
+        "translation": "Please select the battery you want to use:",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 42
+      },
+      "select_title": {
+        "english": "Select Battery",
+        "max_length": 18,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "title": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      }
+    },
     "bbl": {
       "erase_dataflash": {
         "english": "Erase dataflash",
@@ -11265,6 +11531,19 @@
         "english": "Altitude Max",
         "translation": "Alt. Máxima",
         "needs_translation": false,
+        "reverse_text": false,
+        "max_length": 12
+      },
+      "battery": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "battery_profile": {
+        "english": "Battery Profile",
+        "translation": "Battery Profile",
+        "needs_translation": true,
         "reverse_text": false,
         "max_length": 12
       },

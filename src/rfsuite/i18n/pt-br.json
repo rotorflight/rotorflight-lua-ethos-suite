@@ -31,6 +31,13 @@
         "reverse_text": false,
         "translation": "O número de células na sua bateria."
       },
+      "batteryProfile": {
+        "english": "Selected battery profile (0-5)",
+        "max_length": 27,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Selected battery profile (0-5)"
+      },
       "source_adc": {
         "english": "Battery ADC",
         "max_length": 11,
@@ -7913,6 +7920,13 @@
           "reverse_text": false,
           "translation": "Calcular Combustível"
         },
+        "capacity": {
+          "english": "Capacity",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Capacity"
+        },
         "cell_count": {
           "english": "Cell Count",
           "max_length": 10,
@@ -7975,6 +7989,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Valor Alerta RxBatt"
+        },
+        "selected": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Selected"
+        },
+        "show_battery_profile_startup": {
+          "english": "Show battery type choose (startup)",
+          "max_length": 34,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Show battery type choose (startup)"
+        },
+        "show_confirmation_dialog": {
+          "english": "Show confirmation dialog",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Show confirmation dialog"
         },
         "source_name": {
           "english": "Sources",
@@ -9852,6 +9887,20 @@
           "reverse_text": false,
           "translation": "Áudio"
         },
+        "battery_capacity_callout": {
+          "english": "Battery capacity",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery capacity"
+        },
+        "battery_profile_event": {
+          "english": "Battery",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery"
+        },
         "celcius": {
           "english": "Celsius",
           "max_length": 7,
@@ -10496,6 +10545,20 @@
           "reverse_text": false,
           "translation": "Salvar requer mudanças"
         },
+        "txt_show_battery_profile_connect": {
+          "english": "Battery Type on connect",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery Type on connect"
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "max_length": 25,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Battery Type confirmation"
+        },
         "txt_small": {
           "english": "SMALL",
           "max_length": 5,
@@ -11007,6 +11070,13 @@
       "reverse_text": false,
       "translation": "Y.ângulo"
     },
+    "battery_profile": {
+      "english": "Battery Profile",
+      "max_length": 12,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Battery Profile"
+    },
     "bec_voltage": {
       "english": "Bec voltage",
       "max_length": 11,
@@ -11249,6 +11319,46 @@
     }
   },
   "widgets": {
+    "battery": {
+      "adjustment_active": {
+        "english": "Selection disabled because Battery Profile adjustment is configured.",
+        "max_length": 65,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "msg_battery_selected": {
+        "english": "Selected battery:",
+        "max_length": 17,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Selected battery:"
+      },
+      "msg_select_battery": {
+        "english": "Please select the battery you want to use:",
+        "max_length": 42,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Please select the battery you want to use:"
+      },
+      "no_profiles": {
+        "english": "No battery profiles configured.",
+        "max_length": 33,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "select_title": {
+        "english": "Select Battery",
+        "max_length": 18,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "title": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      }
+    },
     "bbl": {
       "erase_dataflash": {
         "english": "Erase dataflash",
@@ -11267,6 +11377,19 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "Alt. Máxima"
+      },
+      "battery": {
+        "english": "Battery Profile",
+        "max_length": 15,
+        "needs_translation": false,
+        "reverse_text": false
+      },
+      "battery_profile": {
+        "english": "Battery Profile",
+        "max_length": 12,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Battery Profile"
       },
       "bec_voltage": {
         "english": "BEC Voltage",

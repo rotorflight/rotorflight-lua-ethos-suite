@@ -11,6 +11,14 @@ local arg = {...}
 local config = arg[1]
 
 function utils.session()
+    local function prefBool(value, default)
+        if value == nil then return default end
+        if value == true or value == "true" or value == 1 or value == "1" then return true end
+        if value == false or value == "false" or value == 0 or value == "0" then return false end
+        return default
+    end
+
+    local prefs = rfsuite.preferences and rfsuite.preferences.general or {}
     
      if rfsuite.session.originalModelName and model.name then
         rfsuite.utils.log("Restoring model name to: " .. rfsuite.session.originalModelName, "info")
@@ -85,8 +93,10 @@ function utils.session()
         originalModelName = nil,
 
         clockSet = nil,
-        resetMSP = nil
+        resetMSP = nil,
         
+        showBatteryTypeStartup = prefBool(prefs.show_battery_profile_startup, true),
+        showConfirmationDialog = prefBool(prefs.show_confirmation_dialog, false)
     }
 
 end

@@ -33,7 +33,7 @@ local ADJUST_FUNCTIONS = {
     {id = 1, name = "Rate Profile", min = 1, max = 6},
     {id = 2, name = "PID Profile", min = 1, max = 6},
     {id = 3, name = "LED Profile", min = 1, max = 4},
-    {id = 4, name = "OSD Profile", min = 1, max = 3},
+    {id = 4, name = "Battery Profile", min = 0, max = 5},
     {id = 5, name = "Pitch Rate", min = 0, max = 255},
     {id = 6, name = "Roll Rate", min = 0, max = 255},
     {id = 7, name = "Yaw Rate", min = 0, max = 255},

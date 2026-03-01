@@ -60,7 +60,23 @@ local DEFAULT_TOOLBAR_ITEMS = {
                 actions.eraseBlackboxAsk()
             end
         end
-    }  
+    },
+    {
+        name = "@i18n(widgets.dashboard.battery_profile)@",
+        order = 110,
+        icon = "widgets/dashboard/gfx/toolbar_battery.png",
+        iconSize = 55,
+        postConnectComplete = true,
+        apiVersion = {12, 0, 9},
+        apiVersionOp = ">=",
+        flightModes = {"preflight"},
+        onClick = function(dashboard)
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.chooseBatteryType) == "function" then
+                actions.chooseBatteryType()
+            end
+        end
+    }
 }
 
 local M = {}
