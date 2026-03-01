@@ -45,6 +45,10 @@ end
 
 
 function performance.wakeup()
+    local prefs = rfsuite.preferences
+    local dev = prefs and prefs.developer
+    if not (dev and (dev.memstats or dev.overlaystats or dev.overlaystatsadmin)) then return end
+
     local t_now = os_clock()
 
     local dt
