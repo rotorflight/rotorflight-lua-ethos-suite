@@ -11071,11 +11071,11 @@
       "translation": "Y.angle"
     },
     "battery_type": {
-      "english": "Battery Type",
+      "english": "Battery Profile",
       "max_length": 12,
       "needs_translation": true,
       "reverse_text": false,
-      "translation": "Battery Type"
+      "translation": "Battery Profile"
     },
     "bec_voltage": {
       "english": "Bec voltage",
@@ -11385,11 +11385,11 @@
         "reverse_text": false
       },
       "battery_type": {
-        "english": "Battery Type",
+        "english": "Battery Profile",
         "max_length": 12,
         "needs_translation": true,
         "reverse_text": false,
-        "translation": "Battery Type"
+        "translation": "Battery Profile"
       },
       "bec_voltage": {
         "english": "BEC Voltage",

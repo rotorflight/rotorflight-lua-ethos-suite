@@ -13,7 +13,7 @@ local LCD_W, LCD_H
 local BUSY_WAKEUP_RUN_NUM = 2
 local BUSY_WAKEUP_RUN_DEN = 3
 
-local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}, [6] = {object = "battery", name = "Battery Type"}}
+local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}, [6] = {object = "battery", name = "Battery Profile"}}
 
 local function generateWidgetList(tbl)
     local widgets = {}

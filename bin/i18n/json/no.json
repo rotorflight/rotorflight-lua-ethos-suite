@@ -11227,8 +11227,8 @@
       "reverse_text": false
     },
     "battery_type": {
-      "english": "Battery Type",
-      "translation": "Battery Type",
+      "english": "Battery Profile",
+      "translation": "Battery Profile",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
@@ -11541,8 +11541,8 @@
         "reverse_text": false
       },
       "battery_type": {
-        "english": "Battery Type",
-        "translation": "Battery Type",
+        "english": "Battery Profile",
+        "translation": "Battery Profile",
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 12
