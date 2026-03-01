@@ -112,7 +112,7 @@ end
 local function batteryProfileChangeDetection()
     local app = rfsuite.app
     local now = os.clock()
-    local interval = rfsuite.tasks.telemetry.getSensorSource("battery_type") and 0.1 or 1.5
+    local interval = rfsuite.tasks.telemetry.getSensorSource("battery_profile") and 0.1 or 1.5
     if (now - (app.batteryProfileCheckScheduler or 0)) >= interval then
         app.batteryProfileCheckScheduler = now
         app.utils.getCurrentBatteryType()

@@ -80,7 +80,7 @@ local function smartFuelCalc()
 
     if not telemetry then telemetry = rfsuite.tasks.telemetry end
 
-    local batType = telemetry and telemetry.getSensor and telemetry.getSensor("battery_type")
+    local batType = telemetry and telemetry.getSensor and telemetry.getSensor("battery_profile")
     if batType then
         rfsuite.session.activeBatteryType = math_floor(batType)
     end

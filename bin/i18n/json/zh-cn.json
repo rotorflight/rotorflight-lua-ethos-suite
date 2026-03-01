@@ -8153,7 +8153,7 @@
           "reverse_text": false,
           "max_length": 8
         },
-        "show_battery_type_startup": {
+        "show_battery_profile_startup": {
           "english": "Show battery type choose (startup)",
           "translation": "Show battery type choose (startup)",
           "needs_translation": true,
@@ -10008,7 +10008,7 @@
           "reverse_text": false,
           "max_length": 19
         },
-        "txt_show_battery_type_connect": {
+        "txt_show_battery_profile_connect": {
           "english": "Battery Type on connect",
           "translation": "Battery Type on connect",
           "needs_translation": true,
@@ -10022,7 +10022,7 @@
           "reverse_text": false,
           "max_length": 25
         },
-        "battery_type_event": {
+        "battery_profile_event": {
           "english": "Battery",
           "translation": "Battery",
           "needs_translation": true,
@@ -11226,7 +11226,7 @@
       "translation": "Y 角度",
       "reverse_text": false
     },
-    "battery_type": {
+    "battery_profile": {
       "english": "Battery Profile",
       "translation": "Battery Profile",
       "needs_translation": true,
@@ -11540,7 +11540,7 @@
         "needs_translation": false,
         "reverse_text": false
       },
-      "battery_type": {
+      "battery_profile": {
         "english": "Battery Profile",
         "translation": "Battery Profile",
         "needs_translation": true,

@@ -60,7 +60,7 @@ local userpref_defaults = {
         mspstatusdialog = true,
         save_armed_warning = true,
         toolbar_timeout = 10,
-        show_battery_type_startup = true,
+        show_battery_profile_startup = true,
         show_confirmation_dialog = false
     },
     localizations = {
@@ -103,7 +103,7 @@ local userpref_defaults = {
         smartfuelcallout = 0,
         smartfuelrepeats = 1,
         smartfuelhaptic = false,
-        battery_type = true,
+        battery_profile = true,
         adj_v = false,
         adj_f = false,
         otherSoundCfg = true,

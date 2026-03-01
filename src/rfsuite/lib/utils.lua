@@ -95,7 +95,7 @@ function utils.session()
         clockSet = nil,
         resetMSP = nil,
         
-        showBatteryTypeStartup = prefBool(prefs.show_battery_type_startup, true),
+        showBatteryTypeStartup = prefBool(prefs.show_battery_profile_startup, true),
         showConfirmationDialog = prefBool(prefs.show_confirmation_dialog, false)
     }
 

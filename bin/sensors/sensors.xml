@@ -44,7 +44,7 @@
             <Option value="5" label="5" />
             <Option value="6" label="6" />
         </Sensor>
-        <Sensor name="battery_type" label="Battery Profile" type="select" default="0">
+        <Sensor name="battery_profile" label="Battery Profile" type="select" default="0">
             <Option value="0" label="1" />
             <Option value="1" label="2" />
             <Option value="2" label="3" />

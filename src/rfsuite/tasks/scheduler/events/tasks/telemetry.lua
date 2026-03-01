@@ -276,10 +276,10 @@ local eventTable = {
             system_playNumber(math_floor(value))
         end
     }, {
-        sensor = "battery_type",
+        sensor = "battery_profile",
         debounce = 0.25,
         event = function(value)
-            local key = "battery_type"
+            local key = "battery_profile"
             if value == lastValues[key] then return end
             utils.playFile("events", "alerts/battery.wav")
             local cap = resolveBatteryCapacity(math_floor(value))

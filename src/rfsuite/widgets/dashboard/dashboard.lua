@@ -96,7 +96,7 @@ dashboard.toolbar_action_modules = {
     reset_flight = toolbarResetFlight,
     erase_blackbox = toolbarEraseBlackbox,
     launch_app = toolbarLaunchApp,
-    battery_type = toolbarBatteryType
+    battery_profile = toolbarBatteryType
 }
 dashboard.toolbar_actions = {
     resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,

@@ -151,7 +151,7 @@ function utils.getCurrentRateProfile()
 end
 
 function utils.getCurrentBatteryType()
-    local telemetryType = tasks.telemetry.getSensor("battery_type")
+    local telemetryType = tasks.telemetry.getSensor("battery_profile")
     local telemetryValue = tonumber(telemetryType)
 
     local values = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and tasks.msp.api.apidata.values

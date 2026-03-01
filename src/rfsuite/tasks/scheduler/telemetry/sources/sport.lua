@@ -49,7 +49,7 @@ return {
     adj_v = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}},
     pid_profile = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}},
     rate_profile = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}},
-    battery_type = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5133}},
+    battery_profile = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5133}},
     led_profile = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5132}},
     throttle_percent = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269}},
     armdisableflags = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5123}},

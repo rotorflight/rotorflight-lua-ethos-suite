@@ -7997,7 +7997,7 @@
           "reverse_text": false,
           "translation": "Selected"
         },
-        "show_battery_type_startup": {
+        "show_battery_profile_startup": {
           "english": "Show battery type choose (startup)",
           "max_length": 34,
           "needs_translation": true,
@@ -9894,7 +9894,7 @@
           "reverse_text": false,
           "translation": "Battery capacity"
         },
-        "battery_type_event": {
+        "battery_profile_event": {
           "english": "Battery",
           "max_length": 7,
           "needs_translation": true,
@@ -10545,7 +10545,7 @@
           "reverse_text": false,
           "translation": "Save requires changes"
         },
-        "txt_show_battery_type_connect": {
+        "txt_show_battery_profile_connect": {
           "english": "Battery Type on connect",
           "max_length": 23,
           "needs_translation": true,
@@ -11070,7 +11070,7 @@
       "reverse_text": true,
       "translation": "זווית Y"
     },
-    "battery_type": {
+    "battery_profile": {
       "english": "Battery Profile",
       "max_length": 12,
       "needs_translation": true,
@@ -11384,7 +11384,7 @@
         "needs_translation": false,
         "reverse_text": false
       },
-      "battery_type": {
+      "battery_profile": {
         "english": "Battery Profile",
         "max_length": 12,
         "needs_translation": true,
