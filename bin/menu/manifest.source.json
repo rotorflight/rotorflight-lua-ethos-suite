@@ -403,6 +403,7 @@
         },
         {
           "image": "app/modules/esc_tools/esc.png",
+          "loaderspeed": false,
           "name": "ESC Tools",
           "offline": false,
           "script": "app/modules/esc_tools/tools/esc.lua",

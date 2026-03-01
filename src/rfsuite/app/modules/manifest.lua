@@ -349,6 +349,7 @@ return {
                 },
                 {
                     image = "app/modules/esc_tools/esc.png",
+                    loaderspeed = false,
                     name = "@i18n(app.modules.esc_tools.name)@",
                     offline = false,
                     script = "app/modules/esc_tools/tools/esc.lua",

@@ -151,7 +151,11 @@ function container.create(cfg)
             else
                 resolvedScript, speedOverride = resolveItemScript(item)
             end
-            local loaderSpeed = speedOverride or cfg.loaderSpeed or app.loaderSpeed.FAST
+            local showLoader = speedOverride ~= false
+            local loaderSpeed = cfg.loaderSpeed or app.loaderSpeed.FAST
+            if speedOverride ~= nil and speedOverride ~= false then
+                loaderSpeed = speedOverride
+            end
             if type(loaderSpeed) == "string" and app.loaderSpeed then
                 loaderSpeed = app.loaderSpeed[loaderSpeed] or app.loaderSpeed.FAST
             end
@@ -161,7 +165,9 @@ function container.create(cfg)
                 targetScript = "manifest_menu/menu.lua"
             else
                 targetScript = scriptPathFor(cfg, item, resolvedScript)
-                app.ui.progressDisplay(nil, nil, loaderSpeed)
+                if showLoader then
+                    app.ui.progressDisplay(nil, nil, loaderSpeed)
+                end
             end
             local openOpts = {
                 idx = index,
