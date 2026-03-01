@@ -12,24 +12,70 @@ local settings_model = {}
 local themeList = rfsuite.widgets.dashboard.listThemes()
 local formattedThemes = {}
 local formattedThemesModel = {}
+local themeIdByFolder = {}
+local themeById = {}
+local defaultThemeId = 0
 
 local enableWakeup = false
 local prevConnectedState = nil
 
+local function clearTable(tbl)
+    if type(tbl) ~= "table" then return end
+    for k in pairs(tbl) do tbl[k] = nil end
+end
+
 local function generateThemeList()
 
-    settings = rfsuite.preferences.dashboard
+    themeList = rfsuite.widgets.dashboard.listThemes()
 
-    if rfsuite.session.modelPreferences then
+    settings = rfsuite.preferences.dashboard or {}
+
+    if rfsuite.session.modelPreferences and type(rfsuite.session.modelPreferences.dashboard) == "table" then
         settings_model = rfsuite.session.modelPreferences.dashboard
     else
         settings_model = {}
     end
 
-    for i, theme in ipairs(themeList) do table.insert(formattedThemes, {theme.name, theme.idx}) end
+    clearTable(formattedThemes)
+    clearTable(formattedThemesModel)
+    clearTable(themeIdByFolder)
+    clearTable(themeById)
+    defaultThemeId = 0
+
+    for i, theme in ipairs(themeList) do
+        local themeId = tonumber(theme.idx) or i
+        local themeName = theme.name or ("Theme " .. tostring(i))
+        local folderKey = nil
+        if type(theme.source) == "string" and type(theme.folder) == "string" then
+            folderKey = theme.source .. "/" .. theme.folder
+            themeIdByFolder[folderKey] = themeId
+        end
+        themeById[themeId] = theme
+        if defaultThemeId == 0 then defaultThemeId = themeId end
+        table.insert(formattedThemes, {themeName, themeId})
+    end
 
     table.insert(formattedThemesModel, {"@i18n(app.modules.settings.dashboard_theme_panel_model_disabled)@", 0})
-    for i, theme in ipairs(themeList) do table.insert(formattedThemesModel, {theme.name, theme.idx}) end
+    for i, theme in ipairs(themeList) do
+        local themeId = tonumber(theme.idx) or i
+        local themeName = theme.name or ("Theme " .. tostring(i))
+        table.insert(formattedThemesModel, {themeName, themeId})
+    end
+end
+
+local function getThemeIdFromFolder(folderName, allowDisabled)
+    if type(folderName) == "string" and folderName ~= "" and folderName ~= "nil" then
+        local id = themeIdByFolder[folderName]
+        if type(id) == "number" then return id end
+    end
+    if allowDisabled then return 0 end
+    return defaultThemeId
+end
+
+local function getThemeByChoiceValue(choiceValue)
+    local id = tonumber(choiceValue)
+    if not id then return nil end
+    return themeById[id]
 end
 
 local function openPage(opts)
@@ -62,12 +108,12 @@ local function openPage(opts)
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemes, function()
         if rfsuite.preferences and rfsuite.preferences.dashboard then
             local folderName = settings.theme_preflight
-            for _, theme in ipairs(themeList) do if (theme.source .. "/" .. theme.folder) == folderName then return theme.idx end end
+            return getThemeIdFromFolder(folderName, false)
         end
-        return nil
+        return defaultThemeId
     end, function(newValue)
         if rfsuite.preferences and rfsuite.preferences.dashboard then
-            local theme = themeList[newValue]
+            local theme = getThemeByChoiceValue(newValue)
             if theme then settings.theme_preflight = theme.source .. "/" .. theme.folder end
         end
     end)
@@ -79,12 +125,12 @@ local function openPage(opts)
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemes, function()
         if rfsuite.preferences and rfsuite.preferences.dashboard then
             local folderName = settings.theme_inflight
-            for _, theme in ipairs(themeList) do if (theme.source .. "/" .. theme.folder) == folderName then return theme.idx end end
+            return getThemeIdFromFolder(folderName, false)
         end
-        return nil
+        return defaultThemeId
     end, function(newValue)
         if rfsuite.preferences and rfsuite.preferences.dashboard then
-            local theme = themeList[newValue]
+            local theme = getThemeByChoiceValue(newValue)
             if theme then settings.theme_inflight = theme.source .. "/" .. theme.folder end
         end
     end)
@@ -96,12 +142,12 @@ local function openPage(opts)
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemes, function()
         if rfsuite.preferences and rfsuite.preferences.dashboard then
             local folderName = settings.theme_postflight
-            for _, theme in ipairs(themeList) do if (theme.source .. "/" .. theme.folder) == folderName then return theme.idx end end
+            return getThemeIdFromFolder(folderName, false)
         end
-        return nil
+        return defaultThemeId
     end, function(newValue)
         if rfsuite.preferences and rfsuite.preferences.dashboard then
-            local theme = themeList[newValue]
+            local theme = getThemeByChoiceValue(newValue)
             if theme then settings.theme_postflight = theme.source .. "/" .. theme.folder end
         end
     end)
@@ -114,14 +160,14 @@ local function openPage(opts)
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_preflight)@")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemesModel, function()
-        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
+        if type(settings_model) == "table" then
             local folderName = settings_model.theme_preflight
-            for _, theme in ipairs(themeList) do if (theme.source .. "/" .. theme.folder) == folderName then return theme.idx end end
+            return getThemeIdFromFolder(folderName, true)
         end
-        return nil
+        return 0
     end, function(newValue)
-        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
-            local theme = themeList[newValue]
+        if type(settings_model) == "table" then
+            local theme = getThemeByChoiceValue(newValue)
             if theme then
                 settings_model.theme_preflight = theme.source .. "/" .. theme.folder
             else
@@ -136,14 +182,14 @@ local function openPage(opts)
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_inflight)@")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemesModel, function()
-        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
+        if type(settings_model) == "table" then
             local folderName = settings_model.theme_inflight
-            for _, theme in ipairs(themeList) do if (theme.source .. "/" .. theme.folder) == folderName then return theme.idx end end
+            return getThemeIdFromFolder(folderName, true)
         end
-        return nil
+        return 0
     end, function(newValue)
-        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
-            local theme = themeList[newValue]
+        if type(settings_model) == "table" then
+            local theme = getThemeByChoiceValue(newValue)
             if theme then
                 settings_model.theme_inflight = theme.source .. "/" .. theme.folder
             else
@@ -158,14 +204,14 @@ local function openPage(opts)
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_postflight)@")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemesModel, function()
-        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
+        if type(settings_model) == "table" then
             local folderName = settings_model.theme_postflight
-            for _, theme in ipairs(themeList) do if (theme.source .. "/" .. theme.folder) == folderName then return theme.idx end end
+            return getThemeIdFromFolder(folderName, true)
         end
-        return nil
+        return 0
     end, function(newValue)
-        if rfsuite.preferences and rfsuite.preferences.dashboard then
-            local theme = themeList[newValue]
+        if type(settings_model) == "table" then
+            local theme = getThemeByChoiceValue(newValue)
             if theme then
                 settings_model.theme_postflight = theme.source .. "/" .. theme.folder
             else
@@ -192,6 +238,7 @@ local function onSaveMenu()
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
 
         if rfsuite.session.isConnected and rfsuite.session.mcu_id and rfsuite.session.modelPreferencesFile then
+            rfsuite.session.modelPreferences.dashboard = rfsuite.session.modelPreferences.dashboard or {}
             for key, value in pairs(settings_model) do rfsuite.session.modelPreferences.dashboard[key] = value end
             rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
         end
@@ -234,10 +281,16 @@ local function wakeup()
 
         if currState then
             generateThemeList()
-            for i = 4, 6 do rfsuite.app.formFields[i]:values(formattedThemesModel) end
+            for i = 4, 6 do
+                local f = rfsuite.app.formFields[i]
+                if f and f.values then f:values(formattedThemesModel) end
+            end
         end
 
-        for i = 4, 6 do rfsuite.app.formFields[i]:enable(currState) end
+        for i = 4, 6 do
+            local f = rfsuite.app.formFields[i]
+            if f and f.enable then f:enable(currState) end
+        end
 
         prevConnectedState = currState
     end
