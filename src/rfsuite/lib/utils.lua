@@ -440,6 +440,20 @@ end
 utils._imagePathCache = {}
 utils._imageBitmapCache = {}
 
+function utils.clearImageCaches()
+    if utils._imagePathCache then
+        for key in pairs(utils._imagePathCache) do
+            utils._imagePathCache[key] = nil
+        end
+    end
+
+    if utils._imageBitmapCache then
+        for key in pairs(utils._imageBitmapCache) do
+            utils._imageBitmapCache[key] = nil
+        end
+    end
+end
+
 function utils.loadImage(image1, image2, image3)
 
     local function getCachedBitmap(key, tryPaths)

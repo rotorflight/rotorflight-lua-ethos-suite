@@ -80,7 +80,7 @@ local function exitApp()
     if app.triggers.exitAPP then
         app.triggers.exitAPP = false
         form.invalidate()
-        system.exit()
+        app.close()
     end
 end
 

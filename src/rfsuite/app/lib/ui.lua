@@ -27,7 +27,7 @@ end
 
 local function NOOP_PAINT() end
 
-local MASK_CACHE_MAX = 32
+local MASK_CACHE_MAX = 16  -- a small cache for recently used masks; evict old entries to avoid unbounded memory growth.
 ui._maskCache = ui._maskCache or {}
 ui._maskCacheOrder = ui._maskCacheOrder or {}
 
@@ -61,6 +61,11 @@ function ui.loadMask(path)
     -- Cache misses too so bad/optional paths do not repeatedly allocate/check.
     maskCacheInsert(path, mask or false)
     return mask
+end
+
+function ui.clearMaskCaches()
+    wipeTable(ui._maskCache)
+    wipeTable(ui._maskCacheOrder)
 end
 
 local arg = {...}

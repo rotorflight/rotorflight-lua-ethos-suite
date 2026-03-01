@@ -294,9 +294,7 @@ function app.event(widget, category, value, x, y)
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
-        app.utils.invalidatePages()
-        system.exit()
-        return 0
+        return app.close()
     end
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
@@ -398,6 +396,20 @@ function app.close()
         end
     elseif app.Page and app.Page.close then
         app.Page.close()
+    end
+
+    if app.ui and app.ui.clearMaskCaches then
+        local ok, err = pcall(app.ui.clearMaskCaches)
+        if not ok then
+            log("app.close clearMaskCaches failed: " .. tostring(err), "debug")
+        end
+    end
+
+    if rfsuite.utils and rfsuite.utils.clearImageCaches then
+        local ok, err = pcall(rfsuite.utils.clearImageCaches)
+        if not ok then
+            log("app.close clearImageCaches failed: " .. tostring(err), "debug")
+        end
     end
 
     app.uiState = app.uiStatus.init
