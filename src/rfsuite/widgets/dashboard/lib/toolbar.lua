@@ -84,7 +84,11 @@ end
 
 local function getToolbarBounds(dashboard, lcd)
     local W, H = lcd.getWindowSize()
-    local barH = math.floor(H * 0.4)
+    -- Keep percentage-based sizing, but avoid overstretch on taller/fullscreen displays.
+    local preferredH = H * 0.40
+    local widthCappedH = W * 0.16
+    local minH = H * 0.24
+    local barH = math.floor(math.max(minH, math.min(preferredH, widthCappedH)))
     local bounds = dashboard._layoutBounds
     local x = 0
     local w = W
