@@ -28,6 +28,98 @@ local imageCache = {}
 local fontCache
 local progressDialog
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+local DEFAULT_COLOR_VARIANT_FACTOR = 0.3
+
+local NAMED_COLORS = {
+    red = {255, 0, 0},
+    green = {0, 188, 4},
+    blue = {0, 122, 255},
+    white = {255, 255, 255},
+    black = {0, 0, 0},
+    gray = {185, 185, 185},
+    grey = {185, 185, 185},
+    orange = {255, 165, 0},
+    yellow = {255, 255, 0},
+    cyan = {0, 255, 255},
+    magenta = {255, 0, 255},
+    pink = {255, 105, 180},
+    purple = {128, 0, 128},
+    violet = {143, 0, 255},
+    brown = {139, 69, 19},
+    lime = {0, 255, 0},
+    olive = {128, 128, 0},
+    gold = {255, 215, 0},
+    silver = {192, 192, 192},
+    teal = {0, 128, 128},
+    navy = {0, 0, 128},
+    maroon = {128, 0, 0},
+    beige = {245, 245, 220},
+    turquoise = {64, 224, 208},
+    indigo = {75, 0, 130},
+    coral = {255, 127, 80},
+    salmon = {250, 128, 114},
+    mint = {62, 180, 137},
+    lightgreen = {144, 238, 144},
+    darkgreen = {0, 100, 0},
+    lightred = {255, 102, 102},
+    darkred = {139, 0, 0},
+    lightorange = {255, 200, 100},
+    lightblue = {173, 216, 230},
+    darkblue = {0, 0, 139},
+    lightpurple = {216, 191, 216},
+    darkpurple = {48, 25, 52},
+    lightyellow = {255, 255, 224},
+    darkyellow = {204, 204, 0},
+    lightgrey = {211, 211, 211},
+    lightgray = {211, 211, 211},
+    darkgrey = {90, 90, 90},
+    darkgray = {90, 90, 90},
+    lmgrey = {80, 80, 80},
+    darkwhite = {245, 245, 245},
+    headergrey = {35, 35, 35},
+    bggrey = {40, 40, 40},
+    bgdarkgrey = {25, 25, 25},
+    bglines = {65, 65, 65}
+}
+
+local resolveColorCache = {}
+local themeFallbackPaletteCache = {dark = nil, light = nil}
+
+local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
+
+local function variantFactorOrDefault(variantFactor)
+    if type(variantFactor) == "number" then
+        return max(0, min(1, variantFactor))
+    end
+    return DEFAULT_COLOR_VARIANT_FACTOR
+end
+
+local function buildVariantColor(base, prefix, factor)
+    if prefix == "dark" then
+        return lcd.RGB(clampColorByte(base[1] * (1 - factor)), clampColorByte(base[2] * (1 - factor)), clampColorByte(base[3] * (1 - factor)), 1)
+    end
+    return lcd.RGB(clampColorByte(base[1] + (255 - base[1]) * factor), clampColorByte(base[2] + (255 - base[2]) * factor), clampColorByte(base[3] + (255 - base[3]) * factor), 1)
+end
+
+local function getThemeFallbackPalette(isDark)
+    local key = isDark and "dark" or "light"
+    local cached = themeFallbackPaletteCache[key]
+    if cached then return cached end
+
+    local fillOrFrame = isDark and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    local white = lcd.RGB(255, 255, 255)
+    cached = {
+        fillcolor = fillOrFrame,
+        fillbgcolor = fillOrFrame,
+        framecolor = fillOrFrame,
+        textcolor = white,
+        titlecolor = white,
+        accentcolor = white,
+        defaultColor = fillOrFrame
+    }
+    themeFallbackPaletteCache[key] = cached
+    return cached
+end
 
 function utils.isFullScreen(w, h)
 
@@ -344,85 +436,29 @@ function utils.screenError(msg, border, pct, padX, padY)
 end
 
 function utils.resolveColor(value, variantFactor)
-
-    local namedColors = {
-        red = {255, 0, 0},
-        green = {0, 188, 4},
-        blue = {0, 122, 255},
-        white = {255, 255, 255},
-        black = {0, 0, 0},
-        gray = {185, 185, 185},
-        grey = {185, 185, 185},
-        orange = {255, 165, 0},
-        yellow = {255, 255, 0},
-        cyan = {0, 255, 255},
-        magenta = {255, 0, 255},
-        pink = {255, 105, 180},
-        purple = {128, 0, 128},
-        violet = {143, 0, 255},
-        brown = {139, 69, 19},
-        lime = {0, 255, 0},
-        olive = {128, 128, 0},
-        gold = {255, 215, 0},
-        silver = {192, 192, 192},
-        teal = {0, 128, 128},
-        navy = {0, 0, 128},
-        maroon = {128, 0, 0},
-        beige = {245, 245, 220},
-        turquoise = {64, 224, 208},
-        indigo = {75, 0, 130},
-        coral = {255, 127, 80},
-        salmon = {250, 128, 114},
-        mint = {62, 180, 137},
-        lightgreen = {144, 238, 144},
-        darkgreen = {0, 100, 0},
-        lightred = {255, 102, 102},
-        darkred = {139, 0, 0},
-        lightorange = {255, 200, 100},
-        lightblue = {173, 216, 230},
-        darkblue = {0, 0, 139},
-        lightpurple = {216, 191, 216},
-        darkpurple = {48, 25, 52},
-        lightyellow = {255, 255, 224},
-        darkyellow = {204, 204, 0},
-        lightgrey = {211, 211, 211},
-        lightgray = {211, 211, 211},
-        darkgrey = {90, 90, 90},
-        darkgray = {90, 90, 90},
-        lmgrey = {80, 80, 80},
-        darkwhite = {245, 245, 245},
-        headergrey = {35, 35, 35},
-        bggrey = {40, 40, 40},
-        bgdarkgrey = {25, 25, 25},
-        bglines = {65, 65, 65},
-    }
-
-    local VARIANT_FACTOR = type(variantFactor) == "number" and max(0, min(1, variantFactor)) or 0.3
-
-    local function clamp(v) return max(0, min(255, floor(v + 0.5))) end
-
-    local function lighten(rgb) return {clamp(rgb[1] + (255 - rgb[1]) * VARIANT_FACTOR), clamp(rgb[2] + (255 - rgb[2]) * VARIANT_FACTOR), clamp(rgb[3] + (255 - rgb[3]) * VARIANT_FACTOR)} end
-
-    local function darken(rgb) return {clamp(rgb[1] * (1 - VARIANT_FACTOR)), clamp(rgb[2] * (1 - VARIANT_FACTOR)), clamp(rgb[3] * (1 - VARIANT_FACTOR))} end
-
     if type(value) == "string" then
         local lower = value:lower()
+        local factor = variantFactorOrDefault(variantFactor)
+        local cacheKey = lower .. "|" .. factor
+        local cached = resolveColorCache[cacheKey]
+        if cached ~= nil then return cached end
 
-        local prefix, baseName = lower:match("^(bright)(.+)"), lower:match("^bright(.+)")
-        if not prefix then prefix, baseName = lower:match("^(light)(.+)"), lower:match("^light(.+)") end
-        if not prefix then prefix, baseName = lower:match("^(dark)(.+)"), lower:match("^dark(.+)") end
+        local prefix, baseName = lower:match("^(bright|light|dark)(.+)$")
 
         if prefix and baseName then
-            local baseColor = namedColors[baseName]
+            local baseColor = NAMED_COLORS[baseName]
             if baseColor then
-                local rgb = (prefix == "dark") and darken(baseColor) or lighten(baseColor)
-                return lcd.RGB(rgb[1], rgb[2], rgb[3], 1)
+                local color = buildVariantColor(baseColor, prefix, factor)
+                resolveColorCache[cacheKey] = color
+                return color
             end
-
-        elseif namedColors[lower] then
-
-            local c = namedColors[lower]
-            return lcd.RGB(c[1], c[2], c[3], 1)
+        else
+            local c = NAMED_COLORS[lower]
+            if c then
+                local color = lcd.RGB(c[1], c[2], c[3], 1)
+                resolveColorCache[cacheKey] = color
+                return color
+            end
         end
 
     elseif type(value) == "table" and #value >= 3 then
@@ -444,21 +480,8 @@ function utils.resolveThemeColor(colorkey, value)
         if resolved then return resolved end
     end
 
-    if colorkey == "fillcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "fillbgcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "framecolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "textcolor" then
-        return lcd.RGB(255, 255, 255)
-    elseif colorkey == "titlecolor" then
-        return lcd.RGB(255, 255, 255)
-    elseif colorkey == "accentcolor" then
-        return lcd.RGB(255, 255, 255)
-    end
-
-    return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    local palette = getThemeFallbackPalette(lcd.darkMode())
+    return palette[colorkey] or palette.defaultColor
 end
 
 function utils.resolveThemeColorArray(colorkey, arr, out)
