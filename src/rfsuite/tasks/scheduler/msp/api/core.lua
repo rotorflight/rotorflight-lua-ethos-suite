@@ -373,7 +373,7 @@ function core.buildFullPayload(apiname, payload, api_structure)
 
         -- Decimal-handling fallback
         if not actual and field_def.decimals then
-            scale = scale / rfsuite.app.utils.decimalInc(field_def.decimals)
+            scale = scale / utils.decimalInc(field_def.decimals)
         end
 
         value = math_floor(value * scale + 0.5)

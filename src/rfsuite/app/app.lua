@@ -18,6 +18,38 @@ local busyUiTick = 0
 local BUSY_UI_RUN_NUM = 2
 local BUSY_UI_RUN_DEN = 3
 
+local function closeTransientDialogs()
+    if not app or not app.dialogs then return end
+
+    local progressHandle = app.dialogs.progress
+    local saveHandle = app.dialogs.save
+
+    if app.dialogs.progressDisplay and progressHandle and progressHandle.close then
+        pcall(function() progressHandle:close() end)
+    end
+    if app.dialogs.saveDisplay and saveHandle and saveHandle.close then
+        pcall(function() saveHandle:close() end)
+    end
+
+    if app.ui and app.ui.clearProgressDialog then
+        app.ui.clearProgressDialog(progressHandle)
+        app.ui.clearProgressDialog(saveHandle)
+    end
+
+    app.dialogs.progressDisplay = false
+    app.dialogs.saveDisplay = false
+    app.dialogs.progressWatchDog = nil
+    app.dialogs.saveWatchDog = nil
+    app.dialogs.progressSpeed = nil
+    app.dialogs.progressCounter = 0
+    app.dialogs.saveProgressCounter = 0
+    app.triggers.closeProgressLoader = false
+    app.triggers.closeProgressLoaderNoisProcessed = false
+    app.triggers.closeSave = false
+    app.triggers.closeSaveFake = false
+    app.triggers.isSaving = false
+end
+
 local function playNoOpSaveTone()
     local now = os.clock()
     if (now - lastNoOpSaveToneAt) < 0.25 then return end
@@ -35,6 +67,11 @@ end
 
 local arg = {...}
 local config = arg[1]
+
+local function isMaxInstructionError(err)
+    local msg = tostring(err)
+    return msg:find("Max instructions count reached", 1, true) or msg:find("Max instructions count", 1, true)
+end
 
 -- Make sure this is set - even if not initialised
 app.guiIsRunning = false
@@ -56,11 +93,29 @@ function app.wakeup_protected()
         if ok then
             app._pendingMainMenuOpen = false
         else
-            local msg = tostring(err)
-            if msg:find("Max instructions count reached", 1, true) then
+            if isMaxInstructionError(err) then
                 -- Retry on next wakeup tick when the VM budget resets.
                 return
             end
+            error(err)
+        end
+    end
+
+    -- Trap deferred page openings and retry them on wakeup to avoid VM instruction
+    -- limit issues when pages are opened from a busy input/event tick.
+    if app._pendingOpenPageOpts and app.ui and app.ui.openPage then
+        local pendingOpts = app._pendingOpenPageOpts
+        local ok, err = pcall(app.ui.openPage, pendingOpts)
+        if ok then
+            if app._pendingOpenPageOpts == pendingOpts then
+                app._pendingOpenPageOpts = nil
+            end
+        else
+            if isMaxInstructionError(err) then
+                -- Retry on next wakeup tick when the VM budget resets.
+                return
+            end
+            app._pendingOpenPageOpts = nil
             error(err)
         end
     end
@@ -196,6 +251,7 @@ function app.create()
         app.triggers.wasConnected = false -- last connection state
         app.triggers.isArmed = false -- model armed flag
         app.triggers.showSaveArmedWarning = false -- warn when saving armed
+        app.triggers.rebootInProgress = false -- expected reboot/link drop in progress
 
         -- default speeds for loaders (multipliers of default animation speed)
         app.loaderSpeed = {
@@ -221,6 +277,7 @@ function app.create()
     end
 
     app._pendingMainMenuOpen = true
+    app._pendingOpenPageOpts = nil
 end
 
 function app.event(widget, category, value, x, y)
@@ -237,9 +294,7 @@ function app.event(widget, category, value, x, y)
 
     if value == KEY_RTN_LONG then
         log("KEY_RTN_LONG", "info")
-        app.utils.invalidatePages()
-        system.exit()
-        return 0
+        return app.close()
     end
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
@@ -267,11 +322,10 @@ function app.event(widget, category, value, x, y)
 
         if isCloseEvent then
             log("EVT_CLOSE", "info")
-            if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-            if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+            closeTransientDialogs()
             if app._forceMenuToMain then
                 app.ui.openMainMenu()
-            elseif app.Page.onNavMenu then
+            elseif app.Page and app.Page.onNavMenu then
                 app.Page.onNavMenu(app.Page)
             else
                 app.ui.openMenuContext()
@@ -280,7 +334,7 @@ function app.event(widget, category, value, x, y)
         end
 
         if value == KEY_ENTER_LONG then
-            if app.Page.navButtons and app.Page.navButtons.save == false then return true end
+            if app.Page and app.Page.navButtons and app.Page.navButtons.save == false then return true end
             local dirtyPref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
             local requireDirty = not (dirtyPref == false or dirtyPref == "false")
 
@@ -299,8 +353,7 @@ function app.event(widget, category, value, x, y)
             end
 
             log("EVT_ENTER_LONG (PAGES)", "info")
-            if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-            if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+            closeTransientDialogs()
             if app.Page and app.Page.onSaveMenu then
                 app.Page.onSaveMenu(app.Page)
             else
@@ -313,8 +366,7 @@ function app.event(widget, category, value, x, y)
 
     if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
         log("EVT_ENTER_LONG (MAIN MENU)", "info")
-        if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
-        if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+        closeTransientDialogs()
         system.killEvents(KEY_ENTER_BREAK)
         return true
     end
@@ -346,10 +398,23 @@ function app.close()
         app.Page.close()
     end
 
+    if app.ui and app.ui.clearMaskCaches then
+        local ok, err = pcall(app.ui.clearMaskCaches)
+        if not ok then
+            log("app.close clearMaskCaches failed: " .. tostring(err), "debug")
+        end
+    end
+
+    if rfsuite.utils and rfsuite.utils.clearImageCaches then
+        local ok, err = pcall(rfsuite.utils.clearImageCaches)
+        if not ok then
+            log("app.close clearImageCaches failed: " .. tostring(err), "debug")
+        end
+    end
+
     app.uiState = app.uiStatus.init
 
-    if app.dialogs.progress then app.dialogs.progress:close() end
-    if app.dialogs.save then app.dialogs.save:close() end
+    closeTransientDialogs()
     if app.dialogs.noLink then app.dialogs.noLink:close() end
 
     config.useCompiler = true

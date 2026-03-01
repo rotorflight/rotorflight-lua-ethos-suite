@@ -7,7 +7,9 @@ local buildContainer = assert(loadfile("app/lib/menu_container.lua"))()
 
 local submenu = {}
 local manifestPath = "app/modules/manifest.lua"
+local menuSpecPathPrefix = "app/modules/manifest_menus/"
 local manifestCache = nil
+local manifestMenuSpecCache = {}
 
 local function cloneShallow(src)
     local out = {}
@@ -53,20 +55,46 @@ local function loadManifest()
     return manifestCache
 end
 
+local function loadManifestMenuSpec(menuId)
+    if type(menuId) ~= "string" or menuId == "" then return nil end
+
+    local cached = manifestMenuSpecCache[menuId]
+    if cached ~= nil then
+        if cached == false then return nil end
+        return cached
+    end
+
+    local chunk = loadfile(menuSpecPathPrefix .. menuId .. ".lua")
+    if not chunk then
+        manifestMenuSpecCache[menuId] = false
+        return nil
+    end
+    local ok, spec = pcall(chunk)
+    if not ok or type(spec) ~= "table" then
+        manifestMenuSpecCache[menuId] = false
+        return nil
+    end
+    manifestMenuSpecCache[menuId] = spec
+    return spec
+end
+
 local function resolveManifestMenuSpec(menuId)
     if type(menuId) ~= "string" or menuId == "" then
         error("submenu.createFromManifest requires opts.menuId")
     end
 
-    local manifest = loadManifest()
-    local menus = manifest.menus
-    if type(menus) ~= "table" then
-        error("Manifest has no menus table for submenu id: " .. menuId)
-    end
-
-    local spec = menus[menuId]
+    local spec = loadManifestMenuSpec(menuId)
     if type(spec) ~= "table" then
-        error("No manifest submenu entry for id: " .. menuId)
+        local manifest = loadManifest()
+        local menus = manifest.menus
+        if type(menus) ~= "table" then
+            error("Manifest has no menus table for submenu id: " .. menuId)
+        end
+
+        spec = menus[menuId]
+        if type(spec) ~= "table" then
+            error("No manifest submenu entry for id: " .. menuId)
+        end
     end
 
     local cfg = cloneShallow(spec)

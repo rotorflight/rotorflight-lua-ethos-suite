@@ -55,8 +55,8 @@ local function openPage(opts)
     rfsuite.app.lastLabel = nil
 
     local app = rfsuite.app
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
+    if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
     rfsuite.app.dashboardEditingTheme = source .. "/" .. folder
 

@@ -71,8 +71,8 @@ local function openPage(opts)
 
     app.formLineCnt = 0
 
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
+    if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
     local posText = {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
     for i, v in ipairs(sensorList or {}) do

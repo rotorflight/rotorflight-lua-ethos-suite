@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local lcd = lcd
+local rfutils = rfsuite.utils
 
 local tables = {}
 
@@ -34,19 +35,6 @@ local function getRateType()
     end
 
     return nil
-end
-
-local function resolveScriptPath(script)
-    if type(script) ~= "string" then return nil, nil end
-    local relativeScript = script
-    if relativeScript:sub(1, 12) == "app/modules/" then
-        relativeScript = relativeScript:sub(13)
-    end
-    local modulePath = script
-    if modulePath:sub(1, 4) ~= "app/" then
-        modulePath = "app/modules/" .. modulePath
-    end
-    return modulePath, relativeScript
 end
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
@@ -108,8 +96,10 @@ local function openPage(opts)
     local title = opts.title
     local script = opts.script
 
-    local modulePath, relativeScript = resolveScriptPath(script)
-    rfsuite.app.Page = assert(loadfile(modulePath))()
+    local relativeScript = script
+    if type(relativeScript) == "string" and relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
@@ -183,8 +173,8 @@ local function openPage(opts)
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-            local minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
-            local maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
+            local minValue = f.min * rfutils.decimalInc(f.decimals)
+            local maxValue = f.max * rfutils.decimalInc(f.decimals)
             if f.mult ~= nil then
                 minValue = minValue * f.mult
                 maxValue = maxValue * f.mult
@@ -218,7 +208,7 @@ local function openPage(opts)
                 f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
             end)
             if f.default ~= nil then
-                local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
+                local default = f.default * rfutils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
                 if f.scale ~= nil then default = math.floor(default / f.scale) end
                 rfsuite.app.formFields[i]:default(default)

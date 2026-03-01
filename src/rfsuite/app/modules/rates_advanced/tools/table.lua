@@ -7,6 +7,8 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
+local rfutils = rfsuite.utils
+
 local activateWakeup = false
 local extraMsgOnSave = nil
 local resetRates = false
@@ -88,7 +90,7 @@ local function preSave(self)
             else
 
                 local default = v.default or 0
-                default = default * rfsuite.app.utils.decimalInc(v.decimals)
+                default = default * rfutils.decimalInc(v.decimals)
                 if v.mult ~= nil then default = math.floor(default * (v.mult)) end
                 if v.scale ~= nil then default = math.floor(default / v.scale) end
 

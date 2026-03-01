@@ -345,6 +345,16 @@ function utils.round(num, places)
     end
 end
 
+function utils.decimalInc(dec)
+    if dec == nil then
+        return 1
+    elseif dec > 0 and dec <= 10 then
+        return 10 ^ dec
+    else
+        return nil
+    end
+end
+
 function utils.joinTableItems(tbl, delimiter, maxItems)
     if type(tbl) ~= "table" then
         if tbl == nil then return "" end
@@ -439,6 +449,20 @@ end
 
 utils._imagePathCache = {}
 utils._imageBitmapCache = {}
+
+function utils.clearImageCaches()
+    if utils._imagePathCache then
+        for key in pairs(utils._imagePathCache) do
+            utils._imagePathCache[key] = nil
+        end
+    end
+
+    if utils._imageBitmapCache then
+        for key in pairs(utils._imageBitmapCache) do
+            utils._imageBitmapCache[key] = nil
+        end
+    end
+end
 
 function utils.loadImage(image1, image2, image3)
 

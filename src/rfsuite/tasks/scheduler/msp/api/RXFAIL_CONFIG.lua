@@ -65,36 +65,43 @@ local function normalizeWriteItems(payloadData, parsed)
     for channelIndex = 1, MAX_SUPPORTED_RC_CHANNEL_COUNT do
         local modeField = "channel_" .. channelIndex .. "_mode"
         local valueField = "channel_" .. channelIndex .. "_value"
+        local parsedMode = parsed and parsed[modeField] or nil
+        local parsedValue = parsed and parsed[valueField] or nil
 
-        local mode = payloadData[modeField]
-        if mode == nil and parsed then mode = parsed[modeField] end
-        if mode == nil then mode = 0 end
+        -- FC replies only include active RC channels. Skip channels not present
+        -- in the read data to avoid out-of-range index writes.
+        local channelAvailable = (not parsed) or (parsedMode ~= nil) or (parsedValue ~= nil)
+        if channelAvailable then
+            local mode = payloadData[modeField]
+            if mode == nil and parsed then mode = parsedMode end
+            if mode == nil then mode = 0 end
 
-        local value = payloadData[valueField]
-        if value == nil and parsed then value = parsed[valueField] end
-        if value == nil then value = 1500 end
+            local value = payloadData[valueField]
+            if value == nil and parsed then value = parsedValue end
+            if value == nil then value = 1500 end
 
-        local modeNum = math_floor(tonumber(mode) or 0)
-        local valueNum = math_floor(tonumber(value) or 1500)
+            local modeNum = math_floor(tonumber(mode) or 0)
+            local valueNum = math_floor(tonumber(value) or 1500)
 
-        local changed = true
-        if parsed then
-            local prevMode = math_floor(tonumber(parsed[modeField]) or 0)
-            local prevValue = math_floor(tonumber(parsed[valueField]) or 0)
-            changed = not (prevMode == modeNum and prevValue == valueNum)
-        end
+            local changed = true
+            if parsed then
+                local prevMode = math_floor(tonumber(parsedMode) or modeNum)
+                local prevValue = math_floor(tonumber(parsedValue) or valueNum)
+                changed = not (prevMode == modeNum and prevValue == valueNum)
+            end
 
-        if changed then
-            local writeData = {
-                index = channelIndex - 1,
-                mode = modeNum,
-                value = valueNum
-            }
-            local payload = core.buildFullPayload(API_NAME, writeData, MSP_API_STRUCTURE_WRITE)
-            items[#items + 1] = {
-                index = channelIndex - 1,
-                payload = payload
-            }
+            if changed then
+                local writeData = {
+                    index = channelIndex - 1,
+                    mode = modeNum,
+                    value = valueNum
+                }
+                local payload = core.buildFullPayload(API_NAME, writeData, MSP_API_STRUCTURE_WRITE)
+                items[#items + 1] = {
+                    index = channelIndex - 1,
+                    payload = payload
+                }
+            end
         end
     end
 

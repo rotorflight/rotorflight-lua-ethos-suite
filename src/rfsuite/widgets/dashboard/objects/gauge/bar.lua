@@ -90,7 +90,6 @@ local ceil = math.ceil
 local min = math.min
 local max = math.max
 local format = string.format
-local rep = string.rep
 local tonumber = tonumber
 
 local render = {}
@@ -100,6 +99,7 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local lastDisplayValue = nil
+local LOADING_DOTS = {".", "..", "...", "."}
 
 function render.dirty(box)
 
@@ -391,11 +391,9 @@ function render.wakeup(box)
     end
 
     if value == nil then
-        local maxDots = 3
         if c._dotCount == nil then c._dotCount = 0 end
-        c._dotCount = (c._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", c._dotCount)
-        if displayValue == "" then displayValue = "." end
+        c._dotCount = (c._dotCount + 1) % 4
+        displayValue = LOADING_DOTS[c._dotCount + 1]
         unit = nil
     end
 
@@ -406,11 +404,27 @@ function render.wakeup(box)
             lines = {}
             box._batteryLines = lines
         end
-        lines.line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount)
-        lines.line2 = format("%d mah", consumed)
+        local qV = floor((voltage or 0) * 10 + 0.5)
+        local qPcV = floor((perCellVoltage or 0) * 100 + 0.5)
+        local qCells = cellCount or 0
+        if lines._qV ~= qV or lines._qPcV ~= qPcV or lines._qCells ~= qCells then
+            lines.line1 = format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount)
+            lines._qV = qV
+            lines._qPcV = qPcV
+            lines._qCells = qCells
+        end
+        local qConsumed = floor((consumed or 0) + 0.5)
+        if lines._qConsumed ~= qConsumed then
+            lines.line2 = format("%d mah", consumed)
+            lines._qConsumed = qConsumed
+        end
     elseif box._batteryLines then
         box._batteryLines.line1 = nil
         box._batteryLines.line2 = nil
+        box._batteryLines._qV = nil
+        box._batteryLines._qPcV = nil
+        box._batteryLines._qCells = nil
+        box._batteryLines._qConsumed = nil
     end
 
     if type(displayValue) == "string" and displayValue:match("^%.+$") then unit = nil end

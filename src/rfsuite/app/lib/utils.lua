@@ -52,7 +52,7 @@ end
 function utils.getFieldValue(f)
     local v = f.value or 0
 
-    if f.decimals then v = rfutils.round(v * app.utils.decimalInc(f.decimals), 2) end
+    if f.decimals then v = rfutils.round(v * rfutils.decimalInc(f.decimals), 2) end
 
     if f.offset then v = v + f.offset end
 
@@ -65,7 +65,7 @@ function utils.saveFieldValue(f, value)
     if value then
         if f.offset then value = value - f.offset end
         if f.decimals then
-            f.value = value / app.utils.decimalInc(f.decimals)
+            f.value = value / rfutils.decimalInc(f.decimals)
         else
             f.value = value
         end
@@ -79,20 +79,11 @@ end
 
 function utils.scaleValue(value, f)
     if not value then return nil end
-    local v = value * app.utils.decimalInc(f.decimals)
+    local v = value * rfutils.decimalInc(f.decimals)
     if f.scale then v = v / f.scale end
     return rfutils.round(v)
 end
 
-function utils.decimalInc(dec)
-    if dec == nil then
-        return 1
-    elseif dec > 0 and dec <= 10 then
-        return 10 ^ dec
-    else
-        return nil
-    end
-end
 
 function utils.getInlinePositions(f)
 
@@ -180,15 +171,15 @@ end
 
 function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, rest) return first:upper() .. rest:lower() end) end
 
-function utils.settingsSaved()
+function utils.settingsSaved(savedPage)
+    local page = savedPage or app.Page
     local mspEepromWrite = {
         command = 250,
         processReply = function(self, buf)
-            local page = app.Page
             app.triggers.closeSave = true
             if page and page.postEepromWrite then page.postEepromWrite() end
             if page and page.reboot then
-                app.ui.rebootFc()
+                app.ui.rebootFc(page)
             else
                 app.utils.invalidatePages({preserveCurrentPage = true})
             end
@@ -200,7 +191,7 @@ function utils.settingsSaved()
         simulatorResponse = {}
     }
 
-    if app.Page and app.Page.eepromWrite then
+    if page and page.eepromWrite then
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
             app.triggers.closeSave = true
@@ -223,7 +214,7 @@ end
 
 function utils.invalidatePages(opts)
     local preserveCurrentPage = (type(opts) == "table" and opts.preserveCurrentPage == true)
-    local keepCurrentPage = preserveCurrentPage and app.uiState == app.uiStatus.pages and app.Page
+    local keepCurrentPage = preserveCurrentPage and app.Page
 
     if not keepCurrentPage then
         app.Page = nil
