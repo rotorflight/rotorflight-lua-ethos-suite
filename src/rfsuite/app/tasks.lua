@@ -109,12 +109,12 @@ local function profileRateChangeDetection()
     end
 end
 
-local function batteryTypeChangeDetection()
+local function batteryProfileChangeDetection()
     local app = rfsuite.app
     local now = os.clock()
     local interval = rfsuite.tasks.telemetry.getSensorSource("battery_type") and 0.1 or 1.5
-    if (now - (app.batteryTypeCheckScheduler or 0)) >= interval then
-        app.batteryTypeCheckScheduler = now
+    if (now - (app.batteryProfileCheckScheduler or 0)) >= interval then
+        app.batteryProfileCheckScheduler = now
         app.utils.getCurrentBatteryType()
     end
 end
@@ -477,7 +477,7 @@ end
 
 local tasks = {}
 
-tasks.list = {exitApp, profileRateChangeDetection, batteryTypeChangeDetection, triggerSaveDialogs, armedSaveWarning, triggerReloadDialogs, telemetryAndPageStateUpdates, performReloadActions, playPendingAudioAlerts, wakeupUITasks, mainMenuIconEnableDisable, requestPage}
+tasks.list = {exitApp, profileRateChangeDetection, batteryProfileChangeDetection, triggerSaveDialogs, armedSaveWarning, triggerReloadDialogs, telemetryAndPageStateUpdates, performReloadActions, playPendingAudioAlerts, wakeupUITasks, mainMenuIconEnableDisable, requestPage}
 
 function tasks.wakeup()
 

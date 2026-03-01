@@ -155,9 +155,9 @@ function utils.getCurrentBatteryType()
     local telemetryValue = tonumber(telemetryType)
 
     local values = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and tasks.msp.api.apidata.values
-    local mspType = values and values.BATTERY_PROFILE and values.BATTERY_PROFILE.batteryType
+    local mspType = values and values.BATTERY_PROFILE and values.BATTERY_PROFILE.batteryProfile
     if mspType == nil and values and values.BATTERY_CONFIG then
-        mspType = values.BATTERY_CONFIG.batteryType
+        mspType = values.BATTERY_CONFIG.batteryProfile
     end
     local mspValue = tonumber(mspType)
 

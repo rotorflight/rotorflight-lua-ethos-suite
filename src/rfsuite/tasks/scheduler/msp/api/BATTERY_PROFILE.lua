@@ -17,7 +17,7 @@ local tblBatteryType = {
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryType", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.batteryType)@"}
+    {field = "batteryProfile", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = 5, default = 0, table = tblBatteryType, tableIdxInc = -1, help = "@i18n(api.BATTERY_CONFIG.batteryProfile)@"}
 }
 -- LuaFormatter on
 

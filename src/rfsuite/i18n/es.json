@@ -31,7 +31,7 @@
         "reverse_text": false,
         "translation": "El numero de celdas de su bateria."
       },
-      "batteryType": {
+      "batteryProfile": {
         "english": "Selected battery type (0-5)",
         "max_length": 27,
         "needs_translation": true,

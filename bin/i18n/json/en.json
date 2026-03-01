@@ -27,7 +27,7 @@
         "needs_translation": false,
         "translation": "The number of cells in your battery."
       },
-      "batteryType": {
+      "batteryProfile": {
         "english": "Selected battery type (0-5)",
         "max_length": 27,
         "needs_translation": false,

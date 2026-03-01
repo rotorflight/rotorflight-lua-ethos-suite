@@ -18,7 +18,7 @@ local CAPACITY_PROFILE_MAX = 40000
 
 local fields = {
     {t = "@i18n(telemetry.group_profiles)@", type = 0, apikey = "profilesGroupHeader", value = ""},
-    {t = "    @i18n(app.modules.power.selected)@", mspapi = 2, apikey = "batteryType", type = 1},
+    {t = "    @i18n(app.modules.power.selected)@", mspapi = 2, apikey = "batteryProfile", type = 1},
     {t = "    @i18n(app.modules.power.capacity)@", mspapi = 1, apikey = "batteryCapacityActive", min = CAPACITY_PROFILE_MIN, max = CAPACITY_PROFILE_MAX, step = 10, unit = "mAh"},
     {t = "@i18n(telemetry.group_battery)@", type = 0, apikey = "batteryGroupHeader", value = ""},
     {t = "    @i18n(app.modules.power.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"},
@@ -111,7 +111,7 @@ local function updateDynamicUi(self, editingType, activeType)
 
     local color = (editingType ~= nil and activeType ~= nil and editingType == activeType) and GREEN or YELLOW
     setFieldColorByApiKey("batteryCapacityActive", color)
-    setFieldColorByApiKey("batteryType", (activeType ~= nil) and GREEN or nil)
+    setFieldColorByApiKey("batteryProfile", (activeType ~= nil) and GREEN or nil)
 end
 
 local function postLoad(self)
@@ -134,9 +134,9 @@ local function postLoad(self)
     local activeType = clampProfileIndex(rfsuite.session.activeBatteryType)
     local editingType = activeType
     if editingType == nil then
-        editingType = clampProfileIndex(getFieldValue(self, "batteryType")) or 0
+        editingType = clampProfileIndex(getFieldValue(self, "batteryProfile")) or 0
     end
-    setFieldValue(self, "batteryType", editingType)
+    setFieldValue(self, "batteryProfile", editingType)
     local capacity = getProfileCapacity(editingType)
     if capacity ~= nil then setFieldValue(self, "batteryCapacityActive", capacity) end
     lastEditingType = editingType
@@ -150,13 +150,13 @@ local function wakeup(self)
     if enableWakeup == false then return end
 
     local activeType = clampProfileIndex(rfsuite.session.activeBatteryType)
-    local editingType = clampProfileIndex(getFieldValue(self, "batteryType"))
+    local editingType = clampProfileIndex(getFieldValue(self, "batteryProfile"))
     local needsInvalidate = false
 
     -- If active battery changes while page is open, resync selection and value.
     if activeType ~= nil and activeType ~= lastActiveType then
-        setFieldValue(self, "batteryType", activeType)
-        local idx = fieldIndexByApiKey["batteryType"]
+        setFieldValue(self, "batteryProfile", activeType)
+        local idx = fieldIndexByApiKey["batteryProfile"]
         if idx and rfsuite.app.formFields and rfsuite.app.formFields[idx] and rfsuite.app.formFields[idx].value then
             rfsuite.app.formFields[idx]:value(activeType)
             needsInvalidate = true
@@ -199,7 +199,7 @@ local function wakeup(self)
 end
 
 local function preSave(self)
-    local editingType = clampProfileIndex(getFieldValue(self, "batteryType"))
+    local editingType = clampProfileIndex(getFieldValue(self, "batteryProfile"))
     local capacityValue = tonumber(getFieldValue(self, "batteryCapacityActive"))
     if editingType == nil or capacityValue == nil then return end
 

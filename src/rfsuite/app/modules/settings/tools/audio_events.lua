@@ -152,9 +152,9 @@ local function openPage(opts)
     setFieldEnabled(rfsuite.app.formFields[becFields.enable], true)
     setFieldEnabled(rfsuite.app.formFields[fuelFields.enable], true)
 
-    local batteryTypeEnabled = config.battery_type == true
+    local batteryProfileEnabled = config.battery_type == true
     local batteryPanel = form.addExpansionPanel("@i18n(app.modules.settings.battery_type_event)@")
-    batteryPanel:open(batteryTypeEnabled)
+    batteryPanel:open(batteryProfileEnabled)
     local batteryLine = batteryPanel:addLine("@i18n(app.modules.settings.battery_capacity_callout)@")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1

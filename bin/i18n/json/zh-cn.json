@@ -31,7 +31,7 @@
         "translation": "电池电芯数量。",
         "reverse_text": false
       },
-      "batteryType": {
+      "batteryProfile": {
         "english": "Selected battery type (0-5)",
         "translation": "Selected battery type (0-5)",
         "needs_translation": true,

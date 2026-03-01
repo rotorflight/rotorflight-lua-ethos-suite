@@ -31,7 +31,7 @@
         "reverse_text": false,
         "translation": "Het aantal cellen in je batterij."
       },
-      "batteryType": {
+      "batteryProfile": {
         "english": "Selected battery type (0-5)",
         "max_length": 27,
         "needs_translation": true,

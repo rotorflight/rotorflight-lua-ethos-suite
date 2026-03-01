@@ -4,5 +4,5 @@
 ]] --
 
 return {
-    ["batteryType"] = "@i18n(api.BATTERY_CONFIG.batteryType)@",
+    ["batteryProfile"] = "@i18n(api.BATTERY_CONFIG.batteryProfile)@",
 }

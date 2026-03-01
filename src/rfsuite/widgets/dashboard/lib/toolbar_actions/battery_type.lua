@@ -104,7 +104,7 @@ local function setBatteryType(typeIndex, profileName)
         progress = nil
     end)
 
-    api.setValue("batteryType", typeIndex)
+    api.setValue("batteryProfile", typeIndex)
     api.write()
 end
 

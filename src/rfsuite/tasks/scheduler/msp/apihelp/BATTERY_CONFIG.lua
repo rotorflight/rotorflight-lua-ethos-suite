@@ -20,5 +20,5 @@ return {
     ["batteryCapacity_3"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
     ["batteryCapacity_4"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
     ["batteryCapacity_5"] = "@i18n(api.BATTERY_CONFIG.batteryCapacity)@",
-    ["batteryType"] = "@i18n(api.BATTERY_CONFIG.batteryType)@",
+    ["batteryProfile"] = "@i18n(api.BATTERY_CONFIG.batteryProfile)@",
 }
