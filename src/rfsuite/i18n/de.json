@@ -32,11 +32,11 @@
         "translation": "Zellenanzahl des Akkus."
       },
       "batteryProfile": {
-        "english": "Selected battery type (0-5)",
+        "english": "Selected battery profile (0-5)",
         "max_length": 27,
         "needs_translation": true,
         "reverse_text": false,
-        "translation": "Selected battery type (0-5)"
+        "translation": "Selected battery profile (0-5)"
       },
       "source_adc": {
         "english": "Battery ADC",
