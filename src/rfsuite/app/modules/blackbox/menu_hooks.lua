@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local mspHelper = rfsuite.tasks.msp.mspHelper
 
 local prevConnectedState = nil
 local initTime = os.clock()
@@ -11,10 +12,16 @@ local prereqRequested = false
 local prereqReady = false
 local featureConfigReady = false
 local blackboxConfigReady = false
+local dataflashStatusReady = false
+local sdcardStatusReady = false
 local blackboxSupported = false
 local blackboxFocused = false
 local featureBitmap = 0
 local blackboxConfigParsed = {}
+local media = {
+    dataflashSupported = true,
+    sdcardSupported = true
+}
 
 local function copyTable(src)
     if type(src) ~= "table" then return src end
@@ -44,12 +51,18 @@ local function updateMenuAvailability()
     end
 end
 
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
 local function onPrereqDone()
-    prereqReady = featureConfigReady and blackboxConfigReady
+    prereqReady = featureConfigReady and blackboxConfigReady and dataflashStatusReady and sdcardStatusReady
     if prereqReady then
         rfsuite.session.blackbox = {
             feature = {enabledFeatures = featureBitmap},
             config = copyTable(blackboxConfigParsed or {}),
+            media = copyTable(media),
             ready = blackboxSupported
         }
         updateMenuAvailability()
@@ -63,9 +76,15 @@ local function requestBlackboxPrereqs()
     prereqReady = false
     featureConfigReady = false
     blackboxConfigReady = false
+    dataflashStatusReady = false
+    sdcardStatusReady = false
     blackboxSupported = false
     featureBitmap = 0
     blackboxConfigParsed = {}
+    media = {
+        dataflashSupported = true,
+        sdcardSupported = true
+    }
     blackboxFocused = false
 
     local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
@@ -100,6 +119,48 @@ local function requestBlackboxPrereqs()
         onPrereqDone()
     end)
     BAPI.read()
+
+    local dataflashMessage = {
+        command = 70,
+        processReply = function(self, buf)
+            if buf then
+                local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
+                media.dataflashSupported = (flags & 2) ~= 0
+            end
+            dataflashStatusReady = true
+            onPrereqDone()
+        end,
+        errorHandler = function()
+            dataflashStatusReady = true
+            onPrereqDone()
+        end,
+        simulatorResponse = {3, 235, 3, 0, 0, 0, 0, 214, 7, 0, 0, 0, 0}
+    }
+    if not queueDirect(dataflashMessage, "blackbox-menu-dataflash") then
+        dataflashStatusReady = true
+    end
+
+    local sdcardMessage = {
+        command = 79,
+        processReply = function(self, buf)
+            if buf then
+                local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
+                media.sdcardSupported = (flags & 0x01) ~= 0
+            end
+            sdcardStatusReady = true
+            onPrereqDone()
+        end,
+        errorHandler = function()
+            sdcardStatusReady = true
+            onPrereqDone()
+        end,
+        simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    }
+    if not queueDirect(sdcardMessage, "blackbox-menu-sdcard") then
+        sdcardStatusReady = true
+    end
+
+    onPrereqDone()
 end
 
 return {

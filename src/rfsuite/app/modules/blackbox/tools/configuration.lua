@@ -90,6 +90,23 @@ local function deviceTable()
     return t
 end
 
+local function coerceBool(value, fallback)
+    if value == nil then return fallback end
+    if type(value) == "number" then return value ~= 0 end
+    if type(value) == "string" then
+        local v = value:lower()
+        return v ~= "0" and v ~= "false"
+    end
+    return value and true or false
+end
+
+local function isChoiceValuePresent(choices, value)
+    for i = 1, #choices do
+        if tonumber(choices[i][2]) == tonumber(value) then return true end
+    end
+    return false
+end
+
 local function markDirty()
     state.dirty = true
 end
@@ -146,8 +163,13 @@ local function renderForm()
     form.clear()
     app.ui.fieldHeader(pageTitle)
 
+    local deviceChoices = deviceTable()
+    if not isChoiceValuePresent(deviceChoices, state.cfg.device) then
+        state.cfg.device = 0
+    end
+
     local line = form.addLine("@i18n(app.modules.blackbox.device)@")
-    state.form.device = form.addChoiceField(line, nil, deviceTable(), function() return state.cfg.device end, function(v)
+    state.form.device = form.addChoiceField(line, nil, deviceChoices, function() return state.cfg.device end, function(v)
         state.cfg.device = v
         markDirty()
         updateVisibility()
@@ -212,6 +234,10 @@ local function onReadDone()
                 rollingErase = state.cfg.rollingErase,
                 gracePeriod = state.cfg.gracePeriod
             }
+            rfsuite.session.blackbox.media = {
+                dataflashSupported = state.media.dataflashSupported,
+                sdcardSupported = state.media.sdcardSupported
+            }
             rfsuite.session.blackbox.ready = tonumber(state.cfg.blackbox_supported or 0) == 1
         end
         state.loading = false
@@ -223,6 +249,10 @@ end
 local function loadFromSessionSnapshot()
     local snapshot = rfsuite.session and rfsuite.session.blackbox or nil
     if not snapshot or not snapshot.config then return false end
+    local media = snapshot.media or nil
+    if not media or media.dataflashSupported == nil or media.sdcardSupported == nil then
+        return false
+    end
 
     local parsed = snapshot.config
     state.featureBitmap = tonumber(snapshot.feature and snapshot.feature.enabledFeatures or 0) or 0
@@ -234,7 +264,17 @@ local function loadFromSessionSnapshot()
     state.cfg.initialEraseFreeSpaceKiB = tonumber(parsed.initialEraseFreeSpaceKiB or 0) or 0
     state.cfg.rollingErase = tonumber(parsed.rollingErase or 0) or 0
     state.cfg.gracePeriod = tonumber(parsed.gracePeriod or 0) or 0
+    state.media.dataflashSupported = coerceBool(media.dataflashSupported, true)
+    state.media.sdcardSupported = coerceBool(media.sdcardSupported, true)
     return true
+end
+
+local function seedMediaFromSession()
+    local snapshot = rfsuite.session and rfsuite.session.blackbox or nil
+    local media = snapshot and snapshot.media or nil
+    if not media then return end
+    state.media.dataflashSupported = coerceBool(media.dataflashSupported, state.media.dataflashSupported)
+    state.media.sdcardSupported = coerceBool(media.sdcardSupported, state.media.sdcardSupported)
 end
 
 local function requestData(forceApiRead)
@@ -245,6 +285,9 @@ local function requestData(forceApiRead)
     state.loadStartedAt = os.clock()
     state.dirty = false
     state.pendingReads = 0
+    state.media.dataflashSupported = true
+    state.media.sdcardSupported = true
+    seedMediaFromSession()
 
     renderLoading("@i18n(app.modules.blackbox.loading_feature_config)@")
 
@@ -330,6 +373,10 @@ local function performSave()
                         initialEraseFreeSpaceKiB = state.cfg.initialEraseFreeSpaceKiB,
                         rollingErase = state.cfg.rollingErase,
                         gracePeriod = state.cfg.gracePeriod
+                    }
+                    rfsuite.session.blackbox.media = {
+                        dataflashSupported = state.media.dataflashSupported,
+                        sdcardSupported = state.media.sdcardSupported
                     }
                 end
                 app.triggers.closeSave = true
