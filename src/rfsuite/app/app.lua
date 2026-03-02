@@ -278,6 +278,10 @@ function app.create()
         app.initialized = true
     end
 
+    if not app.utils then
+        app.utils = assert(compile("app/lib/utils.lua"))(config)
+    end
+
     app._pendingMainMenuOpen = true
     app._pendingOpenPageOpts = nil
 end
@@ -434,6 +438,8 @@ function app.close()
     app.triggers.profileswitchLast = nil
 
     if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
+
+    app.utils = nil
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
 
