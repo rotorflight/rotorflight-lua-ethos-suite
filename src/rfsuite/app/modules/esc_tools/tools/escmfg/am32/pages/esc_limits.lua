@@ -52,6 +52,7 @@ return {
     postLoad = postLoad,
     postSave = postSave,
     onSaveMenu = isolatedSave and isolatedSave.onSaveMenu or nil,
+    close = isolatedSave and isolatedSave.close or nil,
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,

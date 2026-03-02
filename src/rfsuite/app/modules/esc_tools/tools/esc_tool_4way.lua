@@ -60,6 +60,8 @@ local escDetailsApiName
 local escDetailsApi
 local escSwitchApi
 
+local function noop() end
+
 local function trimText(value)
     if type(value) ~= "string" then return value end
     return value:gsub("^%s+", ""):gsub("%s+$", "")
@@ -147,6 +149,35 @@ local function clearEscSession()
     escDetails = {}
 end
 
+local function clearEscMaskCache()
+    local ui = rfsuite.app and rfsuite.app.ui
+    local cache = ui and ui._maskCache
+    local order = ui and ui._maskCacheOrder
+    if type(cache) ~= "table" then return end
+
+    local prefix = "app/modules/esc_tools/tools/escmfg/"
+    local removed = false
+    for path in pairs(cache) do
+        if type(path) == "string" and path:sub(1, #prefix) == prefix then
+            cache[path] = nil
+            removed = true
+        end
+    end
+    if not removed or type(order) ~= "table" then return end
+
+    local writeIdx = 1
+    for i = 1, #order do
+        local path = order[i]
+        if cache[path] ~= nil then
+            order[writeIdx] = path
+            writeIdx = writeIdx + 1
+        end
+    end
+    for i = writeIdx, #order do
+        order[i] = nil
+    end
+end
+
 local function resetEscReadRecovery()
     escReadRecoverRequested = false
     escReadRecoverAt = 0
@@ -191,6 +222,12 @@ local function getEscDetailsAPI()
         escDetailsApiName = nil
     end
     return escDetailsApi
+end
+
+local function detachEscApiHandlers(api)
+    if not api then return end
+    if api.setCompleteHandler then pcall(api.setCompleteHandler, noop) end
+    if api.setErrorHandler then pcall(api.setErrorHandler, noop) end
 end
 
 local function getESCDetails()
@@ -948,20 +985,76 @@ local function onNavMenu()
         rfsuite.session.esc4WaySet = nil
         rfsuite.session.esc4WaySetComplete = nil
         rfsuite.session.esc4WayTarget = nil
+        clearEscSession()
     end
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
 
+local function closePage()
+    local keepEscSessionHot = rfsuite.session and rfsuite.session.esc4WaySkipEntrySwitchOnce == true
+
+    if switchLoadingActive then
+        switchLoadingActive = false
+        if rfsuite.app and rfsuite.app.triggers then
+            rfsuite.app.triggers.closeProgressLoader = true
+        end
+    end
+
+    detachEscApiHandlers(escSwitchApi)
+    detachEscApiHandlers(escDetailsApi)
+
+    waitingTailMode = false
+    pendingTailModeResolve = false
+    inSelector = false
+    lastOpts = nil
+    pendingChildOpen = nil
+    switchState = nil
+    escReadReadyAt = nil
+    selectorPostConnectReady = nil
+    selectorGuardPending = false
+    selectorGuardOk = nil
+    selectorGuardNeedsReset = false
+    selectorGuardStartedAt = 0
+    esc2CheckPending = false
+    esc2CheckLastAttempt = 0
+    esc2Available = nil
+
+    mspBusy = false
+    mspSignature = nil
+    mspBytes = nil
+    simulatorResponse = nil
+    escDetailsApi = nil
+    escDetailsApiName = nil
+    escSwitchApi = nil
+    ESC = nil
+    modelLine = nil
+    modelText = nil
+    last4WayWriteTarget = nil
+    last4WayWriteOk = nil
+    writeSeq = 0
+    lastWriteSeq = 0
+
+    if keepEscSessionHot then
+        resetUiState()
+        resetEscReadRecovery()
+    else
+        clearEscState()
+        clearEscMaskCache()
+    end
+end
+
 local function onReloadMenu()
+    closePage()
     rfsuite.app.Page = nil
-    resetUiState()
     if rfsuite.session then
         rfsuite.session.esc4WaySkipEntrySwitchOnce = nil
+        rfsuite.session.esc4WayTarget = nil
+        rfsuite.session.esc4WayMotorCount = nil
+        rfsuite.session.esc4WaySelected = nil
+        rfsuite.session.esc4WaySet = nil
+        rfsuite.session.esc4WaySetComplete = nil
     end
-    rfsuite.session.esc4WaySelected = nil
-    rfsuite.session.esc4WaySet = nil
-    rfsuite.session.esc4WaySetComplete = nil
     rfsuite.app.triggers.triggerReloadFull = true
     return true
 end
@@ -1094,6 +1187,7 @@ return {
     openPage = openPage,
     wakeup = wakeup,
     event = event,
+    close = closePage,
     onNavMenu = onNavMenu,
     onReloadMenu = onReloadMenu,
     navButtons = {menu = true, save = false, reload = true, tool = false, help = false},
