@@ -701,6 +701,255 @@ local function openProgressDialog(opts)
     return form.openProgressDialog(opts)
 end
 
+local NOOP_DIALOG_CLOSE = function() end
+local SAVE_MESSAGE_TAG = {
+    [app.pageStatus.saving] = "@i18n(app.msg_saving_settings)@",
+    [app.pageStatus.eepromWrite] = "@i18n(app.msg_saving_settings)@",
+    [app.pageStatus.rebooting] = "@i18n(app.msg_rebooting)@"
+}
+
+local function progressDialogWakeup()
+    local progress = app.dialogs.progress
+    if not progress then
+        app.dialogs.progressDisplay = false
+        app.dialogs.progressSpeed = nil
+        app.dialogs.progressWatchDog = nil
+        app.dialogs.progressTimedOut = false
+        return
+    end
+
+    progress:value(app.dialogs.progressCounter)
+
+    local mult = app.dialogs.progressSpeed or 1.0
+    local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+    local apiV = tostring(session.apiVersion)
+
+    if not app.triggers.closeProgressLoader then
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
+        if app.dialogs.progressCounter > 50 and session.apiVersion and not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then print("No API version yet") end
+    elseif isProcessing then
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
+    elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then
+        if app.dialogs.progressIsWait then
+            progress:close()
+            ui.clearProgressDialog(progress)
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressCounter = 0
+            app.triggers.closeProgressLoader = false
+            app.dialogs.progressSpeed = nil
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressTimedOut = false
+            return
+        end
+        if preferences.general.hs_loader == 0 then mult = mult * 2 end
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
+        if app.dialogs.progressCounter >= 100 then
+            progress:close()
+            ui.clearProgressDialog(progress)
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressCounter = 0
+            app.triggers.closeProgressLoader = false
+            app.dialogs.progressSpeed = nil
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressTimedOut = false
+            return
+        end
+    elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
+        if app.dialogs.progressIsWait then
+            progress:close()
+            ui.clearProgressDialog(progress)
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressCounter = 0
+            app.triggers.closeProgressLoader = false
+            app.dialogs.progressSpeed = nil
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressTimedOut = false
+            return
+        end
+        if preferences.general.hs_loader == 0 then mult = mult * 1.5 end
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
+        if app.dialogs.progressCounter >= 100 then
+            progress:close()
+            ui.clearProgressDialog(progress)
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressCounter = 0
+            app.triggers.closeProgressLoader = false
+            app.dialogs.progressSpeed = nil
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressTimedOut = false
+            return
+        end
+    end
+
+    if app.dialogs.progressWatchDog and tasks.msp and (osClock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and app.dialogs.progressTimedOut ~= true then
+        app.dialogs.progressTimedOut = true
+        if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) or (session and session.resetMSP) then
+            app.dialogs.progressCounter = 0
+            app.dialogs.progressSpeed = nil
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressWatchDog = nil
+            app.triggers.closeProgressLoader = false
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            pcall(progress.close, progress)
+            ui.clearProgressDialog(progress)
+            return
+        end
+        app.audio.playTimeout = true
+        progress:message("@i18n(app.error_timed_out)@")
+        progress:closeAllowed(true)
+        progress:value(100)
+        ui.clearProgressDialog(progress)
+        app.dialogs.progressCounter = 0
+        app.dialogs.progressSpeed = nil
+        app.dialogs.progressDisplay = false
+        app.dialogs.progressWatchDog = nil
+
+        ui.disableAllFields()
+        ui.disableAllNavigationFields()
+        ui.enableNavigationField('menu')
+        return
+    end
+
+    if not tasks.msp then
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
+        if app.dialogs.progressCounter >= 100 then
+            progress:close()
+            ui.clearProgressDialog(progress)
+            app.dialogs.progressDisplay = false
+            app.dialogs.progressCounter = 0
+            app.dialogs.progressSpeed = nil
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressTimedOut = false
+            return
+        end
+    end
+
+    local mspStatus = getMspStatusForDialog()
+    local showDebug = preferences and preferences.general and preferences.general.mspstatusdialog
+    local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.progressBaseMessage or "")
+    if showDebug and mspStatus then msg = mspStatus end
+    pcall(progress.message, progress, msg)
+end
+
+local function saveDialogWakeup()
+    local saveDialog = app.dialogs.save
+    if not saveDialog then
+        app.dialogs.saveDisplay = false
+        app.dialogs.saveWatchDog = nil
+        app.dialogs.saveTimedOut = false
+        return
+    end
+
+    saveDialog:value(app.dialogs.saveProgressCounter)
+
+    local isProcessing = (
+        (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or
+        (app.triggers and app.triggers.savePendingAsync == true)
+    ) or false
+
+    if not app.dialogs.saveProgressCounter then app.dialogs.saveProgressCounter = 0 end
+
+    if isProcessing then
+        app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
+    elseif app.triggers.closeSaveFake then
+        if app.dialogs.saveIsWait then
+            app.triggers.closeSaveFake = false
+            app.triggers.savePendingAsync = false
+            app.dialogs.saveProgressCounter = 0
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveWatchDog = nil
+            app.dialogs.saveTimedOut = false
+            saveDialog:close()
+            ui.setPageDirty(false)
+            ui.clearProgressDialog(saveDialog)
+            return
+        end
+        app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+        if app.dialogs.saveProgressCounter >= 100 then
+            app.triggers.closeSaveFake = false
+            app.triggers.savePendingAsync = false
+            app.dialogs.saveProgressCounter = 0
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveWatchDog = nil
+            app.dialogs.saveTimedOut = false
+            saveDialog:close()
+            ui.setPageDirty(false)
+            ui.clearProgressDialog(saveDialog)
+
+        end
+    elseif tasks.msp.mspQueue:isProcessed() then
+        if app.dialogs.saveIsWait then
+            saveDialog:close()
+            ui.setPageDirty(false)
+            ui.clearProgressDialog(saveDialog)
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveProgressCounter = 0
+            app.triggers.closeSave = false
+            app.triggers.isSaving = false
+            app.triggers.savePendingAsync = false
+            app.dialogs.saveWatchDog = nil
+            app.dialogs.saveTimedOut = false
+            return
+        end
+        app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
+        if app.dialogs.saveProgressCounter >= 100 then
+            saveDialog:close()
+            ui.setPageDirty(false)
+            ui.clearProgressDialog(saveDialog)
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveProgressCounter = 0
+            app.triggers.closeSave = false
+            app.triggers.isSaving = false
+            app.triggers.savePendingAsync = false
+            app.dialogs.saveWatchDog = nil
+            app.dialogs.saveTimedOut = false
+
+        end
+    else
+        app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
+    end
+
+    local timeout = tonumber(tasks.msp.protocol.saveTimeout + 5)
+    local watchdogExceeded = app.dialogs.saveWatchDog and (osClock() - app.dialogs.saveWatchDog) > timeout
+    local progressExceeded = (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed())
+    if (watchdogExceeded or progressExceeded) and app.dialogs.saveDisplay == true and app.dialogs.saveTimedOut ~= true then
+        app.dialogs.saveTimedOut = true
+        if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) then
+            app.dialogs.saveProgressCounter = 0
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveWatchDog = nil
+            app.triggers.isSaving = false
+            app.triggers.savePendingAsync = false
+            app.triggers.closeSave = false
+            app.triggers.closeSaveFake = false
+            pcall(saveDialog.close, saveDialog)
+            ui.clearProgressDialog(saveDialog)
+            return
+        end
+        app.audio.playTimeout = true
+        saveDialog:message("@i18n(app.error_timed_out)@")
+        saveDialog:closeAllowed(true)
+        saveDialog:value(100)
+        app.dialogs.saveProgressCounter = 0
+        app.dialogs.saveDisplay = false
+        app.triggers.isSaving = false
+        app.triggers.savePendingAsync = false
+        app.dialogs.saveWatchDog = nil
+        ui.clearProgressDialog(saveDialog)
+
+    end
+
+    local mspStatus = getMspStatusForDialog()
+    local showDebug = preferences and preferences.general and preferences.general.mspstatusdialog
+    local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.saveBaseMessage or "")
+    if showDebug and mspStatus then msg = mspStatus end
+    pcall(saveDialog.message, saveDialog, msg)
+end
+
 function ui.progressDisplay(title, message, speed)
 
 
@@ -715,11 +964,10 @@ function ui.progressDisplay(title, message, speed)
     end
     app.dialogs.progressSpeed = speedMult
 
-    local reachedTimeout = false
-
     if session then session.mspTimeouts = 0 end
     app.dialogs.progressDisplay = true
     app.dialogs.progressWatchDog = osClock()
+    app.dialogs.progressTimedOut = false
     app.dialogs.progressBaseMessage = message
     app.dialogs.progressMspStatusLast = nil
     local useWaitDialog = utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog
@@ -727,124 +975,8 @@ function ui.progressDisplay(title, message, speed)
     app.dialogs.progress = openProgressDialog({
         title = title,
         message = message,
-        close = function() end,
-        wakeup = function()
-            local now = osClock()
-            local progress = app.dialogs.progress
-            if not progress then
-                app.dialogs.progressDisplay = false
-                app.dialogs.progressSpeed = nil
-                return
-            end
-
-            progress:value(app.dialogs.progressCounter)
-
-            local mult = app.dialogs.progressSpeed or 1.0
-
-            local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
-            local apiV = tostring(session.apiVersion)
-
-            if not app.triggers.closeProgressLoader then
-                app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
-                if app.dialogs.progressCounter > 50 and session.apiVersion and not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then print("No API version yet") end
-            elseif isProcessing then
-                app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
-            elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then
-                if app.dialogs.progressIsWait then
-                    progress:close()
-                    ui.clearProgressDialog(progress)
-                    app.dialogs.progressDisplay = false
-                    app.dialogs.progressCounter = 0
-                    app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = nil
-                    app.triggers.closeProgressLoaderNoisProcessed = false
-                    return
-                end
-                if preferences.general.hs_loader == 0 then mult = mult * 2 end
-                app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
-                if app.dialogs.progressCounter >= 100 then
-                    progress:close()
-                    ui.clearProgressDialog(progress)
-                    app.dialogs.progressDisplay = false
-                    app.dialogs.progressCounter = 0
-                    app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = nil
-                    app.triggers.closeProgressLoaderNoisProcessed = false
-                    return
-                end
-            elseif app.triggers.closeProgressLoader and app.triggers.closeProgressLoaderNoisProcessed then
-                if app.dialogs.progressIsWait then
-                    progress:close()
-                    ui.clearProgressDialog(progress)
-                    app.dialogs.progressDisplay = false
-                    app.dialogs.progressCounter = 0
-                    app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = nil
-                    app.triggers.closeProgressLoaderNoisProcessed = false
-                    return
-                end
-                if preferences.general.hs_loader == 0 then mult = mult * 1.5 end
-                app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
-                if app.dialogs.progressCounter >= 100 then
-                    progress:close()
-                    ui.clearProgressDialog(progress)
-                    app.dialogs.progressDisplay = false
-                    app.dialogs.progressCounter = 0
-                    app.triggers.closeProgressLoader = false
-                    app.dialogs.progressSpeed = nil
-                    app.triggers.closeProgressLoaderNoisProcessed = false
-                    return
-                end
-            end
-
-            if app.dialogs.progressWatchDog and tasks.msp and (osClock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and reachedTimeout == false then
-                reachedTimeout = true
-                if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) or (session and session.resetMSP) then
-                    app.dialogs.progressCounter = 0
-                    app.dialogs.progressSpeed = nil
-                    app.dialogs.progressDisplay = false
-                    app.dialogs.progressWatchDog = nil
-                    app.triggers.closeProgressLoader = false
-                    app.triggers.closeProgressLoaderNoisProcessed = false
-                    pcall(function() progress:close() end)
-                    ui.clearProgressDialog(progress)
-                    return
-                end
-                app.audio.playTimeout = true
-                progress:message("@i18n(app.error_timed_out)@")
-                progress:closeAllowed(true)
-                progress:value(100)
-                ui.clearProgressDialog(progress)
-                app.dialogs.progressCounter = 0
-                app.dialogs.progressSpeed = nil
-                app.dialogs.progressDisplay = false
-
-                ui.disableAllFields()
-                ui.disableAllNavigationFields()
-                ui.enableNavigationField('menu')
-                return
-
-            end
-
-            if not tasks.msp then
-                app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
-                if app.dialogs.progressCounter >= 100 then
-                    progress:close()
-                    ui.clearProgressDialog(progress)
-                    app.dialogs.progressDisplay = false
-                    app.dialogs.progressCounter = 0
-                    app.dialogs.progressSpeed = nil
-                    return
-                end
-            end
-
-            local mspStatus = getMspStatusForDialog()
-            local showDebug = preferences and preferences.general and preferences.general.mspstatusdialog
-            local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.progressBaseMessage or "")
-            if showDebug and mspStatus then msg = mspStatus end
-            pcall(function() progress:message(msg) end)
-
-        end
+        close = NOOP_DIALOG_CLOSE,
+        wakeup = progressDialogWakeup
     })
 
     app.dialogs.progressCounter = 0
@@ -855,15 +987,12 @@ end
 
 function ui.progressDisplaySave(message)
 
-    local reachedTimeout = false
-
     if session then session.mspTimeouts = 0 end
     app.dialogs.saveDisplay = true
     app.dialogs.saveWatchDog = osClock()
+    app.dialogs.saveTimedOut = false
     app.dialogs.saveBaseMessage = nil
     app.dialogs.saveMspStatusLast = nil
-
-    local SAVE_MESSAGE_TAG = {[app.pageStatus.saving] = "@i18n(app.msg_saving_settings)@", [app.pageStatus.eepromWrite] = "@i18n(app.msg_saving_settings)@", [app.pageStatus.rebooting] = "@i18n(app.msg_rebooting)@"}
 
     local resolvedMessage = message or SAVE_MESSAGE_TAG[app.pageState] or "@i18n(app.msg_saving_settings)@"
     local title = "@i18n(app.msg_saving)@"
@@ -874,114 +1003,8 @@ function ui.progressDisplaySave(message)
     app.dialogs.save = openProgressDialog({
         title = title,
         message = resolvedMessage,
-        close = function() end,
-        wakeup = function()
-            local now = osClock()
-            local saveDialog = app.dialogs.save
-            if not saveDialog then
-                app.dialogs.saveDisplay = false
-                app.dialogs.saveWatchDog = nil
-                return
-            end
-
-            saveDialog:value(app.dialogs.saveProgressCounter)
-
-            local isProcessing = (
-                (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or
-                (app.triggers and app.triggers.savePendingAsync == true)
-            ) or false
-
-            if not app.dialogs.saveProgressCounter then app.dialogs.saveProgressCounter = 0 end
-
-            if isProcessing then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
-            elseif app.triggers.closeSaveFake then
-                if app.dialogs.saveIsWait then
-                    app.triggers.closeSaveFake = false
-                    app.triggers.savePendingAsync = false
-                    app.dialogs.saveProgressCounter = 0
-                    app.dialogs.saveDisplay = false
-                    app.dialogs.saveWatchDog = nil
-                    saveDialog:close()
-                    ui.setPageDirty(false)
-                    ui.clearProgressDialog(saveDialog)
-                    return
-                end
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
-                if app.dialogs.saveProgressCounter >= 100 then
-                    app.triggers.closeSaveFake = false
-                    app.triggers.savePendingAsync = false
-                    app.dialogs.saveProgressCounter = 0
-                    app.dialogs.saveDisplay = false
-                    app.dialogs.saveWatchDog = nil
-                    saveDialog:close()
-                    ui.setPageDirty(false)
-                    ui.clearProgressDialog(saveDialog)
-
-                end
-            elseif tasks.msp.mspQueue:isProcessed() then
-                if app.dialogs.saveIsWait then
-                    saveDialog:close()
-                    ui.setPageDirty(false)
-                    ui.clearProgressDialog(saveDialog)
-                    app.dialogs.saveDisplay = false
-                    app.dialogs.saveProgressCounter = 0
-                    app.triggers.closeSave = false
-                    app.triggers.isSaving = false
-                    app.triggers.savePendingAsync = false
-                    return
-                end
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
-                if app.dialogs.saveProgressCounter >= 100 then
-                    saveDialog:close()
-                    ui.setPageDirty(false)
-                    ui.clearProgressDialog(saveDialog)
-                    app.dialogs.saveDisplay = false
-                    app.dialogs.saveProgressCounter = 0
-                    app.triggers.closeSave = false
-                    app.triggers.isSaving = false
-                    app.triggers.savePendingAsync = false
-
-                end
-            else
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
-            end
-
-            local timeout = tonumber(tasks.msp.protocol.saveTimeout + 5)
-            local watchdogExceeded = app.dialogs.saveWatchDog and (osClock() - app.dialogs.saveWatchDog) > timeout
-            local progressExceeded = (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed())
-            if (watchdogExceeded or progressExceeded) and app.dialogs.saveDisplay == true and reachedTimeout == false then
-                reachedTimeout = true
-                if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) then
-                    app.dialogs.saveProgressCounter = 0
-                    app.dialogs.saveDisplay = false
-                    app.dialogs.saveWatchDog = nil
-                    app.triggers.isSaving = false
-                    app.triggers.savePendingAsync = false
-                    app.triggers.closeSave = false
-                    app.triggers.closeSaveFake = false
-                    pcall(function() saveDialog:close() end)
-                    ui.clearProgressDialog(saveDialog)
-                    return
-                end
-                app.audio.playTimeout = true
-                saveDialog:message("@i18n(app.error_timed_out)@")
-                saveDialog:closeAllowed(true)
-                saveDialog:value(100)
-                app.dialogs.saveProgressCounter = 0
-                app.dialogs.saveDisplay = false
-                app.triggers.isSaving = false
-                app.triggers.savePendingAsync = false
-                ui.clearProgressDialog(saveDialog)
-
-            end
-
-            local mspStatus = getMspStatusForDialog()
-            local showDebug = preferences and preferences.general and preferences.general.mspstatusdialog
-            local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.saveBaseMessage or "")
-            if showDebug and mspStatus then msg = mspStatus end
-            pcall(function() saveDialog:message(msg) end)
-        end
+        close = NOOP_DIALOG_CLOSE,
+        wakeup = saveDialogWakeup
     })
 
     local saveDialog = app.dialogs.save

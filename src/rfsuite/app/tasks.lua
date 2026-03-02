@@ -298,8 +298,20 @@ local function armedSaveWarning()
     local showDialog = not (pref == false or pref == "false")
     if not showDialog then
         if app.dialogs.progressDisplay then
+            local progress = app.dialogs.progress
             app.dialogs.progressDisplay = false
-            app.dialogs.progress:close()
+            app.dialogs.progressWatchDog = nil
+            app.dialogs.progressTimedOut = false
+            app.dialogs.progressCounter = 0
+            app.dialogs.progressSpeed = nil
+            app.triggers.closeProgressLoader = false
+            app.triggers.closeProgressLoaderNoisProcessed = false
+            if progress and progress.close then
+                pcall(progress.close, progress)
+            end
+            if app.ui and app.ui.clearProgressDialog then
+                app.ui.clearProgressDialog(progress)
+            end
         end
         if not app.dialogs.progressDisplay then
             app.audio.playSaveArmed = true
@@ -315,9 +327,21 @@ local function armedSaveWarning()
         app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", key)
     end
     if app.dialogs.progressCounter >= 100 then
+        local progress = app.dialogs.progress
         app.triggers.showSaveArmedWarning = false
         app.dialogs.progressDisplay = false
-        app.dialogs.progress:close()
+        app.dialogs.progressWatchDog = nil
+        app.dialogs.progressTimedOut = false
+        app.dialogs.progressCounter = 0
+        app.dialogs.progressSpeed = nil
+        app.triggers.closeProgressLoader = false
+        app.triggers.closeProgressLoaderNoisProcessed = false
+        if progress and progress.close then
+            pcall(progress.close, progress)
+        end
+        if app.ui and app.ui.clearProgressDialog then
+            app.ui.clearProgressDialog(progress)
+        end
     end
 end
 
