@@ -256,6 +256,11 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
     if idleCap > 99 then idleCap = 99 end
     local saveMessage = ESC.isolatedSaveMessage or "@i18n(app.msg_saving_settings)@"
     local waitEscMessage = ESC.isolatedSaveWaitEscMessage or "Waiting for ESC..."
+    local gcAfterSave = ESC.isolatedSaveGcCollect ~= false
+    local gcPasses = tonumber(ESC.isolatedSaveGcPasses)
+    if gcPasses == nil then gcPasses = 1 end
+    if gcPasses < 0 then gcPasses = 0 end
+    gcPasses = math.floor(gcPasses)
 
     local saveState = {
         running = false,
@@ -263,7 +268,8 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
         startedAt = 0,
         progress = 0,
         pageRef = nil,
-        messageTag = nil
+        messageTag = nil,
+        gcOnClose = false
     }
 
     local function closeSaveDialog()
@@ -281,6 +287,12 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
         saveState.progress = 0
         saveState.pageRef = nil
         saveState.messageTag = nil
+        if saveState.gcOnClose and gcAfterSave and gcPasses > 0 then
+            for _ = 1, gcPasses do
+                collectgarbage("collect")
+            end
+        end
+        saveState.gcOnClose = false
     end
 
     local function isSaveProcessing()
@@ -321,6 +333,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
         saveState.startedAt = os.clock()
         saveState.progress = 0
         saveState.pageRef = page
+        saveState.gcOnClose = true
 
         app.triggers.saveFailed = false
         app.triggers.savePendingAsync = false

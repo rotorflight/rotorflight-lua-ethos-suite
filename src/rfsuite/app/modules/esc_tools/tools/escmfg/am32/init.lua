@@ -72,6 +72,8 @@ return {
     isolatedSaveProgressIdleStep = 1,
     isolatedSaveProgressIdleCap = 97,
     isolatedSaveWaitEscMessage = "Waiting for ESC...",
+    isolatedSaveGcCollect = true,
+    isolatedSaveGcPasses = 1,
     escDetailsPollInterval = 0.6,
     escDetailsRetryInterval = 1.2,
     retrySwitchOnReadFail = true,
