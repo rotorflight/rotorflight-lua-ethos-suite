@@ -877,10 +877,19 @@ function ui.progressDisplaySave(message)
         close = function() end,
         wakeup = function()
             local now = osClock()
+            local saveDialog = app.dialogs.save
+            if not saveDialog then
+                app.dialogs.saveDisplay = false
+                app.dialogs.saveWatchDog = nil
+                return
+            end
 
-            app.dialogs.save:value(app.dialogs.saveProgressCounter)
+            saveDialog:value(app.dialogs.saveProgressCounter)
 
-            local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+            local isProcessing = (
+                (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or
+                (app.triggers and app.triggers.savePendingAsync == true)
+            ) or false
 
             if not app.dialogs.saveProgressCounter then app.dialogs.saveProgressCounter = 0 end
 
@@ -889,45 +898,49 @@ function ui.progressDisplaySave(message)
             elseif app.triggers.closeSaveFake then
                 if app.dialogs.saveIsWait then
                     app.triggers.closeSaveFake = false
+                    app.triggers.savePendingAsync = false
                     app.dialogs.saveProgressCounter = 0
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
-                    app.dialogs.save:close()
+                    saveDialog:close()
                     ui.setPageDirty(false)
-                    ui.clearProgressDialog(app.dialogs.save)
+                    ui.clearProgressDialog(saveDialog)
                     return
                 end
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then
                     app.triggers.closeSaveFake = false
+                    app.triggers.savePendingAsync = false
                     app.dialogs.saveProgressCounter = 0
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
-                    app.dialogs.save:close()
+                    saveDialog:close()
                     ui.setPageDirty(false)
-                    ui.clearProgressDialog(app.dialogs.save)
+                    ui.clearProgressDialog(saveDialog)
 
                 end
             elseif tasks.msp.mspQueue:isProcessed() then
                 if app.dialogs.saveIsWait then
-                    app.dialogs.save:close()
+                    saveDialog:close()
                     ui.setPageDirty(false)
-                    ui.clearProgressDialog(app.dialogs.save)
+                    ui.clearProgressDialog(saveDialog)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveProgressCounter = 0
                     app.triggers.closeSave = false
                     app.triggers.isSaving = false
+                    app.triggers.savePendingAsync = false
                     return
                 end
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
-                    app.dialogs.save:close()
+                    saveDialog:close()
                     ui.setPageDirty(false)
-                    ui.clearProgressDialog(app.dialogs.save)
+                    ui.clearProgressDialog(saveDialog)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveProgressCounter = 0
                     app.triggers.closeSave = false
                     app.triggers.isSaving = false
+                    app.triggers.savePendingAsync = false
 
                 end
             else
@@ -944,20 +957,22 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay = false
                     app.dialogs.saveWatchDog = nil
                     app.triggers.isSaving = false
+                    app.triggers.savePendingAsync = false
                     app.triggers.closeSave = false
                     app.triggers.closeSaveFake = false
-                    pcall(function() app.dialogs.save:close() end)
-                    ui.clearProgressDialog(app.dialogs.save)
+                    pcall(function() saveDialog:close() end)
+                    ui.clearProgressDialog(saveDialog)
                     return
                 end
                 app.audio.playTimeout = true
-                app.dialogs.save:message("@i18n(app.error_timed_out)@")
-                app.dialogs.save:closeAllowed(true)
-                app.dialogs.save:value(100)
+                saveDialog:message("@i18n(app.error_timed_out)@")
+                saveDialog:closeAllowed(true)
+                saveDialog:value(100)
                 app.dialogs.saveProgressCounter = 0
                 app.dialogs.saveDisplay = false
                 app.triggers.isSaving = false
-                ui.clearProgressDialog(app.dialogs.save)
+                app.triggers.savePendingAsync = false
+                ui.clearProgressDialog(saveDialog)
 
             end
 
@@ -965,12 +980,18 @@ function ui.progressDisplaySave(message)
             local showDebug = preferences and preferences.general and preferences.general.mspstatusdialog
             local msg = showDebug and (mspStatus or MSP_DEBUG_PLACEHOLDER) or (app.dialogs.saveBaseMessage or "")
             if showDebug and mspStatus then msg = mspStatus end
-            pcall(function() app.dialogs.save:message(msg) end)
+            pcall(function() saveDialog:message(msg) end)
         end
     })
 
-    app.dialogs.save:value(0)
-    app.dialogs.save:closeAllowed(false)
+    local saveDialog = app.dialogs.save
+    if not saveDialog then
+        app.dialogs.saveDisplay = false
+        app.dialogs.saveWatchDog = nil
+        return
+    end
+    saveDialog:value(0)
+    saveDialog:closeAllowed(false)
     ui.registerProgressDialog(app.dialogs.save, app.dialogs.saveBaseMessage)
 end
 
@@ -3106,6 +3127,7 @@ function ui.saveSettings(sourcePage)
         log("saveSettings called without valid apidata; skipping.", "info")
         app.pageState = app.pageStatus.display
         app.triggers.isSaving = false
+        app.triggers.savePendingAsync = false
         app.triggers.closeSaveFake = true
         app.triggers.saveFailed = true
         return
@@ -3113,6 +3135,7 @@ function ui.saveSettings(sourcePage)
 
     app.pageState = app.pageStatus.saving
     app.saveTS = osClock()
+    app.triggers.savePendingAsync = false
 
     log("Saving data", "debug")
 
@@ -3123,10 +3146,25 @@ function ui.saveSettings(sourcePage)
     local totalRequests = #apiList
     local completedRequests = 0
     local enqueueFailures = 0
+    local saveFinalizeDone = false
 
     page.apidata.apiState.isProcessing = true
 
     if page.preSave then page.preSave(page) end
+
+    local function setSaveProcessing(isProcessing)
+        if page and page.apidata and page.apidata.apiState then
+            page.apidata.apiState.isProcessing = (isProcessing == true)
+        end
+    end
+
+    local function finalizeSaveSuccess()
+        if saveFinalizeDone then return end
+        saveFinalizeDone = true
+        app.triggers.savePendingAsync = false
+        setSaveProcessing(false)
+        app.utils.settingsSaved(page)
+    end
 
     for apiID, apiEntry in ipairs(apiList) do
 
@@ -3168,17 +3206,38 @@ function ui.saveSettings(sourcePage)
 
             if completedRequests == totalRequests then
                 log("All API requests have been completed!", "debug")
-                if page and page.apidata and page.apidata.apiState then
-                    page.apidata.apiState.isProcessing = false
-                end
                 if enqueueFailures > 0 or app.triggers.saveFailed then
+                    app.triggers.savePendingAsync = false
+                    setSaveProcessing(false)
                     app.pageState = app.pageStatus.display
                     app.triggers.closeSaveFake = true
                     app.triggers.isSaving = false
                 else
                     ui.setPageDirty(false)
-                    if page and page.postSave then page.postSave(page) end
-                    app.utils.settingsSaved(page)
+                    local postSaveDone = false
+                    local function completePostSave()
+                        if postSaveDone then return end
+                        postSaveDone = true
+                        app.triggers.savePendingAsync = false
+                        finalizeSaveSuccess()
+                    end
+                    if page and page.postSave then
+                        local ok, result = pcall(page.postSave, page, completePostSave)
+                        if not ok then
+                            log("postSave error: " .. tostring(result), "warning")
+                            app.triggers.savePendingAsync = false
+                            completePostSave()
+                        elseif result == false or result == "pending" then
+                            -- postSave signaled async completion and will call completePostSave().
+                            app.triggers.savePendingAsync = true
+                        else
+                            app.triggers.savePendingAsync = false
+                            completePostSave()
+                        end
+                    else
+                        app.triggers.savePendingAsync = false
+                        completePostSave()
+                    end
                 end
             end
         end)

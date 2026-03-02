@@ -862,7 +862,7 @@ openSelector = function()
                 if item.target == 1 and esc2Available ~= true then return end
                 inSelector = false
                 rfsuite.preferences.menulastselected["esc4way"] = childIdx
-                local loaderSpeed = ((rfsuite.app.loaderSpeed and rfsuite.app.loaderSpeed.VSLOW) or 0.5) * 0.25
+                local loaderSpeed = ((rfsuite.app.loaderSpeed and rfsuite.app.loaderSpeed.VSLOW) or 0.5) * 0.15
                 rfsuite.app.ui.progressDisplay(nil, nil, loaderSpeed)
                 beginEscSwitch(item.target)
                 return
