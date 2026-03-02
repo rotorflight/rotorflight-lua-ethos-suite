@@ -18,10 +18,21 @@ local function loadEscConfig(folder)
     return moduleOrErr
 end
 
-local function normalizeEscTarget(value)
+local function normalizeEscTarget(value, escConfig)
+    local esc1Target = tonumber(escConfig and escConfig.esc4wayEsc1Target)
+    local esc2Target = tonumber(escConfig and escConfig.esc4wayEsc2Target)
+    if esc1Target == nil then esc1Target = 0 end
+    if esc2Target == nil then esc2Target = 1 end
+    esc1Target = math.floor(esc1Target)
+    esc2Target = math.floor(esc2Target)
+    if esc2Target == esc1Target then
+        esc2Target = (esc1Target == 0) and 1 or 0
+    end
+
     local target = tonumber(value)
-    if target ~= 1 then target = 0 end
-    return target
+    if target == esc2Target then return esc2Target end
+    if target == esc1Target then return esc1Target end
+    return esc1Target
 end
 
 local function scheduleIn(delaySeconds, fn)
@@ -130,6 +141,96 @@ local function writeEsc4WayTarget(target, opts, done)
     return true
 end
 
+local function readEscApiOnce(apiName, opts, done)
+    opts = opts or {}
+    local waitForIdle = opts.waitForIdle == true
+    local idlePollInterval = tonumber(opts.idlePollInterval)
+    if idlePollInterval == nil then idlePollInterval = 0.15 end
+    if idlePollInterval < 0 then idlePollInterval = 0 end
+    local idleTimeout = tonumber(opts.idleTimeout)
+    if idleTimeout == nil then idleTimeout = 2.5 end
+    if idleTimeout < 0 then idleTimeout = 0 end
+    local readTimeout = tonumber(opts.timeout)
+    if readTimeout ~= nil and readTimeout <= 0 then readTimeout = nil end
+    local retryCount = tonumber(opts.retryCount)
+    if retryCount == nil then retryCount = 0 end
+    if retryCount < 0 then retryCount = 0 end
+    retryCount = math.floor(retryCount)
+    local retryDelay = tonumber(opts.retryDelay)
+    if retryDelay == nil then retryDelay = 0.75 end
+    if retryDelay < 0 then retryDelay = 0 end
+    local maxAttempts = retryCount + 1
+
+    local mspApi = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if not (mspApi and mspApi.load) then
+        if done then done(false, "msp_api_missing", 0) end
+        return false
+    end
+    if type(apiName) ~= "string" or apiName == "" then
+        if done then done(false, "api_name_missing", 0) end
+        return false
+    end
+
+    local attempts = 0
+    local idleWaitStartedAt = os.clock()
+    local finished = false
+
+    local function finish(success, err)
+        if finished then return end
+        finished = true
+        if done then done(success, err, attempts) end
+    end
+
+    local function tryRead()
+        if finished then return end
+
+        if waitForIdle and not isMspQueueIdle() then
+            if (os.clock() - idleWaitStartedAt) < idleTimeout then
+                scheduleIn(idlePollInterval, tryRead)
+            else
+                finish(false, "queue_busy")
+            end
+            return
+        end
+
+        attempts = attempts + 1
+        local API = mspApi.load(apiName)
+        if not API then
+            finish(false, "api_missing")
+            return
+        end
+        if readTimeout and API.setTimeout then
+            API.setTimeout(readTimeout)
+        end
+        API.setCompleteHandler(function(self, buf)
+            finish(true)
+        end)
+        API.setErrorHandler(function(self, err)
+            if attempts < maxAttempts then
+                scheduleIn(retryDelay, tryRead)
+                return
+            end
+            finish(false, err)
+        end)
+        if rfsuite.utils and rfsuite.utils.uuid then
+            API.setUUID(rfsuite.utils.uuid())
+        else
+            API.setUUID(tostring(os.clock()))
+        end
+        local ok, reason = API.read()
+        if not ok then
+            if attempts < maxAttempts then
+                scheduleIn(retryDelay, tryRead)
+                return
+            end
+            finish(false, reason or "enqueue_failed")
+        end
+    end
+
+    tryRead()
+    return true
+end
+
 function escToolsPage.createEsc4WayPostSaveHandler(folder, escConfig)
     local ESC = escConfig
     if type(ESC) ~= "table" then
@@ -163,6 +264,23 @@ function escToolsPage.createEsc4WayPostSaveHandler(folder, escConfig)
     local queueIdleTimeout = tonumber(ESC.postSaveQueueIdleTimeout)
     if queueIdleTimeout == nil then queueIdleTimeout = 2.5 end
     if queueIdleTimeout < 0 then queueIdleTimeout = 0 end
+    local restoreSettleDelay = tonumber(ESC.postSaveRestoreSettleDelay)
+    if restoreSettleDelay == nil then restoreSettleDelay = 0.5 end
+    if restoreSettleDelay < 0 then restoreSettleDelay = 0 end
+    local flushRead = ESC.postSaveFlushRead == true
+    local flushReadApi = ESC.postSaveFlushReadApi or ESC.mspapi
+    local flushReadDelay = tonumber(ESC.postSaveFlushReadDelay)
+    if flushReadDelay == nil then flushReadDelay = 0.25 end
+    if flushReadDelay < 0 then flushReadDelay = 0 end
+    local flushReadRetryCount = tonumber(ESC.postSaveFlushReadRetryCount)
+    if flushReadRetryCount == nil then flushReadRetryCount = 0 end
+    if flushReadRetryCount < 0 then flushReadRetryCount = 0 end
+    flushReadRetryCount = math.floor(flushReadRetryCount)
+    local flushReadRetryDelay = tonumber(ESC.postSaveFlushReadRetryDelay)
+    if flushReadRetryDelay == nil then flushReadRetryDelay = 0.6 end
+    if flushReadRetryDelay < 0 then flushReadRetryDelay = 0 end
+    local flushReadTimeout = tonumber(ESC.postSaveFlushReadTimeout)
+    if flushReadTimeout ~= nil and flushReadTimeout <= 0 then flushReadTimeout = nil end
 
     local writeOpts = {
         waitForIdle = waitQueueIdle,
@@ -171,6 +289,14 @@ function escToolsPage.createEsc4WayPostSaveHandler(folder, escConfig)
         timeout = switchTimeout,
         retryCount = switchRetryCount,
         retryDelay = switchRetryDelay
+    }
+    local readOpts = {
+        waitForIdle = waitQueueIdle,
+        idlePollInterval = queueIdlePoll,
+        idleTimeout = queueIdleTimeout,
+        timeout = flushReadTimeout,
+        retryCount = flushReadRetryCount,
+        retryDelay = flushReadRetryDelay
     }
 
     return function(_, onComplete)
@@ -186,7 +312,7 @@ function escToolsPage.createEsc4WayPostSaveHandler(folder, escConfig)
             if complete then complete() end
         end
 
-        local target = normalizeEscTarget(rfsuite.session and rfsuite.session.esc4WayTarget)
+        local target = normalizeEscTarget(rfsuite.session and rfsuite.session.esc4WayTarget, ESC)
         if rfsuite.utils and rfsuite.utils.log then
             rfsuite.utils.log("ESC 4WIF post-save cycle: " .. tostring(resetTarget) .. " -> " .. tostring(target), "info")
         end
@@ -196,7 +322,25 @@ function escToolsPage.createEsc4WayPostSaveHandler(folder, escConfig)
                 if (not success) and rfsuite.utils and rfsuite.utils.log then
                     rfsuite.utils.log("ESC 4WIF post-save restore failed: " .. tostring(err) .. " (attempts=" .. tostring(attempts) .. ")", "info")
                 end
-                finish()
+                if not success then
+                    scheduleIn(restoreSettleDelay, finish)
+                    return
+                end
+                if not flushRead or type(flushReadApi) ~= "string" or flushReadApi == "" then
+                    scheduleIn(restoreSettleDelay, finish)
+                    return
+                end
+                scheduleIn(flushReadDelay, function()
+                    readEscApiOnce(flushReadApi, readOpts, function(readOk, readErr, readAttempts)
+                        if (not readOk) and rfsuite.utils and rfsuite.utils.log then
+                            rfsuite.utils.log(
+                                "ESC 4WIF post-save flush read failed: " .. tostring(readErr) .. " (attempts=" .. tostring(readAttempts) .. ")",
+                                "info"
+                            )
+                        end
+                        scheduleIn(restoreSettleDelay, finish)
+                    end)
+                end)
             end)
         end
 
