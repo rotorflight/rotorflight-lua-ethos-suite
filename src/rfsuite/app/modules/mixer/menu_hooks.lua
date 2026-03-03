@@ -95,7 +95,10 @@ return {
         if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then getMixerCompatibilityStatus() end
     end,
     onWakeup = function()
-        if os.clock() - initTime < 0.25 then return end
+        if os.clock() - initTime < 0.25 then
+            -- Keep default container wakeup from enabling icons before prereqs are known.
+            return true
+        end
 
         if rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil then
             if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
@@ -104,7 +107,7 @@ return {
                     rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
                 end)
             end
-            return
+            return true
         end
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
@@ -143,5 +146,8 @@ return {
             end
             prevConnectedState = currState
         end
+
+        -- We fully manage icon state in this hook.
+        return true
     end
 }
