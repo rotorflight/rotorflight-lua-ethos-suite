@@ -69,7 +69,7 @@ return {
     postSaveSwitchRetryCount = 1,             -- Retry count for post-save target writes.
     postSaveSwitchRetryDelay = 0.75,          -- Delay between post-save write retries.
     postSaveQueueIdleTimeout = 3.0,           -- Max time waiting for MSP queue idle before post-save writes.
-    postSaveFlushRead = true,                 -- Perform one read after restore to flush stale response.
+    postSaveFlushRead = false,                -- Perform one read after restore to flush stale response.
     postSaveFlushReadDelay = 0.35,            -- Delay before the post-save flush read.
     postSaveFlushReadRetryCount = 1,          -- Retry count for post-save flush read.
     postSaveFlushReadRetryDelay = 0.6,        -- Delay between post-save flush read retries.
