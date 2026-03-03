@@ -4782,265 +4782,309 @@
               "english": "Advanced",
               "translation": "Advanced",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 8
             },
             "basic": {
               "english": "Basic",
               "translation": "Basic",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 5
             },
             "bidirectionalmode": {
               "english": "Bidirectional Mode",
               "translation": "Bidirectional Mode",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 18
             },
             "brakeonstop": {
               "english": "Brake on Stop",
               "translation": "Brake on Stop",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 13
             },
             "brakestrength": {
               "english": "Brake Strength",
               "translation": "Brake Strength",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 14
             },
             "complementary_pwm": {
               "english": "Complementary PWM",
               "translation": "Complementary PWM",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 17
             },
             "direction": {
               "english": "Direction",
               "translation": "Direction",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 9
             },
             "currentlimit": {
               "english": "Current Limit",
               "translation": "Current Limit",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 13
             },
             "lowvoltagecutoff": {
               "english": "Low Voltage Cutoff",
               "translation": "Low Voltage Cutoff",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 18
             },
             "lowvoltagethreshold": {
               "english": "Low Voltage Threshold",
               "translation": "Low Voltage Threshold",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 21
             },
             "limits": {
               "english": "Limits",
               "translation": "Limits",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 6
             },
             "motorkv": {
               "english": "Motor KV",
               "translation": "Motor KV",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 8
             },
             "motorpoles": {
               "english": "Motor Poles",
               "translation": "Motor Poles",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 11
             },
             "name": {
               "english": "AM32",
               "translation": "AM32",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 4
             },
             "pwmfrequency": {
               "english": "PWM Frequency",
               "translation": "PWM Frequency",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 13
             },
             "beepvolume": {
               "english": "Beep Volume",
               "translation": "Beep Volume",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 11
             },
             "protocol": {
               "english": "Protocol",
               "translation": "Protocol",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 8
             },
             "rcarreversing": {
               "english": "RC Car Reversing",
               "translation": "RC Car Reversing",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 16
             },
             "runningbrake": {
               "english": "Running Brake",
               "translation": "Running Brake",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 13
             },
             "servodeadband": {
               "english": "Servo Dead Band",
               "translation": "Servo Dead Band",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 15
             },
             "servohighthreshold": {
               "english": "Servo High Threshold",
               "translation": "Servo High Threshold",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 20
             },
             "servolowthreshold": {
               "english": "Servo Low Threshold",
               "translation": "Servo Low Threshold",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 19
             },
             "servoneutral": {
               "english": "Servo Neutral",
               "translation": "Servo Neutral",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 13
             },
             "sinemoderange": {
               "english": "Sine Mode Range",
               "translation": "Sine Mode Range",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 15
             },
             "sinepowermode": {
               "english": "Sine Power Mode",
               "translation": "Sine Power Mode",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 15
             },
             "sinusoidalstartup": {
               "english": "Sinusoidal Startup",
               "translation": "Sinusoidal Startup",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 18
             },
             "startuppower": {
               "english": "Startup Power",
               "translation": "Startup Power",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 13
             },
             "stallprotection": {
               "english": "Stall Protection",
               "translation": "Stall Protection",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 16
             },
             "stuckrotorprotection": {
               "english": "Stuck Rotor Protection",
               "translation": "Stuck Rotor Protection",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 22
             },
             "telemetryinterval": {
               "english": "Telemetry Interval",
               "translation": "Telemetry Interval",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 18
             },
             "temperaturelimit": {
               "english": "Temperature Limit",
               "translation": "Temperature Limit",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 17
             },
             "tbl_brake_active": {
               "english": "Active Brake",
               "translation": "Active Brake",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 12
             },
             "tbl_brake_brake": {
               "english": "Brake",
               "translation": "Brake",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 5
             },
             "tbl_brake_off": {
               "english": "Off",
               "translation": "Off",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 3
             },
             "tbl_lvc_abs": {
               "english": "Absolute",
               "translation": "Absolute",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 8
             },
             "tbl_lvc_cell": {
               "english": "Cell Based",
               "translation": "Cell Based",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 10
             },
             "tbl_lvc_off": {
               "english": "Off",
               "translation": "Off",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 3
             },
             "tbl_pwm_fixed": {
               "english": "Fixed",
               "translation": "Fixed",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 5
             },
             "tbl_pwm_rpm": {
               "english": "By RPM",
               "translation": "By RPM",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 6
             },
             "tbl_pwm_variable": {
               "english": "Variable",
               "translation": "Variable",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 8
             },
             "timing": {
               "english": "Timing",
               "translation": "Timing",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 6
             },
             "usehallsensors": {
               "english": "Use Hall Sensors",
               "translation": "Use Hall Sensors",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 16
             },
             "variablepwmfrequency": {
               "english": "Variable PWM Frequency",
               "translation": "Variable PWM Frequency",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 22
             },
             "autoadvance": {
               "english": "Auto Advance",
               "translation": "Auto Advance",
               "needs_translation": true,
-              "reverse_text": false
+              "reverse_text": false,
+              "max_length": 12
             }
           },
           "flrtr": {
@@ -10757,6 +10801,20 @@
       "needs_translation": false,
       "max_length": 38,
       "reverse_text": false
+    },
+    "msg_lua_memory_critical_title": {
+      "english": "Lua memory critically low",
+      "translation": "Lua memory critically low",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 25
+    },
+    "msg_lua_memory_critical_restart_radio": {
+      "english": "Please powercycle the radio to ensure system stability",
+      "translation": "Please powercycle the radio to ensure system stability",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 54
     },
     "msg_model_changed_reset": {
       "english": "Model changed, resetting session",

@@ -25,6 +25,19 @@ local mainMenuFocusMenuId = nil
 local mainMenuFocusIndex = nil
 local mainMenuFocusEpoch = nil
 local mainMenuFocusApplied = false
+local RAM_CRITICAL_FREE_KB = 200
+local RAM_CRITICAL_RECOVERY_KB = 220
+local RAM_CRITICAL_HOLD_S = 10
+local RAM_CRITICAL_CHECK_INTERVAL_S = 1.0
+local RAM_CRITICAL_DIALOG_TITLE = "@i18n(app.msg_lua_memory_critical_title)@"
+local RAM_CRITICAL_DIALOG_MESSAGE = "@i18n(app.msg_lua_memory_critical_restart_radio)@"
+local RAM_CRITICAL_DIALOG_BUTTONS = {{
+    label = "@i18n(app.btn_ok)@",
+    action = function() return true end
+}}
+local ramCriticalLastCheckAt = 0
+local ramCriticalLowSince = nil
+local ramCriticalAlertShown = false
 
 local function resetMainMenuFocusLatch()
     mainMenuFocusModeTag = nil
@@ -424,6 +437,45 @@ local function performReloadActions()
     end
 end
 
+local function criticalRamMonitor()
+    local app = rfsuite.app
+    if not app or app._closing then return end
+
+    local now = os.clock()
+    if (now - ramCriticalLastCheckAt) < RAM_CRITICAL_CHECK_INTERVAL_S then return end
+    ramCriticalLastCheckAt = now
+
+    local memInfo = system.getMemoryUsage and system.getMemoryUsage()
+    if type(memInfo) ~= "table" then
+        ramCriticalLowSince = nil
+        return
+    end
+
+    local freeLuaKb = (memInfo.luaRamAvailable or 0) / 1024
+    if freeLuaKb < RAM_CRITICAL_FREE_KB then
+        if not ramCriticalLowSince then
+            ramCriticalLowSince = now
+            return
+        end
+
+        if not ramCriticalAlertShown and (now - ramCriticalLowSince) >= RAM_CRITICAL_HOLD_S then
+            ramCriticalAlertShown = true
+            if app.audio then app.audio.playBufferWarn = true end
+            form.openDialog({
+                width = nil,
+                title = RAM_CRITICAL_DIALOG_TITLE,
+                message = RAM_CRITICAL_DIALOG_MESSAGE,
+                buttons = RAM_CRITICAL_DIALOG_BUTTONS,
+                options = TEXT_LEFT
+            })
+        end
+        return
+    end
+
+    ramCriticalLowSince = nil
+    if freeLuaKb >= RAM_CRITICAL_RECOVERY_KB then ramCriticalAlertShown = false end
+end
+
 local function playPendingAudioAlerts()
     local app = rfsuite.app
     if app.audio then
@@ -490,7 +542,7 @@ end
 
 local tasks = {}
 
-tasks.list = {exitApp, profileRateChangeDetection,  triggerSaveDialogs, armedSaveWarning, triggerReloadDialogs, telemetryAndPageStateUpdates, performReloadActions, playPendingAudioAlerts, wakeupUITasks, mainMenuIconEnableDisable, requestPage}
+tasks.list = {exitApp, profileRateChangeDetection,  triggerSaveDialogs, armedSaveWarning, triggerReloadDialogs, telemetryAndPageStateUpdates, performReloadActions, criticalRamMonitor, playPendingAudioAlerts, wakeupUITasks, mainMenuIconEnableDisable, requestPage}
 
 function tasks.wakeup()
 
@@ -524,6 +576,9 @@ function tasks.reset()
     mainMenuLastPassAt = 0
     mainMenuWasActive = false
     resetMainMenuFocusLatch()
+    ramCriticalLastCheckAt = 0
+    ramCriticalLowSince = nil
+    ramCriticalAlertShown = false
 end
 
 return tasks
