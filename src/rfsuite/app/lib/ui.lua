@@ -3027,7 +3027,7 @@ function ui.requestPage()
         local apiKey = type(v) == "string" and v or (apiMeta and apiMeta.name or nil)
         local retryCount = app.Page.apidata.retryCount and app.Page.apidata.retryCount[apiKey] or 0
         if not apiKey then
-            log("API key is missing for index " .. tostring(state.currentIndex), "info")
+            log("API key is missing for index " .. tostring(state.currentIndex), "warning")
             state.currentIndex = state.currentIndex + 1
             local base = 0.25
             local backoff = math.min(2.0, base * (2 ^ retryCount))
@@ -3067,7 +3067,7 @@ function ui.requestPage()
             retryCount = retryCount + 1
             app.Page.apidata.retryCount[apiKey] = retryCount
             if retryCount < 3 then
-                log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "info")
+                log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
                 tasks.callback.inSeconds(0.25, processNextAPI)
             else
                 log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
@@ -3125,7 +3125,7 @@ function ui.requestPage()
             API = nil
 
             if retryCount < 3 then
-                log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "info")
+                log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
                 tasks.callback.inSeconds(0.5, processNextAPI)
             else
                 log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
@@ -3201,7 +3201,7 @@ function ui.saveSettings(sourcePage)
         local apiMeta = type(apiEntry) == "table" and apiEntry or nil
         local apiNAME = type(apiEntry) == "string" and apiEntry or (apiMeta and apiMeta.name or nil)
         if not apiNAME then
-            log("saveSettings skipped entry with missing API name at index " .. tostring(apiID), "info")
+            log("saveSettings skipped entry with missing API name at index " .. tostring(apiID), "warning")
             completedRequests = completedRequests + 1
             goto continue
         end
@@ -3254,7 +3254,7 @@ function ui.saveSettings(sourcePage)
                     if page and page.postSave then
                         local ok, result = pcall(page.postSave, page, completePostSave)
                         if not ok then
-                            log("postSave error: " .. tostring(result), "info")
+                            log("postSave error: " .. tostring(result), "warning")
                             app.triggers.savePendingAsync = false
                             completePostSave()
                         elseif result == false or result == "pending" then
