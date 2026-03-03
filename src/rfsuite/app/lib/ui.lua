@@ -3143,10 +3143,17 @@ end
 function ui.saveSettings(sourcePage)
 
     local log = utils.log
-    local page = sourcePage or app.Page
+    local function isValidSavePage(candidate)
+        return candidate and candidate.apidata and candidate.apidata.formdata and candidate.apidata.formdata.fields and candidate.apidata.api
+    end
+
+    local page = sourcePage
+    if not isValidSavePage(page) then
+        page = app.Page
+    end
 
     if app.pageState == app.pageStatus.saving then return end
-    if not (page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields and page.apidata.api) then
+    if not isValidSavePage(page) then
         log("saveSettings called without valid apidata; skipping.", "info")
         app.pageState = app.pageStatus.display
         app.triggers.isSaving = false

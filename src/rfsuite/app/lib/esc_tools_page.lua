@@ -470,7 +470,11 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
         local app = rfsuite.app
         if not (app and app.ui and type(app.ui.saveSettings) == "function") then return end
         if saveState.running then return end
+        if not page then page = app.Page end
         if not page then return end
+        if not app.Page and app.uiState == app.uiStatus.pages then
+            app.Page = page
+        end
         if app.pageState == app.pageStatus.saving then return end
 
         saveState.running = true
@@ -577,6 +581,10 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
                 {
                     label = "@i18n(app.btn_ok_long)@",
                     action = function()
+                        local appNow = rfsuite.app
+                        if appNow and not appNow.Page and appNow.uiState == appNow.uiStatus.pages and targetPage then
+                            appNow.Page = targetPage
+                        end
                         beginSave(targetPage)
                         return true
                     end
