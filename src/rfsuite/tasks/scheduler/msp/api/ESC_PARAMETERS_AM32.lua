@@ -1,5 +1,5 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
+  Copyright (C) 2026 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
@@ -11,9 +11,6 @@ local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsui
 if msp and not msp.apifactory then msp.apifactory = factory end
 
 local API_NAME = "ESC_PARAMETERS_AM32"
-local MSP_API_CMD_READ = 217
-local MSP_API_CMD_WRITE = 218
-local MSP_REBUILD_ON_WRITE = false
 local MSP_SIGNATURE = 0xC2
 local MSP_HEADER_BYTES = 2
 
@@ -169,6 +166,14 @@ local function encodeCurrentLimit(value)
     return clamp(math.floor((value / 2) + 0.5), 0, 255)
 end
 
+local function resolveTimeout(state, isWrite)
+    if state.timeout ~= nil then return state.timeout end
+    local protocolRef = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol
+    if not protocolRef then return nil end
+    if isWrite then return protocolRef.saveTimeout end
+    return protocolRef.pageReqTimeout
+end
+
 local function parseRead(buf)
     local result = nil
 
@@ -176,7 +181,7 @@ local function parseRead(buf)
         result = parsed
     end)
 
-    if result == nil then
+    if not (result and result.parsed) then
         return nil, "parse_failed"
     end
 
@@ -231,19 +236,10 @@ local function parseRead(buf)
     return result
 end
 
-local function resolveTimingAdvanceEncoding()
-    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
-    local other = apidata and apidata.other and apidata.other[API_NAME]
-    local encoding = other and other.timing_advance_encoding
-    if encoding == "new" or encoding == "legacy" then
-        return encoding
-    end
-    return "legacy"
-end
-
-local function buildWritePayload(payloadData, _, _, state)
+local function buildWritePayload(payloadData, mspData, _, state)
     local effectivePayload = payloadData
-    local encoding = resolveTimingAdvanceEncoding()
+
+    local encoding = mspData and mspData.other and mspData.other.timing_advance_encoding or "legacy"
     if effectivePayload and (
         effectivePayload.timing_advance ~= nil or
         effectivePayload.motor_kv ~= nil or
@@ -281,29 +277,33 @@ local function buildWritePayload(payloadData, _, _, state)
         effectivePayload = cloned
     end
 
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, effectivePayload, writeStructure, state.rebuildOnWrite == true)
+    return core.buildWritePayload(API_NAME, effectivePayload, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
 end
 
 return factory.create({
     name = API_NAME,
-    readCmd = MSP_API_CMD_READ,
-    writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
+    readCmd = 217,
+    writeCmd = 218,
+    minBytes = MSP_MIN_BYTES,
     readStructure = MSP_API_STRUCTURE_READ,
     writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
+    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE,
     parseRead = parseRead,
     buildWritePayload = buildWritePayload,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
+    initialRebuildOnWrite = false,
+    resolveReadTimeout = function(state)
+        return resolveTimeout(state, false)
+    end,
+    resolveWriteTimeout = function(state)
+        return resolveTimeout(state, true)
+    end,
     readCompleteFn = function(state)
         return state.mspData ~= nil
     end,
     exports = {
         mspSignature = MSP_SIGNATURE,
         mspHeaderBytes = MSP_HEADER_BYTES,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
 })
