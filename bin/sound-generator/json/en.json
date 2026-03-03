@@ -221,6 +221,12 @@
     "translation": "P",
     "needs_translation": false
   },
+    {
+    "file": "adjfunctions/b.wav",
+    "english": "B",
+    "translation": "B",
+    "needs_translation": false
+  },
   {
     "file": "adjfunctions/i.wav",
     "english": "I",

@@ -222,6 +222,12 @@
     "needs_translation": true
   },
   {
+    "file": "adjfunctions/b.wav",
+    "english": "B",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
     "file": "adjfunctions/i.wav",
     "english": "I",
     "translation": "I",
