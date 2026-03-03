@@ -17,6 +17,9 @@ local function applyReset()
     if dashboard then
         dashboard.flightmode = "preflight"
     end
+    if model and type(model.resetFlight) == "function" then
+        pcall(model.resetFlight)
+    end
     if lcd and lcd.invalidate then
         lcd.invalidate()
     end

@@ -1,3 +1,14 @@
+# 2.3.0-20260103
+
+Snapshot release of Ethos Suite
+
+- refactored msp api to reduce ram usage and improve speed
+- moved updater tool to own repo
+- added modules for every single part of rotorflight.  you can edit everything
+- new menu structure
+- fixed majorm memory leak
+- many many other improvements in performance
+
 # 2.3.0-20260208
 
 Snapshot release of Ethos Suite

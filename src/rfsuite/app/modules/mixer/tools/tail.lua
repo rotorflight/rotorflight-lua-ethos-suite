@@ -36,7 +36,11 @@ local function tailChanged()
     needsReboot = true
 end
 
-if rfsuite.session.tailMode >= 1 then
+local function isTailMotorizedMode()
+    return (tonumber(rfsuite.session.tailMode) or -1) >= 1
+end
+
+if isTailMotorizedMode() then
 
     LAYOUTINDEX = {
         TAIL_ROTOR_MODE       = 1,   -- MIXER_CONFIG
@@ -132,7 +136,7 @@ function apiDataToFormData()
     YAW_CALIBRATION = math.abs(YAW_CALIBRATION)    
 
     -- handle limits based on tail mode
-    if rfsuite.session.tailMode >= 1 then
+    if isTailMotorizedMode() then
         YAW_CW_LIMIT = u16_to_s16(YAW_CW_LIMIT)
         YAW_CW_LIMIT = math.abs(YAW_CW_LIMIT)     
 
@@ -156,7 +160,7 @@ function apiDataToFormData()
 
 
     -- store processed data into form data table
-    if rfsuite.session.tailMode >= 1 then
+    if isTailMotorizedMode() then
         FORMDATA[LAYOUTINDEX.TAIL_ROTOR_MODE] = TAIL_ROTOR_MODE
         FORMDATA[LAYOUTINDEX.TAIL_ROTOR_IDLE] = TAIL_ROTOR_IDLE
         FORMDATA[LAYOUTINDEX.YAW_DIRECTION] = YAW_DIRECTION
@@ -200,7 +204,7 @@ function copyFormToApiValues()
     mixerCfg["tail_rotor_mode"] = FORMDATA[LAYOUTINDEX.TAIL_ROTOR_MODE]
 
     -- tail motor idle only relevant for motor/variable tail
-    if rfsuite.session.tailMode >= 1 then
+    if isTailMotorizedMode() then
         mixerCfg["tail_motor_idle"] = FORMDATA[LAYOUTINDEX.TAIL_ROTOR_IDLE]
     else
         -- fixed pitch tail: write center trim (UI scaled ±24deg)
@@ -228,7 +232,7 @@ function copyFormToApiValues()
     local ccw_ui = round(FORMDATA[LAYOUTINDEX.YAW_CCW_LIMIT] or 0)
 
     local cw_raw, ccw_raw
-    if rfsuite.session.tailMode >= 1 then
+    if isTailMotorizedMode() then
         -- variable / motor tail: UI already matches raw magnitude
         cw_raw  = cw_ui
         ccw_raw = ccw_ui

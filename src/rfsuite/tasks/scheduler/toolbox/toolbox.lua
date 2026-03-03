@@ -13,7 +13,7 @@ local wakeupStep = 0
 local wakeupHandlers = {}
 local os_clock = os.clock
 
-local taskNames = {"armflags", "governor", "craftname", "bbl", "craftimage"}
+local taskNames = {"armflags", "governor", "craftname", "bbl", "craftimage", "timer"}
 local taskExecutionPercent = 50
 
 for _, name in ipairs(taskNames) do

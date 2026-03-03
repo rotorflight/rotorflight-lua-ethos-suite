@@ -37,6 +37,8 @@ local apidata = {
 local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
 
 local navHandlers = escToolsPage.createSubmenuHandlers(folder)
+local postSave = escToolsPage.createEsc4WayPostSaveHandler(folder, ESC)
+local isolatedSave = escToolsPage.createIsolatedSaveMenuHandler(folder, ESC)
 
 local foundEsc = false
 local foundEscDone = false
@@ -49,6 +51,9 @@ return {
     svFlags = 0,
     simulatorResponse = simulatorResponse,
     postLoad = postLoad,
+    postSave = postSave,
+    onSaveMenu = isolatedSave and isolatedSave.onSaveMenu or nil,
+    close = isolatedSave and isolatedSave.close or nil,
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,

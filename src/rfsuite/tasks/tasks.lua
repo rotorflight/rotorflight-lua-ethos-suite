@@ -26,6 +26,7 @@ local tonumber = tonumber
 local pcall = pcall
 local print = print
 local loadfile = loadfile
+local system_getSource = system.getSource
 
 -- Load event tables (no lazy loading)
 local events = {}
@@ -103,11 +104,16 @@ local NAME_CHECK_INTERVAL = 2.0
 local usingSimulator = system.getVersion().simulation
 
 local tlm
+local flightResetEventSrc
+local flightResetEventSupported = (CATEGORY_SYSTEM_EVENT ~= nil and SYSTEM_EVENT_FLIGHT_RESET ~= nil)
+local flightResetEventPrimed = false
+local lastFlightResetEventState = false
 
 -- Reuse source descriptor tables to avoid allocations in hot paths.
 local SRC_SPORT = {appId = 0xF101}
 local SRC_CRSF  = {crsfId = 0x14, subIdStart = 0, subIdEnd = 1}
 local SRC_TLM_ACTIVE = {category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE}
+local SRC_FLIGHT_RESET = {category = CATEGORY_SYSTEM_EVENT, member = SYSTEM_EVENT_FLIGHT_RESET}
 
 tasks.profile = {enabled = false, dumpInterval = 5, minDuration = 0, include = nil, exclude = nil, onDump = nil}
 
@@ -460,17 +466,17 @@ function tasks.telemetryCheckScheduler()
         end
 
         if internalModule and internalModule:enable() then
-            currentSensor = system.getSource(SRC_SPORT)
+            currentSensor = system_getSource(SRC_SPORT)
             currentModuleId = internalModule
             currentModuleNumber = 0
             currentTelemetryType = "sport"
         elseif externalModule and externalModule:enable() then
-            currentSensor = system.getSource(SRC_CRSF)
+            currentSensor = system_getSource(SRC_CRSF)
             currentModuleId = externalModule
             currentTelemetryType = "crsf"
             currentModuleNumber = 1
             if not currentSensor then
-                currentSensor = system.getSource(SRC_SPORT)
+                currentSensor = system_getSource(SRC_SPORT)
                 currentTelemetryType = "sport"
             end
         end
@@ -668,6 +674,35 @@ end
 local eventWakeLast = {}
 local DEFAULT_EVENT_WAKE_INTERVAL_S = 0.25
 
+local function normalizeSourceState(state)
+    if state == true then return true end
+    if type(state) == "number" then return state ~= 0 end
+    return false
+end
+
+local function handleSystemFlightReset()
+    if not flightResetEventSrc then return end
+
+    local stateNow = normalizeSourceState(flightResetEventSrc:state())
+
+    if not flightResetEventPrimed then
+        lastFlightResetEventState = stateNow
+        flightResetEventPrimed = true
+        return
+    end
+
+    if stateNow and not lastFlightResetEventState then
+        local eventsTask = rfsuite.tasks and rfsuite.tasks.events
+        local flightmodeTask = eventsTask and eventsTask.flightmode
+        if flightmodeTask and type(flightmodeTask.reset) == "function" then
+            utils.log("[event] system flight reset", "info")
+            flightmodeTask.reset()
+        end
+    end
+
+    lastFlightResetEventState = stateNow
+end
+
 local function eventMaybeWake(name, mod, now)
     if not mod or type(mod.wakeup) ~= "function" then return end
 
@@ -741,6 +776,7 @@ function tasks.wakeup_protected()
     tasks.telemetryCheckScheduler()
 
     local now = os_clock()
+    handleSystemFlightReset()
 
     local cycleFlip = schedulerTick % 2
 
@@ -926,7 +962,14 @@ function tasks.init()
 
     tasks.begin = true
 
-    tlm = system.getSource(SRC_TLM_ACTIVE)
+    tlm = system_getSource(SRC_TLM_ACTIVE)
+    if flightResetEventSupported then
+        flightResetEventSrc = system_getSource(SRC_FLIGHT_RESET)
+    else
+        flightResetEventSrc = nil
+    end
+    flightResetEventPrimed = false
+    lastFlightResetEventState = false
 
 end
 
