@@ -21,6 +21,7 @@ local DEFAULT_RETRY_BACKOFF_SECONDS = 1
 local DEFAULT_BUSY_WARNING_THRESHOLD = 8
 local DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS = 0.35
 local MAX_MSP_LOG_BYTES = 96
+local QUEUE_COMPACT_THRESHOLD = 64
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
@@ -31,6 +32,32 @@ local MSP_BUSY_TIMEOUT = 2.5
 -- Queue primitives
 local function newQueue() return {first = 1, last = 0, data = {}} end
 local function qpush(q, v) q.last = q.last + 1; q.data[q.last] = v end
+local function qreset(q)
+    if not q then return end
+    local data = q.data
+    for i = q.first, q.last do
+        data[i] = nil
+    end
+    q.first = 1
+    q.last = 0
+end
+local function qcompact(q)
+    local first = q.first
+    local last = q.last
+    if first <= 1 or first > last then return end
+
+    local data = q.data
+    local write = 1
+    for read = first, last do
+        data[write] = data[read]
+        if write ~= read then
+            data[read] = nil
+        end
+        write = write + 1
+    end
+    q.first = 1
+    q.last = write - 1
+end
 local function qpop(q)
     if q.first > q.last then return nil end
     local idx = q.first
@@ -38,12 +65,16 @@ local function qpop(q)
     q.data[idx] = nil
     idx = idx + 1
     if idx > q.last then
-        -- Reset indices/data when drained so queue tables do not grow forever.
+        -- Queue drained: reset indices, keep storage table to avoid churn.
         q.first = 1
         q.last = 0
-        q.data = {}
     else
         q.first = idx
+        -- Compact occasionally so array indices do not grow unbounded while active.
+        local active = q.last - q.first + 1
+        if q.first > QUEUE_COMPACT_THRESHOLD and q.first > active then
+            qcompact(q)
+        end
     end
     return v
 end
@@ -528,7 +559,11 @@ end
 function MspQueueController:clear()
     if rfsuite.session then rfsuite.session.mspBusy = false end
     self.mspBusyStart = nil
-    self.queue = newQueue()
+    if self.queue then
+        qreset(self.queue)
+    else
+        self.queue = newQueue()
+    end
     self.currentMessage = nil
     self.currentMessageStartTime = nil
     self.lastTimeCommandSent = nil

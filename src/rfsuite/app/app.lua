@@ -25,10 +25,10 @@ local function closeTransientDialogs()
     local saveHandle = app.dialogs.save
 
     if app.dialogs.progressDisplay and progressHandle and progressHandle.close then
-        pcall(function() progressHandle:close() end)
+        pcall(progressHandle.close, progressHandle)
     end
     if app.dialogs.saveDisplay and saveHandle and saveHandle.close then
-        pcall(function() saveHandle:close() end)
+        pcall(saveHandle.close, saveHandle)
     end
 
     if app.ui and app.ui.clearProgressDialog then
@@ -40,6 +40,8 @@ local function closeTransientDialogs()
     app.dialogs.saveDisplay = false
     app.dialogs.progressWatchDog = nil
     app.dialogs.saveWatchDog = nil
+    app.dialogs.progressTimedOut = false
+    app.dialogs.saveTimedOut = false
     app.dialogs.progressSpeed = nil
     app.dialogs.progressCounter = 0
     app.dialogs.saveProgressCounter = 0
@@ -202,6 +204,7 @@ function app.create()
         app.dialogs.progress = false
         app.dialogs.progressDisplay = false -- loader active
         app.dialogs.progressWatchDog = nil -- timeout watchdog start
+        app.dialogs.progressTimedOut = false
         app.dialogs.progressCounter = 0 -- loader progress value
         app.dialogs.progressSpeed = nil -- loader speed multiplier
         app.dialogs.progressRateLimit = os.clock() -- throttle loader updates
@@ -217,6 +220,7 @@ function app.create()
         app.dialogs.save = false
         app.dialogs.saveDisplay = false -- save dialog active
         app.dialogs.saveWatchDog = nil -- save timeout watchdog
+        app.dialogs.saveTimedOut = false
         app.dialogs.saveProgressCounter = 0 -- save progress value
         app.dialogs.saveRateLimit = os.clock() -- throttle save updates
         app.dialogs.saveRate = 0.25 -- save update rate (s)
