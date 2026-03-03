@@ -76,7 +76,7 @@ return {
     postSaveFlushReadTimeout = 5.0,           -- Timeout for post-save flush read.
     useIsolatedSaveDialog = true,             -- Use page-owned save dialog instead of shared global save dialog.
     isolatedSaveTimeout = 32,                 -- Overall timeout for isolated save dialog flow (seconds).
-    isolatedSaveProgressProcessingStep = 2,   -- Progress increment per wakeup while write/postSave is processing.
+    isolatedSaveProgressProcessingStep = 0.2, -- Progress increment per wakeup while write/postSave is processing.
     isolatedSaveProgressProcessingCap = 90,   -- Max progress while processing before wait stage.
     isolatedSaveProgressIdleStep = 1,         -- Progress increment per wakeup while waiting for completion.
     isolatedSaveProgressIdleCap = 97,         -- Max progress in idle wait stage before final completion.

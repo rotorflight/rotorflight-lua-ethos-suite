@@ -601,25 +601,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
 end
 
 function escToolsPage.createSubmenuHandlers(folder)
-    local ESC = loadEscConfig(folder)
-    local clear4WaySessionOnExit = ESC and ESC.esc4way == true
-
-    local function clearEscSession()
-        if not clear4WaySessionOnExit then return end
-        local session = rfsuite.session
-        if not session then return end
-        session.esc4WaySkipEntrySwitchOnce = nil
-        session.esc4WaySelected = nil
-        session.esc4WaySet = nil
-        session.esc4WaySetComplete = nil
-        session.esc4WayTarget = nil
-        session.esc4WayMotorCount = nil
-        session.escDetails = nil
-        session.escBuffer = nil
-    end
-
     local function onNavMenu()
-        clearEscSession()
         pageRuntime.openMenuContext({defaultSection = "system"})
         return true
     end
