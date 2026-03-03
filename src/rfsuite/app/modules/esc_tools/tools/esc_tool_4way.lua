@@ -48,6 +48,8 @@ local selectorGuardOk = nil
 local selectorGuardNeedsReset = false
 local selectorGuardStartedAt = 0
 local selectorGuardTimeout = 2.5
+local selectorGuardRetryAt = 0
+local selectorGuardRetryDelayDefault = 0.75
 local writeSeq = 0
 local lastWriteSeq = 0
 local last4WayWriteTarget
@@ -144,6 +146,23 @@ local function getEsc4WayTargets()
         esc2Target = (esc1Target == 0) and 1 or 0
     end
     return esc1Target, esc2Target
+end
+
+local function getSelectorGuardRetryDelay()
+    local delay = tonumber(ESC and ESC.selectorGuardRetryDelay)
+    if delay == nil then delay = selectorGuardRetryDelayDefault end
+    if delay < 0 then delay = 0 end
+    return delay
+end
+
+local function scheduleSelectorGuardRetry(reason)
+    selectorGuardNeedsReset = true
+    selectorGuardPending = false
+    selectorGuardStartedAt = 0
+    selectorGuardRetryAt = os.clock() + getSelectorGuardRetryDelay()
+    if reason and rfsuite.utils and rfsuite.utils.log then
+        rfsuite.utils.log("ESC 4WIF selector guard retry: " .. tostring(reason), "info")
+    end
 end
 
 local function scheduleEscDetailsReadAt(delaySeconds)
@@ -875,6 +894,7 @@ openSelector = function()
     selectorGuardOk = nil
     selectorGuardNeedsReset = false
     selectorGuardStartedAt = 0
+    selectorGuardRetryAt = 0
     if ESC and ESC.skipSelectorGuardModeReset == true then
         selectorGuardOk = true
     else
@@ -1065,6 +1085,7 @@ local function closePage()
     selectorGuardOk = nil
     selectorGuardNeedsReset = false
     selectorGuardStartedAt = 0
+    selectorGuardRetryAt = 0
     esc2CheckPending = false
     esc2CheckLastAttempt = 0
     esc2Available = nil
@@ -1114,13 +1135,19 @@ local function wakeup()
     if processEscReadRecovery() then return end
     if inSelector then
         if selectorGuardNeedsReset and not selectorGuardPending then
+            local now = os.clock()
+            if selectorGuardRetryAt > 0 and now < selectorGuardRetryAt then
+                applySelectorButtonStates()
+                return
+            end
             selectorGuardNeedsReset = false
             local modeResetRequested = setESC4WayMode(100)
             if modeResetRequested then
                 selectorGuardPending = true
-                selectorGuardStartedAt = os.clock()
+                selectorGuardStartedAt = now
             else
                 selectorGuardOk = false
+                scheduleSelectorGuardRetry("enqueue_failed")
             end
             applySelectorButtonStates()
         end
@@ -1130,12 +1157,18 @@ local function wakeup()
                 selectorGuardOk = (last4WayWriteOk == true)
                 selectorGuardPending = false
                 selectorGuardStartedAt = 0
+                if selectorGuardOk == true then
+                    selectorGuardRetryAt = 0
+                else
+                    scheduleSelectorGuardRetry("write_failed")
+                end
                 last4WayWriteOk = nil
                 applySelectorButtonStates()
             elseif selectorGuardStartedAt > 0 and (now - selectorGuardStartedAt) >= selectorGuardTimeout then
                 selectorGuardOk = false
                 selectorGuardPending = false
                 selectorGuardStartedAt = 0
+                scheduleSelectorGuardRetry("timeout")
                 applySelectorButtonStates()
             end
         end
