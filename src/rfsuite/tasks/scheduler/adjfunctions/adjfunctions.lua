@@ -52,7 +52,7 @@ local function speakNumber(n, now)
         if DEBUG_SPEECH then print(string_format("[DEBUG] playNumber: %s", tostring(n))) end
         system_playNumber(n)
 
-        speakingUntil = math_max(speakingUntil, now + (SPEAK_NUM_MS / 1000.0))
+        speakingUntil = math_max(speakingUntil + (SPEAK_NUM_MS / 1000.0), now + (SPEAK_NUM_MS / 1000.0))
     end
 end
 
@@ -166,6 +166,7 @@ function adjfunc.wakeup()
         if wavs then
             if canSpeak(now) then
                 speakWavs(adjfuncAdjFunction, wavs, now)
+                speakNumber(adjfuncAdjValue, now)
                 adjfuncPendingFuncAnnounce = false
                 adjfuncAdjfuncIdChanged = false
             else
@@ -193,6 +194,7 @@ function adjfunc.wakeup()
                 if wavs then
                     if canSpeak(now) then
                         speakWavs(adjfuncAdjFunction, wavs, now)
+                        speakNumber(adjfuncAdjValue, now)
                         adjfuncPendingFuncAnnounce = false
                     else
 
