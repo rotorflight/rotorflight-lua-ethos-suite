@@ -1525,7 +1525,7 @@ function ui.openMainMenu(activesection)
                 end
 
                 app._mainMenuPressSpecs[menuIndex] = {item = menuItem}
-                app.formFields[menuIndex] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                app.formFields[menuIndex] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                     text = menuItem.title,
                     icon = app.gfx_buttons["mainmenu"][menuIndex],
                     options = FONT_S,
@@ -2582,7 +2582,7 @@ function ui.navigationButtons(x, y, w, h, opts)
             if enabledState[def.key] then
                 local width = def.compact and wS or w
                 local bx = rightEdge - width
-                app.formNavigationFields[def.key] = form.addButton(line, {x = bx, y = y, w = width, h = h}, {
+                app.formNavigationFields[def.key] = form.addButton(nil, {x = bx, y = y, w = width, h = h}, {
                     text = def.text,
                     icon = nil,
                     options = FONT_S,
@@ -2600,35 +2600,35 @@ function ui.navigationButtons(x, y, w, h, opts)
         saveOffset = reloadOffset - (w + padding)
         menuOffset = saveOffset - (w + padding)
 
-        app.formNavigationFields["menu"] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
+        app.formNavigationFields["menu"] = form.addButton(nil, {x = menuOffset, y = y, w = w, h = h}, {
             text = "@i18n(app.navigation_menu)@",
             icon = nil,
             options = FONT_S,
             paint = NOOP_PAINT,
             press = onNavButtonMenuPress
         })
-        app.formNavigationFields["save"] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
+        app.formNavigationFields["save"] = form.addButton(nil, {x = saveOffset, y = y, w = w, h = h}, {
             text = "@i18n(app.navigation_save)@",
             icon = nil,
             options = FONT_S,
             paint = NOOP_PAINT,
             press = onNavButtonSavePress
         })
-        app.formNavigationFields["reload"] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
+        app.formNavigationFields["reload"] = form.addButton(nil, {x = reloadOffset, y = y, w = w, h = h}, {
             text = "@i18n(app.navigation_reload)@",
             icon = nil,
             options = FONT_S,
             paint = NOOP_PAINT,
             press = onNavButtonReloadPress
         })
-        app.formNavigationFields["tool"] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {
+        app.formNavigationFields["tool"] = form.addButton(nil, {x = toolOffset, y = y, w = wS, h = h}, {
             text = "@i18n(app.navigation_tools)@",
             icon = nil,
             options = FONT_S,
             paint = NOOP_PAINT,
             press = onNavButtonToolPress
         })
-        app.formNavigationFields["help"] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
+        app.formNavigationFields["help"] = form.addButton(nil, {x = helpOffset, y = y, w = wS, h = h}, {
             text = "@i18n(app.navigation_help)@",
             icon = nil,
             options = FONT_S,
