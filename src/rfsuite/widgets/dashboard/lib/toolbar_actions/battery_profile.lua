@@ -11,11 +11,43 @@ local progressMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local BATTERY_PROFILE_API = "BATTERY_PROFILE"
 
+local function getDashboardUtils()
+    local widgets = rfsuite and rfsuite.widgets
+    local dashboard = widgets and widgets.dashboard
+    return dashboard and dashboard.utils or nil
+end
+
+local function registerProgressDialog(handle, baseMessage)
+    local utils = getDashboardUtils()
+    if utils and utils.registerProgressDialog then
+        utils.registerProgressDialog(handle, baseMessage)
+    end
+end
+
+local function clearProgressDialog(handle)
+    local utils = getDashboardUtils()
+    if utils and utils.clearProgressDialog then
+        utils.clearProgressDialog(handle)
+    end
+end
+
 local function clearApiEntry(apiName)
     local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
     if api and type(api.clearEntry) == "function" then
         api.clearEntry(apiName)
     end
+end
+
+local function closeAndClearProgress()
+    if not progress then return end
+    local handle = progress
+    if handle.close then
+        pcall(handle.close, handle)
+    end
+    clearProgressDialog(handle)
+    progress = nil
+    progressBaseMessage = nil
+    progressMspStatusLast = nil
 end
 
 local function openProgressDialog(...)
@@ -71,15 +103,16 @@ local function setBatteryType(typeIndex, profileName)
         return
     end
 
+    closeAndClearProgress()
+
     progress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+    if not progress then return end
     progress:value(0)
     progress:closeAllowed(false)
     progressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
     progressMspStatusLast = nil
 
-    if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.registerProgressDialog then
-        rfsuite.app.ui.registerProgressDialog(progress, progressBaseMessage)
-    end
+    registerProgressDialog(progress, progressBaseMessage)
 
     local api = rfsuite.tasks.msp.api.load(BATTERY_PROFILE_API)
 
@@ -87,30 +120,26 @@ local function setBatteryType(typeIndex, profileName)
         rfsuite.session.activeBatteryType = typeIndex
 
         if rfsuite.session.showConfirmationDialog then
-            progress:value(100)
-            progress:message("@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName))
-            progress:closeAllowed(true)
-            if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
-                rfsuite.app.ui.clearProgressDialog(progress)
+            if progress then
+                progress:value(100)
+                progress:message("@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName))
+                progress:closeAllowed(true)
+                clearProgressDialog(progress)
+                progress = nil
+                progressBaseMessage = nil
+                progressMspStatusLast = nil
             end
-            progress = nil
         else
-            progress:value(100)
-            progress:close()
-            if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
-                rfsuite.app.ui.clearProgressDialog(progress)
+            if progress then
+                progress:value(100)
             end
-            progress = nil
+            closeAndClearProgress()
         end
         clearApiEntry(BATTERY_PROFILE_API)
     end)
 
     api.setErrorHandler(function()
-        progress:close()
-        if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.clearProgressDialog then
-            rfsuite.app.ui.clearProgressDialog(progress)
-        end
-        progress = nil
+        closeAndClearProgress()
         clearApiEntry(BATTERY_PROFILE_API)
     end)
 
@@ -196,12 +225,7 @@ end
 
 function M.reset()
     clearApiEntry(BATTERY_PROFILE_API)
-    if progress then
-        progress:close()
-    end
-    progress = nil
-    progressBaseMessage = nil
-    progressMspStatusLast = nil
+    closeAndClearProgress()
 end
 
 return M
