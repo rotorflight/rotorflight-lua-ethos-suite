@@ -366,10 +366,6 @@ function api.clearEntry(apiName)
         if d._lastWriteMode then d._lastWriteMode[apiName] = nil end
     end
 
-    if api._deltaCacheByApi then
-        api._deltaCacheByApi[apiName] = nil
-    end
-
     return true
 end
 
