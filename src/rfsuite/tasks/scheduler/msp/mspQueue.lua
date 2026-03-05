@@ -648,4 +648,45 @@ function MspQueueController:pendingByteCost()
     return total
 end
 
+-- Remove queued (not in-flight) messages matching predicate.
+-- Returns number removed.
+function MspQueueController:removeQueuedBy(predicate)
+    if type(predicate) ~= "function" then return 0 end
+    local q = self.queue
+    if not (q and q.data) then return 0 end
+    if q.first > q.last then return 0 end
+
+    local data = q.data
+    local write = q.first
+    local removed = 0
+
+    for read = q.first, q.last do
+        local msg = data[read]
+        local drop = false
+        if msg ~= nil then
+            local ok, shouldDrop = pcall(predicate, msg)
+            drop = (ok and shouldDrop == true)
+        end
+
+        if drop then
+            data[read] = nil
+            removed = removed + 1
+        else
+            if write ~= read then
+                data[write] = msg
+                data[read] = nil
+            end
+            write = write + 1
+        end
+    end
+
+    q.last = write - 1
+    if q.last < q.first then
+        q.first = 1
+        q.last = 0
+    end
+
+    return removed
+end
+
 return MspQueueController.new()
