@@ -8,6 +8,14 @@ local rfsuite = require("rfsuite")
 local uid = {}
 
 local mspCallMade = false
+local API_NAME = "UID"
+
+local function clearApiEntry()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(API_NAME)
+    end
+end
 
 function uid.wakeup()
 
@@ -19,7 +27,7 @@ function uid.wakeup()
 
         mspCallMade = true
 
-        local API = rfsuite.tasks.msp.api.load("UID")
+        local API = rfsuite.tasks.msp.api.load(API_NAME)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             local U_ID_0 = API.readValue("U_ID_0")
@@ -43,7 +51,9 @@ function uid.wakeup()
                 rfsuite.session.mcu_id = uid
             end
 
+            clearApiEntry()
         end)
+        API.setErrorHandler(function() clearApiEntry() end)
         API.setUUID("a3e5f2d7-9c4b-4e6a-b8f1-3d7e2c9a1f45")
         API.read()
     end
@@ -51,6 +61,7 @@ function uid.wakeup()
 end
 
 function uid.reset()
+    clearApiEntry()
     rfsuite.session.mcu_id = nil
     mspCallMade = false
 end

@@ -13,6 +13,14 @@ local isComplete = false
 
 local FBL_STATS = {} -- holder for fbl stats to sync
 local LOCAL_STATS = {} -- holder for local stats to sync
+local API_NAME = "FLIGHT_STATS"
+
+local function clearApiEntry()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(API_NAME)
+    end
+end
 
 local function copyTable(src)
     if type(src) ~= "table" then return src end
@@ -70,7 +78,7 @@ function sync.wakeup()
         LOCAL_STATS['totalflighttime'] = toNumber(rfsuite.ini.getvalue(prefs, "general", "totalflighttime"), 0)
         LOCAL_STATS['flightcount']     = toNumber(rfsuite.ini.getvalue(prefs, "general", "flightcount"), 0)
 
-        local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+        local API = rfsuite.tasks.msp.api.load(API_NAME)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setUUID("7a5a2f27-2ef6-4f2d-9ecf-8a1f4c4a6e28") 
         API.setCompleteHandler(function(self, buf)
@@ -80,7 +88,9 @@ function sync.wakeup()
 
             -- let's proceed to save
             saveData = true
+            clearApiEntry()
         end)
+        API.setErrorHandler(function() clearApiEntry() end)
         API.read()
     
         fetchData = true
@@ -110,7 +120,7 @@ function sync.wakeup()
 
         elseif totalflighttimeRemote < totalflighttimeLocal or flightcountRemote < flightcountLocal then
             -- local is higher, update remote
-            local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+            local API = rfsuite.tasks.msp.api.load(API_NAME)
             if API and API.enableDeltaCache then API.enableDeltaCache(false) end
             API.setRebuildOnWrite(true)
             API.setUUID("7a5a2f27-2ef6-4f2d-7egf-8a1f4c4a6e28") 
@@ -126,7 +136,9 @@ function sync.wakeup()
                 rfsuite.utils.log("Updated FBL flight stats from radio", "info")
                 saveToEeprom()
                 isComplete = true
+                clearApiEntry()
             end)
+            API.setErrorHandler(function() clearApiEntry() end)
             API.write()
         else
             rfsuite.utils.log("Flight stats are already synchronized", "info")
@@ -139,6 +151,7 @@ function sync.wakeup()
 end
 
 function sync.reset()
+    clearApiEntry()
     isComplete = false
 end
 

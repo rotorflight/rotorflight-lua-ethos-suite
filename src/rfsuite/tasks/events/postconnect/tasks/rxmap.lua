@@ -8,6 +8,14 @@ local rfsuite = require("rfsuite")
 local rxmap = {}
 
 local mspCallMade = false
+local API_NAME = "RX_MAP"
+
+local function clearApiEntry()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(API_NAME)
+    end
+end
 
 function rxmap.wakeup()
 
@@ -17,7 +25,7 @@ function rxmap.wakeup()
 
     if not rfsuite.utils.rxmapReady() and mspCallMade == false then
         mspCallMade = true
-        local API = rfsuite.tasks.msp.api.load("RX_MAP")
+        local API = rfsuite.tasks.msp.api.load(API_NAME)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
 
@@ -42,7 +50,9 @@ function rxmap.wakeup()
             rfsuite.utils.log("RX Map: Aileron: " .. aileron .. ", Elevator: " .. elevator .. ", Rudder: " .. rudder .. ", Collective: " .. collective .. ", Throttle: " .. throttle .. ", Aux1: " .. aux1 .. ", Aux2: " .. aux2 .. ", Aux3: " .. aux3, "info")
             rfsuite.utils.log("RX Map: Ail: " .. aileron .. ", Elev: " .. elevator .. ", Rud: " .. rudder .. ", Col: " .. collective .. ", Thr: " .. throttle , "connect")
 
+            clearApiEntry()
         end)
+        API.setErrorHandler(function() clearApiEntry() end)
         API.setUUID("b3e5c8a4-5f3e-4e2c-9f7d-2e7a1c4b8f21")
         API.read()
     end
@@ -50,6 +60,7 @@ function rxmap.wakeup()
 end
 
 function rxmap.reset()
+    clearApiEntry()
     if rfsuite.session.rx and rfsuite.session.rx.map then for _, key in ipairs({"aileron", "elevator", "rudder", "collective", "throttle", "aux1", "aux2", "aux3"}) do rfsuite.session.rx.map[key] = nil end end
     rfsuite.session.rxmap = {}
     rfsuite.session.rxvalues = {}

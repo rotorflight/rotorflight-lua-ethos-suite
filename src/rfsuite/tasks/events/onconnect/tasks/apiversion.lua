@@ -8,6 +8,14 @@ local rfsuite = require("rfsuite")
 local apiversion = {}
 
 local mspCallMade = false
+local API_NAME = "API_VERSION"
+
+local function clearApiEntry()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(API_NAME)
+    end
+end
 
 local function version_ge(a, b)
     local function split(v)
@@ -66,7 +74,7 @@ function apiversion.wakeup()
         local probeProto = (rfsuite.config.msp and rfsuite.config.msp.probeProtocol) or 1
         rfsuite.config.mspProtocolVersion = probeProto
 
-        local API = rfsuite.tasks.msp.api.load("API_VERSION")
+        local API = rfsuite.tasks.msp.api.load(API_NAME)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             local version = API.readVersion()
@@ -83,6 +91,7 @@ function apiversion.wakeup()
                     rfsuite.session.apiVersion = apiVersionString
 
                     rfsuite.config.mspProtocolVersion = restoreProto
+                    clearApiEntry()
                     return
                 end
 
@@ -121,13 +130,16 @@ function apiversion.wakeup()
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect")
             end
+            clearApiEntry()
         end)
+        API.setErrorHandler(function() clearApiEntry() end)
         API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
         API.read()
     end
 end
 
 function apiversion.reset()
+    clearApiEntry()
     rfsuite.session.apiVersion = nil
     rfsuite.session.apiVersionInvalid = nil
     mspCallMade = false

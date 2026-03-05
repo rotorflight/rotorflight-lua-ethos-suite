@@ -8,6 +8,14 @@ local rfsuite = require("rfsuite")
 local craftname = {}
 
 local mspCallMade = false
+local API_NAME = "NAME"
+
+local function clearApiEntry()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(API_NAME)
+    end
+end
 
 function craftname.wakeup()
 
@@ -17,7 +25,7 @@ function craftname.wakeup()
 
     if (rfsuite.session.craftName == nil) and (mspCallMade == false) then
         mspCallMade = true
-        local API = rfsuite.tasks.msp.api.load("NAME")
+        local API = rfsuite.tasks.msp.api.load(API_NAME)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.craftName = API.readValue("name")
@@ -35,7 +43,9 @@ function craftname.wakeup()
             else
                 rfsuite.session.craftName = model.name()
             end
+            clearApiEntry()
         end)
+        API.setErrorHandler(function() clearApiEntry() end)
         API.setUUID("37163617-1486-4886-8b81-6a1dd6d7edd1")
         API.read()
     end
@@ -43,6 +53,7 @@ function craftname.wakeup()
 end
 
 function craftname.reset()
+    clearApiEntry()
     rfsuite.session.craftName = nil
     mspCallMade = false
 end
