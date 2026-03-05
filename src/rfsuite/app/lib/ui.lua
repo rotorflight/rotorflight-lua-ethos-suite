@@ -2708,35 +2708,35 @@ function ui.injectApiAttributes(fieldIndex, f, v)
 
     if v.decimals and not f.decimals then
         if f.type ~= 1 then
-            log("Injecting decimals: " .. v.decimals, "debug")
+            --log("Injecting decimals: " .. v.decimals, "debug")
             f.decimals = v.decimals
             if formField.decimals then formField:decimals(v.decimals) end
         end
     end
 
     if v.scale and not f.scale then
-        log("Injecting scale: " .. v.scale, "debug");
+        --log("Injecting scale: " .. v.scale, "debug");
         f.scale = v.scale
     end
     if v.mult and not f.mult then
-        log("Injecting mult: " .. v.mult, "debug");
+        --log("Injecting mult: " .. v.mult, "debug");
         f.mult = v.mult
     end
     if v.offset and not f.offset then
-        log("Injecting offset: " .. v.offset, "debug");
+        --log("Injecting offset: " .. v.offset, "debug");
         f.offset = v.offset
     end
 
     if v.unit and not f.unit then
         if f.type ~= 1 then
-            log("Injecting unit: " .. v.unit, "debug")
+            --log("Injecting unit: " .. v.unit, "debug")
             if formField.suffix then formField:suffix(v.unit) end
         end
     end
 
     if v.step and not f.step then
         if f.type ~= 1 then
-            log("Injecting step: " .. v.step, "debug")
+            --log("Injecting step: " .. v.step, "debug")
             f.step = v.step
             if formField.step then formField:step(v.step) end
         end
@@ -2746,7 +2746,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
         f.min = v.min
         if f.offset then f.min = f.min + f.offset end
         if f.type ~= 1 then
-            log("Injecting min: " .. f.min, "debug")
+            --log("Injecting min: " .. f.min, "debug")
             if formField.minimum then formField:minimum(f.min) end
         end
     end
@@ -2755,7 +2755,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
         f.max = v.max
         if f.offset then f.max = f.max + f.offset end
         if f.type ~= 1 then
-            log("Injecting max: " .. f.max, "debug")
+            --log("Injecting max: " .. f.max, "debug")
             if formField.maximum then formField:maximum(f.max) end
         end
     end
@@ -2768,7 +2768,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end
         if f.type ~= 1 then
-            log("Injecting default: " .. default, "debug")
+            --log("Injecting default: " .. default, "debug")
             if formField.default then formField:default(default) end
         end
     end
@@ -2778,7 +2778,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
         local idxInc = f.tableIdxInc or v.tableIdxInc
         local tbldata = app.utils.convertPageValueTable(v.table, idxInc)
         if f.type == 1 then
-            log("Injecting table: {}", "debug")
+            --log("Injecting table: {}", "debug")
             if formField.values then formField:values(tbldata) end
         end
     end
@@ -2786,20 +2786,19 @@ function ui.injectApiAttributes(fieldIndex, f, v)
     if v.tableEthos and not f.tableEthos then
         local tbldata = v.tableEthos
         if f.type == 1 then
-            log("Injecting table: {}", "debug")
+            --log("Injecting table: {}", "debug")
             if formField.values then formField:values(tbldata) end
         end
     end
 
     if v.help then
         f.help = v.help
-        log("Injecting help: {}", "debug")
+        --log("Injecting help: {}", "debug")
         if formField.help then formField:help(v.help) end
     end
 
     if formField.focus then formField:focus(true) end
 
-    formField = nil
 end
 
 function ui.mspApiUpdateFormAttributes()
@@ -2956,7 +2955,7 @@ function ui.requestPage()
 
     if not app.Page.apidata then return end
     if not app.Page.apidata.api and not app.Page.apidata.formdata then
-        log("app.Page.apidata.api did not pass consistancy checks", "debug")
+        --log("app.Page.apidata.api did not pass consistancy checks", "debug")
         return
     end
 
@@ -2966,13 +2965,13 @@ function ui.requestPage()
     local state = app.Page.apidata.apiState
 
     if state.isProcessing then
-        log("requestPage is already running, skipping duplicate call.", "debug")
+        --log("requestPage is already running, skipping duplicate call.", "debug")
         return
     end
     state.isProcessing = true
 
     if not tasks.msp.api.apidata.values then
-        log("requestPage Initialize values on first run", "debug")
+        --log("requestPage Initialize values on first run", "debug")
         tasks.msp.api.apidata.values = {}
         tasks.msp.api.apidata.structure = {}
         tasks.msp.api.apidata.receivedBytesCount = {}
@@ -3002,7 +3001,7 @@ function ui.requestPage()
 
     local function processNextAPI()
         if not app or not app.Page or not app.Page.apidata then
-            log("App is closing. Stopping processNextAPI.", "debug")
+            --log("App is closing. Stopping processNextAPI.", "debug")
             return
         end
 
@@ -3030,7 +3029,7 @@ function ui.requestPage()
         local apiKey = type(v) == "string" and v or (apiMeta and apiMeta.name or nil)
         local retryCount = app.Page.apidata.retryCount and app.Page.apidata.retryCount[apiKey] or 0
         if not apiKey then
-            log("API key is missing for index " .. tostring(state.currentIndex), "warning")
+            log("API key is missing for index " .. tostring(state.currentIndex), "info")
             state.currentIndex = state.currentIndex + 1
             local base = 0.25
             local backoff = math.min(2.0, base * (2 ^ retryCount))
@@ -3058,22 +3057,22 @@ function ui.requestPage()
 
         local handled = false
 
-        log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
+        --log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
 
         local function handleTimeout()
             if handled then return end
             handled = true
             if not app or not app.Page or not app.Page.apidata then
-                log("App is closing. Timeout handling skipped.", "debug")
+                --log("App is closing. Timeout handling skipped.", "debug")
                 return
             end
             retryCount = retryCount + 1
             app.Page.apidata.retryCount[apiKey] = retryCount
             if retryCount < 3 then
-                log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
+                log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "info")
                 tasks.callback.inSeconds(0.25, processNextAPI)
             else
-                log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+                log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
                 tasks.callback.inSeconds(0.25, processNextAPI)
             end
@@ -3085,10 +3084,10 @@ function ui.requestPage()
             if handled then return end
             handled = true
             if not app or not app.Page or not app.Page.apidata then
-                log("App is closing. Skipping API success handling.", "debug")
+                --log("App is closing. Skipping API success handling.", "debug")
                 return
             end
-            log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
+            --log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
             local cacheEnabled = enableDeltaCache
             if cacheEnabled == nil and tasks.msp.api.isDeltaCacheEnabled then
                 cacheEnabled = tasks.msp.api.isDeltaCacheEnabled(apiKey)
@@ -3120,7 +3119,7 @@ function ui.requestPage()
             if handled then return end
             handled = true
             if not app or not app.Page or not app.Page.apidata then
-                log("App is closing. Skipping API error handling.", "debug")
+                --log("App is closing. Skipping API error handling.", "debug")
                 return
             end
             retryCount = retryCount + 1
@@ -3128,10 +3127,10 @@ function ui.requestPage()
             API = nil
 
             if retryCount < 3 then
-                log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
+                log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "info")
                 tasks.callback.inSeconds(0.5, processNextAPI)
             else
-                log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+                log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
                 tasks.callback.inSeconds(0.5, processNextAPI)
             end
@@ -3170,7 +3169,7 @@ function ui.saveSettings(sourcePage)
     app.saveTS = osClock()
     app.triggers.savePendingAsync = false
 
-    log("Saving data", "debug")
+    --log("Saving data", "debug")
 
     local mspapi = page.apidata
     local apiList = mspapi.api
@@ -3204,7 +3203,7 @@ function ui.saveSettings(sourcePage)
         local apiMeta = type(apiEntry) == "table" and apiEntry or nil
         local apiNAME = type(apiEntry) == "string" and apiEntry or (apiMeta and apiMeta.name or nil)
         if not apiNAME then
-            log("saveSettings skipped entry with missing API name at index " .. tostring(apiID), "warning")
+            log("saveSettings skipped entry with missing API name at index " .. tostring(apiID), "info")
             completedRequests = completedRequests + 1
             goto continue
         end
@@ -3234,11 +3233,11 @@ function ui.saveSettings(sourcePage)
         API.setErrorHandler(function(self, buf) app.triggers.saveFailed = true end)
         API.setCompleteHandler(function(self, buf)
             completedRequests = completedRequests + 1
-            log("API " .. apiNAME .. " write complete", "debug")
+            --log("API " .. apiNAME .. " write complete", "debug")
             API = nil
 
             if completedRequests == totalRequests then
-                log("All API requests have been completed!", "debug")
+                --log("All API requests have been completed!", "debug")
                 if enqueueFailures > 0 or app.triggers.saveFailed then
                     app.triggers.savePendingAsync = false
                     setSaveProcessing(false)
@@ -3257,7 +3256,7 @@ function ui.saveSettings(sourcePage)
                     if page and page.postSave then
                         local ok, result = pcall(page.postSave, page, completePostSave)
                         if not ok then
-                            log("postSave error: " .. tostring(result), "warning")
+                            log("postSave error: " .. tostring(result), "info")
                             app.triggers.savePendingAsync = false
                             completePostSave()
                         elseif result == false or result == "pending" then
@@ -3310,7 +3309,7 @@ function ui.saveSettings(sourcePage)
         end
 
         for k, v in pairs(payloadData) do
-            log("Set value for " .. k .. " to " .. v, "debug")
+            --log("Set value for " .. k .. " to " .. v, "debug")
             API.setValue(k, v)
         end
 
