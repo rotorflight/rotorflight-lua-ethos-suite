@@ -9,6 +9,14 @@ local progress
 local progressBaseMessage
 local progressMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+local BATTERY_PROFILE_API = "BATTERY_PROFILE"
+
+local function clearApiEntry(apiName)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(apiName)
+    end
+end
 
 local function openProgressDialog(...)
     if rfsuite.utils.ethosVersionAtLeast({1, 7, 0}) and form.openWaitDialog then
@@ -73,7 +81,7 @@ local function setBatteryType(typeIndex, profileName)
         rfsuite.app.ui.registerProgressDialog(progress, progressBaseMessage)
     end
 
-    local api = rfsuite.tasks.msp.api.load("BATTERY_PROFILE")
+    local api = rfsuite.tasks.msp.api.load(BATTERY_PROFILE_API)
 
     api.setCompleteHandler(function()
         rfsuite.session.activeBatteryType = typeIndex
@@ -94,6 +102,7 @@ local function setBatteryType(typeIndex, profileName)
             end
             progress = nil
         end
+        clearApiEntry(BATTERY_PROFILE_API)
     end)
 
     api.setErrorHandler(function()
@@ -102,6 +111,7 @@ local function setBatteryType(typeIndex, profileName)
             rfsuite.app.ui.clearProgressDialog(progress)
         end
         progress = nil
+        clearApiEntry(BATTERY_PROFILE_API)
     end)
 
     api.setValue("batteryProfile", typeIndex)
@@ -185,6 +195,7 @@ function M.wakeup()
 end
 
 function M.reset()
+    clearApiEntry(BATTERY_PROFILE_API)
     if progress then
         progress:close()
     end

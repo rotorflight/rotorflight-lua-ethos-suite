@@ -30,6 +30,14 @@ local eraseProgressBaseMessage
 local eraseProgressMspStatusLast
 local eraseProgressCounter
 local eraseProgressStart
+local DATAFLASH_SUMMARY_API = "DATAFLASH_SUMMARY"
+
+local function clearApiEntry(apiName)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(apiName)
+    end
+end
 
 local function updateProgressMessage()
     if not eraseProgress or not eraseProgressBaseMessage then return end
@@ -64,7 +72,7 @@ local function doErase()
     eraseProgressMspStatusLast = nil
     local function readDataflashSummary()
         if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load) then return end
-        local API = rfsuite.tasks.msp.api.load("DATAFLASH_SUMMARY")
+        local API = rfsuite.tasks.msp.api.load(DATAFLASH_SUMMARY_API)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
         if not API then return end
         API.setCompleteHandler(function()
@@ -75,7 +83,9 @@ local function doErase()
             if used ~= nil then rfsuite.session.bblUsed = used end
             if flags ~= nil then rfsuite.session.bblFlags = flags end
             logInfo(string.format("Dataflash summary: total=%s used=%s flags=%s", tostring(total), tostring(used), tostring(flags)))
+            clearApiEntry(DATAFLASH_SUMMARY_API)
         end)
+        API.setErrorHandler(function() clearApiEntry(DATAFLASH_SUMMARY_API) end)
         API.read()
     end
 
@@ -126,6 +136,7 @@ function M.wakeup()
 end
 
 function M.reset()
+    clearApiEntry(DATAFLASH_SUMMARY_API)
     if eraseProgress then
         eraseProgress:close()
     end
