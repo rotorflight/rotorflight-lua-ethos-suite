@@ -351,6 +351,28 @@ function api.load(apiName, loadOpts)
     return module
 end
 
+function api.clearEntry(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return false end
+
+    local d = api.apidata
+    if type(d) == "table" then
+        if d.values then d.values[apiName] = nil end
+        if d.structure then d.structure[apiName] = nil end
+        if d.receivedBytes then d.receivedBytes[apiName] = nil end
+        if d.receivedBytesCount then d.receivedBytesCount[apiName] = nil end
+        if d.positionmap then d.positionmap[apiName] = nil end
+        if d.other then d.other[apiName] = nil end
+        if d._lastReadMode then d._lastReadMode[apiName] = nil end
+        if d._lastWriteMode then d._lastWriteMode[apiName] = nil end
+    end
+
+    if api._deltaCacheByApi then
+        api._deltaCacheByApi[apiName] = nil
+    end
+
+    return true
+end
+
 function api.resetApidata()
     local d = api.apidata
 

@@ -185,9 +185,14 @@ end
 local function clearEscApiCache()
     local apiName = ESC and ESC.mspapi
     if type(apiName) ~= "string" or apiName == "" then return end
-    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
-    if type(apidata) ~= "table" then return end
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(apiName)
+        return
+    end
 
+    local apidata = api and api.apidata
+    if type(apidata) ~= "table" then return end
     if apidata.values then apidata.values[apiName] = nil end
     if apidata.structure then apidata.structure[apiName] = nil end
     if apidata.receivedBytes then apidata.receivedBytes[apiName] = nil end

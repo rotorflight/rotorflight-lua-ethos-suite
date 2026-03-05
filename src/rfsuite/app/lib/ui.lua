@@ -1133,15 +1133,20 @@ function ui.cleanupCurrentPage()
         -- Drop cached MSP API data for just this page's APIs.
         if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and app.Page.apidata.api then
             local apidata = tasks.msp.api.apidata
+            local clearEntry = tasks.msp.api.clearEntry
             for _, v in ipairs(app.Page.apidata.api) do
                 local apiKey = type(v) == "string" and v or v.name
                 if apiKey then
-                    if apidata.values then apidata.values[apiKey] = nil end
-                    if apidata.structure then apidata.structure[apiKey] = nil end
-                    if apidata.receivedBytes then apidata.receivedBytes[apiKey] = nil end
-                    if apidata.receivedBytesCount then apidata.receivedBytesCount[apiKey] = nil end
-                    if apidata.positionmap then apidata.positionmap[apiKey] = nil end
-                    if apidata.other then apidata.other[apiKey] = nil end
+                    if type(clearEntry) == "function" then
+                        clearEntry(apiKey)
+                    else
+                        if apidata.values then apidata.values[apiKey] = nil end
+                        if apidata.structure then apidata.structure[apiKey] = nil end
+                        if apidata.receivedBytes then apidata.receivedBytes[apiKey] = nil end
+                        if apidata.receivedBytesCount then apidata.receivedBytesCount[apiKey] = nil end
+                        if apidata.positionmap then apidata.positionmap[apiKey] = nil end
+                        if apidata.other then apidata.other[apiKey] = nil end
+                    end
                 end
             end
         end
