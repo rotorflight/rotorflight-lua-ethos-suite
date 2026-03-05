@@ -2702,8 +2702,9 @@ function ui.openPageHelp(txtData, title)
     })
 end
 
-function ui.injectApiAttributes(formField, f, v)
+function ui.injectApiAttributes(fieldIndex, f, v)
     local log = utils.log
+    local formField = app.formFields and app.formFields[fieldIndex] or nil
 
     if v.decimals and not f.decimals then
         if f.type ~= 1 then
@@ -2797,6 +2798,8 @@ function ui.injectApiAttributes(formField, f, v)
     end
 
     if formField.focus then formField:focus(true) end
+
+    formField = nil
 end
 
 function ui.mspApiUpdateFormAttributes()
@@ -2890,7 +2893,7 @@ function ui.mspApiUpdateFormAttributes()
 
                             if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then v.help = nil end
 
-                            app.ui.injectApiAttributes(formField, f, v)
+                            app.ui.injectApiAttributes(i, f, v)
 
                             local scale = f.scale or 1
                             if values and values[mspapiNAME] and values[mspapiNAME][apikey] then app.Page.apidata.formdata.fields[i].value = values[mspapiNAME][apikey] / scale end
@@ -2908,7 +2911,7 @@ function ui.mspApiUpdateFormAttributes()
                             if bitmapField == apikey and mspapiID == f.mspapi then
                                 if v.help and (v.help == "" or v.help:match("^@i18n%b()@$")) then v.help = nil end
 
-                                app.ui.injectApiAttributes(formField, f, b)
+                                app.ui.injectApiAttributes(i, f, b)
 
                                 local scale = f.scale or 1
                                 if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
