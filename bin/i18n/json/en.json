@@ -28,10 +28,10 @@
         "translation": "The number of cells in your battery."
       },
       "batteryProfile": {
-        "english": "Selected battery profile (0-5)",
-        "max_length": 27,
+        "english": "Selected battery profile (1-6)",
+        "max_length": 30,
         "needs_translation": false,
-        "translation": "Selected battery profile (0-5)"
+        "translation": "Selected battery profile (1-6)"
       },
       "source_adc": {
         "english": "Battery ADC",
@@ -6634,8 +6634,7 @@
           "english": "Yaw",
           "max_length": 3,
           "needs_translation": false,
-          "translation": "Yaw",
-          "max_length": 3
+          "translation": "Yaw"
         }
       },
       "power": {
@@ -6770,7 +6769,6 @@
           "needs_translation": false,
           "translation": "Warn Cell Voltage",
           "max_length": 17
-          "translation": "Yaw"
         }
       },
       "ports": {
@@ -6941,152 +6939,6 @@
           "max_length": 11,
           "needs_translation": false,
           "translation": "Save error:"
-        }
-      },
-      "power": {
-        "alert_name": {
-          "english": "Alerts",
-          "max_length": 6,
-          "needs_translation": false,
-          "translation": "Alerts"
-        },
-        "alert_type": {
-          "english": "Rx Voltage Alert",
-          "max_length": 16,
-          "needs_translation": false,
-          "translation": "Rx Voltage Alert"
-        },
-        "battery_capacity": {
-          "english": "Battery Capacity",
-          "max_length": 16,
-          "needs_translation": false,
-          "translation": "Battery Capacity"
-        },
-        "battery_name": {
-          "english": "Battery",
-          "max_length": 7,
-          "needs_translation": false,
-          "translation": "Battery"
-        },
-        "bec_voltage_alert": {
-          "english": "BEC Alert Value",
-          "max_length": 15,
-          "needs_translation": false,
-          "translation": "BEC Alert Value"
-        },
-        "calcfuel_local": {
-          "english": "Calculate Fuel Using",
-          "max_length": 20,
-          "needs_translation": false,
-          "translation": "Calculate Fuel Using"
-        },
-        "capacity": {
-          "english": "Capacity",
-          "max_length": 8,
-          "needs_translation": false,
-          "translation": "Capacity"
-        },
-        "cell_count": {
-          "english": "Cell Count",
-          "max_length": 10,
-          "needs_translation": false,
-          "translation": "Cell Count"
-        },
-        "consumption_warning_percentage": {
-          "english": "Consumption Warning %",
-          "max_length": 21,
-          "needs_translation": false,
-          "translation": "Consumption Warning %"
-        },
-        "current_meter_source": {
-          "english": "Current Source",
-          "max_length": 14,
-          "needs_translation": false,
-          "translation": "Current Source"
-        },
-        "full_cell_voltage": {
-          "english": "Full Cell Voltage",
-          "max_length": 17,
-          "needs_translation": false,
-          "translation": "Full Cell Voltage"
-        },
-        "help_p1": {
-          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-          "max_length": 162,
-          "needs_translation": false,
-          "translation": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level."
-        },
-        "max_cell_voltage": {
-          "english": "Max Cell Voltage",
-          "max_length": 16,
-          "needs_translation": false,
-          "translation": "Max Cell Voltage"
-        },
-        "min_cell_voltage": {
-          "english": "Min Cell Voltage",
-          "max_length": 16,
-          "needs_translation": false,
-          "translation": "Min Cell Voltage"
-        },
-        "name": {
-          "english": "Power",
-          "max_length": 5,
-          "needs_translation": false,
-          "translation": "Power"
-        },
-        "rx_voltage_alert": {
-          "english": "RxBatt Alert Value",
-          "max_length": 18,
-          "needs_translation": false,
-          "translation": "RxBatt Alert Value"
-        },
-        "selected": {
-          "english": "Selected",
-          "max_length": 8,
-          "needs_translation": false,
-          "translation": "Selected"
-        },
-        "show_battery_profile_startup": {
-          "english": "Show battery type choose (startup)",
-          "max_length": 34,
-          "needs_translation": false,
-          "translation": "Show battery type choose (startup)"
-        },
-        "show_confirmation_dialog": {
-          "english": "Show confirmation dialog",
-          "max_length": 24,
-          "needs_translation": false,
-          "translation": "Show confirmation dialog"
-        },
-        "source_name": {
-          "english": "Sources",
-          "max_length": 7,
-          "needs_translation": false,
-          "translation": "Sources"
-        },
-        "timer": {
-          "english": "Flight Time Alarm",
-          "max_length": 17,
-          "needs_translation": false,
-          "translation": "Flight Time Alarm"
-        },
-        "voltage_meter_source": {
-          "english": "Voltage Source",
-          "max_length": 14,
-          "needs_translation": false,
-          "translation": "Voltage Source"
-        },
-        "voltage_multiplier": {
-          "english": "Sag Compensation",
-          "max_length": 16,
-          "needs_translation": false,
-          "translation": "Sag Compensation"
-        },
-        "warn_cell_voltage": {
-          "english": "Warn Cell Voltage",
-          "max_length": 17,
-          "needs_translation": false,
-          "translation": "Warn Cell Voltage"
         }
       },
       "profile_autolevel": {
@@ -9700,7 +9552,7 @@
     },
     "battery_profile": {
       "english": "Battery Profile",
-      "max_length": 12,
+      "max_length": 15,
       "needs_translation": false,
       "translation": "Battery Profile"
     },
@@ -9975,7 +9827,7 @@
       },
       "battery_profile": {
         "english": "Battery Profile",
-        "max_length": 12,
+        "max_length": 15,
         "needs_translation": false,
         "translation": "Battery Profile"
       },
