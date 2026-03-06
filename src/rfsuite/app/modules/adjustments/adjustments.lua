@@ -110,7 +110,7 @@ local ADJUST_FUNCTIONS = {
     {id = 78, name = "Gov Max Throttle", min = 0, max = 100, minApi = {12, 0, 9}},
     {id = 79, name = "Gov Min Throttle", min = 0, max = 100, minApi = {12, 0, 9}},
     {id = 80, name = "Gov Headspeed", min = 0, max = 10000, minApi = {12, 0, 9}},
-    {id = 81, name = "Gov Yaw FF", min = 0, max = 250, minApi = {12, 0, 9}}
+    {id = 81, name = "Gov Yaw FF", min = 0, max = 250, minApi = {12, 0, 9}},
     {id = 82, name = "Battery Profile", min = 1, max = 6},
 }
 
