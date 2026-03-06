@@ -32,8 +32,8 @@
         "translation": "Het aantal cellen in je batterij."
       },
       "batteryProfile": {
-        "english": "Selected battery profile (0-5)",
-        "max_length": 27,
+        "english": "Selected battery profile (1-6)",
+        "max_length": 30,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Selected battery profile (0-5)"
@@ -8041,20 +8041,6 @@
           "reverse_text": false,
           "translation": "Selected"
         },
-        "show_battery_profile_startup": {
-          "english": "Show battery type choose (startup)",
-          "max_length": 34,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Show battery type choose (startup)"
-        },
-        "show_confirmation_dialog": {
-          "english": "Show confirmation dialog",
-          "max_length": 24,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Show confirmation dialog"
-        },
         "source_name": {
           "english": "Sources",
           "max_length": 7,
@@ -11130,7 +11116,7 @@
     },
     "battery_profile": {
       "english": "Battery Profile",
-      "max_length": 12,
+      "max_length": 15,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Battery Profile"
@@ -11444,7 +11430,7 @@
       },
       "battery_profile": {
         "english": "Battery Profile",
-        "max_length": 12,
+        "max_length": 15,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Battery Profile"

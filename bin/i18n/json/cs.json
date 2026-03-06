@@ -32,11 +32,11 @@
         "reverse_text": false
       },
       "batteryProfile": {
-        "english": "Selected battery profile (0-5)",
+        "english": "Selected battery profile (1-6)",
         "translation": "Selected battery profile (0-5)",
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 27
+        "max_length": 30
       },
       "source_adc": {
         "english": "Battery ADC",
@@ -8077,176 +8077,6 @@
           "max_length": 11
         }
       },
-      "power": {
-        "alert_name": {
-          "english": "Alerts",
-          "translation": "Alerts",
-          "needs_translation": true,
-          "max_length": 6,
-          "reverse_text": false
-        },
-        "alert_type": {
-          "english": "Rx Voltage Alert",
-          "translation": "Rx Voltage Alert",
-          "needs_translation": true,
-          "max_length": 16,
-          "reverse_text": false
-        },
-        "battery_capacity": {
-          "english": "Battery Capacity",
-          "translation": "Battery Capacity",
-          "needs_translation": true,
-          "max_length": 16,
-          "reverse_text": false
-        },
-        "battery_name": {
-          "english": "Battery",
-          "translation": "Battery",
-          "needs_translation": true,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "bec_voltage_alert": {
-          "english": "BEC Alert Value",
-          "translation": "BEC Alert Value",
-          "needs_translation": true,
-          "max_length": 15,
-          "reverse_text": false
-        },
-        "calcfuel_local": {
-          "english": "Calculate Fuel Using",
-          "translation": "Calculate Fuel Using",
-          "needs_translation": true,
-          "max_length": 20,
-          "reverse_text": false
-        },
-        "capacity": {
-          "english": "Capacity",
-          "translation": "Capacity",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 8
-        },
-        "cell_count": {
-          "english": "Cell Count",
-          "translation": "Cell Count",
-          "needs_translation": true,
-          "max_length": 10,
-          "reverse_text": false
-        },
-        "consumption_warning_percentage": {
-          "english": "Consumption Warning %",
-          "translation": "Spotreba Varovani %",
-          "needs_translation": false,
-          "max_length": 21,
-          "reverse_text": false
-        },
-        "current_meter_source": {
-          "english": "Current Source",
-          "translation": "Current Source",
-          "needs_translation": true,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "full_cell_voltage": {
-          "english": "Full Cell Voltage",
-          "translation": "Plny Cell Voltage",
-          "needs_translation": false,
-          "max_length": 17,
-          "reverse_text": false
-        },
-        "help_p1": {
-          "english": "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-          "translation": "The battery Nastaveni are Pouzito to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops Pod a certain level.",
-          "needs_translation": false,
-          "max_length": 162,
-          "reverse_text": false
-        },
-        "max_cell_voltage": {
-          "english": "Max Cell Voltage",
-          "translation": "Max Cell Voltage",
-          "needs_translation": true,
-          "max_length": 16,
-          "reverse_text": false
-        },
-        "min_cell_voltage": {
-          "english": "Min Cell Voltage",
-          "translation": "Min Cell Voltage",
-          "needs_translation": true,
-          "max_length": 16,
-          "reverse_text": false
-        },
-        "name": {
-          "english": "Power",
-          "translation": "Power",
-          "needs_translation": true,
-          "max_length": 5,
-          "reverse_text": false
-        },
-        "rx_voltage_alert": {
-          "english": "RxBatt Alert Value",
-          "translation": "RxBatt Alert Value",
-          "needs_translation": true,
-          "max_length": 18,
-          "reverse_text": false
-        },
-        "selected": {
-          "english": "Selected",
-          "translation": "Selected",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 8
-        },
-        "show_battery_profile_startup": {
-          "english": "Show battery type choose (startup)",
-          "translation": "Show battery type choose (startup)",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 34
-        },
-        "show_confirmation_dialog": {
-          "english": "Show confirmation dialog",
-          "translation": "Show confirmation dialog",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 24
-        },
-        "source_name": {
-          "english": "Sources",
-          "translation": "Sources",
-          "needs_translation": true,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "timer": {
-          "english": "Flight Time Alarm",
-          "translation": "Flight Cas Alarm",
-          "needs_translation": false,
-          "max_length": 17,
-          "reverse_text": false
-        },
-        "voltage_meter_source": {
-          "english": "Voltage Source",
-          "translation": "Voltage Source",
-          "needs_translation": true,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "voltage_multiplier": {
-          "english": "Sag Compensation",
-          "translation": "Sag Compensation",
-          "needs_translation": true,
-          "max_length": 16,
-          "reverse_text": false
-        },
-        "warn_cell_voltage": {
-          "english": "Warn Cell Voltage",
-          "translation": "Warn Cell Voltage",
-          "needs_translation": true,
-          "max_length": 17,
-          "reverse_text": false
-        }
-      },
       "profile_autolevel": {
         "acro_trainer": {
           "english": "Acro trainer",
@@ -11289,7 +11119,7 @@
       "translation": "Battery Profile",
       "needs_translation": true,
       "reverse_text": false,
-      "max_length": 12
+      "max_length": 15
     },
     "bec_voltage": {
       "english": "Bec voltage",
@@ -11603,7 +11433,7 @@
         "translation": "Battery Profile",
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 12
+        "max_length": 15
       },
       "bec_voltage": {
         "english": "BEC Voltage",
