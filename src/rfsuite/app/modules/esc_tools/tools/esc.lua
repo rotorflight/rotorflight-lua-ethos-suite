@@ -61,12 +61,41 @@ local function findMFG()
     return mfgsList
 end
 
+local function clearEscMaskCache()
+    local ui = rfsuite.app and rfsuite.app.ui
+    local cache = ui and ui._maskCache
+    local order = ui and ui._maskCacheOrder
+    if type(cache) ~= "table" then return end
+
+    local prefix = "app/modules/esc_tools/tools/escmfg/"
+    local removed = false
+    for path in pairs(cache) do
+        if type(path) == "string" and path:sub(1, #prefix) == prefix then
+            cache[path] = nil
+            removed = true
+        end
+    end
+    if not removed or type(order) ~= "table" then return end
+
+    local writeIdx = 1
+    for i = 1, #order do
+        local path = order[i]
+        if cache[path] ~= nil then
+            order[writeIdx] = path
+            writeIdx = writeIdx + 1
+        end
+    end
+    for i = writeIdx, #order do
+        order[i] = nil
+    end
+end
+
 local function openPage(opts)
 
     local parentIdx = opts.idx
     local title = opts.title
     local script = opts.script
-    local modulePath, relativeScript = resolveModulePath(script)
+    local _, relativeScript = resolveModulePath(script)
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     rfsuite.session.escDetails = nil
@@ -120,7 +149,6 @@ local function openPage(opts)
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
-    assert(loadfile(modulePath))()
     pages = findMFG()
     local lc = 0
     local bx = 0
@@ -179,7 +207,16 @@ local function openPage(opts)
     return
 end
 
+local function closePage()
+    if rfsuite.app and rfsuite.app.gfx_buttons then
+        rfsuite.app.gfx_buttons["escmain"] = nil
+    end
+    pages = {}
+    clearEscMaskCache()
+end
+
 local function onNavMenu()
+    closePage()
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
@@ -189,6 +226,7 @@ rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 return {
     pages = pages,
     openPage = openPage,
+    close = closePage,
     onNavMenu = onNavMenu,
     event = function(_, category, value) return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu}) end,
     navButtons = {menu = true, save = false, reload = false, tool = false, help = false},

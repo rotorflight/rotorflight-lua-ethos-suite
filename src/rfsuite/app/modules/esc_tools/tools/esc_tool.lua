@@ -15,7 +15,6 @@ end
 
 local mspSignature
 local mspBytes
-local simulatorResponse
 local escDetails = {}
 local foundESC = false
 local foundESCupdateTag = false
@@ -29,10 +28,14 @@ local showPowerCycleLoaderFinished = false
 local powercycleLoaderBaseMessage
 local findTimeoutClock = os.clock()
 local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
+local escDetailsNextReadAt = 0
+local escDetailsApiName
+local escDetailsApi
 
 local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
+local function noop() end
 
 local function openProgressDialog(...)
     if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
@@ -66,16 +69,120 @@ end
 
 local mspBusy = false
 
+local function getEscDetailsPollInterval()
+    local interval = tonumber(ESC and ESC.escDetailsPollInterval)
+    if interval == nil then interval = 0.35 end
+    if interval < 0 then interval = 0 end
+    return interval
+end
+
+local function getEscDetailsRetryInterval()
+    local interval = tonumber(ESC and ESC.escDetailsRetryInterval)
+    if interval == nil then interval = 0.9 end
+    if interval < 0 then interval = 0 end
+    return interval
+end
+
+local function scheduleEscDetailsReadAt(delaySeconds)
+    local delay = tonumber(delaySeconds) or 0
+    if delay < 0 then delay = 0 end
+    local nextAt = os.clock() + delay
+    if nextAt > escDetailsNextReadAt then
+        escDetailsNextReadAt = nextAt
+    end
+end
+
+local function getEscDetailsAPI()
+    if not ESC or not ESC.mspapi then return nil end
+    if escDetailsApi and escDetailsApiName == ESC.mspapi then
+        return escDetailsApi
+    end
+    escDetailsApi = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    if escDetailsApi then
+        escDetailsApiName = ESC.mspapi
+    else
+        escDetailsApiName = nil
+    end
+    return escDetailsApi
+end
+
+local function detachEscApiHandlers(api)
+    if not api then return end
+    if api.setCompleteHandler then pcall(api.setCompleteHandler, noop) end
+    if api.setErrorHandler then pcall(api.setErrorHandler, noop) end
+end
+
+local function clearEscQueueEntries(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return end
+    local queue = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if queue and type(queue.removeQueuedBy) == "function" then
+        queue:removeQueuedBy(function(msg)
+            return msg and msg.apiname == apiName
+        end)
+    end
+end
+
+local function clearEscApiCache()
+    local apiName = ESC and ESC.mspapi
+    if type(apiName) ~= "string" or apiName == "" then return end
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(apiName)
+        return
+    end
+
+    local apidata = api and api.apidata
+    if type(apidata) ~= "table" then return end
+    if apidata.values then apidata.values[apiName] = nil end
+    if apidata.structure then apidata.structure[apiName] = nil end
+    if apidata.receivedBytes then apidata.receivedBytes[apiName] = nil end
+    if apidata.receivedBytesCount then apidata.receivedBytesCount[apiName] = nil end
+    if apidata.positionmap then apidata.positionmap[apiName] = nil end
+    if apidata.other then apidata.other[apiName] = nil end
+    if apidata._lastReadMode then apidata._lastReadMode[apiName] = nil end
+    if apidata._lastWriteMode then apidata._lastWriteMode[apiName] = nil end
+end
+
+local function clearEscMaskCache()
+    local ui = rfsuite.app and rfsuite.app.ui
+    local cache = ui and ui._maskCache
+    local order = ui and ui._maskCacheOrder
+    if type(cache) ~= "table" then return end
+
+    local prefix = "app/modules/esc_tools/tools/escmfg/"
+    local removed = false
+    for path in pairs(cache) do
+        if type(path) == "string" and path:sub(1, #prefix) == prefix then
+            cache[path] = nil
+            removed = true
+        end
+    end
+    if not removed or type(order) ~= "table" then return end
+
+    local writeIdx = 1
+    for i = 1, #order do
+        local path = order[i]
+        if cache[path] ~= nil then
+            order[writeIdx] = path
+            writeIdx = writeIdx + 1
+        end
+    end
+    for i = writeIdx, #order do
+        order[i] = nil
+    end
+end
+
 local function getESCDetails()
     if not ESC then return end
     if not ESC.mspapi then return end
     if not mspSignature then return end
     if not mspBytes then return end
-    if mspBusy == true then 
+    if os.clock() < escDetailsNextReadAt then return end
+    if mspBusy == true then
        if rfsuite.tasks.msp.mspQueue:isProcessed() then
            mspBusy = false
        end
-       return 
+       return
     end
     if not rfsuite.tasks.msp.mspQueue:isProcessed() then return end
 
@@ -89,7 +196,12 @@ local function getESCDetails()
 
     mspBusy = true
 
-    local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    local API = getEscDetailsAPI()
+    if not API then
+        mspBusy = false
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+        return
+    end
     API.setCompleteHandler(function(self, buf)
 
         local signature = API.readValue("esc_signature")
@@ -106,17 +218,30 @@ local function getESCDetails()
             if escDetails.model ~= nil then 
                 foundESC = true 
             end
+        else
+            scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
         end
         mspBusy = false
 
     end)
 
     API.setErrorHandler(function(self, err)
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
         mspBusy = false
     end)
 
     API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
-    API.read()
+    local ok, reason = API.read()
+    if ok then
+        if reason == "queued_busy" then
+            scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+        else
+            scheduleEscDetailsReadAt(getEscDetailsPollInterval())
+        end
+    else
+        mspBusy = false
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+    end
 
 end
 
@@ -146,6 +271,7 @@ local function clearEscSessionCache()
         rfsuite.session.escDetails = nil
         rfsuite.session.escBuffer = nil
     end
+    escDetails = {}
 end
 
 local function openPage(opts)
@@ -159,6 +285,31 @@ local function openPage(opts)
         folder = title
     end
 
+    local keepEscSessionHot = rfsuite.session and rfsuite.session.escToolKeepSessionOnce == true
+    if rfsuite.session then
+        rfsuite.session.escToolKeepSessionOnce = nil
+    end
+    if not keepEscSessionHot then
+        clearEscSessionCache()
+    end
+
+    foundESC = false
+    foundESCupdateTag = false
+    mspBusy = false
+    showPowerCycleLoader = false
+    showPowerCycleLoaderInProgress = false
+    showPowerCycleLoaderFinished = false
+    powercycleLoader = nil
+    powercycleLoaderBaseMessage = nil
+    powercycleLoaderCounter = 0
+    powercycleLoaderRateLimit = 2
+    escDetailsNextReadAt = 0
+    findTimeoutClock = os.clock()
+    mspSignature = nil
+    mspBytes = nil
+    escDetailsApi = nil
+    escDetailsApiName = nil
+
     ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 
     if rfsuite.app and rfsuite.app.Page and ESC and ESC.mspapi then
@@ -168,15 +319,17 @@ local function openPage(opts)
 
     if ESC.mspapi ~= nil then
 
-        local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
-        mspSignature = API.mspSignature
-        simulatorResponse = API.simulatorResponse or {0}
-        mspBytes = #simulatorResponse
+        local API = getEscDetailsAPI()
+        if API then
+            mspSignature = API.mspSignature
+            local expectedResponse = API.simulatorResponse or {0}
+            mspBytes = #expectedResponse
+        end
     else
 
         mspSignature = ESC.mspSignature
-        simulatorResponse = ESC.simulatorResponse
-        mspBytes = ESC.mspBytes
+        local expectedResponse = ESC.simulatorResponse or {0}
+        mspBytes = ESC.mspBytes or #expectedResponse
     end
 
     local app = rfsuite.app
@@ -266,6 +419,9 @@ local function openPage(opts)
                 paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["esctool"] = childIdx
+                    if rfsuite.session then
+                        rfsuite.session.escToolKeepSessionOnce = true
+                    end
                     rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
                     local childTitle = title .. " / " .. pvalue.title
 
@@ -303,20 +459,60 @@ local function openPage(opts)
 
 end
 
-local function onNavMenu()
+local function closePage()
+    local keepEscSessionHot = rfsuite.session and rfsuite.session.escToolKeepSessionOnce == true
+    if rfsuite.session then
+        rfsuite.session.escToolKeepSessionOnce = nil
+    end
+
     clearPowercycleLoader()
-    clearEscSessionCache()
+
+    if rfsuite.app then
+        rfsuite.app.escPowerCycleLoader = false
+        if rfsuite.app.triggers then
+            rfsuite.app.triggers.disableRssiTimeout = false
+        end
+        if rfsuite.app.gfx_buttons then
+            rfsuite.app.gfx_buttons["esctool"] = nil
+        end
+    end
+
+    if ESC and ESC.mspapi then
+        clearEscQueueEntries(ESC.mspapi)
+    end
+    detachEscApiHandlers(escDetailsApi)
+    clearEscApiCache()
+    clearEscMaskCache()
+
+    if not keepEscSessionHot then
+        clearEscSessionCache()
+    end
+
+    mspBusy = false
+    escDetailsNextReadAt = 0
+    escDetailsApi = nil
+    escDetailsApiName = nil
+    mspSignature = nil
+    mspBytes = nil
+    foundESC = false
+    foundESCupdateTag = false
+    powercycleLoaderCounter = 0
+    powercycleLoaderRateLimit = 2
+    findTimeoutClock = os.clock()
+    modelLine = nil
+    modelText = nil
+    ESC = nil
+end
+
+local function onNavMenu()
+    closePage()
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true
 end
 
 local function onReloadMenu()
+    closePage()
     rfsuite.app.Page = nil
-    foundESC = false
-    foundESCupdateTag = false
-    clearPowercycleLoader()
-    clearEscSessionCache()
-    powercycleLoaderCounter = 0
     rfsuite.app.triggers.triggerReloadFull = true
     return true
 end
@@ -337,6 +533,11 @@ local function wakeup()
         end
 
         for i, v in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
+
+        detachEscApiHandlers(escDetailsApi)
+        if ESC and ESC.mspBufferCache ~= true then
+            clearEscApiCache()
+        end
 
         if ESC and ESC.powerCycle == true and showPowerCycleLoader == true then
             powercycleLoader:close()
@@ -412,8 +613,6 @@ end
 
 local function event(widget, category, value, x, y)
     return pageRuntime.handleCloseEvent(category, value, {onClose = function()
-        clearPowercycleLoader()
-        clearEscSessionCache()
         onNavMenu()
     end})
 
@@ -423,6 +622,7 @@ return {
     openPage = openPage,
     wakeup = wakeup,
     event = event,
+    close = closePage,
     onNavMenu = onNavMenu,
     onReloadMenu = onReloadMenu,
     navButtons = {menu = true, save = false, reload = true, tool = false, help = false},
