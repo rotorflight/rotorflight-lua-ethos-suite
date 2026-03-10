@@ -6,7 +6,6 @@
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
-local system = system
 
 local function loadMask(path)
     local ui = rfsuite.app and rfsuite.app.ui
@@ -15,6 +14,18 @@ local function loadMask(path)
 end
 
 local pages = {}
+local DEFAULT_TOOL_SCRIPT = "esc_tools/tools/esc_tool.lua"
+local FOUR_WAY_TOOL_SCRIPT = "esc_tools/tools/esc_tool_4way.lua"
+local MFG_INDEX = {
+    {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
+    {folder = "flrtr", toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", image = "flrtr.png",     apiversion = {12, 0, 7}},
+    {folder = "hw5",   toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@",   image = "hobbywing.png", apiversion = {12, 0, 6}},
+    {folder = "omp",   toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@",   image = "omp.png",       apiversion = {12, 0, 9}},
+    {folder = "scorp", toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@", image = "scorpion.png",  apiversion = {12, 0, 6}},
+    {folder = "xdfly", toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@", image = "xdfly.png",     apiversion = {12, 0, 8}},
+    {folder = "yge",   toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@",   image = "yge.png",       apiversion = {12, 0, 6}},
+    {folder = "ztw",   toolName = "@i18n(app.modules.esc_tools.mfg.ztw.name)@",   image = "ztw.png",       apiversion = {12, 0, 9}}
+}
 
 local function resolveModulePath(script)
     if type(script) ~= "string" then return nil, nil end
@@ -29,36 +40,27 @@ local function resolveModulePath(script)
     return modulePath, relativeScript
 end
 
-local function findMFG()
-    local mfgsList = {}
-
-    local mfgs_path = "app/modules/esc_tools/tools/escmfg/"
-
-    for _, v in pairs(system.listFiles(mfgs_path)) do
-
-        local init_path = mfgs_path .. v .. '/init.lua'
-
-        local f = os.stat(init_path)
-        if f then
-
-            local func, err = loadfile(init_path)
-
-            if func then
-                local mconfig = func()
-                if type(mconfig) ~= "table" or not mconfig.toolName then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path)
-                else
-                    mconfig['folder'] = v
-                    if mconfig.apiversion and rfsuite.session.apiVersion and not rfsuite.utils.apiVersionCompare(">=", mconfig.apiversion) then
-                        mconfig.disabled = true
-                    end
-                    table.insert(mfgsList, mconfig)
-                end
-            end
-        end
+local function buildEscPages()
+    for i = 1, #pages do
+        pages[i] = nil
     end
 
-    return mfgsList
+    for i, entry in ipairs(MFG_INDEX) do
+        local disabled = false
+        if entry.apiversion and rfsuite.session.apiVersion and not rfsuite.utils.apiVersionCompare(">=", entry.apiversion) then
+            disabled = true
+        end
+
+        pages[i] = {
+            folder = entry.folder,
+            toolName = entry.toolName,
+            image = entry.image,
+            script = entry.script or DEFAULT_TOOL_SCRIPT,
+            disabled = disabled
+        }
+    end
+
+    return pages
 end
 
 local function clearEscMaskCache()
@@ -92,7 +94,7 @@ end
 
 local function openPage(opts)
 
-    local parentIdx = opts.idx
+    local pidx = opts.idx
     local title = opts.title
     local script = opts.script
     local _, relativeScript = resolveModulePath(script)
@@ -102,11 +104,11 @@ local function openPage(opts)
     rfsuite.session.escBuffer = nil
 
     rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
     form.clear()
 
-    rfsuite.app.lastIdx = parentIdx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = relativeScript or script
 
@@ -149,7 +151,13 @@ local function openPage(opts)
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
-    pages = findMFG()
+    pages = buildEscPages()
+    local selectedIdx = tonumber(rfsuite.preferences.menulastselected["escmain"]) or 1
+    if selectedIdx < 1 then selectedIdx = 1 end
+    if selectedIdx > #pages then selectedIdx = #pages end
+    if selectedIdx < 1 then selectedIdx = 1 end
+    rfsuite.preferences.menulastselected["escmain"] = selectedIdx
+
     local lc = 0
     local bx = 0
     local y = 0
@@ -170,7 +178,7 @@ local function openPage(opts)
             rfsuite.app.gfx_buttons["escmain"][childIdx] = nil
         end
 
-        rfsuite.app.formFields[childIdx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+        rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.toolName,
             icon = rfsuite.app.gfx_buttons["escmain"][childIdx],
             options = FONT_S,
@@ -178,23 +186,23 @@ local function openPage(opts)
                 press = function()
                     rfsuite.preferences.menulastselected["escmain"] = childIdx
                     rfsuite.app.ui.progressDisplay(nil,nil,0.5)
-                    local toolScript = "esc_tools/tools/esc_tool.lua"
-                    if pvalue.esc4way == true then
-                        toolScript = "esc_tools/tools/esc_tool_4way.lua"
-                    end
                     rfsuite.app.ui.openPage({
                         idx = childIdx,
                         title = title .. " / " .. pvalue.toolName,
                         folder = pvalue.folder,
-                        script = toolScript,
-                        returnContext = {idx = parentIdx, title = title, script = relativeScript or script}
+                        script = pvalue.script,
+                        returnContext = {
+                            idx = childIdx,
+                            title = title,
+                            script = relativeScript or script
+                        }
                     })
                 end
             })
 
         if pvalue.disabled == true then rfsuite.app.formFields[childIdx]:enable(false) end
 
-        if rfsuite.preferences.menulastselected["escmain"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
+        if selectedIdx == childIdx then rfsuite.app.formFields[childIdx]:focus() end
 
         lc = lc + 1
 

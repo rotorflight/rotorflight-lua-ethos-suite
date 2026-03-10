@@ -249,7 +249,7 @@ local function clearEscState(preserveReadRecovery)
 end
 
 local function scheduleEscReadRecovery()
-    if not (ESC and ESC.esc4way and ESC.retrySwitchOnReadFail == true) then return end
+    if not (ESC and ESC.retrySwitchOnReadFail == true) then return end
     if inSelector then return end
     local maxRetries = tonumber(ESC.readSwitchRetryCount) or 2
     if maxRetries < 1 then return end
@@ -1026,17 +1026,15 @@ local function openPage(opts)
         rfsuite.session.esc4WaySkipEntrySwitchOnce = nil
     end
 
-    if ESC and ESC.esc4way then
-        if not rfsuite.session.esc4WaySelected then
-            openSelector()
-            return
-        end
-        if ESC.force4WaySwitchOnEntry == true and not skipEntrySwitchOnce then
-            beginEscSwitch(getSelectedEsc4WayTarget(), {
-                switchWriteCount = ESC.switchWriteCount
-            })
-            return
-        end
+    if not rfsuite.session.esc4WaySelected then
+        openSelector()
+        return
+    end
+    if ESC.force4WaySwitchOnEntry == true and not skipEntrySwitchOnce then
+        beginEscSwitch(getSelectedEsc4WayTarget(), {
+            switchWriteCount = ESC.switchWriteCount
+        })
+        return
     end
 
     renderToolPage(lastOpts)
@@ -1046,7 +1044,7 @@ local function onNavMenu()
     if rfsuite.session then
         rfsuite.session.esc4WaySkipEntrySwitchOnce = nil
     end
-    if ESC and ESC.esc4way then
+    if ESC then
         if not inSelector then
             rfsuite.session.esc4WaySelected = nil
             rfsuite.session.esc4WaySet = nil
@@ -1201,7 +1199,7 @@ local function wakeup()
 
     if pendingTailModeResolve then
         pendingTailModeResolve = false
-        if ESC and ESC.esc4way and not rfsuite.session.esc4WaySelected then
+        if not rfsuite.session.esc4WaySelected then
             if not inSelector then openSelector() end
             return
         end
@@ -1212,16 +1210,12 @@ local function wakeup()
     if waitingTailMode then return end
 
     if foundESC == false then
-        if ESC and ESC.esc4way then
-            if not rfsuite.session.esc4WaySelected then
-                if not inSelector then openSelector() end
-                return
-            end
-            if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
-                if escReadReadyAt and os.clock() < escReadReadyAt then return end
-                getESCDetails()
-            end
-        else
+        if not rfsuite.session.esc4WaySelected then
+            if not inSelector then openSelector() end
+            return
+        end
+        if rfsuite.session.esc4WaySet == true and rfsuite.session.esc4WaySetComplete == true then
+            if escReadReadyAt and os.clock() < escReadReadyAt then return end
             getESCDetails()
         end
     end
@@ -1231,14 +1225,12 @@ local function wakeup()
 
         if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
             local prefix = ""
-            if ESC and ESC.esc4way then
-                local target = rfsuite.session and rfsuite.session.esc4WayTarget or 0
-                local _, esc2Target = getEsc4WayTargets()
-                if target == esc2Target then
-                    prefix = "ESC2 - "
-                else
-                    prefix = "ESC1 - "
-                end
+            local target = rfsuite.session and rfsuite.session.esc4WayTarget or 0
+            local _, esc2Target = getEsc4WayTargets()
+            if target == esc2Target then
+                prefix = "ESC2 - "
+            else
+                prefix = "ESC1 - "
             end
             local text = prefix .. escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
             rfsuite.escHeaderLineText = text

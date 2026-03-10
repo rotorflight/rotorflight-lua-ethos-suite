@@ -3,13 +3,7 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
-local rfsuite = require("rfsuite")
-
-local MSP_API = "ESC_PARAMETERS_AM32"
-local MSP_API_VERSION = {12, 0, 9}
-
 local toolName = "AM32"
-local moduleName = "am32"
 
 local function getPageValue(page, index) return page[index] end
 
@@ -48,9 +42,7 @@ end
 
 return {
     mspapi = "ESC_PARAMETERS_AM32",           -- MSP API used for AM32 read/write fields.
-    toolName = toolName,                      -- Tool label shown in headers/menu.
-    image = "am32.jpg",                       -- ESC vendor image shown in tool list.
-    esc4way = true,                           -- Use 4-way ESC programming transport.
+    toolName = toolName,                      -- Tool label shown in headers.
     force4WaySwitchOnEntry = true,            -- Always send target select when entering a selected ESC.
     esc4wayEsc1Target = 0,                    -- 4WIF target id for ESC1 button.
     esc4wayEsc2Target = 1,                    -- 4WIF target id for ESC2 button.
@@ -91,7 +83,5 @@ return {
     powerCycle = false,                       -- If true, tool enforces manual power-cycle workflow.
     getEscModel = getEscModel,                -- Callback extracting model string from ESC payload.
     getEscVersion = getEscVersion,            -- Callback extracting version string from ESC payload.
-    getEscFirmware = getEscFirmware,          -- Callback extracting firmware string from ESC payload.
-    mspHeaderBytes = mspHeaderBytes,          -- Optional MSP header byte override (framework-level field).
-    apiversion = MSP_API_VERSION              -- Minimum Rotorflight MSP API version for this profile.
+    getEscFirmware = getEscFirmware           -- Callback extracting firmware string from ESC payload.
 }
