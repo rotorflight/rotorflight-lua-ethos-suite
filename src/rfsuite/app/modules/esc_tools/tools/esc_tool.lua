@@ -285,7 +285,7 @@ local function openPage(opts)
         folder = title
     end
 
-    local keepEscSessionHot = rfsuite.session and rfsuite.session.escToolKeepSessionOnce == true
+    local keepEscSessionHot = (rfsuite.session and rfsuite.session.escToolKeepSessionOnce == true) or (type(opts.returnStack) == "table")
     if rfsuite.session then
         rfsuite.session.escToolKeepSessionOnce = nil
     end
