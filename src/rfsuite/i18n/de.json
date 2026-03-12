@@ -34,9 +34,9 @@
       "batteryProfile": {
         "english": "Selected battery profile (1-6)",
         "max_length": 30,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Selected battery profile (0-5)"
+        "translation": "Batterie auswählen (1-6)"
       },
       "source_adc": {
         "english": "Battery ADC",
@@ -92,7 +92,7 @@
       "alert_bec": {
         "english": "BEC",
         "max_length": 3,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "BEC"
       },
@@ -283,7 +283,7 @@
       "tbl_escgov": {
         "english": "ESC Governor",
         "max_length": 12,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "ESC-Governor"
       },
@@ -297,7 +297,7 @@
       "tbl_rf_gov": {
         "english": "RF Gyro Governor",
         "max_length": 16,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "RF Gyro-Governor"
       },
@@ -397,14 +397,14 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Normal"
       },
       "tbl_proportional": {
         "english": "Proportional",
         "max_length": 12,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Proportional"
       },
@@ -560,14 +560,14 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Orange"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Pink"
       },
@@ -653,7 +653,7 @@
       "tbl_exbus": {
         "english": "Jeti Exbus",
         "max_length": 10,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Jeti Exbus"
       },
@@ -667,14 +667,14 @@
       "tbl_futsbus": {
         "english": "Futaba SBUS",
         "max_length": 11,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Futaba SBUS"
       },
       "tbl_heligov": {
         "english": "Heli Governor",
         "max_length": 13,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Heli Governor"
       },
@@ -709,7 +709,7 @@
       "tbl_standard": {
         "english": "Standard",
         "max_length": 8,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Standard"
       },
@@ -723,14 +723,14 @@
       "tbl_vbar": {
         "english": "VBar",
         "max_length": 4,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "VBar"
       },
       "tbl_vbargov": {
         "english": "VBar Governor",
         "max_length": 13,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "VBar Governor"
       }
@@ -851,7 +851,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Normal"
       },
@@ -872,14 +872,14 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Orange"
       },
       "tbl_pink": {
         "english": "PINK",
         "max_length": 4,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Pink"
       },
@@ -965,7 +965,7 @@
       "tbl_autonorm": {
         "english": "Auto Normal",
         "max_length": 11,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Auto Normal"
       },
@@ -1056,7 +1056,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Normal"
       },
@@ -1226,7 +1226,7 @@
       "tbl_normal": {
         "english": "Normal",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Normal"
       },
@@ -1247,7 +1247,7 @@
       "tbl_orange": {
         "english": "ORANGE",
         "max_length": 6,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Orange"
       },
@@ -2745,21 +2745,21 @@
       "channel_mode": {
         "english": "Select how each channel behaves when signal is lost: Auto, Hold, or Set.",
         "max_length": 72,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Select how each channel behaves when signal is lost: Auto, Hold, or Set."
+        "translation": "Kanalverhalten bei Signalverlust wählen: Auto, Hold oder Set."
       },
       "channel_value": {
         "english": "Channel value used only when mode is Set.",
         "max_length": 41,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Channel value used only when mode is Set."
+        "translation": "Kanalwert wird nur im Modus 'Set' verwendet."
       },
       "tbl_auto": {
         "english": "Auto",
         "max_length": 4,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Auto"
       },
@@ -2881,16 +2881,16 @@
     "menu_section_mechanics": {
       "english": "Mechanics",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Mechanics"
+      "translation": "Mechanik"
     },
     "menu_section_profiles": {
       "english": "Profiles",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Profiles"
+      "translation": "Profile"
     },
     "menu_section_safety": {
       "english": "Safety",
@@ -2983,9 +2983,9 @@
         "channel_always": {
           "english": "Always",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Always"
+          "translation": "Immer"
         },
         "channel_auto": {
           "english": "AUTO",
@@ -3011,14 +3011,14 @@
         "confirm_use_current": {
           "english": "Use current value",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Use current value"
+          "translation": "Aktuellen Wert verwenden"
         },
         "current_output": {
           "english": "Current Output",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Current Output"
         },
@@ -3249,21 +3249,21 @@
         "type_off": {
           "english": "OFF",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "OFF"
+          "translation": "AUS"
         },
         "type_stepped": {
           "english": "STEPPED",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "STEPPED"
         },
         "unsaved_changes": {
           "english": "Unsaved changes",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Unsaved changes"
         },
@@ -3405,9 +3405,9 @@
         "msg_reset_tail_view": {
           "english": "Reset view yaw so the tail faces you?",
           "max_length": 37,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Reset view yaw so the tail faces you?"
+          "translation": "Blickwinkel resetten: Heck zeigt zum Nutzer?"
         },
         "name": {
           "english": "Alignment",
@@ -3419,7 +3419,7 @@
         "nose_direction": {
           "english": "Nose Direction",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Nose Direction"
         },
@@ -3689,28 +3689,28 @@
         "field_bat_crit_low": {
           "english": "Battery critical low",
           "max_length": 20,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery critical low"
+          "translation": "Akku kritisch niedrig"
         },
         "field_bat_low": {
           "english": "Battery low",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery low"
+          "translation": "Akku schwach"
         },
         "field_blackbox_erase": {
           "english": "Blackbox erase",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Blackbox erase"
+          "translation": "Blackbox löschen"
         },
         "field_disarm_repeat": {
           "english": "Disarm repeat",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Disarm repeat"
         },
@@ -3780,9 +3780,9 @@
         "help_p1": {
           "english": "Configure analog beeper conditions and DShot beacon behavior.",
           "max_length": 61,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Configure analog beeper conditions and DShot beacon behavior."
+          "translation": "Konfiguriere Analog-Beeper und DShot-Beacon-Verhalten."
         },
         "help_p2": {
           "english": "ESC Beacon page controls beacon tone and conditions.",
@@ -3801,14 +3801,14 @@
         "menu_configuration": {
           "english": "Configuration",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Configuration"
+          "translation": "Konfiguration"
         },
         "menu_dshot": {
           "english": "ESC Beacon",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "DShot"
         },
@@ -3852,9 +3852,9 @@
         "device_disabled": {
           "english": "Disabled",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Disabled"
+          "translation": "Ausgeschaltet"
         },
         "device_onboard_flash": {
           "english": "Onboard Flash",
@@ -3866,9 +3866,9 @@
         "device_sdcard": {
           "english": "SD Card",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "SD Card"
+          "translation": "SD Karte"
         },
         "device_serial_port": {
           "english": "Serial Port",
@@ -3992,14 +3992,14 @@
         "log_battery": {
           "english": "Battery",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery"
+          "translation": "Akku"
         },
         "log_bec": {
           "english": "BEC",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "BEC"
         },
@@ -4013,14 +4013,14 @@
         "log_esc": {
           "english": "ESC",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC"
         },
         "log_esc2": {
           "english": "ESC2",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC2"
         },
@@ -4034,21 +4034,21 @@
         "log_gps": {
           "english": "GPS",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "GPS"
         },
         "log_gyro": {
           "english": "Gyro",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gyro"
         },
         "log_gyro_raw": {
           "english": "Gyro Raw",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gyro Raw"
         },
@@ -4181,9 +4181,9 @@
         "mode_off": {
           "english": "Off",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Off"
+          "translation": "Aus"
         },
         "mode_switch": {
           "english": "Switch",
@@ -4216,16 +4216,16 @@
         "off": {
           "english": "Off",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Off"
+          "translation": "Aus"
         },
         "on": {
           "english": "On",
           "max_length": 2,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "On"
+          "translation": "An"
         },
         "rate_custom": {
           "english": "Custom %s [1/%d]",
@@ -4251,9 +4251,9 @@
         "sdcard": {
           "english": "SD Card",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "SD Card"
+          "translation": "SD Karte"
         },
         "status": {
           "english": "Status",
@@ -4281,9 +4281,9 @@
         "craft_name": {
           "english": "Craft name",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Craft name"
+          "translation": "Modellname"
         },
         "error_advanced_api_unavailable": {
           "english": "ADVANCED_CONFIG API unavailable",
@@ -4365,21 +4365,21 @@
         "error_save_failed": {
           "english": "Save failed",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Save failed"
+          "translation": "Speichern fehlgeschlagen"
         },
         "feature_cms": {
           "english": "CMS",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "CMS"
         },
         "feature_gps": {
           "english": "GPS",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "GPS"
         },
@@ -4428,9 +4428,9 @@
         "name": {
           "english": "Configuration",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Configuration"
+          "translation": "Konfiguration"
         },
         "personalization": {
           "english": "Personalization",
@@ -4449,28 +4449,28 @@
         "pid_loop_16": {
           "english": "1:16",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "1:16"
         },
         "pid_loop_2": {
           "english": "1:2",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "1:2"
         },
         "pid_loop_4": {
           "english": "1:4",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "1:4"
         },
         "pid_loop_8": {
           "english": "1:8",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "1:8"
         },
@@ -4893,7 +4893,7 @@
             "name": {
               "english": "AM32",
               "max_length": 4,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "AM32"
             },
@@ -9841,7 +9841,7 @@
         "servo_prefix": {
           "english": "SERVO ",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "SERVO "
         },
@@ -9920,16 +9920,16 @@
         "battery_capacity_callout": {
           "english": "Battery capacity",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery capacity"
+          "translation": "Akku-Kapazität"
         },
         "battery_profile_event": {
           "english": "Battery",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery"
+          "translation": "Akku"
         },
         "celcius": {
           "english": "Celsius",
@@ -10197,10 +10197,17 @@
           "reverse_text": false,
           "translation": "Display"
         },
+        "panel_engine": {
+          "english": "Engine",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motor"
+        },
         "panel_integration": {
           "english": "Integration",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Integration"
         },
@@ -10242,9 +10249,9 @@
         "shortcuts_group": {
           "english": "Category",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Category"
+          "translation": "Kategorie"
         },
         "shortcuts_none": {
           "english": "No shortcut sources available.",
@@ -10354,14 +10361,14 @@
         "txt_battdig": {
           "english": "Digital",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Digital"
         },
         "txt_batttext": {
           "english": "Text",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Text"
         },
@@ -10389,23 +10396,23 @@
         "txt_debug": {
           "english": "DEBUG",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "DEBUG"
         },
         "txt_developer": {
           "english": "Developer",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Developer"
+          "translation": "Entwickler"
         },
         "txt_developer_tools": {
           "english": "Developer Tools",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Developer Tools"
+          "translation": "Entwickler Tools"
         },
         "txt_development": {
           "english": "Development",
@@ -10452,7 +10459,7 @@
         "txt_info": {
           "english": "INFO",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "INFO"
         },
@@ -10571,23 +10578,23 @@
         "txt_save_requires_changes": {
           "english": "Save requires changes",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Save requires changes"
         },
         "txt_show_battery_profile_connect": {
           "english": "Battery Type on connect",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery Type on connect"
+          "translation": "Akkutyp bei Verbindung"
         },
         "txt_show_confirmation_dialog": {
           "english": "Battery Type confirmation",
           "max_length": 25,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery Type confirmation"
+          "translation": "Akkutyp bestätigen"
         },
         "txt_small": {
           "english": "SMALL",
@@ -10595,6 +10602,20 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "KLEIN"
+        },
+        "txt_smartfuel_autodetect_model_type": {
+          "english": "Autodetect Model Type",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Modelltyp automatisch erkennen"
+        },
+        "txt_smartfuel_force_nitro": {
+          "english": "Force Model Type: Nitro",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Modelltyp erzwingen: Nitro"
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -10613,7 +10634,7 @@
         "txt_text": {
           "english": "TEXT",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "TEXT"
         },
@@ -10824,7 +10845,7 @@
         "ok": {
           "english": "OK",
           "max_length": 2,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "OK"
         }
@@ -10854,16 +10875,16 @@
     "msg_lua_memory_critical_restart_radio": {
       "english": "Please powercycle the radio to ensure system stability",
       "max_length": 54,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Please powercycle the radio to ensure system stability"
+      "translation": "Sender neu starten, um Systemstabilität zu gewährleisten."
     },
     "msg_lua_memory_critical_title": {
       "english": "Lua memory critically low",
       "max_length": 25,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Lua memory critically low"
+      "translation": "Lua-Speicher: Kritisch"
     },
     "msg_model_changed_reset": {
       "english": "Model changed, resetting session",
@@ -10975,7 +10996,7 @@
     "navigation_help": {
       "english": "?",
       "max_length": 1,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "?"
     },
@@ -11003,14 +11024,14 @@
     "navigation_tools": {
       "english": "*",
       "max_length": 1,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "*"
     },
     "unit_hertz": {
       "english": "Hz",
       "max_length": 2,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Hz"
     }
@@ -11025,7 +11046,7 @@
   "iscompiledcheck": {
     "english": "true",
     "max_length": 4,
-    "needs_translation": true,
+    "needs_translation": false,
     "reverse_text": false,
     "translation": "true"
   },
@@ -11117,9 +11138,9 @@
     "battery_profile": {
       "english": "Battery Profile",
       "max_length": 15,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Battery Profile"
+      "translation": "Akku Profil"
     },
     "bec_voltage": {
       "english": "Bec voltage",
@@ -11215,7 +11236,7 @@
     "rssi": {
       "english": "RSSI",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "RSSI"
     },
@@ -11243,7 +11264,7 @@
     "vfr": {
       "english": "VFR",
       "max_length": 3,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "VFR"
     },
@@ -11287,7 +11308,7 @@
     "group_debug": {
       "english": "Debug",
       "max_length": 5,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Debug"
     },
@@ -11308,7 +11329,7 @@
     "group_gps": {
       "english": "GPS",
       "max_length": 3,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS"
     },
@@ -11336,14 +11357,14 @@
     "group_status": {
       "english": "Status",
       "max_length": 6,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Status"
     },
     "group_system": {
       "english": "System",
       "max_length": 6,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "System"
     },
@@ -11373,16 +11394,16 @@
       "msg_battery_selected": {
         "english": "Selected battery:",
         "max_length": 17,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Selected battery:"
+        "translation": "Akku auswählen:"
       },
       "msg_select_battery": {
         "english": "Please select the battery you want to use:",
         "max_length": 42,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Please select the battery you want to use:"
+        "translation": "     Wähle den gewünschten Akku:     "
       },
       "no_profiles": {
         "english": "No battery profiles configured.",
@@ -11423,17 +11444,18 @@
         "translation": "Höhe Max."
       },
       "battery": {
-        "english": "Battery Profile",
-        "max_length": 15,
+        "english": "Battery",
+        "max_length": 7,
         "needs_translation": false,
-        "reverse_text": false
+        "reverse_text": false,
+        "translation": "Akku"
       },
       "battery_profile": {
         "english": "Battery Profile",
         "max_length": 15,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Battery Profile"
+        "translation": "Akku Profil"
       },
       "bec_voltage": {
         "english": "BEC Voltage",
@@ -11445,7 +11467,7 @@
       "blackbox": {
         "english": "Blackbox",
         "max_length": 8,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Blackbox"
       },

@@ -494,7 +494,7 @@
   {
     "file": "events/alerts/battery.wav",
     "english": "Battery",
-    "translation": null,
-    "needs_translation": true
+    "translation": "Akku",
+    "needs_translation": false
   }
 ]
