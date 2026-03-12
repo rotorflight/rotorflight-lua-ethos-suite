@@ -10197,6 +10197,13 @@
           "reverse_text": false,
           "translation": "Display"
         },
+        "panel_engine": {
+          "english": "Engine",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Engine"
+        },
         "panel_integration": {
           "english": "Integration",
           "max_length": 11,
@@ -10595,6 +10602,20 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "PEQUEÑO"
+        },
+        "txt_smartfuel_autodetect_model_type": {
+          "english": "Autodetect Model Type",
+          "max_length": 21,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Autodetect Model Type"
+        },
+        "txt_smartfuel_force_nitro": {
+          "english": "Force Model Type: Nitro",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Force Model Type: Nitro"
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -11423,10 +11444,11 @@
         "translation": "Altitud Máx"
       },
       "battery": {
-        "english": "Battery Profile",
-        "max_length": 15,
-        "needs_translation": false,
-        "reverse_text": false
+        "english": "Battery",
+        "max_length": 7,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Battery"
       },
       "battery_profile": {
         "english": "Battery Profile",

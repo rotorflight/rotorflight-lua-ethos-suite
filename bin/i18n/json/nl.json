@@ -10218,6 +10218,13 @@
           "reverse_text": false,
           "max_length": 7
         },
+        "panel_engine": {
+          "english": "Engine",
+          "translation": "Engine",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
         "panel_integration": {
           "english": "Integration",
           "translation": "Integration",
@@ -10525,6 +10532,20 @@
           "needs_translation": false,
           "max_length": 20,
           "reverse_text": false
+        },
+        "txt_smartfuel_autodetect_model_type": {
+          "english": "Autodetect Model Type",
+          "translation": "Autodetect Model Type",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "txt_smartfuel_force_nitro": {
+          "english": "Force Model Type: Nitro",
+          "translation": "Force Model Type: Nitro",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
         },
         "txt_objectprofiler": {
           "english": "Log dashboard speed",
@@ -11423,10 +11444,11 @@
         "reverse_text": false
       },
       "battery": {
-        "english": "Battery Profile",
-        "max_length": 15,
-        "needs_translation": false,
-        "reverse_text": false
+        "english": "Battery",
+        "translation": "Battery",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 7
       },
       "battery_profile": {
         "english": "Battery Profile",

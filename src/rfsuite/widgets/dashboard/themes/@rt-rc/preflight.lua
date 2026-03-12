@@ -83,6 +83,7 @@ local boxes_cache = nil
 local header_boxes_cache = nil
 local themeconfig = nil
 local last_txbatt_type = nil
+local lastIsElectric = nil
 
 local layout = {cols = 20, rows = 8, padding = 2, showstats = false}
 
@@ -144,7 +145,7 @@ local function buildBoxes(W)
             gaugepadding = opts.gaugepadding,
             valuepaddingtop = opts.valuepaddingtop,
             fillbgcolor = colorMode.fillbgcolor,
-            title = "@i18n(widgets.dashboard.fuel):upper()@",
+            title = utils.isElectricEngine() and "@i18n(widgets.dashboard.battery):upper()@" or "@i18n(widgets.dashboard.fuel):upper()@",
             titlepos = "bottom",
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.titlecolor,
@@ -225,10 +226,12 @@ end
 local function boxes()
     local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
     local W = lcd.getWindowSize()
-    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W then
+    local isElectric = utils.isElectricEngine()
+    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W or lastIsElectric ~= isElectric then
         boxes_cache = buildBoxes(W)
         themeconfig = config
         lastScreenW = W
+        lastIsElectric = isElectric
     end
     return boxes_cache
 end

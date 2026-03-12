@@ -30,6 +30,57 @@ local system_playHaptic = system.playHaptic
 local lastSmartfuelSel = nil
 local cachedSmartfuelThresholds = nil
 
+local function extractCapacityValue(v)
+    if type(v) == "number" then return v end
+    if type(v) == "string" then return tonumber(v:match("(%d+)")) end
+    if type(v) == "table" then
+        if type(v.capacity) == "number" then return v.capacity end
+        if type(v.capacity) == "string" then return tonumber(v.capacity:match("(%d+)")) end
+        if type(v.name) == "string" then return tonumber(v.name:match("(%d+)")) end
+    end
+    return nil
+end
+
+local function hasAnyBatteryCapacityConfigured(bc)
+    local packCapacity = tonumber(bc.batteryCapacity) or 0
+    if packCapacity > 0 then return true end
+
+    local profiles = bc.profiles
+    if type(profiles) ~= "table" then return false end
+
+    for _, profile in pairs(profiles) do
+        local cap = extractCapacityValue(profile)
+        if cap and cap > 0 then return true end
+    end
+    return false
+end
+
+local function smartfuelIsElectricModel()
+    local bc = rfsuite.session and rfsuite.session.batteryConfig
+    if not bc then return false end
+
+    local cellCount = tonumber(bc.batteryCellCount) or 0
+    if cellCount ~= 0 then return true end
+
+    return hasAnyBatteryCapacityConfigured(bc)
+end
+
+local function getSmartfuelCalloutAudio()
+    local generalPrefs = (rfsuite.preferences and rfsuite.preferences.general) or {}
+    local autodetect = generalPrefs.smartfuel_autodetect_model_type
+    if autodetect == nil then autodetect = true end
+
+    local useBatteryCallout
+    if autodetect then
+        useBatteryCallout = smartfuelIsElectricModel()
+    else
+        useBatteryCallout = not (generalPrefs.smartfuel_force_nitro == true)
+    end
+
+    if useBatteryCallout then return "events", "alerts/battery.wav" end
+    return "status", "alerts/fuel.wav"
+end
+
 local function resolveBatteryCapacity(typeIndex)
     local profiles = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
     if not profiles then return nil end
@@ -79,6 +130,7 @@ local function smartfuelCallout(value)
     local eventPrefs = rfsuite.preferences.events or {}
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = buildSmartfuelThresholds(smartfuelcallout)
+    local calloutPkg, calloutFile = getSmartfuelCalloutAudio()
 
     if value <= 0 then
         local now = os_clock()
@@ -105,7 +157,7 @@ local function smartfuelCallout(value)
     end
 
     if lastSmartfuelAnnounced == nil then
-        utils.playFile("status", "alerts/fuel.wav")
+        utils.playFile(calloutPkg, calloutFile)
         system_playNumber(math_floor(value + 0.5), UNIT_PERCENT)
         lastSmartfuelAnnounced = math_floor(value + 0.5)
         return
@@ -121,7 +173,7 @@ local function smartfuelCallout(value)
     end
 
     if calloutValue then
-        utils.playFile("status", "alerts/fuel.wav")
+        utils.playFile(calloutPkg, calloutFile)
         system_playNumber(calloutValue, UNIT_PERCENT)
         lastSmartfuelAnnounced = calloutValue
     end
