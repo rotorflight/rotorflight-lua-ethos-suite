@@ -36,7 +36,7 @@ def _load_connect_module():
             spec.loader.exec_module(mod)  # type: ignore
             _connect_mod = mod
             return _connect_mod
-    except Exception as e:
+    except BaseException as e:
         print(f"[CONNECT] connect.py unavailable ({type(e).__name__}: {e}); using drive-scan fallback.")
     _connect_mod = False
     return _connect_mod
@@ -57,7 +57,7 @@ def _connect_usb_debug(action: str):
         else:
             raise ValueError(f"Unknown action: {action}")
         return True
-    except Exception as e:
+    except BaseException as e:
         print(f"[CONNECT] USB debug {action} failed ({type(e).__name__}: {e})")
         return False
 
@@ -74,7 +74,7 @@ def _connect_find_scripts_dir():
             root = ri.drives.get(key)
             if root and os.path.isdir(os.path.join(root, 'scripts')):
                 return os.path.normpath(os.path.join(root, 'scripts'))
-    except Exception as e:
+    except BaseException as e:
         print(f"[CONNECT] Drive scan failed ({type(e).__name__}: {e})")
     return None
 
@@ -805,8 +805,33 @@ def wait_for_scripts_mount(ethossuite_bin=None, attempts=10, delay=2):
 
     last_err = None
     last_path = None
+    recovery_cycle_done = False
+
+    # Give the radio a moment after switching from USB debug to mass-storage.
+    if delay > 0:
+        time.sleep(min(delay, 2))
 
     for i in range(attempts):
+        # Re-assert mass-storage mode if mount does not appear quickly.
+        # Some radios miss the first mode-switch command while USB is re-enumerating.
+        if i > 0 and i % 3 == 0:
+            try:
+                print(f"[ETHOS] Re-requesting mass-storage mode ({i+1}/{attempts})…")
+                ethos_serial(ethossuite_bin, 'stop')
+            except Exception:
+                pass
+
+        # One-time recovery: bounce debug -> storage to force a fresh USB re-enumeration.
+        if i >= max(2, attempts // 2) and not recovery_cycle_done:
+            try:
+                print("[ETHOS] Radio drive still missing; forcing USB mode reinit (debug -> storage)…")
+                ethos_serial(ethossuite_bin, 'start')
+                time.sleep(1.0)
+                ethos_serial(ethossuite_bin, 'stop')
+                recovery_cycle_done = True
+            except Exception:
+                pass
+
         # First: direct connect.py drive discovery
         path = _connect_find_scripts_dir()
         if path and os.path.isdir(path):
