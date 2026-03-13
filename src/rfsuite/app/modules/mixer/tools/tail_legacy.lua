@@ -37,4 +37,4 @@ local function wakeup()
 
 end
 
-return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, onNavMenu=onNavMenu}
+return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = true, API = {}, onNavMenu=onNavMenu}

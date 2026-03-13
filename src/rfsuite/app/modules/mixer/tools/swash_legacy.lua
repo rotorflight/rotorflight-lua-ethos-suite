@@ -29,4 +29,4 @@ local function onNavMenu(self)
 
 end
 
-return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, onNavMenu=onNavMenu}
+return {apidata = apidata, eepromWrite = true, reboot = true, API = {}, onNavMenu=onNavMenu}
