@@ -6746,6 +6746,12 @@
           "translation": "Sources",
           "max_length": 7
         },
+        "preferences_name": {
+          "english": "Preferences",
+          "needs_translation": false,
+          "translation": "Preferences",
+          "max_length": 11
+        },
         "timer": {
           "english": "Flight Time Alarm",
           "needs_translation": false,

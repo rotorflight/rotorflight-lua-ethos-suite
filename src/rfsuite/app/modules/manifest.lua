@@ -556,6 +556,12 @@ return {
                     script = "source.lua",
                     shortcutId = "s_power_source_lua_6d24f8cd57",
                 },
+                {
+                    image = "preferences.png",
+                    name = "@i18n(app.modules.power.preferences_name)@",
+                    script = "preferences.lua",
+                    shortcutId = "s_power_preferences_lua_2bae48fe41",
+                },
             },
             scriptPrefix = "power/tools/",
             title = "@i18n(app.modules.power.name)@",

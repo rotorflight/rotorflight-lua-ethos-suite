@@ -7850,6 +7850,13 @@
           "translation": "מקורות",
           "reverse_text": true
         },
+        "preferences_name": {
+          "english": "Preferences",
+          "translation": "Preferences",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
         "timer": {
           "english": "Flight Time Alarm",
           "max_length": 17,

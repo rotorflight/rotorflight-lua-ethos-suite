@@ -7850,6 +7850,13 @@
           "reverse_text": false,
           "max_length": 7
         },
+        "preferences_name": {
+          "english": "Preferences",
+          "translation": "Preferences",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
         "timer": {
           "english": "Flight Time Alarm",
           "translation": "Alarme Tempo Voo",
