@@ -66,15 +66,16 @@ local function smartfuelIsElectricModel()
 end
 
 local function getSmartfuelCalloutAudio()
-    local generalPrefs = (rfsuite.preferences and rfsuite.preferences.general) or {}
-    local autodetect = generalPrefs.smartfuel_autodetect_model_type
-    if autodetect == nil then autodetect = true end
+    local batteryPrefs = (rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery) or {}
+    local modelType = tonumber(batteryPrefs.smartfuel_model_type) or 0
 
     local useBatteryCallout
-    if autodetect then
+    if modelType == 0 then
         useBatteryCallout = smartfuelIsElectricModel()
+    elseif modelType == 1 then
+        useBatteryCallout = true
     else
-        useBatteryCallout = not (generalPrefs.smartfuel_force_nitro == true)
+        useBatteryCallout = false
     end
 
     if useBatteryCallout then return "events", "alerts/battery.wav" end

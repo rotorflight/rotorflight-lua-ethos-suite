@@ -735,9 +735,10 @@ function utils.getParam(box, key, ...)
 end
 
 function utils.isElectricEngine()
-    local prefs = rfsuite and rfsuite.preferences and rfsuite.preferences.general
-    local autodetect = prefs == nil or prefs.smartfuel_autodetect_model_type ~= false
-    if autodetect then
+    local batteryPrefs = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery
+    local modelType = batteryPrefs and tonumber(batteryPrefs.smartfuel_model_type) or 0
+
+    if modelType == 0 then
         local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
         if not bc then return false end
         local cellCount = tonumber(bc.batteryCellCount) or 0
@@ -757,9 +758,9 @@ function utils.isElectricEngine()
             end
         end
         return false
-    else
-        return not (prefs and prefs.smartfuel_force_nitro == true)
     end
+
+    return modelType == 1
 end
 
 function utils.applyOffset(x, y, box)

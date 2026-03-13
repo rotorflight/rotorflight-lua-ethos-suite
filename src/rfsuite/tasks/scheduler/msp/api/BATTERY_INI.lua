@@ -20,9 +20,11 @@ local ipairs = ipairs
 
 local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
 local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
+local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.tbl_electric)@", "@i18n(api.BATTERY_INI.tbl_nitro)@"}
 
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
+    { field = "smartfuel_model_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = modelTypes, default = 0, min = 0, max = 2},
     { field = "calc_local",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn},
     { field = "sag_multiplier", type = "U8", simResponse = {0}, decimals = 1, default = 0.5, min = 0, max = 10},
     { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
@@ -77,7 +79,7 @@ return factory.create({
         local tbl = ini.load_ini_file(INI_FILE) or {}
 
         for k, v in pairs(state.payloadData) do
-            if k == "calc_local" then v = math.floor(v) end
+            if k == "calc_local" or k == "smartfuel_model_type" then v = math.floor(v) end
             ini.setvalue(tbl, INI_SECTION, k, v)
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then
                 rfsuite.session.modelPreferences[INI_SECTION][k] = v

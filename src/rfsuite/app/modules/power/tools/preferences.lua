@@ -19,6 +19,7 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
+            {t = "@i18n(app.modules.power.model_type)@",                 mspapi = 1, apikey = "smartfuel_model_type", type = 1},
             {t = "@i18n(app.modules.power.calcfuel_local)@",             mspapi = 1, apikey = "calc_local", type = 1},
         }
     }
