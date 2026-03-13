@@ -55,6 +55,18 @@ local function hasAnyBatteryCapacityConfigured(bc)
     return false
 end
 
+local function hasAnyBatteryProfileCapacityConfigured(bc)
+    if not bc then return false end
+    local profiles = bc.profiles
+    if type(profiles) ~= "table" then return false end
+
+    for _, profile in pairs(profiles) do
+        local cap = extractCapacityValue(profile)
+        if cap and cap > 0 then return true end
+    end
+    return false
+end
+
 local function smartfuelIsElectricModel()
     local bc = rfsuite.session and rfsuite.session.batteryConfig
     if not bc then return false end
@@ -80,6 +92,11 @@ local function getSmartfuelCalloutAudio()
 
     if useBatteryCallout then return "events", "alerts/battery.wav" end
     return "status", "alerts/fuel.wav"
+end
+
+local function getSmartfuelEmptyAudio()
+    if smartfuelIsElectricModel() then return "status", "alerts/batteryempty.wav" end
+    return "status", "alerts/lowfuel.wav"
 end
 
 local function resolveBatteryCapacity(typeIndex)
@@ -137,15 +154,16 @@ local function smartfuelCallout(value)
         local now = os_clock()
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
         local haptic = eventPrefs.smartfuelhaptic and true or false
+        local emptyPkg, emptyFile = getSmartfuelEmptyAudio()
 
         if not lastLowFuelAnnounced then
-            utils.playFile("status", "alerts/lowfuel.wav")
+            utils.playFile(emptyPkg, emptyFile)
             if haptic then system_playHaptic(". . . .") end
             lastLowFuelRepeat = now
             lastLowFuelRepeatCount = 1
             lastLowFuelAnnounced = true
         elseif lastLowFuelRepeatCount < repeats and (now - lastLowFuelRepeat) >= 10 then
-            utils.playFile("status", "alerts/lowfuel.wav")
+            utils.playFile(emptyPkg, emptyFile)
             if haptic then system_playHaptic(". . . .") end
             lastLowFuelRepeat = now
             lastLowFuelRepeatCount = lastLowFuelRepeatCount + 1
@@ -334,6 +352,8 @@ local eventTable = {
         event = function(value)
             local key = "battery_profile"
             if value == lastValues[key] then return end
+            local bc = rfsuite.session and rfsuite.session.batteryConfig
+            if not hasAnyBatteryProfileCapacityConfigured(bc) then return end
             utils.playFile("events", "alerts/battery.wav")
             local cap = resolveBatteryCapacity(math_floor(value) - 1)
             if cap and system_playNumber then

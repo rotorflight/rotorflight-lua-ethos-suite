@@ -62,8 +62,8 @@
   {
     "file": "events/alerts/lowfuel.wav",
     "english": "Low Fuel",
-    "translation": "Laag brandstof",
-    "needs_translation": false
+    "translation": null,
+    "needs_translation": true
   },
   {
     "file": "events/alerts/armed.wav",
@@ -494,6 +494,12 @@
   {
     "file": "events/alerts/battery.wav",
     "english": "Battery",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "status/alerts/batteryempty.wav",
+    "english": "Battery Empty",
     "translation": null,
     "needs_translation": true
   }

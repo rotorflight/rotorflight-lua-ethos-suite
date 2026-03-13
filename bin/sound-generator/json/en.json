@@ -496,5 +496,11 @@
     "english": "Battery",
     "translation": "Battery ",
     "needs_translation": false
+  },
+  {
+    "file": "status/alerts/batteryempty.wav",
+    "english": "Battery Empty",
+    "translation": "Battery Empty",
+    "needs_translation": false
   }
 ]

@@ -11441,7 +11441,7 @@
       },
       "msg_select_battery": {
         "english": "Please select the battery you want to use:",
-        "translation": "     Wähle den gewünschten Akku:     ",
+        "translation": "        Wähle den gewünschten Akku:        ",
         "needs_translation": false,
         "reverse_text": false,
         "max_length": 42
