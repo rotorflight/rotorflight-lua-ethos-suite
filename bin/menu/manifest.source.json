@@ -650,7 +650,13 @@
           "name": "Sources",
           "script": "source.lua",
           "translation": "@i18n(app.modules.power.source_name)@"
-        }
+        },
+        {
+          "image": "preferences.png",
+          "name": "Preferences",
+          "script": "preferences.lua",
+          "translation": "@i18n(app.modules.power.preferences_name)@"
+        }        
       ],
       "scriptPrefix": "power/tools/",
       "title": "Power",
