@@ -124,6 +124,27 @@
         "reverse_text": false,
         "translation": "Erhoehen oder verringern, um den Spannungseinbruch im Flug anzupassen."
       },
+      "tbl_auto": {
+        "english": "Auto",
+        "max_length": 4,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Auto"
+      },
+      "tbl_electric": {
+        "english": "Electric",
+        "max_length": 8,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Electric"
+      },
+      "tbl_nitro": {
+        "english": "Nitro",
+        "max_length": 5,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Nitro"
+      },
       "tbl_off": {
         "english": "Current Sensor",
         "max_length": 14,
@@ -8019,6 +8040,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Min. Zellenspannung"
+        },
+        "model_type": {
+          "english": "Power Type",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Model Type"
         },
         "name": {
           "english": "Power",

@@ -56,7 +56,6 @@ local function openPage(opts)
     local displayPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_display)@")
     local safetyPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_safety_prompts)@")
     local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
-    local enginePanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_engine)@")
     local developerPanel = form.addExpansionPanel("@i18n(app.modules.settings.txt_development)@")
 
     local line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_iconsize)@")
@@ -123,32 +122,11 @@ local function openPage(opts)
         return config.mspstatusdialog
     end, function(newValue) config.mspstatusdialog = newValue end)
 
-    local forceNitroIdx
-
-    line = addFieldLine(enginePanel, "@i18n(app.modules.settings.txt_smartfuel_autodetect_model_type)@")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
-        return prefBool(config.smartfuel_autodetect_model_type, true)
-    end, function(newValue)
-        config.smartfuel_autodetect_model_type = newValue
-        if forceNitroIdx and rfsuite.app.formFields[forceNitroIdx] then
-            rfsuite.app.formFields[forceNitroIdx]:enable(not newValue)
-        end
-    end)
-
-    line = addFieldLine(enginePanel, "@i18n(app.modules.settings.txt_smartfuel_force_nitro)@")
-    forceNitroIdx = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
-        return prefBool(config.smartfuel_force_nitro, false)
-    end, function(newValue) config.smartfuel_force_nitro = newValue end)
-
     line = addFieldLine(developerPanel, "@i18n(app.modules.settings.txt_developer_tools)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.developer_tools or false end, function(newValue) config.developer_tools = newValue end)
 
 
     for i, field in ipairs(rfsuite.app.formFields) do if field and field.enable then field:enable(true) end end
-    if forceNitroIdx and rfsuite.app.formFields[forceNitroIdx] then
-        rfsuite.app.formFields[forceNitroIdx]:enable(not prefBool(config.smartfuel_autodetect_model_type, true))
-    end
     rfsuite.app.navButtons.save = true
 end
 

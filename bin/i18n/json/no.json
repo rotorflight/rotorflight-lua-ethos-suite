@@ -117,6 +117,27 @@
         "max_length": 20,
         "reverse_text": false
       },
+      "tbl_auto": {
+        "english": "Auto",
+        "translation": "Auto",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 4
+      },
+      "tbl_electric": {
+        "english": "Electric",
+        "translation": "Electric",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 8
+      },
+      "tbl_nitro": {
+        "english": "Nitro",
+        "translation": "Nitro",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 5
+      },
       "sag_multiplier": {
         "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
         "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
@@ -7814,6 +7835,13 @@
           "needs_translation": false,
           "max_length": 16,
           "reverse_text": false
+        },
+        "model_type": {
+          "english": "Power Type",
+          "translation": "Model Type",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
         },
         "min_cell_voltage": {
           "english": "Min Cell Voltage",

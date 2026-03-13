@@ -107,6 +107,24 @@
         "needs_translation": false,
         "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight."
       },
+      "tbl_auto": {
+        "english": "Auto",
+        "max_length": 4,
+        "needs_translation": false,
+        "translation": "Auto"
+      },
+      "tbl_electric": {
+        "english": "Electric",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "Electric"
+      },
+      "tbl_nitro": {
+        "english": "Nitro",
+        "max_length": 5,
+        "needs_translation": false,
+        "translation": "Nitro"
+      },
       "tbl_off": {
         "english": "Current Sensor",
         "max_length": 14,
@@ -6891,6 +6909,12 @@
           "max_length": 16,
           "needs_translation": false,
           "translation": "Min Cell Voltage"
+        },
+        "model_type": {
+          "english": "Power Type",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Power Type"
         },
         "name": {
           "english": "Power",
