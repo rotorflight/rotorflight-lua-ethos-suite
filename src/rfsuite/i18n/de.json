@@ -11438,7 +11438,7 @@
         "max_length": 42,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "     Wähle den gewünschten Akku:     "
+        "translation": "        Wähle den gewünschten Akku:        "
       },
       "no_profiles": {
         "english": "No battery profiles configured.",

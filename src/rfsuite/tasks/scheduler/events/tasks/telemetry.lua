@@ -41,13 +41,8 @@ local function extractCapacityValue(v)
     return nil
 end
 
-local function hasAnyBatteryCapacityConfigured(bc)
-    local packCapacity = tonumber(bc.batteryCapacity) or 0
-    if packCapacity > 0 then return true end
-
-    local profiles = bc.profiles
+local function hasAnyProfileCapacityConfigured(profiles)
     if type(profiles) ~= "table" then return false end
-
     for _, profile in pairs(profiles) do
         local cap = extractCapacityValue(profile)
         if cap and cap > 0 then return true end
@@ -56,15 +51,14 @@ local function hasAnyBatteryCapacityConfigured(bc)
 end
 
 local function hasAnyBatteryProfileCapacityConfigured(bc)
-    if not bc then return false end
-    local profiles = bc.profiles
-    if type(profiles) ~= "table" then return false end
+    return bc and hasAnyProfileCapacityConfigured(bc.profiles) or false
+end
 
-    for _, profile in pairs(profiles) do
-        local cap = extractCapacityValue(profile)
-        if cap and cap > 0 then return true end
-    end
-    return false
+local function hasAnyBatteryCapacityConfigured(bc)
+    if not bc then return false end
+    local packCapacity = tonumber(bc.batteryCapacity) or 0
+    if packCapacity > 0 then return true end
+    return hasAnyProfileCapacityConfigured(bc.profiles)
 end
 
 local function smartfuelIsElectricModel()
@@ -102,17 +96,7 @@ end
 local function resolveBatteryCapacity(typeIndex)
     local profiles = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
     if not profiles then return nil end
-    local v = profiles[typeIndex]
-    if v == nil and type(typeIndex) == "number" then
-        v = profiles[typeIndex]
-    end
-    if type(v) == "number" then return v end
-    if type(v) == "string" then return tonumber(v:match("(%d+)")) end
-    if type(v) == "table" then
-        if type(v.capacity) == "number" then return v.capacity end
-        if type(v.name) == "string" then return tonumber(v.name:match("(%d+)")) end
-    end
-    return nil
+    return extractCapacityValue(profiles[typeIndex])
 end
 
 local function buildSmartfuelThresholds(sel)
