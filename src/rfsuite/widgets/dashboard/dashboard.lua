@@ -1600,13 +1600,7 @@ function dashboard.wakeup_protected(widget)
     if rfsuite.session.isConnected and rfsuite.session.showBatteryTypeStartup and not rfsuite.session.batteryDialogShown then
         if rfsuite.session.batteryConfig and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
             rfsuite.session.batteryDialogShown = true
-            local count = 0
-            if rfsuite.session.batteryConfig.profiles then
-                for _, capacity in pairs(rfsuite.session.batteryConfig.profiles) do
-                    if capacity > 0 then count = count + 1 end
-                end
-            end
-            if count > 1 then
+            if dashboard.utils.hasMultipleBatteryProfiles and dashboard.utils.hasMultipleBatteryProfiles() then
                 local actions = dashboard.toolbar_actions
                 if actions and type(actions.chooseBatteryType) == "function" then
                     actions.chooseBatteryType()

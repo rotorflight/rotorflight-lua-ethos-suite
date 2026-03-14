@@ -15,17 +15,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local function maxVoltageToCellVoltage(value)
-    local cfg = rfsuite.session.batteryConfig
-    local cells = (cfg and cfg.batteryCellCount) or 3
-
-    if cfg and cells and value then
-        value = max(0, value / cells)
-        value = floor(value * 100 + 0.5) / 100
-    end
-
-    return value
-end
+local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
 
 local theme_section = "system/@aerc"
 

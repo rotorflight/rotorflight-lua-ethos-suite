@@ -23,12 +23,25 @@ local tonumber = tonumber
 local utils = {}
 
 local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
+local MAX_BATTERY_PROFILES = 6
+local PROFILE_HASH_BASE = 131
 
 local imageCache = {}
 local fontCache
 local progressDialog
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local DEFAULT_COLOR_VARIANT_FACTOR = 0.3
+local batteryConfigCache = {
+    config = nil,
+    profiles = nil,
+    batteryCellCount = 0,
+    batteryCapacity = 0,
+    vbatmincellvoltage = 0,
+    vbatfullcellvoltage = 0,
+    profileSig = 0,
+    profileCapacityCount = 0,
+    hasAnyBatteryCapacity = false
+}
 
 local NAMED_COLORS = {
     red = {255, 0, 0},
@@ -734,30 +747,124 @@ function utils.getParam(box, key, ...)
     end
 end
 
+local function extractCapacityValue(v)
+    if type(v) == "number" then return v end
+    if type(v) == "string" then return tonumber(v:match("(%d+)")) end
+    if type(v) == "table" then
+        if type(v.capacity) == "number" then return v.capacity end
+        if type(v.capacity) == "string" then return tonumber(v.capacity:match("(%d+)")) end
+        if type(v.name) == "string" then return tonumber(v.name:match("(%d+)")) end
+    end
+    return nil
+end
+
+local function extractProfileCapacity(profiles, idx)
+    if type(profiles) ~= "table" then return nil end
+    local v = profiles[idx]
+    if v == nil then v = profiles[idx + 1] end
+    return extractCapacityValue(v)
+end
+
+local function refreshBatteryConfigCache()
+    local session = rfsuite and rfsuite.session
+    local bc = session and session.batteryConfig
+
+    if not bc then
+        batteryConfigCache.config = nil
+        batteryConfigCache.profiles = nil
+        batteryConfigCache.batteryCellCount = 0
+        batteryConfigCache.batteryCapacity = 0
+        batteryConfigCache.vbatmincellvoltage = 0
+        batteryConfigCache.vbatfullcellvoltage = 0
+        batteryConfigCache.profileSig = 0
+        batteryConfigCache.profileCapacityCount = 0
+        batteryConfigCache.hasAnyBatteryCapacity = false
+        return nil
+    end
+
+    local profiles = bc.profiles
+    local batteryCellCount = tonumber(bc.batteryCellCount) or 0
+    local batteryCapacity = tonumber(bc.batteryCapacity) or 0
+    local vbatmincellvoltage = tonumber(bc.vbatmincellvoltage) or 0
+    local vbatfullcellvoltage = tonumber(bc.vbatfullcellvoltage) or 0
+    local profileSig = 0
+    local profileCapacityCount = 0
+
+    for i = 0, MAX_BATTERY_PROFILES - 1 do
+        local cap = extractProfileCapacity(profiles, i)
+        local qCap = floor((cap or -1) + 0.5)
+        profileSig = profileSig * PROFILE_HASH_BASE + (qCap + 1)
+        if cap and cap > 0 then profileCapacityCount = profileCapacityCount + 1 end
+    end
+
+    if batteryConfigCache.config == bc and
+        batteryConfigCache.profiles == profiles and
+        batteryConfigCache.batteryCellCount == batteryCellCount and
+        batteryConfigCache.batteryCapacity == batteryCapacity and
+        batteryConfigCache.vbatmincellvoltage == vbatmincellvoltage and
+        batteryConfigCache.vbatfullcellvoltage == vbatfullcellvoltage and
+        batteryConfigCache.profileSig == profileSig then
+        return batteryConfigCache
+    end
+
+    batteryConfigCache.config = bc
+    batteryConfigCache.profiles = profiles
+    batteryConfigCache.batteryCellCount = batteryCellCount
+    batteryConfigCache.batteryCapacity = batteryCapacity
+    batteryConfigCache.vbatmincellvoltage = vbatmincellvoltage
+    batteryConfigCache.vbatfullcellvoltage = vbatfullcellvoltage
+    batteryConfigCache.profileSig = profileSig
+    batteryConfigCache.profileCapacityCount = profileCapacityCount
+    batteryConfigCache.hasAnyBatteryCapacity = (batteryCapacity > 0) or (profileCapacityCount > 0)
+
+    return batteryConfigCache
+end
+
+function utils.getBatteryCellCount(defaultCellCount)
+    local bcCache = refreshBatteryConfigCache()
+    local fallback = defaultCellCount or 3
+    if not bcCache then return fallback end
+    if bcCache.batteryCellCount > 0 then return bcCache.batteryCellCount end
+    return fallback
+end
+
+function utils.getBatteryVoltageBounds(defaultCellCount, defaultMinCellVoltage, defaultFullCellVoltage)
+    local bcCache = refreshBatteryConfigCache()
+    local cells = defaultCellCount or 3
+    local minCellV = defaultMinCellVoltage or 3.0
+    local fullCellV = defaultFullCellVoltage or 4.2
+
+    if bcCache then
+        if bcCache.batteryCellCount > 0 then cells = bcCache.batteryCellCount end
+        if bcCache.vbatmincellvoltage > 0 then minCellV = bcCache.vbatmincellvoltage end
+        if bcCache.vbatfullcellvoltage > 0 then fullCellV = bcCache.vbatfullcellvoltage end
+    end
+
+    return cells, minCellV, fullCellV
+end
+
+function utils.hasMultipleBatteryProfiles()
+    local bcCache = refreshBatteryConfigCache()
+    return bcCache ~= nil and (bcCache.profileCapacityCount or 0) > 1
+end
+
+function utils.maxVoltageToCellVoltage(value, defaultCellCount)
+    if value == nil then return value end
+    local cells = utils.getBatteryCellCount(defaultCellCount or 3)
+    value = max(0, value / cells)
+    return floor(value * 100 + 0.5) / 100
+end
+
 function utils.isElectricEngine()
     local batteryPrefs = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery
     local modelType = batteryPrefs and tonumber(batteryPrefs.smartfuel_model_type) or 0
 
     if modelType == 0 then
-        local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
-        if not bc then return false end
-        local cellCount = tonumber(bc.batteryCellCount) or 0
+        local bcCache = refreshBatteryConfigCache()
+        if not bcCache then return false end
+        local cellCount = bcCache.batteryCellCount
         if cellCount ~= 0 then return true end
-        local packCapacity = tonumber(bc.batteryCapacity) or 0
-        if packCapacity > 0 then return true end
-        local profiles = bc.profiles
-        if type(profiles) == "table" then
-            for _, v in ipairs(profiles) do
-                local cap
-                if type(v) == "table" then
-                    if type(v.capacity) == "number" then cap = v.capacity
-                    elseif type(v.capacity) == "string" then cap = tonumber(v.capacity:match("(%d+)")) end
-                elseif type(v) == "number" then cap = v
-                end
-                if cap and cap > 0 then return true end
-            end
-        end
-        return false
+        return bcCache.hasAnyBatteryCapacity
     end
 
     return modelType == 1

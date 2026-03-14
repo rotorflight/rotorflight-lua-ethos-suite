@@ -16,14 +16,7 @@ local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
 local function maxVoltageToCellVoltage(value)
-    local cells = 2
-
-    if cells and value then
-        value = max(0, value / cells)
-        value = floor(value * 100 + 0.5) / 100
-    end
-
-    return value
+    return utils.maxVoltageToCellVoltage(value, 2)
 end
 
 local theme_section = "system/@aerc-n"

@@ -15,10 +15,29 @@ local lastAlertState = {}
 local rollingSamples = {}
 local sensorSources = {}
 
+local batteryConfigCache = {
+    config = nil,
+    profiles = nil,
+    batteryCapacity = 0,
+    batteryCellCount = 0,
+    vbatwarningcellvoltage = 0,
+    vbatmincellvoltage = 0,
+    profileSig = 0,
+    hasAnyBatteryCapacity = false,
+    hasAnyProfileCapacity = false,
+    profileCaps = {},
+    smartfuelModelType = 0,
+    modelPrefs = nil
+}
+
 local lastSmartfuelAnnounced = nil
 local lastLowFuelAnnounced = false
 local lastLowFuelRepeat = 0
 local lastLowFuelRepeatCount = 0
+
+-- Shared clock value set once per wakeup; used by all event closures as an upvalue
+-- to avoid repeated os.clock() calls inside hot-path event handlers.
+local now = 0
 
 local utils = rfsuite.utils
 local os_clock = os.clock
@@ -26,6 +45,24 @@ local math_floor = math.floor
 local math_abs = math.abs
 local system_playNumber = system.playNumber
 local system_playHaptic = system.playHaptic
+
+local MAX_BATTERY_PROFILES = 6
+local PROFILE_HASH_BASE = 131
+
+local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
+local governorMap = {
+    [0] = "off.wav",
+    [1] = "idle.wav",
+    [2] = "spoolup.wav",
+    [3] = "recovery.wav",
+    [4] = "active.wav",
+    [5] = "thr-off.wav",
+    [6] = "lost-hs.wav",
+    [7] = "autorot.wav",
+    [8] = "bailout.wav",
+    [100] = "disabled.wav",
+    [101] = "disarmed.wav"
+}
 
 local lastSmartfuelSel = nil
 local cachedSmartfuelThresholds = nil
@@ -41,62 +78,156 @@ local function extractCapacityValue(v)
     return nil
 end
 
-local function hasAnyProfileCapacityConfigured(profiles)
-    if type(profiles) ~= "table" then return false end
-    for _, profile in pairs(profiles) do
-        local cap = extractCapacityValue(profile)
-        if cap and cap > 0 then return true end
+local function clearProfileCaps(caps)
+    for i = 0, MAX_BATTERY_PROFILES - 1 do
+        caps[i] = nil
     end
-    return false
 end
 
-local function hasAnyBatteryProfileCapacityConfigured(bc)
-    return bc and hasAnyProfileCapacityConfigured(bc.profiles) or false
+local function extractProfileCapacity(profiles, idx)
+    if type(profiles) ~= "table" then return nil end
+    local v = profiles[idx]
+    if v == nil then v = profiles[idx + 1] end
+    return extractCapacityValue(v)
 end
 
-local function hasAnyBatteryCapacityConfigured(bc)
-    if not bc then return false end
-    local packCapacity = tonumber(bc.batteryCapacity) or 0
-    if packCapacity > 0 then return true end
-    return hasAnyProfileCapacityConfigured(bc.profiles)
+local function resetBatteryConfigCache()
+    batteryConfigCache.config = nil
+    batteryConfigCache.profiles = nil
+    batteryConfigCache.batteryCapacity = 0
+    batteryConfigCache.batteryCellCount = 0
+    batteryConfigCache.vbatwarningcellvoltage = 0
+    batteryConfigCache.vbatmincellvoltage = 0
+    batteryConfigCache.profileSig = 0
+    batteryConfigCache.hasAnyBatteryCapacity = false
+    batteryConfigCache.hasAnyProfileCapacity = false
+    batteryConfigCache.smartfuelModelType = 0
+    batteryConfigCache.modelPrefs = nil
+    clearProfileCaps(batteryConfigCache.profileCaps)
+end
+
+local function buildProfileSignature(profiles)
+    local profileSig = 0
+    for i = 0, MAX_BATTERY_PROFILES - 1 do
+        local cap = extractProfileCapacity(profiles, i)
+        profileSig = profileSig * PROFILE_HASH_BASE + (math_floor((cap or -1) + 0.5) + 1)
+    end
+    return profileSig
+end
+
+local function rebuildProfileCaps(profiles, profileCaps)
+    local hasProfileCapacity = false
+    clearProfileCaps(profileCaps)
+
+    for i = 0, MAX_BATTERY_PROFILES - 1 do
+        local cap = extractProfileCapacity(profiles, i)
+        if cap and cap > 0 then
+            hasProfileCapacity = true
+            profileCaps[i] = cap
+        end
+    end
+
+    return hasProfileCapacity
+end
+
+local function resetLowFuelState()
+    lastLowFuelAnnounced = false
+    lastLowFuelRepeat = 0
+    lastLowFuelRepeatCount = 0
+end
+
+local function refreshBatteryConfigCache()
+    local session = rfsuite.session
+    local bc = session and session.batteryConfig
+
+    if not bc then
+        resetBatteryConfigCache()
+        return nil
+    end
+
+    local profiles = bc.profiles
+    local batteryCapacity = tonumber(bc.batteryCapacity) or 0
+    local batteryCellCount = tonumber(bc.batteryCellCount) or 0
+    local vbatwarningcellvoltage = tonumber(bc.vbatwarningcellvoltage) or 0
+    local vbatmincellvoltage = tonumber(bc.vbatmincellvoltage) or 0
+        local profileSig = buildProfileSignature(profiles)
+
+    if batteryConfigCache.config == bc and
+        batteryConfigCache.profiles == profiles and
+        batteryConfigCache.batteryCapacity == batteryCapacity and
+        batteryConfigCache.batteryCellCount == batteryCellCount and
+        batteryConfigCache.vbatwarningcellvoltage == vbatwarningcellvoltage and
+        batteryConfigCache.vbatmincellvoltage == vbatmincellvoltage and
+        batteryConfigCache.profileSig == profileSig then
+        return batteryConfigCache
+    end
+
+    batteryConfigCache.config = bc
+    batteryConfigCache.profiles = profiles
+    batteryConfigCache.batteryCapacity = batteryCapacity
+    batteryConfigCache.batteryCellCount = batteryCellCount
+    batteryConfigCache.vbatwarningcellvoltage = vbatwarningcellvoltage
+    batteryConfigCache.vbatmincellvoltage = vbatmincellvoltage
+    batteryConfigCache.profileSig = profileSig
+
+    local profileCaps = batteryConfigCache.profileCaps
+    local hasProfileCapacity = rebuildProfileCaps(profiles, profileCaps)
+
+    batteryConfigCache.hasAnyProfileCapacity = hasProfileCapacity
+    batteryConfigCache.hasAnyBatteryCapacity = (batteryCapacity > 0) or hasProfileCapacity
+
+    local modelPrefs = (session.modelPreferences and session.modelPreferences.battery) or {}
+    batteryConfigCache.modelPrefs = modelPrefs
+    batteryConfigCache.smartfuelModelType = tonumber(modelPrefs.smartfuel_model_type) or 0
+
+    return batteryConfigCache
 end
 
 local function smartfuelIsElectricModel()
-    local bc = rfsuite.session and rfsuite.session.batteryConfig
-    if not bc then return false end
+    local bcCache = refreshBatteryConfigCache()
+    if not bcCache then return false end
 
-    local cellCount = tonumber(bc.batteryCellCount) or 0
+    local cellCount = bcCache.batteryCellCount
     if cellCount ~= 0 then return true end
 
-    return hasAnyBatteryCapacityConfigured(bc)
+    return bcCache.hasAnyBatteryCapacity
 end
 
-local function getSmartfuelCalloutAudio()
-    local batteryPrefs = (rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery) or {}
-    local modelType = tonumber(batteryPrefs.smartfuel_model_type) or 0
+-- Returns callout and empty audio in one call, calling smartfuelIsElectricModel only once.
+local function resolveSmartfuelAudio()
+    local isElectric = smartfuelIsElectricModel()
+    local modelType = batteryConfigCache.smartfuelModelType
 
     local useBatteryCallout
     if modelType == 0 then
-        useBatteryCallout = smartfuelIsElectricModel()
+        useBatteryCallout = isElectric
     elseif modelType == 1 then
         useBatteryCallout = true
     else
         useBatteryCallout = false
     end
 
-    if useBatteryCallout then return "events", "alerts/battery.wav" end
-    return "status", "alerts/fuel.wav"
-end
+    local calloutPkg, calloutFile
+    if useBatteryCallout then
+        calloutPkg, calloutFile = "events", "alerts/battery.wav"
+    else
+        calloutPkg, calloutFile = "status", "alerts/fuel.wav"
+    end
 
-local function getSmartfuelEmptyAudio()
-    if smartfuelIsElectricModel() then return "status", "alerts/batteryempty.wav" end
-    return "status", "alerts/lowfuel.wav"
+    local emptyPkg, emptyFile
+    if isElectric then
+        emptyPkg, emptyFile = "status", "alerts/batteryempty.wav"
+    else
+        emptyPkg, emptyFile = "status", "alerts/lowfuel.wav"
+    end
+
+    return calloutPkg, calloutFile, emptyPkg, emptyFile
 end
 
 local function resolveBatteryCapacity(typeIndex)
-    local profiles = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
-    if not profiles then return nil end
-    return extractCapacityValue(profiles[typeIndex])
+    local bcCache = refreshBatteryConfigCache()
+    if not bcCache then return nil end
+    return bcCache.profileCaps[typeIndex]
 end
 
 local function buildSmartfuelThresholds(sel)
@@ -128,17 +259,15 @@ local function buildSmartfuelThresholds(sel)
     return t
 end
 
-local function smartfuelCallout(value)
+local function smartfuelCallout(value, now)
     local eventPrefs = rfsuite.preferences.events or {}
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = buildSmartfuelThresholds(smartfuelcallout)
-    local calloutPkg, calloutFile = getSmartfuelCalloutAudio()
+    local calloutPkg, calloutFile, emptyPkg, emptyFile = resolveSmartfuelAudio()
 
     if value <= 0 then
-        local now = os_clock()
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
         local haptic = eventPrefs.smartfuelhaptic and true or false
-        local emptyPkg, emptyFile = getSmartfuelEmptyAudio()
 
         if not lastLowFuelAnnounced then
             utils.playFile(emptyPkg, emptyFile)
@@ -154,9 +283,7 @@ local function smartfuelCallout(value)
         end
         return
     else
-        lastLowFuelAnnounced = false
-        lastLowFuelRepeat = 0
-        lastLowFuelRepeatCount = 0
+        resetLowFuelState()
     end
 
     if lastSmartfuelAnnounced == nil then
@@ -182,24 +309,37 @@ local function smartfuelCallout(value)
     end
 end
 
-local function shouldAlert(key, interval)
-    local now = os_clock()
+local function shouldAlert(key, interval, now)
     return (not lastAlertState[key]) or (now - (lastEventTimes[key] or 0)) >= interval
 end
 
-local function registerAlert(key, interval)
-    lastEventTimes[key] = os_clock()
+local function registerAlert(key, now)
+    lastEventTimes[key] = now
     lastAlertState[key] = true
 end
 
 local function updateRollingAverage(key, newValue, window)
-    rollingSamples[key] = rollingSamples[key] or {}
-    local samples = rollingSamples[key]
-    table.insert(samples, newValue)
-    if #samples > window then table.remove(samples, 1) end
-    local sum = 0
-    for _, v in ipairs(samples) do sum = sum + v end
-    return sum / #samples
+    local state = rollingSamples[key]
+    if not state or state.window ~= window then
+        state = {buf = {}, next = 1, count = 0, sum = 0, window = window}
+        rollingSamples[key] = state
+    end
+
+    local idx = state.next
+    if state.count == window then
+        state.sum = state.sum - (state.buf[idx] or 0)
+    else
+        state.count = state.count + 1
+    end
+
+    state.buf[idx] = newValue
+    state.sum = state.sum + newValue
+
+    idx = idx + 1
+    if idx > window then idx = 1 end
+    state.next = idx
+
+    return state.sum / state.count
 end
 
 local eventTable = {
@@ -208,7 +348,6 @@ local eventTable = {
         event = function(value)
             local key = "armflags"
             if value == lastValues[key] then return end
-            local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
             local filename = armMap[math_floor(value)]
             if filename then utils.playFile("events", "alerts/" .. filename) end
         end
@@ -218,11 +357,13 @@ local eventTable = {
         window = 5,
         event = function(value, interval, window)
             local session = rfsuite.session
-            if not session.batteryConfig then return end
+            local bcCache = batteryConfigCache
+            if not bcCache.config then return end
 
-            local cellCount = session.batteryConfig.batteryCellCount
-            local warnVoltage = session.batteryConfig.vbatwarningcellvoltage
-            local minVoltage = session.batteryConfig.vbatmincellvoltage
+            local cellCount = bcCache.batteryCellCount
+            local warnVoltage = bcCache.vbatwarningcellvoltage
+            local minVoltage = bcCache.vbatmincellvoltage
+            if cellCount <= 0 then return end
 
             local cellVoltage = value / cellCount
             if cellVoltage < (minVoltage / 2) then return end
@@ -238,9 +379,9 @@ local eventTable = {
             if math_abs(collective) > suppression or math_abs(aileron) > suppression or math_abs(elevator) > suppression or math_abs(rudder) > suppression then return end
 
             local key = "voltage"
-            if avgVoltage < warnVoltage and shouldAlert(key, interval) then
+            if avgVoltage < warnVoltage and shouldAlert(key, interval, now) then
                 utils.playFile("events", "alerts/lowvoltage.wav")
-                registerAlert(key, interval)
+                registerAlert(key, now)
             elseif avgVoltage >= warnVoltage then
                 lastAlertState[key] = false
             end
@@ -255,10 +396,10 @@ local eventTable = {
             local escalertvalue = tonumber(eventPrefs.escalertvalue) or 90
             local avgTemp = updateRollingAverage("temp_esc", value, window)
             local key = "temp_esc"
-            if avgTemp >= escalertvalue and shouldAlert(key, interval) then
+            if avgTemp >= escalertvalue and shouldAlert(key, interval, now) then
                 utils.playFile("events", "alerts/esctemp.wav")
                 system_playHaptic(". . . .")
-                registerAlert(key, interval)
+                registerAlert(key, now)
             elseif avgTemp < escalertvalue then
                 lastAlertState[key] = false
             end
@@ -273,8 +414,8 @@ local eventTable = {
                 return
             end
 
-            local session = rfsuite.session
-            local batprefs = (session.modelPreferences and session.modelPreferences.battery) or {}
+            local bcCache = batteryConfigCache
+            local batprefs = bcCache.modelPrefs or {}
             local alert_type = tonumber(batprefs.alert_type or 0)
             local becalertvalue = tonumber(batprefs.becalertvalue or 6.5)
             local rxalertvalue = tonumber(batprefs.rxalertvalue or 7.4)
@@ -282,18 +423,18 @@ local eventTable = {
             local key = "bec_voltage"
 
             if alert_type == 1 then
-                if avgBEC < becalertvalue and shouldAlert(key, interval) then
+                if avgBEC < becalertvalue and shouldAlert(key, interval, now) then
                     utils.playFile("events", "alerts/becvolt.wav")
                     system_playHaptic(". . . .")
-                    registerAlert(key, interval)
+                    registerAlert(key, now)
                 elseif avgBEC >= becalertvalue then
                     lastAlertState[key] = false
                 end
             elseif alert_type == 2 then
-                if avgBEC < rxalertvalue and shouldAlert(key, interval) then
+                if avgBEC < rxalertvalue and shouldAlert(key, interval, now) then
                     utils.playFile("events", "alerts/rxvolt.wav")
                     system_playHaptic(". . . .")
-                    registerAlert(key, interval)
+                    registerAlert(key, now)
                 elseif avgBEC >= rxalertvalue then
                     lastAlertState[key] = false
                 end
@@ -301,14 +442,13 @@ local eventTable = {
                 lastAlertState[key] = false
             end
         end
-    }, {sensor = "smartfuel", event = function(value) smartfuelCallout(value) end}, {
+    }, {sensor = "smartfuel", event = function(value) smartfuelCallout(value, now) end}, {
         sensor = "governor",
         event = function(value)
             local key = "governor"
             if value == lastValues[key] then return end
             local session = rfsuite.session
             if not session.isArmed or session.governorMode == 0 then return end
-            local governorMap = {[0] = "off.wav", [1] = "idle.wav", [2] = "spoolup.wav", [3] = "recovery.wav", [4] = "active.wav", [5] = "thr-off.wav", [6] = "lost-hs.wav", [7] = "autorot.wav", [8] = "bailout.wav", [100] = "disabled.wav", [101] = "disarmed.wav"}
             local filename = governorMap[math_floor(value)]
             if filename then utils.playFile("events", "gov/" .. filename) end
         end
@@ -336,8 +476,8 @@ local eventTable = {
         event = function(value)
             local key = "battery_profile"
             if value == lastValues[key] then return end
-            local bc = rfsuite.session and rfsuite.session.batteryConfig
-            if not hasAnyBatteryProfileCapacityConfigured(bc) then return end
+            local bcCache = batteryConfigCache
+            if not bcCache.config or not bcCache.hasAnyProfileCapacity then return end
             utils.playFile("events", "alerts/battery.wav")
             local cap = resolveBatteryCapacity(math_floor(value) - 1)
             if cap and system_playNumber then
@@ -358,9 +498,11 @@ function telemetry.wakeup()
         end
     end
 
-    local now = os_clock()
+    now = os_clock()
     local eventPrefs = rfsuite.preferences.events or {}
     local tlmTask = rfsuite.tasks.telemetry
+
+    refreshBatteryConfigCache()
 
     for _, item in ipairs(eventTable) do
         local key = item.sensor
@@ -399,14 +541,13 @@ telemetry.eventTable = eventTable
 
 function telemetry.reset()
     lastSmartfuelAnnounced = nil
-    lastLowFuelAnnounced = false
-    lastLowFuelRepeat = 0
-    lastLowFuelRepeatCount = 0
+    resetLowFuelState()
     lastEventTimes = {}
     lastValues = {}
     lastAlertState = {}
     rollingSamples = {}
     sensorSources = {}
+    resetBatteryConfigCache()
 end
 
 return telemetry

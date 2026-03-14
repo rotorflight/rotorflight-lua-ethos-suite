@@ -173,18 +173,14 @@ local function buildBoxes(W)
             min = function()
                 local override = getUserVoltageOverride("v_min")
                 if override then return override end
-                local cfg = rfsuite.session.batteryConfig
-                local cells = (cfg and cfg.batteryCellCount) or 3
-                local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+                local cells, minV = utils.getBatteryVoltageBounds(3, 3.0, 4.2)
                 return max(0, cells * minV)
             end,
 
             max = function()
                 local override = getUserVoltageOverride("v_max")
                 if override then return override end
-                local cfg = rfsuite.session.batteryConfig
-                local cells = (cfg and cfg.batteryCellCount) or 3
-                local maxV = (cfg and cfg.vbatfullcellvoltage) or 4.2
+                local cells, _, maxV = utils.getBatteryVoltageBounds(3, 3.0, 4.2)
                 return max(0, cells * maxV)
             end,
 
