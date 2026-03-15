@@ -111,12 +111,16 @@ end
 function sensors.reset()
 
     if loadedSensorModule and loadedSensorModule.module and loadedSensorModule.module.reset then loadedSensorModule.module.reset() end
-    if smart and smart.reset then smart.reset() end
+    sensors.resetSmart()
     if msp and msp.reset then msp.reset() end
     if telemetryconfig and telemetryconfig.reset then telemetryconfig.reset() end
     if battery and battery.reset then battery.reset() end
     loadedSensorModule = nil
 
+end
+
+function sensors.resetSmart()
+    if smart and smart.reset then smart.reset() end
 end
 
 return sensors

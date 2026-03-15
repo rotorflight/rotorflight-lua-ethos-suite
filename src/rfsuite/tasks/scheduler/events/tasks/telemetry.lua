@@ -136,6 +136,13 @@ local function resetLowFuelState()
     lastLowFuelRepeatCount = 0
 end
 
+local function resetSmartfuelSensor()
+    local sensorTask = rfsuite.tasks and rfsuite.tasks.sensors
+    if sensorTask and type(sensorTask.resetSmart) == "function" then
+        sensorTask.resetSmart()
+    end
+end
+
 local function refreshBatteryConfigCache()
     local session = rfsuite.session
     local bc = session and session.batteryConfig
@@ -548,6 +555,7 @@ function telemetry.reset()
     rollingSamples = {}
     sensorSources = {}
     resetBatteryConfigCache()
+    resetSmartfuelSensor()
 end
 
 return telemetry
