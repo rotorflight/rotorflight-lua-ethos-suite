@@ -26,9 +26,7 @@ return {
     current = {{uid = 0x5004, unit = UNIT_AMPERE, dec = 0, value = function() return simSensors('current') end, min = 0, max = 300}},
     temp_esc = {{uid = 0x5005, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_esc') end, min = 0, max = 100}},
     temp_mcu = {{uid = 0x5006, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_mcu') end, min = 0, max = 100}},
-    fuel = {
-                { uid = 0x5007, unit = UNIT_PERCENT, dec = 0, value = function() return simSensors('fuel') end, min = 0, max = 100 }
-            },
+    fuel = {{ uid = 0x5007, unit = UNIT_PERCENT, dec = 0, value = function() return simSensors('fuel') end, min = 0, max = 100 }},
     smartfuel = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}},
     smartconsumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}},
     consumption = {{uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0, value = function() return simSensors('consumption') end, min = 0, max = 5000}},
@@ -49,4 +47,5 @@ return {
     attroll = {{uid = 0x5023, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attroll') end, min = -1800, max = 3600}},
     attpitch = {{uid = 0x5024, unit = UNIT_DEGREE, dec = 1, value = function() return simSensors('attpitch') end, min = -1800, max = 3600}},
     groundspeed = {{uid = 0x5025, unit = UNIT_KNOT, dec = 1, value = function() return simSensors('groundspeed') end, min = -1800, max = 3600}},
+    battery_profile = {{uid = 0x5026, unit = nil, dec = 0, value = function() return simSensors('battery_profile') end, min = 0, max = 6}},
 }
