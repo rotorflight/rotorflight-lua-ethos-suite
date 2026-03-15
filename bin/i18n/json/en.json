@@ -2161,6 +2161,18 @@
       }
     },
     "RC_TUNING": {
+      "tbl_off": {
+        "english": "OFF",
+        "max_length": 3,
+        "needs_translation": false,
+        "translation": "OFF"
+      },
+      "tbl_on": {
+        "english": "ON",
+        "max_length": 2,
+        "needs_translation": false,
+        "translation": "ON"
+      },
       "accel_limit_1": {
         "english": "Maximum acceleration of the craft in response to a stick movement.",
         "max_length": 66,
@@ -8078,6 +8090,12 @@
         }
       },
       "rates_advanced": {
+        "cyclic_polarity": {
+          "english": "Cyclic polarity",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Cyclic polarity"
+        },
         "acc_limit": {
           "english": "Accelerometer Limit",
           "max_length": 19,

@@ -2257,6 +2257,18 @@
         "needs_translation": false,
         "translation": "Boost gain for the setpoint."
       },
+      "tbl_off": {
+        "english": "OFF",
+        "max_length": 3,
+        "needs_translation": false,
+        "translation": "OFF"
+      },
+      "tbl_on": {
+        "english": "ON",
+        "max_length": 2,
+        "needs_translation": false,
+        "translation": "ON"
+      },
       "yaw_dynamic_ceiling_gain": {
         "english": "The maximum gain applied to the yaw dynamic ceiling.",
         "max_length": 52,
@@ -8095,6 +8107,12 @@
           "max_length": 3,
           "needs_translation": false,
           "translation": "Col"
+        },
+        "cyclic_polarity": {
+          "english": "Cyclic polarity",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Cyclic polarity"
         },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",

@@ -2514,6 +2514,20 @@
       }
     },
     "RC_TUNING": {
+      "tbl_off": {
+        "english": "OFF",
+        "translation": "OFF",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 3
+      },
+      "tbl_on": {
+        "english": "ON",
+        "translation": "ON",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 2
+      },
       "accel_limit_1": {
         "english": "Maximum acceleration of the craft in response to a stick movement.",
         "translation": "Aceleração máxima da aeronave em resposta ao movimento do stick.",
@@ -9400,6 +9414,13 @@
         }
       },
       "rates_advanced": {
+        "cyclic_polarity": {
+          "english": "Cyclic polarity",
+          "translation": "Cyclic polarity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
         "acc_limit": {
           "english": "Accelerometer Limit",
           "translation": "Limite Acelerôm",

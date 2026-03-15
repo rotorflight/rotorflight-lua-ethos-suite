@@ -25,6 +25,11 @@ else
     rateSimResponse = {6} 
 end
 
+local onOff = {
+    "@i18n(api.RC_TUNING.tbl_on)@",
+    "@i18n(api.RC_TUNING.tbl_off)@"
+}
+
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "rates_type", type = "U8", apiVersion = {12, 0, 6}, simResponse = rateSimResponse, min = 0, max = 6, default = 4, tableIdxInc = -1, table = rateTable},
@@ -58,13 +63,12 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "setpoint_boost_cutoff_4", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15},
     {field = "yaw_dynamic_ceiling_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250},
     {field = "yaw_dynamic_deadband_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250},
-    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = {12, 0, 8}, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit = "Hz"}
+    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = {12, 0, 8}, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit = "Hz"},
+    {field = "cyclic_polarity", type = "U8", apiVersion = {12, 0, 9}, simResponse = {1}, default = 0, min = 0, max = 1, tableIdxInc = -1, table = onOff},
 }
 -- LuaFormatter on
 
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-MSP_API_SIMULATOR_RESPONSE = {6  , 49 , 2  , 24 , 0  , 0  , 0  , 49 , 0  , 24 , 0  , 0  , 0  , 100, 0  , 24 , 0  , 0  , 0  , 100, 0  , 0  , 0  , 0  , 0  , 0  , 15 , 0  , 15 , 0  , 90 , 0  , 15 , 30 , 30 , 60 }
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 

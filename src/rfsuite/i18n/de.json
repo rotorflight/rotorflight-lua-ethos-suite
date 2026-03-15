@@ -2626,6 +2626,20 @@
         "reverse_text": false,
         "translation": "Boost-Verstaerkung fuer den Sollwert."
       },
+      "tbl_off": {
+        "english": "OFF",
+        "max_length": 3,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "OFF"
+      },
+      "tbl_on": {
+        "english": "ON",
+        "max_length": 2,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "ON"
+      },
       "yaw_dynamic_ceiling_gain": {
         "english": "The maximum gain applied to the yaw dynamic ceiling.",
         "max_length": 52,
@@ -9420,6 +9434,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kol"
+        },
+        "cyclic_polarity": {
+          "english": "Cyclic polarity",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Cyclic polarity"
         },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",
