@@ -58,23 +58,62 @@ end
 
 local _imgCache = {}
 
+local function addCandidate(candidates, path)
+    if type(path) ~= "string" or path == "" then return end
+    for i = 1, #candidates do
+        if candidates[i] == path then return end
+    end
+    candidates[#candidates + 1] = path
+end
+
+local function tryLoadImagePath(path, maxBytes)
+    if type(path) ~= "string" or path == "" or not loadImage then return nil end
+
+    local tryPaths
+    if path:match("%.png$") or path:match("%.bmp$") then
+        tryPaths = {path}
+    else
+        tryPaths = {path .. ".png", path .. ".bmp", path}
+    end
+
+    for i = 1, #tryPaths do
+        local candidate = tryPaths[i]
+        if not isImageTooLarge(candidate, maxBytes) then
+            local loaded = loadImage(candidate)
+            if loaded then return loaded end
+        end
+    end
+
+    return nil
+end
+
+local function getBitmapCandidates(bitmap)
+    local candidates = {}
+    addCandidate(candidates, bitmap)
+
+    if type(bitmap) ~= "string" or bitmap == "" then return candidates end
+
+    if bitmap:match("^/bitmaps/") then
+        addCandidate(candidates, (bitmap:gsub("^/bitmaps", "BITMAPS:", 1)))
+    elseif bitmap:match("^/scripts/") then
+        addCandidate(candidates, (bitmap:gsub("^/scripts", "SCRIPTS:", 1)))
+    elseif bitmap:match("^/system/") then
+        addCandidate(candidates, (bitmap:gsub("^/system", "SYSTEM:", 1)))
+    elseif not bitmap:match("^[A-Z]+:") and not bitmap:match("^/") then
+        addCandidate(candidates, "BITMAPS:/models/" .. bitmap)
+    end
+
+    return candidates
+end
+
 local function resolveModelImage(cfg)
 
     local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
     if craftName and craftName ~= "" then
         local cached = _imgCache[craftName]
         if cached == nil then
-            local base = "BITMAPS:/models/" .. craftName
-            local pngPath = base .. ".png"
-            local bmpPath = base .. ".bmp"
-            local loaded
             local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
-            if loadImage and not isImageTooLarge(pngPath, maxBytes) then
-                loaded = loadImage(pngPath)
-            end
-            if not loaded and loadImage and not isImageTooLarge(bmpPath, maxBytes) then
-                loaded = loadImage(bmpPath)
-            end
+            local loaded = tryLoadImagePath("BITMAPS:/models/" .. craftName, maxBytes)
             cached = loaded
             _imgCache[craftName] = cached or false
         end
@@ -82,28 +121,22 @@ local function resolveModelImage(cfg)
     end
 
     if model and model.bitmap then
-        local bm = "BITMAPS:/models/" .. model.bitmap()
+        local bm = model.bitmap()
         local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
-        if bm and type(bm) == "string" and bm ~= "" and not string.find(bm, "default_") and not isImageTooLarge(bm, maxBytes) then
-            local loaded = loadImage and loadImage(bm)
-            if loaded then return loaded end
+        if bm and type(bm) == "string" and bm ~= "" and not string.find(bm, "default_") then
+            local candidates = getBitmapCandidates(bm)
+            for i = 1, #candidates do
+                local loaded = tryLoadImagePath(candidates[i], maxBytes)
+                if loaded then return loaded end
+            end
         end
     end
 
     local paramImage = getParam(cfg.box, "image")
     if paramImage and paramImage ~= "" then
-        local base = paramImage:gsub("%.png$", ""):gsub("%.bmp$", "")
-        local pngPath = base .. ".png"
-        local bmpPath = base .. ".bmp"
         local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
-        if loadImage and not isImageTooLarge(pngPath, maxBytes) then
-            local loaded = loadImage(pngPath)
-            if loaded then return loaded end
-        end
-        if loadImage and not isImageTooLarge(bmpPath, maxBytes) then
-            local loaded = loadImage(bmpPath)
-            if loaded then return loaded end
-        end
+        local loaded = tryLoadImagePath(paramImage, maxBytes)
+        if loaded then return loaded end
         return paramImage
     end
 
