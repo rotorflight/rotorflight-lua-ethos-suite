@@ -38,6 +38,34 @@ local function normalizeBatteryProfileIndex(value)
     return nil
 end
 
+local function resolveActiveBatteryProfile()
+    local session = rfsuite.session
+    local activeProfile = normalizeBatteryProfileIndex(session and session.activeBatteryType)
+    if activeProfile ~= nil then
+        return activeProfile
+    end
+
+    local batteryProfile = telemetry and telemetry.getSensor and telemetry.getSensor("battery_profile")
+    activeProfile = normalizeBatteryProfileIndex(batteryProfile)
+    if activeProfile ~= nil then
+        session.activeBatteryType = activeProfile
+        return activeProfile
+    end
+
+    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+    local mspType = values and values.BATTERY_PROFILE and values.BATTERY_PROFILE.batteryProfile
+    if mspType == nil and values and values.BATTERY_CONFIG then
+        mspType = values.BATTERY_CONFIG.batteryProfile
+    end
+
+    activeProfile = normalizeBatteryProfileIndex(mspType)
+    if activeProfile ~= nil then
+        session.activeBatteryType = activeProfile
+    end
+
+    return activeProfile
+end
+
 local dischargeCurveTable = {}
 for i = 0, 120 do
     local v = 3.00 + i * 0.01
@@ -75,6 +103,17 @@ local function resetVoltageTracking()
     voltageStabilised = false
 end
 
+local function resetState()
+    batteryConfigCache = nil
+    fuelStartingPercent = nil
+    fuelStartingConsumption = nil
+    stabilizeNotBefore = nil
+    lastSensorMode = nil
+    currentMode = rfsuite.flightmode.current or "preflight"
+    lastMode = currentMode
+    resetVoltageTracking()
+end
+
 local function isVoltageStable()
     if #lastVoltages < maxVoltageSamples then return false end
     local vmin, vmax = lastVoltages[1], lastVoltages[1]
@@ -88,12 +127,7 @@ end
 local function smartFuelCalc()
 
     if not telemetry then telemetry = rfsuite.tasks.telemetry end
-
-    local batType = telemetry and telemetry.getSensor and telemetry.getSensor("battery_profile")
-    local normalizedBatType = normalizeBatteryProfileIndex(batType)
-    if normalizedBatType ~= nil then
-        rfsuite.session.activeBatteryType = normalizedBatType
-    end
+    currentMode = rfsuite.flightmode.current or "preflight"
 
     if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then
         resetVoltageTracking()
@@ -103,7 +137,7 @@ local function smartFuelCalc()
     local bc = rfsuite.session.batteryConfig
 
     local packCapacity = bc.batteryCapacity
-    local activeProfile = rfsuite.session.activeBatteryType
+    local activeProfile = resolveActiveBatteryProfile()
     if activeProfile and bc.profiles and bc.profiles[activeProfile] then
         local pCap = bc.profiles[activeProfile]
         if pCap and pCap > 0 then
@@ -221,12 +255,9 @@ local function smartFuelCalc()
         return math_floor(math_min(100, remaining) + 0.5)
     else
 
-        if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then
-            print("Voltage not stabilised or pre-stabilisation delay active, returning nil")
-            return nil
-        end
+        if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then return nil end
         return fuelStartingPercent
     end
 end
 
-return {calculate = smartFuelCalc, reset = resetVoltageTracking}
+return {calculate = smartFuelCalc, reset = resetState}

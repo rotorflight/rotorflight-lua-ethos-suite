@@ -60,6 +60,18 @@ local function resetVoltageTracking()
     voltageStabilised = false
 end
 
+local function resetState()
+    batteryConfigCache = nil
+    stabilizeNotBefore = nil
+    lastSensorMode = nil
+    lastFuelPercent = nil
+    lastFuelTimestamp = nil
+    lastFilteredVoltage = nil
+    currentMode = rfsuite.flightmode.current or "preflight"
+    lastMode = currentMode
+    resetVoltageTracking()
+end
+
 local function isVoltageStable()
     if #lastVoltages < maxVoltageSamples then return false end
     local vmin, vmax = lastVoltages[1], lastVoltages[1]
@@ -124,6 +136,7 @@ end
 
 local function smartFuelCalc()
     if not telemetry then telemetry = rfsuite.tasks.telemetry end
+    currentMode = rfsuite.flightmode.current or "preflight"
 
     if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then
         resetVoltageTracking()
@@ -212,4 +225,4 @@ local function smartFuelCalc()
     return percent
 end
 
-return {calculate = smartFuelCalc, reset = resetVoltageTracking}
+return {calculate = smartFuelCalc, reset = resetState}
