@@ -182,8 +182,17 @@ local function clearEscSession()
     escDetails = {}
 end
 
-local function clearEscApiCache()
-    local apiName = ESC and ESC.mspapi
+local function clearEscQueueEntries(apiName)
+    if type(apiName) ~= "string" or apiName == "" then return end
+    local queue = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if queue and type(queue.removeQueuedBy) == "function" then
+        queue:removeQueuedBy(function(msg)
+            return msg and msg.apiname == apiName
+        end)
+    end
+end
+
+local function clearApiCacheEntry(apiName)
     if type(apiName) ~= "string" or apiName == "" then return end
     local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
     if api and type(api.clearEntry) == "function" then
@@ -201,6 +210,10 @@ local function clearEscApiCache()
     if apidata.other then apidata.other[apiName] = nil end
     if apidata._lastReadMode then apidata._lastReadMode[apiName] = nil end
     if apidata._lastWriteMode then apidata._lastWriteMode[apiName] = nil end
+end
+
+local function clearEscApiCache()
+    clearApiCacheEntry(ESC and ESC.mspapi)
 end
 
 local function clearEscMaskCache()
@@ -1073,8 +1086,18 @@ local function closePage()
         end
     end
 
+    if rfsuite.app and rfsuite.app.gfx_buttons then
+        rfsuite.app.gfx_buttons["esctool"] = nil
+        rfsuite.app.gfx_buttons["esc4way"] = nil
+    end
+
     detachEscApiHandlers(escSwitchApi)
     detachEscApiHandlers(escDetailsApi)
+    clearEscQueueEntries(ESC and ESC.mspapi)
+    clearEscQueueEntries("4WIF_ESC_FWD_PROG")
+    clearEscQueueEntries("MOTOR_CONFIG")
+    clearApiCacheEntry("4WIF_ESC_FWD_PROG")
+    clearApiCacheEntry("MOTOR_CONFIG")
 
     waitingTailMode = false
     pendingTailModeResolve = false
