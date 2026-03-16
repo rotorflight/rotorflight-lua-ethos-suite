@@ -717,6 +717,12 @@
           "translation": "@i18n(app.modules.rates_advanced.advanced)@"
         },
         {
+          "image": "cyclic_behaviour.png",
+          "name": "Cyclic Behaviour",
+          "script": "cyclic_behaviour.lua",
+          "translation": "@i18n(app.modules.rates_advanced.cyclic_behaviour)@"
+        },
+        {
           "image": "table.png",
           "name": "Rate Table",
           "script": "table.lua",

@@ -9435,6 +9435,13 @@
           "reverse_text": false,
           "translation": "Colec."
         },
+        "cyclic_behaviour": {
+          "english": "Cyclic Behaviour",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Cyclic Behaviour"
+        },
         "cyclic_polarity": {
           "english": "Cyclic polarity",
           "max_length": 15,

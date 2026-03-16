@@ -25,6 +25,7 @@
         - Rates (script `rates_advanced/rates_advanced.lua`)
           - menuId `rates_advanced`: Rates
             - Advanced (script `advanced.lua`)
+            - Cyclic Behaviour (script `cyclic_behaviour.lua`)
             - Rate Table (script `table.lua`)
 - Setup (menuId `setup_menu`)
   - menuId `setup_menu`: Setup
