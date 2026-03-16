@@ -25,9 +25,9 @@ else
     rateSimResponse = {6} 
 end
 
-local onOff = {
-    "@i18n(api.RC_TUNING.tbl_on)@",
-    "@i18n(api.RC_TUNING.tbl_off)@"
+local offOn = {
+    "@i18n(api.RC_TUNING.tbl_off)@",
+    "@i18n(api.RC_TUNING.tbl_on)@"
 }
 
 -- LuaFormatter off
@@ -64,7 +64,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "yaw_dynamic_ceiling_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250},
     {field = "yaw_dynamic_deadband_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250},
     {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = {12, 0, 8}, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit = "Hz"},
-    {field = "cyclic_polarity", type = "U8", apiVersion = {12, 0, 9}, simResponse = {1}, default = 0, min = 0, max = 1, tableIdxInc = -1, table = onOff},
+    {field = "cyclic_polarity", type = "U8", apiVersion = {12, 0, 9}, simResponse = {1}, default = 0, min = 0, max = 1, tableIdxInc = -1, table = offOn},
 }
 -- LuaFormatter on
 
