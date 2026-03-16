@@ -19,10 +19,10 @@ local apidata = {
             {row = 3, col = 1, min = 0, max = 200, default = 25, mult = 5, step = 5, mspapi = 1, apikey = "rcRates_3"}, 
             {row = 4, col = 1, min = 0, max = 200, default = 50, mult = 5, decimals = 2, step = 10, scale = 40, mspapi = 1, apikey = "rcRates_4"},
 
-            {row = 1, col = 2, min = 0, max = 127, default = 24, mult = 1, step = 1, mspapi = 1, apikey = "rates_1"}, 
-            {row = 2, col = 2, min = 0, max = 127, default = 24, mult = 1, step = 1, mspapi = 1, apikey = "rates_2"}, 
-            {row = 3, col = 2, min = 0, max = 127, default = 24, mult = 1, step = 1, mspapi = 1, apikey = "rates_3"}, 
-            {row = 4, col = 2, min = 0, max = 127, default = 50, mult = 1, step = 1, mspapi = 1, apikey = "rates_4"},
+            {row = 1, col = 2, min = 0, max = 127, default = 12, mult = 1, step = 1, mspapi = 1, apikey = "rates_1"}, 
+            {row = 2, col = 2, min = 0, max = 127, default = 12, mult = 1, step = 1, mspapi = 1, apikey = "rates_2"}, 
+            {row = 3, col = 2, min = 0, max = 127, default = 12, mult = 1, step = 1, mspapi = 1, apikey = "rates_3"}, 
+            {row = 4, col = 2, min = 0, max = 127, default = 12, mult = 1, step = 1, mspapi = 1, apikey = "rates_4"},
 
             {row = 1, col = 3, min = 0, max = 100, default = 0, mspapi = 1, apikey = "rcExpo_1"}, 
             {row = 2, col = 3, min = 0, max = 100, default = 0, mspapi = 1, apikey = "rcExpo_2"},
