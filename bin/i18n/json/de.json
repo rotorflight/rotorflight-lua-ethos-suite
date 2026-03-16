@@ -52,6 +52,13 @@
         "reverse_text": false,
         "max_length": 13
       },
+      "source_fbus": {
+        "english": "FrSky F.BUS",
+        "translation": "FrSky F.BUS",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 11
+      },
       "source_none": {
         "english": "None",
         "translation": "Keine",
