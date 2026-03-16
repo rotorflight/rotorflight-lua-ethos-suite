@@ -8096,6 +8096,12 @@
           "needs_translation": false,
           "translation": "Cyclic polarity"
         },
+        "cyclic_ring": {
+          "english": "Cyclic ring",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Cyclic ring"
+        },
         "acc_limit": {
           "english": "Accelerometer Limit",
           "max_length": 19,

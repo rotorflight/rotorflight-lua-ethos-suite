@@ -9442,6 +9442,13 @@
           "reverse_text": false,
           "translation": "Cyclic polarity"
         },
+        "cyclic_ring": {
+          "english": "Cyclic ring",
+          "max_length": 11,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Cyclic ring"
+        },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",
           "max_length": 20,

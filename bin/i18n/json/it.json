@@ -9421,6 +9421,13 @@
           "reverse_text": false,
           "max_length": 15
         },
+        "cyclic_ring": {
+          "english": "Cyclic ring",
+          "translation": "Cyclic ring",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
         "acc_limit": {
           "english": "Accelerometer Limit",
           "translation": "Limite Accelerometro",
