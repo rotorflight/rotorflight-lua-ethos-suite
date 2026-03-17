@@ -9,21 +9,15 @@ local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 local folder = "am32"
 local ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 local simulatorResponse = ESC.simulatorResponse
-local activateWakeup = false
-local lastPwmFrequencyEnabled
-
 local FIELD_IDX = {
     motor_direction = 1,
     motor_kv = 2,
     motor_poles = 3,
     startup_power = 4,
-    complementary_pwm = 5,
-    variable_pwm_frequency = 6,
-    pwm_frequency = 7,
-    brake_on_stop = 8,
-    brake_strength = 9,
-    running_brake_level = 10,
-    beep_volume = 11,
+    brake_on_stop = 5,
+    brake_strength = 6,
+    running_brake_level = 7,
+    beep_volume = 8,
 }
 
 local apidata = {
@@ -38,9 +32,6 @@ local apidata = {
             [FIELD_IDX.motor_kv] = {t = "@i18n(app.modules.esc_tools.mfg.am32.motorkv)@", mspapi = 1, apikey = "motor_kv"},
             [FIELD_IDX.motor_poles] = {t = "@i18n(app.modules.esc_tools.mfg.am32.motorpoles)@", mspapi = 1, apikey = "motor_poles"},
             [FIELD_IDX.startup_power] = {t = "@i18n(app.modules.esc_tools.mfg.am32.startuppower)@", mspapi = 1, apikey = "startup_power"},
-            [FIELD_IDX.complementary_pwm] = {t = "@i18n(app.modules.esc_tools.mfg.am32.complementary_pwm)@", type = 1, mspapi = 1, apikey = "complementary_pwm"},
-            [FIELD_IDX.variable_pwm_frequency] = {t = "@i18n(app.modules.esc_tools.mfg.am32.variablepwmfrequency)@", mspapi = 1, type = 1, apikey = "variable_pwm_frequency"},            
-            [FIELD_IDX.pwm_frequency] = {t = "@i18n(app.modules.esc_tools.mfg.am32.pwmfrequency)@", mspapi = 1, apikey = "pwm_frequency"},
             [FIELD_IDX.brake_on_stop] = {t = "@i18n(app.modules.esc_tools.mfg.am32.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
             [FIELD_IDX.brake_strength] = {t = "@i18n(app.modules.esc_tools.mfg.am32.brakestrength)@", mspapi = 1, apikey = "brake_strength"},
             [FIELD_IDX.running_brake_level] = {t = "@i18n(app.modules.esc_tools.mfg.am32.runningbrake)@", mspapi = 1, apikey = "running_brake_level"},
@@ -50,27 +41,8 @@ local apidata = {
     }                 
 }
 
-local function postLoad() 
-    activateWakeup = true
-    lastPwmFrequencyEnabled = nil
-    rfsuite.app.triggers.closeProgressLoader = true 
-end
-
-local function wakeup()
-    if not activateWakeup then return end
-    local fields = apidata.formdata.fields
-    local variablePwmField = fields and fields[FIELD_IDX.variable_pwm_frequency]
-    local pwmFrequencyField = rfsuite.app.formFields and rfsuite.app.formFields[FIELD_IDX.pwm_frequency]
-    if not (variablePwmField and pwmFrequencyField and pwmFrequencyField.enable) then
-        lastPwmFrequencyEnabled = nil
-        return
-    end
-
-    local shouldEnable = tonumber(variablePwmField.value) == 1
-    if lastPwmFrequencyEnabled ~= shouldEnable then
-        pwmFrequencyField:enable(shouldEnable)
-        lastPwmFrequencyEnabled = shouldEnable
-    end
+local function postLoad()
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local navHandlers = escToolsPage.createSubmenuHandlers(folder)
@@ -96,7 +68,6 @@ return {
     event = navHandlers.event,
     pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.basic)@",
     headerLine = rfsuite.escHeaderLineText,
-    progressCounter = 0.5,
-    wakeup = wakeup
+    progressCounter = 0.5
 }
 
