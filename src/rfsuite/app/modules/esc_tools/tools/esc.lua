@@ -18,6 +18,7 @@ local DEFAULT_TOOL_SCRIPT = "esc_tools/tools/esc_tool.lua"
 local FOUR_WAY_TOOL_SCRIPT = "esc_tools/tools/esc_tool_4way.lua"
 local MFG_INDEX = {
     {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
+    {folder = "blheli_s", toolName = "BLHeli_S",                                  image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
     {folder = "flrtr", toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", image = "flrtr.png",     apiversion = {12, 0, 7}},
     {folder = "hw5",   toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@",   image = "hobbywing.png", apiversion = {12, 0, 6}},
     {folder = "omp",   toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@",   image = "omp.png",       apiversion = {12, 0, 9}},
