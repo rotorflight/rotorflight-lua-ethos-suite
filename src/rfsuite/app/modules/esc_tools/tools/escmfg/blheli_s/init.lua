@@ -3,40 +3,34 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
+local rfsuite = require("rfsuite")
+
 local MSP_API = "ESC_PARAMETERS_BLHELI_S"
 local toolName = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@"
+local ESC1_TARGET = 0
+local ESC2_TARGET = 1
+local BLUEJAY_MAIN_REVISION = 0
 
 local function getPageValue(page, index)
     return page[index]
 end
 
-local function getText(buffer, st, en)
-    local chars = {}
-    for i = st, en do
-        local value = buffer[i]
-        if value == nil or value == 0 then break end
-        chars[#chars + 1] = string.char(value)
+local function getEscFamily(buffer)
+    local major = getPageValue(buffer, 3)
+    if major == BLUEJAY_MAIN_REVISION then
+        return "Bluejay"
     end
-    return table.concat(chars)
-end
-
-local function getEscModel(buffer)
-    local name = getText(buffer, 99, 114)
-    if name ~= "" then return name end
-
-    local layout = getText(buffer, 67, 82)
-    if layout ~= "" then return layout end
-
     return toolName
 end
 
-local function getEscVersion(buffer)
-    local mcu = getText(buffer, 83, 98)
-    if mcu ~= "" then return mcu end
+local function getEscModel(buffer)
+    return  getEscFamily(buffer)
+end
 
+local function getEscVersion(buffer)
     local layoutRevision = getPageValue(buffer, 5)
     if layoutRevision ~= nil then
-        return "Layout " .. tostring(layoutRevision)
+        return "Revision " .. tostring(layoutRevision)
     end
 
     return " "
@@ -56,8 +50,8 @@ return {
     mspapi = MSP_API,
     toolName = toolName,
     force4WaySwitchOnEntry = true,
-    esc4wayEsc1Target = 0,
-    esc4wayEsc2Target = 1,
+    esc4wayEsc1Target = ESC1_TARGET,
+    esc4wayEsc2Target = ESC2_TARGET,
     flushFirstReadAfterSwitch = true,
     preSwitchTarget = 100,
     preSwitchWriteCount = 1,
