@@ -498,7 +498,7 @@
     "needs_translation": true
   },
   {
-    "file": "status/alerts/batteryempty.wav",
+    "file": "status/alerts/lowbat.wav",
     "english": "Battery Empty",
     "translation": null,
     "needs_translation": true

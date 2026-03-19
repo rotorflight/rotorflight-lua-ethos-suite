@@ -223,7 +223,7 @@ local function resolveSmartfuelAudio()
 
     local emptyPkg, emptyFile
     if isElectric then
-        emptyPkg, emptyFile = "status", "alerts/batteryempty.wav"
+        emptyPkg, emptyFile = "status", "alerts/lowbat.wav"
     else
         emptyPkg, emptyFile = "status", "alerts/lowfuel.wav"
     end
