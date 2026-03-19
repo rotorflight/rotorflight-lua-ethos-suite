@@ -15,6 +15,14 @@ local lastActiveType = nil
 
 local CAPACITY_PROFILE_MIN = 0
 local CAPACITY_PROFILE_MAX = 40000
+local SESSION_BATTERY_FIELDS = {
+    "vbatmaxcellvoltage",
+    "vbatfullcellvoltage",
+    "vbatwarningcellvoltage",
+    "vbatmincellvoltage",
+    "batteryCellCount",
+    "consumptionWarningPercentage"
+}
 
 local fields = {
     {t = "@i18n(telemetry.group_profiles)@", type = 0, apikey = "profilesGroupHeader", value = ""},
@@ -93,6 +101,36 @@ local function saveProfileCapacity(profileIndex, capacity)
 
     if rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles then
         rfsuite.session.batteryConfig.profiles[profileIndex] = finalVal
+    end
+end
+
+local function syncSessionBatteryConfig(self, editingType, capacityValue)
+    local batteryConfig = rfsuite.session and rfsuite.session.batteryConfig
+    if not batteryConfig then return end
+
+    for i = 1, #SESSION_BATTERY_FIELDS do
+        local apikey = SESSION_BATTERY_FIELDS[i]
+        local value = tonumber(getFieldValue(self, apikey))
+        if value ~= nil then
+            batteryConfig[apikey] = value
+        end
+    end
+
+    if editingType ~= nil and capacityValue ~= nil then
+        if not batteryConfig.profiles then batteryConfig.profiles = {} end
+        batteryConfig.profiles[editingType] = capacityValue
+    end
+end
+
+local function resetSmartfuel()
+    local sensors = rfsuite.tasks and rfsuite.tasks.sensors
+    if sensors and type(sensors.resetSmart) == "function" then
+        sensors.resetSmart()
+    end
+
+    local eventTelemetry = rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.telemetry
+    if eventTelemetry and type(eventTelemetry.resetSmartfuelAlertState) == "function" then
+        eventTelemetry.resetSmartfuelAlertState()
     end
 end
 
@@ -213,9 +251,8 @@ local function preSave(self)
     local finalVal = math.floor(capacityValue + 0.5)
     batteryValues["batteryCapacity_" .. tostring(editingType)] = finalVal
 
-    if rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles then
-        rfsuite.session.batteryConfig.profiles[editingType] = finalVal
-    end
+    syncSessionBatteryConfig(self, editingType, finalVal)
+    resetSmartfuel()
 end
 
 local function event(widget, category, value, x, y)
