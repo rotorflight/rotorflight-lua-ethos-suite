@@ -500,7 +500,7 @@
   {
     "file": "status/alerts/lowbat.wav",
     "english": "Battery Empty",
-    "translation": null,
-    "needs_translation": true
+    "translation": "Akku leer",
+    "needs_translation": false
   }
 ]
