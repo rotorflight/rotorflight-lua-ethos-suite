@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
+local hw5Profile = assert(loadfile("app/modules/esc_tools/tools/escmfg/hw5/profile.lua"))()
 
 local folder = "hw5"
 local apidata = {
@@ -29,7 +30,12 @@ local apidata = {
     }
 }
 
-local function postLoad() rfsuite.app.triggers.closeProgressLoader = true end
+hw5Profile.configurePage(apidata, "other")
+
+local function postLoad()
+    hw5Profile.postLoad("other")
+    rfsuite.app.triggers.closeProgressLoader = true
+end
 
 local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 

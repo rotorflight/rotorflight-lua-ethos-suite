@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
+local hw5Profile = assert(loadfile("app/modules/esc_tools/tools/escmfg/hw5/profile.lua"))()
 
 local folder = "hw5"
 
@@ -32,23 +33,10 @@ local apidata = {
     }
 }
 
+hw5Profile.configurePage(apidata, "basic")
+
 local function postLoad()
-    local mspApi = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
-    local escApi = mspApi and mspApi.load and mspApi.load("ESC_PARAMETERS_HW5")
-    local voltageLookup = escApi and escApi.voltageTable
-
-    if voltageLookup and rfsuite.app and rfsuite.app.formFields and rfsuite.app.formFields[3] then
-        local version = "default"
-        if rfsuite.session and rfsuite.session.escDetails and rfsuite.session.escDetails.version then
-            version = rfsuite.session.escDetails.version
-        end
-
-        local newVoltage = voltageLookup[version] or voltageLookup.default
-        if newVoltage then
-            rfsuite.app.formFields[3]:values(rfsuite.app.utils.convertPageValueTable(newVoltage, -1))
-        end
-    end
-
+    hw5Profile.postLoad("basic")
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
