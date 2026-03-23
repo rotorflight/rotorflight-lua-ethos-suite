@@ -31,11 +31,14 @@ local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 local escDetailsNextReadAt = 0
 local escDetailsApiName
 local escDetailsApi
+local escDetailsHandlersApi
 
 local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 local function noop() end
+local toolButtonMeta = {}
+local toolButtonHandlers = {}
 
 local function openProgressDialog(...)
     if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
@@ -110,6 +113,92 @@ local function detachEscApiHandlers(api)
     if not api then return end
     if api.setCompleteHandler then pcall(api.setCompleteHandler, noop) end
     if api.setErrorHandler then pcall(api.setErrorHandler, noop) end
+end
+
+local function onEscDetailsReadComplete(_, buf)
+    local API = escDetailsApi
+    if not API then
+        mspBusy = false
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+        return
+    end
+
+    local signature = API.readValue("esc_signature")
+
+    if signature == mspSignature and #buf >= mspBytes then
+        escDetails.model = ESC.getEscModel(buf)
+        escDetails.version = ESC.getEscVersion(buf)
+        escDetails.firmware = ESC.getEscFirmware(buf)
+
+        rfsuite.session.escDetails = escDetails
+
+        if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
+
+        if escDetails.model ~= nil then
+            foundESC = true
+        end
+    else
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+    end
+    mspBusy = false
+end
+
+local function onEscDetailsReadError()
+    scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+    mspBusy = false
+end
+
+local function installEscDetailsHandlers(api)
+    if not api or escDetailsHandlersApi == api then return end
+    api.setCompleteHandler(onEscDetailsReadComplete)
+    api.setErrorHandler(onEscDetailsReadError)
+    escDetailsHandlersApi = api
+end
+
+local function clearButtonMeta(meta)
+    for k in pairs(meta) do
+        meta[k] = nil
+    end
+end
+
+local function clearButtonCache(meta, handlers)
+    clearButtonMeta(meta)
+    for k in pairs(handlers) do
+        handlers[k] = nil
+    end
+end
+
+local function pressToolButton(childIdx)
+    local meta = toolButtonMeta[childIdx]
+    if not meta then return end
+
+    rfsuite.preferences.menulastselected["esctool"] = childIdx
+    if rfsuite.session then
+        rfsuite.session.escToolKeepSessionOnce = true
+    end
+    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
+
+    rfsuite.app.ui.openPage({
+        idx = childIdx,
+        title = meta.childTitle,
+        script = meta.script,
+        returnContext = {
+            idx = meta.parentIdx,
+            title = meta.title,
+            folder = meta.folder,
+            script = "esc_tools/tools/esc_tool.lua"
+        }
+    })
+end
+
+local function getToolButtonHandler(childIdx)
+    local handler = toolButtonHandlers[childIdx]
+    if handler then return handler end
+    handler = function()
+        pressToolButton(childIdx)
+    end
+    toolButtonHandlers[childIdx] = handler
+    return handler
 end
 
 local function clearEscQueueEntries(apiName)
@@ -202,33 +291,7 @@ local function getESCDetails()
         scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
         return
     end
-    API.setCompleteHandler(function(self, buf)
-
-        local signature = API.readValue("esc_signature")
-
-        if signature == mspSignature and #buf >= mspBytes then
-            escDetails.model = ESC.getEscModel(buf)
-            escDetails.version = ESC.getEscVersion(buf)
-            escDetails.firmware = ESC.getEscFirmware(buf)
-
-            rfsuite.session.escDetails = escDetails
-
-            if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
-
-            if escDetails.model ~= nil then 
-                foundESC = true 
-            end
-        else
-            scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
-        end
-        mspBusy = false
-
-    end)
-
-    API.setErrorHandler(function(self, err)
-        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
-        mspBusy = false
-    end)
+    installEscDetailsHandlers(API)
 
     API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
     local ok, reason = API.read()
@@ -350,6 +413,7 @@ local function openPage(opts)
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
+    clearButtonMeta(toolButtonMeta)
 
     local buttonW
     local buttonH
@@ -412,32 +476,20 @@ local function openPage(opts)
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
             end
 
+            toolButtonMeta[childIdx] = {
+                parentIdx = parentIdx,
+                title = title,
+                folder = folder,
+                childTitle = title .. " / " .. pvalue.title,
+                script = "esc_tools/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script
+            }
+
             rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                 text = pvalue.title,
                 icon = rfsuite.app.gfx_buttons["esctool"][pvalue.image],
                 options = FONT_S,
-                paint = function() end,
-                press = function()
-                    rfsuite.preferences.menulastselected["esctool"] = childIdx
-                    if rfsuite.session then
-                        rfsuite.session.escToolKeepSessionOnce = true
-                    end
-                    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
-                    local childTitle = title .. " / " .. pvalue.title
-
-                    rfsuite.app.ui.openPage({
-                        idx = childIdx,
-                        title = childTitle,
-                        script = "esc_tools/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script,
-                        returnContext = {
-                            idx = parentIdx,
-                            title = title,
-                            folder = folder,
-                            script = "esc_tools/tools/esc_tool.lua"
-                        }
-                    })
-
-                end
+                paint = noop,
+                press = getToolButtonHandler(childIdx)
             })
 
             if rfsuite.preferences.menulastselected["esctool"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
@@ -483,6 +535,7 @@ local function closePage()
     detachEscApiHandlers(escDetailsApi)
     clearEscApiCache()
     clearEscMaskCache()
+    clearButtonCache(toolButtonMeta, toolButtonHandlers)
 
     if not keepEscSessionHot then
         clearEscSessionCache()
@@ -492,6 +545,7 @@ local function closePage()
     escDetailsNextReadAt = 0
     escDetailsApi = nil
     escDetailsApiName = nil
+    escDetailsHandlersApi = nil
     mspSignature = nil
     mspBytes = nil
     foundESC = false
