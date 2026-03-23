@@ -136,6 +136,11 @@ local function resetLowFuelState()
     lastLowFuelRepeatCount = 0
 end
 
+local function resetSmartfuelAlertState()
+    lastSmartfuelAnnounced = nil
+    resetLowFuelState()
+end
+
 local function resetSmartfuelSensor()
     local sensorTask = rfsuite.tasks and rfsuite.tasks.sensors
     if sensorTask and type(sensorTask.resetSmart) == "function" then
@@ -223,7 +228,7 @@ local function resolveSmartfuelAudio()
 
     local emptyPkg, emptyFile
     if isElectric then
-        emptyPkg, emptyFile = "status", "alerts/batteryempty.wav"
+        emptyPkg, emptyFile = "status", "alerts/lowbat.wav"
     else
         emptyPkg, emptyFile = "status", "alerts/lowfuel.wav"
     end
@@ -547,8 +552,7 @@ end
 telemetry.eventTable = eventTable
 
 function telemetry.reset()
-    lastSmartfuelAnnounced = nil
-    resetLowFuelState()
+    resetSmartfuelAlertState()
     lastEventTimes = {}
     lastValues = {}
     lastAlertState = {}
@@ -557,5 +561,7 @@ function telemetry.reset()
     resetBatteryConfigCache()
     resetSmartfuelSensor()
 end
+
+telemetry.resetSmartfuelAlertState = resetSmartfuelAlertState
 
 return telemetry

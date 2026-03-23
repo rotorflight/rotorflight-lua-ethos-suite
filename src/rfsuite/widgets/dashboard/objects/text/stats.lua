@@ -155,27 +155,30 @@ function render.wakeup(box)
     local overrideUnit = cfg.manualUnit
     if overrideUnit ~= nil then unit = overrideUnit end
 
-    if value ~= nil and telemetryActive then
-        box._lastValidValue = value
-        box._lastValidUnit = unit
-    elseif box._lastValidValue ~= nil then
-
-        value = box._lastValidValue
-        unit = box._lastValidUnit
-    end
-
     local fallbackText = getParam(box, "novalue") or "-"
     local displayValue
 
     if value == nil then
 
-        local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        if box._lastValidDisplayValue ~= nil then
+            displayValue = box._lastValidDisplayValue
+            unit = box._lastValidUnit
+        else
+            local maxDots = 3
+            if box._dotCount == nil then box._dotCount = 0 end
+            box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+            displayValue = rep(".", box._dotCount)
+            if displayValue == "" then displayValue = "." end
+        end
     else
         displayValue = cfg.transformFn(value)
+        if telemetryActive then
+            -- Keep the rendered post-flight value stable even if telemetry or battery config
+            -- has already been torn down and transform dependencies (for example cell count)
+            -- are no longer available.
+            box._lastValidDisplayValue = displayValue
+            box._lastValidUnit = unit
+        end
     end
 
     if type(displayValue) == "string" and displayValue:match("^%.+$") then unit = nil end

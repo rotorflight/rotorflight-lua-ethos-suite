@@ -35,7 +35,7 @@ function craftname.wakeup()
                 end
                 rfsuite.utils.log("Setting model name to: " .. rfsuite.session.craftName, "info")
                 model.name(rfsuite.session.craftName)
-                lcd.invalidate()
+                rfsuite.session.dashboardInvalidatePending = true
             end
             if rfsuite.session.craftName and rfsuite.session.craftName ~= "" then
                 rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName, "info")

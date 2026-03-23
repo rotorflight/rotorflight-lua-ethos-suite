@@ -17,7 +17,7 @@ local function getText(buffer, st, en)
     return table.concat(tt)
 end
 
-local function getEscModel(buffer) return getText(buffer, 51, 67) end
+local function getEscModel(buffer) return getText(buffer, 35, 50) end
 
 local function getEscVersion(buffer) return getText(buffer, 19, 34) end
 

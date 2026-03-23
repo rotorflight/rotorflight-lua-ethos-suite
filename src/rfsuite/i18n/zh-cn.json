@@ -5136,6 +5136,127 @@
               "translation": "Variable PWM Frequency"
             }
           },
+          "blheli_s": {
+            "advanced": {
+              "english": "Advanced",
+              "max_length": 8,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Advanced"
+            },
+            "basic": {
+              "english": "Basic",
+              "max_length": 5,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Basic"
+            },
+            "beacondelay": {
+              "english": "Beacon Delay",
+              "max_length": 12,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Beacon Delay"
+            },
+            "beaconstrength": {
+              "english": "Beacon Strength",
+              "max_length": 15,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Beacon Strength"
+            },
+            "beepstrength": {
+              "english": "Beep Strength",
+              "max_length": 13,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Beep Strength"
+            },
+            "brakeonstop": {
+              "english": "Brake on Stop",
+              "max_length": 13,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Brake on Stop"
+            },
+            "demagcompensation": {
+              "english": "Demag Compensation",
+              "max_length": 18,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Demag Compensation"
+            },
+            "input": {
+              "english": "Input",
+              "max_length": 5,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Input"
+            },
+            "motordirection": {
+              "english": "Motor Direction",
+              "max_length": 15,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Motor Direction"
+            },
+            "motortiming": {
+              "english": "Motor Timing",
+              "max_length": 12,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Motor Timing"
+            },
+            "name": {
+              "english": "BLHeli_S",
+              "max_length": 8,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "BLHeli_S"
+            },
+            "ppmcenterthrottle": {
+              "english": "PPM Center Throttle",
+              "max_length": 19,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "PPM Center Throttle"
+            },
+            "ppmmaxthrottle": {
+              "english": "PPM Max Throttle",
+              "max_length": 16,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "PPM Max Throttle"
+            },
+            "ppmminthrottle": {
+              "english": "PPM Min Throttle",
+              "max_length": 16,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "PPM Min Throttle"
+            },
+            "startuppower": {
+              "english": "Startup Power",
+              "max_length": 13,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Startup Power"
+            },
+            "temperatureprotection": {
+              "english": "Temperature Protection",
+              "max_length": 22,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Temperature Protection"
+            },
+            "waitingforesc": {
+              "english": "Waiting for ESC...",
+              "max_length": 18,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Waiting for ESC..."
+            }
+          },
           "flrtr": {
             "active_freewheel": {
               "english": "Active Freewheeling",
