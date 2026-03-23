@@ -128,6 +128,7 @@ local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
 
 local loadedStateModules = {}
+local loadedStateThemes = {}
 
 
 local lastModelPath = model.path()
@@ -342,6 +343,13 @@ local function forceInvalidateAllObjects()
         end
     end
     _flushInvalidatesRespectingBudget()
+end
+
+local function clearTableKeys(t)
+    if not t then return end
+    for k in pairs(t) do
+        t[k] = nil
+    end
 end
 
 function dashboard.overlaystatic(x, y, w, h, txt)
@@ -1111,6 +1119,7 @@ local function load_state_script(theme_folder, state, isFallback)
 
     dashboard.themeFallbackUsed[state] = (isFallback == true)
     dashboard.themeFallbackTime[state] = isFallback and clock() or 0
+    loadedStateThemes[state] = src .. "/" .. folder
     setPath()
 
     if initTable.standalone then
@@ -1156,13 +1165,48 @@ local function reload_state_only(state)
     lcd.invalidate()
 end
 
+local function sync_loaded_themes_with_preferences()
+    local activeState = dashboard.flightmode or "preflight"
+    local states = {"preflight", "inflight", "postflight"}
+    local activeThemeChanged = false
+    local restartPreload = false
+
+    for i = 1, #states do
+        local state = states[i]
+        local loadedTheme = loadedStateThemes[state]
+        local resolvedTheme = getThemeForState(state)
+        if loadedTheme and loadedTheme ~= resolvedTheme then
+            if state == activeState then
+                activeThemeChanged = true
+            else
+                loadedStateModules[state] = nil
+                loadedStateThemes[state] = nil
+                restartPreload = true
+            end
+        end
+    end
+
+    if restartPreload then
+        statePreloadIndex = 1
+    end
+
+    if activeThemeChanged or not loadedStateModules[activeState] then
+        reload_state_only(activeState)
+        dashboard.applySchedulerSettings()
+        lcd.invalidate()
+        return true
+    end
+
+    return restartPreload
+end
+
 function dashboard.reload_active_theme_only(force)
     dashboard.utils.resetImageCache()
 
     local state = dashboard.flightmode or "preflight"
     local theme = getThemeForState(state)
 
-    if force or not loadedStateModules[state] then
+    if force or not loadedStateModules[state] or loadedStateThemes[state] ~= theme then
         log("Reloading active theme: " .. theme, "info")
         loadedStateModules[state] = load_state_script(theme, state)
     else
@@ -1215,8 +1259,18 @@ function dashboard.applySchedulerSettings()
 end
 
 function dashboard.reload_themes(force)
+    local states = {"preflight", "inflight", "postflight"}
 
-    dashboard.renders = {}
+    for i = 1, #states do
+        local state = states[i]
+        local resolvedTheme = getThemeForState(state)
+        if force or loadedStateThemes[state] ~= resolvedTheme then
+            loadedStateModules[state] = nil
+            loadedStateThemes[state] = nil
+        end
+    end
+
+    clearTableKeys(dashboard.renders)
 
     dashboard.reload_active_theme_only(force)
 
@@ -1566,6 +1620,12 @@ function dashboard.wakeup_protected(widget)
         lcd.resetFocusTimeout()
         lastFocusReset = now
     end
+
+    if rfsuite.session and rfsuite.session.dashboardInvalidatePending then
+        rfsuite.session.dashboardInvalidatePending = false
+        dashboard._forceFullRepaint = true
+        lcd.invalidate(widget)
+    end
     if toolbarOpenedAt == nil then toolbarOpenedAt = 0 end
     local lastActive = dashboard._toolbarLastActive or 0
     if dashboard.toolbarVisible and toolbarOpenedAt == 0 then
@@ -1662,20 +1722,18 @@ function dashboard.wakeup_protected(widget)
     end
 
     if firstWakeupCustomTheme and rfsuite.session.mcu_id and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
+        firstWakeupCustomTheme = false
 
-        local modelPrefs = rfsuite.session.modelPreferences.dashboard
-        local currentPrefs = rfsuite.preferences.dashboard
-
-        if (modelPrefs.theme_preflight and modelPrefs.theme_preflight ~= "nil" and modelPrefs.theme_preflight ~= currentPrefs.theme_preflight) or (modelPrefs.theme_inflight and modelPrefs.theme_inflight ~= "nil" and modelPrefs.theme_inflight ~= currentPrefs.theme_inflight) or (modelPrefs.theme_postflight and modelPrefs.theme_postflight ~= "nil" and modelPrefs.theme_postflight ~= currentPrefs.theme_postflight) then
-            dashboard.reload_themes()
-            firstWakeupCustomTheme = false
-        end
+        sync_loaded_themes_with_preferences()
     end
 
     local currentFlightMode = rfsuite.flightmode.current or "preflight"
     if lastFlightMode ~= currentFlightMode then
         dashboard.flightmode = currentFlightMode
-        reload_state_only(currentFlightMode)
+        local currentTheme = getThemeForState(currentFlightMode)
+        if (not loadedStateModules[currentFlightMode]) or (loadedStateThemes[currentFlightMode] ~= currentTheme) then
+            reload_state_only(currentFlightMode)
+        end
         lastFlightMode = currentFlightMode
         if dashboard._useSpreadSchedulingPaint then lcd.invalidate(widget) end
     end
