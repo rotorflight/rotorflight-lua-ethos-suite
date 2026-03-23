@@ -369,11 +369,9 @@ function core.buildFullPayload(apiname, payload, api_structure)
         end
 
         local value = payload[name] or field_def.default or 0
-        local scale = field_def.scale or 1
-
-        -- Decimal-handling fallback
-        if not actual and field_def.decimals then
-            scale = scale / utils.decimalInc(field_def.decimals)
+        local scale = 1
+        if actual then
+            scale = field_def.scale or 1
         end
 
         value = math_floor(value * scale + 0.5)
