@@ -41,28 +41,46 @@ local function loadTaskModuleFromPath(fullPath)
     return module, nil
 end
 
-local function hardReloadTask(task)
-    if not task or not task.path then return end
+local function clearTaskEntries()
+    for i = #tasksQueue, 1, -1 do
+        tasksQueue[i] = nil
+    end
+end
 
-    local module, err = loadTaskModuleFromPath(task.path)
+local function ensureTaskModule(task)
+    local module, err
+
+    if not task or not task.path then
+        return nil, "Invalid task descriptor"
+    end
+    if task.module then
+        return task.module, nil
+    end
+
+    module, err = loadTaskModuleFromPath(task.path)
     if not module then
-        rfsuite.utils.log("Error reloading task " .. task.path .. ": " .. (err or "?"), "info")
-        return
+        return nil, err
     end
 
     task.module = module
+    return module, nil
+end
+
+local function releaseTaskModule(task, runReset)
+    local module = task and task.module
+
+    if not module then return end
+    if runReset and type(module.reset) == "function" then
+        module.reset()
+    end
+    task.module = nil
 end
 
 local function resetQueuesAndState()
     for i = 1, #tasksQueue do
         local task = tasksQueue[i]
 
-        hardReloadTask(task)
-
-        if task.module and type(task.module.reset) == "function" then
-            task.module.reset()
-        end
-
+        releaseTaskModule(task, true)
         task.initialized = false
         task.complete = false
         task.failed = false
@@ -91,13 +109,13 @@ local function loadManifest()
 end
 
 local function buildQueueFromManifest(manifest)
-    local q = {}
+    clearTaskEntries()
     for i = 1, #manifest do
         local entry = manifest[i]
         local name = entry and entry.name
         if name then
             local path = BASE_PATH .. name .. ".lua"
-            table.insert(q, {
+            tasksQueue[#tasksQueue + 1] = {
                 name = name,
                 path = path,
                 module = nil,
@@ -107,32 +125,20 @@ local function buildQueueFromManifest(manifest)
                 attempts = 0,
                 nextEligibleAt = 0,
                 startTime = nil,
-            })
+            }
         end
     end
-    return q
 end
 
 function tasks.findTasks()
     local manifest = loadManifest()
     if not manifest then
         tasksLoaded = false
-        tasksQueue = {}
+        clearTaskEntries()
         return
     end
 
-    tasksQueue = buildQueueFromManifest(manifest)
-
-    -- Load modules once
-    for i = 1, #tasksQueue do
-        local task = tasksQueue[i]
-        local module, err = loadTaskModuleFromPath(task.path)
-        if not module then
-            rfsuite.utils.log("Error loading postconnect task " .. task.path .. ": " .. (err or "?"), "info")
-        else
-            task.module = module
-        end
-    end
+    buildQueueFromManifest(manifest)
 
     tasksLoaded = true
 end
@@ -158,6 +164,9 @@ end
 local function failTask(task, reason)
     task.failed = true
     task.complete = true
+    task.startTime = nil
+    task.nextEligibleAt = 0
+    releaseTaskModule(task, false)
     rfsuite.utils.log("postconnect/" .. tostring(task.name) .. " failed: " .. tostring(reason), "info")
 end
 
@@ -212,20 +221,21 @@ function tasks.wakeup()
     end
 
     local task = currentTask()
+    local module, err
     if not task then
         active = false
         return
     end
 
-    -- Skip missing/invalid modules
-    if not task.module or type(task.module.wakeup) ~= "function" then
-        failTask(task, "missing module")
-        advanceQueue()
+    -- Retry backoff
+    if task.nextEligibleAt and task.nextEligibleAt > now then
         return
     end
 
-    -- Retry backoff
-    if task.nextEligibleAt and task.nextEligibleAt > now then
+    module, err = ensureTaskModule(task)
+    if not module or type(module.wakeup) ~= "function" then
+        failTask(task, err or "missing module")
+        advanceQueue()
         return
     end
 
@@ -249,13 +259,14 @@ function tasks.wakeup()
     end
 
     -- Call wakeup
-    task.module.wakeup()
+    module.wakeup()
 
     -- Completion check
-    if task.module.isComplete and task.module.isComplete() then
+    if module.isComplete and module.isComplete() then
         task.complete = true
         task.startTime = nil
         task.nextEligibleAt = 0
+        releaseTaskModule(task, false)
         rfsuite.utils.log("Completed postconnect/" .. task.name, "debug")
         advanceQueue()
     end

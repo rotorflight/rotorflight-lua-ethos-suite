@@ -59,16 +59,39 @@ local function loadTaskModuleFromPath(fullPath)
     return module, nil
 end
 
-local function hardReloadTask(task)
-    if not task or not task.path then return end
+local function clearTaskEntries()
+    for i = #tasksQueue, 1, -1 do
+        tasksQueue[i] = nil
+    end
+end
 
-    local module, err = loadTaskModuleFromPath(task.path)
+local function ensureTaskModule(task)
+    local module, err
+
+    if not task or not task.path then
+        return nil, "Invalid task descriptor"
+    end
+    if task.module then
+        return task.module, nil
+    end
+
+    module, err = loadTaskModuleFromPath(task.path)
     if not module then
-        rfsuite.utils.log("Error reloading task " .. task.path .. ": " .. (err or "?"), "info")
-        return
+        return nil, err
     end
 
     task.module = module
+    return module, nil
+end
+
+local function releaseTaskModule(task, runReset)
+    local module = task and task.module
+
+    if not module then return end
+    if runReset and type(module.reset) == "function" then
+        module.reset()
+    end
+    task.module = nil
 end
 
 local function resetSessionFlags()
@@ -80,12 +103,7 @@ local function resetQueuesAndState()
     for i = 1, #tasksQueue do
         local task = tasksQueue[i]
 
-        hardReloadTask(task)
-
-        if task.module and type(task.module.reset) == "function" then
-            task.module.reset()
-        end
-
+        releaseTaskModule(task, true)
         task.initialized = false
         task.complete = false
         task.failed = false
@@ -146,7 +164,7 @@ function tasks.findTasks()
 
     resetSessionFlags()
 
-    tasksQueue = {}
+    clearTaskEntries()
     queueIndex = 1
 
     local manifest = loadManifest()
@@ -158,24 +176,17 @@ function tasks.findTasks()
     for _, entry in ipairs(manifest) do
         local file = entry and entry.name
         if file then
-            local fullPath = BASE_PATH .. file .. ".lua"
-            local module, err = loadTaskModuleFromPath(fullPath)
-            if not module then
-                rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. (err or "?"), "info")
-            else
-                tasksQueue[#tasksQueue + 1] = {
-                    name = file,
-                    module = module,
-                    path = fullPath,
-
-                    initialized = false,
-                    complete = false,
-                    failed = false,
-                    attempts = 0,
-                    nextEligibleAt = 0,
-                    startTime = nil,
-                }
-            end
+            tasksQueue[#tasksQueue + 1] = {
+                name = file,
+                module = nil,
+                path = BASE_PATH .. file .. ".lua",
+                initialized = false,
+                complete = false,
+                failed = false,
+                attempts = 0,
+                nextEligibleAt = 0,
+                startTime = nil,
+            }
         end
     end
 
@@ -288,6 +299,7 @@ function tasks.wakeup()
     end
 
     local task = currentTask()
+    local module, err
     if not task then return end
 
     if task.nextEligibleAt and task.nextEligibleAt > now then
@@ -301,12 +313,25 @@ function tasks.wakeup()
 
     rfsuite.utils.log("Waking up onconnect/" .. task.name, "debug")
 
-    task.module.wakeup()
+    module, err = ensureTaskModule(task)
+    if not module then
+        task.failed = true
+        task.startTime = nil
+        task.nextEligibleAt = 0
+        rfsuite.utils.log("Failed to load onconnect/" .. task.name .. ": " .. tostring(err or "?"), "info")
+        rfsuite.utils.log("Failed to load onconnect/" .. task.name .. ": " .. tostring(err or "?"), "connect")
+        queueIndex = (queueIndex or 1) + 1
+        advancePastCompletedOrFailed()
+        return
+    end
 
-    if task.module.isComplete and task.module.isComplete() then
+    module.wakeup()
+
+    if module.isComplete and module.isComplete() then
         task.complete = true
         task.startTime = nil
         task.nextEligibleAt = 0
+        releaseTaskModule(task, false)
         rfsuite.utils.log("Completed onconnect/" .. task.name, "debug")
 
         if task.name == "apiversion" then
@@ -324,8 +349,8 @@ function tasks.wakeup()
     end
 
     local timeout = DEFAULT_TASK_TIMEOUT_SECONDS
-    if type(task.module.timeoutSeconds) == "number" and task.module.timeoutSeconds > 0 then
-        timeout = task.module.timeoutSeconds
+    if type(module.timeoutSeconds) == "number" and module.timeoutSeconds > 0 then
+        timeout = module.timeoutSeconds
     end
 
     if task.startTime and (now - task.startTime) > timeout then
@@ -353,6 +378,7 @@ function tasks.wakeup()
         else
             task.failed = true
             task.startTime = nil
+            releaseTaskModule(task, false)
             rfsuite.utils.log(
                 string.format(
                     "Task 'onconnect/%s' failed after %d attempts. Skipping.",

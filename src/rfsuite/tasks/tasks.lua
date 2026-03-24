@@ -28,17 +28,59 @@ local print = print
 local loadfile = loadfile
 local system_getSource = system.getSource
 
--- Load event tables (no lazy loading)
 local events = {}
+local EVENT_MODULE_PATHS = {
+    onconnect = "tasks/events/onconnect/tasks.lua",
+    postconnect = "tasks/events/postconnect/tasks.lua",
+    ondisconnect = "tasks/events/ondisconnect/tasks.lua",
+    onflightmode = "tasks/events/onflightmode/tasks.lua",
+    onmodelchange = "tasks/events/onmodelchange/tasks.lua",
+    onarm = "tasks/events/onarm/tasks.lua",
+    ondisarm = "tasks/events/ondisarm/tasks.lua",
+    ontransportchange = "tasks/events/ontransportchange/tasks.lua",
+}
 
-events.onconnect = loadfile("tasks/events/onconnect/tasks.lua")()
-events.postconnect = loadfile("tasks/events/postconnect/tasks.lua")()
-events.ondisconnect = loadfile("tasks/events/ondisconnect/tasks.lua")()
-events.onflightmode = loadfile("tasks/events/onflightmode/tasks.lua")()
-events.onmodelchange = loadfile("tasks/events/onmodelchange/tasks.lua")()
-events.onarm = loadfile("tasks/events/onarm/tasks.lua")()
-events.ondisarm = loadfile("tasks/events/ondisarm/tasks.lua")()
-events.ontransportchange = loadfile("tasks/events/ontransportchange/tasks.lua")()
+local function getLoadedEvent(name)
+    local mod = events[name]
+    if type(mod) == "table" then
+        return mod
+    end
+    return nil
+end
+
+local function getEvent(name)
+    local cached = events[name]
+    local path, fn, err, ok, mod
+
+    if type(cached) == "table" then
+        return cached
+    end
+    if cached == false then
+        return nil
+    end
+
+    path = EVENT_MODULE_PATHS[name]
+    if not path then
+        return nil
+    end
+
+    fn, err = loadfile(path)
+    if not fn then
+        utils.log("[event] failed to load " .. tostring(name) .. ": " .. tostring(err), "error")
+        events[name] = false
+        return nil
+    end
+
+    ok, mod = pcall(fn)
+    if not ok or type(mod) ~= "table" then
+        utils.log("[event] invalid module for " .. tostring(name) .. ": " .. tostring(mod or "unknown"), "error")
+        events[name] = false
+        return nil
+    end
+
+    events[name] = mod
+    return mod
+end
 
 local currentTelemetrySensor
 local tasksPerCycle
@@ -263,8 +305,9 @@ local function clearSessionAndQueue()
     utils.session()
 
     tasks.setTelemetryTypeChanged()
-    if events.onconnect and type(events.onconnect.setTelemetryTypeChanged)=="function" then
-        events.onconnect.setTelemetryTypeChanged()
+    local oc = getLoadedEvent("onconnect")
+    if oc and type(oc.setTelemetryTypeChanged) == "function" then
+        oc.setTelemetryTypeChanged()
     end
 
     -- reset all scheduled tasks
@@ -278,7 +321,7 @@ local function clearSessionAndQueue()
 
     -- reset every event module that implements it
     for name, ev in pairs(events) do
-        if ev and type(ev.resetAllTasks) == "function" then
+        if type(ev) == "table" and type(ev.resetAllTasks) == "function" then
             ev.resetAllTasks()
         end
     end
@@ -350,7 +393,7 @@ function tasks.telemetryCheckScheduler()
             lastTelemetryUp = false
 
             -- Fire ondisconnect edge.
-            local od = events.ondisconnect
+            local od = getEvent("ondisconnect")
             if od and type(od.fire) == "function" then
                 utils.log("[event] ondisconnect", "info")
                 od.fire({ reason = "telemetry_down", at = now })
@@ -425,7 +468,7 @@ function tasks.telemetryCheckScheduler()
             utils.log("@i18n(app.msg_model_changed_reset)@", "connect")
             utils.log("[event] onmodelchange", "info")
 
-            local omc = events.onmodelchange
+            local omc = getEvent("onmodelchange")
             if omc and type(omc.fire) == "function" then
                 omc.fire({ old = oldModelPath, new = newModelPath, at = now })
             end
@@ -498,7 +541,7 @@ function tasks.telemetryCheckScheduler()
         rfsuite.utils.log("@i18n(app.msg_telem_type_changed)@ " .. tostring(currentTelemetryType), "connect")
         utils.log("[event] ontransportchange", "info")
 
-        local otc = events.ontransportchange
+        local otc = getEvent("ontransportchange")
         if otc and type(otc.fire) == "function" then
             otc.fire({ old = oldTelemetryType, new = currentTelemetryType, at = now })
         end
@@ -509,7 +552,7 @@ function tasks.telemetryCheckScheduler()
     end
 
     -- Run onconnect event handler only when needed (link-up and not yet established)
-    local oc = events.onconnect
+    local oc = getEvent("onconnect")
     if oc and type(oc.wakeup) == "function" then
         local needsRun = (not rfsuite.session.isConnected)
         if not needsRun and type(oc.active) == "function" then needsRun = oc.active() end
@@ -520,7 +563,7 @@ function tasks.telemetryCheckScheduler()
 
     -- Run postconnect handler once AFTER we have declared the connection established.
     -- This lets us close the loader early and fetch non-critical data in the background.
-    local pc = events.postconnect
+    local pc = getEvent("postconnect")
     if pc and type(pc.wakeup) == "function" then
         local needsRun = (rfsuite.session.isConnected == true)
         if not needsRun and type(pc.active) == "function" then needsRun = pc.active() end
@@ -816,13 +859,13 @@ function tasks.wakeup_protected()
         if armedNow ~= lastArmedState then
             if armedNow then
                 utils.log("[event] onarm", "info")
-                local oa = events.onarm
+                local oa = getEvent("onarm")
                 if oa and type(oa.fire) == "function" then
                     oa.fire({ at = now })
                 end
             else
                 utils.log("[event] ondisarm", "info")
-                local oda = events.ondisarm
+                local oda = getEvent("ondisarm")
                 if oda and type(oda.fire) == "function" then
                     oda.fire({ at = now })
                 end
@@ -835,7 +878,7 @@ function tasks.wakeup_protected()
         if fmNow ~= lastFlightModeValue and rfsuite.session.isConnected then
             utils.log("[event] onflightmode", "info")
             if lastFlightModeValue ~= nil then
-                local ofm = events.onflightmode
+                local ofm = getEvent("onflightmode")
                 if ofm and type(ofm.fire) == "function" then
                     ofm.fire({ old = lastFlightModeValue, new = fmNow, at = now })
                 end
@@ -845,12 +888,12 @@ function tasks.wakeup_protected()
 
         -- Allow hook modules (if present) to run their own task queues.
         -- Use active() when available; otherwise throttle to avoid constant wakeup overhead.
-        eventMaybeWake("onflightmode", events.onflightmode, now)
-        eventMaybeWake("onarm", events.onarm, now)
-        eventMaybeWake("ondisarm", events.ondisarm, now)
-        eventMaybeWake("onmodelchange", events.onmodelchange, now)
-        eventMaybeWake("ontransportchange", events.ontransportchange, now)
-        eventMaybeWake("ondisconnect", events.ondisconnect, now)
+        eventMaybeWake("onflightmode", getLoadedEvent("onflightmode"), now)
+        eventMaybeWake("onarm", getLoadedEvent("onarm"), now)
+        eventMaybeWake("ondisarm", getLoadedEvent("ondisarm"), now)
+        eventMaybeWake("onmodelchange", getLoadedEvent("onmodelchange"), now)
+        eventMaybeWake("ontransportchange", getLoadedEvent("ontransportchange"), now)
+        eventMaybeWake("ondisconnect", getLoadedEvent("ondisconnect"), now)
     end
 
     -- Periodic profile dump (if enabled).
