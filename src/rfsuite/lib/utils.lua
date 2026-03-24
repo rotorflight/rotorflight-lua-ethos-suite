@@ -206,6 +206,7 @@ end
 
 local directoryExistenceCache = {}
 local fileExistenceCache = {}
+local lastConnectBeepAt = 0
 
 local function countTable(t)
     if type(t) ~= "table" then return 0 end
@@ -229,6 +230,18 @@ function utils.dir_exists(base, name, noCache)
     end
 
     return false
+end
+
+function utils.playConnectBeep()
+    local now = os.clock()
+
+    if (now - (lastConnectBeepAt or 0)) < 2.0 then
+        return false
+    end
+
+    lastConnectBeepAt = now
+    utils.playFileCommon("beep.wav")
+    return true
 end
 
 function utils.file_size(path)

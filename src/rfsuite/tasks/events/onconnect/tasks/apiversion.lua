@@ -147,7 +147,11 @@ end
 
 function apiversion.isComplete()
     if rfsuite.session.apiVersion ~= nil then
-        rfsuite.utils.playFileCommon("beep.wav")
+        if rfsuite.utils and type(rfsuite.utils.playConnectBeep) == "function" then
+            rfsuite.utils.playConnectBeep()
+        else
+            rfsuite.utils.playFileCommon("beep.wav")
+        end
         return true
     end
 end
