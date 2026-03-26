@@ -18,7 +18,7 @@ rfsuite exposes several subsystems under the global `rfsuite` table.
 
 * **Access**: `rfsuite.session` contains read-only session info.
 
-  * `craftName`, `modelID`, `apiVersion`, `tailMode`, `swashMode`, `servoCount`, `governorMode`, etc.
+  * `craftName`, `modelID`, `apiVersion`, etc.
 
 ```lua
 local name = rfsuite.session.craftName or "-"
@@ -30,18 +30,15 @@ local name = rfsuite.session.craftName or "-"
 
 ### Telemetry API
 
-* **Get sensor**: `rfsuite.tasks.telemetry.getSensorSource(id)` returns a sensor object.
-* **Read value**: `:value()` to fetch the latest reading.
-
-or a faster and more efficient:
-
-* **Get sensor**: `rfsuite.tasks.telemetry.getSensor(id)` returns a value of the sensor
+* **Get source**: `rfsuite.tasks.telemetry.getSensorSource(id)` returns a source object (if available).
+* **Read value**: `source:value()` to fetch the latest reading.
+* **Get value directly**: `rfsuite.tasks.telemetry.getSensor(id)` returns `(value, unit, minor)` and can optionally accept `min/max/thresholds` overrides.
 
 
 ```lua
 local rfsuite = require("rfsuite")
 local rpmSensor = rfsuite.tasks.telemetry.getSensorSource("rpm")
-local rpm = rpmSensor:value()
+local rpm = rpmSensor and rpmSensor:value()
 ```
 
 ### MSP API
@@ -60,6 +57,47 @@ API.read()
 ```
 
 * **Queue check**: `rfsuite.tasks.msp.mspQueue:isProcessed()` to ensure no backlog.
+* **Enqueue result**: MSP API `read()` / `write()` return queue status from `mspQueue:add(...)`:
+  * `true, "queued", qid, pending`
+  * `true, "queued_busy", qid, pending` (advisory pressure signal; request still queued)
+  * `false, "duplicate", nil, pending`
+  * `false, "busy", nil, pending` (only when hard cap is enabled)
+* **Backoff guidance**:
+  * Always set a stable UUID for periodic/retriggerable requests.
+  * Treat `duplicate` / `busy` as explicit "back off and retry later".
+  * For direct queue usage (outside API wrappers), check `ok, reason` and avoid advancing state when enqueue fails.
+
+**MSP API delta cache (RAM vs delta writes)**:
+
+* Enabled: keeps raw buffers and position maps (allows delta payloads).
+* Disabled: keeps only parsed values (no delta payloads, lower RAM).
+
+Defaults to disabled when the app GUI is not running. Override per API:
+
+```lua
+local API = rfsuite.tasks.msp.api.load("STATUS")
+API.enableDeltaCache(false)
+```
+
+Boolean semantics:
+
+* `API.enableDeltaCache(true)` → delta cache enabled
+* `API.enableDeltaCache(false)` → delta cache disabled
+
+Or per-page via `apidata`:
+
+```lua
+local apidata = {
+  api = {
+    {id = 1, name = "STATUS", enableDeltaCache = false, rebuildOnWrite = true},
+    {name = "RC_TUNING"}
+  },
+  formdata = {labels = {}, fields = {...}}
+}
+```
+
+* `rebuildOnWrite = true` forces full payload writes for that API during `saveSettings`.
+* `id = <number>` lets `mspapi = <number>` map by id instead of list order.
 
 ### Utilities
 
@@ -121,10 +159,6 @@ local function wakeup(widget)
             -- Log Rotorflight session information
             rfsuite.utils.log("Craft Name: " .. (rfsuite.session.craftName or "-"), "info")
             rfsuite.utils.log("API Version: " .. (rfsuite.session.apiVersion or "-"), "info")
-            rfsuite.utils.log("Tail Mode: " .. (rfsuite.session.tailMode or "-"), "info")
-            rfsuite.utils.log("Swash Mode: " .. (rfsuite.session.swashMode or "-"), "info")
-            rfsuite.utils.log("Servo Count: " .. (rfsuite.session.servoCount or "-"), "info")
-            rfsuite.utils.log("Governor Mode: " .. (rfsuite.session.governorMode or "-"), "info")
 
             -- Read telemetry sensors
             local armflags = rfsuite.tasks.telemetry.getSensorSource("armflags")
@@ -181,7 +215,5 @@ return { init = init }
 ```
 
 ## License
-
-This widget framework is licensed under GPLv3. See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.en.html) for details.
 
 This widget framework is licensed under GPLv3. See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.en.html) for details.

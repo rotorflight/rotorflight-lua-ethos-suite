@@ -32,17 +32,18 @@
 
 local rfsuite = require("rfsuite")
 
+local rep = string.rep
+local tostring = tostring
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local lastValue = 0
 
 function render.invalidate(box) box._cfg = nil end
 
 function render.dirty(box)
-    if not rfsuite.session.telemetryState then return false end
     if box._lastDisplayValue == nil then
         box._lastDisplayValue = box._currentDisplayValue
         return true
@@ -93,17 +94,18 @@ end
 
 function render.wakeup(box)
 
+    local session = rfsuite.session
+    local telemetryActive = session and session.telemetryState and session.isConnected
     local value
-    if rfsuite.session and rfsuite.session.modelPreferences then
-        value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
-        lastValue = value
-    else
-        value = lastValue or 0
+
+    if telemetryActive and session.modelPreferences then
+        value = rfsuite.ini.getvalue(session.modelPreferences, "general", "flightcount")
     end
 
     local displayValue
 
-    local telemetryActive = rfsuite.session and rfsuite.session.isConnected
+    local inPostflight = (rfsuite.flightmode and rfsuite.flightmode.current == "postflight")
+    if not telemetryActive and not inPostflight then box._lastValidFlightCount = nil end
     if type(value) == "number" and telemetryActive then box._lastValidFlightCount = value end
 
     if type(value) == "number" then
@@ -114,7 +116,7 @@ function render.wakeup(box)
 
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
 
     end

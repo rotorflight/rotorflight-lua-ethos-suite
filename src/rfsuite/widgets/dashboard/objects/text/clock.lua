@@ -89,8 +89,7 @@ function render.wakeup(box)
     local cfg = ensureCfg(box)
 
     local now = os.time()
-    local t = os.date("*t", now)
-    local displayValue = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
+    local displayValue = os.date("%H:%M:%S", now)
 
     box._currentDisplayValue = displayValue
 end

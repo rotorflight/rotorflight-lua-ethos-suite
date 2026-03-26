@@ -4,11 +4,14 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local lcd = lcd
+local app = rfsuite.app
+local tasks = rfsuite.tasks
+local rfutils = rfsuite.utils
 
 local fields = {}
 local labels = {}
-local fcStatus = {}
-local dataflashSummary = {}
 local wakeupScheduler = os.clock()
 local status = {}
 local summary = {}
@@ -24,7 +27,12 @@ local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
-local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
+local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
+
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return tasks.msp.mspQueue:add(message)
+end
 
 local apidata = {
     api = {[1] = nil},
@@ -59,25 +67,25 @@ local function getFblTime()
         processReply = function(self, buf)
 
             buf.offset = 1
-            status.fblYear = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            status.fblYear = tasks.msp.mspHelper.readU16(buf)
             buf.offset = 3
-            status.fblMonth = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.fblMonth = tasks.msp.mspHelper.readU8(buf)
             buf.offset = 4
-            status.fblDay = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.fblDay = tasks.msp.mspHelper.readU8(buf)
             buf.offset = 5
-            status.fblHour = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.fblHour = tasks.msp.mspHelper.readU8(buf)
             buf.offset = 6
-            status.fblMinute = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.fblMinute = tasks.msp.mspHelper.readU8(buf)
             buf.offset = 7
-            status.fblSecond = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.fblSecond = tasks.msp.mspHelper.readU8(buf)
             buf.offset = 8
-            status.fblMillis = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            status.fblMillis = tasks.msp.mspHelper.readU16(buf)
 
         end,
         simulatorResponse = getSimulatorTimeResponse()
     }
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.time")
 end
 
 local function getStatus()
@@ -86,20 +94,20 @@ local function getStatus()
         processReply = function(self, buf)
 
             buf.offset = 12
-            status.realTimeLoad = rfsuite.tasks.msp.mspHelper.readU16(buf)
-            status.cpuLoad = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            status.realTimeLoad = tasks.msp.mspHelper.readU16(buf)
+            status.cpuLoad = tasks.msp.mspHelper.readU16(buf)
             buf.offset = 18
-            status.armingDisableFlags = rfsuite.tasks.msp.mspHelper.readU32(buf)
+            status.armingDisableFlags = tasks.msp.mspHelper.readU32(buf)
             buf.offset = 24
-            status.profile = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.profile = tasks.msp.mspHelper.readU8(buf)
             buf.offset = 26
-            status.rateProfile = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            status.rateProfile = tasks.msp.mspHelper.readU8(buf)
 
         end,
         simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
     }
 
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.status")
 end
 
 local function getDataflashSummary()
@@ -107,17 +115,17 @@ local function getDataflashSummary()
         command = 70,
         processReply = function(self, buf)
 
-            local flags = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            local flags = tasks.msp.mspHelper.readU8(buf)
             summary.ready = (flags & 1) ~= 0
             summary.supported = (flags & 2) ~= 0
-            summary.sectors = rfsuite.tasks.msp.mspHelper.readU32(buf)
-            summary.totalSize = rfsuite.tasks.msp.mspHelper.readU32(buf)
-            summary.usedSize = rfsuite.tasks.msp.mspHelper.readU32(buf)
+            summary.sectors = tasks.msp.mspHelper.readU32(buf)
+            summary.totalSize = tasks.msp.mspHelper.readU32(buf)
+            summary.usedSize = tasks.msp.mspHelper.readU32(buf)
 
         end,
         simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
     }
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.dataflash")
 end
 
 local function eraseDataflash()
@@ -127,16 +135,16 @@ local function eraseDataflash()
 
             summary = {}
 
-            rfsuite.app.formFields[1]:value("")
-            rfsuite.app.formFields[2]:value("")
-            rfsuite.app.formFields[3]:value("")
-            rfsuite.app.formFields[4]:value("")
-            rfsuite.app.formFields[5]:value("")
-            rfsuite.app.formFields[6]:value("")
+            app.formFields[1]:value("")
+            app.formFields[2]:value("")
+            app.formFields[3]:value("")
+            app.formFields[4]:value("")
+            app.formFields[5]:value("")
+            app.formFields[6]:value("")
         end,
         simulatorResponse = {}
     }
-    rfsuite.tasks.msp.mspQueue:add(message)
+    return queueDirect(message, "fbl.erase")
 end
 
 local function postLoad(self)
@@ -144,13 +152,13 @@ local function postLoad(self)
     getStatus()
     getDataflashSummary()
     getFblTime()
-    rfsuite.app.triggers.isReady = true
+    app.triggers.isReady = true
     enableWakeup = true
 
-    rfsuite.app.triggers.closeProgressLoader = true
+    app.triggers.closeProgressLoader = true
 end
 
-local function postRead(self) rfsuite.utils.log("postRead", "debug") end
+local function postRead(self) rfutils.log("postRead", "debug") end
 
 local function getFreeDataflashSpace()
     if not summary.supported then return "@i18n(app.modules.fblstatus.unsupported)@" end
@@ -163,12 +171,12 @@ local function wakeup()
     if enableWakeup == false then return end
 
     if triggerEraseDataFlash == true then
-        rfsuite.app.audio.playEraseFlash = true
+        app.audio.playEraseFlash = true
         triggerEraseDataFlash = false
 
-        rfsuite.app.ui.progressDisplay("@i18n(app.modules.fblstatus.erasing)@", "@i18n(app.modules.fblstatus.erasing_dataflash)@")
-        rfsuite.app.Page.eraseDataflash()
-        rfsuite.app.triggers.isReady = true
+        app.ui.progressDisplay("@i18n(app.modules.fblstatus.erasing)@", "@i18n(app.modules.fblstatus.erasing_dataflash)@")
+        app.Page.eraseDataflash()
+        app.triggers.isReady = true
     end
 
     if triggerEraseDataFlash == false then
@@ -176,7 +184,7 @@ local function wakeup()
         if (now - wakeupScheduler) >= 2 then
             wakeupScheduler = now
             firstRun = false
-            if rfsuite.tasks.msp.mspQueue:isProcessed() then
+            if tasks.msp.mspQueue:isProcessed() then
 
                 getStatus()
                 getDataflashSummary()
@@ -184,38 +192,38 @@ local function wakeup()
 
                 if status.fblYear ~= nil and status.fblMonth ~= nil and status.fblDay ~= nil then
                     local value = string.format("%04d-%02d-%02d", status.fblYear, status.fblMonth, status.fblDay)
-                    rfsuite.app.formFields[1]:value(value)
+                    app.formFields[1]:value(value)
                 end
 
                 if status.fblHour ~= nil and status.fblMinute ~= nil and status.fblSecond ~= nil then
                     local value = string.format("%02d:%02d:%02d", status.fblHour, status.fblMinute, status.fblSecond)
-                    rfsuite.app.formFields[2]:value(value)
+                    app.formFields[2]:value(value)
                 end
 
                 if status.armingDisableFlags ~= nil then
-                    local value = rfsuite.utils.armingDisableFlagsToString(status.armingDisableFlags)
-                    rfsuite.app.formFields[3]:value(value)
+                    local value = rfutils.armingDisableFlagsToString(status.armingDisableFlags)
+                    app.formFields[3]:value(value)
                 end
 
                 if summary.supported == true then
                     local value = getFreeDataflashSpace()
-                    rfsuite.app.formFields[4]:value(value)
+                    app.formFields[4]:value(value)
                 end
 
                 if status.realTimeLoad ~= nil then
                     local value = math.floor(status.realTimeLoad / 10)
-                    rfsuite.app.formFields[5]:value(tostring(value) .. "%")
-                    if value >= 60 then rfsuite.app.formFields[4]:color(RED) end
+                    app.formFields[5]:value(tostring(value) .. "%")
+                    if value >= 60 then app.formFields[4]:color(RED) end
                 end
                 if status.cpuLoad ~= nil then
                     local value = status.cpuLoad / 10
-                    rfsuite.app.formFields[6]:value(tostring(value) .. "%")
-                    if value >= 60 then rfsuite.app.formFields[4]:color(RED) end
+                    app.formFields[6]:value(tostring(value) .. "%")
+                    if value >= 60 then app.formFields[4]:color(RED) end
                 end
 
             end
         end
-        if (now - wakeupScheduler) >= 1 then rfsuite.app.triggers.closeProgressLoader = true end
+        if (now - wakeupScheduler) >= 1 then app.triggers.closeProgressLoader = true end
     end
 
 end
@@ -243,16 +251,12 @@ local function onToolMenu(self)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    pageRuntime.openMenuContext()
+    return true
 end
 
-return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = true, help = false}, API = {}}
+return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware", showProgress = true})
 
 local apidata = {
     api = {[1] = 'GOVERNOR_CONFIG'},
@@ -13,17 +15,19 @@ local apidata = {
 local function postLoad(self) rfsuite.app.triggers.closeProgressLoader = true end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "governor/governor.lua")
-        return true
-    end
+    return navHandlers.event(widget, category, value)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(pidx, title, "governor/governor.lua")
-    return true
+    return navHandlers.onNavMenu()
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, postLoad = postLoad, onNavMenu = onNavMenu, event = event}
+local function wakeup()
+    -- we are compromised if we don't have governor mode known
+    if rfsuite.session.governorMode == nil then
+        pageRuntime.openMenuContext({defaultSection = "hardware"})
+        return
+    end
+end
+
+return {apidata = apidata, reboot = true, eepromWrite = true, postLoad = postLoad, onNavMenu = onNavMenu, event = event, wakeup = wakeup}

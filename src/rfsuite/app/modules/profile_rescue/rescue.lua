@@ -9,8 +9,8 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = "RESCUE_PROFILE"
-    },
+        {id = 1, name = "RESCUE_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },  
     formdata = {
         labels = {
             {t = "@i18n(app.modules.profile_rescue.pull_up)@",   label = 1, inline_size = 13.6},
@@ -22,8 +22,8 @@ local apidata = {
             {t = "",                                              label = 7, inline_size = 40.15}
         },
         fields = {
-            {t = "@i18n(app.modules.profile_rescue.mode_enable)@",       inline = 1, label = 0, mspapi = 1, apikey = "rescue_mode"},
-            {t = "@i18n(app.modules.profile_rescue.flip_upright)@",      inline = 1, label = 0, mspapi = 1, apikey = "rescue_flip_mode"},
+            {t = "@i18n(app.modules.profile_rescue.mode_enable)@",       inline = 1, type = 1, mspapi = 1, apikey = "rescue_mode"},
+            {t = "@i18n(app.modules.profile_rescue.flip_upright)@",      inline = 1, type = 1, mspapi = 1, apikey = "rescue_flip_mode"},
             {t = "@i18n(app.modules.profile_rescue.collective)@",        inline = 2, label = 1, mspapi = 1, apikey = "rescue_pull_up_collective"},
             {t = "@i18n(app.modules.profile_rescue.time)@",              inline = 1, label = 1, mspapi = 1, apikey = "rescue_pull_up_time"},
             {t = "@i18n(app.modules.profile_rescue.collective)@",        inline = 2, label = 2, mspapi = 1, apikey = "rescue_climb_collective"},
@@ -44,6 +44,15 @@ local function postLoad(self)
     activateWakeup = true
 end
 
-local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile) end end end
+local function wakeup()
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+        if activeProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
+        activateWakeup = false
+    end
+end
 
 return {apidata = apidata, title = "@i18n(app.modules.profile_rescue.name)@", reboot = false, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

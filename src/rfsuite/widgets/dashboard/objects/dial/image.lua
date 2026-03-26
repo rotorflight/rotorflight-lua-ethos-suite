@@ -45,6 +45,12 @@ dial image & needle styling
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local format = string.format
+local rep = string.rep
+local tostring = tostring
+local tonumber = tonumber
 
 local render = {}
 
@@ -70,10 +76,10 @@ end
 local function resolveDialAsset(value, basePath)
     if type(value) == "function" then value = value() end
     if type(value) == "number" then
-        return string.format("%s/%d.png", basePath, value)
+        return format("%s/%d.png", basePath, value)
     elseif type(value) == "string" then
         if value:match("^%d+$") then
-            return string.format("%s/%s.png", basePath, value)
+            return format("%s/%s.png", basePath, value)
         else
             return value
         end
@@ -139,7 +145,7 @@ function render.wakeup(box)
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end
@@ -148,43 +154,52 @@ function render.wakeup(box)
 
     box._currentDisplayValue = value
 
-    box._cache = {
-        value = value,
-        displayvalue = displayValue,
-        percent = percent * 100,
-        unit = unit,
-        min = min,
-        max = max,
-        title = getParam(box, "title"),
-        titlepos = getParam(box, "titlepos"),
-        titlefont = getParam(box, "titlefont"),
-        titlealign = getParam(box, "titlealign"),
-        titlespacing = getParam(box, "titlespacing") or 0,
-        titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding = getParam(box, "titlepadding"),
-        titlepaddingleft = getParam(box, "titlepaddingleft"),
-        titlepaddingright = getParam(box, "titlepaddingright"),
-        titlepaddingtop = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font = getParam(box, "font") or "FONT_STD",
-        textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor")),
-        valuealign = getParam(box, "valuealign"),
-        valuepadding = getParam(box, "valuepadding"),
-        valuepaddingleft = getParam(box, "valuepaddingleft"),
-        valuepaddingright = getParam(box, "valuepaddingright"),
-        valuepaddingtop = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        dialid = getParam(box, "dial"),
-        panelimg = loadDialPanelCached(getParam(box, "dial")),
-        scalefactor = tonumber(getParam(box, "scalefactor")) or 0.4,
-        needlecolor = resolveThemeColor("needlecolor", getParam(box, "needlecolor")),
-        hubcolor = resolveThemeColor("needlehubcolor", getParam(box, "needlehubcolor")),
-        needlethickness = getParam(box, "needlethickness") or 3,
-        hubradius = getParam(box, "needlehubsize") or 5,
-        needlestartangle = getParam(box, "needlestartangle") or 135,
-        sweep = getParam(box, "needlesweepangle") or 270,
-        bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
-    }
+    local c = box._cache
+    if not c then
+        c = {}
+        box._cache = c
+    end
+
+    c.value = value
+    c.displayvalue = displayValue
+    c.percent = percent * 100
+    c.unit = unit
+    c.min = min
+    c.max = max
+    c.title = getParam(box, "title")
+    c.titlepos = getParam(box, "titlepos")
+    c.titlefont = getParam(box, "titlefont")
+    c.titlealign = getParam(box, "titlealign")
+    c.titlespacing = getParam(box, "titlespacing") or 0
+    c.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+    c.titlepadding = getParam(box, "titlepadding")
+    c.titlepaddingleft = getParam(box, "titlepaddingleft")
+    c.titlepaddingright = getParam(box, "titlepaddingright")
+    c.titlepaddingtop = getParam(box, "titlepaddingtop")
+    c.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+    c.font = getParam(box, "font") or "FONT_STD"
+    c.textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+    c.valuealign = getParam(box, "valuealign")
+    c.valuepadding = getParam(box, "valuepadding")
+    c.valuepaddingleft = getParam(box, "valuepaddingleft")
+    c.valuepaddingright = getParam(box, "valuepaddingright")
+    c.valuepaddingtop = getParam(box, "valuepaddingtop")
+    c.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+
+    local dialid = getParam(box, "dial")
+    if c.dialid ~= dialid then
+        c.dialid = dialid
+        c.panelimg = loadDialPanelCached(dialid)
+    end
+
+    c.scalefactor = tonumber(getParam(box, "scalefactor")) or 0.4
+    c.needlecolor = resolveThemeColor("needlecolor", getParam(box, "needlecolor"))
+    c.hubcolor = resolveThemeColor("needlehubcolor", getParam(box, "needlehubcolor"))
+    c.needlethickness = getParam(box, "needlethickness") or 3
+    c.hubradius = getParam(box, "needlehubsize") or 5
+    c.needlestartangle = getParam(box, "needlestartangle") or 135
+    c.sweep = getParam(box, "needlesweepangle") or 270
+    c.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
 end
 
 function render.paint(x, y, w, h, box)

@@ -155,7 +155,21 @@ RFSuite has been successfully tested on the following receiver models (with X10,
 -   R-XSR ACCESS / ACCST F.Port
     
 -   ELRS (all versions)
-    
+
+----------    
+
+## Installation Instructions
+
+### Radio Updater (GUI)
+
+For Windows, Mac & Linux users, a prebuilt GUI updater is available to simplify updating files on the radio without using VS Code or Python.
+
+- **Download:** https://github.com/rotorflight/rotorflight-lua-ethos-suite-updater/releases
+- Standalone Windows executable (plus macOS/Linux builds)
+- Intended for end users or quick updates
+
+![Updater](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite-updater/master/.github/gfx/updater.png)
+
 
 ----------
 
@@ -165,30 +179,29 @@ To build and deploy RFSuite locally:
 
 ### Requirements
 
--   FrSky Simulator (Ethos)
-    
+See `docs/dev-environment.md` for the full developer environment setup guide.
+
 -   Visual Studio Code (VS Code)
     
 -   Python 3
     
--   Install tqdm and serial:
+-   Install libraries
     
     ```bash
     pip install tqdm
     pip install serial
+    pip install pywin32 
+    pip install hid
+    pip install debugpy
     ```
 
-If you do not have npm command, you will need to install NodeJS   
+-    Install this package 
 
-### Config file
+     https://github.com/libusb/hidapi/releases/tag/hidapi-0.15.0
 
-Copy the file bin/config-example.json to a folder outside of github and name to suite your preference.
+     Simply copy the dll's for your architecture into c:\windows\system32
 
-Setup en env var of RFSUITE_CONFIG=C:\GitHub\rotorflight-lua-ethos-suite.json  (the path to the file)
-
-Suggested:
-Repo:  C:\GitHub\rotorflight-lua-ethos-suite\<files>
-Config: C:\GitHub\rotorflight-lua-ethos-suite.json
+- Install vscode extention 'ethos'
 
 
 ### VS Code Tasks
@@ -259,4 +272,4 @@ Rotorflight is **open source** and available free of charge, with no warranties.
 
 ## Donate
 
-If you find Rotorflight useful, please consider [supporting the development by donating](https://www.paypal.com/donate/?hosted_button_id=LLP4MT8C8TPVJ) to the Rotorflight Project.
+If you find Rotorflight useful, please consider [supporting the development by donating](https://opencollective.com/rotorflight/donate) to the Rotorflight Project.

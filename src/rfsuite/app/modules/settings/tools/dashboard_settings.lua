@@ -4,13 +4,26 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
+local lcd = lcd
+
+local function loadMask(path)
+    local ui = rfsuite.app and rfsuite.app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
+end
 
 local enableWakeup = false
 local prevConnectedState = nil
+local onNavMenu
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     local themeList = rfsuite.widgets.dashboard.listThemes()
 
@@ -71,7 +84,7 @@ local function openPage(pidx, title, script)
                 else
                     icon = themesUserPath .. theme.folder .. "/icon.png"
                 end
-                rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] = lcd.loadMask(icon)
+                rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] = loadMask(icon)
             end
 
             rfsuite.app.formFields[idx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
@@ -82,7 +95,7 @@ local function openPage(pidx, title, script)
                 press = function()
 
                     rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx
-                    rfsuite.app.ui.progressDisplay(nil, nil, true)
+                    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.FAST)
                     local configure = theme.configure
                     local source = theme.source
                     local folder = theme.folder
@@ -96,7 +109,7 @@ local function openPage(pidx, title, script)
 
                     local wrapperScript = "settings/tools/dashboard_settings_theme.lua"
 
-                    rfsuite.app.ui.openPage(idx, theme.name, wrapperScript, source, folder, themeScript)
+                    rfsuite.app.ui.openPage({idx = idx, title = theme.name, script = wrapperScript, source = source, folder = folder, themeScript = themeScript})
                 end
             })
 
@@ -129,16 +142,11 @@ end
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.dashboard)@", "settings/tools/dashboard.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
-local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.dashboard)@", "settings/tools/dashboard.lua")
+onNavMenu = function()
+    pageRuntime.openMenuContext()
     return true
 end
 

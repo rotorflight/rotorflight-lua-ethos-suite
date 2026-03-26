@@ -1,0 +1,271 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+local lcd = lcd
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
+
+local activateWakeup = false
+local doFullReload = false
+
+if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end
+
+local rows
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
+    rows = {
+        "@i18n(app.modules.rates_advanced.response_time)@",
+        "@i18n(app.modules.rates_advanced.acc_limit)@",
+        "@i18n(app.modules.rates_advanced.setpoint_boost_gain)@",
+        "@i18n(app.modules.rates_advanced.setpoint_boost_cutoff)@",
+        "@i18n(app.modules.rates_advanced.dyn_ceiling_gain)@",
+        "@i18n(app.modules.rates_advanced.dyn_deadband_gain)@",
+        "@i18n(app.modules.rates_advanced.dyn_deadband_filter)@"
+    }
+else
+    rows = {
+        "@i18n(app.modules.rates_advanced.response_time)@",
+        "@i18n(app.modules.rates_advanced.acc_limit)@"
+    }
+end
+
+local apidata = {
+    api = {
+        {id = 1, name = "RC_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
+    },
+    formdata = {
+        name = "@i18n(app.modules.rates_advanced.dynamics)@",
+        labels = {},
+        rows = rows,
+        cols = {
+            "@i18n(app.modules.rates_advanced.roll)@",
+            "@i18n(app.modules.rates_advanced.pitch)@",
+            "@i18n(app.modules.rates_advanced.yaw)@",
+            "@i18n(app.modules.rates_advanced.col)@"
+        },
+        fields = {
+            {row = 1, col = 1, mspapi = 1, apikey = "response_time_1"},
+            {row = 1, col = 2, mspapi = 1, apikey = "response_time_2"},
+            {row = 1, col = 3, mspapi = 1, apikey = "response_time_3"},
+            {row = 1, col = 4, mspapi = 1, apikey = "response_time_4"},
+            {row = 2, col = 1, mspapi = 1, apikey = "accel_limit_1"},
+            {row = 2, col = 2, mspapi = 1, apikey = "accel_limit_2"},
+            {row = 2, col = 3, mspapi = 1, apikey = "accel_limit_3"},
+            {row = 2, col = 4, mspapi = 1, apikey = "accel_limit_4"},
+            {row = 3, col = 1, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = {12, 0, 8}},
+            {row = 3, col = 2, mspapi = 1, apikey = "setpoint_boost_gain_2", apiversiongte = {12, 0, 8}},
+            {row = 3, col = 3, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = {12, 0, 8}},
+            {row = 3, col = 4, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = {12, 0, 8}},
+            {row = 4, col = 1, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = {12, 0, 8}},
+            {row = 4, col = 2, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = {12, 0, 8}},
+            {row = 4, col = 3, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = {12, 0, 8}},
+            {row = 4, col = 4, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = {12, 0, 8}},
+            {row = 5, col = 3, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = {12, 0, 8}},
+            {row = 6, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = {12, 0, 8}},
+            {row = 7, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = {12, 0, 8}}
+        }
+    }
+}
+
+local function getApiEntryName(entry)
+    if type(entry) == "table" then return entry.name end
+    return entry
+end
+
+local function getRateType()
+    local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1])
+    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+
+    if values and apiName and values[apiName] and values[apiName].rates_type ~= nil then
+        return values[apiName].rates_type
+    end
+
+    local fields = rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata and rfsuite.app.Page.apidata.formdata.fields
+    if fields then
+        for i = 1, #fields do
+            if fields[i] and fields[i].apikey == "rates_type" then
+                return fields[i].value
+            end
+        end
+    end
+
+    return nil
+end
+
+local function rightAlignText(width, text)
+    local textWidth, _ = lcd.getTextSize(text)
+    local padding = width - textWidth
+
+    if padding > 0 then
+        return string.rep(" ", math.floor(padding / lcd.getTextSize(" "))) .. text
+    else
+        return text
+    end
+end
+
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    rfsuite.app.triggers.isReady = false
+
+    local relativeScript = script
+    if type(relativeScript) == "string" and relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = relativeScript or script
+    rfsuite.session.lastPage = relativeScript or script
+
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+
+    local longPage = false
+
+    form.clear()
+
+    rfsuite.app.ui.fieldHeader(title)
+    local numCols
+    if rfsuite.app.Page.apidata.formdata.cols ~= nil then
+        numCols = #rfsuite.app.Page.apidata.formdata.cols
+    else
+        numCols = 4
+    end
+    local screenWidth = rfsuite.app.lcdWidth - 10
+    local padding = 10
+    local paddingTop = rfsuite.app.radio.linePaddingTop
+    local h = rfsuite.app.radio.navbuttonHeight
+    local w = ((screenWidth * 60 / 100) / numCols)
+    local paddingRight = 20
+    local positions = {}
+    local positions_r = {}
+    local pos
+
+    local line = form.addLine("")
+
+    local loc = numCols
+    local posX = screenWidth - paddingRight
+    local posY = paddingTop
+
+    rfsuite.session.colWidth = w - paddingRight
+
+    local c = 1
+    while loc > 0 do
+        local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
+
+        positions[loc] = posX - w
+        positions_r[c] = posX - w
+
+        lcd.font(FONT_STD)
+
+        colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
+
+        local posTxt = positions_r[c] + paddingRight
+
+        pos = {x = posTxt, y = posY, w = w, h = h}
+        rfsuite.app.formFields['col_' .. tostring(c)] = form.addStaticText(line, pos, colLabel)
+
+        posX = math.floor(posX - w)
+
+        loc = loc - 1
+        c = c + 1
+    end
+
+    local fieldRows = {}
+    for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do fieldRows[ri] = form.addLine(rv) end
+
+    for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
+        local f = rfsuite.app.Page.apidata.formdata.fields[i]
+
+        local valid = (f.apiversion == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversion)) and (f.apiversionlt == nil or rfsuite.utils.apiVersionCompare("<", f.apiversionlt)) and (f.apiversiongt == nil or rfsuite.utils.apiVersionCompare(">", f.apiversiongt)) and (f.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", f.apiversionlte)) and (f.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversiongte)) and (f.enablefunction == nil or f.enablefunction())
+
+        if f.row and f.col and valid then
+            local l = rfsuite.app.Page.apidata.formdata.labels
+            local pageIdx = i
+            local currentField = i
+
+            posX = positions[f.col]
+
+            pos = {x = posX + padding, y = posY, w = w - padding, h = h}
+
+            rfsuite.app.formFields[i] = form.addNumberField(fieldRows[f.row], pos, 0, 0, function()
+                if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
+                    ui.disableAllFields()
+                    ui.disableAllNavigationFields()
+                    ui.enableNavigationField('menu')
+                    return nil
+                end
+                return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
+            end, function(value)
+                rfsuite.app.ui.markPageDirty()
+                if f.postEdit then f.postEdit(rfsuite.app.Page) end
+                if f.onChange then f.onChange(rfsuite.app.Page) end
+
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            end)
+        end
+    end
+
+    rfsuite.app.ui.setPageDirty(false)
+end
+
+local function postLoad(self)
+
+    local v = getRateType()
+
+    if v == nil then
+        rfsuite.utils.log("Unable to resolve rates_type from RC_TUNING data", "warning")
+        rfsuite.app.triggers.closeProgressLoader = true
+        activateWakeup = true
+        return
+    end
+
+    local activeRateTable = tonumber(rfsuite.session.activeRateTable) or rfsuite.session.activeRateTable
+    local requestedRateTable = tonumber(v) or v
+
+    rfsuite.utils.log("Active Rate Table: " .. tostring(activeRateTable), "debug")
+
+    if requestedRateTable ~= activeRateTable then
+        rfsuite.utils.log("Switching Rate Table: " .. tostring(requestedRateTable), "info")
+        rfsuite.app.triggers.reloadFull = true
+        rfsuite.session.activeRateTable = requestedRateTable
+        return
+    end
+
+    rfsuite.app.triggers.closeProgressLoader = true
+    activateWakeup = true
+end
+
+local function wakeup()
+    if activateWakeup and rfsuite.tasks.msp.mspQueue:isProcessed() then
+
+        local activeRateProfile = rfsuite.session and rfsuite.session.activeRateProfile
+        if activeRateProfile ~= nil then
+            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+            baseTitle = tostring(baseTitle):gsub("%s+#%d+$", "")
+            rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeRateProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+        end
+
+        if doFullReload == true then
+            rfsuite.utils.log("Reloading full after rate type change", "info")
+            rfsuite.app.triggers.reload = true
+            doFullReload = false
+        end
+    end
+end
+
+local function onToolMenu() end
+
+local function canSave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.name)@", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, openPage = openPage, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, postLoad = postLoad, wakeup = wakeup, API = {}, onToolMenu = onToolMenu, canSave = canSave, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}

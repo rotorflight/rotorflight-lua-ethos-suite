@@ -11,6 +11,20 @@ local arg = {...}
 local config = arg[1]
 
 function utils.session()
+    local function prefBool(value, default)
+        if value == nil then return default end
+        if value == true or value == "true" or value == 1 or value == "1" then return true end
+        if value == false or value == "false" or value == 0 or value == "0" then return false end
+        return default
+    end
+
+    local prefs = rfsuite.preferences and rfsuite.preferences.general or {}
+    
+     if rfsuite.session.originalModelName and model.name then
+        rfsuite.utils.log("Restoring model name to: " .. rfsuite.session.originalModelName, "info")
+        model.name(rfsuite.session.originalModelName)
+    end
+
     rfsuite.session = {
 
         escDetails = nil,
@@ -26,6 +40,7 @@ function utils.session()
 
         servoCount = nil,
         servoOverride = nil,
+        servoBusEnabled = nil,
 
         apiVersion = nil,
         apiVersionInvalid = nil,
@@ -36,9 +51,7 @@ function utils.session()
         mcu_id = nil,
 
         isConnected = false,
-        isConnectedHigh = false,
-        isConnectedMedium = false,
-        isConnectedLow = false,
+        postConnectComplete = false,
         isArmed = false,
 
         telemetryState = nil,
@@ -51,6 +64,12 @@ function utils.session()
         telemetryModuleNumber = nil,
 
         mspBusy = false,
+        mspStatusMessage = nil,
+        mspStatusUpdatedAt = nil,
+        mspStatusLast = nil,
+        mspStatusClearAt = nil,
+        mspCrcErrors = 0,
+        progressDialog = nil,
 
         repairSensors = false,
 
@@ -71,8 +90,13 @@ function utils.session()
         modelPreferences = nil,
         modelPreferencesFile = nil,
 
+        originalModelName = nil,
+
         clockSet = nil,
-        resetMSP = nil
+        resetMSP = nil,
+        
+        showBatteryTypeStartup = prefBool(prefs.show_battery_profile_startup, true),
+        showConfirmationDialog = prefBool(prefs.show_confirmation_dialog, false)
     }
 
 end
@@ -89,7 +113,7 @@ end
 
 function utils.msp_version_array_to_indexed()
     local arr = {}
-    local tbl = rfsuite.config.supportedMspApiVersion or {"12.06", "12.07", "12.08"}
+    local tbl = rfsuite.config.supportedMspApiVersion or {"12.07", "12.08", "12.09", "12.10"}
     for i, v in ipairs(tbl) do arr[#arr + 1] = {v, i} end
     return arr
 end
@@ -159,7 +183,7 @@ function utils.getGovernorState(value)
         [101] = "@i18n(widgets.governor.DISARMED):upper()@"
     }
 
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", "12.07") then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", {12, 0, 7}) then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
         if armflags == 0 or armflags == 2 then value = 101 end
     end
@@ -180,49 +204,16 @@ function utils.getGovernorState(value)
     return returnvalue
 end
 
-function utils.createCacheFile(tbl, path, options)
-    os.mkdir("cache")
-
-    path = "cache/" .. path
-
-    local f, err = io.open(path, "w")
-    if not f then
-        rfsuite.utils.log("Error creating cache file: " .. err, "info")
-        return
-    end
-
-    local function serialize(value, indent)
-        indent = indent or ""
-        local t = type(value)
-
-        if t == "string" then
-            return string.format("%q", value)
-        elseif t == "number" or t == "boolean" then
-            return tostring(value)
-        elseif t == "table" then
-            local result = "{\n"
-            for k, v in pairs(value) do
-                local keyStr
-                if type(k) == "string" and k:match("^%a[%w_]*$") then
-                    keyStr = k .. " = "
-                else
-                    keyStr = "[" .. serialize(k) .. "] = "
-                end
-                result = result .. indent .. "  " .. keyStr .. serialize(v, indent .. "  ") .. ",\n"
-            end
-            result = result .. indent .. "}"
-            return result
-        else
-            error("Cannot serialize type: " .. t)
-        end
-    end
-
-    f:write("return ", serialize(tbl), "\n")
-    f:close()
-end
-
 local directoryExistenceCache = {}
 local fileExistenceCache = {}
+local lastConnectBeepAt = 0
+
+local function countTable(t)
+    if type(t) ~= "table" then return 0 end
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n
+end
 
 function utils.dir_exists(base, name, noCache)
     base = base or "./"
@@ -241,6 +232,44 @@ function utils.dir_exists(base, name, noCache)
     return false
 end
 
+function utils.playConnectBeep()
+    local now = os.clock()
+
+    if (now - (lastConnectBeepAt or 0)) < 2.0 then
+        return false
+    end
+
+    lastConnectBeepAt = now
+    utils.playFileCommon("beep.wav")
+    return true
+end
+
+function utils.file_size(path)
+    if not path then return nil end
+
+    local stat = os.stat(path)
+    if not stat then return nil end
+
+    local size = stat.size or stat.length or stat.fileSize or stat.filesize
+    if type(size) ~= "number" then return nil end
+
+    return size
+end
+
+function utils.isImageTooLarge(path, maxBytes)
+    if type(path) ~= "string" or path == "" then return false end
+    local limit = maxBytes
+    if type(limit) ~= "number" then
+        limit = (rfsuite.config and rfsuite.config.maxModelImageBytes) or 350 * 1024
+    end
+    if type(limit) ~= "number" or limit <= 0 then return false end
+
+    local size = utils.file_size(path)
+    if not size then return false end
+
+    return size > limit
+end
+
 function utils.file_exists(path, noCache)
     if not path then return false end
 
@@ -253,6 +282,15 @@ function utils.file_exists(path, noCache)
     end
 
     return false
+end
+
+function utils.getCacheStats()
+    return {
+        fileExists = countTable(fileExistenceCache),
+        dirExists = countTable(directoryExistenceCache),
+        imageBitmap = countTable(utils._imageBitmapCache),
+        imagePath = countTable(utils._imagePathCache)
+    }
 end
 
 function utils.playFile(pkg, file)
@@ -320,22 +358,47 @@ function utils.round(num, places)
     end
 end
 
-function utils.joinTableItems(tbl, delimiter)
-    if not tbl or #tbl == 0 then return "" end
+function utils.decimalInc(dec)
+    if dec == nil then
+        return 1
+    elseif dec > 0 and dec <= 10 then
+        return 10 ^ dec
+    else
+        return nil
+    end
+end
+
+function utils.joinTableItems(tbl, delimiter, maxItems)
+    if type(tbl) ~= "table" then
+        if tbl == nil then return "" end
+        return tostring(tbl)
+    end
 
     delimiter = delimiter or ""
-    local sIdx = tbl[0] and 0 or 1
+    local sIdx = (tbl[0] ~= nil) and 0 or 1
+    local hardLimit = maxItems or 2048
 
-    local padded = {}
-    for i = sIdx, #tbl do padded[i] = tostring(tbl[i]) .. string.rep(" ", math.max(0, 3 - #tostring(tbl[i]))) end
+    local parts = {}
+    local i = sIdx
+    local count = 0
+    while count < hardLimit do
+        local v = tbl[i]
+        if v == nil then break end
+        parts[#parts + 1] = tostring(v)
+        i = i + 1
+        count = count + 1
+    end
 
-    return table.concat(padded, delimiter, sIdx, #tbl)
+    local joined = table.concat(parts, delimiter)
+    local truncated = tbl[i] ~= nil
+
+    if maxItems ~= nil then
+        return joined, count, truncated
+    end
+    return joined
 end
 
 function utils.log(msg, level) 
-    if rfsuite.preferences.developer.loglevel == "off" then 
-        return 
-    end
     if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end 
 end
 
@@ -370,21 +433,19 @@ end
 
 function utils.findModules()
     local modulesList = {}
-    local moduledir = "app/modules/"
-    local modules_path = moduledir
+    local modules_path = "app/modules/"
 
     for _, v in pairs(system.listFiles(modules_path)) do
         if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
-            local init_path = modules_path .. v .. '/init.lua'
+            local init_path = modules_path .. v .. "/init.lua"
 
             local func, err = loadfile(init_path)
             if not func then
                 rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
             else
-                local ok, mconfig = pcall(func)
-                if not ok then
-                    rfsuite.utils.log("Error executing " .. init_path .. ": " .. mconfig, "info")
-                elseif type(mconfig) ~= "table" or not mconfig.script then
+                local mconfig = func()
+
+                if type(mconfig) ~= "table" or not mconfig.script then
                     rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
                 else
                     rfsuite.utils.log("Loading module " .. v, "debug")
@@ -398,37 +459,23 @@ function utils.findModules()
     return modulesList
 end
 
-function utils.findWidgets()
-    local widgetsList = {}
-    local widgetdir = "widgets/"
-    local widgets_path = widgetdir
-
-    for _, v in pairs(system.listFiles(widgets_path)) do
-        if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
-            local init_path = widgets_path .. v .. '/init.lua'
-
-            local func, err = loadfile(init_path)
-            if not func then
-                rfsuite.utils.log("Failed to load widget init " .. init_path .. ": " .. err, "debug")
-            else
-                local ok, wconfig = pcall(func)
-                if not ok then
-                    rfsuite.utils.log("Error executing widget init " .. init_path .. ": " .. wconfig, "debug")
-                elseif type(wconfig) ~= "table" or not wconfig.key then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
-                else
-                    wconfig.folder = v
-                    table.insert(widgetsList, wconfig)
-                end
-            end
-        end
-    end
-
-    return widgetsList
-end
 
 utils._imagePathCache = {}
 utils._imageBitmapCache = {}
+
+function utils.clearImageCaches()
+    if utils._imagePathCache then
+        for key in pairs(utils._imagePathCache) do
+            utils._imagePathCache[key] = nil
+        end
+    end
+
+    if utils._imageBitmapCache then
+        for key in pairs(utils._imageBitmapCache) do
+            utils._imageBitmapCache[key] = nil
+        end
+    end
+end
 
 function utils.loadImage(image1, image2, image3)
 
@@ -472,7 +519,9 @@ function utils.simSensors(id)
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/sensors")
 
-    if id == nil then return 0 end
+    if id == nil then
+        return 0
+    end
 
     local filepath = "sim/sensors/" .. id .. ".lua"
 
@@ -482,20 +531,28 @@ function utils.simSensors(id)
         return 0
     end
 
-    local success, result = pcall(chunk)
-    if not success then
-        print("Error executing telemetry file: " .. result)
-        return 0
-    end
+    local result = chunk()
 
-    return result
+    return result or 0
 end
 
+
 function utils.logMsp(cmd, rwState, buf, err)
-    if rfsuite.preferences.developer.logmsp then
-        local payload = rfsuite.utils.joinTableItems(buf, ", ")
-        rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
-        if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    if dev and dev.logmsp then
+        local function emit()
+            local payload, shown, truncated = rfsuite.utils.joinTableItems(buf, ", ", 96)
+            if truncated then payload = payload .. " ... (" .. tostring(shown) .. "+ items)" end
+            rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
+            if err then rfsuite.utils.log("Error: " .. tostring(err), "info") end
+        end
+
+        local callback = rfsuite.tasks and rfsuite.tasks.callback
+        if callback and callback.now then
+            callback.now(emit)
+        else
+            emit()
+        end
     end
 end
 
@@ -563,15 +620,47 @@ function utils.keys(tbl)
     return keys
 end
 
-function utils.apiVersionCompare(op, req)
+local function appendVersionParts(parts, value)
+    if value == nil then return end
 
-    local function parts(x)
-        local t = {}
-        for n in tostring(x):gmatch("(%d+)") do t[#t + 1] = tonumber(n) end
-        return t
+    local valueType = type(value)
+
+    if valueType == "table" then
+        local arrayValues = {}
+        for _, token in ipairs(value) do arrayValues[#arrayValues + 1] = token end
+
+        -- Accept {major, 0, minor} as an explicit form for two-digit minor
+        -- versions, e.g. {12, 0, 9} => 12.09.
+        if #arrayValues == 3 then
+            local major = tonumber(arrayValues[1])
+            local middle = tonumber(arrayValues[2])
+            local minor = tonumber(arrayValues[3])
+            if major and middle == 0 and minor then
+                parts[#parts + 1] = major
+                parts[#parts + 1] = minor
+                return
+            end
+        end
+
+        if #arrayValues > 0 then
+            for i = 1, #arrayValues do appendVersionParts(parts, arrayValues[i]) end
+        elseif value[0] ~= nil then
+            appendVersionParts(parts, value[0])
+        end
+        return
     end
 
-    local a, b = parts(rfsuite.session.apiVersion or 12.06), parts(req)
+    for n in tostring(value):gmatch("(%d+)") do parts[#parts + 1] = tonumber(n) end
+end
+
+local function versionParts(value)
+    local parts = {}
+    appendVersionParts(parts, value)
+    return parts
+end
+
+function utils.apiVersionCompare(op, req)
+    local a, b = versionParts(rfsuite.session.apiVersion or "12.06"), versionParts(req)
     if #a == 0 or #b == 0 then return false end
 
     local len = math.max(#a, #b)
@@ -605,6 +694,23 @@ end
 function utils.stringInArray(array, s)
     for i, value in ipairs(array) do if value == s then return true end end
     return false
+end
+
+local uuidCounter = 0
+
+function utils.uuid(prefix)
+    uuidCounter = uuidCounter + 1
+    if uuidCounter > 2147483647 then uuidCounter = 1 end
+
+    local now = os.clock()
+    local seconds = math.floor(now)
+    local millis = math.floor((now - seconds) * 1000)
+
+    if prefix and prefix ~= "" then
+        return string.format("%s-%d-%03d-%d", prefix, seconds, millis, uuidCounter)
+    end
+
+    return string.format("%d-%03d-%d", seconds, millis, uuidCounter)
 end
 
 return utils

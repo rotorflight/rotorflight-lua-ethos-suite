@@ -1,0 +1,692 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+
+-- Optimized locals to reduce global/table lookups
+local os_clock = os.clock
+local utils = rfsuite.utils
+local math_max = math.max
+local type = type
+local pairs = pairs
+local setmetatable = setmetatable
+local getmetatable = getmetatable
+local tostring = tostring
+local pcall = pcall
+
+local DEFAULT_RETRY_BACKOFF_SECONDS = 1
+local DEFAULT_BUSY_WARNING_THRESHOLD = 8
+local DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS = 0.35
+local MAX_MSP_LOG_BYTES = 96
+local QUEUE_COMPACT_THRESHOLD = 64
+local MspQueueController = {}
+MspQueueController.__index = MspQueueController
+
+local lastQueueCount = 0 -- for queue size logging
+
+local MSP_BUSY_TIMEOUT = 2.5
+
+-- Queue primitives
+local function newQueue() return {first = 1, last = 0, data = {}} end
+local function qpush(q, v) q.last = q.last + 1; q.data[q.last] = v end
+local function qreset(q)
+    if not q then return end
+    local data = q.data
+    for i = q.first, q.last do
+        data[i] = nil
+    end
+    q.first = 1
+    q.last = 0
+end
+local function qcompact(q)
+    local first = q.first
+    local last = q.last
+    if first <= 1 or first > last then return end
+
+    local data = q.data
+    local write = 1
+    for read = first, last do
+        data[write] = data[read]
+        if write ~= read then
+            data[read] = nil
+        end
+        write = write + 1
+    end
+    q.first = 1
+    q.last = write - 1
+end
+local function qpop(q)
+    if q.first > q.last then return nil end
+    local idx = q.first
+    local v = q.data[idx]
+    q.data[idx] = nil
+    idx = idx + 1
+    if idx > q.last then
+        -- Queue drained: reset indices, keep storage table to avoid churn.
+        q.first = 1
+        q.last = 0
+    else
+        q.first = idx
+        -- Compact occasionally so array indices do not grow unbounded while active.
+        local active = q.last - q.first + 1
+        if q.first > QUEUE_COMPACT_THRESHOLD and q.first > active then
+            qcompact(q)
+        end
+    end
+    return v
+end
+local function qcount(q) return q.last - q.first + 1 end
+
+-- Shallow/array clone helpers
+local function cloneArray(src)
+    local dst = {}
+    for i = 1, #src do dst[i] = src[i] end
+    return setmetatable(dst, getmetatable(src))
+end
+local function shallowClone(src)
+    local dst = {}
+    for k, v in pairs(src) do dst[k] = v end
+    return setmetatable(dst, getmetatable(src))
+end
+local function cloneMessage(msg) -- Clone message (deep clones payload)
+    local out = {}
+    for k, v in pairs(msg) do
+        if k == "payload" and type(v) == "table" then
+            out[k] = cloneArray(v)
+        elseif k == "simulatorResponse" then
+            out[k] = v
+        elseif type(v) == "table" then
+            out[k] = shallowClone(v)
+        else
+            out[k] = v
+        end
+    end
+    return setmetatable(out, getmetatable(msg))
+end
+
+-- Logging toggles
+local function LOG_ENABLED_MSP() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp end
+local function LOG_ENABLED_MSP_RW() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsprw end
+
+local function getRwModeSuffix(msg, rwState, ok)
+    if not LOG_ENABLED_MSP_RW() then return "" end
+    if not msg or not msg.apiname or not rwState then return "" end
+    local apidata = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata
+    if not apidata then return "" end
+
+    if rwState == "WRITE" then
+        local mode = apidata._lastWriteMode and apidata._lastWriteMode[msg.apiname]
+        if not mode then return "" end
+        return " mode=" .. tostring(mode)
+    end
+
+    if rwState == "READ" and ok == true then
+        local mode = apidata._lastReadMode and apidata._lastReadMode[msg.apiname]
+        if not mode then return "" end
+        return " mode=" .. tostring(mode)
+    end
+
+    return ""
+end
+
+-- Lightweight status updates for UI progress loaders.
+local function setMspStatus(message)
+    local session = rfsuite.session
+    if not session then return end
+    if session.mspStatusMessage ~= message then
+        session.mspStatusMessage = message
+        session.mspStatusUpdatedAt = os_clock()
+        if message then
+            session.mspStatusLast = message
+            session.mspStatusClearAt = nil
+        end
+        local app = rfsuite.app
+        if app and app.ui and app.ui.updateProgressDialogMessage then
+            app.ui.updateProgressDialogMessage(message)
+        end
+        if app and app.ui and app.ui.applyMspStatusToActiveDialogs then
+            app.ui.applyMspStatusToActiveDialogs(message)
+        end
+    end
+end
+
+local function formatMspStatus(msg, suffix)
+    if not msg then return nil end
+    local rw
+    if msg.isWrite ~= nil then
+        rw = msg.isWrite and "Write" or "Read"
+    else
+        rw = (msg.payload and #msg.payload > 0) and "Write" or "Read"
+    end
+    local cmd = msg.command
+    local head = "MSP " .. rw
+    if cmd ~= nil then head = head .. " " .. tostring(cmd) end
+    if suffix and suffix ~= "" then return head .. " " .. suffix end
+    return head
+end
+
+
+-- Drain duplicate/late replies for the same command for a brief window after success.
+-- This reduces "spillover" where a late duplicate reply (from an earlier resend) is consumed by the next message.
+local function drainAfterSuccess(self, cmd)
+    if not cmd then return end
+    local drainMs = self.drainAfterReplyMs or 0
+    if drainMs <= 0 then return end
+
+    local start = os_clock()
+    local pollsLeft = self.drainMaxPolls or 0
+    if pollsLeft <= 0 then return end
+
+    local mspCommon = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common
+    local poll = mspCommon and mspCommon.mspPollReply
+    if not poll then return end
+
+    while pollsLeft > 0 and (os_clock() - start) < drainMs do
+        local c, _, e = poll()
+        if not c then break end
+        -- Only expect duplicates of the just-completed command. If something else appears, stop draining.
+        if c ~= cmd or e then
+            if LOG_ENABLED_MSP() then utils.log("Drain saw unexpected cmd " .. tostring(c) .. " (expected " .. tostring(cmd) .. ")", "debug") end
+            break
+        end
+        pollsLeft = pollsLeft - 1
+    end
+end
+
+local function LOG_ENABLED_MSP_QUEUE() return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmspQueue end
+
+-- Create a controller instance
+function MspQueueController.new(opts)
+    opts = opts or {}
+    local self = setmetatable({}, MspQueueController)
+
+    self.queue = newQueue()
+    self.currentMessage = nil
+    self.currentMessageStartTime = nil
+
+    self.lastTimeCommandSent = nil
+    self.retryCount = 0
+    self.maxRetries = opts.maxRetries or 3
+    self.timeout = opts.timeout or 2.0
+
+    -- Minimum seconds between re-sends of the same message (prevents pipelined retries)
+    self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS
+
+    -- After a successful reply, briefly poll to drain any duplicate/late replies for the same cmd
+    -- (common with slow/bursty links when retries were attempted).
+    self.drainAfterReplyMs = opts.drainAfterReplyMs or 0.03
+    self.drainMaxPolls = opts.drainMaxPolls or 6
+
+    self.uuid = nil -- last processed UUID
+    self.apiname = nil -- last processed API name
+
+    -- Inter-message delay (gap between *completed* messages)
+    self.interMessageDelay = opts.interMessageDelay or 0
+    self._nextMessageAt = 0
+    self._qidSeq = 0
+
+    -- Optional loop throttle (kept for backwards-compat, but only gates starting the next message)
+    self.loopInterval = opts.loopInterval or 0
+    self._nextProcessAt = 0
+
+    self.copyOnAdd = opts.copyOnAdd == true -- optionally copy on enqueue
+    -- Enqueue pressure signaling:
+    -- - busyWarningThreshold: soft threshold (status + return code only, still enqueues)
+    -- - maxQueueDepth: hard cap (0 disables hard cap for backwards-compat)
+    self.busyWarningThreshold = opts.busyWarningThreshold or DEFAULT_BUSY_WARNING_THRESHOLD
+    self.maxQueueDepth = opts.maxQueueDepth or 0
+    self.busyStatusCooldown = opts.busyStatusCooldown or DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS
+    self._lastBusyStatusAt = 0
+
+    self.mspBusyStart = nil -- watchdog start
+
+    return self
+end
+
+-- Queue helpers
+function MspQueueController:queueCount() return qcount(self.queue) end
+function MspQueueController:isProcessed() return (self.currentMessage == nil) and (self:queueCount() == 0) end
+
+-- Main queue processor (send, retry, handle replies)
+function MspQueueController:processQueue()
+
+    local now = os_clock()
+    local session = rfsuite.session
+    local mspTask = rfsuite.tasks.msp
+    local mspProtocol = mspTask and mspTask.protocol
+    local mspCommon = mspTask and mspTask.common
+
+    if LOG_ENABLED_MSP_QUEUE() then
+        local count = self:queueCount()
+        if count ~= lastQueueCount then
+            utils.log("MSP Queue: " .. count .. " messages in queue", "info")
+            lastQueueCount = count
+        end
+    end
+
+    -- Nothing to do
+    if self:isProcessed() then
+        session.mspBusy = false
+        self.mspBusyStart = nil
+        if session and session.mspStatusMessage then
+            session.mspStatusClearAt = now + 0.75
+        end
+        return
+    end
+
+    -- Watchdog: MSP stuck too long
+    if self.mspBusyStart and (now - self.mspBusyStart) > MSP_BUSY_TIMEOUT then
+        --utils.log("MSP busy for more than " .. mspBusyTimeout .. " seconds", "info")
+        --utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
+        session.mspBusy = false
+        self.mspBusyStart = nil
+        return
+    end
+
+    -- Get next message if idle (optionally wait before advancing)
+    if not self.currentMessage then
+        -- Inter-message gap (after a message completes/fails)
+        if self.interMessageDelay and self.interMessageDelay > 0 then
+            if now < (self._nextMessageAt or 0) then
+                session.mspBusy = false
+                self.mspBusyStart = nil
+                return
+            end
+        end
+
+        -- Legacy loop throttle, but only gates starting the next message
+        if self.loopInterval and self.loopInterval > 0 then
+            if now < (self._nextProcessAt or 0) then
+                session.mspBusy = false
+                self.mspBusyStart = nil
+                return
+            end
+            self._nextProcessAt = now + self.loopInterval
+        end
+
+        self.currentMessageStartTime = nil  -- set on first successful send
+        self.lastTimeCommandSent = nil    -- per-message send timestamp
+        self.currentMessage = qpop(self.queue)
+        self.retryCount = 0
+    end
+
+    -- We are now genuinely active (either working a current message or about to send one)
+    session.mspBusy = true
+    self.mspBusyStart = self.mspBusyStart or now
+
+    utils.muteSensorLostWarnings() -- Avoid sensor warnings during MSP    
+
+    local cmd, buf, err
+    -- Minimum spacing between send attempts (protocol can override).
+    local lastTimeInterval = (mspProtocol and mspProtocol.mspIntervalOveride) or 0.25
+    if lastTimeInterval == nil then lastTimeInterval = 1 end
+
+    if not system.getVersion().simulation then
+        -- Real MSP: send once, then wait; only resend after backoff/timeout
+        if self.currentMessage then
+            local now2 = os_clock()
+
+            -- Minimum spacing between any sends (existing throttle)
+            local canSendByInterval = (not self.lastTimeCommandSent) or ((self.lastTimeCommandSent + lastTimeInterval) < now2)
+
+            -- Retry/backoff gate: we only resend if we've either never sent, or we've waited long enough.
+            local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS)
+            local canSendByBackoff = (self.retryCount == 0) or ((self.lastTimeCommandSent and (now2 - self.lastTimeCommandSent) >= backoff) or false)
+
+            if canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
+                local sent = mspProtocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+                if sent then
+                    self.lastTimeCommandSent = now2
+                    -- Start overall timeout window on the first successful send only
+                    if not self.currentMessageStartTime then
+                        self.currentMessageStartTime = now2
+                    end
+                    self.retryCount = self.retryCount + 1
+                    if self.retryCount > 1 then
+                        setMspStatus(formatMspStatus(self.currentMessage, "retry " .. tostring(self.retryCount) .. "/" .. tostring(self.maxRetries + 1)))
+                    else
+                        setMspStatus(formatMspStatus(self.currentMessage, "send"))
+                    end
+                    local page = rfsuite.app and rfsuite.app.Page
+                    if page and page.mspRetry then page.mspRetry(self) end
+                end
+            end
+        end
+
+        -- Pump TX queue.
+        if mspCommon then mspCommon.mspProcessTxQ() end
+
+        -- Poll for reply
+        local ok, a, b, c = pcall(mspCommon.mspPollReply)
+        if ok then
+            cmd, buf, err = a, b, c
+        else
+            if LOG_ENABLED_MSP() then
+                utils.log("mspPollReply error: " .. tostring(a), "info")
+            end
+            setMspStatus("MSP poll error")
+            -- back off a little so we don't hammer the same fault every frame
+            self._nextMessageAt = now + 0.05
+            return
+        end
+    else
+        -- Simulator mode: use provided simulatorResponse.
+        if not self.currentMessage.simulatorResponse then
+            if LOG_ENABLED_MSP() then utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
+            self.currentMessage = nil
+            self.uuid = nil
+            self.apiname = nil
+            self.lastTimeCommandSent = nil
+            self.currentMessageStartTime = nil
+            return
+        end
+        cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
+    end
+
+    -- Per-message timeout
+    if self.currentMessage and self.currentMessageStartTime and (now - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
+        local msg = self.currentMessage
+        if msg and LOG_ENABLED_MSP_RW() then
+            local rwState
+            if msg.isWrite ~= nil then
+                rwState = msg.isWrite and "WRITE" or "READ"
+            else
+                rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+            end
+            local modeSuffix = getRwModeSuffix(msg, rwState, false)
+            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+        end
+        if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
+        if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
+        if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
+        if session then
+            session.mspTimeouts = (session.mspTimeouts or 0) + 1
+        end
+        setMspStatus(formatMspStatus(self.currentMessage, "timeout"))
+        self.currentMessage = nil
+        self.uuid = nil
+        self.apiname = nil
+        self.lastTimeCommandSent = nil
+        self.currentMessageStartTime = nil
+        if self.interMessageDelay and self.interMessageDelay > 0 then
+            self._nextMessageAt = now + self.interMessageDelay
+        end
+        return
+    end
+
+    if cmd then self.lastTimeCommandSent = nil end -- allow next send
+
+    -- Success paths (or special-case shortcuts)
+    if (cmd == self.currentMessage.command and not err)
+        or (self.currentMessage.command == 68 and self.retryCount == 2)
+        or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
+
+        if self.currentMessage.processReply then
+            self.currentMessage:processReply(buf)
+            if cmd and LOG_ENABLED_MSP() then
+                local rwState
+                if self.currentMessage.isWrite ~= nil then
+                    rwState = self.currentMessage.isWrite and "WRITE" or "READ"
+                else
+                    -- legacy heuristic
+                    rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
+                end
+                local logPayload
+                if rwState == "WRITE" then
+                    local tx = self.currentMessage.payload or {}
+                    local txCount = #tx
+                    logPayload = {}
+                    local limit = txCount
+                    if limit > MAX_MSP_LOG_BYTES then limit = MAX_MSP_LOG_BYTES end
+                    for i = 1, limit do logPayload[#logPayload + 1] = tx[i] end
+                    if txCount > limit then
+                        logPayload[#logPayload + 1] = "..."
+                        logPayload[#logPayload + 1] = "(" .. tostring(txCount) .. " bytes)"
+                    end
+                else
+                    local tx = self.currentMessage.payload
+                    if tx and #tx > 0 then
+                        logPayload = {}
+                        local txCount = #tx
+                        local rxCount = #(buf or {})
+                        local remaining = MAX_MSP_LOG_BYTES
+                        -- TX bytes first
+                        local txLimit = txCount
+                        if txLimit > remaining then txLimit = remaining end
+                        for i = 1, txLimit do logPayload[#logPayload + 1] = tx[i] end
+                        remaining = remaining - txLimit
+                        -- separator (non-byte) for readability; logMsp should print it as-is
+                        if remaining > 0 then
+                            logPayload[#logPayload + 1] = "|"
+                            remaining = remaining - 1
+                        end
+                        -- RX bytes second
+                        local rxLimit = rxCount
+                        if rxLimit > remaining then rxLimit = remaining end
+                        for i = 1, rxLimit do logPayload[#logPayload + 1] = buf[i] end
+                        if (txCount + rxCount + 1) > MAX_MSP_LOG_BYTES then
+                            logPayload[#logPayload + 1] = "..."
+                            logPayload[#logPayload + 1] = "(" .. tostring(txCount) .. "+" .. tostring(rxCount) .. " bytes)"
+                        end
+                    else
+                        local rx = buf or {}
+                        local rxCount = #rx
+                        logPayload = {}
+                        local rxLimit = rxCount
+                        if rxLimit > MAX_MSP_LOG_BYTES then rxLimit = MAX_MSP_LOG_BYTES end
+                        for i = 1, rxLimit do logPayload[#logPayload + 1] = rx[i] end
+                        if rxCount > rxLimit then
+                            logPayload[#logPayload + 1] = "..."
+                            logPayload[#logPayload + 1] = "(" .. tostring(rxCount) .. " bytes)"
+                        end
+                    end
+                end
+
+                utils.logMsp(cmd, rwState, logPayload, err)
+            end
+        end
+        do
+            local msg = self.currentMessage
+            if msg and LOG_ENABLED_MSP_RW() then
+                local rwState
+                if msg.isWrite ~= nil then
+                    rwState = msg.isWrite and "WRITE" or "READ"
+                else
+                    rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+                end
+                local modeSuffix = getRwModeSuffix(msg, rwState, not err)
+                if err then
+                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " error" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+                else
+                    utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " ok" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+                end
+            end
+        end
+        if err then
+            setMspStatus(formatMspStatus(self.currentMessage, "error flag"))
+        else
+            setMspStatus(formatMspStatus(self.currentMessage, "ok"))
+        end
+
+        -- After a successful completion, briefly drain duplicate/late replies for this cmd
+        if not system.getVersion().simulation then
+            local completedCommand = self.currentMessage and self.currentMessage.command
+            if completedCommand ~= nil then
+                drainAfterSuccess(self, completedCommand)
+            end
+        end
+
+        self.currentMessage = nil
+        self.uuid = nil
+        self.apiname = nil
+        self.lastTimeCommandSent = nil
+        self.currentMessageStartTime = nil
+        if self.interMessageDelay and self.interMessageDelay > 0 then
+            self._nextMessageAt = now + self.interMessageDelay
+        end        
+        local page = rfsuite.app and rfsuite.app.Page
+        if page and page.mspSuccess then page.mspSuccess() end
+
+    -- Too many retries - reset
+    elseif self.retryCount > self.maxRetries then
+        local msg = self.currentMessage
+        if msg and LOG_ENABLED_MSP_RW() then
+            local rwState
+            if msg.isWrite ~= nil then
+                rwState = msg.isWrite and "WRITE" or "READ"
+            else
+                rwState = (msg.payload and #msg.payload > 0) and "WRITE" or "READ"
+            end
+            local modeSuffix = getRwModeSuffix(msg, rwState, false)
+            utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " max retries" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
+        end
+        self:clear()
+        setMspStatus(formatMspStatus(msg, "max retries"))
+        if session then
+            session.mspTimeouts = (session.mspTimeouts or 0) + 1
+        end
+        if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
+        if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
+        local page = rfsuite.app and rfsuite.app.Page
+        if page and page.mspTimeout then page.mspTimeout() end
+    end
+end
+
+-- Reset queue + MSP state
+function MspQueueController:clear()
+    if rfsuite.session then rfsuite.session.mspBusy = false end
+    self.mspBusyStart = nil
+    if self.queue then
+        qreset(self.queue)
+    else
+        self.queue = newQueue()
+    end
+    self.currentMessage = nil
+    self.currentMessageStartTime = nil
+    self.lastTimeCommandSent = nil
+    self._nextMessageAt = 0
+    self.uuid = nil
+    self.apiname = nil
+    if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common then
+        rfsuite.tasks.msp.common.mspClearTxBuf()
+    end
+end
+
+-- Add message to queue (skip duplicate UUIDs; optional clone)
+-- Returns:
+--   ok(boolean), reason(string), qid(number|nil), pending(number)
+-- where reason is one of:
+--   "queued", "queued_busy", "duplicate", "busy", "telemetry_off", "nil_message"
+function MspQueueController:add(message)
+    if not rfsuite.session.telemetryState then
+        return false, "telemetry_off", nil, self:queueCount()
+    end
+    if not message then
+        if LOG_ENABLED_MSP() then utils.log("Unable to queue - nil message.", "debug") end
+        return false, "nil_message", nil, self:queueCount()
+    end
+    -- Reset per-transfer timeout stats when starting a fresh queue.
+    local session = rfsuite.session
+    if session and self.currentMessage == nil and self:queueCount() == 0 then
+        session.mspTimeouts = 0
+    end
+    -- allow apiname to distinguish otherwise identical MSP calls
+    local key = message.uuid
+    if message.apiname then
+        key = (key or "") .. ":" .. message.apiname
+    end
+
+    if key and self.uuid == key then
+        if LOG_ENABLED_MSP() then utils.log("Skipping duplicate message with key " .. key, "info") end
+        setMspStatus("MSP duplicate request skipped (back off)")
+        return false, "duplicate", nil, self:queueCount()
+    end
+
+    -- Pending count includes in-flight currentMessage.
+    local pending = self:queueCount() + (self.currentMessage and 1 or 0)
+    if self.maxQueueDepth and self.maxQueueDepth > 0 and pending >= self.maxQueueDepth then
+        local busyMsg = "MSP queue busy (" .. tostring(pending) .. " pending)"
+        local now = os_clock()
+        if (now - (self._lastBusyStatusAt or 0)) >= (self.busyStatusCooldown or 0) then
+            setMspStatus(busyMsg)
+            self._lastBusyStatusAt = now
+        end
+        return false, "busy", nil, pending
+    end
+
+    if key then self.uuid = key end
+    local toQueue = self.copyOnAdd and cloneMessage(message) or message
+    self._qidSeq = (self._qidSeq or 0) + 1
+    toQueue._qid = self._qidSeq
+    qpush(self.queue, toQueue)
+    pending = self:queueCount() + (self.currentMessage and 1 or 0)
+
+    local isBusy = self.busyWarningThreshold and self.busyWarningThreshold > 0 and pending >= self.busyWarningThreshold
+    if isBusy then
+        setMspStatus(formatMspStatus(toQueue, "queued (busy " .. tostring(pending) .. " pending)"))
+        return true, "queued_busy", toQueue._qid, pending
+    end
+
+    setMspStatus(formatMspStatus(toQueue, "queued"))
+    return true, "queued", toQueue._qid, pending
+end
+
+-- Estimate byte cost of pending messages
+function MspQueueController:pendingByteCost()
+    local total = 0
+    local function add(msg)
+        if not msg then return end
+        local rx = msg.minBytes or 0
+        local tx = (msg.payload and #msg.payload) or 0
+        total = total + math_max(rx, tx)
+    end
+    add(self.currentMessage)
+    for i = self.queue.first, self.queue.last do add(self.queue.data[i]) end
+    return total
+end
+
+-- Remove queued (not in-flight) messages matching predicate.
+-- Returns number removed.
+function MspQueueController:removeQueuedBy(predicate)
+    if type(predicate) ~= "function" then return 0 end
+    local q = self.queue
+    if not (q and q.data) then return 0 end
+    if q.first > q.last then return 0 end
+
+    local data = q.data
+    local write = q.first
+    local removed = 0
+
+    for read = q.first, q.last do
+        local msg = data[read]
+        local drop = false
+        if msg ~= nil then
+            local ok, shouldDrop = pcall(predicate, msg)
+            drop = (ok and shouldDrop == true)
+        end
+
+        if drop then
+            data[read] = nil
+            removed = removed + 1
+        else
+            if write ~= read then
+                data[write] = msg
+                data[read] = nil
+            end
+            write = write + 1
+        end
+    end
+
+    q.last = write - 1
+    if q.last < q.first then
+        q.first = 1
+        q.last = 0
+    end
+
+    return removed
+end
+
+return MspQueueController.new()

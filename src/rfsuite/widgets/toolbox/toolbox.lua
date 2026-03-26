@@ -8,13 +8,39 @@ local rfsuite = require("rfsuite")
 local toolbox = {}
 local wakeupScheduler
 local LCD_W, LCD_H
+-- Busy cadence: run toolbox invalidation on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_WAKEUP_RUN_NUM = 2
+local BUSY_WAKEUP_RUN_DEN = 3
 
-local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}}
+local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}, [6] = {object = "timer", name = "@i18n(widgets.dashboard.flight_time)@"}}
 
 local function generateWidgetList(tbl)
     local widgets = {}
     for i, tool in ipairs(tbl) do table.insert(widgets, {tool.name, i}) end
     return widgets
+end
+
+local function loadWidget(widget)
+    if widget.loadedWidget then return end
+    local tool = toolBoxList[widget.object]
+    if not tool then return end
+
+    local path = "widgets/dashboard/objects/text/" .. tool.object .. ".lua"
+    local file = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/" .. path
+    local chunk, err = loadfile(file)
+    if chunk then
+        local status, result = pcall(chunk)
+        if status then
+            widget.loadedWidget = result
+        else
+            print("Error executing widget " .. tool.object .. ": " .. tostring(result))
+        end
+    else
+        if err and not string.find(tostring(err), "No such file") then
+            print("Error loading widget file " .. file .. ": " .. tostring(err))
+        end
+    end
 end
 
 function toolbox.create()
@@ -69,8 +95,14 @@ function toolbox.paint(widget)
 
     if not widget.object then return end
 
+    if widget.loadedWidget and widget.loadedWidget.paint then
+        local w, h = lcd.getWindowSize()
+        widget.loadedWidget.paint(0, 0, w, h, widget)
+        return
+    end
+
     local isCompiledCheck = "@i18n(iscompiledcheck)@"
-    if isCompiledCheck ~= "true" then
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         screenError("i18n not compiled", true, 0.6)
         return
     end
@@ -167,8 +199,14 @@ function toolbox.wakeup(widget)
         return
     end
 
+    loadWidget(widget)
+
+    if widget.loadedWidget and widget.loadedWidget.wakeup then
+        widget.loadedWidget.wakeup(widget)
+    end
+
     local isCompiledCheck = "@i18n(iscompiledcheck1)@"
-    if isCompiledCheck ~= "true" then
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         lcd.invalidate()
         return
     end
@@ -177,10 +215,28 @@ function toolbox.wakeup(widget)
     local now = os.clock()
 
     if now - (widget.wakeupScheduler or 0) > scheduler then
+        --If MSP is busy, only run UI tasks every N ticks to allow background processing to complete and avoid UI freezes.
+        if rfsuite.session and rfsuite.session.mspBusy then
+            widget._busyWakeupTick = ((widget._busyWakeupTick or 0) % BUSY_WAKEUP_RUN_DEN) + 1
+            if widget._busyWakeupTick > BUSY_WAKEUP_RUN_NUM then
+                widget.wakeupScheduler = now
+                return
+            end
+        else
+            widget._busyWakeupTick = 0
+        end
         lcd.invalidate()
         widget.wakeupScheduler = now
     end
 
+end
+
+function toolbox.event(widget, category, value, x, y)
+    if widget.onpress and category == EVT_TOUCH and value == TOUCH_release then
+        widget.onpress()
+        return true
+    end
+    return false
 end
 
 function toolbox.menu(widget)
@@ -227,9 +283,10 @@ function toolbox.configure(widget)
 end
 
 function toolbox.read(widget)
-    widget.title = (function(ok, result) return ok and result end)(pcall(storage.read, "title"))
-    widget.object = (function(ok, result) return ok and result end)(pcall(storage.read, "object"))
+    widget.title  = storage.read("title")
+    widget.object = storage.read("object")
 end
+
 
 function toolbox.write(widget)
     storage.write("title", widget.title)

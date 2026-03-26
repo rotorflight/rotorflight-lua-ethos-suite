@@ -10,6 +10,7 @@ local fields = {}
 
 local calibrate = false
 local calibrateComplete = false
+local calibrateQueued = false
 
 local apidata = {
     api = {
@@ -32,6 +33,7 @@ local function onToolMenu(self)
             action = function()
 
                 calibrate = true
+                calibrateQueued = false
                 writePayload = nil
                 return true
             end
@@ -55,18 +57,23 @@ end
 
 local function wakeup()
 
-    if calibrate == true then
+    if calibrate == true and calibrateQueued == false then
 
         local message = {
             command = 205,
             processReply = function(self, buf)
                 rfsuite.utils.log("Accelerometer calibrated.", "info")
                 calibrate = false
+                calibrateQueued = false
                 applySettings()
             end,
-            simulatorResponse = {}
+            simulatorResponse = {},
+            uuid = "accelerometer-calibration"
         }
-        rfsuite.tasks.msp.mspQueue:add(message)
+        local ok = rfsuite.tasks.msp.mspQueue:add(message)
+        if ok then
+            calibrateQueued = true
+        end
 
     end
 

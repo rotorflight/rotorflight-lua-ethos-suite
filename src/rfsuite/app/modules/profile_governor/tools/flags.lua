@@ -4,29 +4,29 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local navHandlers = pageRuntime.createMenuHandlers({showProgress = true})
 
 local activateWakeup = false
 local governorDisabledMsg = false
 
-local FIELD_TX_PRECOMP_CURVE = 1
-local FIELD_HS_ADJUSTMENT = 2
-local FIELD_FALLBACK_PRECOMP = 3
-local FIELD_PID_SPOOLUP = 4
-local FIELD_VOLTAGE_COMP = 5
-local FIELD_DYN_MIN_THROTTLE = 6
-local FIELD_AUTOROTATION = 7
-local FIELD_SUSPEND = 8
-local FIELD_BYPASS = 9
+local FIELD_FALLBACK_PRECOMP = 1
+local FIELD_PID_SPOOLUP = 2
+local FIELD_VOLTAGE_COMP = 3
+local FIELD_DYN_MIN_THROTTLE = 4
+
 
 local apidata = {
-    api = {[1] = 'GOVERNOR_PROFILE'},
+    api = {
+        {id = 1, name = "GOVERNOR_PROFILE", enableDeltaCache = false, rebuildOnWrite = true},
+    },    
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.profile_governor.tx_precomp_curve)@", mspapi = 1, apikey = "governor_flags->tx_precomp_curve", type = 4}, {t = "@i18n(app.modules.profile_governor.hs_adjustment)@", mspapi = 1, apikey = "governor_flags->hs_adjustment", type = 4}, {t = "@i18n(app.modules.profile_governor.fallback_precomp)@", mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 4},
-            {t = "@i18n(app.modules.profile_governor.pid_spoolup)@", mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 4}, {t = "@i18n(app.modules.profile_governor.voltage_comp)@", mspapi = 1, apikey = "governor_flags->voltage_comp", type = 4}, {t = "@i18n(app.modules.profile_governor.dyn_min_throttle)@", mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 4},
-            {t = "@i18n(app.modules.profile_governor.autorotation)@", mspapi = 1, apikey = "governor_flags->autorotation", type = 4}, {t = "@i18n(app.modules.profile_governor.suspend)@", mspapi = 1, apikey = "governor_flags->suspend", type = 4}, {t = "@i18n(app.modules.profile_governor.bypass)@", mspapi = 1, apikey = "governor_flags->bypass", type = 4}
-
+            {t = "@i18n(app.modules.profile_governor.fallback_precomp)@", mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 1},
+            {t = "@i18n(app.modules.profile_governor.pid_spoolup)@", mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 1}, 
+            {t = "@i18n(app.modules.profile_governor.voltage_comp)@", mspapi = 1, apikey = "governor_flags->voltage_comp", type = 1}, 
+            {t = "@i18n(app.modules.profile_governor.dyn_min_throttle)@", mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 1},
         }
     }
 }
@@ -36,70 +36,77 @@ local function postLoad(self)
     activateWakeup = true
 end
 
+local function setNavEnabled(id, enabled)
+    local navFields = rfsuite.app and rfsuite.app.formNavigationFields
+    local nav = navFields and navFields[id]
+    if nav and nav.enable then nav:enable(enabled) end
+end
+
+local function setFieldEnabled(index, enabled)
+    local fields = rfsuite.app and rfsuite.app.formFields
+    local field = fields and fields[index]
+    if field and field.enable then field:enable(enabled) end
+end
+
+local function canSave()
+    local govEnabled = (rfsuite.session.governorMode ~= nil and rfsuite.session.governorMode ~= 0)
+    if not govEnabled then return false end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
+
 local function wakeup()
-    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
-        if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " / " .. "@i18n(app.modules.governor.menu_flags)@" .. " #" .. rfsuite.session.activeProfile) end
-
-        if rfsuite.session.governorMode == 0 then
-            if governorDisabledMsg == false then
-                governorDisabledMsg = true
-                rfsuite.app.formNavigationFields['save']:enable(false)
-                rfsuite.app.formNavigationFields['reload']:enable(false)
-                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.profile_governor.disabled_message)@")
-            end
-        end
-
-        local bypass = (rfsuite.app.Page.apidata.formdata.fields[FIELD_BYPASS].value == 1)
-        local txPrecomp = (rfsuite.app.Page.apidata.formdata.fields[FIELD_TX_PRECOMP_CURVE].value == 1)
-        local pidSpoolup = (rfsuite.app.Page.apidata.formdata.fields[FIELD_PID_SPOOLUP].value == 1)
-        local adcVoltage = (rfsuite.session.batteryConfig.voltageMeterSource == 1)
-
-        if bypass then
-            rfsuite.app.formFields[FIELD_TX_PRECOMP_CURVE]:enable(false)
-            rfsuite.app.formFields[FIELD_HS_ADJUSTMENT]:enable(false)
-            rfsuite.app.formFields[FIELD_FALLBACK_PRECOMP]:enable(false)
-            rfsuite.app.formFields[FIELD_PID_SPOOLUP]:enable(false)
-            rfsuite.app.formFields[FIELD_VOLTAGE_COMP]:enable(false)
-            rfsuite.app.formFields[FIELD_DYN_MIN_THROTTLE]:enable(false)
-            rfsuite.app.formFields[FIELD_AUTOROTATION]:enable(false)
-            rfsuite.app.formFields[FIELD_SUSPEND]:enable(false)
-            return
-        end
-
-        rfsuite.app.formFields[FIELD_TX_PRECOMP_CURVE]:enable(true)
-        rfsuite.app.formFields[FIELD_HS_ADJUSTMENT]:enable(true)
-        rfsuite.app.formFields[FIELD_FALLBACK_PRECOMP]:enable(true)
-        rfsuite.app.formFields[FIELD_PID_SPOOLUP]:enable(true)
-        rfsuite.app.formFields[FIELD_VOLTAGE_COMP]:enable(true)
-        rfsuite.app.formFields[FIELD_DYN_MIN_THROTTLE]:enable(true)
-        rfsuite.app.formFields[FIELD_AUTOROTATION]:enable(true)
-        rfsuite.app.formFields[FIELD_SUSPEND]:enable(true)
-
-        rfsuite.app.formFields[FIELD_VOLTAGE_COMP]:enable(adcVoltage)
-
-        if txPrecomp then
-            rfsuite.app.formFields[FIELD_HS_ADJUSTMENT]:enable(false)
-            rfsuite.app.formFields[FIELD_FALLBACK_PRECOMP]:enable(false)
-            rfsuite.app.formFields[FIELD_PID_SPOOLUP]:enable(false)
-        end
-
-        if (not txPrecomp) and pidSpoolup then rfsuite.app.formFields[FIELD_TX_PRECOMP_CURVE]:enable(false) end
+    -- we are compromised if we don't have governor mode known
+    if rfsuite.session.governorMode == nil then
+        pageRuntime.openMenuContext()
+        return
     end
+
+    local mspQueue = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if activateWakeup ~= true or not (mspQueue and mspQueue.isProcessed and mspQueue:isProcessed()) then
+        return
+    end
+
+    local activeProfile = rfsuite.session and rfsuite.session.activeProfile
+    if activeProfile ~= nil then
+        local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+        rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
+    end
+
+    -- Enable/disable fields based on firmware/session state.
+    local govEnabled = (rfsuite.session.governorMode ~= nil and rfsuite.session.governorMode ~= 0)
+    local adcVoltage = (rfsuite.session.batteryConfig ~= nil and rfsuite.session.batteryConfig.voltageMeterSource == 1)
+
+    -- Navigation buttons (if present)
+    setNavEnabled("save", canSave())
+    setNavEnabled("reload", govEnabled)
+
+    -- If governor is disabled in firmware, lock the page.
+    if not govEnabled then
+        setFieldEnabled(FIELD_FALLBACK_PRECOMP, false)
+        setFieldEnabled(FIELD_PID_SPOOLUP, false)
+        setFieldEnabled(FIELD_VOLTAGE_COMP, false)
+        setFieldEnabled(FIELD_DYN_MIN_THROTTLE, false)
+        return
+    end
+
+    -- Governor enabled: field availability.
+    setFieldEnabled(FIELD_FALLBACK_PRECOMP, true)
+    setFieldEnabled(FIELD_PID_SPOOLUP, true)
+    setFieldEnabled(FIELD_DYN_MIN_THROTTLE, true)
+
+    -- Voltage compensation requires an ADC voltage source.
+    setFieldEnabled(FIELD_VOLTAGE_COMP, adcVoltage)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
-        return true
-    end
+    return navHandlers.event(widget, category, value)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")
-    return true
+    return navHandlers.onNavMenu()
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, canSave = canSave, API = {}}

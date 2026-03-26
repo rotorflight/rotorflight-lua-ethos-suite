@@ -4,6 +4,11 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local max = math.max
+local abs = math.abs
+local tonumber = tonumber
 
 local utils = rfsuite.widgets.dashboard.utils
 
@@ -19,8 +24,8 @@ local function getUserVoltageOverride(which)
     if prefs and prefs["system/@default"] then
         local v = tonumber(prefs["system/@default"][which])
 
-        if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
-        if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+        if which == "v_min" and v and abs(v - 18.0) > 0.05 then return v end
+        if which == "v_max" and v and abs(v - 25.2) > 0.05 then return v end
     end
     return nil
 end
@@ -120,18 +125,14 @@ local function buildBoxes(W)
             min = function()
                 local override = getUserVoltageOverride("v_min")
                 if override then return override end
-                local cfg = rfsuite.session.batteryConfig
-                local cells = (cfg and cfg.batteryCellCount) or 3
-                local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-                return math.max(0, cells * minV)
+                local cells, minV = utils.getBatteryVoltageBounds(3, 3.0, 4.2)
+                return max(0, cells * minV)
             end,
             max = function()
                 local override = getUserVoltageOverride("v_max")
                 if override then return override end
-                local cfg = rfsuite.session.batteryConfig
-                local cells = (cfg and cfg.batteryCellCount) or 3
-                local maxV = (cfg and cfg.vbatfullcellvoltage) or 4.2
-                return math.max(0, cells * maxV)
+                local cells, _, maxV = utils.getBatteryVoltageBounds(3, 3.0, 4.2)
+                return max(0, cells * maxV)
             end,
 
             thresholds = {
@@ -166,7 +167,7 @@ local function buildBoxes(W)
                 }
             }
         }, {col = 3, row = 3, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "current", nosource = "-", title = "@i18n(widgets.dashboard.current):upper()@", unit = "A", titlepos = "bottom", font = opts.font, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
-        {col = 6, row = 1, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "smartfuel", nosource = "-", title = "@i18n(widgets.dashboard.fuel):upper()@", unit = "%", titlepos = "bottom", font = opts.font, transform = "floor", thresholds = {{value = 30, textcolor = colorMode.fillcritcolor}, {value = 60, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcolor}}, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
+        {col = 6, row = 1, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "smartfuel", nosource = "-", title = function() return utils.isElectricEngine() and "@i18n(widgets.dashboard.battery):upper()@" or "@i18n(widgets.dashboard.fuel):upper()@" end, unit = "%", titlepos = "bottom", font = opts.font, transform = "floor", thresholds = {{value = 30, textcolor = colorMode.fillcritcolor}, {value = 60, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcolor}}, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
         {col = 6, row = 3, colspan = 3, rowspan = 2, type = "text", subtype = "telemetry", source = "rpm", nosource = "-", title = "@i18n(widgets.dashboard.rpm):upper()@", unit = "rpm", titlepos = "bottom", font = opts.font, transform = "floor", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor}
     }
 

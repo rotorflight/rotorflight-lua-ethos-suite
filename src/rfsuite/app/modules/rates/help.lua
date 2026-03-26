@@ -3,7 +3,6 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
-local rfsuite = require("rfsuite")
 
 local data = {}
 
@@ -24,5 +23,7 @@ data["help"]["table"][3] = {"@i18n(app.modules.rates.help_table_3_p1)@", "@i18n(
 data["help"]["table"][4] = {"@i18n(app.modules.rates.help_table_4_p1)@", "@i18n(app.modules.rates.help_table_4_p2)@", "@i18n(app.modules.rates.help_table_4_p3)@"}
 
 data["help"]["table"][5] = {"@i18n(app.modules.rates.help_table_5_p1)@", "@i18n(app.modules.rates.help_table_5_p2)@", "@i18n(app.modules.rates.help_table_5_p3)@"}
+
+data["help"]["table"][6] = {"@i18n(app.modules.rates.help_table_6_p1)@", "@i18n(app.modules.rates.help_table_6_p2)@", "@i18n(app.modules.rates.help_table_6_p3)@"}
 
 return data

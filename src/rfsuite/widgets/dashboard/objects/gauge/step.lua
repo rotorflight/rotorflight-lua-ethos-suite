@@ -49,6 +49,10 @@ Bar padding parameters
 ]]
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local floor = math.floor
+local rep = string.rep
 
 local render = {}
 
@@ -112,7 +116,7 @@ function render.wakeup(box)
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
     end
@@ -127,44 +131,48 @@ function render.wakeup(box)
 
     box._currentDisplayValue = percent
 
-    box._cache = {
-        value = value,
-        displayValue = displayValue,
-        unit = unit,
-        min = min,
-        max = max,
-        percent = percent,
-        title = getParam(box, "title"),
-        titlepos = getParam(box, "titlepos"),
-        titlefont = getParam(box, "titlefont"),
-        titlespacing = getParam(box, "titlespacing"),
-        titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding = getParam(box, "titlepadding"),
-        titlepaddingleft = getParam(box, "titlepaddingleft"),
-        titlepaddingright = getParam(box, "titlepaddingright"),
-        titlepaddingtop = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        stepcount = getParam(box, "stepcount") or 4,
-        fillcolor = fillcolor,
-        fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
-        bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        font = getParam(box, "font"),
-        valuealign = getParam(box, "valuealign"),
-        valuepadding = getParam(box, "valuepadding"),
-        valuepaddingleft = getParam(box, "valuepaddingleft"),
-        valuepaddingright = getParam(box, "valuepaddingright"),
-        valuepaddingtop = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        barpadding = getParam(box, "barpadding"),
-        barpaddingleft = getParam(box, "barpaddingleft"),
-        barpaddingright = getParam(box, "barpaddingright"),
-        barpaddingtop = getParam(box, "barpaddingtop"),
-        barpaddingbottom = getParam(box, "barpaddingbottom"),
-        textcolor = textcolor,
-        hidevalue = getParam(box, "hidevalue"),
-        thresholds = thresholds,
-        stepgap = getParam(box, "stepgap") or 1
-    }
+    local c = box._cache
+    if not c then
+        c = {}
+        box._cache = c
+    end
+
+    c.value = value
+    c.displayValue = displayValue
+    c.unit = unit
+    c.min = min
+    c.max = max
+    c.percent = percent
+    c.title = getParam(box, "title")
+    c.titlepos = getParam(box, "titlepos")
+    c.titlefont = getParam(box, "titlefont")
+    c.titlespacing = getParam(box, "titlespacing")
+    c.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+    c.titlepadding = getParam(box, "titlepadding")
+    c.titlepaddingleft = getParam(box, "titlepaddingleft")
+    c.titlepaddingright = getParam(box, "titlepaddingright")
+    c.titlepaddingtop = getParam(box, "titlepaddingtop")
+    c.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+    c.stepcount = getParam(box, "stepcount") or 4
+    c.fillcolor = fillcolor
+    c.fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    c.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    c.font = getParam(box, "font")
+    c.valuealign = getParam(box, "valuealign")
+    c.valuepadding = getParam(box, "valuepadding")
+    c.valuepaddingleft = getParam(box, "valuepaddingleft")
+    c.valuepaddingright = getParam(box, "valuepaddingright")
+    c.valuepaddingtop = getParam(box, "valuepaddingtop")
+    c.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+    c.barpadding = getParam(box, "barpadding")
+    c.barpaddingleft = getParam(box, "barpaddingleft")
+    c.barpaddingright = getParam(box, "barpaddingright")
+    c.barpaddingtop = getParam(box, "barpaddingtop")
+    c.barpaddingbottom = getParam(box, "barpaddingbottom")
+    c.textcolor = textcolor
+    c.hidevalue = getParam(box, "hidevalue")
+    c.thresholds = thresholds
+    c.stepgap = getParam(box, "stepgap") or 1
 end
 
 function render.paint(x, y, w, h, box)
@@ -209,14 +217,14 @@ function render.paint(x, y, w, h, box)
     local barH = h - title_area_top - title_area_bottom - barpaddingtop - barpaddingbottom
 
     local reqSteps = c.stepcount or 4
-    local maxFitSteps = math.max(2, math.floor((barW + stepGap) / (minStepW + stepGap)))
+    local maxFitSteps = math.max(2, floor((barW + stepGap) / (minStepW + stepGap)))
     local steps = math.min(reqSteps, maxFitSteps)
     local stepW = (barW - (steps - 1) * stepGap) / steps
     local maxStepH = math.max(minStepH, barH)
-    local activeSteps = math.floor((c.percent or 0) * steps + 0.5)
+    local activeSteps = floor((c.percent or 0) * steps + 0.5)
 
     for i = 1, steps do
-        local stepH = math.floor((maxStepH / steps) * i)
+        local stepH = floor((maxStepH / steps) * i)
         local stepY = barY + maxStepH - stepH
         local stepX = barX + (i - 1) * (stepW + stepGap)
         lcd.color(i <= activeSteps and c.fillcolor or c.fillbgcolor)

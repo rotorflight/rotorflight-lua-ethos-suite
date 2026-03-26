@@ -9,7 +9,7 @@ local activateWakeup = false
 
 local apidata = {
     api = {
-        [1] = 'PID_TUNING'
+        {id = 1, name = "PID_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
         labels = {},
@@ -53,21 +53,26 @@ local function postLoad(self)
     activateWakeup = true
 end
 
-local function openPage(idx, title, script)
+local function openPage(opts)
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    local relativeScript = script
+    if type(relativeScript) == "string" and relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.session.lastPage = script
+    rfsuite.app.lastScript = relativeScript or script
+    rfsuite.session.lastPage = relativeScript or script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-
-    local longPage = false
 
     form.clear()
 
@@ -85,7 +90,6 @@ local function openPage(idx, title, script)
     local w = ((screenWidth * 70 / 100) / numCols)
     local paddingRight = 20
     local positions = {}
-    local positions_r = {}
     local pos
 
     local line = form.addLine("")
@@ -94,49 +98,63 @@ local function openPage(idx, title, script)
     local posX = screenWidth - paddingRight
     local posY = paddingTop
 
-    local c = 1
     while loc > 0 do
         local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
         pos = {x = posX, y = posY, w = w, h = h}
         form.addStaticText(line, pos, colLabel)
         positions[loc] = posX - w + paddingRight
-        positions_r[c] = posX - w + paddingRight
         posX = math.floor(posX - w)
         loc = loc - 1
-        c = c + 1
     end
 
+    local fields = rfsuite.app.Page.apidata.formdata.fields
     local pidRows = {}
     for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do pidRows[ri] = form.addLine(rv) end
 
-    for i = 1, #rfsuite.app.Page.apidata.formdata.fields do
-        local f = rfsuite.app.Page.apidata.formdata.fields[i]
-        local l = rfsuite.app.Page.apidata.formdata.labels
-        local pageIdx = i
-        local currentField = i
-
+    for i = 1, #fields do
+        local f = fields[i]
         posX = positions[f.col]
 
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
-            if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
-                ui.disableAllFields()
-                ui.disableAllNavigationFields()
-                ui.enableNavigationField('menu')
+            if not fields or not fields[i] then
+                if rfsuite.app.ui then
+                    rfsuite.app.ui.disableAllFields()
+                    rfsuite.app.ui.disableAllNavigationFields()
+                    rfsuite.app.ui.enableNavigationField('menu')
+                end
                 return nil
             end
-            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
+            return rfsuite.app.utils.getFieldValue(fields[i])
         end, function(value)
+            if not fields or not fields[i] then return end
+            rfsuite.app.ui.markPageDirty()
             if f.postEdit then f.postEdit(rfsuite.app.Page) end
             if f.onChange then f.onChange(rfsuite.app.Page) end
 
-            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
         end)
     end
 
+    rfsuite.app.ui.setPageDirty(false)
 end
 
-local function wakeup() if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then if rfsuite.session.activeProfile ~= nil then rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile) end end end
+local function canSave()
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
 
-return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, API = {}}
+local function wakeup()
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        if rfsuite.session.activeProfile ~= nil then
+            local titleField = rfsuite.app.formFields['title']
+            if titleField then
+                rfsuite.app.ui.setHeaderTitle(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
+            end
+        end
+    end
+end
+
+return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, canSave = canSave, API = {}}

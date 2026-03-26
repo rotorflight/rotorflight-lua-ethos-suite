@@ -40,6 +40,9 @@ thresholds = {
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local rep = string.rep
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -107,7 +110,7 @@ function render.wakeup(box)
     local showReason = false
 
     if disableflags ~= nil and armingDisableFlagsToString then
-        disableflags = math.floor(disableflags)
+        disableflags = floor(disableflags)
         local reason = armingDisableFlagsToString(disableflags)
         if reason and reason ~= "OK" then
             displayValue = reason
@@ -118,9 +121,9 @@ function render.wakeup(box)
     if not showReason then
         if value ~= nil then
             if value == 1 or value == 3 then
-                displayValue = "@i18n(ARMED)@"
+                displayValue = "@i18n(widgets.governor.ARMED)@"
             else
-                displayValue = "@i18n(DISARMED)@"
+                displayValue = "@i18n(widgets.governor.DISARMED)@"
             end
         end
     end
@@ -128,7 +131,7 @@ function render.wakeup(box)
     if displayValue == nil and value == nil and disableflags == nil then
         local maxDots = 3
         box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = string.rep(".", box._dotCount)
+        displayValue = rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     elseif displayValue == nil then
         displayValue = cfg.novalue

@@ -42,6 +42,18 @@
     "needs_translation": false
   },
   {
+    "file": "app/mpoverideen.wav",
+    "english": "Passthrough Mixer overide - enabled",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "app/mpoveridedis.wav",
+    "english": "Passthrough Mixer overide - disabled",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
     "file": "events/alerts/lowvoltage.wav",
     "english": "Low Voltage",
     "translation": "Bajo Voltaje",
@@ -50,8 +62,8 @@
   {
     "file": "events/alerts/lowfuel.wav",
     "english": "Low Fuel",
-    "translation": "Combustible Bajo",
-    "needs_translation": false
+    "translation": null,
+    "needs_translation": true
   },
   {
     "file": "events/alerts/armed.wav",
@@ -195,7 +207,7 @@
     "file": "adjfunctions/rc.wav",
     "english": "RC",
     "translation": "RC",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/rate.wav",
@@ -207,31 +219,37 @@
     "file": "adjfunctions/p.wav",
     "english": "P",
     "translation": "P",
-    "needs_translation": false
+    "needs_translation": true
+  },
+  {
+    "file": "adjfunctions/b.wav",
+    "english": "B",
+    "translation": null,
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/i.wav",
     "english": "I",
     "translation": "I",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/d.wav",
     "english": "D",
     "translation": "D",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/f.wav",
     "english": "F",
     "translation": "F",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/o.wav",
     "english": "O",
     "translation": "O",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gain.wav",
@@ -345,7 +363,7 @@
     "file": "adjfunctions/acro.wav",
     "english": "Acro",
     "translation": "Acro",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "adjfunctions/gov.wav",
@@ -465,12 +483,24 @@
     "file": "status/alerts/timer.wav",
     "english": "timer",
     "translation": "timer",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "status/alerts/voltage.wav",
     "english": "voltage",
     "translation": "voltaje",
     "needs_translation": false
+  },
+  {
+    "file": "events/alerts/battery.wav",
+    "english": "Battery",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "status/alerts/lowbat.wav",
+    "english": "Battery Empty",
+    "translation": null,
+    "needs_translation": true
   }
 ]

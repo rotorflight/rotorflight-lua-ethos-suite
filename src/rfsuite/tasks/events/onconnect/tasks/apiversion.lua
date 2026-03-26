@@ -1,0 +1,159 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+local apiversion = {}
+
+local mspCallMade = false
+local API_NAME = "API_VERSION"
+
+local function clearApiEntry()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(API_NAME)
+    end
+end
+
+local function version_ge(a, b)
+    local function split(v)
+        local t = {}
+
+        local function appendParts(value)
+            if value == nil then return end
+
+            if type(value) == "table" then
+                local arrayValues = {}
+                for _, token in ipairs(value) do arrayValues[#arrayValues + 1] = token end
+
+                if #arrayValues == 3 then
+                    local major = tonumber(arrayValues[1])
+                    local middle = tonumber(arrayValues[2])
+                    local minor = tonumber(arrayValues[3])
+                    if major and middle == 0 and minor then
+                        t[#t + 1] = major
+                        t[#t + 1] = minor
+                        return
+                    end
+                end
+
+                if #arrayValues > 0 then
+                    for i = 1, #arrayValues do appendParts(arrayValues[i]) end
+                elseif value[0] ~= nil then
+                    appendParts(value[0])
+                end
+                return
+            end
+
+            for part in tostring(value):gmatch("(%d+)") do t[#t + 1] = tonumber(part) end
+        end
+
+        appendParts(v)
+
+        return t
+    end
+
+    local A, B = split(a), split(b)
+    local len = math.max(#A, #B)
+    for i = 1, len do
+        local ai = A[i] or 0
+        local bi = B[i] or 0
+        if ai < bi then return false end
+        if ai > bi then return true end
+    end
+    return true
+end
+
+function apiversion.wakeup()
+    if rfsuite.session.apiVersion == nil and mspCallMade == false then
+        mspCallMade = true
+
+        local originalProto = rfsuite.config.mspProtocolVersion
+        local probeProto = (rfsuite.config.msp and rfsuite.config.msp.probeProtocol) or 1
+        rfsuite.config.mspProtocolVersion = probeProto
+
+        local API = rfsuite.tasks.msp.api.load(API_NAME)
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
+        API.setCompleteHandler(function(self, buf)
+            local version = API.readVersion()
+
+            local restoreProto = originalProto
+
+            if version then
+                local apiVersionString = string.format("%.2f", version)
+
+                if not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionString) then
+                    rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "info")
+                    rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "connect")
+                    rfsuite.session.apiVersionInvalid = true
+                    rfsuite.session.apiVersion = apiVersionString
+
+                    rfsuite.config.mspProtocolVersion = restoreProto
+                    clearApiEntry()
+                    return
+                end
+
+                local wantProto = probeProto
+                local policy = rfsuite.config.msp or {}
+                if policy.allowAutoUpgrade and policy.maxProtocol and policy.maxProtocol >= 2 then
+                    if policy.v2MinApiVersion and version_ge(apiVersionString, policy.v2MinApiVersion) then
+                        wantProto = 2
+                    end
+                end
+
+                if wantProto ~= rfsuite.config.mspProtocolVersion then
+                    rfsuite.config.mspProtocolVersion = wantProto
+                    rfsuite.session.mspProtocolVersion = wantProto
+
+                    if rfsuite.tasks.msp.common.setProtocolVersion then
+                        rfsuite.tasks.msp.common.setProtocolVersion(wantProto)
+                    elseif rfsuite.tasks.msp.reset then
+                        rfsuite.tasks.msp.reset()
+                    end
+
+                    rfsuite.utils.log(string.format("MSP protocol upgraded to v%d (api %s)", wantProto, apiVersionString), "info")
+                    rfsuite.utils.log(string.format("MSP protocol upgraded to v%d (api %s)", wantProto, apiVersionString), "connect")
+                else
+                    rfsuite.config.mspProtocolVersion = wantProto
+                end
+            else
+                rfsuite.config.mspProtocolVersion = restoreProto
+                rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "info")
+                rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "connect")
+            end
+
+            rfsuite.session.apiVersion = version and string.format("%.2f", version) or nil
+            rfsuite.session.apiVersionInvalid = false
+            if rfsuite.session.apiVersion then
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "connect")
+            end
+            clearApiEntry()
+        end)
+        API.setErrorHandler(function() clearApiEntry() end)
+        API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
+        API.read()
+    end
+end
+
+function apiversion.reset()
+    clearApiEntry()
+    rfsuite.session.apiVersion = nil
+    rfsuite.session.apiVersionInvalid = nil
+    mspCallMade = false
+end
+
+function apiversion.isComplete()
+    if rfsuite.session.apiVersion ~= nil then
+        if rfsuite.utils and type(rfsuite.utils.playConnectBeep) == "function" then
+            rfsuite.utils.playConnectBeep()
+        else
+            rfsuite.utils.playFileCommon("beep.wav")
+        end
+        return true
+    end
+end
+
+return apiversion

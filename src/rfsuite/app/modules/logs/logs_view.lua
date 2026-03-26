@@ -4,6 +4,16 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local lcd = lcd
+local system = system
+local app = rfsuite.app
+local prefs = rfsuite.preferences
+local tasks = rfsuite.tasks
+local rfutils = rfsuite.utils
+local session = rfsuite.session
+local navHandlers = pageRuntime.createMenuHandlers()
+local onNavMenu
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 local res = system.getVersion()
@@ -11,11 +21,11 @@ local LCD_W = res.lcdWidth
 local LCD_H = res.lcdHeight
 
 local graphPos = {}
-graphPos['menu_offset'] = rfsuite.app.radio.logGraphMenuOffset
-graphPos['height_offset'] = rfsuite.app.radio.logGraphHeightOffset or 0
+graphPos['menu_offset'] = app.radio.logGraphMenuOffset
+graphPos['height_offset'] = app.radio.logGraphHeightOffset or 0
 graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
-graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
+graphPos['width'] = math.floor(LCD_W * app.radio.logGraphWidthPercentage)
 graphPos['key_width'] = LCD_W - graphPos['width']
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
 graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height_offset']
@@ -33,17 +43,22 @@ local logFileReadOffset = 0
 local logDataRawReadComplete = false
 local readNextChunk
 local logData = {}
-local maxMinData = {}
 local progressLoader
+local progressLoaderBaseMessage
+local progressLoaderMspStatusLast
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local logLineCount
 
-local logColumns = rfsuite.tasks.logging.getLogTable()
+local logColumns = tasks.logging.getLogTable()
 
 local sliderPosition = 1
 local sliderPositionOld = 1
 
 local processedLogData = false
 local currentDataIndex = 1
+local slowcount = 0
+local carriedOver = nil
+local subStepSize = nil
 
 local paintCache = {points = {}, step_size = 0, position = 1, graphCount = 0, laneHeight = 0, currentLane = 0, decimationFactor = 1, needsUpdate = false}
 
@@ -53,6 +68,52 @@ local zoomLevelToTime = {[1] = 600, [2] = 300, [3] = 120, [4] = 60, [5] = 30}
 
 local SAMPLE_RATE = 1
 local function secondsToSamples(sec) return math.floor(sec * SAMPLE_RATE) end
+
+local function openProgressDialog(...)
+    if rfutils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
+local function setProgressLoaderMessage(baseMessage)
+    if not progressLoader then return end
+    progressLoaderBaseMessage = baseMessage
+    local showMsp = prefs and prefs.general and prefs.general.mspstatusdialog
+    local mspStatus = (showMsp and session and session.mspStatusMessage) or nil
+    if showMsp then
+        progressLoader:message(mspStatus or MSP_DEBUG_PLACEHOLDER)
+        progressLoaderMspStatusLast = mspStatus or MSP_DEBUG_PLACEHOLDER
+    else
+        progressLoader:message(baseMessage)
+        progressLoaderMspStatusLast = nil
+    end
+end
+
+local function refreshProgressLoaderMessage()
+    if not progressLoader or not progressLoaderBaseMessage then return end
+    local showMsp = prefs and prefs.general and prefs.general.mspstatusdialog
+    local mspStatus = (showMsp and session and session.mspStatusMessage) or nil
+    if showMsp then
+        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+        if msg ~= progressLoaderMspStatusLast then
+            progressLoader:message(msg)
+            progressLoaderMspStatusLast = msg
+        end
+    else
+        if progressLoaderMspStatusLast ~= nil then
+            progressLoader:message(progressLoaderBaseMessage)
+            progressLoaderMspStatusLast = nil
+        end
+    end
+end
 
 local function readNextChunk()
     if logDataRawReadComplete then return end
@@ -68,14 +129,14 @@ local function readNextChunk()
     if chunk then
         table.insert(logDataRaw, chunk)
         logFileReadOffset = logFileReadOffset + #chunk
-        rfsuite.utils.log("Read " .. #chunk .. " bytes from log file", "debug")
+        rfutils.log("Read " .. #chunk .. " bytes from log file", "debug")
     else
         logFileHandle:close()
         logFileHandle = nil
         logDataRawReadComplete = true
         logDataRaw = table.concat(logDataRaw)
 
-        rfsuite.utils.log("Read complete, total size: " .. #logDataRaw .. " bytes", "debug")
+        rfutils.log("Read complete, total size: " .. #logDataRaw .. " bytes", "debug")
     end
 end
 
@@ -246,7 +307,7 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
     local w = LCD_W - graphPos['width'] - 10
     local boxpadding = 3
 
-    lcd.font(rfsuite.app.radio.logKeyFont)
+    lcd.font(app.radio.logKeyFont)
     local _, th = lcd.getTextSize(name)
     local boxHeight = th + boxpadding
 
@@ -265,7 +326,7 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
     local textY = y + (boxHeight / 2 - th / 2)
     lcd.drawText(x + 5, textY, name, LEFT)
 
-    lcd.font(rfsuite.app.radio.logKeyFontSmall)
+    lcd.font(app.radio.logKeyFontSmall)
     if lcd.darkMode() then
         lcd.color(COLOR_WHITE)
     else
@@ -294,7 +355,7 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
     local tw, th = lcd.getTextSize(max_str)
     lcd.drawText((LCD_W - tw) + boxpadding, mmY, max_str, LEFT)
 
-    if rfsuite.app.radio.logShowAvg == true then
+    if app.radio.logShowAvg == true then
         local avg_str = "Ø " .. math.floor((minimum + maximum) / 2) .. keyunit
         local avgY = mmY + th - 2
         lcd.drawText(x + 5, avgY, avg_str, LEFT)
@@ -304,7 +365,7 @@ end
 local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit, keyfloor, name, color, laneY, laneHeight, laneNumber, totalLanes)
     if position < 1 then position = 1 end
 
-    local sliderPadding = rfsuite.app.radio.logSliderPaddingLeft
+    local sliderPadding = app.radio.logSliderPaddingLeft
     local w = graphPos['width'] - sliderPadding
 
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
@@ -327,7 +388,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     if keyfloor then value = math.floor(value) end
     value = value .. keyunit
 
-    lcd.font(rfsuite.app.radio.logKeyFont)
+    lcd.font(app.radio.logKeyFont)
     local tw, th = lcd.getTextSize(value)
 
     local boxHeight = th + boxpadding
@@ -362,7 +423,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
 
         local full_label = string.format("%s [+%s]", time_str, win_label)
 
-        lcd.font(rfsuite.app.radio.logKeyFont)
+        lcd.font(app.radio.logKeyFont)
         local ty = graphPos['height'] + graphPos['menu_offset'] - 10
 
         lcd.color(COLOR_WHITE)
@@ -423,41 +484,60 @@ local function findAverage(numbers)
     return average
 end
 
-local function openPage(pidx, title, script, logfile, displaymode, dirname)
+local function openPage(opts)
 
-    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    local logfile = opts.logfile
+    local displaymode = opts.displaymode
+    local dirname = opts.dirname
+    local modelName = opts.modelName
 
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    if tasks.msp then tasks.msp.protocol.mspIntervalOveride = nil end
+
+    app.triggers.isReady = false
+    app.uiState = app.uiStatus.pages
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    app.lastIdx = pidx
+    app.lastTitle = title
+    app.lastScript = script
 
     local err
 
-    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.app.activeLogDir)
-    rfsuite.app.ui.fieldHeader("Logs / " .. name .. " / " .. extractShortTimestamp(logfile))
+    local name = modelName or utils.resolveModelName(dirname or session.mcu_id)
+    app.ui.fieldHeader("Logs / " .. name .. " / " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    local filePath
-
-    if rfsuite.app.activeLogDir then
-        filePath = utils.getLogDir(rfsuite.app.activeLogDir) .. "/" .. logfile
-    else
-        filePath = utils.getLogDir() .. "/" .. logfile
-    end
+    local filePath = utils.getLogDir(dirname) .. logfile
     logFileHandle, err = io.open(filePath, "rb")
+    if not logFileHandle then
+        rfutils.log("Failed to open log file: " .. tostring(err), "error")
+        app.ui.progressDisplay()
+        onNavMenu()
+        return
+    end
+
+    zoomLevel = 1
+    sliderPosition = 1
+    sliderPositionOld = 1
+    processedLogData = false
+    currentDataIndex = 1
+    slowcount = 0
+    carriedOver = nil
+    subStepSize = nil
+    logData = {}
+    paintCache.needsUpdate = true
 
     local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
-    rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function() return sliderPosition end, function(newValue) sliderPosition = newValue end)
+    app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function() return sliderPosition end, function(newValue) sliderPosition = newValue end)
 
     local zoomButtonWidth = (graphPos['key_width'] / 2) - 20
 
     local posField = {x = graphPos['width'], y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
-    rfsuite.app.formFields[2] = form.addButton(line, posField, {
+    app.formFields[2] = form.addButton(line, posField, {
         text = "-",
         icon = nil,
         options = FONT_STD,
@@ -466,20 +546,20 @@ local function openPage(pidx, title, script, logfile, displaymode, dirname)
                 zoomLevel = zoomLevel - 1
                 paintCache.needsUpdate = true
                 lcd.invalidate()
-                rfsuite.app.formFields[2]:enable(true)
-                rfsuite.app.formFields[3]:enable(true)
+                app.formFields[2]:enable(true)
+                app.formFields[3]:enable(true)
             end
             if zoomLevel == 1 then
-                rfsuite.app.formFields[2]:enable(false)
-                rfsuite.app.formFields[3]:focus()
+                app.formFields[2]:enable(false)
+                app.formFields[3]:focus()
             end
         end
     })
 
-    rfsuite.app.formFields[2]:enable(false)
+    app.formFields[2]:enable(false)
 
     local posField = {x = graphPos['width'] + zoomButtonWidth + 10, y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
-    rfsuite.app.formFields[3] = form.addButton(line, posField, {
+    app.formFields[3] = form.addButton(line, posField, {
         text = "+",
         icon = nil,
         options = FONT_STD,
@@ -488,39 +568,31 @@ local function openPage(pidx, title, script, logfile, displaymode, dirname)
                 zoomLevel = zoomLevel + 1
                 paintCache.needsUpdate = true
                 lcd.invalidate()
-                rfsuite.app.formFields[2]:enable(true)
-                rfsuite.app.formFields[3]:enable(true)
+                app.formFields[2]:enable(true)
+                app.formFields[3]:enable(true)
             end
             if zoomLevel == zoomCount then
-                rfsuite.app.formFields[3]:enable(false)
-                rfsuite.app.formFields[2]:focus()
+                app.formFields[3]:enable(false)
+                app.formFields[2]:focus()
             end
         end
     })
 
-    rfsuite.app.formFields[1]:step(1)
+    app.formFields[1]:step(1)
 
     logDataRaw = {}
     logFileReadOffset = 0
     logDataRawReadComplete = false
 
-    rfsuite.app.triggers.closeProgressLoader = true
+    app.triggers.closeProgressLoader = true
     lcd.invalidate()
     enableWakeup = true
     return
 end
 
 local function event(event, category, value, x, y)
-    if value == 35 then
-        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_logs.lua")
-        return true
-    end
-    return false
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
-
-local slowcount = 0
-local carriedOver = nil
-local subStepSize = nil
 
 local function updatePaintCache()
     if not logData or not processedLogData then return end
@@ -570,9 +642,13 @@ local function wakeup()
     end
 
     if not progressLoader then
-        progressLoader = form.openProgressDialog("Processing", "Loading log data")
+        progressLoader = openProgressDialog("Processing", "Loading log data")
         progressLoader:closeAllowed(false)
+        setProgressLoaderMessage("Loading log data")
+        app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage or "Loading log data")
     end
+
+    refreshProgressLoaderMessage()
 
     if not logDataRawReadComplete then
         progressLoader:value(slowcount)
@@ -584,7 +660,7 @@ local function wakeup()
 
         if not carriedOver then
 
-            rfsuite.app.formNavigationFields['menu']:focus(true)
+            app.formNavigationFields['menu']:focus(true)
             carriedOver = slowcount
             subStepSize = (100 - carriedOver) / (#logColumns * 5)
         end
@@ -621,7 +697,7 @@ local function wakeup()
         updateProgress(5)
         logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
 
-        progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
+        setProgressLoaderMessage("Processing data " .. currentDataIndex .. " of " .. #logColumns)
 
         if currentDataIndex >= #logColumns then
             logLineCount = #logData[currentDataIndex]['data']
@@ -629,8 +705,8 @@ local function wakeup()
             zoomCount = calculateZoomSteps(logLineCount)
             if zoomLevel > zoomCount then zoomLevel = zoomCount end
 
-            local btnMinus = rfsuite.app.formFields[2]
-            local btnPlus = rfsuite.app.formFields[3]
+            local btnMinus = app.formFields[2]
+            local btnPlus = app.formFields[3]
             if zoomCount <= 1 then
                 btnMinus:enable(false);
                 btnPlus:enable(false)
@@ -640,6 +716,9 @@ local function wakeup()
             end
 
             progressLoader:close()
+            app.ui.clearProgressDialog(progressLoader)
+            progressLoaderBaseMessage = nil
+            progressLoaderMspStatusLast = nil
             processedLogData = true
             paintCache.needsUpdate = true
             lcd.invalidate()
@@ -670,9 +749,25 @@ local function paint()
     end
 end
 
-local function onNavMenu(self)
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_logs.lua")
+onNavMenu = function(self)
+    return navHandlers.onNavMenu()
 end
 
-return {event = event, openPage = openPage, wakeup = wakeup, paint = paint, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}
+local function close()
+    enableWakeup = false
+
+    if progressLoader then
+        pcall(function() progressLoader:close() end)
+        app.ui.clearProgressDialog(progressLoader)
+        progressLoader = nil
+        progressLoaderBaseMessage = nil
+        progressLoaderMspStatusLast = nil
+    end
+
+    if logFileHandle then
+        pcall(function() logFileHandle:close() end)
+        logFileHandle = nil
+    end
+end
+
+return {event = event, openPage = openPage, wakeup = wakeup, paint = paint, onNavMenu = onNavMenu, close = close, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}, API = {}}

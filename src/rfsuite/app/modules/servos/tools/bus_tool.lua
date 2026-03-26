@@ -1,0 +1,623 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+
+local triggerOverRide = false
+local triggerOverRideAll = false
+local currentServoCenter
+local lastSetServoCenter
+local lastServoChangeTime = os.clock()
+
+
+-- Indexing model (12.09+):
+-- - UI selection is 1-based and converted to local 0-based `servoIndex`.
+-- - Read requests (MSP 125) use legacy absolute servo index space with base index 8.
+-- - Write/override requests (MSP 212/213/193) use the same index space in this tool.
+-- Example:
+-- - UI BUS servo 10 -> ui0=9 -> index=17
+
+local servoIndex = rfsuite.currentServoIndex - 1 -- UI 0-based index (0..N-1)
+local isSaving = false
+local enableWakeup = false
+
+local servoTable
+local servoCount
+local configs = {}
+local BUS_OUTPUT_COUNT = 18
+local MSP125_READ_BASE_INDEX = 8  -- Base index expected by MSP 125 read-index namespace
+
+local function queueDirect(message, uuid)
+    if message and uuid and message.uuid == nil then message.uuid = uuid end
+    return rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+local function uiIndexToReadIndex(ui0)
+    -- Read path (MSP 125): legacy absolute namespace.
+    -- ui0=0 -> 8, ui0=9 -> 17
+    return (ui0 or 0) + MSP125_READ_BASE_INDEX
+end
+
+local function uiIndexToWriteIndex(ui0)
+    -- Write path intentionally matches read path.
+    return uiIndexToReadIndex(ui0)
+end
+
+local function uiIndexToConfigWriteIndex(ui0)
+    -- MSP 212 uses active-output index space on 12.09 BUS targets.
+    return (ui0 or 0) + (rfsuite.session.servoCount - BUS_OUTPUT_COUNT)
+end
+
+local function currentServoReadIndex()
+    return uiIndexToReadIndex(servoIndex)
+end
+
+local function currentServoWriteIndex()
+    return uiIndexToWriteIndex(servoIndex)
+end
+
+local function servoCenterFocusAllOn(self)
+
+    rfsuite.app.audio.playServoOverideEnable = true
+    local message = {command = 196, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+    queueDirect(message, "servo.bus.override.all.on")
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function servoCenterFocusAllOff(self)
+
+    local message = {command = 196, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+    queueDirect(message, "servo.bus.override.all.off")
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function servoCenterFocusOff(self)
+    local message = {command = 193, payload = {currentServoWriteIndex()}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+    queueDirect(message, string.format("servo.bus.override.%d.off", currentServoWriteIndex()))
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function servoCenterFocusOn(self)
+    local message = {command = 193, payload = {currentServoWriteIndex()}}
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+    queueDirect(message, string.format("servo.bus.override.%d.on", currentServoWriteIndex()))
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function writeEeprom()
+
+    local mspEepromWrite = {command = 250, simulatorResponse = {}}
+    return queueDirect(mspEepromWrite, "servo.bustool.eeprom")
+
+end
+
+local function saveServoCenter(self)
+
+    local servoCenter = math.floor(configs[servoIndex]['mid'])
+    local writeIndex = currentServoWriteIndex()
+    rfsuite.utils.log(string.format("BUS save center: ui=%d read=%d write=%d mid=%d", servoIndex, currentServoReadIndex(), writeIndex, servoCenter), "debug")
+
+    local message = {command = 213, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
+
+    return queueDirect(message, string.format("servo.bus.%d.center", writeIndex))
+
+end
+
+local function saveServoSettings(self)
+
+    local servoCenter = math.floor(configs[servoIndex]['mid'])
+    local servoMin = math.floor(configs[servoIndex]['min'])
+    local servoMax = math.floor(configs[servoIndex]['max'])
+    local servoScaleNeg = math.floor(configs[servoIndex]['scaleNeg'])
+    local servoScalePos = math.floor(configs[servoIndex]['scalePos'])
+    local servoRate = math.floor(configs[servoIndex]['rate'])
+    local servoSpeed = math.floor(configs[servoIndex]['speed'])
+    local servoFlags = math.floor(configs[servoIndex]['flags'])
+    local servoReverse = math.floor(configs[servoIndex]['reverse'])
+    local servoGeometry = math.floor(configs[servoIndex]['geometry'])
+
+    if servoReverse == 0 and servoGeometry == 0 then
+        servoFlags = 0
+    elseif servoReverse == 1 and servoGeometry == 0 then
+        servoFlags = 1
+    elseif servoReverse == 0 and servoGeometry == 1 then
+        servoFlags = 2
+    elseif servoReverse == 1 and servoGeometry == 1 then
+        servoFlags = 3
+    end
+
+    local configWriteIndex = uiIndexToConfigWriteIndex(servoIndex)
+    local message = {command = 212, payload = {}}
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, configWriteIndex)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoScaleNeg)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoScalePos)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoRate)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
+
+    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", configWriteIndex))
+    if not ok then return false, reason end
+
+    if rfsuite.session.servoOverride == true then
+        writeEeprom()
+    end
+    return true, "queued"
+
+end
+
+local function onSaveMenuProgress()
+    rfsuite.app.ui.progressDisplay()
+    local ok = saveServoSettings()
+    if ok then
+        rfsuite.app.ui.setPageDirty(false)
+    end
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function onSaveMenu()
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        isSaving = true
+        return
+    end  
+
+    local buttons = {
+        {
+            label = "@i18n(app.btn_ok_long)@",
+            action = function()
+                isSaving = true
+
+                return true
+            end
+        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+    }
+    local theTitle = "@i18n(app.msg_save_settings)@"
+    local theMsg = "@i18n(app.msg_save_current_page)@"
+
+    form.openDialog({width = nil, title = theTitle, message = theMsg, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+
+    rfsuite.app.triggers.triggerSave = false
+end
+
+local function onNavMenu(self)
+
+    rfsuite.app.ui.progressDisplay()
+    pageRuntime.openMenuContext({defaultSection = "hardware"})
+    return true
+
+end
+
+local function setServoConfigFieldsEnabled(enabled)
+    if not rfsuite.app.formFields then return end
+    for _, idx in ipairs({3, 4, 5, 6, 7, 8, 9, 10}) do
+        local field = rfsuite.app.formFields[idx]
+        if field and field.enable then field:enable(enabled) end
+    end
+    local saveField = rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields['save']
+    if saveField and saveField.enable then
+        if enabled then
+            rfsuite.app.ui.setPageDirty(rfsuite.app.pageDirty == true)
+        else
+            saveField:enable(false)
+        end
+    end
+end
+
+local function canSave()
+    if rfsuite.session.servoOverride == true then return false end
+    local pref = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.save_dirty_only
+    if pref == false or pref == "false" then return true end
+    return rfsuite.app.pageDirty == true
+end
+
+local function wakeup(self)
+
+    if enableWakeup == true then
+
+        -- go back to main as this tool is compromised 
+        if rfsuite.session.servoCount == nil or rfsuite.session.servoOverride == nil then
+            rfsuite.app.ui.openMenuContext()
+            return
+        end
+
+        if isSaving == true then
+            onSaveMenuProgress()
+            isSaving = false
+        end
+
+        if rfsuite.session.servoOverride == true then
+
+            currentServoCenter = configs[servoIndex]['mid']
+
+            local now = os.clock()
+            local settleTime = 0.05 -- seconds
+            if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
+                if currentServoCenter ~= lastSetServoCenter then
+                    local ok, reason = self.saveServoCenter(self)
+                    if ok then
+                        lastSetServoCenter = currentServoCenter
+                        lastServoChangeTime = now
+                    elseif reason then
+                        rfsuite.utils.log("BUS servo trim enqueue rejected: " .. tostring(reason), "debug")
+                    end    
+                end
+            end
+
+        end
+    end
+
+    if triggerOverRide == true then
+        triggerOverRide = false
+
+        if rfsuite.session.servoOverride == false then
+            rfsuite.app.audio.playServoOverideEnable = true
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.enabling_servo_override)@")
+            rfsuite.app.Page.servoCenterFocusAllOn(self)
+            rfsuite.session.servoOverride = true
+
+            setServoConfigFieldsEnabled(false)
+
+        else
+
+            rfsuite.app.audio.playServoOverideDisable = true
+            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
+            rfsuite.app.Page.servoCenterFocusAllOff(self)
+            rfsuite.session.servoOverride = false
+
+            setServoConfigFieldsEnabled(true)
+        end
+    end
+
+end
+
+local function getServoConfigurationsIndexed(callback, callbackParam)
+
+    -- MSP_GET_SERVO_CONFIG (125) reads one servo by read-index namespace (legacy absolute).
+    -- This intentionally differs from write-index namespace used by 212/213/193.
+    local absIndex = currentServoReadIndex()
+
+    local message = {
+        command = 125,
+        payload = {absIndex},
+        uuid = string.format("servo.cfg.bus.%d", absIndex),
+        processReply = function(self, buf)
+
+            -- Ensure we have a servoCount for any "all servos" operations (override on/off).
+            if not servoCount then
+                servoCount = rfsuite.session.servoCount or (servoTable and #servoTable) or 0
+                rfsuite.session.servoCount = servoCount
+            end
+
+            local config = configs[servoIndex] or {}
+            config.name = servoTable[servoIndex + 1]['title']
+            config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
+            config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
+            config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
+
+            if config.flags == 1 or config.flags == 3 then
+                config.reverse = 1
+            else
+                config.reverse = 0
+            end
+
+            if config.flags == 2 or config.flags == 3 then
+                config.geometry = 1
+            else
+                config.geometry = 0
+            end
+
+            configs[servoIndex] = config
+
+            if callback then callback(callbackParam) end
+        end,
+
+        -- 8x U16 fields (16 bytes). Values: mid=1500, min=1000, max=2000, rneg=1000, rpos=1000, rate=100, speed=0, flags=0
+        simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
+    }
+
+    return queueDirect(message)
+end
+
+
+local function getServoConfigurationsEnd(callbackParam)
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+    enableWakeup = true
+    rfsuite.app.ui.setPageDirty(false)
+end
+
+local function openPage(opts)
+
+    local app = rfsuite.app
+
+    local idx = opts.idx
+    local title = opts.title
+    local script = opts.script
+    local servoTableIn = opts.servoTable
+
+    if servoTableIn ~= nil then
+        servoTable = servoTableIn
+        rfsuite.servoTableLast = servoTable
+    else
+        if rfsuite.servoTableLast ~= nil then servoTable = rfsuite.servoTableLast end
+    end
+
+    configs = {}
+    configs[servoIndex] = {}
+    configs[servoIndex]['name'] = servoTable[servoIndex + 1]['title']
+    configs[servoIndex]['mid'] = 0
+    configs[servoIndex]['min'] = 0
+    configs[servoIndex]['max'] = 0
+    configs[servoIndex]['scaleNeg'] = 0
+    configs[servoIndex]['scalePos'] = 0
+    configs[servoIndex]['rate'] = 0
+    configs[servoIndex]['speed'] = 0
+    configs[servoIndex]['flags'] = 0
+    configs[servoIndex]['geometry'] = 0
+    configs[servoIndex]['reverse'] = 0
+
+    if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
+    if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
+
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
+
+    form.clear()
+
+    local fieldHelpTxt = rfsuite.app.ui.getFieldHelpTxt()
+    local function getFieldHelpText(key)
+        if not fieldHelpTxt or not fieldHelpTxt[key] then return nil end
+        return fieldHelpTxt[key]['t']
+    end
+
+
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.bus)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
+    rfsuite.app.ui.setPageDirty(false)
+
+
+    if rfsuite.app.Page.headerLine ~= nil then
+        local headerLine = form.addLine("")
+        local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, rfsuite.app.Page.headerLine)
+    end
+
+    if rfsuite.session.servoOverride == true then rfsuite.app.formNavigationFields['save']:enable(false) end
+
+    if configs[servoIndex]['mid'] ~= nil then
+
+        local idx = 2
+        local minValue = 1000
+        local maxValue = 2000
+        local defaultValue = 1500
+        local suffix = nil
+        local helpTxt = getFieldHelpText('servoMid')
+
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.center)@")
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value)
+            configs[servoIndex]['mid'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
+        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
+        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
+    end
+
+    if configs[servoIndex]['min'] ~= nil then
+        local idx = 3
+        local minValue = -500
+        local maxValue = -1
+        local defaultValue = -500
+        local suffix = nil
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
+        local helpTxt = getFieldHelpText('servoMin')
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value)
+            configs[servoIndex]['min'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
+        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
+        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+    end
+
+    if configs[servoIndex]['max'] ~= nil then
+        local idx = 4
+        local minValue = 1
+        local maxValue = 500
+        local defaultValue = 500
+        local suffix = nil
+        local helpTxt = getFieldHelpText('servoMax')
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value)
+            configs[servoIndex]['max'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
+        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
+        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+    end
+
+    if configs[servoIndex]['scaleNeg'] ~= nil then
+        local idx = 5
+        local minValue = 100
+        local maxValue = 1000
+        local defaultValue = 500
+        local suffix = nil
+        local helpTxt = getFieldHelpText('servoScaleNeg')
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_negative)@")
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scaleNeg'] end, function(value)
+            configs[servoIndex]['scaleNeg'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
+        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
+        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+    end
+
+    if configs[servoIndex]['scalePos'] ~= nil then
+        local idx = 6
+        local minValue = 100
+        local maxValue = 1000
+        local defaultValue = 500
+        local suffix = nil
+        local helpTxt = getFieldHelpText('servoScalePos')
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_positive)@")
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scalePos'] end, function(value)
+            configs[servoIndex]['scalePos'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
+        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
+        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+    end
+
+    if configs[servoIndex]['speed'] ~= nil then
+        local idx = 8
+        local minValue = 0
+        local maxValue = 60000
+        local defaultValue = 0
+        local suffix = "ms"
+        local helpTxt = getFieldHelpText('servoSpeed')
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.speed)@")
+        rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['speed'] end, function(value)
+            configs[servoIndex]['speed'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
+        if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
+        if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+    end
+
+    if configs[servoIndex]['flags'] ~= nil then
+        local idx = 9
+        local minValue = 0
+        local maxValue = 1000
+        local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
+        local tableIdxInc = -1
+        local value
+        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.reverse)@")
+        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['reverse'] end, function(value)
+            configs[servoIndex]['reverse'] = value
+            rfsuite.app.ui.markPageDirty()
+        end)
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+    end
+
+
+    if servoIndex <= 7 then
+        if configs[servoIndex]['flags'] ~= nil then
+            local idx = 10
+            local minValue = 0
+            local maxValue = 1000
+            local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
+            local tableIdxInc = -1
+            local value
+            rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
+            rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value)
+                configs[servoIndex]['geometry'] = value
+                rfsuite.app.ui.markPageDirty()
+            end)
+            if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        end
+    end    
+
+    getServoConfigurationsIndexed(getServoConfigurationsEnd)
+
+end
+
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
+
+end
+
+local function onToolMenu(self)
+
+    local buttons
+    if rfsuite.session.servoOverride == false then
+        buttons = {
+            {
+                label = "@i18n(app.btn_ok_long)@",
+                action = function()
+
+                    triggerOverRide = true
+                    triggerOverRideAll = true
+                    return true
+                end
+            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }
+    else
+        buttons = {
+            {
+                label = "@i18n(app.btn_ok_long)@",
+                action = function()
+
+                    triggerOverRide = true
+                    return true
+                end
+            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }
+    end
+    local message
+    local title
+    if rfsuite.session.servoOverride == false then
+        title = "@i18n(app.modules.servos.enable_servo_override)@"
+        message = "@i18n(app.modules.servos.enable_servo_override_msg)@"
+    else
+        title = "@i18n(app.modules.servos.disable_servo_override)@"
+        message = "@i18n(app.modules.servos.disable_servo_override_msg)@"
+    end
+
+    form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+
+end
+
+local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
+
+return {
+
+    reboot = false,
+    event = event,
+    setValues = setValues,
+    servoChanged = servoChanged,
+    servoCenterFocusOn = servoCenterFocusOn,
+    servoCenterFocusOff = servoCenterFocusOff,
+    servoCenterFocusAllOn = servoCenterFocusAllOn,
+    servoCenterFocusAllOff = servoCenterFocusAllOff,
+    saveServoSettings = saveServoSettings,
+    saveServoCenter = saveServoCenter,
+    onToolMenu = onToolMenu,
+    wakeup = wakeup,
+    openPage = openPage,
+    onNavMenu = onNavMenu,
+    canSave = canSave,
+    onSaveMenu = onSaveMenu,
+    onReloadMenu = onReloadMenu,
+    navButtons = {menu = true, save = true, reload = true, tool = true, help = true},
+    API = {}
+
+}

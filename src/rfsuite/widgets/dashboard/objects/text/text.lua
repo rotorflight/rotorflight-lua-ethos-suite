@@ -34,6 +34,8 @@ If you need dynamic stats or telemetry (min/max/live), use `stats.lua` or other 
 
 local rfsuite = require("rfsuite")
 
+local tostring = tostring
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils

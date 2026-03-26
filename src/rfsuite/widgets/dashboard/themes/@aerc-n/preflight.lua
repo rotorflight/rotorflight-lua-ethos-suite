@@ -4,6 +4,9 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local tonumber = tonumber
 
 local utils = rfsuite.widgets.dashboard.utils
 

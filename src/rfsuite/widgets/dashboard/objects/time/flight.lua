@@ -30,6 +30,9 @@
 
 local rfsuite = require("rfsuite")
 
+local floor = math.floor
+local format = string.format
+
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -91,9 +94,18 @@ end
 
 function render.wakeup(box)
 
+    local session = rfsuite.session
+    local telemetryActive = session and session.telemetryState and session.isConnected
+    local inPostflight = (rfsuite.flightmode and rfsuite.flightmode.current == "postflight")
+
+    if not telemetryActive and not inPostflight then
+        box._lastDisplayValue = nil
+        lastValue = 0
+    end
+
     local value
-    if rfsuite.session and rfsuite.session.modelPreferences then
-        value = rfsuite.session.timer and rfsuite.session.timer.live or 0
+    if telemetryActive and session and session.modelPreferences then
+        value = session.timer and session.timer.live or 0
         lastValue = value
     else
         value = lastValue or 0
@@ -102,9 +114,9 @@ function render.wakeup(box)
     local displayValue
 
     if type(value) == "number" and value > 0 then
-        local minutes = math.floor(value / 60)
-        local seconds = math.floor(value % 60)
-        displayValue = string.format("%02d:%02d", minutes, seconds)
+        local minutes = floor(value / 60)
+        local seconds = floor(value % 60)
+        displayValue = format("%02d:%02d", minutes, seconds)
     else
         displayValue = getParam(box, "novalue") or "00:00"
     end

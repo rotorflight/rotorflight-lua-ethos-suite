@@ -5,6 +5,8 @@
 
 local rfsuite = require("rfsuite")
 
+local clock = os.clock
+
 local wrapper = {}
 
 local renders = rfsuite.widgets.dashboard.renders
@@ -23,7 +25,7 @@ function wrapper.wakeup(box)
     if not utils.isModelPrefsReady() then utils.resetBoxCache(box) end
 
     if box.wakeupinterval ~= nil then
-        local now = os.clock()
+        local now = clock()
 
         box._wakeupInterval = box._wakeupInterval
         box._lastWakeup = box._lastWakeup or 0

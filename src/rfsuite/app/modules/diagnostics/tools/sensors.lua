@@ -4,9 +4,12 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-
-local fields = {}
-local labels = {}
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local lcd = lcd
+local app = rfsuite.app
+local tasks = rfsuite.tasks
+local rfutils = rfsuite.utils
+local session = rfsuite.session
 
 local enableWakeup = false
 
@@ -15,9 +18,9 @@ local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
-local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
+local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 100, h = app.radio.navbuttonHeight}
 
-local invalidSensors = rfsuite.tasks.telemetry.validateSensors()
+local invalidSensors = tasks.telemetry.validateSensors()
 
 local repairSensors = false
 
@@ -25,38 +28,57 @@ local sensorTlm = nil
 
 local progressLoader
 local progressLoaderCounter = 0
+local progressLoaderBaseMessage
+local progressLoaderMspStatusLast
 local doDiscoverNotify = false
+
+local function openProgressDialog(...)
+    if rfutils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
 
 local function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b) return a.name:lower() < b.name:lower() end)
     return sensorList
 end
 
-local sensorList = sortSensorListByName(rfsuite.tasks.telemetry.listSensors())
+local sensorList = sortSensorListByName(tasks.telemetry.listSensors())
 
-local function openPage(pidx, title, script)
+local function openPage(opts)
+
+    local pidx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = false
-    rfsuite.app.triggers.closeProgressLoader = true
+    app.triggers.closeProgressLoader = true
 
     form.clear()
 
-    rfsuite.app.lastIdx = pidx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    app.lastIdx = pidx
+    app.lastTitle = title
+    app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.validate_sensors.name)@")
+    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.validate_sensors.name)@")
 
-    rfsuite.app.formLineCnt = 0
+    app.formLineCnt = 0
 
-    local app = rfsuite.app
-    if app.formFields then for i = 1, #app.formFields do app.formFields[i] = nil end end
-    if app.formLines then for i = 1, #app.formLines do app.formLines[i] = nil end end
+    if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
+    if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
-    local posText = {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
+    local posText = {x = x - 5 - buttonW - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
     for i, v in ipairs(sensorList or {}) do
-        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(v.name)
-        rfsuite.app.formFields[v.key] = form.addStaticText(rfsuite.app.formLines[rfsuite.app.formLineCnt], posText, "-")
+        app.formLineCnt = app.formLineCnt + 1
+        app.formLines[app.formLineCnt] = form.addLine(v.name)
+        app.formFields[v.key] = form.addStaticText(app.formLines[app.formLineCnt], posText, "-")
     end
 
     enableWakeup = true
@@ -70,18 +92,18 @@ local function sensorKeyExists(searchKey, sensorTable)
     return false
 end
 
-local function postLoad(self) rfsuite.utils.log("postLoad", "debug") end
+local function postLoad(self) rfutils.log("postLoad", "debug") end
 
-local function postRead(self) rfsuite.utils.log("postRead", "debug") end
+local function postRead(self) rfutils.log("postRead", "debug") end
 
 local function rebootFC()
 
-    local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    local RAPI = tasks.msp.api.load("REBOOT")
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
-        rfsuite.utils.log("Rebooting FC", "info")
+        rfutils.log("Rebooting FC", "info")
 
-        rfsuite.utils.onReboot()
+        rfutils.onReboot()
 
     end)
     RAPI.write()
@@ -89,10 +111,10 @@ local function rebootFC()
 end
 
 local function applySettings()
-    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local EAPI = tasks.msp.api.load("EEPROM_WRITE")
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
-        rfsuite.utils.log("Writing to EEPROM", "info")
+        rfutils.log("Writing to EEPROM", "info")
         rebootFC()
     end)
     EAPI.write()
@@ -101,7 +123,7 @@ end
 
 local function runRepair(data)
 
-    local sensorList = rfsuite.tasks.telemetry.listSensors()
+    local sensorList = tasks.telemetry.listSensors()
     local newSensorList = {}
 
     local count = 1
@@ -123,7 +145,7 @@ local function runRepair(data)
         end
     end
 
-    local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+    local WRITEAPI = tasks.msp.api.load("TELEMETRY_CONFIG")
     WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     WRITEAPI.setCompleteHandler(function(self, buf) applySettings() end)
 
@@ -150,6 +172,13 @@ local function runRepair(data)
 
 end
 
+local function updateProgressLoaderMessage()
+    if not progressLoader or not progressLoaderBaseMessage then return end
+    if app and app.ui and app.ui.updateProgressDialogMessage then
+        app.ui.updateProgressDialogMessage()
+    end
+end
+
 local function wakeup()
 
     if enableWakeup == false then return end
@@ -157,10 +186,10 @@ local function wakeup()
     if doDiscoverNotify == true then
 
         if not sensorTlm then
-            if not rfsuite.session.telemetrySensor then return false end
+            if not session.telemetrySensor then return false end
 
             sensorTlm = sport.getSensor()
-            sensorTlm:module(rfsuite.session.telemetrySensor:module())
+            sensorTlm:module(session.telemetrySensor:module())
 
             if not sensorTlm then return false end
         end
@@ -169,19 +198,19 @@ local function wakeup()
 
         local buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}
 
-        if rfsuite.utils.ethosVersionAtLeast({1, 6, 3}) then
-            rfsuite.utils.log("Starting discover sensors", "info")
+        if rfutils.ethosVersionAtLeast({1, 6, 3}) then
+            rfutils.log("Starting discover sensors", "info")
             sensorTlm:discover()
         else
             form.openDialog({width = nil, title = "@i18n(app.modules.validate_sensors.name)@", message = "@i18n(app.modules.validate_sensors.msg_repair_fin)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
         end
     end
 
-    invalidSensors = rfsuite.tasks.telemetry.validateSensors()
+    invalidSensors = tasks.telemetry.validateSensors()
 
     for i, v in ipairs(sensorList) do
 
-        local field = rfsuite.app.formFields and rfsuite.app.formFields[v.key]
+        local field = app.formFields and app.formFields[v.key]
         if field then
             if sensorKeyExists(v.key, invalidSensors) then
                 if v.mandatory == true then
@@ -200,11 +229,15 @@ local function wakeup()
 
     if repairSensors == true then
 
-        progressLoader = form.openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+        progressLoader = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
         progressLoader:closeAllowed(false)
         progressLoaderCounter = 0
+        progressLoaderBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+        progressLoaderMspStatusLast = nil
+        updateProgressLoaderMessage()
+        app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage)
 
-        API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        API = tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setUUID("550e8400-e29b-41d4-a716-446655440000")
         API.setCompleteHandler(function(self, buf)
             local data = API.data()
@@ -214,21 +247,25 @@ local function wakeup()
         repairSensors = false
     end
 
-    if rfsuite.app.formNavigationFields['tool'] then
-        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare("<", "12.08") then
-            rfsuite.app.formNavigationFields['tool']:enable(false)
+    if app.formNavigationFields['tool'] then
+        if session and session.apiVersion and rfutils.apiVersionCompare("<", {12, 0, 8}) then
+            app.formNavigationFields['tool']:enable(false)
         else
-            rfsuite.app.formNavigationFields['tool']:enable(true)
+            app.formNavigationFields['tool']:enable(true)
         end
     end
 
     if progressLoader then
+        updateProgressLoaderMessage()
         if progressLoaderCounter < 100 then
             progressLoaderCounter = progressLoaderCounter + 5
             progressLoader:value(progressLoaderCounter)
         else
             progressLoader:close()
+            app.ui.clearProgressDialog(progressLoader)
             progressLoader = nil
+            progressLoaderBaseMessage = nil
+            progressLoaderMspStatusLast = nil
 
             doDiscoverNotify = true
 
@@ -256,16 +293,12 @@ local function onToolMenu(self)
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.diagnostics.name)@", "diagnostics/diagnostics.lua")
+    pageRuntime.openMenuContext()
+    return true
 end
 
 return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

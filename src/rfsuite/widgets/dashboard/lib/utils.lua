@@ -4,11 +4,136 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+
+local floor = math.floor
+local ceil = math.ceil
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+local format = string.format
+local ipairs = ipairs
+local pairs = pairs
+local tostring = tostring
+local tonumber = tonumber
 
 local utils = {}
 
+local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
+local MAX_BATTERY_PROFILES = 6
+local PROFILE_HASH_BASE = 131
+
 local imageCache = {}
 local fontCache
+local progressDialog
+local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
+local DEFAULT_COLOR_VARIANT_FACTOR = 0.3
+local batteryConfigCache = {
+    config = nil,
+    profiles = nil,
+    batteryCellCount = 0,
+    batteryCapacity = 0,
+    vbatmincellvoltage = 0,
+    vbatfullcellvoltage = 0,
+    profileSig = 0,
+    profileCapacityCount = 0,
+    hasAnyBatteryCapacity = false
+}
+
+local NAMED_COLORS = {
+    red = {255, 0, 0},
+    green = {0, 188, 4},
+    blue = {0, 122, 255},
+    white = {255, 255, 255},
+    black = {0, 0, 0},
+    gray = {185, 185, 185},
+    grey = {185, 185, 185},
+    orange = {255, 165, 0},
+    yellow = {255, 255, 0},
+    cyan = {0, 255, 255},
+    magenta = {255, 0, 255},
+    pink = {255, 105, 180},
+    purple = {128, 0, 128},
+    violet = {143, 0, 255},
+    brown = {139, 69, 19},
+    lime = {0, 255, 0},
+    olive = {128, 128, 0},
+    gold = {255, 215, 0},
+    silver = {192, 192, 192},
+    teal = {0, 128, 128},
+    navy = {0, 0, 128},
+    maroon = {128, 0, 0},
+    beige = {245, 245, 220},
+    turquoise = {64, 224, 208},
+    indigo = {75, 0, 130},
+    coral = {255, 127, 80},
+    salmon = {250, 128, 114},
+    mint = {62, 180, 137},
+    lightgreen = {144, 238, 144},
+    darkgreen = {0, 100, 0},
+    lightred = {255, 102, 102},
+    darkred = {139, 0, 0},
+    lightorange = {255, 200, 100},
+    lightblue = {173, 216, 230},
+    darkblue = {0, 0, 139},
+    lightpurple = {216, 191, 216},
+    darkpurple = {48, 25, 52},
+    lightyellow = {255, 255, 224},
+    darkyellow = {204, 204, 0},
+    lightgrey = {211, 211, 211},
+    lightgray = {211, 211, 211},
+    darkgrey = {90, 90, 90},
+    darkgray = {90, 90, 90},
+    lmgrey = {80, 80, 80},
+    darkwhite = {245, 245, 245},
+    headergrey = {35, 35, 35},
+    bggrey = {40, 40, 40},
+    bgdarkgrey = {25, 25, 25},
+    bglines = {65, 65, 65}
+}
+
+local resolveColorCache = {}
+local resolveColorTableCache = setmetatable({}, {__mode = "k"})
+local themeFallbackPaletteCache = {dark = nil, light = nil}
+
+local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
+
+local function variantFactorOrDefault(variantFactor)
+    if type(variantFactor) == "number" then
+        return max(0, min(1, variantFactor))
+    end
+    return DEFAULT_COLOR_VARIANT_FACTOR
+end
+
+local function buildVariantColor(base, prefix, factor)
+    if prefix == "dark" then
+        return lcd.RGB(clampColorByte(base[1] * (1 - factor)), clampColorByte(base[2] * (1 - factor)), clampColorByte(base[3] * (1 - factor)), 1)
+    end
+    return lcd.RGB(clampColorByte(base[1] + (255 - base[1]) * factor), clampColorByte(base[2] + (255 - base[2]) * factor), clampColorByte(base[3] + (255 - base[3]) * factor), 1)
+end
+
+local function getThemeFallbackPalette(isDark)
+    local key = isDark and "dark" or "light"
+    local cached = themeFallbackPaletteCache[key]
+    if cached then return cached end
+
+    local fillOrFrame = isDark and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    local white = lcd.RGB(255, 255, 255)
+    cached = {
+        fillcolor = fillOrFrame,
+        fillbgcolor = fillOrFrame,
+        framecolor = fillOrFrame,
+        textcolor = white,
+        titlecolor = white,
+        accentcolor = white,
+        defaultColor = fillOrFrame
+    }
+    themeFallbackPaletteCache[key] = cached
+    return cached
+end
 
 function utils.isFullScreen(w, h)
 
@@ -35,13 +160,13 @@ function utils.supportedResolution(W, H, supportedResolutions)
 end
 
 function utils.drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
-    local angleRad = math.rad(angleDeg)
+    local angleRad = rad(angleDeg)
     local step = 1
     local rad_thick = thickness / 2
     lcd.color(color)
     for i = 0, length, step do
-        local px = cx + i * math.cos(angleRad)
-        local py = cy + i * math.sin(angleRad)
+        local px = cx + i * cos(angleRad)
+        local py = cy + i * sin(angleRad)
         lcd.drawFilledCircle(px, py, rad_thick)
     end
 end
@@ -159,8 +284,8 @@ end
 
 function utils.themeColors()
     local colorMode = {
-        dark = {textcolor = "white", titlecolor = "white", bgcolor = "black", fillcolor = "green", fillwarncolor = "orange", fillcritcolor = "red", fillbgcolor = "grey", accentcolor = "white", rssifillcolor = "green", rssifillbgcolor = "darkgrey", txaccentcolor = "grey", txfillcolor = "green", txbgfillcolor = "darkgrey", tbbgcolor = "headergrey", cntextcolor = "white", tbtextcolor = "white"},
-        light = {textcolor = "lmgrey", titlecolor = "lmgrey", bgcolor = "white", fillcolor = "lightgreen", fillwarncolor = "lightorange", fillcritcolor = "lightred", fillbgcolor = "lightgrey", accentcolor = "darkgrey", rssifillcolor = "lightgreen", rssifillbgcolor = "grey", txaccentcolor = "white", txfillcolor = "lightgreen", txbgfillcolor = "grey", tbbgcolor = "darkgrey", cntextcolor = "white", tbtextcolor = "white"}
+        dark = {textcolor = "white", titlecolor = "white", bgcolor = "black", fillcolor = "green", fillwarncolor = "orange", fillcritcolor = "red", fillbgcolor = "grey", accentcolor = "white", rssifillcolor = "green", rssifillbgcolor = "darkgrey", txaccentcolor = "grey", txfillcolor = "green", txbgfillcolor = "darkgrey", tbbgcolor = "headergrey", cntextcolor = "white", tbtextcolor = "white", panelbg = "bggrey", paneldarkbg = "bgdarkgrey", panelbgline = "bglines"},
+        light = {textcolor = "lmgrey", titlecolor = "lmgrey", bgcolor = "white", fillcolor = "lightgreen", fillwarncolor = "lightorange", fillcritcolor = "lightred", fillbgcolor = "lightgrey", accentcolor = "darkgrey", rssifillcolor = "lightgreen", rssifillbgcolor = "grey", txaccentcolor = "white", txfillcolor = "lightgreen", txbgfillcolor = "grey", tbbgcolor = "darkgrey", cntextcolor = "white", tbtextcolor = "white", panelbg = "darkgrey", paneldarkbg = "grey", panelbgline = "lmgrey"}
     }
     return lcd.darkMode() and colorMode.dark or colorMode.light
 end
@@ -169,12 +294,16 @@ function utils.standardHeaderLayout(headeropts) return {height = headeropts.heig
 
 function utils.getTxBatteryVoltageRange()
     if system and system.voltageRange then
-        local ok, vmin, vmax = pcall(system.voltageRange)
-        if ok and vmin and vmax and vmin < vmax then return vmin, vmax end
+        local vmin, vmax = system.voltageRange()
+        if vmin and vmax and vmin < vmax then
+            return vmin, vmax
+        end
     end
 
+    -- Safe default for 2-cell Li-ion / LiPo TX packs
     return 7.2, 8.4
 end
+
 
 function utils.getTxBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
     return {
@@ -321,87 +450,37 @@ function utils.screenError(msg, border, pct, padX, padY)
 end
 
 function utils.resolveColor(value, variantFactor)
-
-    local namedColors = {
-        red = {255, 0, 0},
-        green = {0, 188, 4},
-        blue = {0, 122, 255},
-        white = {255, 255, 255},
-        black = {0, 0, 0},
-        gray = {185, 185, 185},
-        grey = {185, 185, 185},
-        orange = {255, 165, 0},
-        yellow = {255, 255, 0},
-        cyan = {0, 255, 255},
-        magenta = {255, 0, 255},
-        pink = {255, 105, 180},
-        purple = {128, 0, 128},
-        violet = {143, 0, 255},
-        brown = {139, 69, 19},
-        lime = {0, 255, 0},
-        olive = {128, 128, 0},
-        gold = {255, 215, 0},
-        silver = {192, 192, 192},
-        teal = {0, 128, 128},
-        navy = {0, 0, 128},
-        maroon = {128, 0, 0},
-        beige = {245, 245, 220},
-        turquoise = {64, 224, 208},
-        indigo = {75, 0, 130},
-        coral = {255, 127, 80},
-        salmon = {250, 128, 114},
-        mint = {62, 180, 137},
-        lightgreen = {144, 238, 144},
-        darkgreen = {0, 100, 0},
-        lightred = {255, 102, 102},
-        darkred = {139, 0, 0},
-        lightorange = {255, 200, 100},
-        lightblue = {173, 216, 230},
-        darkblue = {0, 0, 139},
-        lightpurple = {216, 191, 216},
-        darkpurple = {48, 25, 52},
-        lightyellow = {255, 255, 224},
-        darkyellow = {204, 204, 0},
-        lightgrey = {211, 211, 211},
-        lightgray = {211, 211, 211},
-        darkgrey = {90, 90, 90},
-        darkgray = {90, 90, 90},
-        lmgrey = {80, 80, 80},
-        darkwhite = {245, 245, 245},
-        headergrey = {35, 35, 35}
-    }
-
-    local VARIANT_FACTOR = type(variantFactor) == "number" and math.max(0, math.min(1, variantFactor)) or 0.3
-
-    local function clamp(v) return math.max(0, math.min(255, math.floor(v + 0.5))) end
-
-    local function lighten(rgb) return {clamp(rgb[1] + (255 - rgb[1]) * VARIANT_FACTOR), clamp(rgb[2] + (255 - rgb[2]) * VARIANT_FACTOR), clamp(rgb[3] + (255 - rgb[3]) * VARIANT_FACTOR)} end
-
-    local function darken(rgb) return {clamp(rgb[1] * (1 - VARIANT_FACTOR)), clamp(rgb[2] * (1 - VARIANT_FACTOR)), clamp(rgb[3] * (1 - VARIANT_FACTOR))} end
-
     if type(value) == "string" then
         local lower = value:lower()
+        local factor = variantFactorOrDefault(variantFactor)
+        local cacheKey = lower .. "|" .. factor
+        local cached = resolveColorCache[cacheKey]
+        if cached ~= nil then return cached end
 
-        local prefix, baseName = lower:match("^(bright)(.+)"), lower:match("^bright(.+)")
-        if not prefix then prefix, baseName = lower:match("^(light)(.+)"), lower:match("^light(.+)") end
-        if not prefix then prefix, baseName = lower:match("^(dark)(.+)"), lower:match("^dark(.+)") end
+        local prefix, baseName = lower:match("^(bright|light|dark)(.+)$")
 
         if prefix and baseName then
-            local baseColor = namedColors[baseName]
+            local baseColor = NAMED_COLORS[baseName]
             if baseColor then
-                local rgb = (prefix == "dark") and darken(baseColor) or lighten(baseColor)
-                return lcd.RGB(rgb[1], rgb[2], rgb[3], 1)
+                local color = buildVariantColor(baseColor, prefix, factor)
+                resolveColorCache[cacheKey] = color
+                return color
             end
-
-        elseif namedColors[lower] then
-
-            local c = namedColors[lower]
-            return lcd.RGB(c[1], c[2], c[3], 1)
+        else
+            local c = NAMED_COLORS[lower]
+            if c then
+                local color = lcd.RGB(c[1], c[2], c[3], 1)
+                resolveColorCache[cacheKey] = color
+                return color
+            end
         end
 
     elseif type(value) == "table" and #value >= 3 then
-
-        return lcd.RGB(value[1], value[2], value[3], 1)
+        local cached = resolveColorTableCache[value]
+        if cached ~= nil then return cached end
+        local color = lcd.RGB(value[1], value[2], value[3], 1)
+        resolveColorTableCache[value] = color
+        return color
     end
 
     return nil
@@ -418,30 +497,28 @@ function utils.resolveThemeColor(colorkey, value)
         if resolved then return resolved end
     end
 
-    if colorkey == "fillcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "fillbgcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "framecolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "textcolor" then
-        return lcd.RGB(255, 255, 255)
-    elseif colorkey == "titlecolor" then
-        return lcd.RGB(255, 255, 255)
-    elseif colorkey == "accentcolor" then
-        return lcd.RGB(255, 255, 255)
-    end
-
-    return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    local palette = getThemeFallbackPalette(lcd.darkMode())
+    return palette[colorkey] or palette.defaultColor
 end
 
-function utils.resolveThemeColorArray(colorkey, arr)
-    local resolved = {}
-    if type(arr) == "table" then for i = 1, #arr do resolved[i] = utils.resolveThemeColor(colorkey, arr[i]) end end
+function utils.resolveThemeColorArray(colorkey, arr, out)
+    local resolved = out or {}
+    for i = #resolved, 1, -1 do
+        resolved[i] = nil
+    end
+    if type(arr) == "table" then
+        for i = 1, #arr do
+            resolved[i] = utils.resolveThemeColor(colorkey, arr[i])
+        end
+    end
     return resolved
 end
 
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
+
+    if type(title) ~= "string" and type(title) ~= "number" then
+        title = nil
+    end
 
     local DEFAULT_TITLE_PADDING = 0
     local DEFAULT_VALUE_PADDING = 6
@@ -555,7 +632,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
         local value_str = tostring(displayValue) .. (unit or "")
 
         local value_str_calc = string.gsub(value_str, "[%%]", "W")
-        value_str_calc = string.gsub(value_str, "[°]", ".")
+        value_str_calc = string.gsub(value_str_calc, "[°]", ".")
 
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
         if font and _G[font] then
@@ -572,7 +649,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             lcd.font(valueFont)
         end
 
-        local fudgeTitle = (title and (titlepos or "top") == "top") and -math.floor(bestH * 0.15 + 0.5) or (title and titlepos == "bottom") and math.floor(bestH * 0.15 + 0.5) or 0
+        local fudgeTitle = (title and (titlepos or "top") == "top") and -floor(bestH * 0.15 + 0.5) or (title and titlepos == "bottom") and floor(bestH * 0.15 + 0.5) or 0
 
         local sy = region_vy + ((region_vh - bestH) / 2) + fudgeTitle
         local align = (valuealign or "center"):lower()
@@ -634,17 +711,17 @@ function utils.transformValue(value, box)
         if type(transform) == "function" then
             value = transform(value)
         elseif transform == "floor" then
-            value = math.floor(value)
+            value = floor(value)
         elseif transform == "ceil" then
-            value = math.ceil(value)
+            value = ceil(value)
         elseif transform == "round" then
-            value = math.floor(value + 0.5)
+            value = floor(value + 0.5)
         end
     end
     local decimals = utils.getParam(box, "decimals")
 
     if decimals ~= nil and value ~= nil then
-        value = string.format("%." .. decimals .. "f", value)
+        value = format("%." .. decimals .. "f", value)
     elseif value ~= nil then
         value = tostring(value)
     end
@@ -662,8 +739,6 @@ function utils.setBackgroundColourBasedOnTheme()
 end
 
 function utils.getParam(box, key, ...)
-    local SKIP_CALL_KEYS = {transform = true, thresholds = true, value = true}
-
     local v = box[key]
     if type(v) == "function" and not SKIP_CALL_KEYS[key] then
         return v(box, key, ...)
@@ -672,10 +747,159 @@ function utils.getParam(box, key, ...)
     end
 end
 
+local function extractCapacityValue(v)
+    if type(v) == "number" then return v end
+    if type(v) == "string" then return tonumber(v:match("(%d+)")) end
+    if type(v) == "table" then
+        if type(v.capacity) == "number" then return v.capacity end
+        if type(v.capacity) == "string" then return tonumber(v.capacity:match("(%d+)")) end
+        if type(v.name) == "string" then return tonumber(v.name:match("(%d+)")) end
+    end
+    return nil
+end
+
+local function extractProfileCapacity(profiles, idx)
+    if type(profiles) ~= "table" then return nil end
+    local v = profiles[idx]
+    if v == nil then v = profiles[idx + 1] end
+    return extractCapacityValue(v)
+end
+
+local function refreshBatteryConfigCache()
+    local session = rfsuite and rfsuite.session
+    local bc = session and session.batteryConfig
+
+    if not bc then
+        batteryConfigCache.config = nil
+        batteryConfigCache.profiles = nil
+        batteryConfigCache.batteryCellCount = 0
+        batteryConfigCache.batteryCapacity = 0
+        batteryConfigCache.vbatmincellvoltage = 0
+        batteryConfigCache.vbatfullcellvoltage = 0
+        batteryConfigCache.profileSig = 0
+        batteryConfigCache.profileCapacityCount = 0
+        batteryConfigCache.hasAnyBatteryCapacity = false
+        return nil
+    end
+
+    local profiles = bc.profiles
+    local batteryCellCount = tonumber(bc.batteryCellCount) or 0
+    local batteryCapacity = tonumber(bc.batteryCapacity) or 0
+    local vbatmincellvoltage = tonumber(bc.vbatmincellvoltage) or 0
+    local vbatfullcellvoltage = tonumber(bc.vbatfullcellvoltage) or 0
+    local profileSig = 0
+    local profileCapacityCount = 0
+
+    for i = 0, MAX_BATTERY_PROFILES - 1 do
+        local cap = extractProfileCapacity(profiles, i)
+        local qCap = floor((cap or -1) + 0.5)
+        profileSig = profileSig * PROFILE_HASH_BASE + (qCap + 1)
+        if cap and cap > 0 then profileCapacityCount = profileCapacityCount + 1 end
+    end
+
+    if batteryConfigCache.config == bc and
+        batteryConfigCache.profiles == profiles and
+        batteryConfigCache.batteryCellCount == batteryCellCount and
+        batteryConfigCache.batteryCapacity == batteryCapacity and
+        batteryConfigCache.vbatmincellvoltage == vbatmincellvoltage and
+        batteryConfigCache.vbatfullcellvoltage == vbatfullcellvoltage and
+        batteryConfigCache.profileSig == profileSig then
+        return batteryConfigCache
+    end
+
+    batteryConfigCache.config = bc
+    batteryConfigCache.profiles = profiles
+    batteryConfigCache.batteryCellCount = batteryCellCount
+    batteryConfigCache.batteryCapacity = batteryCapacity
+    batteryConfigCache.vbatmincellvoltage = vbatmincellvoltage
+    batteryConfigCache.vbatfullcellvoltage = vbatfullcellvoltage
+    batteryConfigCache.profileSig = profileSig
+    batteryConfigCache.profileCapacityCount = profileCapacityCount
+    batteryConfigCache.hasAnyBatteryCapacity = (batteryCapacity > 0) or (profileCapacityCount > 0)
+
+    return batteryConfigCache
+end
+
+function utils.getBatteryCellCount(defaultCellCount)
+    local bcCache = refreshBatteryConfigCache()
+    local fallback = defaultCellCount or 3
+    if not bcCache then return fallback end
+    if bcCache.batteryCellCount > 0 then return bcCache.batteryCellCount end
+    return fallback
+end
+
+function utils.getBatteryVoltageBounds(defaultCellCount, defaultMinCellVoltage, defaultFullCellVoltage)
+    local bcCache = refreshBatteryConfigCache()
+    local cells = defaultCellCount or 3
+    local minCellV = defaultMinCellVoltage or 3.0
+    local fullCellV = defaultFullCellVoltage or 4.2
+
+    if bcCache then
+        if bcCache.batteryCellCount > 0 then cells = bcCache.batteryCellCount end
+        if bcCache.vbatmincellvoltage > 0 then minCellV = bcCache.vbatmincellvoltage end
+        if bcCache.vbatfullcellvoltage > 0 then fullCellV = bcCache.vbatfullcellvoltage end
+    end
+
+    return cells, minCellV, fullCellV
+end
+
+function utils.hasMultipleBatteryProfiles()
+    local bcCache = refreshBatteryConfigCache()
+    return bcCache ~= nil and (bcCache.profileCapacityCount or 0) > 1
+end
+
+function utils.maxVoltageToCellVoltage(value, defaultCellCount)
+    if value == nil then return value end
+    local cells = utils.getBatteryCellCount(defaultCellCount or 3)
+    value = max(0, value / cells)
+    return floor(value * 100 + 0.5) / 100
+end
+
+function utils.isElectricEngine()
+    local batteryPrefs = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery
+    local modelType = batteryPrefs and tonumber(batteryPrefs.smartfuel_model_type) or 0
+
+    if modelType == 0 then
+        local bcCache = refreshBatteryConfigCache()
+        if not bcCache then return false end
+        local cellCount = bcCache.batteryCellCount
+        if cellCount ~= 0 then return true end
+        return bcCache.hasAnyBatteryCapacity
+    end
+
+    return modelType == 1
+end
+
 function utils.applyOffset(x, y, box)
     local ox = utils.getParam(box, "offsetx") or 0
     local oy = utils.getParam(box, "offsety") or 0
     return x + ox, y + oy
+end
+
+function utils.registerProgressDialog(handle, baseMessage)
+    if not handle then return end
+    progressDialog = {
+        handle = handle,
+        baseMessage = baseMessage or ""
+    }
+end
+
+function utils.clearProgressDialog(handle)
+    if not progressDialog then return end
+    if handle == nil or progressDialog.handle == handle then
+        progressDialog = nil
+    end
+end
+
+function utils.updateProgressDialogMessage(statusOverride)
+    if not progressDialog or not progressDialog.handle then return end
+    local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
+    local mspStatus = statusOverride or (rfsuite.session and rfsuite.session.mspStatusMessage) or nil
+    local msg = progressDialog.baseMessage or ""
+    if showDebug then
+        msg = mspStatus or MSP_DEBUG_PLACEHOLDER
+    end
+    pcall(function() progressDialog.handle:message(msg) end)
 end
 
 return utils

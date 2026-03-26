@@ -2,7 +2,19 @@
 
 ---
 
-### API Version Widget
+## Current Object Type/Subtype Map
+
+- `text`: apiversion, armflags, blackbox, clock, craftname, governor, pidrates, session, stats, telemetry, text, watts
+- `gauge`: arc, bar, ring, step
+- `dial`: image, rainbow
+- `image`: image, model
+- `time`: count, flight, total
+- `func`: func
+- `navigation`: ah
+
+---
+
+### API Version Widget (type="text", subtype="apiversion")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -32,7 +44,7 @@
 ```
 ---
 
-### Arc Gauge Widget
+### Arc Gauge Widget (type="gauge", subtype="arc")
 
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -85,7 +97,7 @@ Arc Geometry/Advanced
 ```
 ---
 
-### Arm Flags Widget
+### Arm Flags Widget (type="text", subtype="armflags")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -123,7 +135,7 @@ thresholds = {
 ```
 ---
 
-### Attitude Horizon Widget (AH)
+### Attitude Horizon Widget (type="navigation", subtype="ah")
 
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (default: 0.2)
@@ -148,7 +160,7 @@ thresholds = {
 ```
 ---
 
-### Bar Gauge Widget
+### Bar Gauge Widget (type="gauge", subtype="bar")
 
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -229,7 +241,7 @@ Subtext
 ```
 ---
 
-### Blackbox Widget
+### Blackbox Widget (type="text", subtype="blackbox")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -262,7 +274,7 @@ Subtext
 ```
 ---
 
-### Clock Widget
+### Clock Widget (type="text", subtype="clock")
 
 ```
     title               : string                    -- (Optional) Title text
@@ -290,7 +302,7 @@ Subtext
 ```
 ---
 
-### Craft Name Widget
+### Craft Name Widget (type="text", subtype="craftname")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -320,7 +332,7 @@ Subtext
 ```
 ---
 
-### Custom Function Widget
+### Custom Function Widget (type="func")
 
 ```
     wakeupinterval    : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -330,7 +342,7 @@ Note: This widget does not process colors, layout, or padding. All rendering and
 ```
 ---
 
-### Dial Image Widget
+### Dial Image Widget (type="dial", subtype="image")
 
 ```
     wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -374,7 +386,7 @@ dial image & needle styling
 ```
 ---
 
-### Dynamic Power (Watts) Display Widget
+### Dynamic Power (Watts) Display Widget (type="text", subtype="watts")
 
 ```
     title               : string          -- (Optional) Title text displayed above or below the value
@@ -394,7 +406,7 @@ dial image & needle styling
 ```
 ---
 
-### Flight Count Widget
+### Flight Count Widget (type="time", subtype="count")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -424,7 +436,7 @@ dial image & needle styling
 ```
 ---
 
-### Flight Time Widget
+### Flight Time Widget (type="time", subtype="flight")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -452,7 +464,7 @@ dial image & needle styling
 ```
 ---
 
-### Governor State Widget
+### Governor State Widget (type="text", subtype="governor")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -489,7 +501,7 @@ thresholds = {
 ```
 ---
 
-### Image Box Widget
+### Image Box Widget (type="image", subtype="image")
 
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -517,7 +529,7 @@ thresholds = {
 ```
 ---
 
-### Model Image Widget
+### Model Image Widget (type="image", subtype="model")
 
 ```
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -548,7 +560,7 @@ thresholds = {
 ```
 ---
 
-### PID/Rates Profile Display Object
+### PID/Rates Profile Display Object (type="text", subtype="pidrates")
 
 ```
 Profile Source Selection
@@ -599,7 +611,7 @@ Background
 
 ---
 
-### Rainbow Gauge Widget
+### Rainbow Dial Widget (type="dial", subtype="rainbow")
 
 ```
     wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
@@ -648,7 +660,7 @@ needle styling
 
 ---
 
-### Ring Gauge Widget
+### Ring Gauge Widget (type="gauge", subtype="ring")
 
 ```
 Timing
@@ -703,7 +715,7 @@ Battery Ring Mode (Optional fuel-based battery style)
 
 ---
 
-### Session Value Widget
+### Session Value Widget (type="text", subtype="session")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -732,7 +744,7 @@ Battery Ring Mode (Optional fuel-based battery style)
 ```
 ---
 
-### Stats Display Widget
+### Stats Display Widget (type="text", subtype="stats")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -776,7 +788,7 @@ To display min stats, set stattype = "min"; for max, omit or set stattype = "max
 ```
 ---
 
-### Step Bar Widget
+### Step Bar Widget (type="gauge", subtype="step")
 
 ```
     wakeupinterval      : number    -- (Optional) Wakeup interval in seconds for the widget (set in wrapper)
@@ -824,7 +836,7 @@ Bar padding parameters
 ```
 ---
 
-### Telemetry Value Widget
+### Telemetry Value Widget (type="text", subtype="telemetry")
 
 ```
     wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
@@ -858,7 +870,7 @@ Bar padding parameters
 ```
 ---
 
-### Text Display Widget (Static/Label)
+### Text Display Widget (type="text", subtype="text")
 
 
 ```
@@ -891,7 +903,7 @@ If you need dynamic stats or telemetry (min/max/live), use `stats.lua` or other 
 ```
 ---
 
-### Total Flight Time Widget
+### Total Flight Time Widget (type="time", subtype="total")
 
 Total Flight Time Widget
 

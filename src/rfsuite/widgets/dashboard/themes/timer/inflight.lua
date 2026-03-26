@@ -4,6 +4,10 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local abs = math.abs
+local tonumber = tonumber
 
 local utils = rfsuite.widgets.dashboard.utils
 
@@ -19,8 +23,8 @@ local function getUserVoltageOverride(which)
     if prefs and prefs["system/timer"] then
         local v = tonumber(prefs["system/timer"][which])
 
-        if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
-        if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+        if which == "v_min" and v and abs(v - 18.0) > 0.05 then return v end
+        if which == "v_max" and v and abs(v - 25.2) > 0.05 then return v end
     end
     return nil
 end
@@ -120,4 +124,4 @@ local function boxes()
     return boxes_cache
 end
 
-return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.5}}
+return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.8}}

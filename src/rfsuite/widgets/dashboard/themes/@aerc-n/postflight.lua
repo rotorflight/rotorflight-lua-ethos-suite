@@ -4,6 +4,11 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local lcd = lcd
+
+local floor = math.floor
+local max = math.max
+local tonumber = tonumber
 
 local utils = rfsuite.widgets.dashboard.utils
 
@@ -11,14 +16,7 @@ local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
 local function maxVoltageToCellVoltage(value)
-    local cells = 2
-
-    if cells and value then
-        value = math.max(0, value / cells)
-        value = math.floor(value * 100 + 0.5) / 100
-    end
-
-    return value
+    return utils.maxVoltageToCellVoltage(value, 2)
 end
 
 local theme_section = "system/@aerc-n"

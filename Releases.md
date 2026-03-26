@@ -1,6 +1,48 @@
+# 2.3.0-20260103
+
+Snapshot release of Ethos Suite
+
+- refactored msp api to reduce ram usage and improve speed
+- moved updater tool to own repo
+- added modules for every single part of rotorflight.  you can edit everything
+- new menu structure
+- fixed majorm memory leak
+- many many other improvements in performance
+
+# 2.3.0-20260208
+
+Snapshot release of Ethos Suite
+
+ - massive speed improvements
+ - ethos suite update tool (windows, apple, linux)
+ - restructure of admin module
+ - improve msp speed and reliability over sport
+ - improved developer deployment tools
+
+# 2.3.0-20260118
+
+Snapshot release of Ethos Suite
+
+- Improve dashboard loader messages
+- Add mixer module for rf2.3
+- Add fbus module for rf2.3
+- Expand receiver module for rf2.3
+- Expand esc/motor module for rf2.3
+- Reduce cpu churn/improve speed
+- Various small bug fixes.
+
+# 2.3.0-20251221
+
+Snapshot release of Ethos Suite
+
+- Fix bug in s.port msp communication
+- Guard / Prevent repeat audio playing in certain odd alert situations
+- Fbus out configuration
+- Fix sensor support for RF2.1
+
 # 2.3.0-20251214
 
-Snaopshot release of Ethos Suite
+Snapshot release of Ethos Suite
 
  - Support for ZTW and OMP Fwd Programming
  - MSP protocol improvements

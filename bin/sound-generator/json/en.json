@@ -42,6 +42,18 @@
     "needs_translation": false
   },
   {
+    "file": "app/mpoverideen.wav",
+    "english": "Passthrough Mixer overide - enabled",
+    "translation": "Passthrough Mixer overide - enabled",
+    "needs_translation": false
+  },
+  {
+    "file": "app/mpoveridedis.wav",
+    "english": "Passthrough Mixer overide - disabled",
+    "translation": "Passthrough Mixer overide - disabled",
+    "needs_translation": false
+  },
+  {
     "file": "events/alerts/lowvoltage.wav",
     "english": "Low Voltage",
     "translation": "Low Voltage",
@@ -207,6 +219,12 @@
     "file": "adjfunctions/p.wav",
     "english": "P",
     "translation": "P",
+    "needs_translation": false
+  },
+    {
+    "file": "adjfunctions/b.wav",
+    "english": "B",
+    "translation": "B",
     "needs_translation": false
   },
   {
@@ -471,6 +489,18 @@
     "file": "status/alerts/voltage.wav",
     "english": "voltage",
     "translation": "voltage",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/battery.wav",
+    "english": "Battery",
+    "translation": "Battery ",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/lowbat.wav",
+    "english": "Battery Empty",
+    "translation": "Battery Empty",
     "needs_translation": false
   }
 ]

@@ -4,6 +4,8 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local system = system
 
 local config = {}
 local enableWakeup = false
@@ -14,7 +16,11 @@ local function sensorNameMap(sensorList)
     return nameMap
 end
 
-local function openPage(pageIdx, title, script)
+local function openPage(opts)
+
+    local pageIdx = opts.idx
+    local title = opts.title
+    local script = opts.script
     enableWakeup = true
     if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
@@ -69,21 +75,31 @@ local function openPage(pageIdx, title, script)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay(nil, nil, true)
-    rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/tools/audio.lua")
+    pageRuntime.openMenuContext()
+    return true
 end
 
 local function onSaveMenu()
+
+    local function doSave()
+        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        for key, value in pairs(config) do rfsuite.preferences.switches[key] = value end
+        rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
+        rfsuite.tasks.events.switches.reset()
+        rfsuite.app.triggers.closeSave = true
+    end
+
+    if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
+        doSave()
+        return
+    end
+
     local buttons = {
         {
             label = "@i18n(app.btn_ok_long)@",
             action = function()
-                local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
-                rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                for key, value in pairs(config) do rfsuite.preferences.switches[key] = value end
-                rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-                rfsuite.tasks.events.switches.resetSwitchStates()
-                rfsuite.app.triggers.closeSave = true
+                doSave()
                 return true
             end
         }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
@@ -93,11 +109,7 @@ local function onSaveMenu()
 end
 
 local function event(widget, category, value, x, y)
-
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(pageIdx, "@i18n(app.modules.settings.name)@", "settings/tools/audio.lua")
-        return true
-    end
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {event = event, openPage = openPage, onNavMenu = onNavMenu, onSaveMenu = onSaveMenu, navButtons = {menu = true, save = true, reload = false, tool = false, help = false}, API = {}}

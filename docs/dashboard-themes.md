@@ -11,42 +11,61 @@ Rotorflight dashboard themes and objects are organized under:
 ```
 <SCRIPTS>/rfsuite/widgets/dashboard/
 ├── objects/           # Reusable widget implementations (dial, gauge, image, etc.)
+│   ├── dial.lua
 │   ├── dial/
 │   │   ├── image.lua
 │   │   └── rainbow.lua
+│   ├── func.lua
 │   ├── func/func.lua
-│   ├── gauge/arc.lua
-│   ├── gauge/bar.lua
-│   ├── gauge/ring.lua
-│   ├── image/image.lua
-│   ├── image/model.lua
-│   ├── text/apiversion.lua
-│   ├── text/armflags.lua
-│   ├── text/blackbox.lua
-│   ├── text/craftname.lua
-│   ├── text/governor.lua
-│   ├── text/session.lua
-│   ├── text/stats.lua
-│   ├── text/telemetry.lua
-│   │── text.lua
-│   └── time/clock.lua
-│       time.lua
+│   ├── gauge.lua
+│   ├── gauge/
+│   │   ├── arc.lua
+│   │   ├── bar.lua
+│   │   ├── ring.lua
+│   │   └── step.lua
+│   ├── image.lua
+│   ├── image/
+│   │   ├── image.lua
+│   │   └── model.lua
+│   ├── navigation.lua
+│   ├── navigation/ah.lua
+│   ├── text.lua
+│   ├── text/
+│   │   ├── apiversion.lua
+│   │   ├── armflags.lua
+│   │   ├── blackbox.lua
+│   │   ├── clock.lua
+│   │   ├── craftname.lua
+│   │   ├── governor.lua
+│   │   ├── pidrates.lua
+│   │   ├── session.lua
+│   │   ├── stats.lua
+│   │   ├── telemetry.lua
+│   │   ├── text.lua
+│   │   └── watts.lua
+│   ├── time.lua
+│   └── time/
+│       ├── count.lua
+│       ├── flight.lua
+│       └── total.lua
 └── themes/            # Installed themes
     ├── default/
     │   ├── icon.png
-    │   ├── init.lua       # Returns theme table (layout, boxes)
-    │   ├── preflight.lua  # Runs before flight initialization
-    │   ├── inflight.lua   # Runs at flight start
-    │   └── postflight.lua # Runs after flight termination
-    ├── @aerc/             # Example user theme
-    ├── developer-basic/   # Includes configure.lua for setup UI
+    │   ├── init.lua       # Theme metadata (name, state scripts, configure)
+    │   ├── preflight.lua  # Preflight layout
+    │   ├── inflight.lua   # In-flight layout
+    │   └── postflight.lua # Post-flight layout
+    ├── @aerc/
+    ├── @rt-rc/
+    ├── rfstatus/
+    ├── timer/
     └── ...
 ```
 
 **System vs User Themes**
 
-* **System**: `SCRIPTS:rfsuite/widgets/dashboard/themes/<themename>/`
-* **User**:   `SCRIPTS:rfsuite.user/dashboard/<themename>/`
+* **System**: `SCRIPTS:/rfsuite/widgets/dashboard/themes/<themename>/`
+* **User**:   `SCRIPTS:/rfsuite.user/dashboard/<themename>/`
 
 User themes override system themes of the same name and are safe from package updates.
 
@@ -56,16 +75,26 @@ User themes override system themes of the same name and are safe from package up
 
 Each theme may implement the following Lua modules:
 
-* **`init.lua`** (required): returns a table with at minimum:
-
-  * `layout` (table): global settings (colors, fonts, selection style).
-  * `boxes` (array): list of box definitions (see Section 4).
-* **`preflight.lua`** (optional): called once before flight setup.
-* **`inflight.lua`** (optional): called once at the start of flight.
-* **`postflight.lua`** (optional): called once after flight ends.
-* **`configure.lua`** (optional): for themes with configurable parameters.
+* **`init.lua`** (required): returns theme metadata (e.g., `name`, `preflight`, `inflight`, `postflight`, optional `configure`, and scheduling hints).
+* **`preflight.lua`** (optional): returns a layout table for preflight.
+* **`inflight.lua`** (optional): returns a layout table for inflight.
+* **`postflight.lua`** (optional): returns a layout table for postflight.
+* **`configure.lua`** (optional): exposes a configuration UI and saves preferences.
 
 Example **`init.lua`**:
+
+```lua
+return {
+  name = "Example Theme",
+  preflight = "preflight.lua",
+  inflight = "inflight.lua",
+  postflight = "postflight.lua",
+  configure = "configure.lua",
+  standalone = false
+}
+```
+
+Example **`preflight.lua`**:
 
 ```lua
 return {
@@ -75,12 +104,11 @@ return {
     defaultbg    = "black",
   },
   boxes = {
-    { col = 1, row = 1, type = "text", subtype = "telemetry", source = "alt", title = "ALT", unit = "m" },
+    { col = 1, row = 1, type = "text", subtype = "telemetry", source = "altitude", title = "ALT", unit = "m" },
     { x_pct = 0.5, y_pct = 0.1, w_pct = 0.4, h_pct = 0.2,
       type = "gauge", subtype = "bar", source = "smartfuel", gaugemin = 0, gaugemax = 100,
       title = "Fuel", unit = "%"
     },
-    -- ...
   }
 }
 ```
@@ -137,6 +165,9 @@ Outputs static or telemetry-based text. Subtypes located in `objects/text/`:
 | `armflags`   | Armed status flags (auto).             | –                 |
 | `session`    | Any session key (`source` required).   | e.g., `"rx_rssi"` |
 | `stats`      | Session summary stats (auto).          | –                 |
+| `clock`      | Clock display (auto).                  | –                 |
+| `pidrates`   | PID/Rates profile display (auto).      | –                 |
+| `watts`      | Voltage/Current => Power (auto).       | –                 |
 
 **Common Parameters:**
 
@@ -218,17 +249,26 @@ Displays flight timer or clock (`objects/time/`):
 
 | `subtype` | Description                       | Key Params                          |
 | --------- | --------------------------------- | ----------------------------------- |
-| `flight`  | Elapsed flight time (hh\:mm\:ss). | `format`, `font`, `title`           |
-| `clock`   | Real-time clock display.          | `format` (Lua date fmt), `timezone` |
+| `flight`  | Elapsed flight time (mm\:ss).      | `font`, `title`                     |
+| `count`   | Flight count (from model prefs).  | `font`, `title`                     |
+| `total`   | Total flight time.                | `font`, `title`                     |
 
 **Example:**
 
 ```lua
 { type = "time", subtype = "flight", x_pct=0.8, y_pct=0.05,
-  format = "%H:%M:%S", title = "TIMER" }
+  title = "TIMER" }
 ```
 
-### 4.6 Function (`type = "func")`
+### 4.6 Navigation (`type = "navigation")`
+
+Navigation-style widgets under `objects/navigation/`:
+
+| `subtype` | Description                 |
+| --------- | --------------------------- |
+| `ah`      | Attitude horizon display.   |
+
+### 4.7 Function (`type = "func")`
 
 Custom drawing logic (`objects/func/func.lua`):
 
