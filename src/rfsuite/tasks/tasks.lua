@@ -105,6 +105,8 @@ local OVERDUE_TOL = SCHED_DT * 0.25
 tasks.rateMultiplier = tasks.rateMultiplier or 1.0
 
 local LOG_OVERDUE_TASKS = false
+local perfTimingEnabled = false
+local taskTimingEnabled = false
 
 tasks._justInitialized = false
 tasks._initState = "start"
@@ -620,14 +622,18 @@ local function runNonSpreadTasks(now)
 
                     local fn = mod.wakeup
                     if fn then
-                        local c0 = os_clock()
-                        fn(mod)
-                        local c1 = os_clock()
-                        local dur = c1 - c0
-                        loopCpu = loopCpu + dur
-
-                        if profWanted(task.name) then
-                            profRecord(task, dur)
+                        if taskTimingEnabled then
+                            local c0 = os_clock()
+                            fn(mod)
+                            local dur = os_clock() - c0
+                            if perfTimingEnabled then
+                                loopCpu = loopCpu + dur
+                            end
+                            if profWanted(task.name) then
+                                profRecord(task, dur)
+                            end
+                        else
+                            fn(mod)
                         end
                     end
 
@@ -680,12 +686,17 @@ local function runSpreadTasks(now)
         local mod = tasks[task.name]
         local fn = mod and mod.wakeup
         if fn then
-            local c0 = os_clock()
-            fn(mod)
-            local c1 = os_clock()
-            local dur = c1 - c0
-            loopCpu = loopCpu + dur
-            if profWanted(task.name) then profRecord(task, dur) end
+            if taskTimingEnabled then
+                local c0 = os_clock()
+                fn(mod)
+                local dur = os_clock() - c0
+                if perfTimingEnabled then
+                    loopCpu = loopCpu + dur
+                end
+                if profWanted(task.name) then profRecord(task, dur) end
+            else
+                fn(mod)
+            end
         end
         task.last_run = now
     end
@@ -696,12 +707,17 @@ local function runSpreadTasks(now)
         local mod = tasks[task.name]
         local fn = mod and mod.wakeup
         if fn then
-            local c0 = os_clock()
-            fn(mod)
-            local c1 = os_clock()
-            local dur = c1 - c0
-            loopCpu = loopCpu + dur
-            if profWanted(task.name) then profRecord(task, dur) end
+            if taskTimingEnabled then
+                local c0 = os_clock()
+                fn(mod)
+                local dur = os_clock() - c0
+                if perfTimingEnabled then
+                    loopCpu = loopCpu + dur
+                end
+                if profWanted(task.name) then profRecord(task, dur) end
+            else
+                fn(mod)
+            end
         end
         task.last_run = now
     end
@@ -770,10 +786,16 @@ function tasks.wakeup_protected()
     -- Primary scheduler tick: runs task loops, event edges, and profiling.
     schedulerTick = (schedulerTick or 0) + 1
     tasks.heartbeat = os_clock()
-    local t0 = tasks.heartbeat
     local loopCpu = 0
+    local t0, t1
 
     tasks.profile.enabled = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler
+    local devPrefs = rfsuite.preferences and rfsuite.preferences.developer
+    perfTimingEnabled = devPrefs and (devPrefs.memstats or devPrefs.overlaystats or devPrefs.overlaystatsadmin) or false
+    taskTimingEnabled = tasks.profile.enabled or perfTimingEnabled
+    if perfTimingEnabled then
+        t0 = tasks.heartbeat
+    end
 
     -- Abort early on unsupported Ethos versions to avoid undefined APIs.
     if ethosVersionGood == nil then ethosVersionGood = utils.ethosVersionAtLeast() end
@@ -828,16 +850,22 @@ function tasks.wakeup_protected()
     -- This ensures that the MSP queue is drained as fast as possible to reduce latency.
     if rfsuite.session.mspBusy then
             if tasks.msp and tasks.msp.wakeup then
-                local c0 = os_clock()
-                tasks.msp.wakeup()
-                local c1 = os_clock()
-                loopCpu = loopCpu + (c1 - c0)
+                if perfTimingEnabled then
+                    local c0 = os_clock()
+                    tasks.msp.wakeup()
+                    loopCpu = loopCpu + (os_clock() - c0)
+                else
+                    tasks.msp.wakeup()
+                end
             end
             if tasks.callback and tasks.callback.wakeup then
-                local c0 = os_clock()
-                tasks.callback.wakeup()
-                local c1 = os_clock()
-                loopCpu = loopCpu + (c1 - c0)
+                if perfTimingEnabled then
+                    local c0 = os_clock()
+                    tasks.callback.wakeup()
+                    loopCpu = loopCpu + (os_clock() - c0)
+                else
+                    tasks.callback.wakeup()
+                end
             end
     else
     -- Bulk task processing split across two cycles to reduce per-cycle load.
@@ -906,10 +934,12 @@ function tasks.wakeup_protected()
         end
     end
 
-    local t1 = os_clock()
-    rfsuite.performance = rfsuite.performance or {}
-    rfsuite.performance.taskLoopCpuMs = loopCpu * 1000.0
-    rfsuite.performance.taskLoopTime = (t1 - t0) * 1000.0
+    if perfTimingEnabled then
+        t1 = os_clock()
+        rfsuite.performance = rfsuite.performance or {}
+        rfsuite.performance.taskLoopCpuMs = loopCpu * 1000.0
+        rfsuite.performance.taskLoopTime = (t1 - t0) * 1000.0
+    end
 end
 
 function tasks.wakeup()
