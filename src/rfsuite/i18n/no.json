@@ -7978,6 +7978,12 @@
           "reverse_text": false,
           "translation": "SBus Out"
         },
+        "function_sport_input": {
+          "english": "S.PORT Input",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "S.PORT Input"
+        },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "max_length": 15,
