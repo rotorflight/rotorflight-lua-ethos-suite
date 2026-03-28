@@ -16,6 +16,9 @@ end
 local pages = {}
 local DEFAULT_TOOL_SCRIPT = "esc_tools/tools/esc_tool.lua"
 local FOUR_WAY_TOOL_SCRIPT = "esc_tools/tools/esc_tool_4way.lua"
+local function noop() end
+local pageButtonMeta = {}
+local pageButtonHandlers = {}
 local MFG_INDEX = {
     {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
     {folder = "blheli_s", toolName = "BLHeli_S",                                  image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
@@ -93,6 +96,48 @@ local function clearEscMaskCache()
     end
 end
 
+local function clearButtonMeta()
+    for k in pairs(pageButtonMeta) do
+        pageButtonMeta[k] = nil
+    end
+end
+
+local function clearButtonCache()
+    clearButtonMeta()
+    for k in pairs(pageButtonHandlers) do
+        pageButtonHandlers[k] = nil
+    end
+end
+
+local function pressMainButton(childIdx)
+    local meta = pageButtonMeta[childIdx]
+    if not meta then return end
+
+    rfsuite.preferences.menulastselected["escmain"] = childIdx
+    rfsuite.app.ui.progressDisplay(nil, nil, 0.5)
+    rfsuite.app.ui.openPage({
+        idx = childIdx,
+        title = meta.childTitle,
+        folder = meta.folder,
+        script = meta.script,
+        returnContext = {
+            idx = childIdx,
+            title = meta.title,
+            script = meta.returnScript
+        }
+    })
+end
+
+local function getMainButtonHandler(childIdx)
+    local handler = pageButtonHandlers[childIdx]
+    if handler then return handler end
+    handler = function()
+        pressMainButton(childIdx)
+    end
+    pageButtonHandlers[childIdx] = handler
+    return handler
+end
+
 local function openPage(opts)
 
     local pidx = opts.idx
@@ -153,6 +198,7 @@ local function openPage(opts)
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
     pages = buildEscPages()
+    clearButtonMeta()
     local selectedIdx = tonumber(rfsuite.preferences.menulastselected["escmain"]) or 1
     if selectedIdx < 1 then selectedIdx = 1 end
     if selectedIdx > #pages then selectedIdx = #pages end
@@ -179,27 +225,21 @@ local function openPage(opts)
             rfsuite.app.gfx_buttons["escmain"][childIdx] = nil
         end
 
+        pageButtonMeta[childIdx] = {
+            title = title,
+            childTitle = title .. " / " .. pvalue.toolName,
+            folder = pvalue.folder,
+            script = pvalue.script,
+            returnScript = relativeScript or script
+        }
+
         rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.toolName,
             icon = rfsuite.app.gfx_buttons["escmain"][childIdx],
             options = FONT_S,
-            paint = function() end,
-                press = function()
-                    rfsuite.preferences.menulastselected["escmain"] = childIdx
-                    rfsuite.app.ui.progressDisplay(nil,nil,0.5)
-                    rfsuite.app.ui.openPage({
-                        idx = childIdx,
-                        title = title .. " / " .. pvalue.toolName,
-                        folder = pvalue.folder,
-                        script = pvalue.script,
-                        returnContext = {
-                            idx = childIdx,
-                            title = title,
-                            script = relativeScript or script
-                        }
-                    })
-                end
-            })
+            paint = noop,
+            press = getMainButtonHandler(childIdx)
+        })
 
         if pvalue.disabled == true then rfsuite.app.formFields[childIdx]:enable(false) end
 
@@ -221,6 +261,7 @@ local function closePage()
         rfsuite.app.gfx_buttons["escmain"] = nil
     end
     pages = {}
+    clearButtonCache()
     clearEscMaskCache()
 end
 

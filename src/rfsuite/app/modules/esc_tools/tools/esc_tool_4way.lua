@@ -62,6 +62,15 @@ local escSwitchReadFlushPending = false
 local escDetailsApiName
 local escDetailsApi
 local escSwitchApi
+local escDetailsHandlersApi
+local esc2CheckApi
+local esc2CheckHandlersApi
+local selectorButtonsReadyState
+local selectorButtonsEsc2State
+local toolButtonMeta = {}
+local toolButtonHandlers = {}
+local selectorButtonMeta = {}
+local selectorButtonHandlers = {}
 
 local function noop() end
 
@@ -299,6 +308,123 @@ local function detachEscApiHandlers(api)
     if api.setErrorHandler then pcall(api.setErrorHandler, noop) end
 end
 
+local function clearButtonMeta(meta)
+    for k in pairs(meta) do
+        meta[k] = nil
+    end
+end
+
+local function clearButtonCache(meta, handlers)
+    clearButtonMeta(meta)
+    for k in pairs(handlers) do
+        handlers[k] = nil
+    end
+end
+
+local function onEscDetailsReadComplete(_, buf)
+    if escSwitchReadFlushPending then
+        escSwitchReadFlushPending = false
+        clearEscSession()
+        scheduleEscDetailsReadAt(0.2)
+        mspBusy = false
+        return
+    end
+
+    local API = escDetailsApi
+    if not API then
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+        mspBusy = false
+        return
+    end
+
+    local signature = API.readValue("esc_signature")
+    local valid = signature == mspSignature and #buf >= mspBytes
+
+    if valid then
+        escDetails.model = ESC.getEscModel(buf)
+        escDetails.version = ESC.getEscVersion(buf)
+        escDetails.firmware = ESC.getEscFirmware(buf)
+
+        rfsuite.session.escDetails = escDetails
+
+        if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
+
+        if escDetails.model ~= nil then
+            foundESC = true
+            resetEscReadRecovery()
+            escDetailsNextReadAt = 0
+        end
+    else
+        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+        scheduleEscReadRecovery()
+    end
+    mspBusy = false
+end
+
+local function onEscDetailsReadError()
+    scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
+    scheduleEscReadRecovery()
+    mspBusy = false
+end
+
+local function installEscDetailsHandlers(api)
+    if not api or escDetailsHandlersApi == api then return end
+    api.setCompleteHandler(onEscDetailsReadComplete)
+    api.setErrorHandler(onEscDetailsReadError)
+    escDetailsHandlersApi = api
+end
+
+local function pressToolButton(childIdx)
+    local meta = toolButtonMeta[childIdx]
+    if not meta then return end
+
+    rfsuite.preferences.menulastselected["esctool"] = childIdx
+    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
+
+    local childOpts = {
+        idx = childIdx,
+        title = meta.childTitle,
+        script = meta.script,
+        returnContext = {
+            idx = meta.parentIdx,
+            title = meta.title,
+            folder = meta.folder,
+            script = "esc_tools/tools/esc_tool_4way.lua"
+        }
+    }
+
+    if switchState then
+        pendingChildOpen = childOpts
+        renderLoading(meta.childTitle)
+        return
+    end
+    if escReadReadyAt and os.clock() < escReadReadyAt then
+        pendingChildOpen = childOpts
+        renderLoading(meta.childTitle)
+        return
+    end
+    if escSwitchReadFlushPending then
+        pendingChildOpen = childOpts
+        renderLoading(meta.childTitle)
+        return
+    end
+
+    if rfsuite.session then
+        rfsuite.session.esc4WaySkipEntrySwitchOnce = true
+    end
+    rfsuite.app.ui.openPage(childOpts)
+end
+
+local function getToolButtonHandler(childIdx)
+    local handler = toolButtonHandlers[childIdx]
+    if handler then return handler end
+    handler = function()
+        pressToolButton(childIdx)
+    end
+    toolButtonHandlers[childIdx] = handler
+    return handler
+end
+
 local function getESCDetails()
     if not ESC then return end
     if not ESC.mspapi then return end
@@ -329,45 +455,7 @@ local function getESCDetails()
         scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
         return
     end
-    API.setCompleteHandler(function(self, buf)
-        if escSwitchReadFlushPending then
-            escSwitchReadFlushPending = false
-            clearEscSession()
-            scheduleEscDetailsReadAt(0.2)
-            mspBusy = false
-            return
-        end
-
-        local signature = API.readValue("esc_signature")
-        local valid = signature == mspSignature and #buf >= mspBytes
-
-        if valid then
-            escDetails.model = ESC.getEscModel(buf)
-            escDetails.version = ESC.getEscVersion(buf)
-            escDetails.firmware = ESC.getEscFirmware(buf)
-
-            rfsuite.session.escDetails = escDetails
-
-            if ESC.mspBufferCache == true then rfsuite.session.escBuffer = buf end
-
-            if escDetails.model ~= nil then
-                foundESC = true
-                resetEscReadRecovery()
-                escDetailsNextReadAt = 0
-            end
-        else
-            scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
-            scheduleEscReadRecovery()
-        end
-        mspBusy = false
-
-    end)
-
-    API.setErrorHandler(function(self, err)
-        scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
-        scheduleEscReadRecovery()
-        mspBusy = false
-    end)
+    installEscDetailsHandlers(API)
 
     API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
     local ok = API.read()
@@ -403,14 +491,17 @@ local function applySelectorButtonStates()
     local fields = rfsuite.app and rfsuite.app.formFields
     if not fields then return end
     local ready = isPostConnectComplete() and selectorGuardOk == true
+    local esc2Ready = ready and esc2Available == true
     local fieldEsc1 = fields[1]
     local fieldEsc2 = fields[2]
-    if fieldEsc1 and fieldEsc1.enable then
+    if fieldEsc1 and fieldEsc1.enable and selectorButtonsReadyState ~= ready then
         fieldEsc1:enable(ready)
     end
-    if fieldEsc2 and fieldEsc2.enable then
-        fieldEsc2:enable(ready and esc2Available == true)
+    if fieldEsc2 and fieldEsc2.enable and selectorButtonsEsc2State ~= esc2Ready then
+        fieldEsc2:enable(esc2Ready)
     end
+    selectorButtonsReadyState = ready
+    selectorButtonsEsc2State = esc2Ready
 end
 
 local function updateEsc2AvailabilityFromCount(count)
@@ -426,6 +517,27 @@ local function resolveEsc2AvailabilityFromSession()
         return true
     end
     return false
+end
+
+local function onEsc2AvailabilityComplete()
+    esc2CheckPending = false
+    local API = esc2CheckApi
+    local count = API and API.readValue and API.readValue("motor_count_blheli")
+    if not updateEsc2AvailabilityFromCount(count) then
+        esc2Available = false
+    end
+    applySelectorButtonStates()
+end
+
+local function onEsc2AvailabilityError()
+    esc2CheckPending = false
+end
+
+local function installEsc2AvailabilityHandlers(api)
+    if not api or esc2CheckHandlersApi == api then return end
+    api.setCompleteHandler(onEsc2AvailabilityComplete)
+    api.setErrorHandler(onEsc2AvailabilityError)
+    esc2CheckHandlersApi = api
 end
 
 local function requestEsc2AvailabilityCheck()
@@ -448,18 +560,9 @@ local function requestEsc2AvailabilityCheck()
     local API = mspApi.load("MOTOR_CONFIG")
     if not API then return end
 
+    esc2CheckApi = API
+    installEsc2AvailabilityHandlers(API)
     esc2CheckPending = true
-    API.setCompleteHandler(function(self, buf)
-        esc2CheckPending = false
-        local count = API.readValue("motor_count_blheli")
-        if not updateEsc2AvailabilityFromCount(count) then
-            esc2Available = false
-        end
-        applySelectorButtonStates()
-    end)
-    API.setErrorHandler(function(self, err)
-        esc2CheckPending = false
-    end)
     if rfsuite.utils and rfsuite.utils.uuid then
         API.setUUID(rfsuite.utils.uuid())
     else
@@ -574,6 +677,29 @@ local function beginEscSwitch(target, opts)
     rfsuite.session.esc4WaySetComplete = false
     clearEscState(isRecovery)
     renderLoading(lastOpts.title or "")
+end
+
+local function pressSelectorButton(childIdx)
+    local item = selectorButtonMeta[childIdx]
+    if not item then return end
+    if selectorGuardOk ~= true then return end
+    if not isPostConnectComplete() then return end
+    if item.target == item.esc2Target and esc2Available ~= true then return end
+    inSelector = false
+    rfsuite.preferences.menulastselected["esc4way"] = childIdx
+    local loaderSpeed = ((rfsuite.app.loaderSpeed and rfsuite.app.loaderSpeed.VSLOW) or 0.5) * 0.15
+    rfsuite.app.ui.progressDisplay(nil, nil, loaderSpeed)
+    beginEscSwitch(item.target)
+end
+
+local function getSelectorButtonHandler(childIdx)
+    local handler = selectorButtonHandlers[childIdx]
+    if handler then return handler end
+    handler = function()
+        pressSelectorButton(childIdx)
+    end
+    selectorButtonHandlers[childIdx] = handler
+    return handler
 end
 
 local function processEscSwitch()
@@ -795,6 +921,7 @@ renderToolPage = function(opts)
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
+    clearButtonMeta(toolButtonMeta)
 
     local buttonW, buttonH, padding, numPerRow = getButtonLayout()
 
@@ -825,50 +952,20 @@ renderToolPage = function(opts)
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
             end
 
+            toolButtonMeta[childIdx] = {
+                parentIdx = parentIdx,
+                title = title,
+                folder = folder,
+                childTitle = title .. " / " .. pvalue.title,
+                script = "esc_tools/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script
+            }
+
             rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                 text = pvalue.title,
                 icon = rfsuite.app.gfx_buttons["esctool"][pvalue.image],
                 options = FONT_S,
-                paint = function() end,
-                press = function()
-                    rfsuite.preferences.menulastselected["esctool"] = childIdx
-                    rfsuite.app.ui.progressDisplay(nil, nil, rfsuite.app.loaderSpeed.DEFAULT)
-                    local childTitle = title .. " / " .. pvalue.title
-
-                    local childOpts = {
-                        idx = childIdx,
-                        title = childTitle,
-                        script = "esc_tools/tools/escmfg/" .. folder .. "/pages/" .. pvalue.script,
-                        returnContext = {
-                            idx = parentIdx,
-                            title = title,
-                            folder = folder,
-                            script = "esc_tools/tools/esc_tool_4way.lua"
-                        }
-                    }
-
-                    if switchState then
-                        pendingChildOpen = childOpts
-                        renderLoading(childTitle)
-                        return
-                    end
-                    if escReadReadyAt and os.clock() < escReadReadyAt then
-                        pendingChildOpen = childOpts
-                        renderLoading(childTitle)
-                        return
-                    end
-                    if escSwitchReadFlushPending then
-                        pendingChildOpen = childOpts
-                        renderLoading(childTitle)
-                        return
-                    end
-
-                    if rfsuite.session then
-                        rfsuite.session.esc4WaySkipEntrySwitchOnce = true
-                    end
-                    rfsuite.app.ui.openPage(childOpts)
-
-                end
+                paint = noop,
+                press = getToolButtonHandler(childIdx)
             })
 
             if rfsuite.preferences.menulastselected["esctool"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
@@ -913,6 +1010,8 @@ openSelector = function()
     selectorGuardNeedsReset = false
     selectorGuardStartedAt = 0
     selectorGuardRetryAt = 0
+    selectorButtonsReadyState = nil
+    selectorButtonsEsc2State = nil
     if ESC and ESC.skipSelectorGuardModeReset == true then
         selectorGuardOk = true
     else
@@ -943,6 +1042,7 @@ openSelector = function()
         {title = "ESC1", image = "basic.png", target = esc1Target},
         {title = "ESC2", image = "advanced.png", target = esc2Target},
     }
+    clearButtonMeta(selectorButtonMeta)
     if esc2Available == nil then
         resolveEsc2AvailabilityFromSession()
     end
@@ -975,22 +1075,17 @@ openSelector = function()
             rfsuite.app.gfx_buttons["esc4way"][childIdx] = nil
         end
 
+        selectorButtonMeta[childIdx] = {
+            target = item.target,
+            esc2Target = esc2Target
+        }
+
         rfsuite.app.formFields[childIdx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = item.title,
             icon = rfsuite.app.gfx_buttons["esc4way"][childIdx],
             options = FONT_S,
-            paint = function() end,
-            press = function()
-                if selectorGuardOk ~= true then return end
-                if not isPostConnectComplete() then return end
-                if item.target == 1 and esc2Available ~= true then return end
-                inSelector = false
-                rfsuite.preferences.menulastselected["esc4way"] = childIdx
-                local loaderSpeed = ((rfsuite.app.loaderSpeed and rfsuite.app.loaderSpeed.VSLOW) or 0.5) * 0.15
-                rfsuite.app.ui.progressDisplay(nil, nil, loaderSpeed)
-                beginEscSwitch(item.target)
-                return
-            end
+            paint = noop,
+            press = getSelectorButtonHandler(childIdx)
         })
 
         if rfsuite.preferences.menulastselected["esc4way"] == childIdx then rfsuite.app.formFields[childIdx]:focus() end
@@ -1093,6 +1188,7 @@ local function closePage()
 
     detachEscApiHandlers(escSwitchApi)
     detachEscApiHandlers(escDetailsApi)
+    detachEscApiHandlers(esc2CheckApi)
     clearEscQueueEntries(ESC and ESC.mspapi)
     clearEscQueueEntries("4WIF_ESC_FWD_PROG")
     clearEscQueueEntries("MOTOR_CONFIG")
@@ -1112,6 +1208,8 @@ local function closePage()
     selectorGuardNeedsReset = false
     selectorGuardStartedAt = 0
     selectorGuardRetryAt = 0
+    selectorButtonsReadyState = nil
+    selectorButtonsEsc2State = nil
     esc2CheckPending = false
     esc2CheckLastAttempt = 0
     esc2Available = nil
@@ -1122,7 +1220,10 @@ local function closePage()
     simulatorResponse = nil
     escDetailsApi = nil
     escDetailsApiName = nil
+    escDetailsHandlersApi = nil
     escSwitchApi = nil
+    esc2CheckApi = nil
+    esc2CheckHandlersApi = nil
     ESC = nil
     modelLine = nil
     modelText = nil
@@ -1130,6 +1231,8 @@ local function closePage()
     last4WayWriteOk = nil
     writeSeq = 0
     lastWriteSeq = 0
+    clearButtonCache(toolButtonMeta, toolButtonHandlers)
+    clearButtonCache(selectorButtonMeta, selectorButtonHandlers)
 
     if keepEscSessionHot then
         resetUiState()

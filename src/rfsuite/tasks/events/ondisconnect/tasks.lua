@@ -40,16 +40,39 @@ local function loadTaskModuleFromPath(fullPath)
     return module, nil
 end
 
-local function hardReloadTask(task)
-    if not task or not task.path then return end
+local function clearTaskEntries()
+    for i = #tasksQueue, 1, -1 do
+        tasksQueue[i] = nil
+    end
+end
 
-    local module, err = loadTaskModuleFromPath(task.path)
+local function ensureTaskModule(task)
+    local module, err
+
+    if not task or not task.path then
+        return nil, "Invalid task descriptor"
+    end
+    if task.module then
+        return task.module, nil
+    end
+
+    module, err = loadTaskModuleFromPath(task.path)
     if not module then
-        rfsuite.utils.log("Error reloading task " .. task.path .. ": " .. (err or "?"), "info")
-        return
+        return nil, err
     end
 
     task.module = module
+    return module, nil
+end
+
+local function releaseTaskModule(task, runReset)
+    local module = task and task.module
+
+    if not module then return end
+    if runReset and type(module.reset) == "function" then
+        module.reset()
+    end
+    task.module = nil
 end
 
 local function loadManifest()
@@ -71,7 +94,7 @@ end
 function tasks.findTasks()
     if tasksLoaded then return end
 
-    tasksQueue = {}
+    clearTaskEntries()
     queueIndex = 1
 
     local manifest = loadManifest()
@@ -83,20 +106,14 @@ function tasks.findTasks()
     for _, entry in ipairs(manifest) do
         local file = entry and entry.name
         if file then
-            local fullPath = BASE_PATH .. file .. ".lua"
-            local module, err = loadTaskModuleFromPath(fullPath)
-            if not module then
-                rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. (err or "?"), "info")
-            else
-                tasksQueue[#tasksQueue + 1] = {
-                    name = file,
-                    module = module,
-                    path = fullPath,
-                    initialized = false,
-                    complete = false,
-                    failed = false,
-                }
-            end
+            tasksQueue[#tasksQueue + 1] = {
+                name = file,
+                module = nil,
+                path = BASE_PATH .. file .. ".lua",
+                initialized = false,
+                complete = false,
+                failed = false,
+            }
         end
     end
 
@@ -107,12 +124,7 @@ local function resetQueueState()
     for i = 1, #tasksQueue do
         local task = tasksQueue[i]
 
-        hardReloadTask(task)
-
-        if task.module and type(task.module.reset) == "function" then
-            task.module.reset()
-        end
-
+        releaseTaskModule(task, true)
         task.initialized = false
         task.complete = false
         task.failed = false
@@ -171,20 +183,31 @@ function tasks.wakeup()
 
     while not isQueueDone() do
         local task = tasksQueue[queueIndex]
+        local module, err
         if not task or task.complete or task.failed then
             queueIndex = (queueIndex or 1) + 1
         else
             if not task.initialized then task.initialized = true end
 
-            task.module.wakeup()
+            module, err = ensureTaskModule(task)
+            if not module or type(module.wakeup) ~= "function" then
+                task.failed = true
+                rfsuite.utils.log("Failed to load ondisconnect/" .. tostring(task and task.name) .. ": " .. tostring(err or "missing module"), "info")
+                queueIndex = (queueIndex or 1) + 1
+                goto continue
+            end
 
-            if task.module.isComplete and task.module.isComplete() then
+            module.wakeup()
+
+            if module.isComplete and module.isComplete() then
                 task.complete = true
+                releaseTaskModule(task, false)
             else
                 return
             end
             queueIndex = (queueIndex or 1) + 1
         end
+        ::continue::
     end
 
     active = false
