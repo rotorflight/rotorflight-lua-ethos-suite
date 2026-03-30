@@ -1111,6 +1111,12 @@ function tasks.load(name, meta)
         return false
     end
 
+    local baseInterval = tonumber(meta.interval or 1)
+    if baseInterval and baseInterval < 0 then
+        utils.log(string.format("[scheduler] Skipped loading disabled task '%s' (interval < 0)", name), "info")
+        return true
+    end
+
     local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. meta.script
     local fn, loadErr = loadfile(scriptPath)
     if not fn then
@@ -1119,12 +1125,6 @@ function tasks.load(name, meta)
     end
 
     tasks[name] = fn(config)
-
-    local baseInterval = tonumber(meta.interval or 1)
-    if baseInterval and baseInterval < 0 then
-        utils.log(string.format("[scheduler] Loaded task '%s' (no schedule; interval < 0)", name), "info")
-        return true
-    end
 
     local jitter = (math_random() * 0.1)
     local interval = (baseInterval * (tasks.rateMultiplier or 1.0)) + jitter
