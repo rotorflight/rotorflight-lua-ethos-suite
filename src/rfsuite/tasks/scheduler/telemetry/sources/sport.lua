@@ -41,7 +41,10 @@ return {
     fuel = {
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600 }
             },
-    smartfuel = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}},
+    smartfuel = {
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5251, mspgt = {12, 0, 10}},
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1, msplt = {12, 0, 9}}
+            },
     smartconsumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}},
     consumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}},
     governor = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}},

@@ -166,6 +166,15 @@ return {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        default_telemetry_sensor = function()
+            return rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+        end,
+        set_telemetry_sensors = function()
+            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+                return 118
+            end
+            return nil
+        end,
     },
 
     smartconsumption = {

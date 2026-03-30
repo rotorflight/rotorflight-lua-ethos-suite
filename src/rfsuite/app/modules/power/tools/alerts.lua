@@ -20,7 +20,7 @@ local apidata = {
         labels = {},
         fields = {
             {t = "@i18n(app.modules.power.timer)@",                      mspapi = 1, apikey = "flighttime"},
-            {t = "@i18n(app.modules.power.voltage_multiplier)@",         mspapi = 1, apikey = "sag_multiplier"},
+            {t = "@i18n(app.modules.power.voltage_multiplier)@",         mspapi = 1, apikey = "sag_multiplier", apiversionlt = {12, 0, 10}},
             {t = "@i18n(app.modules.power.alert_type)@",                 mspapi = 1, apikey = "alert_type", type = 1},
             {t = "@i18n(app.modules.power.bec_voltage_alert)@",          mspapi = 1, apikey = "becalertvalue"},
             {t = "@i18n(app.modules.power.rx_voltage_alert)@",           mspapi = 1, apikey = "rxalertvalue"}
@@ -35,23 +35,6 @@ end
 
 local function wakeup(self)
     if enableWakeup == false then return end
-
-    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-        if f.apikey == "calc_local" then
-            local v = tonumber(f.value)
-            if v == 1 then
-                disableMultiplier = true
-            else
-                disableMultiplier = false
-            end
-        end
-    end
-
-    if disableMultiplier == true then
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do if f.apikey == "sag_multiplier" then rfsuite.app.formFields[i]:enable(true) end end
-    else
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do if f.apikey == "sag_multiplier" then rfsuite.app.formFields[i]:enable(false) end end
-    end
 
     for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "alert_type" then
