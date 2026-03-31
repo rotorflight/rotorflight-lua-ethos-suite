@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local os_clock = os.clock
 local math_floor = math.floor
@@ -22,8 +23,6 @@ local voltageStableTime = nil
 local voltageStabilised = false
 local stabilizeNotBefore = nil
 local voltageThreshold = 0.15
-local preStabiliseDelay = 1.5
-
 local telemetry
 local lastMode = rfsuite.flightmode.current or "preflight"
 local currentMode = rfsuite.flightmode.current or "preflight"
@@ -118,14 +117,13 @@ local function smartFuelCalc()
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         resetVoltageTracking()
-        stabilizeNotBefore = os_clock() + preStabiliseDelay
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
     end
 
-    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-        if lastSensorMode ~= rfsuite.session.modelPreferences.battery.calc_local then
-            resetVoltageTracking()
-            lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
-        end
+    local sensorMode = smartfuelprefs.getSource()
+    if lastSensorMode ~= sensorMode then
+        resetVoltageTracking()
+        lastSensorMode = sensorMode
     end
 
     local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
@@ -146,13 +144,15 @@ local function smartFuelCalc()
 
         resetVoltageTracking()
 
-        stabilizeNotBefore = now + preStabiliseDelay
+        stabilizeNotBefore = now + smartfuelprefs.getStabilizeDelaySeconds()
 
         lastMode = currentMode
         return nil
     end
 
     lastMode = currentMode
+
+    voltageThreshold = smartfuelprefs.getStableWindowVolts()
 
     if stabilizeNotBefore and now < stabilizeNotBefore then return nil end
 
@@ -179,7 +179,7 @@ local function smartFuelCalc()
             fuelStartingPercent = nil
             fuelStartingConsumption = nil
             resetVoltageTracking()
-            stabilizeNotBefore = os_clock() + preStabiliseDelay
+            stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
             return nil
         end
     end

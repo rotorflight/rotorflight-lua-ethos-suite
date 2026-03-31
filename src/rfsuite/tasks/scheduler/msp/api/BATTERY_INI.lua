@@ -25,8 +25,13 @@ local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.t
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "smartfuel_model_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = modelTypes, default = 0, min = 0, max = 2},
-    { field = "calc_local",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn},
-    { field = "sag_multiplier", type = "U8", simResponse = {0}, decimals = 1, default = 0.5, min = 0, max = 10},
+    { field = "smartfuel_source", type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn, default = 0, min = 0, max = 1},
+    { field = "stabilize_delay", type = "U16", simResponse = {220, 5}, default = 1500, min = 0, max = 10000, unit = "ms"},
+    { field = "stable_window", type = "U16", simResponse = {15, 0}, decimals = 2, default = 15, min = 0, max = 100, unit = "V"},
+    { field = "voltage_fall_limit", type = "U16", simResponse = {5, 0}, decimals = 2, default = 5, min = 0, max = 100, unit = "V/s"},
+    { field = "fuel_drop_rate", type = "U16", simResponse = {10, 0}, decimals = 1, default = 10, min = 0, max = 500, unit = "%/s"},
+    { field = "fuel_rise_rate", type = "U16", simResponse = {2, 0}, decimals = 1, default = 2, min = 0, max = 500, unit = "%/s"},
+    { field = "sag_multiplier_percent", type = "U16", simResponse = {70, 0}, default = 70, min = 0, max = 200, unit = "%"},
     { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
     { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 6.5},
     { field = "rxalertvalue",   type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 7.5},
@@ -42,6 +47,14 @@ local function loadParsedFromINI()
 
     for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do
         local raw = ini.getvalue(tbl, INI_SECTION, entry.field)
+        if raw == nil and entry.field == "smartfuel_source" then
+            raw = ini.getvalue(tbl, INI_SECTION, "calc_local")
+        elseif raw == nil and entry.field == "sag_multiplier_percent" then
+            local legacyRaw = ini.getvalue(tbl, INI_SECTION, "sag_multiplier")
+            if legacyRaw ~= nil then
+                raw = tonumber(legacyRaw) * 100
+            end
+        end
         if raw ~= nil then
             if entry.field == "becalertvalue" or entry.field == "rxalertvalue" then
                 parsed[entry.field] = tonumber(raw) * 10
@@ -79,10 +92,22 @@ return factory.create({
         local tbl = ini.load_ini_file(INI_FILE) or {}
 
         for k, v in pairs(state.payloadData) do
-            if k == "calc_local" or k == "smartfuel_model_type" then v = math.floor(v) end
+            if k == "smartfuel_source" or k == "smartfuel_model_type" or k == "alert_type" then
+                v = math.floor(v)
+            end
             ini.setvalue(tbl, INI_SECTION, k, v)
+            if k == "smartfuel_source" then
+                ini.setvalue(tbl, INI_SECTION, "calc_local", v)
+            elseif k == "sag_multiplier_percent" then
+                ini.setvalue(tbl, INI_SECTION, "sag_multiplier", v / 100)
+            end
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then
                 rfsuite.session.modelPreferences[INI_SECTION][k] = v
+                if k == "smartfuel_source" then
+                    rfsuite.session.modelPreferences[INI_SECTION]["calc_local"] = v
+                elseif k == "sag_multiplier_percent" then
+                    rfsuite.session.modelPreferences[INI_SECTION]["sag_multiplier"] = v / 100
+                end
             end
         end
 

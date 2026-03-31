@@ -20,7 +20,6 @@ local apidata = {
         labels = {},
         fields = {
             {t = "@i18n(app.modules.power.timer)@",                      mspapi = 1, apikey = "flighttime"},
-            {t = "@i18n(app.modules.power.voltage_multiplier)@",         mspapi = 1, apikey = "sag_multiplier", apiversionlt = {12, 0, 10}},
             {t = "@i18n(app.modules.power.alert_type)@",                 mspapi = 1, apikey = "alert_type", type = 1},
             {t = "@i18n(app.modules.power.bec_voltage_alert)@",          mspapi = 1, apikey = "becalertvalue"},
             {t = "@i18n(app.modules.power.rx_voltage_alert)@",           mspapi = 1, apikey = "rxalertvalue"}

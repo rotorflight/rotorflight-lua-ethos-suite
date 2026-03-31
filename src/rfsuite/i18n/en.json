@@ -107,6 +107,48 @@
         "needs_translation": false,
         "translation": "Calculate Fuel Using"
       },
+      "smartfuel_source": {
+        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
+        "max_length": 101,
+        "needs_translation": false,
+        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
+      },
+      "stabilize_delay": {
+        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "max_length": 119,
+        "needs_translation": false,
+        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
+      },
+      "stable_window": {
+        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "max_length": 137,
+        "needs_translation": false,
+        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
+      },
+      "voltage_fall_limit": {
+        "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
+        "max_length": 113,
+        "needs_translation": false,
+        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel."
+      },
+      "fuel_drop_rate": {
+        "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
+        "max_length": 83,
+        "needs_translation": false,
+        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
+      },
+      "fuel_rise_rate": {
+        "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
+        "max_length": 91,
+        "needs_translation": false,
+        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
+      },
+      "sag_multiplier_percent": {
+        "english": "Compensates for in-flight voltage sag in voltage mode. Increase it if SmartFuel drops too aggressively under load.",
+        "max_length": 111,
+        "needs_translation": false,
+        "translation": "Compensates for in-flight voltage sag in voltage mode. Increase it if SmartFuel drops too aggressively under load."
+      },
       "sag_multiplier": {
         "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
         "max_length": 73,

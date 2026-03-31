@@ -40,8 +40,14 @@ else
         formdata = {
             labels = {},
             fields = {
-                {t = "@i18n(app.modules.power.model_type)@",     mspapi = 1, apikey = "smartfuel_model_type", type = 1},
-                {t = "@i18n(app.modules.power.calcfuel_local)@", mspapi = 1, apikey = "calc_local", type = 1},
+                {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
+                {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 1, apikey = "smartfuel_source", type = 1},
+                {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 1, apikey = "stabilize_delay"},
+                {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 1, apikey = "stable_window"},
+                {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 1, apikey = "voltage_fall_limit"},
+                {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 1, apikey = "fuel_drop_rate"},
+                {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = 1, apikey = "fuel_rise_rate"},
+                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 1, apikey = "sag_multiplier_percent"},
             }
         }
     }
@@ -54,24 +60,22 @@ end
 
 local function wakeup(self)
     if enableWakeup == false then return end
-    if useFirmwareSmartFuel then
-        local voltageMode = false
-        for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "smartfuel_source" then
-                voltageMode = tonumber(f.value) == 1
-                break
-            end
+    local voltageMode = false
+    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "smartfuel_source" then
+            voltageMode = tonumber(f.value) == 1
+            break
         end
+    end
 
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "voltage_fall_limit" or
-               f.apikey == "fuel_drop_rate" or
-               f.apikey == "fuel_rise_rate" or
-               f.apikey == "sag_multiplier_percent" then
-                local fieldHandle = rfsuite.app.formFields[i]
-                if fieldHandle and fieldHandle.enable then
-                    fieldHandle:enable(voltageMode)
-                end
+    for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "voltage_fall_limit" or
+           f.apikey == "fuel_drop_rate" or
+           f.apikey == "fuel_rise_rate" or
+           f.apikey == "sag_multiplier_percent" then
+            local fieldHandle = rfsuite.app.formFields[i]
+            if fieldHandle and fieldHandle.enable then
+                fieldHandle:enable(voltageMode)
             end
         end
     end

@@ -9,6 +9,7 @@ local smart = {}
 
 local smartfuel = assert(loadfile("tasks/scheduler/sensors/lib/smartfuel.lua"))()
 local smartfuelvoltage = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelvoltage.lua"))()
+local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local log
 local tasks
@@ -37,16 +38,14 @@ local function useNativeSmartFuel()
 end
 
 local function calculateFuel()
-    local prefs = rfsuite.session.modelPreferences
-    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+    if smartfuelprefs.getSource() == 1 then
         return smartfuelvoltage.calculate()
     end
     return smartfuel.calculate()
 end
 
 local function calculateConsumption()
-    local prefs = rfsuite.session.modelPreferences
-    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+    if smartfuelprefs.getSource() == 1 then
         local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
         local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
         local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
