@@ -151,17 +151,17 @@
         "needs_translation": false,
         "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
       },
-      "voltage_stabilize_delay": {
-        "english": "How long SmartFuel waits after power-up or reset before beginning voltage-mode stabilization.",
-        "max_length": 91,
+      "stabilize_delay": {
+        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "max_length": 119,
         "needs_translation": false,
-        "translation": "How long SmartFuel waits after power-up or reset before beginning voltage-mode stabilization."
+        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
       },
-      "voltage_stable_window": {
-        "english": "Maximum allowed pack-voltage variation during stabilization before voltage is treated as settled.",
-        "max_length": 96,
+      "stable_window": {
+        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "max_length": 137,
         "needs_translation": false,
-        "translation": "Maximum allowed pack-voltage variation during stabilization before voltage is treated as settled."
+        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
       },
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",

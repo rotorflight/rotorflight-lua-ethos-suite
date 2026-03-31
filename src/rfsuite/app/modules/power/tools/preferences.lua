@@ -23,8 +23,8 @@ if useFirmwareSmartFuel then
             fields = {
                 {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
                 {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 2, apikey = "smartfuel_source", type = 1},
-                {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 2, apikey = "voltage_stabilize_delay"},
-                {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 2, apikey = "voltage_stable_window"},
+                {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 2, apikey = "stabilize_delay"},
+                {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 2, apikey = "stable_window"},
                 {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 2, apikey = "voltage_fall_limit"},
                 {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 2, apikey = "fuel_drop_rate"},
                 {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = 2, apikey = "fuel_rise_rate"},
@@ -64,9 +64,7 @@ local function wakeup(self)
         end
 
         for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "voltage_stabilize_delay" or
-               f.apikey == "voltage_stable_window" or
-               f.apikey == "voltage_fall_limit" or
+            if f.apikey == "voltage_fall_limit" or
                f.apikey == "fuel_drop_rate" or
                f.apikey == "fuel_rise_rate" or
                f.apikey == "sag_multiplier_percent" then

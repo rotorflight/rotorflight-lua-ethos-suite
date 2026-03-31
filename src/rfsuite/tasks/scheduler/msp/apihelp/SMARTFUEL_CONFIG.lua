@@ -5,8 +5,8 @@
 
 return {
     ["smartfuel_source"] = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@",
-    ["voltage_stabilize_delay"] = "@i18n(api.SMARTFUEL_CONFIG.voltage_stabilize_delay)@",
-    ["voltage_stable_window"] = "@i18n(api.SMARTFUEL_CONFIG.voltage_stable_window)@",
+    ["stabilize_delay"] = "@i18n(api.SMARTFUEL_CONFIG.stabilize_delay)@",
+    ["stable_window"] = "@i18n(api.SMARTFUEL_CONFIG.stable_window)@",
     ["voltage_fall_limit"] = "@i18n(api.SMARTFUEL_CONFIG.voltage_fall_limit)@",
     ["fuel_drop_rate"] = "@i18n(api.SMARTFUEL_CONFIG.fuel_drop_rate)@",
     ["fuel_rise_rate"] = "@i18n(api.SMARTFUEL_CONFIG.fuel_rise_rate)@",
