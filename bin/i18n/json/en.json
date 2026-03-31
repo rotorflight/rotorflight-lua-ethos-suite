@@ -115,13 +115,13 @@
       },
       "stabilize_delay": {
         "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
-        "max_length": 119,
+        "max_length": 122,
         "needs_translation": false,
         "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
       },
       "stable_window": {
         "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
-        "max_length": 137,
+        "max_length": 141,
         "needs_translation": false,
         "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
       },
@@ -133,21 +133,21 @@
       },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
-        "max_length": 83,
+        "max_length": 84,
         "needs_translation": false,
         "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
       },
       "fuel_rise_rate": {
         "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
-        "max_length": 91,
+        "max_length": 92,
         "needs_translation": false,
         "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
       },
       "sag_multiplier_percent": {
-        "english": "Compensates for in-flight voltage sag in voltage mode. Increase it if SmartFuel drops too aggressively under load.",
-        "max_length": 111,
+        "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
+        "max_length": 126,
         "needs_translation": false,
-        "translation": "Compensates for in-flight voltage sag in voltage mode. Increase it if SmartFuel drops too aggressively under load."
+        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
       },
       "tbl_auto": {
         "english": "Auto",
@@ -195,13 +195,13 @@
       },
       "stabilize_delay": {
         "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
-        "max_length": 119,
+        "max_length": 122,
         "needs_translation": false,
         "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
       },
       "stable_window": {
         "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
-        "max_length": 137,
+        "max_length": 141,
         "needs_translation": false,
         "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
       },
@@ -213,21 +213,21 @@
       },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
-        "max_length": 83,
+        "max_length": 84,
         "needs_translation": false,
         "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
       },
       "fuel_rise_rate": {
         "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
-        "max_length": 91,
+        "max_length": 92,
         "needs_translation": false,
         "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
       },
       "sag_multiplier_percent": {
-        "english": "Compensates for in-flight voltage sag in voltage mode. Increase it if SmartFuel drops too aggressively under load.",
-        "max_length": 111,
+        "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
+        "max_length": 126,
         "needs_translation": false,
-        "translation": "Compensates for in-flight voltage sag in voltage mode. Increase it if SmartFuel drops too aggressively under load."
+        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
       }
     },
     "ESC_PARAMETERS_FLYROTOR": {
@@ -6937,10 +6937,10 @@
           "max_length": 14
         },
         "smartfuel_sag_compensation": {
-          "english": "Sag Compensation",
+          "english": "Sag Compensation Factor",
           "needs_translation": false,
-          "translation": "Sag Compensation",
-          "max_length": 16
+          "translation": "Sag Compensation Factor",
+          "max_length": 23
         },
         "cell_count": {
           "english": "Cell Count",
@@ -7033,10 +7033,10 @@
           "max_length": 14
         },
         "voltage_multiplier": {
-          "english": "Sag Compensation",
+          "english": "Sag Compensation Factor",
           "needs_translation": false,
-          "translation": "Sag Compensation",
-          "max_length": 16
+          "translation": "Sag Compensation Factor",
+          "max_length": 23
         },
         "warn_cell_voltage": {
           "english": "Warn Cell Voltage",

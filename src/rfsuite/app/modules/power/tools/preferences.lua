@@ -8,9 +8,22 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local onNavMenu
+local lastVoltageMode = nil
 local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
 
 local apidata
+local function buildFields(apiIndex)
+    return {
+        {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1,        apikey = "smartfuel_model_type", type = 1},
+        {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = apiIndex, apikey = "smartfuel_source", type = 1},
+        {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = apiIndex, apikey = "stabilize_delay"},
+        {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = apiIndex, apikey = "stable_window"},
+        {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = apiIndex, apikey = "sag_multiplier_percent"},
+        {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = apiIndex, apikey = "voltage_fall_limit"},
+        {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = apiIndex, apikey = "fuel_drop_rate"},
+        {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = apiIndex, apikey = "fuel_rise_rate"},
+    }
+end
 
 if useFirmwareSmartFuel then
     apidata = {
@@ -20,16 +33,7 @@ if useFirmwareSmartFuel then
         },
         formdata = {
             labels = {},
-            fields = {
-                {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
-                {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 2, apikey = "smartfuel_source", type = 1},
-                {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 2, apikey = "stabilize_delay"},
-                {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 2, apikey = "stable_window"},
-                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 2, apikey = "sag_multiplier_percent"},
-                {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 2, apikey = "voltage_fall_limit"},
-                {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 2, apikey = "fuel_drop_rate"},
-                {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = 2, apikey = "fuel_rise_rate"},
-            }
+            fields = buildFields(2)
         }
     }
 else
@@ -39,21 +43,13 @@ else
         },
         formdata = {
             labels = {},
-            fields = {
-                {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
-                {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 1, apikey = "smartfuel_source", type = 1},
-                {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 1, apikey = "stabilize_delay"},
-                {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 1, apikey = "stable_window"},
-                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 1, apikey = "sag_multiplier_percent"},
-                {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 1, apikey = "voltage_fall_limit"},
-                {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 1, apikey = "fuel_drop_rate"},
-                {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = 1, apikey = "fuel_rise_rate"},
-            }
+            fields = buildFields(1)
         }
     }
 end
 
 local function postLoad(self)
+    lastVoltageMode = nil
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
 end
@@ -67,6 +63,11 @@ local function wakeup(self)
             break
         end
     end
+
+    if voltageMode == lastVoltageMode then
+        return
+    end
+    lastVoltageMode = voltageMode
 
     for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "voltage_fall_limit" or

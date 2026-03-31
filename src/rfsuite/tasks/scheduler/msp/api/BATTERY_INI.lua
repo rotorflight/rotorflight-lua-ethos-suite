@@ -28,16 +28,16 @@ local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.t
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "smartfuel_model_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = modelTypes, default = 0, min = 0, max = 2},
     { field = "smartfuel_source", type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn, default = 0, min = 0, max = 1},
-    { field = "stabilize_delay", type = "U16", simResponse = {220, 5}, decimals = 1, scale = 1000, default = 1500, min = 0, max = 10000, unit = "s"},
-    { field = "stable_window", type = "U16", simResponse = {15, 0}, decimals = 2, scale = 100, default = 15, min = 0, max = 100, unit = "V"},
-    { field = "voltage_fall_limit", type = "U16", simResponse = {5, 0}, decimals = 2, scale = 100, default = 5, min = 0, max = 100, unit = "V/s"},
-    { field = "fuel_drop_rate", type = "U16", simResponse = {10, 0}, decimals = 1, scale = 10, default = 10, min = 0, max = 500, unit = "%/s"},
-    { field = "fuel_rise_rate", type = "U16", simResponse = {2, 0}, decimals = 1, scale = 10, default = 2, min = 0, max = 500, unit = "%/s"},
-    { field = "sag_multiplier_percent", type = "U16", simResponse = {70, 0}, default = 70, min = 0, max = 200, unit = "%"},
+    { field = "stabilize_delay", type = "U16", simResponse = {220, 5}, decimals = 1, scale = 1000, default = 1500, min = 0, max = 10000, step = 1, unit = "s"},
+    { field = "stable_window", type = "U16", simResponse = {15, 0}, decimals = 2, scale = 100, default = 15, min = 0, max = 100, step = 1, unit = "V"},
+    { field = "voltage_fall_limit", type = "U16", simResponse = {5, 0}, decimals = 2, scale = 100, default = 5, min = 0, max = 100, step = 1, unit = "V/s"},
+    { field = "fuel_drop_rate", type = "U16", simResponse = {10, 0}, decimals = 1, scale = 10, default = 10, min = 0, max = 500, step = 1, unit = "%/s"},
+    { field = "fuel_rise_rate", type = "U16", simResponse = {2, 0}, decimals = 1, scale = 10, default = 2, min = 0, max = 500, step = 1, unit = "%/s"},
+    { field = "sag_multiplier_percent", type = "U16", simResponse = {70, 0}, default = 70, min = 0, max = 200, step = 1, decimals = 2, scale = 100, unit = "x"},
     { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
-    { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 6.5},
-    { field = "rxalertvalue",   type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 7.5},
-    { field = "flighttime",     type = "U8", simResponse = {0}, min = 0, max = 3600, unit = "s", default = 300},
+    { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, step = 1, unit = "V", default = 6.5},
+    { field = "rxalertvalue",   type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, step = 1, unit = "V", default = 7.5},
+    { field = "flighttime",     type = "U8", simResponse = {0}, min = 0, max = 3600, step = 1, unit = "s", default = 300},
 }
 -- LuaFormatter on
 
