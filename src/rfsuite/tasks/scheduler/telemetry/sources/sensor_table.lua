@@ -166,6 +166,12 @@ return {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        transform = function(value)
+            if value ~= nil and value < 0 then
+                return nil
+            end
+            return value
+        end,
         default_telemetry_sensor = function()
             return rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
         end,
