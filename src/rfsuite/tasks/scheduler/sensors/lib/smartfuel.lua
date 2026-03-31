@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local os_clock = os.clock
 local math_floor = math.floor
@@ -22,8 +23,6 @@ local voltageStableTime = nil
 local voltageStabilised = false
 local stabilizeNotBefore = nil
 local voltageThreshold = 0.15
-local preStabiliseDelay = 1.5
-
 local telemetry
 local lastMode = rfsuite.flightmode.current or "preflight"
 local currentMode = rfsuite.flightmode.current or "preflight"
@@ -39,31 +38,22 @@ local function normalizeBatteryProfileIndex(value)
 end
 
 local dischargeCurveTable = {}
-for i = 0, 120 do
-    local v = 3.00 + i * 0.01
-    local a, b, c = 12, 3.7, 100
-    local percent = 100 / (1 + math.exp(-a * (v - b)))
+for i = 0, 100 do
+    local v = 3.30 + i * 0.01
+    local percent = (v - 3.30) / (4.20 - 3.30) * 100
     dischargeCurveTable[i + 1] = math_floor(math_min(100, math_max(0, percent)) + 0.5)
 end
 
 local function fuelPercentageFromVoltage(voltage, cellCount, bc)
     local minV = bc.vbatmincellvoltage or 3.30
     local fullV = bc.vbatfullcellvoltage or 4.10
+    local reserve = bc.consumptionWarningPercentage or 30
 
-    local voltagePerCell = voltage / cellCount
-
-    if voltagePerCell >= fullV then
-        return 100
-    elseif voltagePerCell <= minV then
-        return 0
-    end
-
-    local sigmoidMin, sigmoidMax = 3.00, 4.20
-    local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
-
-    scaledV = math_max(sigmoidMin, math_min(sigmoidMax, scaledV))
-
-    local index = math_floor((scaledV - sigmoidMin) / 0.01) + 1
+    local usableRange = fullV - minV
+    local adjustedMinV = minV + (usableRange * (reserve / 100)) * 1.4
+    local voltagePerCell = math_max(3.30, math_min(fullV, voltage / cellCount))
+    local scaledV = 3.30 + (voltagePerCell - adjustedMinV) / (fullV - adjustedMinV) * (4.20 - 3.30)
+    local index = math_floor((scaledV - 3.30) / 0.01) + 1
     index = math_max(1, math_min(#dischargeCurveTable, index))
 
     return dischargeCurveTable[index]
@@ -118,14 +108,17 @@ local function smartFuelCalc()
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         resetVoltageTracking()
-        stabilizeNotBefore = os_clock() + preStabiliseDelay
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
     end
 
-    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-        if lastSensorMode ~= rfsuite.session.modelPreferences.battery.calc_local then
-            resetVoltageTracking()
-            lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
-        end
+    local sensorMode = smartfuelprefs.getSource()
+    if lastSensorMode ~= sensorMode then
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
+        resetVoltageTracking()
+        lastSensorMode = sensorMode
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
+        return nil
     end
 
     local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
@@ -146,13 +139,15 @@ local function smartFuelCalc()
 
         resetVoltageTracking()
 
-        stabilizeNotBefore = now + preStabiliseDelay
+        stabilizeNotBefore = now + smartfuelprefs.getStabilizeDelaySeconds()
 
         lastMode = currentMode
         return nil
     end
 
     lastMode = currentMode
+
+    voltageThreshold = smartfuelprefs.getStableWindowVolts()
 
     if stabilizeNotBefore and now < stabilizeNotBefore then return nil end
 
@@ -179,7 +174,7 @@ local function smartFuelCalc()
             fuelStartingPercent = nil
             fuelStartingConsumption = nil
             resetVoltageTracking()
-            stabilizeNotBefore = os_clock() + preStabiliseDelay
+            stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
             return nil
         end
     end
@@ -210,8 +205,7 @@ local function smartFuelCalc()
         else
             fuelStartingPercent = 0
         end
-        local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
-        fuelStartingConsumption = (consumption or 0) - estimatedUsed
+        fuelStartingConsumption = consumption or 0
     end
 
     if consumption and fuelStartingConsumption and packCapacity > 0 then

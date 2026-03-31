@@ -55,6 +55,8 @@ return function(decoders)
 
     [0x1014] = {name = "Charge Level", unit = UNIT_PERCENT, prec = 0, min = 0, max = 100, dec = decU8},
 
+    [0x1015] = {name = "Smart Fuel", unit = UNIT_PERCENT, prec = 0, min = -1, max = 100, dec = decS8},
+
     [0x1020] = {name = "Cell Count", unit = UNIT_RAW, prec = 0, min = 0, max = 16, dec = decU8},
 
     [0x1021] = {name = "Cell Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 455, dec = decCellV},
