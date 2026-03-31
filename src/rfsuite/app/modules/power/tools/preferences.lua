@@ -23,12 +23,12 @@ if useFirmwareSmartFuel then
             fields = {
                 {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
                 {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 2, apikey = "smartfuel_source", type = 1},
+                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 2, apikey = "sag_multiplier_percent"},
                 {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 2, apikey = "stabilize_delay"},
                 {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 2, apikey = "stable_window"},
                 {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 2, apikey = "voltage_fall_limit"},
                 {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 2, apikey = "fuel_drop_rate"},
                 {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = 2, apikey = "fuel_rise_rate"},
-                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 2, apikey = "sag_multiplier_percent"},
             }
         }
     }
@@ -42,12 +42,12 @@ else
             fields = {
                 {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
                 {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 1, apikey = "smartfuel_source", type = 1},
+                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 1, apikey = "sag_multiplier_percent"},
                 {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 1, apikey = "stabilize_delay"},
                 {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 1, apikey = "stable_window"},
                 {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 1, apikey = "voltage_fall_limit"},
                 {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 1, apikey = "fuel_drop_rate"},
                 {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = 1, apikey = "fuel_rise_rate"},
-                {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 1, apikey = "sag_multiplier_percent"},
             }
         }
     }
