@@ -17,6 +17,8 @@ local INI_SECTION = "battery"
 local ini = rfsuite.ini
 local tonumber = tonumber
 local ipairs = ipairs
+local pairs = pairs
+local math_floor = math.floor
 
 local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
 local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
@@ -26,11 +28,11 @@ local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.t
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "smartfuel_model_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = modelTypes, default = 0, min = 0, max = 2},
     { field = "smartfuel_source", type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn, default = 0, min = 0, max = 1},
-    { field = "stabilize_delay", type = "U16", simResponse = {220, 5}, default = 1500, min = 0, max = 10000, unit = "ms"},
-    { field = "stable_window", type = "U16", simResponse = {15, 0}, decimals = 2, default = 15, min = 0, max = 100, unit = "V"},
-    { field = "voltage_fall_limit", type = "U16", simResponse = {5, 0}, decimals = 2, default = 5, min = 0, max = 100, unit = "V/s"},
-    { field = "fuel_drop_rate", type = "U16", simResponse = {10, 0}, decimals = 1, default = 10, min = 0, max = 500, unit = "%/s"},
-    { field = "fuel_rise_rate", type = "U16", simResponse = {2, 0}, decimals = 1, default = 2, min = 0, max = 500, unit = "%/s"},
+    { field = "stabilize_delay", type = "U16", simResponse = {220, 5}, decimals = 1, scale = 1000, default = 1500, min = 0, max = 10000, unit = "s"},
+    { field = "stable_window", type = "U16", simResponse = {15, 0}, decimals = 2, scale = 100, default = 15, min = 0, max = 100, unit = "V"},
+    { field = "voltage_fall_limit", type = "U16", simResponse = {5, 0}, decimals = 2, scale = 100, default = 5, min = 0, max = 100, unit = "V/s"},
+    { field = "fuel_drop_rate", type = "U16", simResponse = {10, 0}, decimals = 1, scale = 10, default = 10, min = 0, max = 500, unit = "%/s"},
+    { field = "fuel_rise_rate", type = "U16", simResponse = {2, 0}, decimals = 1, scale = 10, default = 2, min = 0, max = 500, unit = "%/s"},
     { field = "sag_multiplier_percent", type = "U16", simResponse = {70, 0}, default = 70, min = 0, max = 200, unit = "%"},
     { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
     { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, unit = "V", default = 6.5},
@@ -40,6 +42,11 @@ local MSP_API_STRUCTURE_READ_DATA = {
 -- LuaFormatter on
 
 local READ_STRUCT = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local FIELD_METADATA = {}
+
+for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do
+    FIELD_METADATA[entry.field] = entry
+end
 
 local function loadParsedFromINI()
     local tbl = ini.load_ini_file(INI_FILE) or {}
@@ -92,8 +99,12 @@ return factory.create({
         local tbl = ini.load_ini_file(INI_FILE) or {}
 
         for k, v in pairs(state.payloadData) do
+            local entry = FIELD_METADATA[k]
+            if entry and entry.scale then
+                v = math_floor(v * entry.scale + 0.5)
+            end
             if k == "smartfuel_source" or k == "smartfuel_model_type" or k == "alert_type" then
-                v = math.floor(v)
+                v = math_floor(v)
             end
             ini.setvalue(tbl, INI_SECTION, k, v)
             if k == "smartfuel_source" then

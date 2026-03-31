@@ -22,11 +22,11 @@ local sourceTable = {
 -- LuaFormatter off
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "smartfuel_source",       type = "U8",  tableIdxInc = -1, table = sourceTable, default = 0, min = 0, max = 1, simResponse = {0} },
-    { field = "stabilize_delay",        type = "U16", default = 1500, min = 0, max = 10000, unit = "ms", simResponse = {220, 5} },
-    { field = "stable_window",          type = "U16", default = 15,   min = 0, max = 100, decimals = 2, unit = "V", simResponse = {15, 0} },
-    { field = "voltage_fall_limit",     type = "U16", default = 5,    min = 0, max = 100, decimals = 2, unit = "V/s", simResponse = {5, 0} },
-    { field = "fuel_drop_rate",         type = "U16", default = 10,   min = 0, max = 500, decimals = 1, unit = "%/s", simResponse = {10, 0} },
-    { field = "fuel_rise_rate",         type = "U16", default = 2,    min = 0, max = 500, decimals = 1, unit = "%/s", simResponse = {2, 0} },
+    { field = "stabilize_delay",        type = "U16", default = 1500, min = 0, max = 10000, decimals = 1, scale = 1000, unit = "s", simResponse = {220, 5} },
+    { field = "stable_window",          type = "U16", default = 15,   min = 0, max = 100, decimals = 2, scale = 100, unit = "V", simResponse = {15, 0} },
+    { field = "voltage_fall_limit",     type = "U16", default = 5,    min = 0, max = 100, decimals = 2, scale = 100, unit = "V/s", simResponse = {5, 0} },
+    { field = "fuel_drop_rate",         type = "U16", default = 10,   min = 0, max = 500, decimals = 1, scale = 10, unit = "%/s", simResponse = {10, 0} },
+    { field = "fuel_rise_rate",         type = "U16", default = 2,    min = 0, max = 500, decimals = 1, scale = 10, unit = "%/s", simResponse = {2, 0} },
     { field = "sag_multiplier_percent", type = "U16", default = 70,   min = 0, max = 200, unit = "%", simResponse = {70, 0} },
 }
 -- LuaFormatter on
