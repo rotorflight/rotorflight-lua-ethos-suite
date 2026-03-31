@@ -113,8 +113,12 @@ local function smartFuelCalc()
 
     local sensorMode = smartfuelprefs.getSource()
     if lastSensorMode ~= sensorMode then
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
         resetVoltageTracking()
         lastSensorMode = sensorMode
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
+        return nil
     end
 
     local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil

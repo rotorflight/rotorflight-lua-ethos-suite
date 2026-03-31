@@ -126,8 +126,13 @@ local function smartFuelCalc()
 
     local sensorMode = smartfuelprefs.getSource()
     if lastSensorMode ~= sensorMode then
+        lastFuelPercent = nil
+        lastFuelTimestamp = nil
+        lastFilteredVoltage = nil
         resetVoltageTracking()
         lastSensorMode = sensorMode
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
+        return nil
     end
 
     local bc = rfsuite.session.batteryConfig
