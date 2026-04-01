@@ -48,19 +48,7 @@ local function getThemeValue(key)
 end
 
 local function getThemeOptionKey(W)
-    if W == 800 then
-        return "ls_full"
-    elseif W == 784 then
-        return "ls_std"
-    elseif W == 640 then
-        return "ss_full"
-    elseif W == 630 then
-        return "ss_std"
-    elseif W == 480 then
-        return "ms_full"
-    elseif W == 472 then
-        return "ms_std"
-    end
+    return utils.getDashboardThemeOptionKey(W)
 end
 
 local themeOptions = {ls_full = {thickness = 60, valuepaddingtop = 45, gaugepadding = 20}, ls_std = {thickness = 40, valuepaddingtop = 35, gaugepadding = 10}, ms_full = {thickness = 40, valuepaddingtop = 35, gaugepadding = 15}, ms_std = {thickness = 30, valuepaddingtop = 30, gaugepadding = 5}, ss_full = {thickness = 50, valuepaddingtop = 40, gaugepadding = 5}, ss_std = {thickness = 30, valuepaddingtop = 30, gaugepadding = 5}}
