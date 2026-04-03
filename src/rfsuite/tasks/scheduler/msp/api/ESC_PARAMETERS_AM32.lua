@@ -292,6 +292,7 @@ return factory.create({
     buildWritePayload = buildWritePayload,
     writeUuidFallback = true,
     initialRebuildOnWrite = false,
+    readCompleteOnErrorReplyAttempt = 2,
     resolveReadTimeout = function(state)
         return resolveTimeout(state, false)
     end,

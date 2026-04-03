@@ -157,7 +157,10 @@ function factory.create(spec)
             errorHandler = messageErrorHandler,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseRead or {}, state, "read", ...),
             uuid = state.uuid,
-            timeout = state.timeout
+            timeout = state.timeout,
+            retryOnErrorReply = (spec.readRetryOnErrorReply == true),
+            retryBackoff = spec.readRetryBackoff,
+            completeOnErrorReplyAttempt = spec.readCompleteOnErrorReplyAttempt
         }
 
         local readUuidResolver = spec.resolveReadUUID
