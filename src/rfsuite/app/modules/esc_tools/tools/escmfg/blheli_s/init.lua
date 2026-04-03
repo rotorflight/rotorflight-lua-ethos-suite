@@ -56,6 +56,7 @@ return {
     preSwitchTarget = 100,
     preSwitchWriteCount = 1,
     preSwitchDelay = 0.8,
+    initialConnectTimeout = 18.0,
     switchWriteCount = 1,
     switchReadDelay = 5.0,
     postSaveSwitchCycle = true,
