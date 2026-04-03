@@ -1357,6 +1357,18 @@ local function wakeup()
     end
 
     if foundESC == true and foundESCupdateTag == false then
+        local compatible = true
+        if ESC and type(ESC.isCompatibleEsc) == "function" then
+            compatible = (ESC.isCompatibleEsc(rfsuite.session and rfsuite.session.escBuffer or nil, escDetailsApi) == true)
+        end
+
+        if not compatible then
+            foundESCupdateTag = true
+            rfsuite.app.triggers.closeProgressLoader = true
+            setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@")
+            return
+        end
+
         foundESCupdateTag = true
 
         if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
@@ -1382,7 +1394,12 @@ local function wakeup()
 
     end
 
-    if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
+    local progressTimedOut = false
+    if rfsuite.app and rfsuite.app.dialogs and rfsuite.app.dialogs.progressDisplay == true then
+        progressTimedOut = (rfsuite.app.dialogs.progressCounter or 0) >= 101
+    end
+
+    if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or progressTimedOut) then
         rfsuite.app.dialogs.progress:close()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true

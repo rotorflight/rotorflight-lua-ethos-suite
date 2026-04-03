@@ -5,11 +5,11 @@
 
 local rfsuite = require("rfsuite")
 
-local MSP_API = "ESC_PARAMETERS_BLHELI_S"
-local toolName = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@"
+local MSP_API = "ESC_PARAMETERS_BLUEJAY"
+local toolName = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@"
 local ESC1_TARGET = 0
 local ESC2_TARGET = 1
-local BLHELI_S_MAIN_REVISION = 16
+local BLUEJAY_MAIN_REVISION = 0
 
 local function getPageValue(page, index)
     if type(page) ~= "table" then return nil end
@@ -20,8 +20,26 @@ local function getMainRevision(buffer)
     return getPageValue(buffer, 3)
 end
 
-local function getEscModel(buffer)
+local function getLayoutRevision(buffer)
+    return getPageValue(buffer, 5)
+end
+
+local function getLayoutNamePrefix(buffer)
+    local byte = getPageValue(buffer, 67)
+    if type(byte) ~= "number" or byte <= 0 then return nil end
+    return string.char(byte)
+end
+
+local function getEscFamily(buffer)
+    local major = getPageValue(buffer, 3)
+    if major == BLUEJAY_MAIN_REVISION then
+        return toolName
+    end
     return toolName
+end
+
+local function getEscModel(buffer)
+    return  getEscFamily(buffer)
 end
 
 local function getEscVersion(buffer)
@@ -47,20 +65,25 @@ local function isCompatibleEsc(buffer, api)
     if api and api.readValue then
         local mainRevision = api.readValue("main_revision")
         if mainRevision ~= nil then
-            return mainRevision == BLHELI_S_MAIN_REVISION
+            return mainRevision == BLUEJAY_MAIN_REVISION
         end
     end
-    return getMainRevision(buffer) == BLHELI_S_MAIN_REVISION
+    return getMainRevision(buffer) == BLUEJAY_MAIN_REVISION
+end
+
+local function supportsLedControl(buffer)
+    local prefix = getLayoutNamePrefix(buffer)
+    return prefix == "E" or prefix == "J" or prefix == "M" or prefix == "Q" or prefix == "U"
 end
 
 return {
     mspapi = MSP_API,
     toolName = toolName,
     isCompatibleEsc = isCompatibleEsc,
-    mspBufferCache = true,
     force4WaySwitchOnEntry = true,
     esc4wayEsc1Target = ESC1_TARGET,
     esc4wayEsc2Target = ESC2_TARGET,
+    mspBufferCache = true,
     flushFirstReadAfterSwitch = true,
     preSwitchTarget = 100,
     preSwitchWriteCount = 1,
@@ -88,7 +111,7 @@ return {
     isolatedSaveProgressProcessingCap = 90,
     isolatedSaveProgressIdleStep = 1,
     isolatedSaveProgressIdleCap = 97,
-    isolatedSaveWaitEscMessage = "@i18n(app.modules.esc_tools.mfg.blheli_s.waitingforesc)@",
+    isolatedSaveWaitEscMessage = "@i18n(app.modules.esc_tools.mfg.bluejay.waitingforesc)@",
     isolatedSaveGcCollect = true,
     isolatedSaveGcPasses = 1,
     escDetailsPollInterval = 0.6,
@@ -97,6 +120,8 @@ return {
     readSwitchRetryCount = 3,
     readSwitchRetryDelay = 1.5,
     powerCycle = false,
+    getLayoutRevision = getLayoutRevision,
+    supportsLedControl = supportsLedControl,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
     getEscFirmware = getEscFirmware
