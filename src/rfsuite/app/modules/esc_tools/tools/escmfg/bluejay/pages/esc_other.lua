@@ -10,9 +10,8 @@ local folder = "bluejay"
 local ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 local layoutRevision = ESC.getLayoutRevision and ESC.getLayoutRevision(rfsuite.session and rfsuite.session.escBuffer or nil) or nil
 
-local function keepField(minLayout, maxLayout, onlyLayout)
+local function keepField(minLayout, maxLayout)
     if layoutRevision == nil then return true end
-    if onlyLayout ~= nil then return layoutRevision == onlyLayout end
     if minLayout ~= nil and layoutRevision < minLayout then return false end
     if maxLayout ~= nil and layoutRevision > maxLayout then return false end
     return true
@@ -26,12 +25,13 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.motordirection)@", type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "Rampup Start Power", type = 1, mspapi = 1, apikey = "rpm_power_slope", _keep = keepField(nil, 200)},
-            {t = "Rampup Power", type = 1, mspapi = 1, apikey = "rpm_power_slope", _keep = keepField(201, nil)},
-            {t = "Min Startup Power", mspapi = 1, apikey = "startup_power_min"},
-            {t = "Max Startup Power", mspapi = 1, apikey = "startup_power_max", _keep = keepField(201, nil)},
-            {t = "PWM Frequency", type = 1, mspapi = 1, apikey = "pwm_frequency", _keep = (layoutRevision == nil) or layoutRevision == 205 or layoutRevision >= 209},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.temperatureprotection)@", type = 1, mspapi = 1, apikey = "temperature_protection"},
+            {t = "Low RPM Power Protection", type = 1, mspapi = 1, apikey = "low_rpm_power_protection", _keep = keepField(nil, 200)},
+            {t = "Power Rating", type = 1, mspapi = 1, apikey = "power_rating", _keep = keepField(206, nil)},
+            {t = "Force EDT Arm", type = 1, mspapi = 1, apikey = "force_edt_arm", _keep = keepField(207, nil)},
+            {t = "Dithering", type = 1, mspapi = 1, apikey = "dithering", _keep = keepField(nil, 207)},
+            {t = "96kHz -> 48kHz Threshold", mspapi = 1, apikey = "threshold_96to48", _keep = keepField(209, nil)},
+            {t = "48kHz -> 24kHz Threshold", mspapi = 1, apikey = "threshold_48to24", _keep = keepField(209, nil)},
         }
     }
 }
@@ -83,7 +83,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / General",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / Other",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

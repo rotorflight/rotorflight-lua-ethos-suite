@@ -8,13 +8,17 @@ local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 
 local folder = "bluejay"
 local ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
+local escBuffer = rfsuite.session and rfsuite.session.escBuffer or nil
+local layoutRevision = ESC.getLayoutRevision and ESC.getLayoutRevision(escBuffer) or nil
+local supportsLedControl = ESC.supportsLedControl and ESC.supportsLedControl(escBuffer) or false
 
-local FIELD_IDX = {
-    temperature_protection = 1,
-    beep_strength = 2,
-    beacon_strength = 3,
-    beacon_delay = 4,
-}
+local function keepField(minLayout, maxLayout, onlyLayout)
+    if layoutRevision == nil then return true end
+    if onlyLayout ~= nil then return layoutRevision == onlyLayout end
+    if minLayout ~= nil and layoutRevision < minLayout then return false end
+    if maxLayout ~= nil and layoutRevision > maxLayout then return false end
+    return true
+end
 
 local apidata = {
     api = {
@@ -24,13 +28,24 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.temperature_protection] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.temperatureprotection)@", type = 1, mspapi = 1, apikey = "temperature_protection"},
-            [FIELD_IDX.beep_strength] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beepstrength)@", mspapi = 1, apikey = "beep_strength"},
-            [FIELD_IDX.beacon_strength] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beaconstrength)@", mspapi = 1, apikey = "beacon_strength"},
-            [FIELD_IDX.beacon_delay] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beacondelay)@", type = 1, mspapi = 1, apikey = "beacon_delay"},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.motortiming)@", type = 1, mspapi = 1, apikey = "commutation_timing"},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.demagcompensation)@", type = 1, mspapi = 1, apikey = "demag_compensation"},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
+            {t = "Braking Mode", type = 1, mspapi = 1, apikey = "braking_strength", _keep = keepField(nil, nil, 202)},
+            {t = "Braking Strength", mspapi = 1, apikey = "braking_strength", _keep = keepField(204, nil)},
+            {t = "LED Control", type = 1, mspapi = 1, apikey = "led_control", _keep = supportsLedControl == true},
         }
     }
 }
+
+for i = #apidata.formdata.fields, 1, -1 do
+    local f = apidata.formdata.fields[i]
+    if f._keep == false then
+        table.remove(apidata.formdata.fields, i)
+    else
+        f._keep = nil
+    end
+end
 
 local isolatedSave
 
@@ -70,7 +85,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.advanced)@",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / Brake",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

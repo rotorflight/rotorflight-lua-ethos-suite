@@ -8,12 +8,15 @@ local escToolsPage = assert(loadfile("app/lib/esc_tools_page.lua"))()
 
 local folder = "bluejay"
 local ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
+local layoutRevision = ESC.getLayoutRevision and ESC.getLayoutRevision(rfsuite.session and rfsuite.session.escBuffer or nil) or nil
 
-local FIELD_IDX = {
-    ppm_min_throttle = 1,
-    ppm_max_throttle = 2,
-    ppm_center_throttle = 3,
-}
+local function keepField(minLayout, maxLayout, onlyLayout)
+    if layoutRevision == nil then return true end
+    if onlyLayout ~= nil then return layoutRevision == onlyLayout end
+    if minLayout ~= nil and layoutRevision < minLayout then return false end
+    if maxLayout ~= nil and layoutRevision > maxLayout then return false end
+    return true
+end
 
 local apidata = {
     api = {
@@ -23,12 +26,22 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.ppm_min_throttle] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.ppmminthrottle)@", mspapi = 1, apikey = "ppm_min_throttle"},
-            [FIELD_IDX.ppm_max_throttle] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.ppmmaxthrottle)@", mspapi = 1, apikey = "ppm_max_throttle"},
-            [FIELD_IDX.ppm_center_throttle] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.ppmcenterthrottle)@", mspapi = 1, apikey = "ppm_center_throttle"},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beepstrength)@", mspapi = 1, apikey = "beep_strength"},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beaconstrength)@", mspapi = 1, apikey = "beacon_strength"},
+            {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beacondelay)@", type = 1, mspapi = 1, apikey = "beacon_delay"},
+            {t = "Startup Beep", type = 1, mspapi = 1, apikey = "startup_beep", _keep = (layoutRevision == nil) or layoutRevision <= 202 or layoutRevision == 205},
         }
     }
 }
+
+for i = #apidata.formdata.fields, 1, -1 do
+    local f = apidata.formdata.fields[i]
+    if f._keep == false then
+        table.remove(apidata.formdata.fields, i)
+    else
+        f._keep = nil
+    end
+end
 
 local isolatedSave
 
@@ -68,7 +81,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.input)@",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / Beacon",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

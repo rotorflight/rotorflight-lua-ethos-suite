@@ -15,6 +15,20 @@ local function getPageValue(page, index)
     return page[index]
 end
 
+local function getMainRevision(buffer)
+    return getPageValue(buffer, 3)
+end
+
+local function getLayoutRevision(buffer)
+    return getPageValue(buffer, 5)
+end
+
+local function getLayoutNamePrefix(buffer)
+    local byte = getPageValue(buffer, 67)
+    if type(byte) ~= "number" or byte <= 0 then return nil end
+    return string.char(byte)
+end
+
 local function getEscFamily(buffer)
     local major = getPageValue(buffer, 3)
     if major == BLUEJAY_MAIN_REVISION then
@@ -46,12 +60,26 @@ local function getEscFirmware(buffer)
     return "FW" .. tostring(major) .. "." .. tostring(minor)
 end
 
+local function isCompatibleEsc(buffer, api)
+    if api and api.readValue then
+        return api.readValue("main_revision") == BLUEJAY_MAIN_REVISION
+    end
+    return getMainRevision(buffer) == BLUEJAY_MAIN_REVISION
+end
+
+local function supportsLedControl(buffer)
+    local prefix = getLayoutNamePrefix(buffer)
+    return prefix == "E" or prefix == "J" or prefix == "M" or prefix == "Q" or prefix == "U"
+end
+
 return {
     mspapi = MSP_API,
     toolName = toolName,
+    isCompatibleEsc = isCompatibleEsc,
     force4WaySwitchOnEntry = true,
     esc4wayEsc1Target = ESC1_TARGET,
     esc4wayEsc2Target = ESC2_TARGET,
+    mspBufferCache = true,
     flushFirstReadAfterSwitch = true,
     preSwitchTarget = 100,
     preSwitchWriteCount = 1,
@@ -88,6 +116,8 @@ return {
     readSwitchRetryCount = 3,
     readSwitchRetryDelay = 1.5,
     powerCycle = false,
+    getLayoutRevision = getLayoutRevision,
+    supportsLedControl = supportsLedControl,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
     getEscFirmware = getEscFirmware
