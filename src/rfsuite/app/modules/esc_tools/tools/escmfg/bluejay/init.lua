@@ -5,22 +5,26 @@
 
 local rfsuite = require("rfsuite")
 
-local MSP_API = "ESC_PARAMETERS_BLHELI_S"
-local toolName = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@"
+local MSP_API = "ESC_PARAMETERS_BLUEJAY"
+local toolName = "Bluejay"
 local ESC1_TARGET = 0
 local ESC2_TARGET = 1
-local BLHELI_S_MAIN_REVISION = 16
+local BLUEJAY_MAIN_REVISION = 0
 
 local function getPageValue(page, index)
     return page[index]
 end
 
-local function getMainRevision(buffer)
-    return getPageValue(buffer, 3)
+local function getEscFamily(buffer)
+    local major = getPageValue(buffer, 3)
+    if major == BLUEJAY_MAIN_REVISION then
+        return toolName
+    end
+    return toolName
 end
 
 local function getEscModel(buffer)
-    return toolName
+    return  getEscFamily(buffer)
 end
 
 local function getEscVersion(buffer)
@@ -42,17 +46,9 @@ local function getEscFirmware(buffer)
     return "FW" .. tostring(major) .. "." .. tostring(minor)
 end
 
-local function isCompatibleEsc(buffer, api)
-    if api and api.readValue then
-        return api.readValue("main_revision") == BLHELI_S_MAIN_REVISION
-    end
-    return getMainRevision(buffer) == BLHELI_S_MAIN_REVISION
-end
-
 return {
     mspapi = MSP_API,
     toolName = toolName,
-    isCompatibleEsc = isCompatibleEsc,
     force4WaySwitchOnEntry = true,
     esc4wayEsc1Target = ESC1_TARGET,
     esc4wayEsc2Target = ESC2_TARGET,
