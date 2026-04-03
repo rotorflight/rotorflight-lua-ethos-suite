@@ -52,6 +52,13 @@
         "reverse_text": false,
         "translation": "ESC Telemetrie"
       },
+      "source_fbus": {
+        "english": "FrSky F.BUS",
+        "max_length": 11,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "FrSky F.BUS"
+      },
       "source_none": {
         "english": "None",
         "max_length": 4,

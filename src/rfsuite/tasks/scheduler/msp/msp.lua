@@ -31,18 +31,57 @@ msp.protocol = protocol.getProtocol()
 -- Expose helper functions
 msp.helpers = helpers
 
--- Load all transport modules
+local transportPaths = protocol.getTransports()
+
+-- Load only the active transport module on demand.
 msp.protocolTransports = {}
-for i, v in pairs(protocol.getTransports()) do
-    msp.protocolTransports[i] = assert(loadfile(v))()
+
+local function loadTransportModule(transportName)
+    local transportModule = msp.protocolTransports[transportName]
+    local transportPath
+
+    if transportModule then
+        return transportModule
+    end
+
+    transportPath = transportPaths[transportName]
+    if not transportPath then
+        return nil
+    end
+
+    transportModule = assert(loadfile(transportPath))()
+    msp.protocolTransports[transportName] = transportModule
+    return transportModule
+end
+
+local function clearInactiveTransports(activeName)
+    for transportName, transportModule in pairs(msp.protocolTransports) do
+        if transportName ~= activeName then
+            if transportModule and transportModule.reset then transportModule.reset() end
+            msp.protocolTransports[transportName] = nil
+        end
+    end
+end
+
+local function bindActiveTransport()
+    local transportName = msp.protocol and msp.protocol.mspProtocol
+    local transport = transportName and loadTransportModule(transportName)
+
+    if not transport then
+        return nil
+    end
+
+    clearInactiveTransports(transportName)
+    msp.protocol.mspRead  = transport.mspRead
+    msp.protocol.mspSend  = transport.mspSend
+    msp.protocol.mspWrite = transport.mspWrite
+    msp.protocol.mspPoll  = transport.mspPoll
+
+    return transport
 end
 
 -- Bind protocol transport functions
-local transport = msp.protocolTransports[msp.protocol.mspProtocol]
-msp.protocol.mspRead  = transport.mspRead
-msp.protocol.mspSend  = transport.mspSend
-msp.protocol.mspWrite = transport.mspWrite
-msp.protocol.mspPoll  = transport.mspPoll
+bindActiveTransport()
 
 -- Load MSP queue with protocol settings
 mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
@@ -140,11 +179,7 @@ function msp.wakeup()
 
         msp.protocol = protocol.getProtocol()
 
-        local transport = msp.protocolTransports[msp.protocol.mspProtocol]
-        msp.protocol.mspRead  = transport.mspRead
-        msp.protocol.mspSend  = transport.mspSend
-        msp.protocol.mspWrite = transport.mspWrite
-        msp.protocol.mspPoll  = transport.mspPoll
+        bindActiveTransport()
 
         utils.session()
         msp.onConnectChecksInit = true
@@ -177,7 +212,7 @@ function msp.reset()
     msp.onConnectChecksInit = true
     delayStartTime = nil
     delayPending = false
-    local activeTransport = msp.protocolTransports[msp.protocol.mspProtocol]
+    local activeTransport = msp.protocol and msp.protocol.mspProtocol and msp.protocolTransports[msp.protocol.mspProtocol]
     if activeTransport and activeTransport.reset then activeTransport.reset() end
 end
 

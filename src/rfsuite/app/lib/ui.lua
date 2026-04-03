@@ -2245,7 +2245,103 @@ function ui.fieldHeader(title)
     app.ui.navigationButtons(metrics.windowWidth - 5, getHeaderNavButtonY(radio.linePaddingTop), metrics.buttonW, metrics.buttonH)
 end
 
+local function countNumericFormFields(formFields)
+    if type(formFields) ~= "table" then return 0 end
+    local count = 0
+    for key in pairs(formFields) do
+        if type(key) == "number" then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function countVisibleFieldDefinitions(fields)
+    if type(fields) ~= "table" then return 0 end
+
+    local count = 0
+    for _, field in ipairs(fields) do
+        if type(field) == "table" then
+            local visible = field.hidden ~= true
+            if visible and field.apiversion and not utils.apiVersionCompare(">=", field.apiversion) then visible = false end
+            if visible and field.apiversionlt and not utils.apiVersionCompare("<", field.apiversionlt) then visible = false end
+            if visible and field.apiversiongt and not utils.apiVersionCompare(">", field.apiversiongt) then visible = false end
+            if visible and field.apiversionlte and not utils.apiVersionCompare("<=", field.apiversionlte) then visible = false end
+            if visible and field.apiversiongte and not utils.apiVersionCompare(">=", field.apiversiongte) then visible = false end
+            if visible and field.enablefunction then
+                local ok, enabled = pcall(field.enablefunction)
+                visible = ok and enabled ~= false
+            end
+            if visible then
+                count = count + 1
+            end
+        end
+    end
+    return count
+end
+
+local function clearPageApiEntries(page)
+    if not (page and page.apidata and page.apidata.api) then return end
+
+    local mspApi = tasks and tasks.msp and tasks.msp.api
+    local clearEntry = mspApi and mspApi.clearEntry
+    local apidata = mspApi and mspApi.apidata
+
+    for _, entry in ipairs(page.apidata.api) do
+        local apiKey = type(entry) == "string" and entry or (type(entry) == "table" and entry.name or nil)
+        if apiKey then
+            if type(clearEntry) == "function" then
+                clearEntry(apiKey)
+            elseif apidata then
+                if apidata.values then apidata.values[apiKey] = nil end
+                if apidata.structure then apidata.structure[apiKey] = nil end
+                if apidata.receivedBytes then apidata.receivedBytes[apiKey] = nil end
+                if apidata.receivedBytesCount then apidata.receivedBytesCount[apiKey] = nil end
+                if apidata.positionmap then apidata.positionmap[apiKey] = nil end
+                if apidata.other then apidata.other[apiKey] = nil end
+            end
+        end
+    end
+end
+
 function ui.openPageRefresh(opts)
+    local page = app.Page
+    if not page then
+        if type(opts) == "table" then
+            ui.openPage(opts)
+        end
+        return
+    end
+
+    if page.openPage then
+        ui.openPage(opts)
+        return
+    end
+
+    local fields = page.apidata and page.apidata.formdata and page.apidata.formdata.fields or nil
+    if countVisibleFieldDefinitions(fields) > 0 and countNumericFormFields(app.formFields) == 0 then
+        ui.openPage(opts)
+        return
+    end
+
+    clearPageApiEntries(page)
+
+    if page.apidata then
+        if type(page.apidata.retryCount) == "table" then
+            wipeTable(page.apidata.retryCount)
+        else
+            page.apidata.retryCount = {}
+        end
+
+        if type(page.apidata.apiState) ~= "table" then
+            page.apidata.apiState = {}
+        end
+        page.apidata.apiState.currentIndex = 1
+        page.apidata.apiState.isProcessing = false
+    end
+
+    ui.enableAllFields()
+    ui.enableAllNavigationFields()
     app.triggers.isReady = false
 end
 

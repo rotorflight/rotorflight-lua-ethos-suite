@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local os_clock = os.clock
 local math_abs = math.abs
@@ -20,8 +21,6 @@ local voltageStableTime = nil
 local voltageStabilised = false
 local stabilizeNotBefore = nil
 local voltageThreshold = 0.15
-local preStabiliseDelay = 1.5
-
 local telemetry
 local currentMode = rfsuite.flightmode.current or "preflight"
 local lastMode = currentMode
@@ -30,16 +29,11 @@ local lastSensorMode
 local lastFuelPercent = nil
 local lastFuelTimestamp = nil
 
-local maxFuelDropPerSecond = 1
-
-local maxFuelRisePerSecond = 0.2
-
-local MAX_FALL_PER_SEC = 0.05
 local lastFilteredVoltage = nil
 
 local function fallingLimitedFilter(current_v, prev_v, dt)
     if not prev_v then return current_v end
-    local max_drop = dt * MAX_FALL_PER_SEC
+    local max_drop = dt * smartfuelprefs.getVoltageFallPerSecond()
     if current_v >= prev_v then
         return current_v
     else
@@ -93,7 +87,7 @@ end
 
 local function applySagCompensation(voltage)
     if rfsuite.flightmode.current ~= "inflight" then return voltage end
-    local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.7
+    local multiplier = smartfuelprefs.getSagMultiplier()
     local sagFactor = math_max(getStickLoadFactor(), getRpmDropFactor())
 
     local compensationScale = multiplier ^ 1.5
@@ -130,11 +124,15 @@ local function smartFuelCalc()
         return nil
     end
 
-    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-        if lastSensorMode ~= rfsuite.session.modelPreferences.battery.calc_local then
-            resetVoltageTracking()
-            lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
-        end
+    local sensorMode = smartfuelprefs.getSource()
+    if lastSensorMode ~= sensorMode then
+        lastFuelPercent = nil
+        lastFuelTimestamp = nil
+        lastFilteredVoltage = nil
+        resetVoltageTracking()
+        lastSensorMode = sensorMode
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
+        return nil
     end
 
     local bc = rfsuite.session.batteryConfig
@@ -143,7 +141,7 @@ local function smartFuelCalc()
     if configSig ~= batteryConfigCache then
         batteryConfigCache = configSig
         resetVoltageTracking()
-        stabilizeNotBefore = os_clock() + preStabiliseDelay
+        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
     end
 
     local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
@@ -158,11 +156,13 @@ local function smartFuelCalc()
     if currentMode ~= lastMode then
         rfsuite.utils.log("Flight mode changed – resetting voltage state", "info")
         resetVoltageTracking()
-        stabilizeNotBefore = now + preStabiliseDelay
+        stabilizeNotBefore = now + smartfuelprefs.getStabilizeDelaySeconds()
         lastMode = currentMode
         return nil
     end
     lastMode = currentMode
+
+    voltageThreshold = smartfuelprefs.getStableWindowVolts()
 
     if stabilizeNotBefore and now < stabilizeNotBefore then return nil end
 
@@ -184,7 +184,7 @@ local function smartFuelCalc()
         if voltage > prev + voltageThreshold then
             rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
             resetVoltageTracking()
-            stabilizeNotBefore = os_clock() + preStabiliseDelay
+            stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
             return nil
         end
     end
@@ -196,8 +196,8 @@ local function smartFuelCalc()
     if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight") and lastFuelPercent and lastFuelTimestamp then
 
         local dt = now - lastFuelTimestamp
-        local maxDrop = dt * maxFuelDropPerSecond
-        local maxRise = dt * maxFuelRisePerSecond
+        local maxDrop = dt * smartfuelprefs.getFuelDropPerSecond()
+        local maxRise = dt * smartfuelprefs.getFuelRisePerSecond()
 
         if percent < lastFuelPercent then
             percent = math_max(percent, lastFuelPercent - maxDrop)

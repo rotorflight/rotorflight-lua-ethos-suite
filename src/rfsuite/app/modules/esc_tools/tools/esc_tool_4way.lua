@@ -21,7 +21,8 @@ local foundESC = false
 local foundESCupdateTag = false
 local ESC
 local findTimeoutClock = os.clock()
-local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
+local findTimeoutDefault = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
+local findTimeout = findTimeoutDefault
 
 local modelLine
 local modelText
@@ -142,6 +143,13 @@ local function getEscDetailsRetryInterval()
     if interval == nil then interval = 0.9 end
     if interval < 0 then interval = 0 end
     return interval
+end
+
+local function getInitialConnectTimeout()
+    local timeout = tonumber(ESC and ESC.initialConnectTimeout)
+    if timeout == nil then timeout = findTimeoutDefault end
+    if timeout < 0 then timeout = 0 end
+    return timeout
 end
 
 local function getEsc4WayTargets()
@@ -859,6 +867,7 @@ local function loadEscConfig(folder)
     ESC = moduleOrErr
     escDetailsApi = nil
     escDetailsApiName = nil
+    findTimeout = getInitialConnectTimeout()
 
     if ESC.mspapi ~= nil then
         local API = getEscDetailsAPI()
@@ -1225,6 +1234,7 @@ local function closePage()
     esc2CheckApi = nil
     esc2CheckHandlersApi = nil
     ESC = nil
+    findTimeout = findTimeoutDefault
     modelLine = nil
     modelText = nil
     last4WayWriteTarget = nil

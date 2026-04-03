@@ -1,3 +1,15 @@
+# 2.3.0-RC1
+
+Release candidate version for 2.3.0-RC1 Rotorflight
+
+- Battery Profile support
+- BLHELI Programing support
+- AM32 Programing support
+- Reduce memory consumption in problematic modules
+- Reduce memory consumption in bgtask service
+- Various small bug fixes
+
+
 # 2.3.0-20260103
 
 Snapshot release of Ethos Suite

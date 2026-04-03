@@ -19,6 +19,7 @@ local tblBatterySource = {
     [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
     [2] = "@i18n(api.BATTERY_CONFIG.source_adc)@",
     [3] = "@i18n(api.BATTERY_CONFIG.source_esc)@",
+    [4] = "@i18n(api.BATTERY_CONFIG.source_fbus)@",
 }
 
 local tblBatteryType = {

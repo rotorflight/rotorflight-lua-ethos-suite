@@ -113,6 +113,13 @@ local function loadSensorMetadata()
     return metadataTable
 end
 
+local function resolveMemoValue(value)
+    if t_type(value) == "function" then
+        return value()
+    end
+    return value
+end
+
 local sensorTable = loadSensorMetadata()
 
 local sourceModules = {
@@ -208,18 +215,22 @@ function telemetry.getSensorProtocol() return protocol end
 local function build_memo_lists()
     memo_listSensors, memo_listSwitchSensors, memo_listAudioUnits = {}, {}, {}
     for key, sensor in t_pairs(sensorTable) do
+        local setTelemetrySensors = resolveMemoValue(sensor.set_telemetry_sensors)
+        local defaultTelemetrySensor = resolveMemoValue(sensor.default_telemetry_sensor)
         t_insert(memo_listSensors, {
             key = key,
             name = sensor.name,
             mandatory = sensor.mandatory,
-            set_telemetry_sensors = sensor.set_telemetry_sensors
+            set_telemetry_sensors = setTelemetrySensors,
+            default_telemetry_sensor = defaultTelemetrySensor
         })
         if sensor.switch_alerts then
             t_insert(memo_listSwitchSensors, {
                 key = key,
                 name = sensor.name,
                 mandatory = sensor.mandatory,
-                set_telemetry_sensors = sensor.set_telemetry_sensors
+                set_telemetry_sensors = setTelemetrySensors,
+                default_telemetry_sensor = defaultTelemetrySensor
             })
         end
         if sensor.unit then

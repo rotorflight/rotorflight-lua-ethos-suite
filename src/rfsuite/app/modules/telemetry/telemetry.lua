@@ -125,7 +125,8 @@ if not TELEMETRY_STATIC_CACHE then
         [104] = {name = "DBG4", group = "debug"},
         [105] = {name = "DBG5", group = "debug"},
         [106] = {name = "DBG6", group = "debug"},
-        [107] = {name = "DBG7", group = "debug"}
+        [107] = {name = "DBG7", group = "debug"},
+        [118] = {name = "Smart Fuel", group = "battery"}
     }
 
     local groupTitleTag = {
@@ -464,7 +465,7 @@ end
 local function getDefaultSensors(sensorListFromApi)
     local defaultSensors = {}
     for _, sensor in pairs(sensorListFromApi) do
-        if sensor["mandatory"] == true and sensor["set_telemetry_sensors"] ~= nil then
+        if (sensor["mandatory"] == true or sensor["default_telemetry_sensor"] == true) and sensor["set_telemetry_sensors"] ~= nil then
             local sensorId = tonumber(sensor["set_telemetry_sensors"])
             if sensorId then
                 table.insert(defaultSensors, sensorId)

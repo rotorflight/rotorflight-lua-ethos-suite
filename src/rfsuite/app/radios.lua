@@ -98,8 +98,39 @@ local supportedRadios = {
     }
 }
 
-local radio = assert(supportedRadios[resolution], resolution .. " not supported")
+local function parseResolution(key)
+    local width, height = key:match("^(%d+)x(%d+)$")
+    return tonumber(width), tonumber(height)
+end
 
-for resKey in pairs(supportedRadios) do if resKey ~= resolution then supportedRadios[resKey] = nil end end
+local function getClosestSupportedResolution(targetW, targetH)
+    local bestKey, bestDistance
+
+    for resKey in pairs(supportedRadios) do
+        local width, height = parseResolution(resKey)
+        local distance = math.abs(width - targetW) + math.abs(height - targetH)
+
+        if bestDistance == nil or distance < bestDistance then
+            bestKey = resKey
+            bestDistance = distance
+        end
+    end
+
+    return bestKey
+end
+
+local matchedResolution = resolution
+
+if not supportedRadios[matchedResolution] then
+    matchedResolution = getClosestSupportedResolution(LCD_W, LCD_H)
+
+    if matchedResolution then
+        rfsuite.utils.log("Unsupported app resolution: " .. resolution .. ". Using closest match " .. matchedResolution .. ".", "info")
+    end
+end
+
+local radio = assert(supportedRadios[matchedResolution], resolution .. " not supported")
+
+for resKey in pairs(supportedRadios) do if resKey ~= matchedResolution then supportedRadios[resKey] = nil end end
 
 return radio

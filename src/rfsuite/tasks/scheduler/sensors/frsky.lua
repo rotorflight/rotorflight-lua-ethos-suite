@@ -47,6 +47,7 @@ local sidLookup = loadSidLookup()
 local createSensorList = {}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
+createSensorList[0x5251] = {name = "Smart Fuel", unit = UNIT_PERCENT, minimum = -1, maximum = 100}
 createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
 createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals = 2}
 createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE, decimals = 2}

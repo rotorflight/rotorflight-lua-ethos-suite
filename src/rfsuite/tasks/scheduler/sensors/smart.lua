@@ -9,6 +9,7 @@ local smart = {}
 
 local smartfuel = assert(loadfile("tasks/scheduler/sensors/lib/smartfuel.lua"))()
 local smartfuelvoltage = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelvoltage.lua"))()
+local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local log
 local tasks
@@ -32,17 +33,19 @@ local FORCE_REFRESH_INTERVAL = 2.0
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
+local function useNativeSmartFuel()
+    return system.getVersion().simulation ~= true and rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+end
+
 local function calculateFuel()
-    local prefs = rfsuite.session.modelPreferences
-    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+    if smartfuelprefs.getSource() == 1 then
         return smartfuelvoltage.calculate()
     end
     return smartfuel.calculate()
 end
 
 local function calculateConsumption()
-    local prefs = rfsuite.session.modelPreferences
-    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+    if smartfuelprefs.getSource() == 1 then
         local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
         local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
         local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
@@ -73,7 +76,7 @@ end
 
 local function resetConsumption() end
 
-local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = UNIT_PERCENT, minimum = 0, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
+local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = UNIT_PERCENT, minimum = -1, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
 
 smart.sensors = smart_sensors
 
@@ -161,13 +164,16 @@ function smart.wakeup()
     lastWake = os_clock()
 
     for name, meta in pairs(smart_sensors) do
-        local value
-        if type(meta.value) == "function" then
-            value = meta.value()
-        else
-            value = meta.value
+        local shouldPublish = not (name == "smartfuel" and useNativeSmartFuel())
+        if shouldPublish then
+            local value
+            if type(meta.value) == "function" then
+                value = meta.value()
+            else
+                value = meta.value
+            end
+            createOrUpdateSensor(meta.appId, meta, value)
         end
-        createOrUpdateSensor(meta.appId, meta, value)
     end
 end
 
