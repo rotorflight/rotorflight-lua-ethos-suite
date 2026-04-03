@@ -157,7 +157,9 @@ function factory.create(spec)
             errorHandler = messageErrorHandler,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseRead or {}, state, "read", ...),
             uuid = state.uuid,
-            timeout = state.timeout
+            timeout = state.timeout,
+            retryOnErrorReply = (spec.readRetryOnErrorReply == true),
+            retryBackoff = spec.readRetryBackoff
         }
 
         local readUuidResolver = spec.resolveReadUUID
@@ -227,7 +229,9 @@ function factory.create(spec)
             errorHandler = messageErrorHandler,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseWrite or {}, state, "write", suppliedPayload, ...),
             uuid = resolveWriteUUID(spec, state),
-            timeout = state.timeout
+            timeout = state.timeout,
+            retryOnErrorReply = (spec.writeRetryOnErrorReply == true),
+            retryBackoff = spec.writeRetryBackoff
         }
 
         local writeUuidResolver = spec.resolveWriteUUID

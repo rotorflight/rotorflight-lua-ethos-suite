@@ -99,6 +99,8 @@ return factory.create({
     buildWritePayload = buildWritePayload,
     writeUuidFallback = true,
     initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
+    readRetryOnErrorReply = true,
+    readRetryBackoff = 0.35,
     readCompleteFn = function(state)
         return state.mspData ~= nil
     end,

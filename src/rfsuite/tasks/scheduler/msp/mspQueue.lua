@@ -419,10 +419,15 @@ function MspQueueController:processQueue()
 
     if cmd then self.lastTimeCommandSent = nil end -- allow next send
 
+    if cmd == self.currentMessage.command and err and self.currentMessage.retryOnErrorReply == true then
+        self.lastTimeCommandSent = now
+        setMspStatus(formatMspStatus(self.currentMessage, "error reply"))
+        return
+    end
+
     -- Success paths (or special-case shortcuts)
     if (cmd == self.currentMessage.command and not err)
-        or (self.currentMessage.command == 68 and self.retryCount == 2)
-        or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
+        or (self.currentMessage.command == 68 and self.retryCount == 2) then
 
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
