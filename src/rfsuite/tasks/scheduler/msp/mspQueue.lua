@@ -427,6 +427,7 @@ function MspQueueController:processQueue()
 
     -- Success paths (or special-case shortcuts)
     if (cmd == self.currentMessage.command and not err)
+        or (cmd == self.currentMessage.command and err and self.currentMessage.completeOnErrorReplyAttempt and self.retryCount >= self.currentMessage.completeOnErrorReplyAttempt)
         or (self.currentMessage.command == 68 and self.retryCount == 2) then
 
         if self.currentMessage.processReply then

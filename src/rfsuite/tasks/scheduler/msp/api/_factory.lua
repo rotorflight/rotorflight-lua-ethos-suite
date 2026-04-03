@@ -159,7 +159,8 @@ function factory.create(spec)
             uuid = state.uuid,
             timeout = state.timeout,
             retryOnErrorReply = (spec.readRetryOnErrorReply == true),
-            retryBackoff = spec.readRetryBackoff
+            retryBackoff = spec.readRetryBackoff,
+            completeOnErrorReplyAttempt = spec.readCompleteOnErrorReplyAttempt
         }
 
         local readUuidResolver = spec.resolveReadUUID
