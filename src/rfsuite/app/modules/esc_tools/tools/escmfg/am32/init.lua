@@ -50,6 +50,7 @@ return {
     preSwitchTarget = 100,                    -- Optional pre-target written before selected target.
     preSwitchWriteCount = 1,                  -- Number of pre-target writes per switch attempt.
     preSwitchDelay = 0.8,                     -- Delay after pre-target write before final target write.
+    initialConnectTimeout = 18.0,            -- Allow extra time for initial 4WIF connect before the loader times out.
     switchWriteCount = 1,                     -- Number of writes for the selected target.
     switchReadDelay = 4.0,                    -- Wait after target switch before normal ESC reads start.
     postSaveSwitchCycle = true,               -- If true, do post-save cycle (reset target then restore selected target).
