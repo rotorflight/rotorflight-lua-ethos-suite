@@ -29,7 +29,7 @@ local apidata = {
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beepstrength)@", mspapi = 1, apikey = "beep_strength"},
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beaconstrength)@", mspapi = 1, apikey = "beacon_strength"},
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beacondelay)@", type = 1, mspapi = 1, apikey = "beacon_delay"},
-            {t = "Startup Beep", type = 1, mspapi = 1, apikey = "startup_beep", _keep = (layoutRevision == nil) or layoutRevision <= 202 or layoutRevision == 205},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.startupbeep)@", type = 1, mspapi = 1, apikey = "startup_beep", _keep = (layoutRevision == nil) or layoutRevision <= 202 or layoutRevision == 205},
         }
     }
 }
@@ -81,7 +81,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / Beacon",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / " .. "@i18n(app.modules.esc_tools.mfg.bluejay.beacon)@",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

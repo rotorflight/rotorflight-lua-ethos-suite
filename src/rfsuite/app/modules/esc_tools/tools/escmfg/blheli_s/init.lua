@@ -12,6 +12,7 @@ local ESC2_TARGET = 1
 local BLHELI_S_MAIN_REVISION = 16
 
 local function getPageValue(page, index)
+    if type(page) ~= "table" then return nil end
     return page[index]
 end
 
@@ -44,7 +45,10 @@ end
 
 local function isCompatibleEsc(buffer, api)
     if api and api.readValue then
-        return api.readValue("main_revision") == BLHELI_S_MAIN_REVISION
+        local mainRevision = api.readValue("main_revision")
+        if mainRevision ~= nil then
+            return mainRevision == BLHELI_S_MAIN_REVISION
+        end
     end
     return getMainRevision(buffer) == BLHELI_S_MAIN_REVISION
 end
@@ -53,6 +57,7 @@ return {
     mspapi = MSP_API,
     toolName = toolName,
     isCompatibleEsc = isCompatibleEsc,
+    mspBufferCache = true,
     force4WaySwitchOnEntry = true,
     esc4wayEsc1Target = ESC1_TARGET,
     esc4wayEsc2Target = ESC2_TARGET,

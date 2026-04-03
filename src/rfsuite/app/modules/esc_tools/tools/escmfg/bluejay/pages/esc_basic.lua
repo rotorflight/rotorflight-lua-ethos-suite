@@ -27,11 +27,11 @@ local apidata = {
         },
         fields = {
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.motordirection)@", type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "Rampup Start Power", type = 1, mspapi = 1, apikey = "rpm_power_slope", _keep = keepField(nil, 200)},
-            {t = "Rampup Power", type = 1, mspapi = 1, apikey = "rpm_power_slope", _keep = keepField(201, nil)},
-            {t = "Min Startup Power", mspapi = 1, apikey = "startup_power_min"},
-            {t = "Max Startup Power", mspapi = 1, apikey = "startup_power_max", _keep = keepField(201, nil)},
-            {t = "PWM Frequency", type = 1, mspapi = 1, apikey = "pwm_frequency", _keep = (layoutRevision == nil) or layoutRevision == 205 or layoutRevision >= 209},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.rampupstartpower)@", type = 1, mspapi = 1, apikey = "rpm_power_slope", _keep = keepField(nil, 200)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.rampuppower)@", type = 1, mspapi = 1, apikey = "rpm_power_slope", _keep = keepField(201, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.minstartuppower)@", mspapi = 1, apikey = "startup_power_min"},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.maxstartuppower)@", mspapi = 1, apikey = "startup_power_max", _keep = keepField(201, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.pwmfrequency)@", type = 1, mspapi = 1, apikey = "pwm_frequency", _keep = (layoutRevision == nil) or layoutRevision == 205 or layoutRevision >= 209},
         }
     }
 }
@@ -83,7 +83,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / General",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / " .. "@i18n(app.modules.esc_tools.mfg.bluejay.general)@",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

@@ -4603,6 +4603,134 @@
               "max_length": 18
             }
           },
+          "bluejay": {
+            "beacon": {
+              "english": "Beacon",
+              "needs_translation": false,
+              "translation": "Beacon",
+              "max_length": 6
+            },
+            "brake": {
+              "english": "Brake",
+              "needs_translation": false,
+              "translation": "Brake",
+              "max_length": 5
+            },
+            "brakingmode": {
+              "english": "Braking Mode",
+              "needs_translation": false,
+              "translation": "Braking Mode",
+              "max_length": 12
+            },
+            "brakingstrength": {
+              "english": "Braking Strength",
+              "needs_translation": false,
+              "translation": "Braking Strength",
+              "max_length": 16
+            },
+            "dithering": {
+              "english": "Dithering",
+              "needs_translation": false,
+              "translation": "Dithering",
+              "max_length": 9
+            },
+            "forceedtarm": {
+              "english": "Force EDT Arm",
+              "needs_translation": false,
+              "translation": "Force EDT Arm",
+              "max_length": 13
+            },
+            "general": {
+              "english": "General",
+              "needs_translation": false,
+              "translation": "General",
+              "max_length": 7
+            },
+            "ledcontrol": {
+              "english": "LED Control",
+              "needs_translation": false,
+              "translation": "LED Control",
+              "max_length": 11
+            },
+            "lowrpmpowerprotection": {
+              "english": "Low RPM Power Protection",
+              "needs_translation": false,
+              "translation": "Low RPM Power Protection",
+              "max_length": 24
+            },
+            "maxstartuppower": {
+              "english": "Max Startup Power",
+              "needs_translation": false,
+              "translation": "Max Startup Power",
+              "max_length": 17
+            },
+            "minstartuppower": {
+              "english": "Min Startup Power",
+              "needs_translation": false,
+              "translation": "Min Startup Power",
+              "max_length": 17
+            },
+            "name": {
+              "english": "Bluejay",
+              "needs_translation": false,
+              "translation": "Bluejay",
+              "max_length": 7
+            },
+            "other": {
+              "english": "Other",
+              "needs_translation": false,
+              "translation": "Other",
+              "max_length": 5
+            },
+            "powerrating": {
+              "english": "Power Rating",
+              "needs_translation": false,
+              "translation": "Power Rating",
+              "max_length": 12
+            },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "needs_translation": false,
+              "translation": "PWM Frequency",
+              "max_length": 13
+            },
+            "rampupstartpower": {
+              "english": "Rampup Start Power",
+              "needs_translation": false,
+              "translation": "Rampup Start Power",
+              "max_length": 18
+            },
+            "rampuppower": {
+              "english": "Rampup Power",
+              "needs_translation": false,
+              "translation": "Rampup Power",
+              "max_length": 12
+            },
+            "startupbeep": {
+              "english": "Startup Beep",
+              "needs_translation": false,
+              "translation": "Startup Beep",
+              "max_length": 12
+            },
+            "threshold48to24": {
+              "english": "48kHz -> 24kHz Threshold",
+              "needs_translation": false,
+              "translation": "48kHz -> 24kHz Threshold",
+              "max_length": 25
+            },
+            "threshold96to48": {
+              "english": "96kHz -> 48kHz Threshold",
+              "needs_translation": false,
+              "translation": "96kHz -> 48kHz Threshold",
+              "max_length": 25
+            },
+            "waitingforesc": {
+              "english": "Waiting for ESC...",
+              "needs_translation": false,
+              "translation": "Waiting for ESC...",
+              "max_length": 18
+            }
+          },
           "flrtr": {
             "active_freewheel": {
               "english": "Active Freewheeling",

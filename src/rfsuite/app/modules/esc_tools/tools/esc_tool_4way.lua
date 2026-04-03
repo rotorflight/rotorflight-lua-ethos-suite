@@ -1394,7 +1394,12 @@ local function wakeup()
 
     end
 
-    if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
+    local progressTimedOut = false
+    if rfsuite.app and rfsuite.app.dialogs and rfsuite.app.dialogs.progressDisplay == true then
+        progressTimedOut = (rfsuite.app.dialogs.progressCounter or 0) >= 101
+    end
+
+    if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or progressTimedOut) then
         rfsuite.app.dialogs.progress:close()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true

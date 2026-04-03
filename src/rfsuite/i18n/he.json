@@ -124,12 +124,48 @@
         "reverse_text": true,
         "translation": "חשב דלק באמצעות"
       },
+      "fuel_drop_rate": {
+        "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
+      },
+      "fuel_rise_rate": {
+        "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
+      },
       "sag_multiplier": {
         "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
         "max_length": 73,
         "needs_translation": true,
         "reverse_text": true,
         "translation": "העלה או הורד כדי לכוונן לפי שקיעת המתח בזמן טיסה."
+      },
+      "sag_multiplier_percent": {
+        "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
+      },
+      "smartfuel_source": {
+        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
+      },
+      "stabilize_delay": {
+        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
+      },
+      "stable_window": {
+        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
       },
       "tbl_auto": {
         "english": "Auto",
@@ -165,6 +201,12 @@
         "needs_translation": true,
         "reverse_text": true,
         "translation": "חיישן מתח"
+      },
+      "voltage_fall_limit": {
+        "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel."
       }
     },
     "ESC_PARAMETERS_FLYROTOR": {
@@ -2819,6 +2861,50 @@
         "reverse_text": false,
         "translation": "Set"
       }
+    },
+    "SMARTFUEL_CONFIG": {
+      "fuel_drop_rate": {
+        "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
+      },
+      "fuel_rise_rate": {
+        "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
+      },
+      "sag_multiplier_percent": {
+        "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
+      },
+      "smartfuel_source": {
+        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
+      },
+      "stabilize_delay": {
+        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
+      },
+      "stable_window": {
+        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
+      },
+      "voltage_fall_limit": {
+        "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel."
+      }
     }
   },
   "app": {
@@ -5252,6 +5338,134 @@
             "waitingforesc": {
               "english": "Waiting for ESC...",
               "max_length": 18,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Waiting for ESC..."
+            }
+          },
+          "bluejay": {
+            "beacon": {
+              "english": "Beacon",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Beacon"
+            },
+            "brake": {
+              "english": "Brake",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Brake"
+            },
+            "brakingmode": {
+              "english": "Braking Mode",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Braking Mode"
+            },
+            "brakingstrength": {
+              "english": "Braking Strength",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Braking Strength"
+            },
+            "dithering": {
+              "english": "Dithering",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Dithering"
+            },
+            "forceedtarm": {
+              "english": "Force EDT Arm",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Force EDT Arm"
+            },
+            "general": {
+              "english": "General",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "General"
+            },
+            "ledcontrol": {
+              "english": "LED Control",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "LED Control"
+            },
+            "lowrpmpowerprotection": {
+              "english": "Low RPM Power Protection",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Low RPM Power Protection"
+            },
+            "maxstartuppower": {
+              "english": "Max Startup Power",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Max Startup Power"
+            },
+            "minstartuppower": {
+              "english": "Min Startup Power",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Min Startup Power"
+            },
+            "name": {
+              "english": "Bluejay",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Bluejay"
+            },
+            "other": {
+              "english": "Other",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Other"
+            },
+            "powerrating": {
+              "english": "Power Rating",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Power Rating"
+            },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "PWM Frequency"
+            },
+            "rampuppower": {
+              "english": "Rampup Power",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Rampup Power"
+            },
+            "rampupstartpower": {
+              "english": "Rampup Start Power",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Rampup Start Power"
+            },
+            "startupbeep": {
+              "english": "Startup Beep",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Startup Beep"
+            },
+            "threshold48to24": {
+              "english": "48kHz -> 24kHz Threshold",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "48kHz -> 24kHz Threshold"
+            },
+            "threshold96to48": {
+              "english": "96kHz -> 48kHz Threshold",
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "96kHz -> 48kHz Threshold"
+            },
+            "waitingforesc": {
+              "english": "Waiting for ESC...",
               "needs_translation": true,
               "reverse_text": false,
               "translation": "Waiting for ESC..."
@@ -8218,6 +8432,42 @@
           "reverse_text": false,
           "translation": "Selected"
         },
+        "smartfuel_fuel_drop_rate": {
+          "english": "Fuel Drop Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Fuel Drop Rate"
+        },
+        "smartfuel_fuel_rise_rate": {
+          "english": "Fuel Rise Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Fuel Rise Rate"
+        },
+        "smartfuel_sag_compensation": {
+          "english": "Sag Compensation Factor",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Sag Compensation Factor"
+        },
+        "smartfuel_stabilize_delay": {
+          "english": "Stabilize Delay",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Stabilize Delay"
+        },
+        "smartfuel_stable_window": {
+          "english": "Stable Window",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Stable Window"
+        },
+        "smartfuel_voltage_fall_limit": {
+          "english": "Voltage Fall Limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Voltage Fall Limit"
+        },
         "source_name": {
           "english": "Sources",
           "max_length": 7,
@@ -8240,7 +8490,7 @@
           "translation": "מקור מתח"
         },
         "voltage_multiplier": {
-          "english": "Sag Compensation",
+          "english": "Sag Compensation Factor",
           "max_length": 16,
           "needs_translation": true,
           "reverse_text": true,

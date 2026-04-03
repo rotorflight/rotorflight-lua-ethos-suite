@@ -26,12 +26,12 @@ local apidata = {
         },
         fields = {
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.temperatureprotection)@", type = 1, mspapi = 1, apikey = "temperature_protection"},
-            {t = "Low RPM Power Protection", type = 1, mspapi = 1, apikey = "low_rpm_power_protection", _keep = keepField(nil, 200)},
-            {t = "Power Rating", type = 1, mspapi = 1, apikey = "power_rating", _keep = keepField(206, nil)},
-            {t = "Force EDT Arm", type = 1, mspapi = 1, apikey = "force_edt_arm", _keep = keepField(207, nil)},
-            {t = "Dithering", type = 1, mspapi = 1, apikey = "dithering", _keep = keepField(nil, 207)},
-            {t = "96kHz -> 48kHz Threshold", mspapi = 1, apikey = "threshold_96to48", _keep = keepField(209, nil)},
-            {t = "48kHz -> 24kHz Threshold", mspapi = 1, apikey = "threshold_48to24", _keep = keepField(209, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.lowrpmpowerprotection)@", type = 1, mspapi = 1, apikey = "low_rpm_power_protection", _keep = keepField(nil, 200)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.powerrating)@", type = 1, mspapi = 1, apikey = "power_rating", _keep = keepField(206, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.forceedtarm)@", type = 1, mspapi = 1, apikey = "force_edt_arm", _keep = keepField(207, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.dithering)@", type = 1, mspapi = 1, apikey = "dithering", _keep = keepField(nil, 207)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.threshold96to48)@", mspapi = 1, apikey = "threshold_96to48", _keep = keepField(209, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.threshold48to24)@", mspapi = 1, apikey = "threshold_48to24", _keep = keepField(209, nil)},
         }
     }
 }
@@ -83,7 +83,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / Other",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / " .. "@i18n(app.modules.esc_tools.mfg.bluejay.other)@",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

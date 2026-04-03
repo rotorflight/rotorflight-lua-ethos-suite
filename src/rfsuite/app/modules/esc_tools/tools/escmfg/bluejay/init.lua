@@ -6,12 +6,13 @@
 local rfsuite = require("rfsuite")
 
 local MSP_API = "ESC_PARAMETERS_BLUEJAY"
-local toolName = "Bluejay"
+local toolName = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@"
 local ESC1_TARGET = 0
 local ESC2_TARGET = 1
 local BLUEJAY_MAIN_REVISION = 0
 
 local function getPageValue(page, index)
+    if type(page) ~= "table" then return nil end
     return page[index]
 end
 
@@ -62,7 +63,10 @@ end
 
 local function isCompatibleEsc(buffer, api)
     if api and api.readValue then
-        return api.readValue("main_revision") == BLUEJAY_MAIN_REVISION
+        local mainRevision = api.readValue("main_revision")
+        if mainRevision ~= nil then
+            return mainRevision == BLUEJAY_MAIN_REVISION
+        end
     end
     return getMainRevision(buffer) == BLUEJAY_MAIN_REVISION
 end
@@ -107,7 +111,7 @@ return {
     isolatedSaveProgressProcessingCap = 90,
     isolatedSaveProgressIdleStep = 1,
     isolatedSaveProgressIdleCap = 97,
-    isolatedSaveWaitEscMessage = "@i18n(app.modules.esc_tools.mfg.blheli_s.waitingforesc)@",
+    isolatedSaveWaitEscMessage = "@i18n(app.modules.esc_tools.mfg.bluejay.waitingforesc)@",
     isolatedSaveGcCollect = true,
     isolatedSaveGcPasses = 1,
     escDetailsPollInterval = 0.6,

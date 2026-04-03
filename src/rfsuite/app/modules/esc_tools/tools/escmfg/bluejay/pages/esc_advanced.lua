@@ -31,9 +31,9 @@ local apidata = {
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.motortiming)@", type = 1, mspapi = 1, apikey = "commutation_timing"},
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.demagcompensation)@", type = 1, mspapi = 1, apikey = "demag_compensation"},
             {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
-            {t = "Braking Mode", type = 1, mspapi = 1, apikey = "braking_strength", _keep = keepField(nil, nil, 202)},
-            {t = "Braking Strength", mspapi = 1, apikey = "braking_strength", _keep = keepField(204, nil)},
-            {t = "LED Control", type = 1, mspapi = 1, apikey = "led_control", _keep = supportsLedControl == true},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.brakingmode)@", type = 1, mspapi = 1, apikey = "braking_strength", _keep = keepField(nil, nil, 202)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.brakingstrength)@", mspapi = 1, apikey = "braking_strength", _keep = keepField(204, nil)},
+            {t = "@i18n(app.modules.esc_tools.mfg.bluejay.ledcontrol)@", type = 1, mspapi = 1, apikey = "led_control", _keep = supportsLedControl == true},
         }
     }
 }
@@ -85,7 +85,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / Brake",
+    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName .. " / " .. "@i18n(app.modules.esc_tools.mfg.bluejay.brake)@",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }
