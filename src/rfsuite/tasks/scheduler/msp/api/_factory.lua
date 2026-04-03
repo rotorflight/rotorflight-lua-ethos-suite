@@ -230,9 +230,7 @@ function factory.create(spec)
             errorHandler = messageErrorHandler,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseWrite or {}, state, "write", suppliedPayload, ...),
             uuid = resolveWriteUUID(spec, state),
-            timeout = state.timeout,
-            retryOnErrorReply = (spec.writeRetryOnErrorReply == true),
-            retryBackoff = spec.writeRetryBackoff
+            timeout = state.timeout
         }
 
         local writeUuidResolver = spec.resolveWriteUUID

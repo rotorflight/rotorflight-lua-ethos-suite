@@ -29,7 +29,5 @@ return factory.create({
     buildWritePayload = buildWritePayload,
     writeRequiresStructure = true,
     writeUuidFallback = true,
-    writeRetryOnErrorReply = true,
-    writeRetryBackoff = 0.35,
     initialRebuildOnWrite = true
 })
