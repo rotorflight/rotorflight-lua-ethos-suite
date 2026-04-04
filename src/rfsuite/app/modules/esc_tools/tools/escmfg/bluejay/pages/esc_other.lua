@@ -51,7 +51,9 @@ local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
-local function close()
+local page
+
+local function close(self)
     if isolatedSave then isolatedSave.close() end
     local mspApi = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
     if mspApi and mspApi.clearEntry then mspApi.clearEntry(ESC.mspapi) end
@@ -65,13 +67,31 @@ local function close()
         apidata.retryCount = nil
         apidata.apiState = nil
     end
+
+    local target = self or page
+    if target then
+        target.onSaveMenu = nil
+        target.postSave = nil
+        target.onNavMenu = nil
+        target.event = nil
+        target.navButtons = nil
+        target.headerLine = nil
+        target.pageTitle = nil
+        target.apidata = nil
+        target.close = nil
+    end
+
+    isolatedSave = nil
+    ESC = nil
+    apidata = nil
+    page = nil
 end
 
 local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 local postSave = escToolsPage.createEsc4WayPostSaveHandler(folder, ESC)
 isolatedSave = escToolsPage.createIsolatedSaveMenuHandler(folder, ESC)
 
-return {
+page = {
     apidata = apidata,
     eepromWrite = false,
     reboot = false,
@@ -87,3 +107,5 @@ return {
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }
+
+return page

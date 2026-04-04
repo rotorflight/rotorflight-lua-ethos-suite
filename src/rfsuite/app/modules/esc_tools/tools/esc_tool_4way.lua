@@ -303,6 +303,9 @@ local function getEscDetailsAPI()
     end
     escDetailsApi = rfsuite.tasks.msp.api.load(ESC.mspapi)
     if escDetailsApi then
+        if escDetailsApi.enableDeltaCache then
+            escDetailsApi.enableDeltaCache(false)
+        end
         escDetailsApiName = ESC.mspapi
     else
         escDetailsApiName = nil
@@ -567,6 +570,9 @@ local function requestEsc2AvailabilityCheck()
     if not (mspApi and mspApi.load) then return end
     local API = mspApi.load("MOTOR_CONFIG")
     if not API then return end
+    if API.enableDeltaCache then
+        API.enableDeltaCache(false)
+    end
 
     esc2CheckApi = API
     installEsc2AvailabilityHandlers(API)
