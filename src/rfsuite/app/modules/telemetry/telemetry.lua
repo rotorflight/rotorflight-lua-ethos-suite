@@ -126,7 +126,8 @@ if not TELEMETRY_STATIC_CACHE then
         [105] = {name = "DBG5", group = "debug"},
         [106] = {name = "DBG6", group = "debug"},
         [107] = {name = "DBG7", group = "debug"},
-        [118] = {name = "Smart Fuel", group = "battery"}
+        [118] = {name = "Smart Fuel", group = "battery"},
+        [119] = {name = "Smart Consumption", group = "battery"}
     }
 
     local groupTitleTag = {

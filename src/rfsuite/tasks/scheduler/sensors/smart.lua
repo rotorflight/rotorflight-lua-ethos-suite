@@ -33,7 +33,7 @@ local FORCE_REFRESH_INTERVAL = 2.0
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
-local function useNativeSmartFuel()
+local function useNativeSmartSensors()
     return system.getVersion().simulation ~= true and rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
 end
 
@@ -164,7 +164,7 @@ function smart.wakeup()
     lastWake = os_clock()
 
     for name, meta in pairs(smart_sensors) do
-        local shouldPublish = not (name == "smartfuel" and useNativeSmartFuel())
+        local shouldPublish = not ((name == "smartfuel" or name == "smartconsumption") and useNativeSmartSensors())
         if shouldPublish then
             local value
             if type(meta.value) == "function" then
