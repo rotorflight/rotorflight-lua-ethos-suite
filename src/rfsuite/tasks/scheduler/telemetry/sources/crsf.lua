@@ -29,7 +29,10 @@ return {
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1015, mspgt = {12, 0, 10}},
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1, msplt = {12, 0, 9}},
     },
-    smartconsumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}},
+    smartconsumption = {
+        {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1016, mspgt = {12, 0, 10}},
+        {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0, msplt = {12, 0, 9}},
+    },
     consumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}},
 
     -- Temperature

@@ -190,6 +190,15 @@ return {
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
         unit_string = "mAh",
+        default_telemetry_sensor = function()
+            return rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+        end,
+        set_telemetry_sensors = function()
+            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+                return 119
+            end
+            return nil
+        end,
     },
 
     consumption = {
