@@ -17,11 +17,26 @@ local function buildWritePayload(payloadData, _, _, state)
     return core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
 end
 
+local function validateWrite()
+    local armed = rfsuite.utils and rfsuite.utils.resolveArmedState and rfsuite.utils.resolveArmedState()
+    if armed then
+        if rfsuite.utils and rfsuite.utils.log then
+            rfsuite.utils.log("EEPROM_WRITE API blocked while armed", "info")
+        end
+        if rfsuite.utils and rfsuite.utils.signalArmedWriteBlocked then
+            rfsuite.utils.signalArmedWriteBlocked()
+        end
+        return false, "armed_blocked"
+    end
+    return true
+end
+
 return factory.create({
     name = API_NAME,
     writeCmd = 250,
     writeStructure = MSP_API_STRUCTURE_WRITE,
     buildWritePayload = buildWritePayload,
+    validateWrite = validateWrite,
     writeUuidFallback = true,
     initialRebuildOnWrite = true
 })

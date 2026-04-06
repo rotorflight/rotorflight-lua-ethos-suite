@@ -317,7 +317,28 @@ end
 
 local function armedSaveWarning()
     local app = rfsuite.app
-    if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
+    if not app.triggers.showSaveArmedWarning then return end
+
+    if app.triggers.closeSave then
+        local saveDialog = app.dialogs and app.dialogs.save
+        if app.dialogs and app.dialogs.saveDisplay then
+            app.dialogs.saveDisplay = false
+            app.dialogs.saveWatchDog = nil
+            app.dialogs.saveTimedOut = false
+            app.dialogs.saveProgressCounter = 0
+            if saveDialog and saveDialog.close then
+                pcall(saveDialog.close, saveDialog)
+            end
+            if app.ui and app.ui.clearProgressDialog then
+                app.ui.clearProgressDialog(saveDialog)
+            end
+        end
+        app.triggers.closeSave = false
+        app.triggers.closeSaveFake = false
+        app.triggers.isSaving = false
+        app.triggers.savePendingAsync = false
+    end
+
     local pref = rfsuite.preferences.general.save_armed_warning
     local showDialog = not (pref == false or pref == "false")
     if not showDialog then
@@ -346,7 +367,7 @@ local function armedSaveWarning()
     if not app.dialogs.progressDisplay then
         app.audio.playSaveArmed = true
         app.dialogs.progressCounter = 0
-        local key = (rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) and "@i18n(app.msg_please_disarm_to_save_warning)@" or "@i18n(app.msg_please_disarm_to_save)@")
+        local key = rfsuite.utils.getArmedSaveBlockedMessage()
 
         app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", key)
     end

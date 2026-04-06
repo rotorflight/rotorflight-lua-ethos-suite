@@ -3455,35 +3455,29 @@ function ui.saveSettings(sourcePage)
 end
 
 function ui.rebootFc(sourcePage)
-    local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
-    local armedByFlags = (armflags == 1 or armflags == 3)
     local rebootPage = sourcePage or app.Page
-    if (session and session.isArmed) or armedByFlags then
-        utils.log("Blocked reboot while armed", "info")
+    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("REBOOT")
+    if not rebootAPI then
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
-        app.triggers.showSaveArmedWarning = true
-        return false, "armed_blocked"
+        return false, "reboot_api_unavailable"
     end
 
     app.triggers.rebootInProgress = true
     app.pageState = app.pageStatus.rebooting
-    local ok, reason = tasks.msp.mspQueue:add({
-        command = 68,
-        uuid = "ui.reboot",
-        processReply = function(self, buf)
-            if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
-                app.Page = rebootPage
-            end
-            -- Keep the current page object alive across reboot transitions;
-            -- loader/request logic will refresh live values when connection resumes.
-            app.utils.invalidatePages({preserveCurrentPage = true})
-            app.triggers.isReady = false
-            utils.onReboot()
-        end,
-        simulatorResponse = {}
-    })
+    rebootAPI.setUUID("ui.reboot")
+    rebootAPI.setCompleteHandler(function(self, buf)
+        if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
+            app.Page = rebootPage
+        end
+        -- Keep the current page object alive across reboot transitions;
+        -- loader/request logic will refresh live values when connection resumes.
+        app.utils.invalidatePages({preserveCurrentPage = true})
+        app.triggers.isReady = false
+        utils.onReboot()
+    end)
+    local ok, reason = rebootAPI.write()
     if ok and app.dialogs then
         if app.dialogs.saveDisplay then
             app.triggers.closeSaveFake = true
@@ -3513,6 +3507,9 @@ function ui.rebootFc(sourcePage)
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
+        if reason == "armed_blocked" then
+            app.triggers.showSaveArmedWarning = true
+        end
     end
     return ok, reason
 end

@@ -23,13 +23,13 @@ local function buildWritePayload(payloadData, _, _, state)
 end
 
 local function validateWrite()
-    local session = rfsuite.session
-    local tasks = rfsuite.tasks
-    local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
-    local armedByFlags = (armflags == 1 or armflags == 3)
-    if (session and session.isArmed) or armedByFlags then
+    local armed = rfsuite.utils and rfsuite.utils.resolveArmedState and rfsuite.utils.resolveArmedState()
+    if armed then
         if rfsuite and rfsuite.utils and rfsuite.utils.log then
             rfsuite.utils.log("REBOOT API blocked while armed", "info")
+        end
+        if rfsuite.utils and rfsuite.utils.signalArmedWriteBlocked then
+            rfsuite.utils.signalArmedWriteBlocked()
         end
         return false, "armed_blocked"
     end

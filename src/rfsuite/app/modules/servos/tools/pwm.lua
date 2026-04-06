@@ -26,10 +26,11 @@ local pwmServoCount
 local busServoOffset = 18
 
 local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
-
+    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.pwm.eeprom"})
+    if not ok then
+        rfsuite.utils.log("Servo PWM EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
+    return ok, reason
 end
 
 local function buildServoTable()
