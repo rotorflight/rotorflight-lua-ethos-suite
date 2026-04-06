@@ -152,6 +152,7 @@ local function smartFuelCalc()
     end
 
     local now = os_clock()
+    currentMode = rfsuite.flightmode.current or "preflight"
 
     if currentMode ~= lastMode then
         rfsuite.utils.log("Flight mode changed – resetting voltage state", "info")
