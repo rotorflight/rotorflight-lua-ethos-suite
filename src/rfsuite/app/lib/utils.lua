@@ -182,8 +182,8 @@ function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, r
 
 function utils.settingsSaved(savedPage)
     local page = savedPage or app.Page
-    local mspEepromWrite = {
-        command = 250,
+    local eepromWrite = {
+        uuid = "app.settingsSaved.eeprom",
         processReply = function(self, buf)
             app.triggers.closeSave = true
             if page and page.postEepromWrite then page.postEepromWrite() end
@@ -197,17 +197,15 @@ function utils.settingsSaved(savedPage)
             app.triggers.closeSave = true 
             app.triggers.showSaveArmedWarning = true
         end,
-        simulatorResponse = {}
     }
 
     if page and page.eepromWrite then
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
             app.triggers.closeSave = true
-            if session.isArmed then app.triggers.showSaveArmedWarning = true end
-            local ok, reason = tasks.msp.mspQueue:add(mspEepromWrite)
+            local ok, reason = rfutils.queueEepromWrite(eepromWrite)
             if not ok then
-                utils.log("EEPROM enqueue rejected: " .. tostring(reason), "info")
+                rfutils.log("EEPROM enqueue rejected: " .. tostring(reason), "info")
                 app.pageState = app.pageStatus.display
                 app.triggers.closeSaveFake = true
                 app.triggers.isSaving = false

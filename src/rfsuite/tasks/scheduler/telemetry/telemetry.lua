@@ -417,6 +417,10 @@ function telemetry.wakeup()
     local tasks = rfsuite.tasks
     if tasks and tasks.onconnect and tasks.onconnect.active and tasks.onconnect.active() then return end
 
+    if session and session.telemetryState then
+        rfsuite.utils.resolveArmedState()
+    end
+
     if (now - sensorRateLimit) >= ONCHANGE_RATE then
         sensorRateLimit = now
 

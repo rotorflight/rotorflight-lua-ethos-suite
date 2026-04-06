@@ -106,6 +106,72 @@ function utils.rxmapReady()
     return false
 end
 
+function utils.armFlagsToIsArmed(value)
+    if value == 1 or value == 3 then return true end
+    if value == 0 or value == 2 then return false end
+    return nil
+end
+
+function utils.resolveArmedState(refreshFromTelemetry)
+    local session = rfsuite.session
+
+    if refreshFromTelemetry ~= false then
+        local tasks = rfsuite.tasks
+        local telemetry = tasks and tasks.telemetry
+        local getSensorSource = telemetry and telemetry.getSensorSource
+        local source = getSensorSource and getSensorSource("armflags")
+
+        if source and source:state() then
+            local armflags = source:value()
+            local armed = utils.armFlagsToIsArmed(armflags)
+            if armed ~= nil then
+                if session then session.isArmed = armed end
+                return armed, armflags, "armflags"
+            end
+        end
+    end
+
+    return (session and session.isArmed) == true, nil, "session"
+end
+
+function utils.signalArmedWriteBlocked()
+    local app = rfsuite.app
+    if app and app.triggers then
+        app.triggers.showSaveArmedWarning = true
+    end
+end
+
+function utils.getArmedSaveBlockedMessage()
+    if utils.apiVersionCompare(">=", {12, 0, 8}) then
+        return "@i18n(app.msg_please_disarm_to_save_warning)@"
+    end
+    return "@i18n(app.msg_please_disarm_to_save)@"
+end
+
+function utils.queueEepromWrite(opts)
+    opts = opts or {}
+
+    local tasks = rfsuite.tasks
+    local api = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("EEPROM_WRITE")
+    if not api then
+        return false, "eeprom_api_unavailable"
+    end
+
+    local completeHandler = opts.completeHandler or opts.processReply
+    local errorHandler = opts.errorHandler
+    local uuid = opts.uuid
+
+    if uuid and api.setUUID then api.setUUID(uuid) end
+    if type(completeHandler) == "function" then api.setCompleteHandler(completeHandler) end
+    if type(errorHandler) == "function" then api.setErrorHandler(errorHandler) end
+
+    local ok, reason = api.write()
+    if not ok and reason == "armed_blocked" then
+        utils.signalArmedWriteBlocked()
+    end
+    return ok, reason
+end
+
 function utils.inFlight()
     if rfsuite.flightmode.current == "inflight" then return true end
     return false
@@ -185,7 +251,7 @@ function utils.getGovernorState(value)
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", {12, 0, 7}) then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
-        if armflags == 0 or armflags == 2 then value = 101 end
+        if utils.armFlagsToIsArmed(armflags) == false then value = 101 end
     end
 
     if map[value] then

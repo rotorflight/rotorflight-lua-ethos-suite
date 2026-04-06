@@ -8,7 +8,6 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local MSP_SET_SERIAL_CONFIG = 55
-local MSP_EEPROM_WRITE = 250
 
 local PORT_TYPE_DISABLED = 0
 local PORT_TYPE_MSP = 1
@@ -349,14 +348,18 @@ local function queueSetSerialPort(port, done, failed)
 end
 
 local function queueEepromWrite(done, failed)
-    local message = {
-        command = MSP_EEPROM_WRITE,
+    local ok, reason = rfsuite.utils.queueEepromWrite({
+        uuid = "ports.eeprom",
         processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end,
-        simulatorResponse = {}
-    }
-    local ok, reason = queueDirect(message, "ports.eeprom")
-    if not ok and failed then failed(reason or "queue_rejected") end
+        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end
+    })
+    if not ok and failed then
+        if reason == "armed_blocked" then
+            failed(rfsuite.utils.getArmedSaveBlockedMessage())
+        else
+            failed(reason or "queue_rejected")
+        end
+    end
 end
 
 local function savePorts()

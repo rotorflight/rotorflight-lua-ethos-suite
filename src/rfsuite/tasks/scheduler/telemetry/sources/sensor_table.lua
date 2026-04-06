@@ -68,7 +68,12 @@ return {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
-        onchange = function(value) rfsuite.session.isArmed = (value == 1 or value == 3) end
+        onchange = function(value)
+            local armed = rfsuite.utils.armFlagsToIsArmed(value)
+            if armed ~= nil then
+                rfsuite.session.isArmed = armed
+            end
+        end
     },
 
     voltage = {

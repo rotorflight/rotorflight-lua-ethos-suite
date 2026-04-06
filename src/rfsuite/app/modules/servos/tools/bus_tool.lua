@@ -95,10 +95,11 @@ local function servoCenterFocusOn(self)
 end
 
 local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    return queueDirect(mspEepromWrite, "servo.bustool.eeprom")
-
+    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.bustool.eeprom"})
+    if not ok then
+        rfsuite.utils.log("Servo BUS EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
+    return ok, reason
 end
 
 local function saveServoCenter(self)
