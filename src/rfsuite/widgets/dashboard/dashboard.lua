@@ -352,6 +352,73 @@ local function clearTableKeys(t)
     end
 end
 
+local function resetBoxRuntime(box)
+    if not box then return end
+    for k in pairs(box) do
+        if type(k) == "string" and k:sub(1, 1) == "_" then
+            box[k] = nil
+        end
+    end
+    box.xOffset = nil
+end
+
+local function resetModuleRuntimeState(mod)
+    if type(mod) ~= "table" then return end
+
+    local boxes = resolveMaybe(mod.boxes or EMPTY) or EMPTY
+    local headerBoxes = resolveMaybe(mod.header_boxes or EMPTY) or EMPTY
+
+    for _, box in ipairs(boxes) do
+        resetBoxRuntime(box)
+    end
+
+    for _, box in ipairs(headerBoxes) do
+        resetBoxRuntime(box)
+    end
+end
+
+local function activate_state_only(state)
+    resetModuleRuntimeState(loadedStateModules[state])
+
+    dashboard.currentWidgetPath = loadedStateThemes[state]
+    dashboard._loader_start_time = nil
+    dashboard._forceFullRepaint = true
+    objectWakeupIndex = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle = nil
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    lastLoadedBoxSigCount = 0
+
+    if lastLoadedBoxSigParts then
+        clearArray(lastLoadedBoxSigParts)
+    end
+
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
+
+    if scheduledBoxIndices then
+        clearArray(scheduledBoxIndices)
+    else
+        scheduledBoxIndices = {}
+    end
+
+    if dashboard._onpressIndices then
+        clearArray(dashboard._onpressIndices)
+    end
+
+    clearTableKeys(dashboard._objectDirty)
+    _clearPendingInvalidates()
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._onpressIndicesReady = false
+    dashboard.selectedBoxIndex = nil
+
+    lcd.invalidate()
+end
+
 function dashboard.overlaystatic(x, y, w, h, txt)
     local msg = txt
     if not msg or msg == "" then
@@ -1733,7 +1800,10 @@ function dashboard.wakeup_protected(widget)
         local currentTheme = getThemeForState(currentFlightMode)
         if (not loadedStateModules[currentFlightMode]) or (loadedStateThemes[currentFlightMode] ~= currentTheme) then
             reload_state_only(currentFlightMode)
+        else
+            activate_state_only(currentFlightMode)
         end
+        dashboard.applySchedulerSettings()
         lastFlightMode = currentFlightMode
         if dashboard._useSpreadSchedulingPaint then lcd.invalidate(widget) end
     end
