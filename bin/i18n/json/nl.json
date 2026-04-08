@@ -9800,8 +9800,8 @@
           "max_length": 16
         },
         "cyclic_polarity": {
-          "english": "Cyclic polarity",
-          "translation": "Cyclic polarity",
+          "english": "Cyclic polar",
+          "translation": "Cyclic polar",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 15

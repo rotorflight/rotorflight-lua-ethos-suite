@@ -9821,11 +9821,11 @@
           "translation": "Cyclic Behaviour"
         },
         "cyclic_polarity": {
-          "english": "Cyclic polarity",
+          "english": "Cyclic polar",
           "max_length": 15,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Cyclic polarity"
+          "translation": "Cyclic polar"
         },
         "cyclic_ring": {
           "english": "Cyclic ring",
