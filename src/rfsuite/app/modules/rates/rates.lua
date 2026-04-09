@@ -17,24 +17,28 @@ local function getApiEntryName(entry)
     return entry
 end
 
-local function getRateType()
+local function getRcTuningValue(apikey)
     local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1])
     local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
 
-    if values and apiName and values[apiName] and values[apiName].rates_type ~= nil then
-        return values[apiName].rates_type
+    if values and apiName and values[apiName] and values[apiName][apikey] ~= nil then
+        return values[apiName][apikey]
     end
 
     local fields = rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata and rfsuite.app.Page.apidata.formdata.fields
     if fields then
         for i = 1, #fields do
-            if fields[i] and fields[i].apikey == "rates_type" then
+            if fields[i] and fields[i].apikey == apikey then
                 return fields[i].value
             end
         end
     end
 
     return nil
+end
+
+local function getRateType()
+    return getRcTuningValue("rates_type")
 end
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
@@ -48,12 +52,20 @@ tables[6] = "app/modules/rates/ratetables/rotorflight.lua"
 if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end
 
 rfsuite.utils.log("Loading Rate Table: " .. tables[rfsuite.session.activeRateTable], "debug")
-apidata = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
+local rateTableChunk = assert(loadfile(tables[rfsuite.session.activeRateTable]))
+rfsuite.session.applyPolarRateLayout = true
+local ok, loadedTable = pcall(rateTableChunk)
+rfsuite.session.applyPolarRateLayout = false
+rfsuite.session.pendingPolarRateLayout = nil
+assert(ok, loadedTable)
+apidata = loadedTable
 local mytable = apidata.formdata
 
 local function postLoad(self)
 
     local v = getRateType()
+    local polarValue = getRcTuningValue("cyclic_polarity")
+    local polarEnabled = polarValue ~= nil and tonumber(polarValue) == 1 or nil
 
     if v == nil then
         rfsuite.utils.log("Unable to resolve rates_type from RC_TUNING data", "warning")
@@ -71,6 +83,17 @@ local function postLoad(self)
         rfsuite.utils.log("Switching Rate Table: " .. tostring(requestedRateTable), "info")
         rfsuite.app.triggers.reloadFull = true
         rfsuite.session.activeRateTable = requestedRateTable
+        return
+    end
+
+    if polarEnabled ~= nil then
+        rfsuite.session.ratesPolarEnabled = polarEnabled
+    end
+
+    if polarEnabled ~= nil and polarEnabled ~= (apidata.formdata and apidata.formdata._polarEnabled) then
+        rfsuite.utils.log("Switching rates layout for polar coordinates: " .. tostring(polarEnabled), "info")
+        rfsuite.session.pendingPolarRateLayout = polarEnabled
+        rfsuite.app.triggers.reloadFull = true
         return
     end
 

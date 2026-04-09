@@ -965,7 +965,10 @@ function ui.progressDisplay(title, message, speed)
     app.dialogs.progressSpeed = speedMult
 
     if session then session.mspTimeouts = 0 end
+    app.triggers.closeProgressLoader = false
+    app.triggers.closeProgressLoaderNoisProcessed = false
     app.dialogs.progressDisplay = true
+    app.dialogs.progressCounter = 0
     app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressTimedOut = false
     app.dialogs.progressBaseMessage = message

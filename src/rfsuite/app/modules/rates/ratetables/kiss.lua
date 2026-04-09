@@ -2,7 +2,7 @@
   Copyright (C) 2025 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
-
+local layout = assert(loadfile("app/modules/rates/ratetables/layout.lua"))()
 
 local apidata = {
     api = {
@@ -33,4 +33,4 @@ local apidata = {
     }
 }
 
-return apidata
+return layout.apply(apidata)
