@@ -67,6 +67,9 @@ local function sigEquals(a, aN, b, bN)
 end
 
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
+-- Holding inactive themes resident smooths the first state transition, but
+-- costs a noticeable amount of Lua RAM. Keep it off by default on Ethos.
+local PRELOAD_INACTIVE_STATES = false
 -- Busy cadence: run dashboard wakeup on RUN_NUM of RUN_DEN ticks while MSP is busy.
 -- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
 local BUSY_WAKEUP_RUN_NUM = 2
@@ -143,7 +146,7 @@ local lastBoxRectsCount = 0
 local lastLoadedBoxSigParts = nil
 local lastLoadedBoxSigCount = 0
 
-local statePreloadQueue = {"inflight", "postflight"}
+local statePreloadQueue = PRELOAD_INACTIVE_STATES and {"inflight", "postflight"} or EMPTY
 local statePreloadIndex = 1
 
 local unsupportedResolution = false
@@ -350,6 +353,76 @@ local function clearTableKeys(t)
     for k in pairs(t) do
         t[k] = nil
     end
+end
+
+local function clearDashboardRuntimeCaches()
+    dashboard.reset()
+
+    if dashboard.utils then
+        if dashboard.utils.clearProgressDialog then dashboard.utils.clearProgressDialog() end
+        if dashboard.utils.resetImageCache then dashboard.utils.resetImageCache() end
+    end
+
+    if toolbar and toolbar.clearCaches then toolbar.clearCaches(dashboard) end
+    if rfsuite.utils and rfsuite.utils.clearImageCaches then rfsuite.utils.clearImageCaches() end
+
+    local session = rfsuite.session
+    if session and session.dialImageCache then
+        clearTableKeys(session.dialImageCache)
+    end
+
+    clearTableKeys(loadedStateModules)
+    clearTableKeys(loadedStateThemes)
+    clearTableKeys(dashboard.renders)
+    clearTableKeys(dashboard.objectsByType)
+    clearTableKeys(dashboard._moduleCache)
+    clearTableKeys(dashboard._objectDirty)
+
+    if dashboard.boxRects then clearArray(dashboard.boxRects) end
+    if scheduledBoxIndices then clearArray(scheduledBoxIndices) end
+    if dashboard._onpressIndices then clearArray(dashboard._onpressIndices) end
+    if dashboard._pendingInvalidates then clearArray(dashboard._pendingInvalidates) end
+    if dashboard._pendingInvalidatesPool then clearArray(dashboard._pendingInvalidatesPool) end
+    if dashboard._headerGeoms then clearArray(dashboard._headerGeoms) end
+    if dashboard._headerGeomsPaint then clearArray(dashboard._headerGeomsPaint) end
+    if dashboard._allBoxes then clearArray(dashboard._allBoxes) end
+    if dashboard._boxSigScratch then clearArray(dashboard._boxSigScratch) end
+    if lastLoadedBoxSigParts then clearArray(lastLoadedBoxSigParts) end
+
+    objectWakeupIndex = 1
+    objectWakeupsPerCycle = nil
+    objectsThreadedWakeupCount = 0
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    lastLoadedBoxSigCount = 0
+    lastFlightMode = nil
+    statePreloadIndex = 1
+
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._onpressIndicesReady = false
+    dashboard._forceFullRepaint = true
+    dashboard._loader_start_time = nil
+    dashboard._toolbarCache = nil
+    dashboard._toolbarRects = nil
+    dashboard._toolbarItemsSorted = nil
+    dashboard._toolbarEnabled = nil
+    dashboard._layoutBounds = nil
+    dashboard._overlayQueue = nil
+    dashboard._overlayLastTxt = nil
+    dashboard._overlayDefaultLine = nil
+    dashboard._overlaySingleLine = nil
+    dashboard._overlayStaticOpts = nil
+    dashboard._overlayLogOpts = nil
+    dashboard._lastWH = nil
+    dashboard.selectedBoxIndex = nil
+    dashboard.toolbarVisible = false
+    dashboard.selectedToolbarIndex = nil
+    dashboard.currentWidgetPath = nil
+    dashboard.overlayMessage = nil
+    unsupportedResolution = false
+
+    dashboard.utils = nil
+    dashboard.loaders = nil
 end
 
 local function resetBoxRuntime(box)
@@ -1424,6 +1497,10 @@ function dashboard.create()
     lcd.invalidate()
 
     return {value = 0}
+end
+
+function dashboard.close()
+    clearDashboardRuntimeCaches()
 end
 
 function dashboard.paint(widget)

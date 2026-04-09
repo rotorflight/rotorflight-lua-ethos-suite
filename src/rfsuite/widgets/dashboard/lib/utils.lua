@@ -655,9 +655,10 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             imageCache = imageCache or {}
             local cacheKey = image or "default_image"
             bitmapPtr = imageCache[cacheKey]
+            if bitmapPtr == false then bitmapPtr = nil end
             if not bitmapPtr then
                 bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/gfx/logo.png")
-                imageCache[cacheKey] = bitmapPtr
+                imageCache[cacheKey] = bitmapPtr or false
             end
         elseif type(image) == "userdata" then
 
