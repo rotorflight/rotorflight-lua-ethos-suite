@@ -22,7 +22,7 @@ return {
     pages = {
         {
             bgtask = true,
-            image = "app/modules/developer/gfx/msp_speed.png",
+            image = "app/modules/developer/gfx/msp_speed.jpg",
             name = "@i18n(app.modules.msp_speed.name)@",
             offline = false,
             script = "developer/tools/msp_speed.lua",
@@ -30,7 +30,7 @@ return {
         },
         {
             bgtask = true,
-            image = "app/modules/developer/gfx/api_tester.png",
+            image = "app/modules/developer/gfx/api_tester.jpg",
             name = "@i18n(app.modules.api_tester.name)@",
             offline = false,
             script = "developer/tools/api_tester.lua",
@@ -38,7 +38,7 @@ return {
         },
         {
             bgtask = true,
-            image = "app/modules/developer/gfx/msp_exp.png",
+            image = "app/modules/developer/gfx/msp_exp.jpg",
             name = "@i18n(app.modules.msp_exp.name)@",
             offline = false,
             script = "developer/tools/msp_exp.lua",
@@ -46,7 +46,7 @@ return {
         },
         {
             bgtask = true,
-            image = "app/modules/developer/gfx/settings.png",
+            image = "app/modules/developer/gfx/settings.jpg",
             name = "@i18n(app.modules.settings.name)@",
             offline = true,
             script = "settings/tools/development.lua",

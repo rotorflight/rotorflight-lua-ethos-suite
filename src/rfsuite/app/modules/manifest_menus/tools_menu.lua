@@ -19,7 +19,7 @@ return {
         {
             apiversion = { 12, 0, 6 },
             disabled = true,
-            image = "copyprofiles/copy.png",
+            image = "copyprofiles/copy.jpg",
             name = "@i18n(app.modules.copyprofiles.name)@",
             offline = false,
             order = 1,
@@ -28,7 +28,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_select/select_profile.png",
+            image = "profile_select/select_profile.jpg",
             name = "@i18n(app.modules.profile_select.name)@",
             offline = false,
             order = 2,
@@ -36,7 +36,7 @@ return {
             shortcutId = "s_tools_menu_profile_select_select_pro_b62834ef6e",
         },
         {
-            image = "diagnostics/diagnostics.png",
+            image = "diagnostics/diagnostics.jpg",
             menuId = "diagnostics",
             name = "@i18n(app.modules.diagnostics.name)@",
             offline = true,

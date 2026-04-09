@@ -7,10 +7,8 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
-local function loadMask(path)
-    local ui = rfsuite.app and rfsuite.app.ui
-    if ui and ui.loadMask then return ui.loadMask(path) end
-    return lcd.loadMask(path)
+local function loadBitmap(path)
+    return lcd.loadBitmap(path)
 end
 
 local servoTable = {}
@@ -54,7 +52,7 @@ local function buildServoTable()
         servoTable[i] = {}
         servoTable[i] = {}
         servoTable[i]['title'] = "@i18n(app.modules.servos.servo_prefix)@" .. i
-        servoTable[i]['image'] = "servo" .. i .. ".png"
+        servoTable[i]['image'] = "servo" .. i .. ".jpg"
         servoTable[i]['disabled'] = true
     end
 
@@ -68,25 +66,25 @@ local function buildServoTable()
 
             if rfsuite.session.tailMode == 0 then
                 servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
-                servoTable[4]['image'] = "tail.png"
+                servoTable[4]['image'] = "tail.jpg"
                 servoTable[4]['section'] = 1
             end
         elseif rfsuite.session.swashMode == 2 or rfsuite.session.swashMode == 3 or rfsuite.session.swashMode == 4 then
 
             servoTable[1]['title'] = "@i18n(app.modules.servos.cyc_pitch)@"
-            servoTable[1]['image'] = "cpitch.png"
+            servoTable[1]['image'] = "cpitch.jpg"
 
             servoTable[2]['title'] = "@i18n(app.modules.servos.cyc_left)@"
-            servoTable[2]['image'] = "cleft.png"
+            servoTable[2]['image'] = "cleft.jpg"
 
             servoTable[3]['title'] = "@i18n(app.modules.servos.cyc_right)@"
-            servoTable[3]['image'] = "cright.png"
+            servoTable[3]['image'] = "cright.jpg"
 
             if rfsuite.session.tailMode == 0 then
 
                 if servoTable[4] == nil then servoTable[4] = {} end
                 servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
-                servoTable[4]['image'] = "tail.png"
+                servoTable[4]['image'] = "tail.jpg"
             else
 
             end
@@ -94,7 +92,7 @@ local function buildServoTable()
 
             if rfsuite.session.tailMode == 0 then
                 servoTable[4]['title'] = "@i18n(app.modules.servos.tail)@"
-                servoTable[4]['image'] = "tail.png"
+                servoTable[4]['image'] = "tail.jpg"
             else
 
             end
@@ -229,7 +227,7 @@ local function openPage(opts)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["pwm"][pidx] == nil then rfsuite.app.gfx_buttons["pwm"][pidx] = loadMask("app/modules/servos/gfx/" .. pvalue.image) end
+                if rfsuite.app.gfx_buttons["pwm"][pidx] == nil then rfsuite.app.gfx_buttons["pwm"][pidx] = loadBitmap("app/modules/servos/gfx/" .. pvalue.image) end
             else
                 rfsuite.app.gfx_buttons["pwm"][pidx] = nil
             end

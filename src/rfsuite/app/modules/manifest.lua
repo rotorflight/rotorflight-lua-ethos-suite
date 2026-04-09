@@ -17,7 +17,7 @@ return {
                 {
                     ethosversion = { 1, 6, 2 },
                     id = "flight_tuning",
-                    image = "app/gfx/flight_tuning.png",
+                    image = "app/gfx/flight_tuning.jpg",
                     loaderspeed = "FAST",
                     menuId = "flight_tuning_menu",
                     title = "@i18n(app.menu_section_flight_tuning)@",
@@ -25,7 +25,7 @@ return {
                 {
                     ethosversion = { 1, 6, 2 },
                     id = "setup",
-                    image = "app/gfx/hardware.png",
+                    image = "app/gfx/hardware.jpg",
                     loaderspeed = "FAST",
                     menuId = "setup_menu",
                     title = "@i18n(app.modules.hardware_setup.name)@",
@@ -38,14 +38,14 @@ return {
             sections = {
                 {
                     ethosversion = { 1, 6, 2 },
-                    image = "app/gfx/tools.png",
+                    image = "app/gfx/tools.jpg",
                     menuId = "tools_menu",
                     offline = true,
                     title = "@i18n(app.menu_section_tools)@",
                 },
                 {
                     ethosversion = { 1, 6, 2 },
-                    image = "app/modules/logs/gfx/logs.png",
+                    image = "app/modules/logs/gfx/logs.jpg",
                     loaderspeed = "FAST",
                     module = "logs",
                     offline = true,
@@ -54,7 +54,7 @@ return {
                 },
                 {
                     ethosversion = { 1, 6, 2 },
-                    image = "app/modules/settings/settings.png",
+                    image = "app/modules/settings/settings.jpg",
                     menuId = "settings_admin",
                     offline = true,
                     title = "@i18n(app.modules.settings.name)@",
@@ -63,7 +63,7 @@ return {
                     bgtask = true,
                     developer = true,
                     ethosversion = { 1, 6, 2 },
-                    image = "app/modules/developer/developer.png",
+                    image = "app/modules/developer/developer.jpg",
                     module = "developer",
                     offline = true,
                     script = "developer.lua",
@@ -82,7 +82,7 @@ return {
             },
             pages = {
                 {
-                    image = "filters/filters.png",
+                    image = "filters/filters.jpg",
                     name = "@i18n(app.modules.filters.name)@",
                     order = 1,
                     script = "filters/filters.lua",
@@ -90,7 +90,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_pidcontroller/pids-controller.png",
+                    image = "profile_pidcontroller/pids-controller.jpg",
                     name = "@i18n(app.modules.profile_pidcontroller.name)@",
                     order = 2,
                     script = "profile_pidcontroller/pidcontroller.lua",
@@ -98,7 +98,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_pidbandwidth/pids-bandwidth.png",
+                    image = "profile_pidbandwidth/pids-bandwidth.jpg",
                     name = "@i18n(app.modules.profile_pidbandwidth.name)@",
                     order = 3,
                     script = "profile_pidbandwidth/pidbandwidth.lua",
@@ -106,7 +106,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_autolevel/autolevel.png",
+                    image = "profile_autolevel/autolevel.jpg",
                     name = "@i18n(app.modules.profile_autolevel.name)@",
                     order = 4,
                     script = "profile_autolevel/autolevel.lua",
@@ -114,7 +114,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_mainrotor/mainrotor.png",
+                    image = "profile_mainrotor/mainrotor.jpg",
                     name = "@i18n(app.modules.profile_mainrotor.name)@",
                     order = 5,
                     script = "profile_mainrotor/mainrotor.lua",
@@ -122,7 +122,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_tailrotor/tailrotor.png",
+                    image = "profile_tailrotor/tailrotor.jpg",
                     name = "@i18n(app.modules.profile_tailrotor.name)@",
                     order = 6,
                     script = "profile_tailrotor/tailrotor.lua",
@@ -130,7 +130,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_rescue/rescue.png",
+                    image = "profile_rescue/rescue.jpg",
                     name = "@i18n(app.modules.profile_rescue.name)@",
                     order = 7,
                     script = "profile_rescue/rescue.lua",
@@ -138,7 +138,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "rates_advanced/rates.png",
+                    image = "rates_advanced/rates.jpg",
                     name = "@i18n(app.modules.rates_advanced.name)@",
                     order = 8,
                     script = "rates_advanced/rates_advanced.lua",
@@ -164,13 +164,13 @@ return {
             },
             pages = {
                 {
-                    image = "configuration.png",
+                    image = "configuration.jpg",
                     name = "@i18n(app.modules.beepers.menu_configuration)@",
                     script = "configuration.lua",
                     shortcutId = "s_beepers_configuration_lua_3d60a90251",
                 },
                 {
-                    image = "dshot.png",
+                    image = "dshot.jpg",
                     name = "@i18n(app.modules.beepers.menu_dshot)@",
                     script = "dshot.lua",
                     shortcutId = "s_beepers_dshot_lua_f1e47cbff2",
@@ -195,19 +195,19 @@ return {
             },
             pages = {
                 {
-                    image = "configuration.png",
+                    image = "configuration.jpg",
                     name = "@i18n(app.modules.blackbox.menu_configuration)@",
                     script = "configuration.lua",
                     shortcutId = "s_blackbox_configuration_lua_1b07855e2c",
                 },
                 {
-                    image = "logging.png",
+                    image = "logging.jpg",
                     name = "@i18n(app.modules.blackbox.menu_logging)@",
                     script = "logging.lua",
                     shortcutId = "s_blackbox_logging_lua_6216852e49",
                 },
                 {
-                    image = "status.png",
+                    image = "status.jpg",
                     name = "@i18n(app.modules.blackbox.menu_status)@",
                     script = "status.lua",
                     shortcutId = "s_blackbox_status_lua_6d398bae79",
@@ -229,7 +229,7 @@ return {
             pages = {
                 {
                     bgtask = true,
-                    image = "app/modules/developer/gfx/msp_speed.png",
+                    image = "app/modules/developer/gfx/msp_speed.jpg",
                     name = "@i18n(app.modules.msp_speed.name)@",
                     offline = false,
                     script = "developer/tools/msp_speed.lua",
@@ -237,7 +237,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "app/modules/developer/gfx/api_tester.png",
+                    image = "app/modules/developer/gfx/api_tester.jpg",
                     name = "@i18n(app.modules.api_tester.name)@",
                     offline = false,
                     script = "developer/tools/api_tester.lua",
@@ -245,7 +245,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "app/modules/developer/gfx/msp_exp.png",
+                    image = "app/modules/developer/gfx/msp_exp.jpg",
                     name = "@i18n(app.modules.msp_exp.name)@",
                     offline = false,
                     script = "developer/tools/msp_exp.lua",
@@ -253,7 +253,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "app/modules/developer/gfx/settings.png",
+                    image = "app/modules/developer/gfx/settings.jpg",
                     name = "@i18n(app.modules.settings.name)@",
                     offline = true,
                     script = "settings/tools/development.lua",
@@ -271,7 +271,7 @@ return {
             pages = {
                 {
                     bgtask = false,
-                    image = "rfstatus.png",
+                    image = "rfstatus.jpg",
                     name = "@i18n(app.modules.rfstatus.name)@",
                     offline = false,
                     script = "rfstatus.lua",
@@ -279,7 +279,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "sensors.png",
+                    image = "sensors.jpg",
                     name = "@i18n(app.modules.validate_sensors.name)@",
                     offline = true,
                     script = "sensors.lua",
@@ -287,7 +287,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "fblsensors.png",
+                    image = "fblsensors.jpg",
                     name = "@i18n(app.modules.fblsensors.name)@",
                     offline = false,
                     script = "fblsensors.lua",
@@ -295,7 +295,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "fblstatus.png",
+                    image = "fblstatus.jpg",
                     name = "@i18n(app.modules.fblstatus.name)@",
                     offline = false,
                     script = "fblstatus.lua",
@@ -303,7 +303,7 @@ return {
                 },
                 {
                     bgtask = true,
-                    image = "info.png",
+                    image = "info.jpg",
                     name = "@i18n(app.modules.info.name)@",
                     offline = true,
                     script = "info.lua",
@@ -330,25 +330,25 @@ return {
             },
             pages = {
                 {
-                    image = "throttle.png",
+                    image = "throttle.jpg",
                     name = "@i18n(app.modules.esc_motors.throttle)@",
                     script = "throttle.lua",
                     shortcutId = "s_esc_motors_throttle_lua_17f21fa300",
                 },
                 {
-                    image = "telemetry.png",
+                    image = "telemetry.jpg",
                     name = "@i18n(app.modules.esc_motors.telemetry)@",
                     script = "telemetry.lua",
                     shortcutId = "s_esc_motors_telemetry_lua_a9d9e2a50a",
                 },
                 {
-                    image = "rpm.png",
+                    image = "rpm.jpg",
                     name = "@i18n(app.modules.esc_motors.rpm)@",
                     script = "rpm.lua",
                     shortcutId = "s_esc_motors_rpm_lua_19b6337da0",
                 },
                 {
-                    image = "app/modules/esc_tools/esc.png",
+                    image = "app/modules/esc_tools/esc.jpg",
                     loaderspeed = false,
                     name = "@i18n(app.modules.esc_tools.name)@",
                     offline = false,
@@ -367,21 +367,21 @@ return {
             },
             pages = {
                 {
-                    image = "pids/pids.png",
+                    image = "pids/pids.jpg",
                     name = "@i18n(app.modules.pids.name)@",
                     order = 1,
                     script = "pids/pids.lua",
                     shortcutId = "s_flight_tuning_menu_pids_pids_lua_e97a40faab",
                 },
                 {
-                    image = "rates/rates.png",
+                    image = "rates/rates.jpg",
                     name = "@i18n(app.modules.rates.name)@",
                     order = 2,
                     script = "rates/rates.lua",
                     shortcutId = "s_flight_tuning_menu_rates_rates_lua_853c5751ea",
                 },
                 {
-                    image = "profile_governor/governor.png",
+                    image = "profile_governor/governor.jpg",
                     name = "@i18n(app.modules.profile_governor.name)@",
                     order = 3,
                     script = "profile_governor/governor.lua",
@@ -401,7 +401,7 @@ return {
                     shortcutId = "s_flight_tuning_menu_profile_governor_2361300e05",
                 },
                 {
-                    image = "app/gfx/advanced.png",
+                    image = "app/gfx/advanced.jpg",
                     menuId = "advanced_menu",
                     name = "@i18n(app.menu_section_advanced)@",
                     order = 4,
@@ -428,25 +428,25 @@ return {
             },
             pages = {
                 {
-                    image = "general.png",
+                    image = "general.jpg",
                     name = "@i18n(app.modules.governor.menu_general)@",
                     script = "general.lua",
                     shortcutId = "s_governor_general_lua_bb876f329d",
                 },
                 {
-                    image = "time.png",
+                    image = "time.jpg",
                     name = "@i18n(app.modules.governor.menu_time)@",
                     script = "time.lua",
                     shortcutId = "s_governor_time_lua_3fa58c3610",
                 },
                 {
-                    image = "filters.png",
+                    image = "filters.jpg",
                     name = "@i18n(app.modules.governor.menu_filters)@",
                     script = "filters.lua",
                     shortcutId = "s_governor_filters_lua_258e16a592",
                 },
                 {
-                    image = "curves.png",
+                    image = "curves.jpg",
                     name = "@i18n(app.modules.governor.menu_curves)@",
                     script = "curves.lua",
                     shortcutId = "s_governor_curves_lua_a8f9b2b504",
@@ -473,41 +473,41 @@ return {
             pages = {
                 {
                     apiversion = { 12, 0, 9 },
-                    image = "swash.png",
+                    image = "swash.jpg",
                     name = "@i18n(app.modules.mixer.swash)@",
                     script = "swash.lua",
                     shortcutId = "s_mixer_swash_lua_219836e7bb",
                 },
                 {
                     apiversionlt = { 12, 0, 9 },
-                    image = "swash.png",
+                    image = "swash.jpg",
                     name = "@i18n(app.modules.mixer.swash)@",
                     script = "swash_legacy.lua",
                     shortcutId = "s_mixer_swash_legacy_lua_c1fdc218f2",
                 },
                 {
                     apiversion = { 12, 0, 9 },
-                    image = "geometry.png",
+                    image = "geometry.jpg",
                     name = "@i18n(app.modules.mixer.geometry)@",
                     script = "swashgeometry.lua",
                     shortcutId = "s_mixer_swashgeometry_lua_2b19036cb9",
                 },
                 {
                     apiversion = { 12, 0, 9 },
-                    image = "tail.png",
+                    image = "tail.jpg",
                     name = "@i18n(app.modules.mixer.tail)@",
                     script = "tail.lua",
                     shortcutId = "s_mixer_tail_lua_4dae4bbc4e",
                 },
                 {
                     apiversionlt = { 12, 0, 9 },
-                    image = "tail.png",
+                    image = "tail.jpg",
                     name = "@i18n(app.modules.mixer.tail)@",
                     script = "tail_legacy.lua",
                     shortcutId = "s_mixer_tail_legacy_lua_af252b8ccf",
                 },
                 {
-                    image = "trims.png",
+                    image = "trims.jpg",
                     name = "@i18n(app.modules.mixer.trims)@",
                     script = "trims.lua",
                     shortcutId = "s_mixer_trims_lua_89bbcb71cc",
@@ -532,32 +532,32 @@ return {
             pages = {
                 {
                     apiversion = { 12, 0, 9 },
-                    image = "battery.png",
+                    image = "battery.jpg",
                     name = "@i18n(app.modules.power.battery_name)@",
                     script = "battery.lua",
                     shortcutId = "s_power_battery_lua_f67116c271",
                 },
                 {
                     apiversionlt = { 12, 0, 9 },
-                    image = "battery.png",
+                    image = "battery.jpg",
                     name = "@i18n(app.modules.power.battery_name)@",
                     script = "battery_legacy.lua",
                     shortcutId = "s_power_battery_legacy_lua_71177b8cf6",
                 },
                 {
-                    image = "alerts.png",
+                    image = "alerts.jpg",
                     name = "@i18n(app.modules.power.alert_name)@",
                     script = "alerts.lua",
                     shortcutId = "s_power_alerts_lua_9fd7dbdc4d",
                 },
                 {
-                    image = "source.png",
+                    image = "source.jpg",
                     name = "@i18n(app.modules.power.source_name)@",
                     script = "source.lua",
                     shortcutId = "s_power_source_lua_6d24f8cd57",
                 },
                 {
-                    image = "preferences.png",
+                    image = "preferences.jpg",
                     name = "@i18n(app.modules.power.preferences_name)@",
                     script = "preferences.lua",
                     shortcutId = "s_power_preferences_lua_2bae48fe41",
@@ -582,13 +582,13 @@ return {
             },
             pages = {
                 {
-                    image = "general.png",
+                    image = "general.jpg",
                     name = "@i18n(app.modules.governor.menu_general)@",
                     script = "general.lua",
                     shortcutId = "s_profile_governor_general_lua_3a27cf6764",
                 },
                 {
-                    image = "flags.png",
+                    image = "flags.jpg",
                     name = "@i18n(app.modules.governor.menu_flags)@",
                     script = "flags.lua",
                     shortcutId = "s_profile_governor_flags_lua_3992e9f64d",
@@ -614,19 +614,19 @@ return {
             },
             pages = {
                 {
-                    image = "advanced.png",
+                    image = "advanced.jpg",
                     name = "@i18n(app.modules.rates_advanced.advanced)@",
                     script = "advanced.lua",
                     shortcutId = "s_rates_advanced_advanced_lua_5673f8caee",
                 },
                 {
-                    image = "cyclic_behaviour.png",
+                    image = "cyclic_behaviour.jpg",
                     name = "@i18n(app.modules.rates_advanced.cyclic_behaviour)@",
                     script = "cyclic_behaviour.lua",
                     shortcutId = "s_rates_advanced_cyclic_behaviour_lua_df5de615f1",
                 },
                 {
-                    image = "table.png",
+                    image = "table.jpg",
                     name = "@i18n(app.modules.rates_advanced.table)@",
                     script = "table.lua",
                     shortcutId = "s_rates_advanced_table_lua_7e2b9c5584",
@@ -644,7 +644,7 @@ return {
             },
             pages = {
                 {
-                    image = "modes/modes.png",
+                    image = "modes/modes.jpg",
                     loaderspeed = 0.05,
                     name = "@i18n(app.modules.modes.name)@",
                     order = 1,
@@ -652,7 +652,7 @@ return {
                     shortcutId = "s_safety_menu_modes_modes_lua_4bfa50db9c",
                 },
                 {
-                    image = "adjustments/adjustments.png",
+                    image = "adjustments/adjustments.jpg",
                     loaderspeed = 0.1,
                     name = "@i18n(app.modules.adjustments.name)@",
                     order = 2,
@@ -660,28 +660,28 @@ return {
                     shortcutId = "s_safety_menu_adjustments_adjustments_1aa898354c",
                 },
                 {
-                    image = "failsafe/failsafe.png",
+                    image = "failsafe/failsafe.jpg",
                     name = "@i18n(app.modules.failsafe.name)@",
                     order = 3,
                     script = "failsafe/failsafe.lua",
                     shortcutId = "s_safety_menu_failsafe_failsafe_lua_5033612baf",
                 },
                 {
-                    image = "beepers/beepers.png",
+                    image = "beepers/beepers.jpg",
                     menuId = "beepers",
                     name = "@i18n(app.modules.beepers.name)@",
                     order = 4,
                     shortcutId = "s_safety_menu_beepers_7440548a09",
                 },
                 {
-                    image = "blackbox/blackbox.png",
+                    image = "blackbox/blackbox.jpg",
                     menuId = "blackbox",
                     name = "@i18n(app.modules.blackbox.name)@",
                     order = 5,
                     shortcutId = "s_safety_menu_blackbox_91e70d8f9f",
                 },
                 {
-                    image = "stats/stats.png",
+                    image = "stats/stats.jpg",
                     name = "@i18n(app.modules.stats.name)@",
                     order = 6,
                     script = "stats/stats.lua",
@@ -709,13 +709,13 @@ return {
             },
             pages = {
                 {
-                    image = "pwm.png",
+                    image = "pwm.jpg",
                     name = "@i18n(app.modules.servos.pwm)@",
                     script = "pwm.lua",
                     shortcutId = "s_servos_type_pwm_lua_401567fa69",
                 },
                 {
-                    image = "bus.png",
+                    image = "bus.jpg",
                     name = "@i18n(app.modules.servos.bus)@",
                     script = "bus.lua",
                     shortcutId = "s_servos_type_bus_lua_a5236c586f",
@@ -740,21 +740,21 @@ return {
             },
             pages = {
                 {
-                    image = "general.png",
+                    image = "general.jpg",
                     name = "@i18n(app.modules.settings.txt_general)@",
                     offline = true,
                     script = "tools/general.lua",
                     shortcutId = "s_settings_admin_tools_general_lua_37954a091f",
                 },
                 {
-                    image = "shortcuts.png",
+                    image = "shortcuts.jpg",
                     name = "@i18n(app.modules.settings.shortcuts)@",
                     offline = true,
                     script = "tools/shortcuts.lua",
                     shortcutId = "s_settings_admin_tools_shortcuts_lua_7ef1a52bf9",
                 },
                 {
-                    image = "dashboard.png",
+                    image = "dashboard.jpg",
                     name = "@i18n(app.modules.settings.dashboard)@",
                     offline = true,
                     script = "tools/dashboard.lua",
@@ -762,21 +762,21 @@ return {
                 },
                 {
                     ethosversion = { 1, 7, 0 },
-                    image = "activelook.png",
+                    image = "activelook.jpg",
                     name = "ActiveLook",
                     offline = true,
                     script = "activelook.lua",
                     shortcutId = "s_settings_admin_activelook_lua_cac11316fe",
                 },
                 {
-                    image = "localizations.png",
+                    image = "localizations.jpg",
                     name = "@i18n(app.modules.settings.localizations)@",
                     offline = true,
                     script = "tools/localizations.lua",
                     shortcutId = "s_settings_admin_tools_localizations_l_bfcda87566",
                 },
                 {
-                    image = "audio.png",
+                    image = "audio.jpg",
                     name = "@i18n(app.modules.settings.audio)@",
                     offline = true,
                     script = "tools/audio.lua",
@@ -803,14 +803,14 @@ return {
             },
             pages = {
                 {
-                    image = "dashboard_theme.png",
+                    image = "dashboard_theme.jpg",
                     name = "@i18n(app.modules.settings.dashboard_theme)@",
                     offline = true,
                     script = "dashboard_theme.lua",
                     shortcutId = "s_settings_dashboard_dashboard_theme_l_356eb135bd",
                 },
                 {
-                    image = "dashboard_settings.png",
+                    image = "dashboard_settings.jpg",
                     name = "@i18n(app.modules.settings.dashboard_settings)@",
                     offline = false,
                     script = "dashboard_settings.lua",
@@ -836,21 +836,21 @@ return {
             },
             pages = {
                 {
-                    image = "audio_events.png",
+                    image = "audio_events.jpg",
                     name = "@i18n(app.modules.settings.txt_audio_events)@",
                     offline = true,
                     script = "audio_events.lua",
                     shortcutId = "s_settings_dashboard_audio_audio_event_363fb08408",
                 },
                 {
-                    image = "audio_switches.png",
+                    image = "audio_switches.jpg",
                     name = "@i18n(app.modules.settings.txt_audio_switches)@",
                     offline = true,
                     script = "audio_switches.lua",
                     shortcutId = "s_settings_dashboard_audio_audio_switc_79dcc8350e",
                 },
                 {
-                    image = "audio_timer.png",
+                    image = "audio_timer.jpg",
                     name = "@i18n(app.modules.settings.txt_audio_timer)@",
                     offline = true,
                     script = "audio_timer.lua",
@@ -868,7 +868,7 @@ return {
             },
             pages = {
                 {
-                    image = "configuration/configuration.png",
+                    image = "configuration/configuration.jpg",
                     loaderspeed = 0.08,
                     name = "@i18n(app.modules.configuration.name)@",
                     order = 1,
@@ -876,21 +876,21 @@ return {
                     shortcutId = "s_setup_menu_configuration_configurati_fd32dd8698",
                 },
                 {
-                    image = "radio_config/radio_config.png",
+                    image = "radio_config/radio_config.jpg",
                     name = "@i18n(app.modules.radio_config.name)@",
                     order = 2,
                     script = "radio_config/radio_config.lua",
                     shortcutId = "s_setup_menu_radio_config_radio_config_176a7167bd",
                 },
                 {
-                    image = "telemetry/telemetry.png",
+                    image = "telemetry/telemetry.jpg",
                     name = "@i18n(app.modules.telemetry.name)@",
                     order = 3,
                     script = "telemetry/telemetry.lua",
                     shortcutId = "s_setup_menu_telemetry_telemetry_lua_72f812703b",
                 },
                 {
-                    image = "accelerometer/acc.png",
+                    image = "accelerometer/acc.jpg",
                     loaderspeed = 0.08,
                     name = "@i18n(app.modules.accelerometer.name)@",
                     order = 4,
@@ -898,7 +898,7 @@ return {
                     shortcutId = "s_setup_menu_accelerometer_acceleromet_1e39c3bf97",
                 },
                 {
-                    image = "alignment/alignment.png",
+                    image = "alignment/alignment.jpg",
                     loaderspeed = 0.08,
                     name = "@i18n(app.modules.alignment.name)@",
                     order = 5,
@@ -906,14 +906,14 @@ return {
                     shortcutId = "s_setup_menu_alignment_alignment_lua_58dbca14ba",
                 },
                 {
-                    image = "ports/ports.png",
+                    image = "ports/ports.jpg",
                     name = "@i18n(app.modules.ports.name)@",
                     order = 6,
                     script = "ports/ports.lua",
                     shortcutId = "s_setup_menu_ports_ports_lua_0511c48eaf",
                 },
                 {
-                    image = "mixer/mixer.png",
+                    image = "mixer/mixer.jpg",
                     loaderspeed = 0.08,
                     menuId = "mixer",
                     name = "@i18n(app.modules.mixer.name)@",
@@ -921,7 +921,7 @@ return {
                     shortcutId = "s_setup_menu_mixer_f568f6ed70",
                 },
                 {
-                    image = "servos/servos.png",
+                    image = "servos/servos.jpg",
                     loaderspeed = 0.08,
                     menuId = "servos_type",
                     name = "@i18n(app.modules.servos.name)@",
@@ -929,28 +929,28 @@ return {
                     shortcutId = "s_setup_menu_servos_type_065c3eb7e4",
                 },
                 {
-                    image = "failsafe/failsafe.png",
+                    image = "failsafe/failsafe.jpg",
                     menuId = "safety_menu",
                     name = "@i18n(app.menu_section_controls)@",
                     order = 9,
                     shortcutId = "s_setup_menu_safety_menu_f14794af21",
                 },
                 {
-                    image = "power/power.png",
+                    image = "power/power.jpg",
                     menuId = "power",
                     name = "@i18n(app.modules.power.name)@",
                     order = 10,
                     shortcutId = "s_setup_menu_power_73049b904c",
                 },
                 {
-                    image = "esc_motors/esc.png",
+                    image = "esc_motors/esc.jpg",
                     menuId = "esc_motors",
                     name = "@i18n(app.modules.esc_motors.name)@",
                     order = 11,
                     shortcutId = "s_setup_menu_esc_motors_5f43b662f9",
                 },
                 {
-                    image = "governor/governor.png",
+                    image = "governor/governor.jpg",
                     menuId = "governor",
                     name = "@i18n(app.modules.governor.name)@",
                     order = 11,
@@ -970,7 +970,7 @@ return {
                 {
                     apiversion = { 12, 0, 6 },
                     disabled = true,
-                    image = "copyprofiles/copy.png",
+                    image = "copyprofiles/copy.jpg",
                     name = "@i18n(app.modules.copyprofiles.name)@",
                     offline = false,
                     order = 1,
@@ -979,7 +979,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
-                    image = "profile_select/select_profile.png",
+                    image = "profile_select/select_profile.jpg",
                     name = "@i18n(app.modules.profile_select.name)@",
                     offline = false,
                     order = 2,
@@ -987,7 +987,7 @@ return {
                     shortcutId = "s_tools_menu_profile_select_select_pro_b62834ef6e",
                 },
                 {
-                    image = "diagnostics/diagnostics.png",
+                    image = "diagnostics/diagnostics.jpg",
                     menuId = "diagnostics",
                     name = "@i18n(app.modules.diagnostics.name)@",
                     offline = true,

@@ -26,25 +26,25 @@ return {
     },
     pages = {
         {
-            image = "throttle.png",
+            image = "throttle.jpg",
             name = "@i18n(app.modules.esc_motors.throttle)@",
             script = "throttle.lua",
             shortcutId = "s_esc_motors_throttle_lua_17f21fa300",
         },
         {
-            image = "telemetry.png",
+            image = "telemetry.jpg",
             name = "@i18n(app.modules.esc_motors.telemetry)@",
             script = "telemetry.lua",
             shortcutId = "s_esc_motors_telemetry_lua_a9d9e2a50a",
         },
         {
-            image = "rpm.png",
+            image = "rpm.jpg",
             name = "@i18n(app.modules.esc_motors.rpm)@",
             script = "rpm.lua",
             shortcutId = "s_esc_motors_rpm_lua_19b6337da0",
         },
         {
-            image = "app/modules/esc_tools/esc.png",
+            image = "app/modules/esc_tools/esc.jpg",
             loaderspeed = false,
             name = "@i18n(app.modules.esc_tools.name)@",
             offline = false,

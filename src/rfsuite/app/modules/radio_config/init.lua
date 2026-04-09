@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.radio_config.name)@", section = "hardware", script = "radio_config.lua", image = "radio_config.png", order = 9, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.radio_config.name)@", section = "hardware", script = "radio_config.lua", image = "radio_config.jpg", order = 9, ethosversion = {1, 6, 2}}
 
 return init

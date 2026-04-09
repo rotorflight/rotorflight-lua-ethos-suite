@@ -18,7 +18,7 @@ return {
     pages = {
         {
             bgtask = false,
-            image = "rfstatus.png",
+            image = "rfstatus.jpg",
             name = "@i18n(app.modules.rfstatus.name)@",
             offline = false,
             script = "rfstatus.lua",
@@ -26,7 +26,7 @@ return {
         },
         {
             bgtask = true,
-            image = "sensors.png",
+            image = "sensors.jpg",
             name = "@i18n(app.modules.validate_sensors.name)@",
             offline = true,
             script = "sensors.lua",
@@ -34,7 +34,7 @@ return {
         },
         {
             bgtask = true,
-            image = "fblsensors.png",
+            image = "fblsensors.jpg",
             name = "@i18n(app.modules.fblsensors.name)@",
             offline = false,
             script = "fblsensors.lua",
@@ -42,7 +42,7 @@ return {
         },
         {
             bgtask = true,
-            image = "fblstatus.png",
+            image = "fblstatus.jpg",
             name = "@i18n(app.modules.fblstatus.name)@",
             offline = false,
             script = "fblstatus.lua",
@@ -50,7 +50,7 @@ return {
         },
         {
             bgtask = true,
-            image = "info.png",
+            image = "info.jpg",
             name = "@i18n(app.modules.info.name)@",
             offline = true,
             script = "info.lua",

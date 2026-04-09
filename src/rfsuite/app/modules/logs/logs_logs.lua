@@ -16,10 +16,8 @@ local navHandlers = pageRuntime.createMenuHandlers()
 
 local utils = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 
-local function loadMask(path)
-    local ui = rfsuite.app and rfsuite.app.ui
-    if ui and ui.loadMask then return ui.loadMask(path) end
-    return lcd.loadMask(path)
+local function loadBitmap(path)
+    return lcd.loadBitmap(path)
 end
 
 local lastServoCountTime = os.clock()
@@ -190,7 +188,7 @@ local function openPage(opts)
 
                 local x = (buttonW + padding) * lc
                 if prefs.general.iconsize ~= 0 then
-                    if app.gfx_buttons["logs_logs"][currentButtonIndex] == nil then app.gfx_buttons["logs_logs"][currentButtonIndex] = loadMask("app/modules/logs/gfx/logs.png") end
+                    if app.gfx_buttons["logs_logs"][currentButtonIndex] == nil then app.gfx_buttons["logs_logs"][currentButtonIndex] = loadBitmap("app/modules/logs/gfx/logs.jpg") end
                 else
                     app.gfx_buttons["logs_logs"][currentButtonIndex] = nil
                 end

@@ -26,25 +26,25 @@ return {
     },
     pages = {
         {
-            image = "general.png",
+            image = "general.jpg",
             name = "@i18n(app.modules.governor.menu_general)@",
             script = "general.lua",
             shortcutId = "s_governor_general_lua_bb876f329d",
         },
         {
-            image = "time.png",
+            image = "time.jpg",
             name = "@i18n(app.modules.governor.menu_time)@",
             script = "time.lua",
             shortcutId = "s_governor_time_lua_3fa58c3610",
         },
         {
-            image = "filters.png",
+            image = "filters.jpg",
             name = "@i18n(app.modules.governor.menu_filters)@",
             script = "filters.lua",
             shortcutId = "s_governor_filters_lua_258e16a592",
         },
         {
-            image = "curves.png",
+            image = "curves.jpg",
             name = "@i18n(app.modules.governor.menu_curves)@",
             script = "curves.lua",
             shortcutId = "s_governor_curves_lua_a8f9b2b504",

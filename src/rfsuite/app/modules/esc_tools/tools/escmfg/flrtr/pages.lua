@@ -12,9 +12,9 @@ local function disablebutton(pidx, param)
     return false
 end
 
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.basic)@", script = "esc_basic.lua", image = "basic.png"}
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.advanced)@", script = "esc_advanced.lua", image = "advanced.png"}
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@", script = "esc_governor.lua", image = "governor.png"}
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.other)@", script = "esc_other.lua", image = "other.png", disablebutton = function(param) return disablebutton(#PageFiles, param) end, mspversion = {12, 0, 8}}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.basic)@", script = "esc_basic.lua", image = "basic.jpg"}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.advanced)@", script = "esc_advanced.lua", image = "advanced.jpg"}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@", script = "esc_governor.lua", image = "governor.jpg"}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.flrtr.other)@", script = "esc_other.lua", image = "other.jpg", disablebutton = function(param) return disablebutton(#PageFiles, param) end, mspversion = {12, 0, 8}}
 
 return PageFiles

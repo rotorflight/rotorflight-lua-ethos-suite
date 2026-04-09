@@ -25,21 +25,21 @@ return {
     },
     pages = {
         {
-            image = "audio_events.png",
+            image = "audio_events.jpg",
             name = "@i18n(app.modules.settings.txt_audio_events)@",
             offline = true,
             script = "audio_events.lua",
             shortcutId = "s_settings_dashboard_audio_audio_event_363fb08408",
         },
         {
-            image = "audio_switches.png",
+            image = "audio_switches.jpg",
             name = "@i18n(app.modules.settings.txt_audio_switches)@",
             offline = true,
             script = "audio_switches.lua",
             shortcutId = "s_settings_dashboard_audio_audio_switc_79dcc8350e",
         },
         {
-            image = "audio_timer.png",
+            image = "audio_timer.jpg",
             name = "@i18n(app.modules.settings.txt_audio_timer)@",
             offline = true,
             script = "audio_timer.lua",

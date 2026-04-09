@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.mixer.name)@", section = "hardware", script = "mixer.lua", image = "mixer.png", order = 4, developer = false, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.mixer.name)@", section = "hardware", script = "mixer.lua", image = "mixer.jpg", order = 4, developer = false, ethosversion = {1, 6, 2}}
 
 return init

@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.profile_pidbandwidth.name)@", section = "advanced", script = "pidbandwidth.lua", image = "pids-bandwidth.png", order = 2, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.profile_pidbandwidth.name)@", section = "advanced", script = "pidbandwidth.lua", image = "pids-bandwidth.jpg", order = 2, ethosversion = {1, 6, 2}}
 
 return init
