@@ -61,15 +61,13 @@ local function rightAlignText(width, text)
     return text
 end
 
-local function applyFieldValues(formdata)
-    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
-    local rcTuning = values and values.RC_TUNING
+local function applyFieldValues(formdata, api)
     local fields = formdata and formdata.fields
-    if not (rcTuning and fields) then return end
+    if not (fields and api and api.readValue) then return end
 
     for i = 1, #fields do
         local field = fields[i]
-        local rawValue = field and field.apikey and rcTuning[field.apikey]
+        local rawValue = field and field.apikey and api.readValue(field.apikey)
         if rawValue ~= nil then
             local scale = field.scale or 1
             field.value = rawValue / scale
@@ -254,7 +252,7 @@ local function startLoad()
         cachePolarState(polarEnabled)
 
         page.apidata = loadRateTable(rateType, polarEnabled)
-        applyFieldValues(page.apidata.formdata)
+        applyFieldValues(page.apidata.formdata, api)
 
         state.loading = false
         state.loaded = true
