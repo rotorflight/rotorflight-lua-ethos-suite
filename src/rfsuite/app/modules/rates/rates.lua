@@ -7,76 +7,47 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 local rfutils = rfsuite.utils
 
-local tables = {}
+local RATE_TABLES = {
+    [0] = "app/modules/rates/ratetables/none.lua",
+    [1] = "app/modules/rates/ratetables/betaflight.lua",
+    [2] = "app/modules/rates/ratetables/raceflight.lua",
+    [3] = "app/modules/rates/ratetables/kiss.lua",
+    [4] = "app/modules/rates/ratetables/actual.lua",
+    [5] = "app/modules/rates/ratetables/quick.lua",
+    [6] = "app/modules/rates/ratetables/rotorflight.lua"
+}
+
+local page = {
+    title = "@i18n(app.modules.rates.name)@",
+    reboot = false,
+    eepromWrite = true,
+    refreshOnRateChange = true,
+    API = {}
+}
+
+local state = {
+    title = "@i18n(app.modules.rates.name)@",
+    loading = false,
+    loaded = false,
+    loadError = nil,
+    needsRender = false,
+    loadToken = 0
+}
 
 local activateWakeup = false
-local apidata
 
-local function getApiEntryName(entry)
-    if type(entry) == "table" then return entry.name end
-    return entry
-end
+local function cachePolarState(polarEnabled)
+    local session = rfsuite.session
+    local activeRateProfile = session and session.activeRateProfile
+    if activeRateProfile == nil or polarEnabled == nil then return end
 
-local function getRateType()
-    local apiName = getApiEntryName(apidata and apidata.api and apidata.api[1])
-    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
-
-    if values and apiName and values[apiName] and values[apiName].rates_type ~= nil then
-        return values[apiName].rates_type
+    local cache = session.rateProfilePolarState
+    if not cache then
+        cache = {}
+        session.rateProfilePolarState = cache
     end
 
-    local fields = rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata and rfsuite.app.Page.apidata.formdata.fields
-    if fields then
-        for i = 1, #fields do
-            if fields[i] and fields[i].apikey == "rates_type" then
-                return fields[i].value
-            end
-        end
-    end
-
-    return nil
-end
-
-tables[0] = "app/modules/rates/ratetables/none.lua"
-tables[1] = "app/modules/rates/ratetables/betaflight.lua"
-tables[2] = "app/modules/rates/ratetables/raceflight.lua"
-tables[3] = "app/modules/rates/ratetables/kiss.lua"
-tables[4] = "app/modules/rates/ratetables/actual.lua"
-tables[5] = "app/modules/rates/ratetables/quick.lua"
-tables[6] = "app/modules/rates/ratetables/rotorflight.lua"
-
-if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile end
-
-rfsuite.utils.log("Loading Rate Table: " .. tables[rfsuite.session.activeRateTable], "debug")
-apidata = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
-local mytable = apidata.formdata
-
-local function postLoad(self)
-
-    local v = getRateType()
-
-    if v == nil then
-        rfsuite.utils.log("Unable to resolve rates_type from RC_TUNING data", "warning")
-        rfsuite.app.triggers.closeProgressLoader = true
-        activateWakeup = true
-        return
-    end
-
-    local activeRateTable = tonumber(rfsuite.session.activeRateTable) or rfsuite.session.activeRateTable
-    local requestedRateTable = tonumber(v) or v
-
-    rfsuite.utils.log("Active Rate Table: " .. tostring(activeRateTable), "debug")
-
-    if requestedRateTable ~= activeRateTable then
-        rfsuite.utils.log("Switching Rate Table: " .. tostring(requestedRateTable), "info")
-        rfsuite.app.triggers.reloadFull = true
-        rfsuite.session.activeRateTable = requestedRateTable
-        return
-    end
-
-    rfsuite.app.triggers.closeProgressLoader = true
-    activateWakeup = true
-
+    cache[activeRateProfile] = (polarEnabled == true)
 end
 
 local function rightAlignText(width, text)
@@ -85,42 +56,103 @@ local function rightAlignText(width, text)
 
     if padding > 0 then
         return string.rep(" ", math.floor(padding / lcd.getTextSize(" "))) .. text
-    else
-        return text
+    end
+
+    return text
+end
+
+local function applyFieldValues(formdata, api)
+    local fields = formdata and formdata.fields
+    if not (fields and api and api.readValue) then return end
+
+    for i = 1, #fields do
+        local field = fields[i]
+        local rawValue = field and field.apikey and api.readValue(field.apikey)
+        if rawValue ~= nil then
+            local scale = field.scale or 1
+            field.value = rawValue / scale
+        end
     end
 end
 
-local function openPage(opts)
+local function cacheApiData(apiName, api, enableDeltaCache)
+    local tasks = rfsuite.tasks
+    local apiLoader = tasks and tasks.msp and tasks.msp.api
+    local shared = apiLoader and apiLoader.apidata
+    local data = api and api.data and api.data()
+    if not (shared and data and apiName) then return end
 
-    local idx = opts.idx
-    local title = opts.title
-    local script = opts.script
+    shared.values = shared.values or {}
+    shared.structure = shared.structure or {}
+    shared.receivedBytes = shared.receivedBytes or {}
+    shared.receivedBytesCount = shared.receivedBytesCount or {}
+    shared.positionmap = shared.positionmap or {}
+    shared.other = shared.other or {}
 
-    local relativeScript = script
-    if type(relativeScript) == "string" and relativeScript:sub(1, 12) == "app/modules/" then
-        relativeScript = relativeScript:sub(13)
+    shared.values[apiName] = data.parsed
+    shared.structure[apiName] = data.structure
+
+    if enableDeltaCache == true then
+        shared.receivedBytes[apiName] = data.buffer
+        shared.receivedBytesCount[apiName] = data.receivedBytesCount
+        shared.positionmap[apiName] = data.positionmap
+    else
+        shared.receivedBytes[apiName] = nil
+        shared.receivedBytesCount[apiName] = nil
+        shared.positionmap[apiName] = nil
     end
 
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = relativeScript or script
-    rfsuite.session.lastPage = relativeScript or script
+    shared.other[apiName] = data.other or {}
+end
 
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+local function loadRateTable(tableId, polarEnabled)
+    local tablePath = RATE_TABLES[tableId]
+    if not tablePath then
+        tableId = rfsuite.config.defaultRateProfile
+        tablePath = RATE_TABLES[tableId]
+    end
+
+    rfsuite.utils.log("Loading Rate Table: " .. tostring(tablePath), "debug")
+
+    local session = rfsuite.session
+    session.activeRateTable = tableId
+    session.applyPolarRateLayout = true
+    session.pendingPolarRateLayout = (polarEnabled == true)
+
+    local chunk = assert(loadfile(tablePath))
+    local ok, loadedTable = pcall(chunk)
+
+    session.applyPolarRateLayout = false
+    session.pendingPolarRateLayout = nil
+
+    assert(ok, loadedTable)
+    return loadedTable
+end
+
+local function renderLoading()
+    form.clear()
+    rfsuite.app.ui.fieldHeader(state.title)
+    form.addLine("@i18n(app.msg_loading)@")
+end
+
+local function renderError()
+    form.clear()
+    rfsuite.app.ui.fieldHeader(state.title)
+    form.addLine(tostring(state.loadError or "@i18n(app.error_timed_out)@"))
+end
+
+local function renderForm()
+    local formdata = page.apidata and page.apidata.formdata
+    if not formdata then
+        renderError()
+        return
+    end
 
     form.clear()
+    rfsuite.app.ui.fieldHeader(state.title)
 
-    rfsuite.app.ui.fieldHeader(title)
-
-    local numCols
-    if rfsuite.app.Page.apidata.formdata.cols ~= nil then
-        numCols = #rfsuite.app.Page.apidata.formdata.cols
-    else
-        numCols = 3
-    end
-
-    local screenWidth, screenHeight = lcd.getWindowSize()
-
+    local numCols = (formdata.cols and #formdata.cols) or 3
+    local screenWidth = lcd.getWindowSize()
     local padding = 10
     local paddingTop = rfsuite.app.radio.linePaddingTop
     local h = rfsuite.app.radio.navbuttonHeight
@@ -131,7 +163,7 @@ local function openPage(opts)
 
     local line = form.addLine("")
     pos = {x = 0, y = paddingTop, w = 200, h = h}
-    rfsuite.app.formFields['col_0'] = form.addStaticText(line, pos, apidata.formdata.name)
+    rfsuite.app.formFields["col_0"] = form.addStaticText(line, pos, formdata.name)
 
     local loc = numCols
     local posX = screenWidth - paddingRight
@@ -140,37 +172,32 @@ local function openPage(opts)
     rfsuite.session.colWidth = w - paddingRight
 
     while loc > 0 do
-        local colLabel = rfsuite.app.Page.apidata.formdata.cols[loc]
+        local colLabel = formdata.cols[loc]
 
         positions[loc] = posX - w
-
         lcd.font(FONT_STD)
-
         colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
 
         local posTxt = positions[loc] + paddingRight
-
         pos = {x = posTxt, y = posY, w = w, h = h}
-        rfsuite.app.formFields['col_' .. tostring(numCols - loc + 1)] = form.addStaticText(line, pos, colLabel)
+        rfsuite.app.formFields["col_" .. tostring(numCols - loc + 1)] = form.addStaticText(line, pos, colLabel)
 
         posX = math.floor(posX - w)
-
         loc = loc - 1
     end
 
     local rateRows = {}
-    for ri, rv in ipairs(rfsuite.app.Page.apidata.formdata.rows) do rateRows[ri] = form.addLine(rv) end
+    for ri, rv in ipairs(formdata.rows) do
+        rateRows[ri] = form.addLine(rv)
+    end
 
-    local page = rfsuite.app.Page
-    local fields = page.apidata.formdata.fields
+    local fields = formdata.fields
     local fieldHelpTxt = rfsuite.app.ui.getFieldHelpTxt()
 
     for i = 1, #fields do
         local f = fields[i]
-
-        if f.hidden == nil or f.hidden == false then
+        if f.hidden ~= true then
             posX = positions[f.col]
-
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
             local minValue = f.min * rfutils.decimalInc(f.decimals)
@@ -189,24 +216,24 @@ local function openPage(opts)
                     if rfsuite.app.ui then
                         rfsuite.app.ui.disableAllFields()
                         rfsuite.app.ui.disableAllNavigationFields()
-                        rfsuite.app.ui.enableNavigationField('menu')
+                        rfsuite.app.ui.enableNavigationField("menu")
                     end
                     return nil
                 end
-                local value
+
                 if rfsuite.session.activeRateProfile == 0 then
-                    value = 0
-                else
-                    value = rfsuite.app.utils.getFieldValue(fields[i])
+                    return 0
                 end
-                return value
+
+                return rfsuite.app.utils.getFieldValue(fields[i])
             end, function(value)
                 if not fields or not fields[i] then return end
                 rfsuite.app.ui.markPageDirty()
-                if f.postEdit and page then f.postEdit(page) end
-                if f.onChange and page then f.onChange(page) end
+                if f.postEdit then f.postEdit(page) end
+                if f.onChange then f.onChange(page) end
                 f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
             end)
+
             if f.default ~= nil then
                 local default = f.default * rfutils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
@@ -215,14 +242,12 @@ local function openPage(opts)
             else
                 rfsuite.app.formFields[i]:default(0)
             end
+
             if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
             if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
             if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
-            if f.help ~= nil then
-                if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help]['t'] ~= nil then
-                    local helpTxt = fieldHelpTxt[f.help]['t']
-                    rfsuite.app.formFields[i]:help(helpTxt)
-                end
+            if f.help ~= nil and fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t ~= nil then
+                rfsuite.app.formFields[i]:help(fieldHelpTxt[f.help].t)
             end
             if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
         end
@@ -231,23 +256,117 @@ local function openPage(opts)
     rfsuite.app.ui.setPageDirty(false)
 end
 
+local function startLoad()
+    state.loading = true
+    state.loaded = false
+    state.loadError = nil
+    state.needsRender = true
+    state.loadToken = state.loadToken + 1
+    local token = state.loadToken
+
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load and rfsuite.tasks.msp.api.load("RC_TUNING")
+    if not api then
+        state.loading = false
+        state.loadError = "@i18n(app.error_timed_out)@"
+        state.needsRender = true
+        rfsuite.app.triggers.closeProgressLoader = true
+        return
+    end
+
+    api.setCompleteHandler(function()
+        if token ~= state.loadToken then return end
+
+        local rateType = tonumber(api.readValue("rates_type") or rfsuite.config.defaultRateProfile) or rfsuite.config.defaultRateProfile
+        local polarEnabled = tonumber(api.readValue("cyclic_polarity") or 0) == 1
+
+        cachePolarState(polarEnabled)
+        cacheApiData("RC_TUNING", api, false)
+
+        page.apidata = loadRateTable(rateType, polarEnabled)
+        page.apidata.apiState = page.apidata.apiState or {isProcessing = false}
+        applyFieldValues(page.apidata.formdata, api)
+
+        state.loading = false
+        state.loaded = true
+        state.loadError = nil
+        state.needsRender = true
+        activateWakeup = true
+        rfsuite.app.triggers.closeProgressLoader = true
+    end)
+
+    api.setErrorHandler(function()
+        if token ~= state.loadToken then return end
+
+        state.loading = false
+        state.loaded = false
+        state.loadError = "@i18n(app.error_timed_out)@"
+        state.needsRender = true
+        rfsuite.app.triggers.closeProgressLoader = true
+    end)
+
+    local ok, reason = api.read()
+    if not ok then
+        if token ~= state.loadToken then return end
+
+        state.loading = false
+        state.loaded = false
+        state.loadError = tostring(reason or "@i18n(app.error_timed_out)@")
+        state.needsRender = true
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
+end
+
+local function openPage(opts)
+    local relativeScript = opts.script
+    if type(relativeScript) == "string" and relativeScript:sub(1, 12) == "app/modules/" then
+        relativeScript = relativeScript:sub(13)
+    end
+
+    activateWakeup = false
+    page.apidata = nil
+    state.title = opts.title or page.title
+
+    rfsuite.app.lastIdx = opts.idx
+    rfsuite.app.lastTitle = state.title
+    rfsuite.app.lastScript = relativeScript or opts.script
+    rfsuite.session.lastPage = relativeScript or opts.script
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    rfsuite.app.triggers.isReady = true
+
+    renderLoading()
+    startLoad()
+end
+
 local function wakeup()
+    if state.needsRender then
+        if state.loading then
+            renderLoading()
+        elseif state.loadError then
+            renderError()
+        else
+            renderForm()
+        end
+        state.needsRender = false
+    end
+
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
         local activeRateProfile = rfsuite.session and rfsuite.session.activeRateProfile
-        if activeRateProfile ~= nil and rfsuite.app.formFields['title'] then
-            local baseTitle = rfsuite.app.lastTitle or (rfsuite.app.Page and rfsuite.app.Page.title) or ""
+        if activeRateProfile ~= nil and rfsuite.app.formFields["title"] then
+            local baseTitle = state.title or page.title or ""
             baseTitle = tostring(baseTitle):gsub("%s+#%d+$", "")
             rfsuite.app.ui.setHeaderTitle(baseTitle .. " #" .. activeRateProfile, nil, rfsuite.app.Page and rfsuite.app.Page.navButtons)
         end
+        activateWakeup = false
     end
 end
 
 local function onHelpMenu()
-
     local helpPath = "app/modules/rates/help.lua"
     local help = assert(loadfile(helpPath))()
-    rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.activeRateTable])
-
+    local activeRateTable = rfsuite.session and rfsuite.session.activeRateTable
+    if activeRateTable ~= nil and help.help and help.help.table and help.help.table[activeRateTable] then
+        rfsuite.app.ui.openPageHelp(help.help.table[activeRateTable])
+    end
 end
 
 local function canSave()
@@ -256,4 +375,20 @@ local function canSave()
     return rfsuite.app.pageDirty == true
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, canSave = canSave, API = {}}
+local function close()
+    activateWakeup = false
+    state.loadToken = state.loadToken + 1
+    state.loading = false
+    state.loaded = false
+    state.loadError = nil
+    state.needsRender = false
+    page.apidata = nil
+end
+
+page.openPage = openPage
+page.wakeup = wakeup
+page.onHelpMenu = onHelpMenu
+page.canSave = canSave
+page.close = close
+
+return page

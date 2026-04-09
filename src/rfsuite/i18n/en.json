@@ -4714,13 +4714,13 @@
             },
             "threshold48to24": {
               "english": "48kHz -> 24kHz Threshold",
-              "max_length": 25,
+              "max_length": 24,
               "needs_translation": false,
               "translation": "48kHz -> 24kHz Threshold"
             },
             "threshold96to48": {
               "english": "96kHz -> 48kHz Threshold",
-              "max_length": 25,
+              "max_length": 24,
               "needs_translation": false,
               "translation": "96kHz -> 48kHz Threshold"
             },
@@ -8226,6 +8226,12 @@
           "needs_translation": false,
           "translation": "Col"
         },
+        "cyclic": {
+          "english": "Cyclic",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Cyclic"
+        },
         "expo": {
           "english": "Expo",
           "max_length": 4,
@@ -8475,10 +8481,10 @@
           "translation": "Cyclic Behaviour"
         },
         "cyclic_polarity": {
-          "english": "Cyclic polar",
-          "max_length": 15,
+          "english": "Polar coordinates",
+          "max_length": 17,
           "needs_translation": false,
-          "translation": "Cyclic polar"
+          "translation": "Polar coordinates"
         },
         "cyclic_ring": {
           "english": "Cyclic ring",
