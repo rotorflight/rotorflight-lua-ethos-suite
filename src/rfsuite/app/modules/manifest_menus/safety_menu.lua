@@ -18,7 +18,7 @@ return {
     },
     pages = {
         {
-            image = "modes/modes.png",
+            image = "modes/modes.jpg",
             loaderspeed = 0.05,
             name = "@i18n(app.modules.modes.name)@",
             order = 1,
@@ -26,7 +26,7 @@ return {
             shortcutId = "s_safety_menu_modes_modes_lua_4bfa50db9c",
         },
         {
-            image = "adjustments/adjustments.png",
+            image = "adjustments/adjustments.jpg",
             loaderspeed = 0.1,
             name = "@i18n(app.modules.adjustments.name)@",
             order = 2,
@@ -34,28 +34,28 @@ return {
             shortcutId = "s_safety_menu_adjustments_adjustments_1aa898354c",
         },
         {
-            image = "failsafe/failsafe.png",
+            image = "failsafe/failsafe.jpg",
             name = "@i18n(app.modules.failsafe.name)@",
             order = 3,
             script = "failsafe/failsafe.lua",
             shortcutId = "s_safety_menu_failsafe_failsafe_lua_5033612baf",
         },
         {
-            image = "beepers/beepers.png",
+            image = "beepers/beepers.jpg",
             menuId = "beepers",
             name = "@i18n(app.modules.beepers.name)@",
             order = 4,
             shortcutId = "s_safety_menu_beepers_7440548a09",
         },
         {
-            image = "blackbox/blackbox.png",
+            image = "blackbox/blackbox.jpg",
             menuId = "blackbox",
             name = "@i18n(app.modules.blackbox.name)@",
             order = 5,
             shortcutId = "s_safety_menu_blackbox_91e70d8f9f",
         },
         {
-            image = "stats/stats.png",
+            image = "stats/stats.jpg",
             name = "@i18n(app.modules.stats.name)@",
             order = 6,
             script = "stats/stats.lua",

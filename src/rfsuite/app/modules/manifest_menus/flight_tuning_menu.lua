@@ -17,21 +17,21 @@ return {
     },
     pages = {
         {
-            image = "pids/pids.png",
+            image = "pids/pids.jpg",
             name = "@i18n(app.modules.pids.name)@",
             order = 1,
             script = "pids/pids.lua",
             shortcutId = "s_flight_tuning_menu_pids_pids_lua_e97a40faab",
         },
         {
-            image = "rates/rates.png",
+            image = "rates/rates.jpg",
             name = "@i18n(app.modules.rates.name)@",
             order = 2,
             script = "rates/rates.lua",
             shortcutId = "s_flight_tuning_menu_rates_rates_lua_853c5751ea",
         },
         {
-            image = "profile_governor/governor.png",
+            image = "profile_governor/governor.jpg",
             name = "@i18n(app.modules.profile_governor.name)@",
             order = 3,
             script = "profile_governor/governor.lua",
@@ -51,7 +51,7 @@ return {
             shortcutId = "s_flight_tuning_menu_profile_governor_2361300e05",
         },
         {
-            image = "app/gfx/advanced.png",
+            image = "app/gfx/advanced.jpg",
             menuId = "advanced_menu",
             name = "@i18n(app.menu_section_advanced)@",
             order = 4,

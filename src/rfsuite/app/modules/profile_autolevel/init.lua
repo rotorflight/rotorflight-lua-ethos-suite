@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.profile_autolevel.name)@", section = "advanced", script = "autolevel.lua", image = "autolevel.png", order = 3, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.profile_autolevel.name)@", section = "advanced", script = "autolevel.lua", image = "autolevel.jpg", order = 3, ethosversion = {1, 6, 2}}
 
 return init

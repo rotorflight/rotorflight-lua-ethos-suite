@@ -27,13 +27,13 @@ return {
     },
     pages = {
         {
-            image = "pwm.png",
+            image = "pwm.jpg",
             name = "@i18n(app.modules.servos.pwm)@",
             script = "pwm.lua",
             shortcutId = "s_servos_type_pwm_lua_401567fa69",
         },
         {
-            image = "bus.png",
+            image = "bus.jpg",
             name = "@i18n(app.modules.servos.bus)@",
             script = "bus.lua",
             shortcutId = "s_servos_type_bus_lua_a5236c586f",

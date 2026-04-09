@@ -5,8 +5,8 @@
 
 local PageFiles = {}
 
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.ztw.basic)@", script = "esc_basic.lua", image = "basic.png"}
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.ztw.advanced)@", script = "esc_advanced.lua", image = "advanced.png"}
-PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.ztw.governor)@", script = "esc_governor.lua", image = "other.png"}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.ztw.basic)@", script = "esc_basic.lua", image = "basic.jpg"}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.ztw.advanced)@", script = "esc_advanced.lua", image = "advanced.jpg"}
+PageFiles[#PageFiles + 1] = {title = "@i18n(app.modules.esc_tools.mfg.ztw.governor)@", script = "esc_governor.lua", image = "other.jpg"}
 
 return PageFiles

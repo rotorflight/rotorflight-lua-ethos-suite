@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.pids.name)@", section = "main", script = "pids.lua", image = "pids.png", order = 1, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.pids.name)@", section = "main", script = "pids.lua", image = "pids.jpg", order = 1, ethosversion = {1, 6, 2}}
 
 return init

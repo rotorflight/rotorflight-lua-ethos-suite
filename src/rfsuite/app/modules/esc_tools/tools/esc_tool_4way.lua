@@ -7,10 +7,8 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
-local function loadMask(path)
-    local ui = rfsuite.app and rfsuite.app.ui
-    if ui and ui.loadMask then return ui.loadMask(path) end
-    return lcd.loadMask(path)
+local function loadBitmap(path)
+    return lcd.loadBitmap(path)
 end
 
 local mspSignature
@@ -956,7 +954,7 @@ renderToolPage = function(opts)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.preferences.general.iconsize ~= 0 then
-                if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. pvalue.image) end
+                if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = loadBitmap("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. pvalue.image) end
             else
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
             end
@@ -1048,8 +1046,8 @@ openSelector = function()
     local esc1Target, esc2Target = getEsc4WayTargets()
 
     local items = {
-        {title = "ESC1", image = "basic.png", target = esc1Target},
-        {title = "ESC2", image = "advanced.png", target = esc2Target},
+        {title = "ESC1", image = "basic.jpg", target = esc1Target},
+        {title = "ESC2", image = "advanced.jpg", target = esc2Target},
     }
     clearButtonMeta(selectorButtonMeta)
     if esc2Available == nil then
@@ -1078,7 +1076,7 @@ openSelector = function()
 
         if rfsuite.preferences.general.iconsize ~= 0 then
             if rfsuite.app.gfx_buttons["esc4way"][childIdx] == nil then
-                rfsuite.app.gfx_buttons["esc4way"][childIdx] = loadMask("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. item.image)
+                rfsuite.app.gfx_buttons["esc4way"][childIdx] = loadBitmap("app/modules/esc_tools/tools/escmfg/" .. folder .. "/gfx/" .. item.image)
             end
         else
             rfsuite.app.gfx_buttons["esc4way"][childIdx] = nil
