@@ -11,6 +11,21 @@ local tables = {}
 
 local activateWakeup = false
 local apidata
+local mytable
+
+local function cachePolarState(polarEnabled)
+    local session = rfsuite.session
+    local activeRateProfile = session and session.activeRateProfile
+    if activeRateProfile == nil or polarEnabled == nil then return end
+
+    local cache = session.rateProfilePolarState
+    if not cache then
+        cache = {}
+        session.rateProfilePolarState = cache
+    end
+
+    cache[activeRateProfile] = (polarEnabled == true)
+end
 
 local function getApiEntryName(entry)
     if type(entry) == "table" then return entry.name end
@@ -59,7 +74,7 @@ rfsuite.session.applyPolarRateLayout = false
 rfsuite.session.pendingPolarRateLayout = nil
 assert(ok, loadedTable)
 apidata = loadedTable
-local mytable = apidata.formdata
+mytable = apidata.formdata
 
 local function postLoad(self)
 
@@ -86,9 +101,7 @@ local function postLoad(self)
         return
     end
 
-    if polarEnabled ~= nil then
-        rfsuite.session.ratesPolarEnabled = polarEnabled
-    end
+    cachePolarState(polarEnabled)
 
     if polarEnabled ~= nil and polarEnabled ~= (apidata.formdata and apidata.formdata._polarEnabled) then
         rfsuite.utils.log("Switching rates layout for polar coordinates: " .. tostring(polarEnabled), "info")
@@ -100,6 +113,17 @@ local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 
+end
+
+local function close()
+    activateWakeup = false
+
+    if rfsuite.session then
+        rfsuite.session.applyPolarRateLayout = false
+    end
+
+    mytable = nil
+    apidata = nil
 end
 
 local function rightAlignText(width, text)
@@ -279,4 +303,4 @@ local function canSave()
     return rfsuite.app.pageDirty == true
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, canSave = canSave, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.rates.name)@", reboot = false, eepromWrite = true, refreshOnRateChange = true, rows = mytable.rows, cols = mytable.cols, flagRateChange = flagRateChange, postLoad = postLoad, openPage = openPage, wakeup = wakeup, onHelpMenu = onHelpMenu, canSave = canSave, close = close, API = {}}

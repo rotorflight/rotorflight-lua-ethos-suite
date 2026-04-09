@@ -51,6 +51,13 @@ local function resolvePolarEnabled()
         end
     end
 
+    local session = rfsuite.session
+    local activeRateProfile = session and session.activeRateProfile
+    local cached = session and session.rateProfilePolarState
+    if activeRateProfile ~= nil and cached and cached[activeRateProfile] ~= nil then
+        return cached[activeRateProfile] == true
+    end
+
     return false
 end
 

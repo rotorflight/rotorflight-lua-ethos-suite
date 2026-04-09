@@ -26,6 +26,21 @@ local function getField(index)
     return fields and fields[index] or nil
 end
 
+local function cachePolarState()
+    local polarField = getField(FIELD_CYCLIC_POLAR)
+    local session = rfsuite.session
+    local activeRateProfile = session and session.activeRateProfile
+    if not polarField or activeRateProfile == nil then return end
+
+    local cache = session.rateProfilePolarState
+    if not cache then
+        cache = {}
+        session.rateProfilePolarState = cache
+    end
+
+    cache[activeRateProfile] = tonumber(polarField.value or 0) == 1
+end
+
 local function setFormFieldEnabled(index, enabled)
     local formField = rfsuite.app and rfsuite.app.formFields and rfsuite.app.formFields[index]
     if formField and formField.enable then
@@ -80,6 +95,7 @@ local apidata = {
 }
 
 local function postLoad(self)
+    cachePolarState()
     syncCyclicRingState()
     rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
