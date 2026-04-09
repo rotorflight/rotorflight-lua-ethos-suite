@@ -155,6 +155,15 @@ local function getToolbarCache(dashboard)
     return dashboard._toolbarCache
 end
 
+function M.clearCaches(dashboard)
+    clearToolbarMaskCache(dashboard)
+    if dashboard then
+        dashboard._toolbarRects = nil
+        dashboard._toolbarItemsSorted = nil
+        dashboard._toolbarEnabled = nil
+    end
+end
+
 local function isItemEnabled(item, dashboard, rfsuite)
     if not item then return false end
     if type(item.enableFunction) == "function" then

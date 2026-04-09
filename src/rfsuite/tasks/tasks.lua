@@ -101,6 +101,12 @@ local internalModule, externalModule
 local CPU_TICK_HZ = 20
 local SCHED_DT = 1 / CPU_TICK_HZ
 local OVERDUE_TOL = SCHED_DT * 0.25
+local OPTIONAL_TASK_RECHECK_INTERVAL = 0.5
+local OPTIONAL_TASKS = {
+    performance = true,
+    adjfunctions = true,
+    toolbox = true
+}
 
 tasks.rateMultiplier = tasks.rateMultiplier or 1.0
 
@@ -113,7 +119,11 @@ tasks._initState = "start"
 tasks._initMetadata = nil
 tasks._initKeys = nil
 tasks._initByName = nil
+tasks._metaByName = nil
 tasks._initIndex = 1
+
+local optionalTaskWanted
+local reconcileOptionalTasks
 
 local ethosVersionGood
 local lastCheckAt
@@ -140,6 +150,7 @@ local CONNECT_WATCHDOG_COOLDOWN_S = 3.0
 -- We only want to do heavy teardown ONCE when link drops, not every scheduler tick.
 -- nil = unknown (startup), true = up, false = down
 local lastTelemetryUp = nil
+local lastOptionalTaskCheckAt = 0
 
 
 local lastNameCheckAt = 0
@@ -247,6 +258,7 @@ function tasks.initialize()
         utils.log("[tasks] manifest.lua missing: " .. tostring(err), "error")
         tasks._initMetadata = {}
         tasks._initKeys = {}
+        tasks._metaByName = {}
         tasks._initState = nil
         return
     end
@@ -256,6 +268,7 @@ function tasks.initialize()
         utils.log("[tasks] manifest.lua did not return a table", "error")
         tasks._initMetadata = {}
         tasks._initKeys = {}
+        tasks._metaByName = {}
         tasks._initState = nil
         return
     end
@@ -263,10 +276,12 @@ function tasks.initialize()
     tasks._initMetadata = manifest
     tasks._initKeys = {}
     tasks._initByName = {}
+    tasks._metaByName = {}
     for i, meta in ipairs(tasks._initMetadata) do
         tasks._initKeys[i] = i
         if type(meta) == "table" and meta.name then
             tasks._initByName[meta.name] = meta
+            tasks._metaByName[meta.name] = meta
         end
     end
     tasks._initState = "loadNextTask"
@@ -841,6 +856,7 @@ function tasks.wakeup_protected()
     tasks.telemetryCheckScheduler()
 
     local now = os_clock()
+    reconcileOptionalTasks(now)
     handleSystemFlightReset()
 
     local cycleFlip = schedulerTick % 2
@@ -1031,7 +1047,10 @@ function tasks.init()
     tasks._initState = "start"
     tasks._initMetadata = nil
     tasks._initKeys = nil
+    tasks._initByName = nil
+    tasks._metaByName = nil
     tasks._initIndex = 1
+    lastOptionalTaskCheckAt = 0
 
     tasks.begin = true
 
@@ -1058,6 +1077,47 @@ end
 
 function tasks.read() end
 function tasks.write() end
+
+optionalTaskWanted = function(name)
+    local prefs = rfsuite.preferences
+
+    if name == "performance" then
+        local dev = prefs and prefs.developer
+        return dev and (dev.memstats or dev.overlaystats or dev.overlaystatsadmin) or false
+    end
+
+    if name == "adjfunctions" then
+        local evt = prefs and prefs.events
+        return evt and (evt.adj_f or evt.adj_v) or false
+    end
+
+    if name == "toolbox" then
+        local session = rfsuite.session
+        return session and session.toolbox ~= nil or false
+    end
+
+    return true
+end
+
+reconcileOptionalTasks = function(now)
+    if tasks._initState ~= nil then return end
+    if (now - lastOptionalTaskCheckAt) < OPTIONAL_TASK_RECHECK_INTERVAL then return end
+
+    lastOptionalTaskCheckAt = now
+
+    local metaByName = tasks._metaByName
+    if not metaByName then return end
+
+    for name in pairs(OPTIONAL_TASKS) do
+        if optionalTaskWanted(name) then
+            if tasks[name] == nil then
+                tasks.load(name, metaByName[name])
+            end
+        elseif tasks[name] ~= nil then
+            tasks.unload(name)
+        end
+    end
+end
 
 function tasks.unload(name)
 
@@ -1117,6 +1177,11 @@ function tasks.load(name, meta)
         return true
     end
 
+    if OPTIONAL_TASKS[name] and not optionalTaskWanted(name) then
+        utils.log(string.format("[scheduler] Skipped loading optional task '%s' (inactive)", name), "info")
+        return true
+    end
+
     local scriptPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/" .. meta.script
     local fn, loadErr = loadfile(scriptPath)
     if not fn then
@@ -1164,7 +1229,7 @@ function tasks.reload(name)
 
     tasks.unload(name)
 
-    local meta = tasks._initByName and tasks._initByName[name] or nil
+    local meta = tasks._metaByName and tasks._metaByName[name] or tasks._initByName and tasks._initByName[name] or nil
 
     local ok = tasks.load(name, meta)
 
