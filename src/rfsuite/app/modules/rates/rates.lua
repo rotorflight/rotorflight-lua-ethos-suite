@@ -75,6 +75,36 @@ local function applyFieldValues(formdata, api)
     end
 end
 
+local function cacheApiData(apiName, api, enableDeltaCache)
+    local tasks = rfsuite.tasks
+    local apiLoader = tasks and tasks.msp and tasks.msp.api
+    local shared = apiLoader and apiLoader.apidata
+    local data = api and api.data and api.data()
+    if not (shared and data and apiName) then return end
+
+    shared.values = shared.values or {}
+    shared.structure = shared.structure or {}
+    shared.receivedBytes = shared.receivedBytes or {}
+    shared.receivedBytesCount = shared.receivedBytesCount or {}
+    shared.positionmap = shared.positionmap or {}
+    shared.other = shared.other or {}
+
+    shared.values[apiName] = data.parsed
+    shared.structure[apiName] = data.structure
+
+    if enableDeltaCache == true then
+        shared.receivedBytes[apiName] = data.buffer
+        shared.receivedBytesCount[apiName] = data.receivedBytesCount
+        shared.positionmap[apiName] = data.positionmap
+    else
+        shared.receivedBytes[apiName] = nil
+        shared.receivedBytesCount[apiName] = nil
+        shared.positionmap[apiName] = nil
+    end
+
+    shared.other[apiName] = data.other or {}
+end
+
 local function loadRateTable(tableId, polarEnabled)
     local tablePath = RATE_TABLES[tableId]
     if not tablePath then
@@ -250,8 +280,10 @@ local function startLoad()
         local polarEnabled = tonumber(api.readValue("cyclic_polarity") or 0) == 1
 
         cachePolarState(polarEnabled)
+        cacheApiData("RC_TUNING", api, false)
 
         page.apidata = loadRateTable(rateType, polarEnabled)
+        page.apidata.apiState = page.apidata.apiState or {isProcessing = false}
         applyFieldValues(page.apidata.formdata, api)
 
         state.loading = false
