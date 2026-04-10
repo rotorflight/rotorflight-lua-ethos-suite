@@ -52,6 +52,21 @@ local function apiVersionSupported(major, minor, revision)
     return not utils.apiVersionCompare("<", {major, minor or 0, revision or 0})
 end
 
+local function operationSupported(spec, op)
+    local minVersion = spec[op .. "MinApiVersion"] or spec.minApiVersion
+    local maxVersion = spec[op .. "MaxApiVersion"] or spec.maxApiVersion
+
+    if type(minVersion) == "table" and utils.apiVersionCompare("<", minVersion) then
+        return false
+    end
+
+    if type(maxVersion) == "table" and utils.apiVersionCompare(">", maxVersion) then
+        return false
+    end
+
+    return true
+end
+
 local function getLegacyCore()
     if legacyCore then return legacyCore end
 
@@ -265,6 +280,10 @@ function core.createReadOnlyAPI(spec)
     end
 
     local function read()
+        if not operationSupported(spec, "read") then
+            return false, "read_not_supported"
+        end
+
         return rfsuite.tasks.msp.mspQueue:add({
             command = spec.readCmd,
             apiname = spec.name,
@@ -416,6 +435,10 @@ function core.createConfigAPI(spec)
     end
 
     local function read()
+        if not operationSupported(spec, "read") then
+            return false, "read_not_supported"
+        end
+
         return rfsuite.tasks.msp.mspQueue:add({
             command = spec.readCmd,
             apiname = spec.name,
@@ -429,6 +452,10 @@ function core.createConfigAPI(spec)
     end
 
     local function write(suppliedPayload)
+        if not operationSupported(spec, "write") then
+            return false, "write_not_supported"
+        end
+
         local payload = suppliedPayload
         if payload == nil then
             payload = getLegacyCore().buildWritePayload(
