@@ -1,0 +1,40 @@
+--[[
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+
+local msp = rfsuite.tasks and rfsuite.tasks.msp
+local core = (msp and msp.apicorev2) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apiv2/core.lua"))()
+if msp and not msp.apicorev2 then
+    msp.apicorev2 = core
+end
+
+local API_NAME = "ACC_TRIM"
+local MSP_API_CMD_READ = 240
+local MSP_API_CMD_WRITE = 239
+
+-- Tuple layout:
+--   field, type, api major, api minor, api revision, min, max, default, unit
+local FIELD_SPEC = {
+    {"pitch", "S16", 12, 0, 6, -300, 300, 0, "°"},
+    {"roll", "S16", 12, 0, 6, -300, 300, 0, "°"}
+}
+
+local SIM_RESPONSE = core.simResponse({
+    0, 0, -- pitch
+    0, 0  -- roll
+})
+
+return core.createConfigAPI({
+    name = API_NAME,
+    readCmd = MSP_API_CMD_READ,
+    writeCmd = MSP_API_CMD_WRITE,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
+    writeUuidFallback = true,
+    exports = {
+        simulatorResponse = SIM_RESPONSE
+    }
+})
