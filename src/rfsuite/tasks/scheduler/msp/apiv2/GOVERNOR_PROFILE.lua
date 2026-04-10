@@ -122,8 +122,22 @@ local api = core.createConfigAPI({
     }
 })
 
+local function attachGovernorFlagsBitmap(structure)
+    if type(structure) ~= "table" then return end
+
+    for _, entry in ipairs(structure) do
+        if type(entry) == "table" and entry.field == "governor_flags" then
+            entry.bitmap = GOVERNOR_FLAGS_BITMAP
+            return
+        end
+    end
+end
+
 if GOVERNOR_FLAGS_BITMAP then
-    api.__rfReadStructure[#api.__rfReadStructure].bitmap = GOVERNOR_FLAGS_BITMAP
+    attachGovernorFlagsBitmap(api.__rfReadStructure)
+    if api.__rfWriteStructure ~= api.__rfReadStructure then
+        attachGovernorFlagsBitmap(api.__rfWriteStructure)
+    end
 end
 
 return api

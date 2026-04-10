@@ -649,4 +649,176 @@ function core.createConfigAPI(spec)
     return api
 end
 
+function core.createWriteOnlyAPI(spec)
+    if type(spec) ~= "table" then
+        error("apiv2.createWriteOnlyAPI requires spec table")
+    end
+    if type(spec.name) ~= "string" or spec.name == "" then
+        error("apiv2.createWriteOnlyAPI requires spec.name")
+    end
+    if spec.writeCmd == nil then
+        error("apiv2.createWriteOnlyAPI requires spec.writeCmd")
+    end
+
+    local completeHandler = nil
+    local errorHandler = nil
+    local state = {
+        mspWriteComplete = false,
+        payloadData = {},
+        timeout = nil,
+        uuid = nil,
+        rebuildOnWrite = (spec.initialRebuildOnWrite == true)
+    }
+
+    local function emitComplete(self, buf)
+        if completeHandler then
+            completeHandler(self, buf)
+        end
+    end
+
+    local function dispatchError(self, errMsg)
+        if errorHandler then
+            errorHandler(self, errMsg)
+        end
+    end
+
+    local function handleWriteReply(self, buf)
+        state.mspWriteComplete = true
+        emitComplete(self, buf)
+    end
+
+    local function setCompleteHandler(fn)
+        if type(fn) ~= "function" then
+            error("Complete handler requires function")
+        end
+        completeHandler = fn
+    end
+
+    local function setErrorHandler(fn)
+        if type(fn) ~= "function" then
+            error("Error handler requires function")
+        end
+        errorHandler = fn
+    end
+
+    local function read()
+        return false, "read_not_supported"
+    end
+
+    local function write(suppliedPayload, ...)
+        local validateWrite = spec.validateWrite
+        if type(validateWrite) == "function" then
+            local ok, reason = validateWrite(suppliedPayload, state, ...)
+            if ok == false then
+                return false, reason or "write_validation_failed"
+            end
+        end
+
+        local payload = suppliedPayload
+        if payload == nil then
+            local writeBuilder = spec.buildWritePayload
+            if type(writeBuilder) == "function" then
+                payload = writeBuilder(state.payloadData, nil, mspHelper, state, ...)
+            elseif spec.writePayload ~= nil then
+                payload = spec.writePayload
+            else
+                payload = EMPTY_SIM_RESPONSE
+            end
+        end
+
+        local message = {
+            command = spec.writeCmd,
+            apiname = spec.name,
+            payload = payload,
+            processReply = handleWriteReply,
+            errorHandler = dispatchError,
+            simulatorResponse = spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE,
+            timeout = state.timeout,
+            uuid = resolveWriteUUID(spec, state)
+        }
+
+        local writeUuidResolver = spec.resolveWriteUUID
+        if type(writeUuidResolver) == "function" then
+            message.uuid = writeUuidResolver(state, suppliedPayload, ...)
+        end
+
+        state.mspWriteComplete = false
+        return rfsuite.tasks.msp.mspQueue:add(message)
+    end
+
+    local function data()
+        return nil
+    end
+
+    local function readValue()
+        return nil
+    end
+
+    local function setValue(fieldName, value)
+        state.payloadData[fieldName] = value
+    end
+
+    local function readComplete()
+        return false
+    end
+
+    local function writeComplete()
+        return state.mspWriteComplete == true
+    end
+
+    local function resetWriteStatus()
+        state.mspWriteComplete = false
+    end
+
+    local function setUUID(uuid)
+        state.uuid = uuid
+    end
+
+    local function setTimeout(timeout)
+        state.timeout = timeout
+    end
+
+    local function setRebuildOnWrite(rebuild)
+        state.rebuildOnWrite = (rebuild == true)
+    end
+
+    local api = {
+        read = read,
+        write = write,
+        data = data,
+        readValue = readValue,
+        setValue = setValue,
+        readComplete = readComplete,
+        writeComplete = writeComplete,
+        resetWriteStatus = resetWriteStatus,
+        setCompleteHandler = setCompleteHandler,
+        setErrorHandler = setErrorHandler,
+        setUUID = setUUID,
+        setTimeout = setTimeout,
+        setRebuildOnWrite = setRebuildOnWrite,
+        __rfReadStructure = {},
+        __rfWriteStructure = {}
+    }
+
+    local methods = spec.methods
+    if type(methods) == "table" then
+        for name, fn in pairs(methods) do
+            if type(fn) == "function" then
+                api[name] = function(...)
+                    return fn(state, ...)
+                end
+            end
+        end
+    end
+
+    local exports = spec.exports
+    if type(exports) == "table" then
+        for name, value in pairs(exports) do
+            api[name] = value
+        end
+    end
+
+    return api
+end
+
 return core

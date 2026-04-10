@@ -36,7 +36,7 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     }
 
     FIELD_SPEC = {
-        {"gov_mode", "U8", 0, #govModeTable, nil, nil, nil, nil, nil, govModeTable},
+        {"gov_mode", "U8", 0, #govModeTable, nil, nil, nil, nil, nil, nil, govModeTable},
         {"gov_startup_time", "U16", 0, 600, 200, "", 1, 10},
         {"gov_spoolup_time", "U16", 0, 600, 100, "%/s", 1, 10},
         {"gov_tracking_time", "U16", 0, 100, 10, "%/s", 1, 10},
@@ -54,7 +54,7 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
         {"spare_3", "U8"},
         {"gov_d_filter", "U8", 0, 250, 50, "Hz", 1, 10},
         {"gov_spooldown_time", "U16", 0, 600, 100, "%/s", 1, 10},
-        {"gov_throttle_type", "U8", 0, #throttleTypeTable, nil, nil, nil, nil, nil, throttleTypeTable},
+        {"gov_throttle_type", "U8", 0, #throttleTypeTable, nil, nil, nil, nil, nil, nil, throttleTypeTable},
         {"spare_4", "S8"},
         {"spare_5", "S8"},
         {"governor_idle_throttle", "U8", 0, 250, 0, "%", 1, 10},
@@ -114,7 +114,7 @@ else
     }
 
     FIELD_SPEC = {
-        {"gov_mode", "U8", 0, #govModeTable, nil, nil, nil, nil, nil, govModeTable},
+        {"gov_mode", "U8", 0, #govModeTable, nil, nil, nil, nil, nil, nil, govModeTable},
         {"gov_startup_time", "U16", 0, 600, 200, "s", 1, 10},
         {"gov_spoolup_time", "U16", 0, 600, 100, "s", 1, 10},
         {"gov_tracking_time", "U16", 0, 100, 10, "s", 1, 10},
