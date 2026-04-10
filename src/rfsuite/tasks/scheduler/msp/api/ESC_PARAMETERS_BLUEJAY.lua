@@ -1,14 +1,15 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "ESC_PARAMETERS_BLUEJAY"
 local MSP_SIGNATURE = 0xC1
@@ -90,78 +91,147 @@ local ledControlEthos = {
     [8] = {"White", 0x3F}
 }
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature",                type = "U8",  apiVersion = {12, 0, 9}, simResponse = {193}},
-    {field = "esc_command",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "main_revision",                type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "sub_revision",                 type = "U8",  apiVersion = {12, 0, 9}, simResponse = {22}},
-    {field = "layout_revision",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {209}},
-    {field = "reserved_03",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "startup_power_min",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {51},  min = 1000, max = 1125, step = 5},
-    {field = "startup_beep",                 type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "dithering",                    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},   tableEthos = startupBeepBoolEthos},
-    {field = "startup_power_max",            type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5},   min = 1004, max = 1300, step = 4},
-    {field = "reserved_08",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "rpm_power_slope",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {9}},
-    {field = "pwm_frequency",                type = "U8",  apiVersion = {12, 0, 9}, simResponse = {24}},
-    {field = "motor_direction",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {1},   table = motorDirection},
-    {field = "reserved_0c",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "mode_raw",                     type = "U16", apiVersion = {12, 0, 9}, simResponse = {85, 170}},
-    {field = "reserved_0f",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "braking_strength",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}, min = 0, max = 255, step = 1},
-    {field = "reserved_11",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_12",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_13",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_14",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "commutation_timing",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {4},   table = commutationTiming},
-    {field = "reserved_16",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_17",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_18",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_19",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_1a",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "beep_strength",                type = "U8",  apiVersion = {12, 0, 9}, simResponse = {40},  min = 0, max = 255, step = 1},
-    {field = "beacon_strength",              type = "U8",  apiVersion = {12, 0, 9}, simResponse = {80},  min = 0, max = 255, step = 1},
-    {field = "beacon_delay",                 type = "U8",  apiVersion = {12, 0, 9}, simResponse = {4},   table = beaconDelay},
-    {field = "reserved_1e",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "demag_compensation",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {2},   table = demagCompensation},
-    {field = "reserved_20",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_21",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_22",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "temperature_protection",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},   table = temperatureProtection},
-    {field = "low_rpm_power_protection",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {1},   tableEthos = startupBeepBoolEthos},
-    {field = "reserved_25",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "reserved_26",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {255}},
-    {field = "brake_on_stop",                type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},   tableEthos = startupBeepBoolEthos},
-    {field = "led_control",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},   tableEthos = ledControlEthos},
-    {field = "power_rating",                 type = "U8",  apiVersion = {12, 0, 9}, simResponse = {2},   table = powerRating},
-    {field = "force_edt_arm",                type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},   tableEthos = startupBeepBoolEthos},
-    {field = "threshold_48to24",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {170}, min = 0, max = 100, step = 1, unit = "%"},
-    {field = "threshold_96to48",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {85},  min = 0, max = 100, step = 1, unit = "%"},
-    {field = "reserved_2d",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_2e",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_2f",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_30",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_31",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_32",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_33",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_34",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_35",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_36",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_37",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_38",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_39",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_3a",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_3b",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_3c",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_3d",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_3e",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}},
-    {field = "reserved_3f",                  type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0}}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local FIELD_SPEC = {
+    {"esc_signature", "U8"},
+    {"esc_command", "U8"},
+    {"main_revision", "U8"},
+    {"sub_revision", "U8"},
+    {"layout_revision", "U8"},
+    {"reserved_03", "U8"},
+    {"startup_power_min", "U8", 1000, 1125, nil, nil, nil, nil, 5},
+    {"startup_beep", "U8"},
+    {"dithering", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, startupBeepBoolEthos},
+    {"startup_power_max", "U8", 1004, 1300, nil, nil, nil, nil, 4},
+    {"reserved_08", "U8"},
+    {"rpm_power_slope", "U8"},
+    {"pwm_frequency", "U8"},
+    {"motor_direction", "U8", nil, nil, nil, nil, nil, nil, nil, nil, motorDirection},
+    {"reserved_0c", "U8"},
+    {"mode_raw", "U16"},
+    {"reserved_0f", "U8"},
+    {"braking_strength", "U8", 0, 255, nil, nil, nil, nil, 1},
+    {"reserved_11", "U8"},
+    {"reserved_12", "U8"},
+    {"reserved_13", "U8"},
+    {"reserved_14", "U8"},
+    {"commutation_timing", "U8", nil, nil, nil, nil, nil, nil, nil, nil, commutationTiming},
+    {"reserved_16", "U8"},
+    {"reserved_17", "U8"},
+    {"reserved_18", "U8"},
+    {"reserved_19", "U8"},
+    {"reserved_1a", "U8"},
+    {"beep_strength", "U8", 0, 255, nil, nil, nil, nil, 1},
+    {"beacon_strength", "U8", 0, 255, nil, nil, nil, nil, 1},
+    {"beacon_delay", "U8", nil, nil, nil, nil, nil, nil, nil, nil, beaconDelay},
+    {"reserved_1e", "U8"},
+    {"demag_compensation", "U8", nil, nil, nil, nil, nil, nil, nil, nil, demagCompensation},
+    {"reserved_20", "U8"},
+    {"reserved_21", "U8"},
+    {"reserved_22", "U8"},
+    {"temperature_protection", "U8", nil, nil, nil, nil, nil, nil, nil, nil, temperatureProtection},
+    {"low_rpm_power_protection", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, startupBeepBoolEthos},
+    {"reserved_25", "U8"},
+    {"reserved_26", "U8"},
+    {"brake_on_stop", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, startupBeepBoolEthos},
+    {"led_control", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ledControlEthos},
+    {"power_rating", "U8", nil, nil, nil, nil, nil, nil, nil, nil, powerRating},
+    {"force_edt_arm", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, startupBeepBoolEthos},
+    {"threshold_48to24", "U8", 0, 100, nil, "%", nil, nil, 1},
+    {"threshold_96to48", "U8", 0, 100, nil, "%", nil, nil, 1},
+    {"reserved_2d", "U8"},
+    {"reserved_2e", "U8"},
+    {"reserved_2f", "U8"},
+    {"reserved_30", "U8"},
+    {"reserved_31", "U8"},
+    {"reserved_32", "U8"},
+    {"reserved_33", "U8"},
+    {"reserved_34", "U8"},
+    {"reserved_35", "U8"},
+    {"reserved_36", "U8"},
+    {"reserved_37", "U8"},
+    {"reserved_38", "U8"},
+    {"reserved_39", "U8"},
+    {"reserved_3a", "U8"},
+    {"reserved_3b", "U8"},
+    {"reserved_3c", "U8"},
+    {"reserved_3d", "U8"},
+    {"reserved_3e", "U8"},
+    {"reserved_3f", "U8"}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local READ_STRUCT, MIN_BYTES = core.buildStructure(FIELD_SPEC)
+local WRITE_STRUCT = READ_STRUCT
+
+local SIM_RESPONSE = core.simResponse({
+    193, -- esc_signature
+    0,   -- esc_command
+    0,   -- main_revision
+    22,  -- sub_revision
+    209, -- layout_revision
+    255, -- reserved_03
+    51,  -- startup_power_min
+    0,   -- startup_beep
+    0,   -- dithering
+    5,   -- startup_power_max
+    255, -- reserved_08
+    9,   -- rpm_power_slope
+    24,  -- pwm_frequency
+    1,   -- motor_direction
+    255, -- reserved_0c
+    85, 170, -- mode_raw
+    255, -- reserved_0f
+    255, -- braking_strength
+    255, -- reserved_11
+    255, -- reserved_12
+    255, -- reserved_13
+    255, -- reserved_14
+    4,   -- commutation_timing
+    255, -- reserved_16
+    255, -- reserved_17
+    255, -- reserved_18
+    255, -- reserved_19
+    255, -- reserved_1a
+    40,  -- beep_strength
+    80,  -- beacon_strength
+    4,   -- beacon_delay
+    255, -- reserved_1e
+    2,   -- demag_compensation
+    255, -- reserved_20
+    255, -- reserved_21
+    255, -- reserved_22
+    0,   -- temperature_protection
+    1,   -- low_rpm_power_protection
+    255, -- reserved_25
+    255, -- reserved_26
+    0,   -- brake_on_stop
+    0,   -- led_control
+    2,   -- power_rating
+    0,   -- force_edt_arm
+    170, -- threshold_48to24
+    85,  -- threshold_96to48
+    0,   -- reserved_2d
+    0,   -- reserved_2e
+    0,   -- reserved_2f
+    0,   -- reserved_30
+    0,   -- reserved_31
+    0,   -- reserved_32
+    0,   -- reserved_33
+    0,   -- reserved_34
+    0,   -- reserved_35
+    0,   -- reserved_36
+    0,   -- reserved_37
+    0,   -- reserved_38
+    0,   -- reserved_39
+    0,   -- reserved_3a
+    0,   -- reserved_3b
+    0,   -- reserved_3c
+    0,   -- reserved_3d
+    0,   -- reserved_3e
+    0    -- reserved_3f
+})
 
 local function clamp(value, min, max)
     if value < min then return min end
@@ -224,14 +294,9 @@ local function resolveTimeout(state, isWrite)
 end
 
 local function parseRead(buf)
-    local result = nil
-
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-
-    if not (result and result.parsed) then
-        return nil, "parse_failed"
+    local result, err = core.parseStructure(API_NAME, buf, READ_STRUCT)
+    if not result then
+        return nil, err
     end
 
     local parsed = result.parsed
@@ -263,72 +328,43 @@ local function parseRead(buf)
     end
 
     local layoutRevision = parsed.layout_revision or 0
-    if layoutRevision == 200 then
-        local meta = result.structure
-        if meta then
-            for _, field in ipairs(meta) do
-                if field.field == "rpm_power_slope" then
+    local meta = result.structure
+    if meta then
+        for _, field in ipairs(meta) do
+            if field.field == "rpm_power_slope" then
+                if layoutRevision == 200 then
                     field.tableEthos = rampupStartPowerEthos
-                    field.table = nil
-                elseif field.field == "startup_beep" then
-                    field.tableEthos = startupBeepBoolEthos
-                    field.table = nil
-                elseif field.field == "braking_strength" then
-                    field.tableEthos = nil
-                    field.table = nil
-                    field.min = 0
-                    field.max = 255
-                    field.step = 1
-                end
-            end
-        end
-    elseif layoutRevision == 202 then
-        local meta = result.structure
-        if meta then
-            for _, field in ipairs(meta) do
-                if field.field == "rpm_power_slope" then
+                else
                     field.tableEthos = rampupPowerEthos
-                    field.table = nil
-                elseif field.field == "startup_beep" then
+                end
+                field.table = nil
+            elseif field.field == "startup_beep" then
+                if layoutRevision == 205 then
+                    field.tableEthos = startupBeepModeEthos
+                else
                     field.tableEthos = startupBeepBoolEthos
-                    field.table = nil
-                elseif field.field == "braking_strength" then
+                end
+                field.table = nil
+            elseif field.field == "braking_strength" then
+                if layoutRevision == 202 then
                     field.tableEthos = brakingModeEthos
-                    field.table = nil
                     field.min = nil
                     field.max = nil
                     field.step = nil
-                end
-            end
-        end
-    else
-        local meta = result.structure
-        if meta then
-            for _, field in ipairs(meta) do
-                if field.field == "rpm_power_slope" then
-                    field.tableEthos = rampupPowerEthos
-                    field.table = nil
-                elseif field.field == "startup_beep" then
-                    if layoutRevision == 205 then
-                        field.tableEthos = startupBeepModeEthos
-                    else
-                        field.tableEthos = startupBeepBoolEthos
-                    end
-                    field.table = nil
-                elseif field.field == "braking_strength" then
+                else
                     field.tableEthos = nil
-                    field.table = nil
                     field.min = 0
                     field.max = 255
                     field.step = 1
-                elseif field.field == "pwm_frequency" then
-                    if layoutRevision >= 209 then
-                        field.tableEthos = pwmFrequencyDynamicEthos
-                    else
-                        field.tableEthos = pwmFrequencyEthos
-                    end
-                    field.table = nil
                 end
+                field.table = nil
+            elseif field.field == "pwm_frequency" then
+                if layoutRevision >= 209 then
+                    field.tableEthos = pwmFrequencyDynamicEthos
+                else
+                    field.tableEthos = pwmFrequencyEthos
+                end
+                field.table = nil
             end
         end
     end
@@ -336,7 +372,7 @@ local function parseRead(buf)
     return result
 end
 
-local function buildWritePayload(payloadData, mspData, _, state)
+local function buildWritePayload(payloadData, _, _, state)
     local effectivePayload = payloadData
 
     if effectivePayload and (
@@ -366,7 +402,6 @@ local function buildWritePayload(payloadData, mspData, _, state)
         if cloned.threshold_96to48 ~= nil then
             cloned.threshold_96to48 = encodeThreshold(cloned.threshold_96to48)
         end
-
         if cloned.threshold_96to48 ~= nil and cloned.threshold_48to24 ~= nil and cloned.threshold_96to48 > cloned.threshold_48to24 then
             cloned.threshold_96to48 = cloned.threshold_48to24
         end
@@ -374,17 +409,16 @@ local function buildWritePayload(payloadData, mspData, _, state)
         effectivePayload = cloned
     end
 
-    return core.buildWritePayload(API_NAME, effectivePayload, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
+    return core.buildPayload(API_NAME, effectivePayload, WRITE_STRUCT, state.rebuildOnWrite == true)
 end
 
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
+    minApiVersion = {12, 0, 9},
     readCmd = 217,
     writeCmd = 218,
-    minBytes = MSP_MIN_BYTES,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     parseRead = parseRead,
     buildWritePayload = buildWritePayload,
     writeUuidFallback = true,
@@ -395,12 +429,9 @@ return factory.create({
     resolveWriteTimeout = function(state)
         return resolveTimeout(state, true)
     end,
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
         mspSignature = MSP_SIGNATURE,
         mspHeaderBytes = MSP_HEADER_BYTES,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = SIM_RESPONSE
     }
 })

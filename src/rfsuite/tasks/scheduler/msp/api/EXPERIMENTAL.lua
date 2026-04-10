@@ -1,78 +1,71 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "EXPERIMENTAL"
 local MSP_API_CMD_READ = 158
 local MSP_API_CMD_WRITE = 159
-local MSP_REBUILD_ON_WRITE = false
+local OPTIONAL = false
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "exp_uint1",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {255}},
-    {field = "exp_uint2",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {10}},
-    {field = "exp_uint3",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {60}},
-    {field = "exp_uint4",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {200}},
-    {field = "exp_uint5",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {20}},
-    {field = "exp_uint6",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {255}},
-    {field = "exp_uint7",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {6}},
-    {field = "exp_uint8",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {10}},
-    {field = "exp_uint9",  mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {20}},
-    {field = "exp_uint10", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {40}},
-    {field = "exp_uint11", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {255}},
-    {field = "exp_uint12", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {6}},
-    {field = "exp_uint13", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {10}},
-    {field = "exp_uint14", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {20}},
-    {field = "exp_uint15", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {20}},
-    {field = "exp_uint16", mandatory = false, type = "U8", apiVersion = {12, 0, 7}, simResponse = {20}}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"exp_uint1", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint2", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint3", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint4", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint5", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint6", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint7", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint8", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint9", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint10", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint11", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint12", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint13", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint14", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint15", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"exp_uint16", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local SIM_RESPONSE = core.simResponse({
+    255, -- exp_uint1
+    10,  -- exp_uint2
+    60,  -- exp_uint3
+    200, -- exp_uint4
+    20,  -- exp_uint5
+    255, -- exp_uint6
+    6,   -- exp_uint7
+    10,  -- exp_uint8
+    20,  -- exp_uint9
+    40,  -- exp_uint10
+    255, -- exp_uint11
+    6,   -- exp_uint12
+    10,  -- exp_uint13
+    20,  -- exp_uint14
+    20,  -- exp_uint15
+    20   -- exp_uint16
+})
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    minApiVersion = {12, 0, 7},
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

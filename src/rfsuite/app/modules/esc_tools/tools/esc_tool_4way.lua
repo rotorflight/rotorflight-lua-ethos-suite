@@ -1398,8 +1398,14 @@ local function wakeup()
     end
 
     if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or progressTimedOut) then
-        rfsuite.app.dialogs.progress:close()
-        rfsuite.app.dialogs.progressDisplay = false
+        local dialogs = rfsuite.app and rfsuite.app.dialogs
+        if dialogs then
+            if dialogs.progress and dialogs.progress.close then
+                dialogs.progress:close()
+            end
+            dialogs.progress = nil
+            dialogs.progressDisplay = false
+        end
         rfsuite.app.triggers.isReady = true
 
         setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@")

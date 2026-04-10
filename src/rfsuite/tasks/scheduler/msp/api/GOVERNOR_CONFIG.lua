@@ -1,25 +1,28 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "GOVERNOR_CONFIG"
 local MSP_API_CMD_READ = 142
 local MSP_API_CMD_WRITE = 143
-local MSP_REBUILD_ON_WRITE = false
 
-local MSP_API_STRUCTURE_READ_DATA
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC
+local SIM_RESPONSE
 
--- LuaFormatter off
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
-    local gov_modeTable = {
+    local govModeTable = {
         [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@",
         [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_limit)@",
         [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_direct)@",
@@ -29,106 +32,137 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     local throttleTypeTable = {
         [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@",
         [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_switch)@",
-        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_function)@",
+        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_function)@"
     }
 
-    MSP_API_STRUCTURE_READ_DATA = {
-        {field = "gov_mode", type = "U8", apiVersion = {12, 0, 9}, simResponse = {2}, min = 0, max = #gov_modeTable, table = gov_modeTable},
-        {field = "gov_startup_time", type = "U16", apiVersion = {12, 0, 9}, simResponse = {200, 0}, min = 0, max = 600, unit = "", default = 200, decimals = 1, scale = 10},
-        {field = "gov_spoolup_time", type = "U16", apiVersion = {12, 0, 9}, simResponse = {100, 0}, min = 0, max = 600, unit = "%/s", default = 100, decimals = 1, scale = 10},
-        {field = "gov_tracking_time", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 0}, min = 0, max = 100, unit = "%/s", default = 10, decimals = 1, scale = 10},
-        {field = "gov_recovery_time", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 0}, min = 0, max = 100, unit = "%/s", default = 21, decimals = 1, scale = 10},
-        {field = "gov_throttle_hold_timeout", type = "U16", apiVersion = {12, 0, 9}, simResponse = {50, 0}, min = 0, max = 250, unit = "s", default = 5, decimals = 1, scale = 10},
-        {field = "spare_0", type = "U16", apiVersion = {12, 0, 9}, simResponse = {0, 0}}, 
-        {field = "gov_autorotation_timeout", type = "U16", apiVersion = {12, 0, 9}, unit = "s", min = 0, max = 250, simResponse = {0, 0}},  
-        {field = "spare_1", type = "U16", apiVersion = {12, 0, 9}, simResponse = {0, 0}},
-        {field = "spare_2", type = "U16", apiVersion = {12, 0, 9}, simResponse = {0, 0}},
-        {field = "gov_handover_throttle", type = "U8", apiVersion = {12, 0, 9}, simResponse = {20}, min = 0, max = 50, unit = "%", default = 20},
-        {field = "gov_pwr_filter", type = "U8", apiVersion = {12, 0, 9}, simResponse = {20}, unit = "Hz", min = 0, max = 250, default = 20},
-        {field = "gov_rpm_filter", type = "U8", apiVersion = {12, 0, 9}, simResponse = {20}, unit = "Hz", min = 0, max = 250, default = 20},
-        {field = "gov_tta_filter", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, unit = "Hz", min = 0, max = 250, default = 20},
-        {field = "gov_ff_filter", type = "U8", apiVersion = {12, 0, 9}, simResponse = {10}, unit = "Hz", min = 0, max = 25, default = 10},
-        {field = "spare_3", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}},
-        {field = "gov_d_filter", type = "U8", apiVersion = {12, 0, 9}, simResponse = {50}, unit = "Hz", min = 0, max = 250, default = 50, decimals = 1, scale = 10},
-        {field = "gov_spooldown_time", type = "U16", apiVersion = {12, 0, 9}, simResponse = {30, 0}, min = 0, max = 600, unit = "%/s", default = 100, decimals = 1, scale = 10},
-        {field = "gov_throttle_type", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}, min = 0, max = #throttleTypeTable, table = throttleTypeTable},
-        {field = "spare_4", type = "S8", apiVersion = {12, 0, 9}, simResponse = {0}},
-        {field = "spare_5", type = "S8", apiVersion = {12, 0, 9}, simResponse = {0}},
-        {field = "governor_idle_throttle", type = "U8", apiVersion = {12, 0, 9}, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%"},
-        {field = "governor_auto_throttle", type = "U8", apiVersion = {12, 0, 9}, simResponse = {10}, min = 0, max = 250, scale = 10, decimals = 1, default = 0, unit = "%"},
-        {field = "gov_bypass_throttle_curve_1", type = "U8", apiVersion = {12, 0, 9}, simResponse = {0}},
-        {field = "gov_bypass_throttle_curve_2", type = "U8", apiVersion = {12, 0, 9}, simResponse = {10}},
-        {field = "gov_bypass_throttle_curve_3", type = "U8", apiVersion = {12, 0, 9}, simResponse = {20}},
-        {field = "gov_bypass_throttle_curve_4", type = "U8", apiVersion = {12, 0, 9}, simResponse = {30}},
-        {field = "gov_bypass_throttle_curve_5", type = "U8", apiVersion = {12, 0, 9}, simResponse = {50}},
-        {field = "gov_bypass_throttle_curve_6", type = "U8", apiVersion = {12, 0, 9}, simResponse = {60}},
-        {field = "gov_bypass_throttle_curve_7", type = "U8", apiVersion = {12, 0, 9}, simResponse = {70}},
-        {field = "gov_bypass_throttle_curve_8", type = "U8", apiVersion = {12, 0, 9}, simResponse = {80}},
-        {field = "gov_bypass_throttle_curve_9", type = "U8", apiVersion = {12, 0, 9}, simResponse = {100}},
-        
+    FIELD_SPEC = {
+        {"gov_mode", "U8", 0, #govModeTable, nil, nil, nil, nil, nil, nil, govModeTable},
+        {"gov_startup_time", "U16", 0, 600, 200, "", 1, 10},
+        {"gov_spoolup_time", "U16", 0, 600, 100, "%/s", 1, 10},
+        {"gov_tracking_time", "U16", 0, 100, 10, "%/s", 1, 10},
+        {"gov_recovery_time", "U16", 0, 100, 21, "%/s", 1, 10},
+        {"gov_throttle_hold_timeout", "U16", 0, 250, 5, "s", 1, 10},
+        {"spare_0", "U16"},
+        {"gov_autorotation_timeout", "U16", 0, 250, nil, "s"},
+        {"spare_1", "U16"},
+        {"spare_2", "U16"},
+        {"gov_handover_throttle", "U8", 0, 50, 20, "%"},
+        {"gov_pwr_filter", "U8", 0, 250, 20, "Hz"},
+        {"gov_rpm_filter", "U8", 0, 250, 20, "Hz"},
+        {"gov_tta_filter", "U8", 0, 250, 20, "Hz"},
+        {"gov_ff_filter", "U8", 0, 25, 10, "Hz"},
+        {"spare_3", "U8"},
+        {"gov_d_filter", "U8", 0, 250, 50, "Hz", 1, 10},
+        {"gov_spooldown_time", "U16", 0, 600, 100, "%/s", 1, 10},
+        {"gov_throttle_type", "U8", 0, #throttleTypeTable, nil, nil, nil, nil, nil, nil, throttleTypeTable},
+        {"spare_4", "S8"},
+        {"spare_5", "S8"},
+        {"governor_idle_throttle", "U8", 0, 250, 0, "%", 1, 10},
+        {"governor_auto_throttle", "U8", 0, 250, 0, "%", 1, 10},
+        {"gov_bypass_throttle_curve_1", "U8"},
+        {"gov_bypass_throttle_curve_2", "U8"},
+        {"gov_bypass_throttle_curve_3", "U8"},
+        {"gov_bypass_throttle_curve_4", "U8"},
+        {"gov_bypass_throttle_curve_5", "U8"},
+        {"gov_bypass_throttle_curve_6", "U8"},
+        {"gov_bypass_throttle_curve_7", "U8"},
+        {"gov_bypass_throttle_curve_8", "U8"},
+        {"gov_bypass_throttle_curve_9", "U8"}
     }
 
+    SIM_RESPONSE = core.simResponse({
+        2,       -- gov_mode
+        200, 0,  -- gov_startup_time
+        100, 0,  -- gov_spoolup_time
+        20, 0,   -- gov_tracking_time
+        20, 0,   -- gov_recovery_time
+        50, 0,   -- gov_throttle_hold_timeout
+        0, 0,    -- spare_0
+        0, 0,    -- gov_autorotation_timeout
+        0, 0,    -- spare_1
+        0, 0,    -- spare_2
+        20,      -- gov_handover_throttle
+        20,      -- gov_pwr_filter
+        20,      -- gov_rpm_filter
+        0,       -- gov_tta_filter
+        10,      -- gov_ff_filter
+        0,       -- spare_3
+        50,      -- gov_d_filter
+        30, 0,   -- gov_spooldown_time
+        0,       -- gov_throttle_type
+        0,       -- spare_4
+        0,       -- spare_5
+        10,      -- governor_idle_throttle
+        10,      -- governor_auto_throttle
+        0,       -- gov_bypass_throttle_curve_1
+        10,      -- gov_bypass_throttle_curve_2
+        20,      -- gov_bypass_throttle_curve_3
+        30,      -- gov_bypass_throttle_curve_4
+        50,      -- gov_bypass_throttle_curve_5
+        60,      -- gov_bypass_throttle_curve_6
+        70,      -- gov_bypass_throttle_curve_7
+        80,      -- gov_bypass_throttle_curve_8
+        100      -- gov_bypass_throttle_curve_9
+    })
 else
-    local gov_modeTable = {[0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_passthrough)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_standard)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode1)@", "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode2)@"}
-
-    MSP_API_STRUCTURE_READ_DATA = {
-        {field = "gov_mode", type = "U8", apiVersion = {12, 0, 6}, simResponse = {3}, min = 0, max = #gov_modeTable, table = gov_modeTable},
-        {field = "gov_startup_time", type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0}, min = 0, max = 600, unit = "s", default = 200, decimals = 1, scale = 10},
-        {field = "gov_spoolup_time", type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0}, min = 0, max = 600, unit = "s", default = 100, decimals = 1, scale = 10},
-        {field = "gov_tracking_time", type = "U16", apiVersion = {12, 0, 6}, simResponse = {20, 0}, min = 0, max = 100, unit = "s", default = 10, decimals = 1, scale = 10},
-        {field = "gov_recovery_time", type = "U16", apiVersion = {12, 0, 6}, simResponse = {20, 0}, min = 0, max = 100, unit = "s", default = 21, decimals = 1, scale = 10},
-        {field = "gov_zero_throttle_timeout", type = "U16", apiVersion = {12, 0, 6}, simResponse = {30, 0}},
-        {field = "gov_lost_headspeed_timeout", type = "U16", apiVersion = {12, 0, 6}, simResponse = {10, 0}},
-        {field = "gov_autorotation_timeout", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}},
-        {field = "gov_autorotation_bailout_time", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}},
-        {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = {12, 0, 6}, simResponse = {50, 0}},
-        {field = "gov_handover_throttle", type = "U8", apiVersion = {12, 0, 6}, simResponse = {10}, min = 10, max = 50, unit = "%", default = 20},
-        {field = "gov_pwr_filter", type = "U8", apiVersion = {12, 0, 6}, simResponse = {5}},
-        {field = "gov_rpm_filter", type = "U8", apiVersion = {12, 0, 6}, simResponse = {10}},
-        {field = "gov_tta_filter", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-        {field = "gov_ff_filter", type = "U8", apiVersion = {12, 0, 6}, simResponse = {10}},
-        {field = "gov_spoolup_min_throttle", type = "U8", apiVersion = {12, 0, 8}, simResponse = {5}, min = 0, max = 50, unit = "%", default = 0}
+    local govModeTable = {
+        [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@",
+        [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_passthrough)@",
+        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_standard)@",
+        [3] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode1)@",
+        [4] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode2)@"
     }
-end
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+    FIELD_SPEC = {
+        {"gov_mode", "U8", 0, #govModeTable, nil, nil, nil, nil, nil, nil, govModeTable},
+        {"gov_startup_time", "U16", 0, 600, 200, "s", 1, 10},
+        {"gov_spoolup_time", "U16", 0, 600, 100, "s", 1, 10},
+        {"gov_tracking_time", "U16", 0, 100, 10, "s", 1, 10},
+        {"gov_recovery_time", "U16", 0, 100, 21, "s", 1, 10},
+        {"gov_zero_throttle_timeout", "U16"},
+        {"gov_lost_headspeed_timeout", "U16"},
+        {"gov_autorotation_timeout", "U16"},
+        {"gov_autorotation_bailout_time", "U16"},
+        {"gov_autorotation_min_entry_time", "U16"},
+        {"gov_handover_throttle", "U8", 10, 50, 20, "%"},
+        {"gov_pwr_filter", "U8"},
+        {"gov_rpm_filter", "U8"},
+        {"gov_tta_filter", "U8"},
+        {"gov_ff_filter", "U8"}
+    }
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
+    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
+        FIELD_SPEC[#FIELD_SPEC + 1] = {"gov_spoolup_min_throttle", "U8", 0, 50, 0, "%"}
     end
-    return result
+
+    SIM_RESPONSE = core.simResponse({
+        3,       -- gov_mode
+        100, 0,  -- gov_startup_time
+        100, 0,  -- gov_spoolup_time
+        20, 0,   -- gov_tracking_time
+        20, 0,   -- gov_recovery_time
+        30, 0,   -- gov_zero_throttle_timeout
+        10, 0,   -- gov_lost_headspeed_timeout
+        0, 0,    -- gov_autorotation_timeout
+        0, 0,    -- gov_autorotation_bailout_time
+        50, 0,   -- gov_autorotation_min_entry_time
+        10,      -- gov_handover_throttle
+        5,       -- gov_pwr_filter
+        10,      -- gov_rpm_filter
+        0,       -- gov_tta_filter
+        10,      -- gov_ff_filter
+        5        -- gov_spoolup_min_throttle
+    })
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

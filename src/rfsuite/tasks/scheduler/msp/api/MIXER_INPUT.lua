@@ -1,207 +1,104 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "MIXER_INPUT"
-local MSP_API_CMD_READ = 170
-local MSP_API_CMD_WRITE = 171
-local MSP_REBUILD_ON_WRITE = true
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-
-    -- 0: MIXER_IN_NONE
-    { field = "rate_none", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 0, 0 } },
-    { field = "min_none",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 0, 0 } },
-    { field = "max_none",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 0, 0 } },
-
-    -- 1: MIXER_IN_STABILIZED_ROLL
-    { field = "rate_stabilized_roll", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 }, tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
-    { field = "min_stabilized_roll",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_stabilized_roll",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 2: MIXER_IN_STABILIZED_PITCH
-    { field = "rate_stabilized_pitch", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } , tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
-    { field = "min_stabilized_pitch",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_stabilized_pitch",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 3: MIXER_IN_STABILIZED_YAW
-    { field = "rate_stabilized_yaw", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } , tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
-    { field = "min_stabilized_yaw",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_stabilized_yaw",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 4: MIXER_IN_STABILIZED_COLLECTIVE
-    { field = "rate_stabilized_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } , tableEthos = {[1] = { "@i18n(api.MIXER_INPUT.tbl_normal)@",   250 },[2] = { "@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286 }}},
-    { field = "min_stabilized_collective",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_stabilized_collective",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 5: MIXER_IN_STABILIZED_THROTTLE
-    { field = "rate_stabilized_throttle", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_stabilized_throttle",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_stabilized_throttle",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 6: MIXER_IN_RC_COMMAND_ROLL
-    { field = "rate_rc_command_roll", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_command_roll",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_command_roll",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 7: MIXER_IN_RC_COMMAND_PITCH
-    { field = "rate_rc_command_pitch", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_command_pitch",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_command_pitch",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 8: MIXER_IN_RC_COMMAND_YAW
-    { field = "rate_rc_command_yaw", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_command_yaw",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_command_yaw",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 9: MIXER_IN_RC_COMMAND_COLLECTIVE
-    { field = "rate_rc_command_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_command_collective",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_command_collective",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 10: MIXER_IN_RC_COMMAND_THROTTLE
-    { field = "rate_rc_command_throttle", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_command_throttle",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_command_throttle",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 11: MIXER_IN_RC_CHANNEL_ROLL
-    { field = "rate_rc_channel_roll", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_roll",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_roll",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 12: MIXER_IN_RC_CHANNEL_PITCH
-    { field = "rate_rc_channel_pitch", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_pitch",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_pitch",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 13: MIXER_IN_RC_CHANNEL_YAW
-    { field = "rate_rc_channel_yaw", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_yaw",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_yaw",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 14: MIXER_IN_RC_CHANNEL_COLLECTIVE
-    { field = "rate_rc_channel_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_collective",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_collective",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 15: MIXER_IN_RC_CHANNEL_THROTTLE
-    { field = "rate_rc_channel_throttle", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_throttle",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_throttle",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 16–18: AUX
-    { field = "rate_rc_channel_aux1", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_aux1",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_aux1",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_aux2", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_aux2",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_aux2",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_aux3", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_aux3",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_aux3",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    -- 19–28: RC channels 9–18
-    { field = "rate_rc_channel_9",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_9",   type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_9",   type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_10", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_10",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_10",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_11", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_11",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_11",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_12", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_12",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_12",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_13", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_13",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_13",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_14", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_14",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_14",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_15", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_15",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_15",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_16", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_16",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_16",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_17", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_17",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_17",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
-
-    { field = "rate_rc_channel_18", type = "U16", apiVersion = {12, 0, 6}, simResponse = { 250, 0 } },
-    { field = "min_rc_channel_18",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 30, 251 } },
-    { field = "max_rc_channel_18",  type = "U16", apiVersion = {12, 0, 6}, simResponse = { 226, 4 } },
+local directionTableEthos = {
+    [1] = {"@i18n(api.MIXER_INPUT.tbl_normal)@", 250},
+    [2] = {"@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286}
 }
 
--- LuaFormatter on
-
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
--- LuaFormatter off
-local MSP_API_STRUCTURE_WRITE = {
-    -- mixer input index
-    { field = "index", type = "U8" },
-
-    -- mixer input values
-    { field = "rate",  type = "U16" },
-    { field = "min",   type = "U16" },
-    { field = "max",   type = "U16" },
+-- Each entry is:
+--   name, rate default, min default, max default, rate tableEthos
+local INPUT_GROUPS = {
+    {"none", 0, 0, 0},
+    {"stabilized_roll", 250, 64350, 1250, directionTableEthos},
+    {"stabilized_pitch", 250, 64350, 1250, directionTableEthos},
+    {"stabilized_yaw", 250, 64350, 1250, directionTableEthos},
+    {"stabilized_collective", 250, 64350, 1250, directionTableEthos},
+    {"stabilized_throttle", 250, 64350, 1250},
+    {"rc_command_roll", 250, 64350, 1250},
+    {"rc_command_pitch", 250, 64350, 1250},
+    {"rc_command_yaw", 250, 64350, 1250},
+    {"rc_command_collective", 250, 64350, 1250},
+    {"rc_command_throttle", 250, 64350, 1250},
+    {"rc_channel_roll", 250, 64350, 1250},
+    {"rc_channel_pitch", 250, 64350, 1250},
+    {"rc_channel_yaw", 250, 64350, 1250},
+    {"rc_channel_collective", 250, 64350, 1250},
+    {"rc_channel_throttle", 250, 64350, 1250},
+    {"rc_channel_aux1", 250, 64350, 1250},
+    {"rc_channel_aux2", 250, 64350, 1250},
+    {"rc_channel_aux3", 250, 64350, 1250},
+    {"rc_channel_9", 250, 64350, 1250},
+    {"rc_channel_10", 250, 64350, 1250},
+    {"rc_channel_11", 250, 64350, 1250},
+    {"rc_channel_12", 250, 64350, 1250},
+    {"rc_channel_13", 250, 64350, 1250},
+    {"rc_channel_14", 250, 64350, 1250},
+    {"rc_channel_15", 250, 64350, 1250},
+    {"rc_channel_16", 250, 64350, 1250},
+    {"rc_channel_17", 250, 64350, 1250},
+    {"rc_channel_18", 250, 64350, 1250}
 }
--- LuaFormatter on
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local FIELD_SPEC = {}
+for _, group in ipairs(INPUT_GROUPS) do
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"rate_" .. group[1], "U16", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, group[5]}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"min_" .. group[1], "U16"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"max_" .. group[1], "U16"}
+end
+
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local WRITE_FIELD_SPEC = {
+    {"index", "U8"},
+    {"rate", "U16"},
+    {"min", "U16"},
+    {"max", "U16"}
+}
+
+local function appendU16(bytes, value)
+    bytes[#bytes + 1] = value & 0xFF
+    bytes[#bytes + 1] = (value >> 8) & 0xFF
+end
+
+local function buildSimResponse()
+    local bytes = {}
+    for _, group in ipairs(INPUT_GROUPS) do
+        appendU16(bytes, group[2]) -- rate_<group>
+        appendU16(bytes, group[3]) -- min_<group>
+        appendU16(bytes, group[4]) -- max_<group>
     end
-    return result
+    return bytes
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
+local SIM_RESPONSE = core.simResponse(buildSimResponse())
 
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
-    readCmd = MSP_API_CMD_READ,
-    writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    readCmd = 170,
+    writeCmd = 171,
+    fields = FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
+    initialRebuildOnWrite = true,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

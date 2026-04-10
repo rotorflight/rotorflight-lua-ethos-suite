@@ -57,8 +57,17 @@ local function normalizePath(value)
     return defaultApiPath .. value
 end
 
-local function resolvePath(apiName)
-    return normalizePath(api._ported[apiName]) or (defaultApiPath .. apiName .. ".lua")
+local function resolveCandidates(apiName)
+    local portedPath = normalizePath(api._ported[apiName])
+    if portedPath then
+        return {
+            {path = portedPath, source = "ported"}
+        }
+    end
+
+    return {
+        {path = defaultApiPath .. apiName .. ".lua", source = "api"}
+    }
 end
 
 local function resolveHelpPath(apiName)
@@ -94,16 +103,25 @@ local function cachedFileExists(path)
     return api._fileExistsCache[path]
 end
 
-local function getChunk(apiName, path)
-    local chunk = api._chunkCache[apiName]
+local function resolvePath(apiName)
+    for _, candidate in ipairs(resolveCandidates(apiName)) do
+        if candidate.path and cachedFileExists(candidate.path) then
+            return candidate.path, candidate.source
+        end
+    end
+    return nil, nil
+end
+
+local function getChunk(cacheKey, apiName, path)
+    local chunk = api._chunkCache[cacheKey]
     if chunk then
-        for i, name in ipairs(api._chunkCacheOrder) do
-            if name == apiName then
+        for i, key in ipairs(api._chunkCacheOrder) do
+            if key == cacheKey then
                 table_remove(api._chunkCacheOrder, i)
                 break
             end
         end
-        table_insert(api._chunkCacheOrder, apiName)
+        table_insert(api._chunkCacheOrder, cacheKey)
         return chunk
     end
 
@@ -113,12 +131,12 @@ local function getChunk(apiName, path)
         return nil
     end
 
-    api._chunkCache[apiName] = loaderFn
-    table_insert(api._chunkCacheOrder, apiName)
+    api._chunkCache[cacheKey] = loaderFn
+    table_insert(api._chunkCacheOrder, cacheKey)
 
     if #api._chunkCacheOrder > api._chunkCacheMax then
-        local oldest = table_remove(api._chunkCacheOrder, 1)
-        api._chunkCache[oldest] = nil
+        local oldestKey = table_remove(api._chunkCacheOrder, 1)
+        api._chunkCache[oldestKey] = nil
     end
 
     return loaderFn
@@ -234,7 +252,7 @@ local function injectHelpIntoStructure(apiName, structure)
     end
 end
 
-local function validateModule(apiName, module)
+local function validateModule(apiName, module, source)
     if type(module) ~= "table" then
         return nil, "module_not_table"
     end
@@ -243,12 +261,12 @@ local function validateModule(apiName, module)
     end
 
     module.__apiName = apiName
-    module.__apiSource = "api"
+    module.__apiSource = source or "api"
 
     if module.read and not module.__rfWrappedRead then
         local original = module.read
         module.read = function(...)
-            logApiIo(apiName, "read", "api")
+            logApiIo(apiName, "read", source)
             return original(...)
         end
         module.__rfWrappedRead = true
@@ -257,7 +275,7 @@ local function validateModule(apiName, module)
     if module.write and not module.__rfWrappedWrite then
         local original = module.write
         module.write = function(...)
-            logApiIo(apiName, "write", "api")
+            logApiIo(apiName, "write", source)
             return original(...)
         end
         module.__rfWrappedWrite = true
@@ -295,20 +313,23 @@ function api.register(apiName, modulePath)
     if type(apiName) ~= "string" or apiName == "" then return false end
     if type(modulePath) ~= "string" or modulePath == "" then return false end
     api._ported[apiName] = modulePath
-    api._chunkCache[apiName] = nil
+    api._chunkCache = {}
+    api._chunkCacheOrder = {}
     return true
 end
 
 function api.unregister(apiName)
     if type(apiName) ~= "string" or apiName == "" then return false end
     api._ported[apiName] = nil
-    api._chunkCache[apiName] = nil
+    api._chunkCache = {}
+    api._chunkCacheOrder = {}
     return true
 end
 
 function api.isPorted(apiName)
     if type(apiName) ~= "string" or apiName == "" then return false end
-    return cachedFileExists(resolvePath(apiName)) == true
+    local path = resolvePath(apiName)
+    return path ~= nil
 end
 
 function api.load(apiName, loadOpts)
@@ -317,18 +338,18 @@ function api.load(apiName, loadOpts)
         return nil
     end
 
+    local path, source = resolvePath(apiName)
+    if not path then
+        utils.log("[api] API file not found: " .. tostring(apiName), "info")
+        return nil
+    end
+
     if not ensureCore() then
         utils.log("[api] core unavailable; cannot load " .. tostring(apiName), "info")
         return nil
     end
 
-    local path = resolvePath(apiName)
-    if not cachedFileExists(path) then
-        utils.log("[api] API file not found: " .. tostring(path), "info")
-        return nil
-    end
-
-    local chunk = getChunk(apiName, path)
+    local chunk = getChunk(path, apiName, path)
     if not chunk then return nil end
 
     local apiModule = chunk()
@@ -339,7 +360,7 @@ function api.load(apiName, loadOpts)
         end
     end
 
-    local module, reason = validateModule(apiName, apiModule)
+    local module, reason = validateModule(apiName, apiModule, source)
     if not module then
         utils.log("[api] invalid module for " .. tostring(apiName) .. ": " .. tostring(reason), "info")
         return nil

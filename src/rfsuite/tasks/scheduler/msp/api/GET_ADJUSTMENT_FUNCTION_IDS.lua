@@ -1,22 +1,24 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "GET_ADJUSTMENT_FUNCTION_IDS"
 local ADJUSTMENT_RANGE_MAX = 42
-local SIMULATOR_RESPONSE = {
+local SIM_RESPONSE = {
     1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 }
 
-local function parseRead(buf)
-    local helper = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspHelper
+local function parseRead(buf, helper)
     if not helper then return nil, "msp_helper_missing" end
 
     local parsed = {}
@@ -30,16 +32,14 @@ local function parseRead(buf)
     end
 
     parsed.adjustment_function_ids = functions
-    return {parsed = parsed, buffer = buf}
+    return {parsed = parsed, buffer = buf, receivedBytesCount = #buf}
 end
 
-return factory.create({
+return core.createReadOnlyAPI({
     name = API_NAME,
     readCmd = 167,
     minBytes = 0,
-    simulatorResponseRead = SIMULATOR_RESPONSE,
-    parseRead = parseRead,
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end
+    fields = {},
+    simulatorResponseRead = SIM_RESPONSE,
+    parseRead = parseRead
 })

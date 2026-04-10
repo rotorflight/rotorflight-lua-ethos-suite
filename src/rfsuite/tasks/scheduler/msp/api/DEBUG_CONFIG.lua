@@ -1,70 +1,55 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "DEBUG_CONFIG"
 local MSP_API_CMD_READ = 59
 local MSP_API_CMD_WRITE = 60
-local MSP_REBUILD_ON_WRITE = true
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "debug_count",       type = "U8", apiVersion = {12, 0, 6}, simResponse = {8} },
-    { field = "debug_value_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {8} },
-    { field = "debug_mode",        type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
-    { field = "debug_axis",        type = "U8", apiVersion = {12, 0, 6}, simResponse = {0} },
-}
--- LuaFormatter on
-
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = {
-    { field = "debug_mode", type = "U8", apiVersion = {12, 0, 6} },
-    { field = "debug_axis", type = "U8", apiVersion = {12, 0, 6} },
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"debug_count", "U8"},
+    {"debug_value_count", "U8"},
+    {"debug_mode", "U8"},
+    {"debug_axis", "U8"}
 }
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local WRITE_FIELD_SPEC = {
+    {"debug_mode", "U8"},
+    {"debug_axis", "U8"}
+}
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
+local SIM_RESPONSE = core.simResponse({
+    8,  -- debug_count
+    8,  -- debug_value_count
+    0,  -- debug_mode
+    0   -- debug_axis
+})
 
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    writeRequiresStructure = true,
+    fields = FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
+    initialRebuildOnWrite = true,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })
