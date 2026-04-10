@@ -19,12 +19,14 @@ local utils = rfsuite.utils
 local api = {}
 
 api._fileExistsCache = {}
+api._fileExistsCacheOrder = {}
+api._fileExistsCacheMax = 24
 api._chunkCache = {}
 api._chunkCacheOrder = {}
-api._chunkCacheMax = 5
+api._chunkCacheMax = 2
 api._helpChunkCache = {}
 api._helpChunkCacheOrder = {}
-api._helpChunkCacheMax = 5
+api._helpChunkCacheMax = 2
 api._helpDataCache = {}
 api._deltaCacheDefault = true
 api._deltaCacheByApi = {}
@@ -96,11 +98,33 @@ local function ensureCore()
     return core
 end
 
-local function cachedFileExists(path)
-    if api._fileExistsCache[path] == nil then
-        api._fileExistsCache[path] = utils.file_exists(path)
+local function touchCacheOrder(order, key)
+    for i, existing in ipairs(order) do
+        if existing == key then
+            table_remove(order, i)
+            break
+        end
     end
-    return api._fileExistsCache[path]
+    table_insert(order, key)
+end
+
+local function cachedFileExists(path)
+    local cached = api._fileExistsCache[path]
+    if cached ~= nil then
+        touchCacheOrder(api._fileExistsCacheOrder, path)
+        return cached
+    end
+
+    cached = utils.file_exists(path)
+    api._fileExistsCache[path] = cached
+    table_insert(api._fileExistsCacheOrder, path)
+
+    if #api._fileExistsCacheOrder > api._fileExistsCacheMax then
+        local oldest = table_remove(api._fileExistsCacheOrder, 1)
+        api._fileExistsCache[oldest] = nil
+    end
+
+    return cached
 end
 
 local function resolvePath(apiName)
@@ -115,13 +139,7 @@ end
 local function getChunk(cacheKey, apiName, path)
     local chunk = api._chunkCache[cacheKey]
     if chunk then
-        for i, key in ipairs(api._chunkCacheOrder) do
-            if key == cacheKey then
-                table_remove(api._chunkCacheOrder, i)
-                break
-            end
-        end
-        table_insert(api._chunkCacheOrder, cacheKey)
+        touchCacheOrder(api._chunkCacheOrder, cacheKey)
         return chunk
     end
 
@@ -145,13 +163,7 @@ end
 local function getHelpChunk(apiName, path)
     local chunk = api._helpChunkCache[apiName]
     if chunk then
-        for i, name in ipairs(api._helpChunkCacheOrder) do
-            if name == apiName then
-                table_remove(api._helpChunkCacheOrder, i)
-                break
-            end
-        end
-        table_insert(api._helpChunkCacheOrder, apiName)
+        touchCacheOrder(api._helpChunkCacheOrder, apiName)
         return chunk
     end
 
@@ -437,6 +449,7 @@ end
 
 function api.clearFileExistsCache()
     api._fileExistsCache = {}
+    api._fileExistsCacheOrder = {}
 end
 
 return api

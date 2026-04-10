@@ -17,14 +17,39 @@ local delayStartTime = nil
 local delayPending = false
 local schedulerTick = 0
 
-local msp = assert(loadfile("tasks/scheduler/sensors/msp.lua"))(config)
-local smart = assert(loadfile("tasks/scheduler/sensors/smart.lua"))(config)
-local telemetryconfig = assert(loadfile("tasks/scheduler/sensors/lib/telemetryconfig.lua"))(config)
-local battery = assert(loadfile("tasks/scheduler/sensors/lib/battery.lua"))(config)
+local msp
+local smart
+local telemetryconfig
+local battery
 
 
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
+
+local function ensureHelperModule(path, current)
+    if current ~= nil then return current end
+    return assert(loadfile(path))(config)
+end
+
+local function getMspModule()
+    msp = ensureHelperModule("tasks/scheduler/sensors/msp.lua", msp)
+    return msp
+end
+
+local function getSmartModule()
+    smart = ensureHelperModule("tasks/scheduler/sensors/smart.lua", smart)
+    return smart
+end
+
+local function getTelemetryConfigModule()
+    telemetryconfig = ensureHelperModule("tasks/scheduler/sensors/lib/telemetryconfig.lua", telemetryconfig)
+    return telemetryconfig
+end
+
+local function getBatteryModule()
+    battery = ensureHelperModule("tasks/scheduler/sensors/lib/battery.lua", battery)
+    return battery
+end
 
 local function loadSensorModule()
     if not tasks.active() then return nil end
@@ -54,16 +79,28 @@ function sensors.wakeup()
 
     -- Ensure telemetry config is complete before proceeding
     -- This is a one time msp call on startup to get telemetry config data
-    if not telemetryconfig.isComplete() then
-        telemetryconfig.wakeup()
-        return
+    if rfsuite.session.telemetryConfig == nil then
+        local telemetryconfigModule = getTelemetryConfigModule()
+        if not telemetryconfigModule.isComplete() then
+            telemetryconfigModule.wakeup()
+            return
+        end
+        telemetryconfig = nil
+    else
+        telemetryconfig = nil
     end
 
     -- Ensure battery config is complete before proceeding
     -- This is a one time msp call on startup to get battery config data
-    if not battery.isComplete() then
-        battery.wakeup()
-        return
+    if rfsuite.session.batteryConfig == nil then
+        local batteryModule = getBatteryModule()
+        if not batteryModule.isComplete() then
+            batteryModule.wakeup()
+            return
+        end
+        battery = nil
+    else
+        battery = nil
     end
 
     schedulerTick = schedulerTick + 1
@@ -97,9 +134,11 @@ function sensors.wakeup()
         if cycleFlip == 0 then
             if rfsuite.session and rfsuite.session.isConnected then
 
-                if msp and msp.wakeup then msp.wakeup() end
+                local mspModule = getMspModule()
+                if mspModule and mspModule.wakeup then mspModule.wakeup() end
 
-                if smart and smart.wakeup then smart.wakeup() end
+                local smartModule = getSmartModule()
+                if smartModule and smartModule.wakeup then smartModule.wakeup() end
 
             end
         end
@@ -116,11 +155,15 @@ function sensors.reset()
     if telemetryconfig and telemetryconfig.reset then telemetryconfig.reset() end
     if battery and battery.reset then battery.reset() end
     loadedSensorModule = nil
+    msp = nil
+    telemetryconfig = nil
+    battery = nil
 
 end
 
 function sensors.resetSmart()
     if smart and smart.reset then smart.reset() end
+    smart = nil
 end
 
 return sensors
