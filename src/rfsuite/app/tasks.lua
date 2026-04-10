@@ -39,6 +39,11 @@ local ramCriticalLastCheckAt = 0
 local ramCriticalLowSince = nil
 local ramCriticalAlertShown = false
 
+local function getTelemetryTask()
+    local tasks = rfsuite.tasks
+    return tasks and tasks.telemetry or nil
+end
+
 local function resetMainMenuFocusLatch()
     mainMenuFocusModeTag = nil
     mainMenuFocusMenuId = nil
@@ -102,7 +107,8 @@ local function profileRateChangeDetection()
     if not (app.Page and (app.Page.refreshOnProfileChange or app.Page.refreshOnRateChange or app.Page.refreshFullOnProfileChange or app.Page.refreshFullOnRateChange) and app.uiState == app.uiStatus.pages and not app.triggers.isSaving and not app.dialogs.saveDisplay and not app.dialogs.progressDisplay and rfsuite.tasks.msp.mspQueue:isProcessed()) then return end
 
     local now = os.clock()
-    local interval = (rfsuite.tasks.telemetry.getSensorSource("pid_profile") and rfsuite.tasks.telemetry.getSensorSource("rate_profile")) and 0.1 or 1.5
+    local telemetry = getTelemetryTask()
+    local interval = (telemetry and telemetry.getSensorSource("pid_profile") and telemetry.getSensorSource("rate_profile")) and 0.1 or 1.5
 
     if (now - (app.profileCheckScheduler or 0)) >= interval then
         app.profileCheckScheduler = now
@@ -125,7 +131,8 @@ end
 local function batteryProfileChangeDetection()
     local app = rfsuite.app
     local now = os.clock()
-    local interval = rfsuite.tasks.telemetry.getSensorSource("battery_profile") and 0.1 or 1.5
+    local telemetry = getTelemetryTask()
+    local interval = (telemetry and telemetry.getSensorSource("battery_profile")) and 0.1 or 1.5
     if (now - (app.batteryProfileCheckScheduler or 0)) >= interval then
         app.batteryProfileCheckScheduler = now
         app.utils.getCurrentBatteryType()
