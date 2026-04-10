@@ -1,14 +1,15 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "BATTERY_INI"
 local INI_FILE = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
@@ -16,7 +17,6 @@ local INI_SECTION = "battery"
 
 local ini = rfsuite.ini
 local tonumber = tonumber
-local ipairs = ipairs
 local pairs = pairs
 local math_floor = math.floor
 
@@ -24,35 +24,58 @@ local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)
 local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
 local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.tbl_electric)@", "@i18n(api.BATTERY_INI.tbl_nitro)@"}
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "smartfuel_model_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = modelTypes, default = 0, min = 0, max = 2},
-    { field = "smartfuel_source", type = "U8", simResponse = {0}, tableIdxInc = -1, table = offOn, default = 0, min = 0, max = 1},
-    { field = "stabilize_delay", type = "U16", simResponse = {220, 5}, decimals = 1, scale = 1000, default = 1500, min = 0, max = 10000, step = 1, unit = "s"},
-    { field = "stable_window", type = "U16", simResponse = {15, 0}, decimals = 2, scale = 100, default = 15, min = 0, max = 100, step = 1, unit = "V"},
-    { field = "voltage_fall_limit", type = "U16", simResponse = {5, 0}, decimals = 2, scale = 100, default = 5, min = 0, max = 100, step = 1, unit = "V/s"},
-    { field = "fuel_drop_rate", type = "U16", simResponse = {10, 0}, decimals = 1, scale = 10, default = 10, min = 0, max = 500, step = 1, unit = "%/s"},
-    { field = "fuel_rise_rate", type = "U16", simResponse = {2, 0}, decimals = 1, scale = 10, default = 2, min = 0, max = 500, step = 1, unit = "%/s"},
-    { field = "sag_multiplier_percent", type = "U16", simResponse = {70, 0}, default = 70, min = 0, max = 200, step = 1, decimals = 2, scale = 100, unit = "x"},
-    { field = "alert_type",     type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
-    { field = "becalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, step = 1, unit = "V", default = 6.5},
-    { field = "rxalertvalue",   type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140, step = 1, unit = "V", default = 7.5},
-    { field = "flighttime",     type = "U8", simResponse = {0}, min = 0, max = 3600, step = 1, unit = "s", default = 300},
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local FIELD_SPEC = {
+    {"smartfuel_model_type", "U8", 0, 2, 0, nil, nil, nil, nil, nil, modelTypes, -1},
+    {"smartfuel_source", "U8", 0, 1, 0, nil, nil, nil, nil, nil, offOn, -1},
+    {"stabilize_delay", "U16", 0, 10000, 1500, "s", 1, 1000, 1},
+    {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
+    {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
+    {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
+    {"fuel_rise_rate", "U16", 0, 500, 2, "%/s", 1, 10, 1},
+    {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1},
+    {"alert_type", "U8", 0, 2, 0, nil, nil, nil, nil, nil, alertTypes, -1},
+    {"becalertvalue", "U8", 30, 140, 6.5, "V", 1, 10, 1},
+    {"rxalertvalue", "U8", 30, 140, 7.5, "V", 1, 10, 1},
+    {"flighttime", "U8", 0, 3600, 300, "s", nil, nil, 1}
 }
--- LuaFormatter on
 
-local READ_STRUCT = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local READ_STRUCT = select(1, core.buildStructure(FIELD_SPEC))
 local FIELD_METADATA = {}
 
-for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do
+for _, entry in ipairs(READ_STRUCT) do
     FIELD_METADATA[entry.field] = entry
+end
+
+local function normalizeScaledINIValue(entry, value)
+    local numeric = tonumber(value)
+    if numeric == nil then
+        return nil
+    end
+
+    local max = entry and entry.max or nil
+    local scale = entry and entry.scale or nil
+
+    -- Recover gracefully if a scaled field was accidentally persisted with its
+    -- transport scaling applied one or more extra times.
+    if scale and scale > 1 and max ~= nil and numeric > max then
+        local guard = 0
+        while numeric > max and guard < 4 do
+            numeric = numeric / scale
+            guard = guard + 1
+        end
+    end
+
+    return numeric
 end
 
 local function loadParsedFromINI()
     local tbl = ini.load_ini_file(INI_FILE) or {}
     local parsed = {}
 
-    for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do
+    for _, entry in ipairs(READ_STRUCT) do
         local raw = ini.getvalue(tbl, INI_SECTION, entry.field)
         if raw == nil and entry.field == "smartfuel_source" then
             raw = ini.getvalue(tbl, INI_SECTION, "calc_local")
@@ -62,32 +85,46 @@ local function loadParsedFromINI()
                 raw = tonumber(legacyRaw) * 100
             end
         end
+
         if raw ~= nil then
+            local normalized = normalizeScaledINIValue(entry, raw)
             if entry.field == "becalertvalue" or entry.field == "rxalertvalue" then
-                parsed[entry.field] = tonumber(raw) * 10
+                parsed[entry.field] = (normalized or tonumber(raw)) * 10
             else
-                parsed[entry.field] = tonumber(raw)
+                parsed[entry.field] = normalized
+            end
+        elseif entry.default ~= nil then
+            if entry.field == "becalertvalue" or entry.field == "rxalertvalue" then
+                parsed[entry.field] = entry.default * 10
+            else
+                parsed[entry.field] = entry.default
             end
         else
-            parsed[entry.field] = entry.default and ((entry.field == "becalertvalue" or entry.field == "rxalertvalue") and (entry.default * 10) or entry.default)
+            parsed[entry.field] = 0
         end
     end
 
     return parsed
 end
 
-return factory.create({
+local function updateStateData(state, parsed)
+    state.mspData = {
+        parsed = parsed,
+        structure = READ_STRUCT,
+        buffer = parsed,
+        positionmap = {},
+        other = {},
+        receivedBytesCount = #READ_STRUCT
+    }
+end
+
+return core.createCustomAPI({
     name = API_NAME,
+    readStructure = READ_STRUCT,
+    writeStructure = READ_STRUCT,
     customRead = function(state, emitComplete)
         local parsed = loadParsedFromINI()
-        state.mspData = {
-            parsed = parsed,
-            structure = READ_STRUCT,
-            buffer = parsed,
-            positionmap = {},
-            other = {},
-            receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA
-        }
+        updateStateData(state, parsed)
         state.mspWriteComplete = false
         emitComplete(nil, parsed)
         return true
@@ -106,18 +143,20 @@ return factory.create({
             if k == "smartfuel_source" or k == "smartfuel_model_type" or k == "alert_type" then
                 v = math_floor(v)
             end
+
             ini.setvalue(tbl, INI_SECTION, k, v)
             if k == "smartfuel_source" then
                 ini.setvalue(tbl, INI_SECTION, "calc_local", v)
             elseif k == "sag_multiplier_percent" then
                 ini.setvalue(tbl, INI_SECTION, "sag_multiplier", v / 100)
             end
+
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then
                 rfsuite.session.modelPreferences[INI_SECTION][k] = v
                 if k == "smartfuel_source" then
-                    rfsuite.session.modelPreferences[INI_SECTION]["calc_local"] = v
+                    rfsuite.session.modelPreferences[INI_SECTION].calc_local = v
                 elseif k == "sag_multiplier_percent" then
-                    rfsuite.session.modelPreferences[INI_SECTION]["sag_multiplier"] = v / 100
+                    rfsuite.session.modelPreferences[INI_SECTION].sag_multiplier = v / 100
                 end
             end
         end
@@ -129,17 +168,8 @@ return factory.create({
         end
 
         state.mspWriteComplete = true
-        local parsed = loadParsedFromINI()
-        state.mspData = {
-            parsed = parsed,
-            structure = READ_STRUCT,
-            buffer = parsed,
-            positionmap = {},
-            other = {},
-            receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA
-        }
-
-        emitComplete(nil, parsed)
+        updateStateData(state, loadParsedFromINI())
+        emitComplete(nil, state.mspData.parsed)
         state.payloadData = {}
         return true
     end,

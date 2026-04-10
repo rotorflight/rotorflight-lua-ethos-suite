@@ -1,84 +1,75 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "OSD_CONFIG"
 local MSP_API_CMD_READ = 84
 local MSP_API_CMD_WRITE = 85
-local MSP_REBUILD_ON_WRITE = true
+local OPTIONAL = false
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "osd_flags",       type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
-    { field = "video_system",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
-    { field = "units",           type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
-    { field = "rssi_alarm",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
-    { field = "cap_alarm",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, mandatory = false },
-    { field = "legacy_timer_lo", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
-    { field = "legacy_timer_hi", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = false },
-    { field = "alt_alarm",       type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, mandatory = false },
-}
--- LuaFormatter on
-
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = {
-    { field = "addr",              type = "U8"  }, -- 255 for general settings
-    { field = "video_system",      type = "U8"  },
-    { field = "units",             type = "U8"  },
-    { field = "rssi_alarm",        type = "U8"  },
-    { field = "cap_alarm",         type = "U16" },
-    { field = "legacy_timer",      type = "U16" },
-    { field = "alt_alarm",         type = "U16" },
-    { field = "enabled_warnings_16", type = "U16" },
-    { field = "enabled_warnings_32", type = "U32" },
-    { field = "osd_profile_index", type = "U8"  },
-    { field = "overlay_radio_mode",type = "U8"  },
-    { field = "camera_frame_width",type = "U8"  },
-    { field = "camera_frame_height",type = "U8" },
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"osd_flags", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"video_system", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"units", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"rssi_alarm", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"cap_alarm", "U16", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"legacy_timer_lo", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"legacy_timer_hi", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"alt_alarm", "U16", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL}
 }
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local WRITE_FIELD_SPEC = {
+    {"addr", "U8"},
+    {"video_system", "U8"},
+    {"units", "U8"},
+    {"rssi_alarm", "U8"},
+    {"cap_alarm", "U16"},
+    {"legacy_timer", "U16"},
+    {"alt_alarm", "U16"},
+    {"enabled_warnings_16", "U16"},
+    {"enabled_warnings_32", "U32"},
+    {"osd_profile_index", "U8"},
+    {"overlay_radio_mode", "U8"},
+    {"camera_frame_width", "U8"},
+    {"camera_frame_height", "U8"}
+}
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
+local SIM_RESPONSE = core.simResponse({
+    0,    -- osd_flags
+    0,    -- video_system
+    0,    -- units
+    0,    -- rssi_alarm
+    0, 0, -- cap_alarm
+    0,    -- legacy_timer_lo
+    0,    -- legacy_timer_hi
+    0, 0  -- alt_alarm
+})
 
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    initialRebuildOnWrite = true,
+    fields = FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

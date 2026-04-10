@@ -1,76 +1,63 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "SERVO_OVERRIDE"
 local MSP_API_CMD_READ = 192
 local MSP_API_CMD_WRITE = 193
-local MSP_REBUILD_ON_WRITE = true
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "servo_1", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_2", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_3", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_4", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_5", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_6", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_7", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}},
-    {field = "servo_8", type = "U16", apiVersion = {12, 0, 6}, simResponse = {209, 7}}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"servo_1", "U16"},
+    {"servo_2", "U16"},
+    {"servo_3", "U16"},
+    {"servo_4", "U16"},
+    {"servo_5", "U16"},
+    {"servo_6", "U16"},
+    {"servo_7", "U16"},
+    {"servo_8", "U16"}
 }
 
-local MSP_API_STRUCTURE_WRITE = {
-    {field = "servo_id", type = "U8"}, {field = "action", type = "U8"}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local WRITE_FIELD_SPEC = {
+    {"servo_id", "U8"},
+    {"action", "U8"}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ = core.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+local SIM_RESPONSE = core.simResponse({
+    209, 7, -- servo_1
+    209, 7, -- servo_2
+    209, 7, -- servo_3
+    209, 7, -- servo_4
+    209, 7, -- servo_5
+    209, 7, -- servo_6
+    209, 7, -- servo_7
+    209, 7  -- servo_8
+})
 
-local MSP_MIN_BYTES = core.calculateMinBytes(MSP_API_STRUCTURE_READ)
-
-local MSP_API_SIMULATOR_RESPONSE = core.buildSimResponse(MSP_API_STRUCTURE_READ)
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
+    initialRebuildOnWrite = true,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

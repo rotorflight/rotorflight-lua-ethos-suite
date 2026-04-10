@@ -1,14 +1,15 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "SMARTFUEL_CONFIG"
 local MSP_API_CMD_READ = 0x3006
@@ -19,52 +20,38 @@ local sourceTable = {
     "@i18n(api.BATTERY_INI.tbl_on)@"
 }
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "smartfuel_source",       type = "U8",  tableIdxInc = -1, table = sourceTable, default = 0, min = 0, max = 1, simResponse = {0} },
-    { field = "stabilize_delay",        type = "U16", default = 1500, min = 0, max = 10000, step = 1, decimals = 1, scale = 1000, unit = "s", simResponse = {220, 5} },
-    { field = "stable_window",          type = "U16", default = 15,   min = 0, max = 100, step = 1, decimals = 2, scale = 100, unit = "V", simResponse = {15, 0} },
-    { field = "voltage_fall_limit",     type = "U16", default = 5,    min = 0, max = 100, step = 1, decimals = 2, scale = 100, unit = "V/s", simResponse = {5, 0} },
-    { field = "fuel_drop_rate",         type = "U16", default = 10,   min = 0, max = 500, step = 1, decimals = 1, scale = 10, unit = "%/s", simResponse = {10, 0} },
-    { field = "fuel_rise_rate",         type = "U16", default = 2,    min = 0, max = 500, step = 1, decimals = 1, scale = 10, unit = "%/s", simResponse = {2, 0} },
-    { field = "sag_multiplier_percent", type = "U16", default = 70,   min = 0, max = 200, step = 1, decimals = 2, scale = 100, unit = "x", simResponse = {70, 0} },
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"smartfuel_source", "U8", 0, 1, 0, nil, nil, nil, nil, nil, sourceTable, -1},
+    {"stabilize_delay", "U16", 0, 10000, 1500, "s", 1, 1000, 1},
+    {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
+    {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
+    {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
+    {"fuel_rise_rate", "U16", 0, 500, 2, "%/s", 1, 10, 1},
+    {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local SIM_RESPONSE = core.simResponse({
+    0,       -- smartfuel_source
+    220, 5,  -- stabilize_delay
+    15, 0,   -- stable_window
+    5, 0,    -- voltage_fall_limit
+    10, 0,   -- fuel_drop_rate
+    2, 0,    -- fuel_rise_rate
+    70, 0    -- sag_multiplier_percent
+})
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    return core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    writeRequiresStructure = true,
+    minApiVersion = {12, 0, 10},
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

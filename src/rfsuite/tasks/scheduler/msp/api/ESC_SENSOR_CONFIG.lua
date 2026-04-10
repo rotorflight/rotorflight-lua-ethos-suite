@@ -1,76 +1,75 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "ESC_SENSOR_CONFIG"
 local MSP_API_CMD_READ = 123
 local MSP_API_CMD_WRITE = 216
-local MSP_REBUILD_ON_WRITE = false
 
-local escTypes = {"NONE", "BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMP", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY", "FrSky F.BUS", "RECORD"}
-local onOff = {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@", "@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"}
-
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "protocol", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, table = escTypes, tableIdxInc = -1},
-    { field = "half_duplex", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, default = 0, min = 1, max = 2, table = onOff, tableIdxInc = -1},
-    { field = "update_hz", type = "U16", apiVersion = {12, 0, 6}, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz"},
-    { field = "current_offset", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 15}, min = 0, max = 1000, default = 0},
-    { field = "hw4_current_offset", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 1000, default = 0},
-    { field = "hw4_current_gain", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, min = 0, max = 250, default = 0},
-    { field = "hw4_voltage_gain", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 250, default = 30},
-    { field = "pin_swap", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}, table = onOff, tableIdxInc = -1},
-    { field = "voltage_correction", mandatory = false, type = "S8", apiVersion = {12, 0, 8}, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125},
-    { field = "current_correction", mandatory = false, type = "S8", apiVersion = {12, 0, 8}, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125},
-    { field = "consumption_correction", mandatory = false, type = "S8", apiVersion = {12, 0, 8}, simResponse = {0}, unit = "%", default = 1, min = -99, max = 125},
+local TBL_ESC_TYPES = {
+    "NONE", "BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION",
+    "KONTRONIK", "OMP", "ZTW", "APD", "OPENYGE", "FLYROTOR",
+    "GRAUPNER", "XDFLY", "FrSky F.BUS", "RECORD"
 }
--- LuaFormatter on
+local TBL_OFF_ON = {
+    "@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@",
+    "@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"
+}
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"protocol", "U8", nil, nil, nil, nil, nil, nil, nil, nil, TBL_ESC_TYPES, -1},
+    {"half_duplex", "U8", 1, 2, 0, nil, nil, nil, nil, nil, TBL_OFF_ON, -1},
+    {"update_hz", "U16", 10, 500, 200, "Hz"},
+    {"current_offset", "U16", 0, 1000, 0},
+    {"hw4_current_offset", "U16", 0, 1000, 0},
+    {"hw4_current_gain", "U8", 0, 250, 0},
+    {"hw4_voltage_gain", "U8", 0, 250, 30}
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 7}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"pin_swap", "U8", nil, nil, nil, nil, nil, nil, nil, nil, TBL_OFF_ON, -1}
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"voltage_correction", "S8", -99, 125, 1, "%", nil, nil, nil, nil, nil, nil, false}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"current_correction", "S8", -99, 125, 1, "%", nil, nil, nil, nil, nil, nil, false}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"consumption_correction", "S8", -99, 125, 1, "%", nil, nil, nil, nil, nil, nil, false}
 end
 
-return factory.create({
+local SIM_RESPONSE = core.simResponse({
+    0,       -- protocol
+    0,       -- half_duplex
+    200, 0,  -- update_hz
+    0, 15,   -- current_offset
+    0, 0,    -- hw4_current_offset
+    0,       -- hw4_current_gain
+    30,      -- hw4_voltage_gain
+    0,       -- pin_swap
+    0,       -- voltage_correction
+    0,       -- current_correction
+    0        -- consumption_correction
+})
+
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

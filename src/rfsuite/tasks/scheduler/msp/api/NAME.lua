@@ -1,14 +1,24 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local MAX_NAME_LENGTH = 16
+
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"name", "U8"}
+}
 
 local function parseRead(buf, helper)
     if not helper then return nil, "msp_helper_missing" end
@@ -44,12 +54,21 @@ local function buildWritePayload(payloadData, mspData)
     return payload
 end
 
-return factory.create({
+local SIM_RESPONSE = core.simResponse({
+    80,  -- P
+    105, -- i
+    108, -- l
+    111, -- o
+    116  -- t
+})
+
+return core.createConfigAPI({
     name = "NAME",
     readCmd = 10,
     writeCmd = 11,
-    minBytes = 0,
-    simulatorResponseRead = {80, 105, 108, 111, 116},
+    minApiVersion = {12, 0, 6},
+    fields = FIELD_SPEC,
     parseRead = parseRead,
-    buildWritePayload = buildWritePayload
+    buildWritePayload = buildWritePayload,
+    simulatorResponseRead = SIM_RESPONSE
 })

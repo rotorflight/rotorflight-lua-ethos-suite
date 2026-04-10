@@ -33,7 +33,6 @@ api.apidata = {}
 api._core = nil
 
 local defaultApiPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/"
-local defaultApiV2Path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apiv2/"
 local defaultApiHelpPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/apihelp/"
 local defaultCorePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"
 
@@ -67,7 +66,6 @@ local function resolveCandidates(apiName)
     end
 
     return {
-        {path = defaultApiV2Path .. apiName .. ".lua", source = "apiv2"},
         {path = defaultApiPath .. apiName .. ".lua", source = "api"}
     }
 end
@@ -346,7 +344,7 @@ function api.load(apiName, loadOpts)
         return nil
     end
 
-    if source ~= "apiv2" and not ensureCore() then
+    if not ensureCore() then
         utils.log("[api] core unavailable; cannot load " .. tostring(apiName), "info")
         return nil
     end

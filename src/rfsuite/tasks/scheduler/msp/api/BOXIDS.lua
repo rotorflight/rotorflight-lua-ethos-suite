@@ -1,18 +1,20 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "BOXIDS"
-local SIMULATOR_RESPONSE = {0, 1, 2, 53, 27, 36, 45, 13, 52, 19, 20, 26, 31, 51, 55, 56, 57}
+local SIM_RESPONSE = {0, 1, 2, 53, 27, 36, 45, 13, 52, 19, 20, 26, 31, 51, 55, 56, 57}
 
-local function parseRead(buf)
-    local helper = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspHelper
+local function parseRead(buf, helper)
     if not helper then return nil, "msp_helper_missing" end
 
     local parsed = {}
@@ -26,16 +28,14 @@ local function parseRead(buf)
     end
 
     parsed.box_ids = ids
-    return {parsed = parsed, buffer = buf}
+    return {parsed = parsed, buffer = buf, receivedBytesCount = #buf}
 end
 
-return factory.create({
+return core.createReadOnlyAPI({
     name = API_NAME,
     readCmd = 119,
     minBytes = 0,
-    simulatorResponseRead = SIMULATOR_RESPONSE,
-    parseRead = parseRead,
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end
+    fields = {},
+    simulatorResponseRead = SIM_RESPONSE,
+    parseRead = parseRead
 })
