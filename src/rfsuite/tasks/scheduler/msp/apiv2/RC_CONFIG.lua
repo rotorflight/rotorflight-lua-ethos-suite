@@ -16,16 +16,16 @@ local MSP_API_CMD_READ = 66
 local MSP_API_CMD_WRITE = 67
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"rc_center", "U16", 12, 0, 6, 1400, 1600, 1500, "us"},
-    {"rc_deflection", "U16", 12, 0, 6, 200, 700, 510, "us"},
-    {"rc_arm_throttle", "U16", 12, 0, 6, 850, 1500, 1050, "us"},
-    {"rc_min_throttle", "U16", 12, 0, 6, 860, 1500, 1100, "us"},
-    {"rc_max_throttle", "U16", 12, 0, 6, 1510, 2150, 1900, "us"},
-    {"rc_deadband", "U8", 12, 0, 6, 0, 100, 2, "us"},
-    {"rc_yaw_deadband", "U8", 12, 0, 6, 0, 100, 2, "us"}
+    {"rc_center", "U16", 1400, 1600, 1500, "us"},
+    {"rc_deflection", "U16", 200, 700, 510, "us"},
+    {"rc_arm_throttle", "U16", 850, 1500, 1050, "us"},
+    {"rc_min_throttle", "U16", 860, 1500, 1100, "us"},
+    {"rc_max_throttle", "U16", 1510, 2150, 1900, "us"},
+    {"rc_deadband", "U8", 0, 100, 2, "us"},
+    {"rc_yaw_deadband", "U8", 0, 100, 2, "us"}
 }
 
 local SIM_RESPONSE = core.simResponse({

@@ -16,13 +16,13 @@ local MSP_API_CMD_READ = 50
 local MSP_API_CMD_WRITE = 51
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"rssi_channel", "U8", 12, 0, 6},
-    {"rssi_scale", "U8", 12, 0, 6},
-    {"rssi_invert", "U8", 12, 0, 6},
-    {"rssi_offset", "U8", 12, 0, 6}
+    {"rssi_channel", "U8"},
+    {"rssi_scale", "U8"},
+    {"rssi_invert", "U8"},
+    {"rssi_offset", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

@@ -16,12 +16,12 @@ local MSP_API_CMD_READ = 38
 local MSP_API_CMD_WRITE = 39
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"roll_degrees", "U16", 12, 0, 6},
-    {"pitch_degrees", "U16", 12, 0, 6},
-    {"yaw_degrees", "U16", 12, 0, 6}
+    {"roll_degrees", "U16"},
+    {"pitch_degrees", "U16"},
+    {"yaw_degrees", "U16"}
 }
 
 local SIM_RESPONSE = core.simResponse({

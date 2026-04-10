@@ -16,16 +16,19 @@ local MSP_API_CMD_READ = 132
 local MSP_API_CMD_WRITE = 223
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"provider", "U8", 12, 0, 6},
-    {"sbas_mode", "U8", 12, 0, 6},
-    {"auto_config", "U8", 12, 0, 6},
-    {"auto_baud", "U8", 12, 0, 6},
-    {"set_home_point_once", "U8", 12, 43},
-    {"ublox_use_galileo", "U8", 12, 43}
+    {"provider", "U8"},
+    {"sbas_mode", "U8"},
+    {"auto_config", "U8"},
+    {"auto_baud", "U8"}
 }
+
+if rfsuite.utils.apiVersionCompare(">=", {12, 43}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"set_home_point_once", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"ublox_use_galileo", "U8"}
+end
 
 local SIM_RESPONSE = core.simResponse({
     0,  -- provider

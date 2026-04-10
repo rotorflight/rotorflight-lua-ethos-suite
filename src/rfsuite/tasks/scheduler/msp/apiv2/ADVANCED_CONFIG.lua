@@ -16,19 +16,22 @@ local MSP_API_CMD_READ = 90
 local MSP_API_CMD_WRITE = 91
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"gyro_sync_denom_compat", "U8", 12, 0, 6, nil, nil, 1},
-    {"pid_process_denom", "U8", 12, 0, 6, 1, 16},
-    {"use_unsynced_pwm", "U8", 12, 0, 6},
-    {"motor_pwm_protocol", "U8", 12, 0, 6},
-    {"motor_pwm_rate", "U16", 12, 0, 6}
+    {"gyro_sync_denom_compat", "U8", nil, nil, 1},
+    {"pid_process_denom", "U8", 1, 16},
+    {"use_unsynced_pwm", "U8"},
+    {"motor_pwm_protocol", "U8"},
+    {"motor_pwm_rate", "U16"}
 }
 
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local WRITE_FIELD_SPEC = {
-    {"gyro_sync_denom_compat", "U8", 12, 0, 6},
-    {"pid_process_denom", "U8", 12, 0, 6}
+    {"gyro_sync_denom_compat", "U8"},
+    {"pid_process_denom", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

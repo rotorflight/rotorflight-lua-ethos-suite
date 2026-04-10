@@ -15,27 +15,27 @@ local API_NAME = "STATUS"
 local MSP_API_CMD_READ = 101
 
 -- Flat field spec:
---   field name, type, api major, api minor, api revision
+--   field name, type
 local FIELD_SPEC = {
-    "task_delta_time_pid", "U16", 12, 0, 6,
-    "task_delta_time_gyro", "U16", 12, 0, 6,
-    "sensor_status", "U16", 12, 0, 6,
-    "flight_mode_flags", "U32", 12, 0, 6,
-    "profile_number", "U8", 12, 0, 6,
-    "max_real_time_load", "U16", 12, 0, 6,
-    "average_cpu_load", "U16", 12, 0, 6,
-    "extra_flight_mode_flags_count", "U8", 12, 0, 6,
-    "arming_disable_flags_count", "U8", 12, 0, 6,
-    "arming_disable_flags", "U32", 12, 0, 6,
-    "reboot_required", "U8", 12, 0, 6,
-    "configuration_state", "U8", 12, 0, 6,
-    "current_pid_profile_index", "U8", 12, 0, 6,
-    "pid_profile_count", "U8", 12, 0, 6,
-    "current_control_rate_profile_index", "U8", 12, 0, 6,
-    "control_rate_profile_count", "U8", 12, 0, 6,
-    "motor_count", "U8", 12, 0, 6,
-    "servo_count", "U8", 12, 0, 6,
-    "gyro_detection_flags", "U8", 12, 0, 6
+    "task_delta_time_pid", "U16",
+    "task_delta_time_gyro", "U16",
+    "sensor_status", "U16",
+    "flight_mode_flags", "U32",
+    "profile_number", "U8",
+    "max_real_time_load", "U16",
+    "average_cpu_load", "U16",
+    "extra_flight_mode_flags_count", "U8",
+    "arming_disable_flags_count", "U8",
+    "arming_disable_flags", "U32",
+    "reboot_required", "U8",
+    "configuration_state", "U8",
+    "current_pid_profile_index", "U8",
+    "pid_profile_count", "U8",
+    "current_control_rate_profile_index", "U8",
+    "control_rate_profile_count", "U8",
+    "motor_count", "U8",
+    "servo_count", "U8",
+    "gyro_detection_flags", "U8"
 }
 
 local SIM_RESPONSE = core.simResponse({

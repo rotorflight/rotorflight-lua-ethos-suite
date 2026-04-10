@@ -30,27 +30,19 @@ local TYPE_SIZES = {
 
 local FIELD_NAME = 1
 local FIELD_TYPE = 2
-local FIELD_API_MAJOR = 3
-local FIELD_API_MINOR = 4
-local FIELD_API_REVISION = 5
-local FIELD_MIN = 6
-local FIELD_MAX = 7
-local FIELD_DEFAULT = 8
-local FIELD_UNIT = 9
-local FIELD_DECIMALS = 10
-local FIELD_SCALE = 11
-local FIELD_STEP = 12
-local FIELD_MULT = 13
-local FIELD_TABLE = 14
-local FIELD_TABLE_IDX_INC = 15
-local FIELD_MANDATORY = 16
-local FIELD_BYTEORDER = 17
-local FIELD_TABLE_ETHOS = 18
-
-local function apiVersionSupported(major, minor, revision)
-    if major == nil then return true end
-    return not utils.apiVersionCompare("<", {major, minor or 0, revision or 0})
-end
+local FIELD_MIN = 3
+local FIELD_MAX = 4
+local FIELD_DEFAULT = 5
+local FIELD_UNIT = 6
+local FIELD_DECIMALS = 7
+local FIELD_SCALE = 8
+local FIELD_STEP = 9
+local FIELD_MULT = 10
+local FIELD_TABLE = 11
+local FIELD_TABLE_IDX_INC = 12
+local FIELD_MANDATORY = 13
+local FIELD_BYTEORDER = 14
+local FIELD_TABLE_ETHOS = 15
 
 local function operationSupported(spec, op)
     local minVersion = spec[op .. "MinApiVersion"] or spec.minApiVersion
@@ -143,38 +135,32 @@ local function buildRuntimeStructure(fieldSpec)
     for _, tuple in ipairs(fieldSpec) do
         local fieldName = tuple[FIELD_NAME]
         local typeName = tuple[FIELD_TYPE]
-        local major = tuple[FIELD_API_MAJOR]
-        local minor = tuple[FIELD_API_MINOR]
-        local revision = tuple[FIELD_API_REVISION]
-
-        if apiVersionSupported(major, minor, revision) then
-            local reader = mspHelper["read" .. typeName]
-            if not reader then
-                error("Unknown MSP type in apiv2 structure: " .. tostring(typeName))
-            end
-
-            local fieldSize = TYPE_SIZES[typeName]
-            if not fieldSize then
-                error("Missing MSP size for apiv2 type: " .. tostring(typeName))
-            end
-
-            local field = {
-                field = fieldName,
-                type = typeName
-            }
-            applyFieldMeta(field, tuple)
-
-            structure[#structure + 1] = field
-            names[#names + 1] = fieldName
-            readers[#readers + 1] = reader
-            positionmap[fieldName] = {start = currentByte, size = fieldSize}
-
-            if field.mandatory ~= false then
-                minBytes = minBytes + fieldSize
-            end
-
-            currentByte = currentByte + fieldSize
+        local reader = mspHelper["read" .. typeName]
+        if not reader then
+            error("Unknown MSP type in apiv2 structure: " .. tostring(typeName))
         end
+
+        local fieldSize = TYPE_SIZES[typeName]
+        if not fieldSize then
+            error("Missing MSP size for apiv2 type: " .. tostring(typeName))
+        end
+
+        local field = {
+            field = fieldName,
+            type = typeName
+        }
+        applyFieldMeta(field, tuple)
+
+        structure[#structure + 1] = field
+        names[#names + 1] = fieldName
+        readers[#readers + 1] = reader
+        positionmap[fieldName] = {start = currentByte, size = fieldSize}
+
+        if field.mandatory ~= false then
+            minBytes = minBytes + fieldSize
+        end
+
+        currentByte = currentByte + fieldSize
     end
 
     return structure, names, readers, minBytes, positionmap
@@ -185,22 +171,17 @@ function core.prepareReadPlan(fieldSpec)
     local readers = {}
     local minBytes = 0
 
-    for i = 1, #fieldSpec, 5 do
+    for i = 1, #fieldSpec, 2 do
         local fieldName = fieldSpec[i]
         local typeName = fieldSpec[i + 1]
-        local major = fieldSpec[i + 2]
-        local minor = fieldSpec[i + 3]
-        local revision = fieldSpec[i + 4]
 
-        if apiVersionSupported(major, minor, revision) then
-            local reader = mspHelper["read" .. typeName]
-            if not reader then
-                error("Unknown MSP type in apiv2 plan: " .. tostring(typeName))
-            end
-            names[#names + 1] = fieldName
-            readers[#readers + 1] = reader
-            minBytes = minBytes + (TYPE_SIZES[typeName] or 1)
+        local reader = mspHelper["read" .. typeName]
+        if not reader then
+            error("Unknown MSP type in apiv2 plan: " .. tostring(typeName))
         end
+        names[#names + 1] = fieldName
+        readers[#readers + 1] = reader
+        minBytes = minBytes + (TYPE_SIZES[typeName] or 1)
     end
 
     return names, readers, minBytes

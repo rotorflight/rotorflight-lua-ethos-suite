@@ -16,24 +16,24 @@ local MSP_API_CMD_READ = 40
 local MSP_API_CMD_WRITE = 41
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"meter_count", "U8", 12, 0, 6},
-    {"frame_length", "U8", 12, 0, 6},
-    {"meter_id", "U8", 12, 0, 6},
-    {"meter_type", "U8", 12, 0, 6},
-    {"scale", "U16", 12, 0, 6},
-    {"offset", "U16", 12, 0, 6}
+    {"meter_count", "U8"},
+    {"frame_length", "U8"},
+    {"meter_id", "U8"},
+    {"meter_type", "U8"},
+    {"scale", "U16"},
+    {"offset", "U16"}
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local WRITE_FIELD_SPEC = {
-    {"meter_id", "U8", 12, 0, 6},
-    {"scale", "U16", 12, 0, 6},
-    {"offset", "U16", 12, 0, 6}
+    {"meter_id", "U8"},
+    {"scale", "U16"},
+    {"offset", "U16"}
 }
 
 local SIM_RESPONSE = core.simResponse({

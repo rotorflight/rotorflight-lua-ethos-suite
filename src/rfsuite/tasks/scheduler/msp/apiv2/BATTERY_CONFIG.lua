@@ -23,26 +23,29 @@ local TBL_BATTERY_SOURCE = {
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"batteryCapacity", "U16", 12, 0, 6, 0, 20000, 0, "mAh", nil, nil, 50},
-    {"batteryCellCount", "U8", 12, 0, 6, 0, 24, 6},
-    {"voltageMeterSource", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, TBL_BATTERY_SOURCE, -1},
-    {"currentMeterSource", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, TBL_BATTERY_SOURCE, -1},
-    {"vbatmincellvoltage", "U16", 12, 0, 6, 0, 500, 3.3, "V", 2, 100},
-    {"vbatmaxcellvoltage", "U16", 12, 0, 6, 0, 500, 4.2, "V", 2, 100},
-    {"vbatfullcellvoltage", "U16", 12, 0, 6, 0, 500, 4.1, "V", 2, 100},
-    {"vbatwarningcellvoltage", "U16", 12, 0, 6, 0, 500, 3.5, "V", 2, 100},
-    {"lvcPercentage", "U8", 12, 0, 6},
-    {"consumptionWarningPercentage", "U8", 12, 0, 6, 0, 50, 35, "%"},
-    {"batteryCapacity_0", "U16", 12, 0, 9, 0, 40000, 0, "mAh", nil, nil, 10},
-    {"batteryCapacity_1", "U16", 12, 0, 9, 0, 40000, 0, "mAh", nil, nil, 10},
-    {"batteryCapacity_2", "U16", 12, 0, 9, 0, 40000, 0, "mAh", nil, nil, 10},
-    {"batteryCapacity_3", "U16", 12, 0, 9, 0, 40000, 0, "mAh", nil, nil, 10},
-    {"batteryCapacity_4", "U16", 12, 0, 9, 0, 40000, 0, "mAh", nil, nil, 10},
-    {"batteryCapacity_5", "U16", 12, 0, 9, 0, 40000, 0, "mAh", nil, nil, 10}
+    {"batteryCapacity", "U16", 0, 20000, 0, "mAh", nil, nil, 50},
+    {"batteryCellCount", "U8", 0, 24, 6},
+    {"voltageMeterSource", "U8", nil, nil, nil, nil, nil, nil, nil, TBL_BATTERY_SOURCE, -1},
+    {"currentMeterSource", "U8", nil, nil, nil, nil, nil, nil, nil, TBL_BATTERY_SOURCE, -1},
+    {"vbatmincellvoltage", "U16", 0, 500, 3.3, "V", 2, 100},
+    {"vbatmaxcellvoltage", "U16", 0, 500, 4.2, "V", 2, 100},
+    {"vbatfullcellvoltage", "U16", 0, 500, 4.1, "V", 2, 100},
+    {"vbatwarningcellvoltage", "U16", 0, 500, 3.5, "V", 2, 100},
+    {"lvcPercentage", "U8"},
+    {"consumptionWarningPercentage", "U8", 0, 50, 35, "%"}
 }
+
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_0", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_1", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_2", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_3", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_4", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_5", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+end
 
 local SIM_RESPONSE = core.simResponse({
     136, 19, -- batteryCapacity

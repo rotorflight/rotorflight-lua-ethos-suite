@@ -16,12 +16,12 @@ local MSP_API_CMD_READ = 184
 local MSP_API_CMD_WRITE = 185
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"beeper_off_flags", "U32", 12, 0, 6},
-    {"dshotBeaconTone", "U8", 12, 0, 6},
-    {"dshotBeaconOffFlags", "U32", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, false}
+    {"beeper_off_flags", "U32"},
+    {"dshotBeaconTone", "U8"},
+    {"dshotBeaconOffFlags", "U32", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, false}
 }
 
 local SIM_RESPONSE = core.simResponse({

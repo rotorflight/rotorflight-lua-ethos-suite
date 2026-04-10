@@ -16,10 +16,10 @@ local MSP_API_CMD_READ = 240
 local MSP_API_CMD_WRITE = 239
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit
+--   field, type, min, max, default, unit
 local FIELD_SPEC = {
-    {"pitch", "S16", 12, 0, 6, -300, 300, 0, "°"},
-    {"roll", "S16", 12, 0, 6, -300, 300, 0, "°"}
+    {"pitch", "S16", -300, 300, 0, "°"},
+    {"roll", "S16", -300, 300, 0, "°"}
 }
 
 local SIM_RESPONSE = core.simResponse({

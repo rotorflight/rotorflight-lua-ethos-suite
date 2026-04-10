@@ -16,18 +16,18 @@ local MSP_API_CMD_READ = 96
 local MSP_API_CMD_WRITE = 97
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"acc_hardware", "U8", 12, 0, 6},
-    {"baro_hardware", "U8", 12, 0, 6},
-    {"mag_hardware", "U8", 12, 0, 6},
-    {"gyro_to_use", "U8", 12, 0, 6},
-    {"gyro_high_fsr", "U8", 12, 0, 6},
-    {"gyroMovementCalibrationThreshold", "U8", 12, 0, 6},
-    {"gyroCalibrationDuration", "U16", 12, 0, 6},
-    {"gyro_offset_yaw", "U16", 12, 0, 6},
-    {"checkOverflow", "U8", 12, 0, 6}
+    {"acc_hardware", "U8"},
+    {"baro_hardware", "U8"},
+    {"mag_hardware", "U8"},
+    {"gyro_to_use", "U8"},
+    {"gyro_high_fsr", "U8"},
+    {"gyroMovementCalibrationThreshold", "U8"},
+    {"gyroCalibrationDuration", "U16"},
+    {"gyro_offset_yaw", "U16"},
+    {"checkOverflow", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

@@ -16,21 +16,21 @@ local MSP_API_CMD_READ = 59
 local MSP_API_CMD_WRITE = 60
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"debug_count", "U8", 12, 0, 6},
-    {"debug_value_count", "U8", 12, 0, 6},
-    {"debug_mode", "U8", 12, 0, 6},
-    {"debug_axis", "U8", 12, 0, 6}
+    {"debug_count", "U8"},
+    {"debug_value_count", "U8"},
+    {"debug_mode", "U8"},
+    {"debug_axis", "U8"}
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local WRITE_FIELD_SPEC = {
-    {"debug_mode", "U8", 12, 0, 6},
-    {"debug_axis", "U8", 12, 0, 6}
+    {"debug_mode", "U8"},
+    {"debug_axis", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

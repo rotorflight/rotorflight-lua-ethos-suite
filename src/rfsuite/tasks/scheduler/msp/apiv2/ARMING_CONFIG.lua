@@ -16,10 +16,10 @@ local MSP_API_CMD_READ = 61
 local MSP_API_CMD_WRITE = 62
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"auto_disarm_delay", "U8", 12, 0, 6}
+    {"auto_disarm_delay", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

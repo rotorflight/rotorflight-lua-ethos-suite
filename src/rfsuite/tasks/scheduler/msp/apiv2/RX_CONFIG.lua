@@ -16,18 +16,18 @@ local MSP_API_CMD_READ = 44
 local MSP_API_CMD_WRITE = 45
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"serialrx_provider", "U8", 12, 0, 6},
-    {"serialrx_inverted", "U8", 12, 0, 6},
-    {"halfDuplex", "U8", 12, 0, 6},
-    {"rx_pulse_min", "U16", 12, 0, 6, nil, nil, nil, "us"},
-    {"rx_pulse_max", "U16", 12, 0, 6, nil, nil, nil, "us"},
-    {"rx_spi_protocol", "U8", 12, 0, 6},
-    {"rx_spi_id", "U32", 12, 0, 6},
-    {"rx_spi_rf_channel_count", "U8", 12, 0, 6},
-    {"pinSwap", "U8", 12, 0, 6}
+    {"serialrx_provider", "U8"},
+    {"serialrx_inverted", "U8"},
+    {"halfDuplex", "U8"},
+    {"rx_pulse_min", "U16", nil, nil, nil, "us"},
+    {"rx_pulse_max", "U16", nil, nil, nil, "us"},
+    {"rx_spi_protocol", "U8"},
+    {"rx_spi_id", "U32"},
+    {"rx_spi_rf_channel_count", "U8"},
+    {"pinSwap", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

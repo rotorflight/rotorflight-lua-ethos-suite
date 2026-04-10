@@ -21,16 +21,16 @@ local sourceTable = {
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"smartfuel_source", "U8", nil, nil, nil, 0, 1, 0, nil, nil, nil, nil, nil, sourceTable, -1},
-    {"stabilize_delay", "U16", nil, nil, nil, 0, 10000, 1500, "s", 1, 1000, 1},
-    {"stable_window", "U16", nil, nil, nil, 0, 100, 15, "V", 2, 100, 1},
-    {"voltage_fall_limit", "U16", nil, nil, nil, 0, 100, 5, "V/s", 2, 100, 1},
-    {"fuel_drop_rate", "U16", nil, nil, nil, 0, 500, 10, "%/s", 1, 10, 1},
-    {"fuel_rise_rate", "U16", nil, nil, nil, 0, 500, 2, "%/s", 1, 10, 1},
-    {"sag_multiplier_percent", "U16", nil, nil, nil, 0, 200, 70, "x", 2, 100, 1}
+    {"smartfuel_source", "U8", 0, 1, 0, nil, nil, nil, nil, nil, sourceTable, -1},
+    {"stabilize_delay", "U16", 0, 10000, 1500, "s", 1, 1000, 1},
+    {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
+    {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
+    {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
+    {"fuel_rise_rate", "U16", 0, 500, 2, "%/s", 1, 10, 1},
+    {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1}
 }
 
 local SIM_RESPONSE = core.simResponse({

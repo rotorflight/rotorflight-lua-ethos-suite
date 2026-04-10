@@ -16,15 +16,15 @@ local MSP_API_CMD_READ = 75
 local MSP_API_CMD_WRITE = 76
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"failsafe_delay", "U8", 12, 0, 6},
-    {"failsafe_off_delay", "U8", 12, 0, 6},
-    {"failsafe_throttle", "U16", 12, 0, 6},
-    {"failsafe_switch_mode", "U8", 12, 0, 6},
-    {"failsafe_throttle_low_delay", "U16", 12, 0, 6},
-    {"failsafe_procedure", "U8", 12, 0, 6}
+    {"failsafe_delay", "U8"},
+    {"failsafe_off_delay", "U8"},
+    {"failsafe_throttle", "U16"},
+    {"failsafe_switch_mode", "U8"},
+    {"failsafe_throttle_low_delay", "U16"},
+    {"failsafe_procedure", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({

@@ -28,64 +28,64 @@ local onoff = {
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"minthrottle", "U16", 12, 0, 6, 50, 2250, 1070, "us"},
-    {"maxthrottle", "U16", 12, 0, 6, 50, 2250, 2000, "us"},
-    {"mincommand", "U16", 12, 0, 6, 50, 2250, 1000, "us"},
-    {"motor_count_blheli", "U8", 12, 0, 6},
-    {"motor_pole_count_blheli", "U8", 12, 0, 6},
+    {"minthrottle", "U16", 50, 2250, 1070, "us"},
+    {"maxthrottle", "U16", 50, 2250, 2000, "us"},
+    {"mincommand", "U16", 50, 2250, 1000, "us"},
+    {"motor_count_blheli", "U8"},
+    {"motor_pole_count_blheli", "U8"},
 
-    {"use_dshot_telemetry", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, onoff, -1},
-    {"motor_pwm_protocol", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, pwmProtocol, -1},
-    {"motor_pwm_rate", "U16", 12, 0, 6, 50, 8000, 250, "Hz"},
-    {"use_unsynced_pwm", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, onoff, -1},
+    {"use_dshot_telemetry", "U8", nil, nil, nil, nil, nil, nil, nil, onoff, -1},
+    {"motor_pwm_protocol", "U8", nil, nil, nil, nil, nil, nil, nil, pwmProtocol, -1},
+    {"motor_pwm_rate", "U16", 50, 8000, 250, "Hz"},
+    {"use_unsynced_pwm", "U8", nil, nil, nil, nil, nil, nil, nil, onoff, -1},
 
-    {"motor_pole_count_0", "U8", 12, 0, 6, 2, 256, 10, nil, nil, nil, 2},
-    {"motor_pole_count_1", "U8", 12, 0, 6},
-    {"motor_pole_count_2", "U8", 12, 0, 6},
-    {"motor_pole_count_3", "U8", 12, 0, 6},
+    {"motor_pole_count_0", "U8", 2, 256, 10, nil, nil, nil, 2},
+    {"motor_pole_count_1", "U8"},
+    {"motor_pole_count_2", "U8"},
+    {"motor_pole_count_3", "U8"},
 
-    {"motor_rpm_lpf_0", "U8", 12, 0, 6},
-    {"motor_rpm_lpf_1", "U8", 12, 0, 6},
-    {"motor_rpm_lpf_2", "U8", 12, 0, 6},
-    {"motor_rpm_lpf_3", "U8", 12, 0, 6},
+    {"motor_rpm_lpf_0", "U8"},
+    {"motor_rpm_lpf_1", "U8"},
+    {"motor_rpm_lpf_2", "U8"},
+    {"motor_rpm_lpf_3", "U8"},
 
-    {"main_rotor_gear_ratio_0", "U16", 12, 0, 6, 1, 50000, 1},
-    {"main_rotor_gear_ratio_1", "U16", 12, 0, 6, 1, 50000, 1},
-    {"tail_rotor_gear_ratio_0", "U16", 12, 0, 6, 1, 50000, 1},
-    {"tail_rotor_gear_ratio_1", "U16", 12, 0, 6, 1, 50000, 1}
+    {"main_rotor_gear_ratio_0", "U16", 1, 50000, 1},
+    {"main_rotor_gear_ratio_1", "U16", 1, 50000, 1},
+    {"tail_rotor_gear_ratio_0", "U16", 1, 50000, 1},
+    {"tail_rotor_gear_ratio_1", "U16", 1, 50000, 1}
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local WRITE_FIELD_SPEC = {
-    {"minthrottle", "U16", 12, 0, 6},
-    {"maxthrottle", "U16", 12, 0, 6},
-    {"mincommand", "U16", 12, 0, 6},
-    {"motor_pole_count_blheli", "U8", 12, 0, 6},
+    {"minthrottle", "U16"},
+    {"maxthrottle", "U16"},
+    {"mincommand", "U16"},
+    {"motor_pole_count_blheli", "U8"},
 
-    {"use_dshot_telemetry", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, onoff, -1},
-    {"motor_pwm_protocol", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, pwmProtocol, -1},
-    {"motor_pwm_rate", "U16", 12, 0, 6},
-    {"use_unsynced_pwm", "U8", 12, 0, 6, nil, nil, nil, nil, nil, nil, nil, nil, onoff, -1},
+    {"use_dshot_telemetry", "U8", nil, nil, nil, nil, nil, nil, nil, onoff, -1},
+    {"motor_pwm_protocol", "U8", nil, nil, nil, nil, nil, nil, nil, pwmProtocol, -1},
+    {"motor_pwm_rate", "U16"},
+    {"use_unsynced_pwm", "U8", nil, nil, nil, nil, nil, nil, nil, onoff, -1},
 
-    {"motor_pole_count_0", "U8", 12, 0, 6},
-    {"motor_pole_count_1", "U8", 12, 0, 6},
-    {"motor_pole_count_2", "U8", 12, 0, 6},
-    {"motor_pole_count_3", "U8", 12, 0, 6},
+    {"motor_pole_count_0", "U8"},
+    {"motor_pole_count_1", "U8"},
+    {"motor_pole_count_2", "U8"},
+    {"motor_pole_count_3", "U8"},
 
-    {"motor_rpm_lpf_0", "U8", 12, 0, 6},
-    {"motor_rpm_lpf_1", "U8", 12, 0, 6},
-    {"motor_rpm_lpf_2", "U8", 12, 0, 6},
-    {"motor_rpm_lpf_3", "U8", 12, 0, 6},
+    {"motor_rpm_lpf_0", "U8"},
+    {"motor_rpm_lpf_1", "U8"},
+    {"motor_rpm_lpf_2", "U8"},
+    {"motor_rpm_lpf_3", "U8"},
 
-    {"main_rotor_gear_ratio_0", "U16", 12, 0, 6},
-    {"main_rotor_gear_ratio_1", "U16", 12, 0, 6},
-    {"tail_rotor_gear_ratio_0", "U16", 12, 0, 6},
-    {"tail_rotor_gear_ratio_1", "U16", 12, 0, 6}
+    {"main_rotor_gear_ratio_0", "U16"},
+    {"main_rotor_gear_ratio_1", "U16"},
+    {"tail_rotor_gear_ratio_0", "U16"},
+    {"tail_rotor_gear_ratio_1", "U16"}
 }
 
 local SIM_RESPONSE = core.simResponse({

@@ -16,44 +16,44 @@ local MSP_API_CMD_READ = 56
 local MSP_API_CMD_WRITE = 57
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"meter_count", "U8", 12, 0, 6},
-    {"frame_length_1", "U8", 12, 0, 6},
-    {"meter_id_1", "U8", 12, 0, 6},
-    {"meter_type_1", "U8", 12, 0, 6},
-    {"scale_1", "U16", 12, 0, 6},
-    {"divider_1", "U16", 12, 0, 6},
-    {"divmul_1", "U8", 12, 0, 6},
-    {"frame_length_2", "U8", 12, 0, 6},
-    {"meter_id_2", "U8", 12, 0, 6},
-    {"meter_type_2", "U8", 12, 0, 6},
-    {"scale_2", "U16", 12, 0, 6},
-    {"divider_2", "U16", 12, 0, 6},
-    {"divmul_2", "U8", 12, 0, 6},
-    {"frame_length_3", "U8", 12, 0, 6},
-    {"meter_id_3", "U8", 12, 0, 6},
-    {"meter_type_3", "U8", 12, 0, 6},
-    {"scale_3", "U16", 12, 0, 6},
-    {"divider_3", "U16", 12, 0, 6},
-    {"divmul_3", "U8", 12, 0, 6},
-    {"frame_length_4", "U8", 12, 0, 6},
-    {"meter_id_4", "U8", 12, 0, 6},
-    {"meter_type_4", "U8", 12, 0, 6},
-    {"scale_4", "U16", 12, 0, 6},
-    {"divider_4", "U16", 12, 0, 6},
-    {"divmul_4", "U8", 12, 0, 6}
+    {"meter_count", "U8"},
+    {"frame_length_1", "U8"},
+    {"meter_id_1", "U8"},
+    {"meter_type_1", "U8"},
+    {"scale_1", "U16"},
+    {"divider_1", "U16"},
+    {"divmul_1", "U8"},
+    {"frame_length_2", "U8"},
+    {"meter_id_2", "U8"},
+    {"meter_type_2", "U8"},
+    {"scale_2", "U16"},
+    {"divider_2", "U16"},
+    {"divmul_2", "U8"},
+    {"frame_length_3", "U8"},
+    {"meter_id_3", "U8"},
+    {"meter_type_3", "U8"},
+    {"scale_3", "U16"},
+    {"divider_3", "U16"},
+    {"divmul_3", "U8"},
+    {"frame_length_4", "U8"},
+    {"meter_id_4", "U8"},
+    {"meter_type_4", "U8"},
+    {"scale_4", "U16"},
+    {"divider_4", "U16"},
+    {"divmul_4", "U8"}
 }
 
 -- Tuple layout:
---   field, type, api major, api minor, api revision, min, max, default, unit,
+--   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local WRITE_FIELD_SPEC = {
-    {"meter_id", "U8", 12, 0, 6},
-    {"scale", "U16", 12, 0, 6},
-    {"divider", "U16", 12, 0, 6},
-    {"divmul", "U8", 12, 0, 6}
+    {"meter_id", "U8"},
+    {"scale", "U16"},
+    {"divider", "U16"},
+    {"divmul", "U8"}
 }
 
 local SIM_RESPONSE = core.simResponse({
