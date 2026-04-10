@@ -314,6 +314,25 @@ local function refreshMenuLookupCache()
     return menuLookupCache
 end
 
+function ui.clearRuntimeCaches()
+    menuLookupCache = {menuRef = nil}
+    ui._helpCache = {}
+    ui._helpExistsCache = {}
+
+    if app then
+        app._mainMenuPressHandlers = nil
+        app._mainMenuPressSpecs = nil
+        app._navButtonContext = nil
+        app.headerTitle = nil
+        app.headerParentBreadcrumb = nil
+        if type(app.menuContextStack) == "table" then
+            for i = #app.menuContextStack, 1, -1 do
+                app.menuContextStack[i] = nil
+            end
+        end
+    end
+end
+
 local function getHeaderNavButtonHeight()
     local base = (app and app.radio and app.radio.navbuttonHeight) or 0
     if base <= 0 then return base end
