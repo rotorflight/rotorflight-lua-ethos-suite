@@ -278,6 +278,16 @@ local function createLazyWidgetProxy(path)
     end
 
     local proxy = {}
+    proxy.__isLoaded = function()
+        return loadedModule ~= nil
+    end
+    proxy.__callIfLoaded = function(method, ...)
+        local mod = loadedModule
+        local fn = mod and mod[method]
+        if type(fn) == "function" then
+            return fn(...)
+        end
+    end
     setmetatable(proxy, {
         __index = function(_, key)
             local mod = ensureWidgetModule()

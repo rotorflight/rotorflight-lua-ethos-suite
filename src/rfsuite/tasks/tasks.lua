@@ -155,6 +155,7 @@ local lastOptionalTaskCheckAt = 0
 
 local lastNameCheckAt = 0
 local NAME_CHECK_INTERVAL = 2.0
+local lastAppGuiRunning = false
 
 local usingSimulator = system.getVersion().simulation
 
@@ -796,6 +797,31 @@ local function eventMaybeWake(name, mod, now)
     mod.wakeup()
 end
 
+local function cleanupClosedAppRuntime()
+    local app = rfsuite.app
+
+    if app and app.tasks and app.tasks.reset then
+        app.tasks.reset()
+    end
+
+    if tasks.callback and tasks.callback.clearOwner then
+        tasks.callback.clearOwner("app.page")
+    elseif tasks.callback and tasks.callback.reset then
+        tasks.callback.reset()
+    end
+
+    local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if q and q.clear then
+        q:clear()
+    end
+
+    if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.resetApidata then
+        rfsuite.tasks.msp.api.resetApidata()
+    end
+
+    utils.log("[app] scheduler cleaned app-owned runtime after close", "debug")
+end
+
 function tasks.wakeup_protected()
 
     -- Primary scheduler tick: runs task loops, event edges, and profiling.
@@ -829,6 +855,12 @@ function tasks.wakeup_protected()
         tasks._justInitialized = false
         return
     end
+
+    local appGuiRunning = (rfsuite.app and rfsuite.app.guiIsRunning) == true
+    if lastAppGuiRunning and not appGuiRunning then
+        cleanupClosedAppRuntime()
+    end
+    lastAppGuiRunning = appGuiRunning
 
     -- Progressive task loading to avoid long stalls on a single tick.
     if tasks._initState == "loadNextTask" then

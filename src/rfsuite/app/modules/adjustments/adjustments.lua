@@ -142,6 +142,8 @@ local state = {
     showFunctionNamesInRangeSelector = false
 }
 
+local APP_PAGE_CALLBACK_META = {owner = "app.page"}
+
 local function setPendingFocus(key)
     state.pendingFocusKey = key
 end
@@ -762,7 +764,7 @@ local function readAdjustmentRanges()
 
         local callback = rfsuite.tasks and rfsuite.tasks.callback
         if callback and callback.now then
-            callback.now(finalizeLoad)
+            callback.now(finalizeLoad, APP_PAGE_CALLBACK_META)
         else
             finalizeLoad()
         end
@@ -788,7 +790,7 @@ local function readAdjustmentRanges()
 
         local callback = rfsuite.tasks and rfsuite.tasks.callback
         if callback and callback.now then
-            callback.now(finalizeFallback)
+            callback.now(finalizeFallback, APP_PAGE_CALLBACK_META)
         else
             finalizeFallback()
         end

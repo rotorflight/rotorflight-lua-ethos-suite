@@ -87,6 +87,7 @@ local MENU_TRANSITION_PROGRESS = false
 local NAV_FOCUS_ORDER = {"menu", "save", "reload", "tool", "help"}
 local ADMIN_OVERLAY_REFRESH_S = 0.50
 local ADMIN_OVERLAY_INVALIDATE_H = 20
+local APP_PAGE_CALLBACK_OWNER = "app.page"
 
 ui._adminOverlayState = ui._adminOverlayState or {
     lastInvalidateAt = 0,
@@ -311,6 +312,25 @@ local function refreshMenuLookupCache()
 
     menuLookupCache = cache
     return menuLookupCache
+end
+
+function ui.clearRuntimeCaches()
+    menuLookupCache = {menuRef = nil}
+    ui._helpCache = {}
+    ui._helpExistsCache = {}
+
+    if app then
+        app._mainMenuPressHandlers = nil
+        app._mainMenuPressSpecs = nil
+        app._navButtonContext = nil
+        app.headerTitle = nil
+        app.headerParentBreadcrumb = nil
+        if type(app.menuContextStack) == "table" then
+            for i = #app.menuContextStack, 1, -1 do
+                app.menuContextStack[i] = nil
+            end
+        end
+    end
 end
 
 local function getHeaderNavButtonHeight()
@@ -1081,6 +1101,10 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
+    if tasks and tasks.callback and tasks.callback.clearOwner then
+        tasks.callback.clearOwner(APP_PAGE_CALLBACK_OWNER)
+    end
+
     if preferences and preferences.developer and preferences.developer.memstats then
         local mem_kb = collectgarbage("count")
         local function tcount(t)
@@ -3057,6 +3081,7 @@ end
 
 function ui.requestPage()
     local log = utils.log
+    local callbackMeta = {owner = APP_PAGE_CALLBACK_OWNER}
 
     if not app.Page.apidata then return end
     if not app.Page.apidata.api and not app.Page.apidata.formdata then
@@ -3139,7 +3164,7 @@ function ui.requestPage()
             local base = 0.25
             local backoff = math.min(2.0, base * (2 ^ retryCount))
             local jitter = math.random() * 0.2
-            tasks.callback.inSeconds(backoff + jitter, processNextAPI)
+            tasks.callback.inSeconds(backoff + jitter, processNextAPI, callbackMeta)
             return
         end
 
@@ -3175,15 +3200,15 @@ function ui.requestPage()
             app.Page.apidata.retryCount[apiKey] = retryCount
             if retryCount < 3 then
                 log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "info")
-                tasks.callback.inSeconds(0.25, processNextAPI)
+                tasks.callback.inSeconds(0.25, processNextAPI, callbackMeta)
             else
                 log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
-                tasks.callback.inSeconds(0.25, processNextAPI)
+                tasks.callback.inSeconds(0.25, processNextAPI, callbackMeta)
             end
         end
 
-        tasks.callback.inSeconds(2, handleTimeout)
+        tasks.callback.inSeconds(2, handleTimeout, callbackMeta)
 
         API.setCompleteHandler(function(self, buf)
             if handled then return end
@@ -3217,7 +3242,7 @@ function ui.requestPage()
             state.currentIndex = state.currentIndex + 1
             API = nil
 
-            tasks.callback.inSeconds(0.5, processNextAPI)
+            tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
         end)
 
         API.setErrorHandler(function(self, err)
@@ -3233,11 +3258,11 @@ function ui.requestPage()
 
             if retryCount < 3 then
                 log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "info")
-                tasks.callback.inSeconds(0.5, processNextAPI)
+                tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
             else
                 log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
-                tasks.callback.inSeconds(0.5, processNextAPI)
+                tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
             end
         end)
 
