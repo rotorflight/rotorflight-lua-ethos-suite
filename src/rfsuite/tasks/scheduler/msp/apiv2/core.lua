@@ -260,12 +260,20 @@ function core.createReadOnlyAPI(spec)
         errorHandler = fn
     end
 
-    local function read()
+    local function read(...)
         if not operationSupported(spec, "read") then
             return false, "read_not_supported"
         end
 
-        return rfsuite.tasks.msp.mspQueue:add({
+        local payload = nil
+        local readBuilder = spec.buildReadPayload
+        if type(readBuilder) == "function" then
+            payload = readBuilder(state.payloadData, state.mspData, mspHelper, state, ...)
+        elseif spec.readPayload ~= nil then
+            payload = spec.readPayload
+        end
+
+        local message = {
             command = spec.readCmd,
             apiname = spec.name,
             minBytes = minBytes,
@@ -274,7 +282,18 @@ function core.createReadOnlyAPI(spec)
             simulatorResponse = spec.simulatorResponseRead,
             timeout = state.timeout,
             uuid = state.uuid
-        })
+        }
+
+        local readUuidResolver = spec.resolveReadUUID
+        if type(readUuidResolver) == "function" then
+            message.uuid = readUuidResolver(state, ...)
+        end
+
+        if payload ~= nil then
+            message.payload = payload
+        end
+
+        return rfsuite.tasks.msp.mspQueue:add(message)
     end
 
     local function write()
@@ -319,7 +338,7 @@ function core.createReadOnlyAPI(spec)
     local function setRebuildOnWrite()
     end
 
-    return {
+    local api = {
         read = read,
         write = write,
         data = data,
@@ -336,6 +355,26 @@ function core.createReadOnlyAPI(spec)
         __rfReadStructure = {},
         __rfWriteStructure = {}
     }
+
+    local methods = spec.methods
+    if type(methods) == "table" then
+        for name, fn in pairs(methods) do
+            if type(fn) == "function" then
+                api[name] = function(...)
+                    return fn(state, ...)
+                end
+            end
+        end
+    end
+
+    local exports = spec.exports
+    if type(exports) == "table" then
+        for name, value in pairs(exports) do
+            api[name] = value
+        end
+    end
+
+    return api
 end
 
 function core.createConfigAPI(spec)
@@ -347,9 +386,6 @@ function core.createConfigAPI(spec)
     end
     if spec.readCmd == nil then
         error("apiv2.createConfigAPI requires spec.readCmd")
-    end
-    if spec.writeCmd == nil then
-        error("apiv2.createConfigAPI requires spec.writeCmd")
     end
     if type(spec.fields) ~= "table" then
         error("apiv2.createConfigAPI requires spec.fields")
@@ -415,12 +451,20 @@ function core.createConfigAPI(spec)
         errorHandler = fn
     end
 
-    local function read()
+    local function read(...)
         if not operationSupported(spec, "read") then
             return false, "read_not_supported"
         end
 
-        return rfsuite.tasks.msp.mspQueue:add({
+        local payload = nil
+        local readBuilder = spec.buildReadPayload
+        if type(readBuilder) == "function" then
+            payload = readBuilder(state.payloadData, state.mspData, mspHelper, state, ...)
+        elseif spec.readPayload ~= nil then
+            payload = spec.readPayload
+        end
+
+        local message = {
             command = spec.readCmd,
             apiname = spec.name,
             minBytes = minBytes,
@@ -429,25 +473,44 @@ function core.createConfigAPI(spec)
             simulatorResponse = spec.simulatorResponseRead,
             timeout = state.timeout,
             uuid = state.uuid
-        })
+        }
+
+        local readUuidResolver = spec.resolveReadUUID
+        if type(readUuidResolver) == "function" then
+            message.uuid = readUuidResolver(state, ...)
+        end
+
+        if payload ~= nil then
+            message.payload = payload
+        end
+
+        return rfsuite.tasks.msp.mspQueue:add(message)
     end
 
-    local function write(suppliedPayload)
+    local function write(suppliedPayload, ...)
         if not operationSupported(spec, "write") then
+            return false, "write_not_supported"
+        end
+        if spec.writeCmd == nil then
             return false, "write_not_supported"
         end
 
         local payload = suppliedPayload
         if payload == nil then
-            payload = getLegacyCore().buildWritePayload(
-                spec.name,
-                state.payloadData,
-                writeStructure,
-                state.rebuildOnWrite == true
-            )
+            local writeBuilder = spec.buildWritePayload
+            if type(writeBuilder) == "function" then
+                payload = writeBuilder(state.payloadData, state.mspData, mspHelper, state, ...)
+            else
+                payload = getLegacyCore().buildWritePayload(
+                    spec.name,
+                    state.payloadData,
+                    writeStructure,
+                    state.rebuildOnWrite == true
+                )
+            end
         end
 
-        return rfsuite.tasks.msp.mspQueue:add({
+        local message = {
             command = spec.writeCmd,
             apiname = spec.name,
             payload = payload,
@@ -456,7 +519,14 @@ function core.createConfigAPI(spec)
             simulatorResponse = spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE,
             timeout = state.timeout,
             uuid = resolveWriteUUID(spec, state)
-        })
+        }
+
+        local writeUuidResolver = spec.resolveWriteUUID
+        if type(writeUuidResolver) == "function" then
+            message.uuid = writeUuidResolver(state, suppliedPayload, ...)
+        end
+
+        return rfsuite.tasks.msp.mspQueue:add(message)
     end
 
     local function data()
@@ -517,6 +587,17 @@ function core.createConfigAPI(spec)
         __rfReadStructure = readStructure,
         __rfWriteStructure = writeStructure
     }
+
+    local methods = spec.methods
+    if type(methods) == "table" then
+        for name, fn in pairs(methods) do
+            if type(fn) == "function" then
+                api[name] = function(...)
+                    return fn(state, ...)
+                end
+            end
+        end
+    end
 
     local exports = spec.exports
     if type(exports) == "table" then
