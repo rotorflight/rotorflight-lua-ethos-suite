@@ -804,7 +804,9 @@ local function cleanupClosedAppRuntime()
         app.tasks.reset()
     end
 
-    if tasks.callback and tasks.callback.reset then
+    if tasks.callback and tasks.callback.clearOwner then
+        tasks.callback.clearOwner("app.page")
+    elseif tasks.callback and tasks.callback.reset then
         tasks.callback.reset()
     end
 
