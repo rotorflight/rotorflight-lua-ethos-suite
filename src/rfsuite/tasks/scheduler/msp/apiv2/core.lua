@@ -213,11 +213,17 @@ function core.createReadOnlyAPI(spec)
     if spec.readCmd == nil then
         error("apiv2.createReadOnlyAPI requires spec.readCmd")
     end
-    if type(spec.fields) ~= "table" then
+    local customParser = spec.parseRead
+    if customParser == nil and type(spec.fields) ~= "table" then
         error("apiv2.createReadOnlyAPI requires spec.fields")
     end
 
-    local fieldNames, fieldReaders, minBytes = core.prepareReadPlan(spec.fields)
+    local fieldNames = nil
+    local fieldReaders = nil
+    local minBytes = tonumber(spec.minBytes) or 0
+    if customParser == nil then
+        fieldNames, fieldReaders, minBytes = core.prepareReadPlan(spec.fields)
+    end
     local completeHandler = nil
     local errorHandler = nil
     local state = {
@@ -227,14 +233,29 @@ function core.createReadOnlyAPI(spec)
     }
 
     local function processReply(self, buf)
-        state.mspData = {
-            parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
-            structure = {},
-            buffer = buf,
-            positionmap = nil,
-            other = nil,
-            receivedBytesCount = #buf
-        }
+        if type(customParser) == "function" then
+            local parsed, parseErr = customParser(buf, mspHelper, state)
+            if not parsed then
+                onError(self, parseErr or "parse_failed")
+                return
+            end
+            if parsed.structure == nil then
+                parsed.structure = {}
+            end
+            if parsed.receivedBytesCount == nil then
+                parsed.receivedBytesCount = #buf
+            end
+            state.mspData = parsed
+        else
+            state.mspData = {
+                parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
+                structure = {},
+                buffer = buf,
+                positionmap = nil,
+                other = nil,
+                receivedBytesCount = #buf
+            }
+        end
         if completeHandler then
             completeHandler(self, buf)
         end
@@ -421,14 +442,33 @@ function core.createConfigAPI(spec)
     end
 
     local function handleReadReply(self, buf)
-        state.mspData = {
-            parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
-            structure = readStructure,
-            buffer = buf,
-            positionmap = positionmap,
-            other = nil,
-            receivedBytesCount = #buf
-        }
+        local customParser = spec.parseRead
+        if type(customParser) == "function" then
+            local parsed, parseErr = customParser(buf, mspHelper, state)
+            if not parsed then
+                dispatchError(self, parseErr or "parse_failed")
+                return
+            end
+            if parsed.structure == nil then
+                parsed.structure = readStructure
+            end
+            if parsed.positionmap == nil then
+                parsed.positionmap = positionmap
+            end
+            if parsed.receivedBytesCount == nil then
+                parsed.receivedBytesCount = #buf
+            end
+            state.mspData = parsed
+        else
+            state.mspData = {
+                parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
+                structure = readStructure,
+                buffer = buf,
+                positionmap = positionmap,
+                other = nil,
+                receivedBytesCount = #buf
+            }
+        end
         emitComplete(self, buf)
     end
 
