@@ -46,14 +46,11 @@ end
 
 local function calculateConsumption()
     if smartfuelprefs.getSource() == 1 then
-        local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
-        local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
-        local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
-        if smartfuelPct then
-            local usableCapacity = capacity * (1 - warningPercentage / 100)
-            local usedPercent = 100 - smartfuelPct
-            return (usedPercent / 100) * usableCapacity
+        if smartfuelvoltage.getConsumption then
+            local consumption = smartfuelvoltage.getConsumption()
+            if consumption ~= nil then return consumption end
         end
+        return 0
     end
     return rfsuite.tasks.telemetry.getSensor("consumption") or 0
 end

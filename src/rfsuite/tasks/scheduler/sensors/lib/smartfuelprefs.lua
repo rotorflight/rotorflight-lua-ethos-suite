@@ -46,10 +46,6 @@ function prefs.getFuelDropPerSecond()
     return getNumericField(getBatteryPrefs(), "fuel_drop_rate", 10) / 10
 end
 
-function prefs.getFuelRisePerSecond()
-    return getNumericField(getBatteryPrefs(), "fuel_rise_rate", 2) / 10
-end
-
 function prefs.getSagMultiplier()
     local batteryPrefs = getBatteryPrefs()
     local sagMultiplierPercent = getNumericField(batteryPrefs, "sag_multiplier_percent", nil)

@@ -16,7 +16,6 @@ data['fields'] = {
     ["stable_window"] = {t = "@i18n(api.BATTERY_INI.stable_window)@"},
     ["voltage_fall_limit"] = {t = "@i18n(api.BATTERY_INI.voltage_fall_limit)@"},
     ["fuel_drop_rate"] = {t = "@i18n(api.BATTERY_INI.fuel_drop_rate)@"},
-    ["fuel_rise_rate"] = {t = "@i18n(api.BATTERY_INI.fuel_rise_rate)@"},
     ["sag_multiplier_percent"] = {t = "@i18n(api.BATTERY_INI.sag_multiplier_percent)@"},
     ["alert_type"] = {t = "@i18n(api.BATTERY_INI.alert_type)@"},
     ["becalertvalue"] = {t = "@i18n(api.BATTERY_INI.becalertvalue)@"},
