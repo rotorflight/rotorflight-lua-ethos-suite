@@ -9,6 +9,5 @@ return {
     ["stable_window"] = "@i18n(api.SMARTFUEL_CONFIG.stable_window)@",
     ["voltage_fall_limit"] = "@i18n(api.SMARTFUEL_CONFIG.voltage_fall_limit)@",
     ["fuel_drop_rate"] = "@i18n(api.SMARTFUEL_CONFIG.fuel_drop_rate)@",
-    ["fuel_rise_rate"] = "@i18n(api.SMARTFUEL_CONFIG.fuel_rise_rate)@",
     ["sag_multiplier_percent"] = "@i18n(api.SMARTFUEL_CONFIG.sag_multiplier_percent)@",
 }

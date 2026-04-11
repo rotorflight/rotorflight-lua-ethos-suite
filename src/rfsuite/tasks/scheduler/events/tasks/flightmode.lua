@@ -63,6 +63,14 @@ local function determineMode()
         return "inflight"
     end
 
+    -- Hold inflight while the model remains armed after flight has started.
+    -- This avoids transient sensor/telemetry gaps flipping to postflight mid-flight,
+    -- which can reset dashboard/runtime state and Smart Fuel tracking.
+    if armed and hasBeenInFlight then
+        lastArmed = armed
+        return "inflight"
+    end
+
     lastArmed = armed
     return hasBeenInFlight and "postflight" or "preflight"
 end

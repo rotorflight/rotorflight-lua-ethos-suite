@@ -34,7 +34,6 @@ local FIELD_SPEC = {
     {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
     {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
     {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
-    {"fuel_rise_rate", "U16", 0, 500, 2, "%/s", 1, 10, 1},
     {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1},
     {"alert_type", "U8", 0, 2, 0, nil, nil, nil, nil, nil, alertTypes, -1},
     {"becalertvalue", "U8", 30, 140, 6.5, "V", 1, 10, 1},

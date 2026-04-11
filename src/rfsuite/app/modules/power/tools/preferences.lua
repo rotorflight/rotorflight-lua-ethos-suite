@@ -21,7 +21,6 @@ local function buildFields(apiIndex)
         {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = apiIndex, apikey = "sag_multiplier_percent"},
         {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = apiIndex, apikey = "voltage_fall_limit"},
         {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = apiIndex, apikey = "fuel_drop_rate"},
-        {t = "@i18n(app.modules.power.smartfuel_fuel_rise_rate)@",      mspapi = apiIndex, apikey = "fuel_rise_rate"},
     }
 end
 
@@ -72,7 +71,6 @@ local function wakeup(self)
     for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
         if f.apikey == "voltage_fall_limit" or
            f.apikey == "fuel_drop_rate" or
-           f.apikey == "fuel_rise_rate" or
            f.apikey == "sag_multiplier_percent" then
             local fieldHandle = rfsuite.app.formFields[i]
             if fieldHandle and fieldHandle.enable then

@@ -29,7 +29,6 @@ local FIELD_SPEC = {
     {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
     {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
     {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
-    {"fuel_rise_rate", "U16", 0, 500, 2, "%/s", 1, 10, 1},
     {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1}
 }
 
@@ -39,7 +38,6 @@ local SIM_RESPONSE = core.simResponse({
     15, 0,   -- stable_window
     5, 0,    -- voltage_fall_limit
     10, 0,   -- fuel_drop_rate
-    2, 0,    -- fuel_rise_rate
     70, 0    -- sag_multiplier_percent
 })
 
