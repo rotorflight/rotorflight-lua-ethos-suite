@@ -42,9 +42,10 @@ local function fallingLimitedFilter(current_v, prev_v, dt)
 end
 
 local dischargeCurveTable = {}
-for i = 0, 100 do
-    local v = 3.30 + i * 0.01
-    local percent = (v - 3.30) / (4.20 - 3.30) * 100
+for i = 0, 120 do
+    local v = 3.00 + i * 0.01
+    local a, b = 12, 3.7
+    local percent = 100 / (1 + math.exp(-a * (v - b)))
     dischargeCurveTable[i + 1] = math_floor(math_min(100, math_max(0, percent)) + 0.5)
 end
 
@@ -52,6 +53,20 @@ local function resetVoltageTracking()
     lastVoltages = {}
     voltageStableTime = nil
     voltageStabilised = false
+end
+
+local function resetState()
+    batteryConfigCache = nil
+    stabilizeNotBefore = nil
+    lastSensorMode = nil
+    lastFuelPercent = nil
+    lastFuelTimestamp = nil
+    lastFilteredVoltage = nil
+    lastRpm = nil
+    telemetry = nil
+    currentMode = rfsuite.flightmode.current or "preflight"
+    lastMode = currentMode
+    resetVoltageTracking()
 end
 
 local function isVoltageStable()
@@ -62,6 +77,12 @@ local function isVoltageStable()
         if v > vmax then vmax = v end
     end
     return (vmax - vmin) <= voltageThreshold
+end
+
+local function shouldResetForModeChange(previousMode, nextMode)
+    if previousMode == nextMode then return false end
+    if nextMode ~= "preflight" then return false end
+    return rfsuite.session and rfsuite.session.isArmed == false
 end
 
 local function getStickLoadFactor()
@@ -98,17 +119,17 @@ local function fuelPercentageCalcByVoltage(voltage, cellCount)
     local bc = rfsuite.session.batteryConfig
     local minV = bc.vbatmincellvoltage or 3.30
     local fullV = bc.vbatfullcellvoltage or 4.10
-    local reserve = bc.consumptionWarningPercentage or 30
-
-    local usableRange = fullV - minV
-    local adjustedMinV = minV + (usableRange * (reserve / 100)) * 1.4
-
     local voltagePerCell = voltage / cellCount
 
-    voltagePerCell = math_max(3.30, math_min(fullV, voltagePerCell))
+    if voltagePerCell >= fullV then
+        return 100
+    elseif voltagePerCell <= minV then
+        return 0
+    end
 
-    local sigmoidMin, sigmoidMax = 3.30, 4.20
-    local scaledV = sigmoidMin + (voltagePerCell - adjustedMinV) / (fullV - adjustedMinV) * (sigmoidMax - sigmoidMin)
+    local sigmoidMin, sigmoidMax = 3.00, 4.20
+    local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
+    scaledV = math_max(sigmoidMin, math_min(sigmoidMax, scaledV))
 
     local tableIndex = math_floor((scaledV - sigmoidMin) / 0.01) + 1
     tableIndex = math_max(1, math_min(#dischargeCurveTable, tableIndex))
@@ -120,7 +141,7 @@ local function smartFuelCalc()
     if not telemetry then telemetry = rfsuite.tasks.telemetry end
 
     if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then
-        resetVoltageTracking()
+        resetState()
         return nil
     end
 
@@ -154,7 +175,7 @@ local function smartFuelCalc()
     local now = os_clock()
     currentMode = rfsuite.flightmode.current or "preflight"
 
-    if currentMode ~= lastMode then
+    if shouldResetForModeChange(lastMode, currentMode) then
         rfsuite.utils.log("Flight mode changed – resetting voltage state", "info")
         resetVoltageTracking()
         stabilizeNotBefore = now + smartfuelprefs.getStabilizeDelaySeconds()
@@ -180,7 +201,7 @@ local function smartFuelCalc()
         end
     end
 
-    if #lastVoltages >= 1 and rfsuite.flightmode.current == "preflight" then
+    if #lastVoltages >= 2 and rfsuite.flightmode.current == "preflight" then
         local prev = lastVoltages[#lastVoltages - 1]
         if voltage > prev + voltageThreshold then
             rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
@@ -209,8 +230,9 @@ local function smartFuelCalc()
 
     lastFuelPercent = percent
     lastFuelTimestamp = now
+    lastFilteredVoltage = filteredVoltage
 
     return percent
 end
 
-return {calculate = smartFuelCalc, reset = resetVoltageTracking}
+return {calculate = smartFuelCalc, reset = resetState}
