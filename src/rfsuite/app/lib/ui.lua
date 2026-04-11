@@ -2581,7 +2581,15 @@ function ui.openPage(opts)
     if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
-            if session.apiVersion == nil then return end
+            if session.apiVersion == nil then
+                utils.log("Page open aborted: API version unavailable; returning to main menu", "info")
+                if app.triggers then
+                    app.triggers.closeProgressLoader = true
+                    app.triggers.closeProgressLoaderNoisProcessed = true
+                end
+                app._pendingMainMenuOpen = true
+                return
+            end
 
             local valid = (field.apiversion == nil or utils.apiVersionCompare(">=", field.apiversion)) and (field.apiversionlt == nil or utils.apiVersionCompare("<", field.apiversionlt)) and (field.apiversiongt == nil or utils.apiVersionCompare(">", field.apiversiongt)) and (field.apiversionlte == nil or utils.apiVersionCompare("<=", field.apiversionlte)) and (field.apiversiongte == nil or utils.apiVersionCompare(">=", field.apiversiongte)) and
                               (field.enablefunction == nil or field.enablefunction())
