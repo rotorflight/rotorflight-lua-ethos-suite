@@ -5,6 +5,9 @@
 
 local rfsuite = require("rfsuite")
 
+local utils = rfsuite.utils
+local log = utils.log
+
 local arg = {...}
 
 local switches = {}
@@ -15,9 +18,6 @@ local lastPlayTime = {}
 local lastSwitchState = {}
 local switchStartTime = nil
 
-local validCache = {}
-local lastValidityCheck = {}
-local VALIDITY_RECHECK_SEC = 5
 local initialized = false
 
 local os_clock = os.clock
@@ -50,26 +50,15 @@ function switches.wakeup()
 
     if (now - switchStartTime) <= 5 then return end
 
-    local flightmode = rfsuite.flightmode
-    local mode = (flightmode and flightmode.current) or nil
-    local allowRecheck = (mode == "preflight")
     local telemetry = rfsuite.tasks.telemetry
 
     for key, sensor in pairs(switchTable.switches) do
-
-        local isValid = validCache[key]
-        local lastChk = lastValidityCheck[key] or 0
-
-        if isValid == nil or (allowRecheck and (now - lastChk) >= VALIDITY_RECHECK_SEC) then
-            -- sensor:state() returns boolean for validity/active state on some sources
-            -- optimization: call only when needed
-            local s = sensor:state() 
-            validCache[key] = (s == true)
-            lastValidityCheck[key] = now
+        -- Read the live switch position each wakeup; caching a false state masks later ON transitions.
+        local currentState = sensor:state() == true
+        if not currentState then
+            lastSwitchState[key] = false
+            goto continue
         end
-
-        local currentState = validCache[key] == true
-        if not currentState then goto continue end
 
         local prevState = lastSwitchState[key] or false
         local lastTime = lastPlayTime[key] or 0
@@ -100,8 +89,6 @@ function switches.reset()
     lastPlayTime = {}
     lastSwitchState = {}
     switchStartTime = nil
-    validCache = {}
-    lastValidityCheck = {}
     initialized = false
 end
 
