@@ -30,6 +30,7 @@ local lastPush = {}
 local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
+local cleanupSignature = nil
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
@@ -76,6 +77,55 @@ local function resetConsumption() end
 local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = UNIT_PERCENT, minimum = -1, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
 
 smart.sensors = smart_sensors
+
+local function dropObsoleteSensor(appId)
+    local source = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+    if not source then return end
+
+    local currentModule = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module()
+    if currentModule ~= nil and source.module and source:module() ~= currentModule then
+        return
+    end
+
+    if source.drop then
+        source:drop()
+    elseif source.reset then
+        source:reset()
+    end
+end
+
+local function cleanupObsoleteSmartSensors()
+    local session = rfsuite.session
+    if not (session and session.apiVersion and session.telemetrySensor) then return end
+
+    local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol
+    local moduleId = session.telemetrySensor and session.telemetrySensor.module and session.telemetrySensor:module() or "?"
+    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId)}, ":")
+    if cleanupSignature == signature then return end
+    cleanupSignature = signature
+
+    if useNativeSmartSensors() then
+        dropObsoleteSensor(0x5FE1)
+        dropObsoleteSensor(0x5FE0)
+        sensorCache[0x5FE1] = nil
+        sensorCache[0x5FE0] = nil
+        negativeCache[0x5FE1] = nil
+        negativeCache[0x5FE0] = nil
+        lastValue[0x5FE1] = nil
+        lastValue[0x5FE0] = nil
+        lastPush[0x5FE1] = nil
+        lastPush[0x5FE0] = nil
+        return
+    end
+
+    if protocol == "sport" then
+        dropObsoleteSensor(0x5251)
+        dropObsoleteSensor(0x5252)
+    elseif protocol == "crsf" then
+        dropObsoleteSensor(0x1015)
+        dropObsoleteSensor(0x1016)
+    end
+end
 
 local function createOrUpdateSensor(appId, fieldMeta, value)
 
@@ -160,6 +210,8 @@ function smart.wakeup()
     if (os_clock() - lastWake) < interval then return end
     lastWake = os_clock()
 
+    cleanupObsoleteSmartSensors()
+
     for name, meta in pairs(smart_sensors) do
         local shouldPublish = not ((name == "smartfuel" or name == "smartconsumption") and useNativeSmartSensors())
         if shouldPublish then
@@ -189,6 +241,7 @@ function smart.reset()
     lastValue = {}
     lastPush = {}
     lastModule = nil
+    cleanupSignature = nil
 
     resetFuel()
     resetConsumption()
