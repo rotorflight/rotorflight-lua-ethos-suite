@@ -292,9 +292,11 @@ local function smartFuelCalc()
     local targetConsumption = usableCapacity * (100 - targetPercent) / 100
     local isPreflightDisarmed = currentMode == "preflight" and rfsuite.session.isArmed == false
 
-    if virtualConsumption == nil or isPreflightDisarmed then
+    -- Seed once from stabilized resting voltage, then hold that estimate until flight begins.
+    -- A meaningful voltage rise in preflight still triggers the reset/reseed path above.
+    if virtualConsumption == nil then
         virtualConsumption = targetConsumption
-    elseif lastFuelTimestamp then
+    elseif not isPreflightDisarmed and lastFuelTimestamp then
         local dt = now - lastFuelTimestamp
         local maxConsumptionIncrease = dt * smartfuelprefs.getFuelDropPerSecond() * usableCapacity / 100
         if targetConsumption > virtualConsumption then
