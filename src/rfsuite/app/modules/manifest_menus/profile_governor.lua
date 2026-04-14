@@ -25,13 +25,13 @@ return {
     },
     pages = {
         {
-            image = "general.jpg",
+            image = "general.png",
             name = "@i18n(app.modules.governor.menu_general)@",
             script = "general.lua",
             shortcutId = "s_profile_governor_general_lua_3a27cf6764",
         },
         {
-            image = "flags.jpg",
+            image = "flags.png",
             name = "@i18n(app.modules.governor.menu_flags)@",
             script = "flags.lua",
             shortcutId = "s_profile_governor_flags_lua_3992e9f64d",

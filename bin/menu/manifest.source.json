@@ -10,7 +10,7 @@
             2
           ],
           "id": "flight_tuning",
-          "image": "app/gfx/flight_tuning.jpg",
+          "image": "app/gfx/flight_tuning.png",
           "loaderspeed": "FAST",
           "menuId": "flight_tuning_menu",
           "title": "Flight Tuning",
@@ -23,7 +23,7 @@
             2
           ],
           "id": "setup",
-          "image": "app/gfx/hardware.jpg",
+          "image": "app/gfx/hardware.png",
           "loaderspeed": "FAST",
           "menuId": "setup_menu",
           "title": "Setup",
@@ -42,7 +42,7 @@
             6,
             2
           ],
-          "image": "app/gfx/tools.jpg",
+          "image": "app/gfx/tools.png",
           "menuId": "tools_menu",
           "offline": true,
           "title": "Tools",
@@ -54,7 +54,7 @@
             6,
             2
           ],
-          "image": "app/modules/logs/gfx/logs.jpg",
+          "image": "app/modules/logs/gfx/logs.png",
           "loaderspeed": "FAST",
           "module": "logs",
           "offline": true,
@@ -68,7 +68,7 @@
             6,
             2
           ],
-          "image": "app/modules/settings/settings.jpg",
+          "image": "app/modules/settings/settings.png",
           "menuId": "settings_admin",
           "offline": true,
           "title": "Settings",
@@ -82,7 +82,7 @@
             6,
             2
           ],
-          "image": "app/modules/developer/developer.jpg",
+          "image": "app/modules/developer/developer.png",
           "module": "developer",
           "offline": true,
           "script": "developer.lua",
@@ -103,7 +103,7 @@
       },
       "pages": [
         {
-          "image": "filters/filters.jpg",
+          "image": "filters/filters.png",
           "name": "Filters",
           "order": 1,
           "script": "filters/filters.lua",
@@ -115,7 +115,7 @@
             0,
             6
           ],
-          "image": "profile_pidcontroller/pids-controller.jpg",
+          "image": "profile_pidcontroller/pids-controller.png",
           "name": "PID Controller",
           "order": 2,
           "script": "profile_pidcontroller/pidcontroller.lua",
@@ -127,7 +127,7 @@
             0,
             6
           ],
-          "image": "profile_pidbandwidth/pids-bandwidth.jpg",
+          "image": "profile_pidbandwidth/pids-bandwidth.png",
           "name": "PID Bandwidth",
           "order": 3,
           "script": "profile_pidbandwidth/pidbandwidth.lua",
@@ -139,7 +139,7 @@
             0,
             6
           ],
-          "image": "profile_autolevel/autolevel.jpg",
+          "image": "profile_autolevel/autolevel.png",
           "name": "Autolevel",
           "order": 4,
           "script": "profile_autolevel/autolevel.lua",
@@ -151,7 +151,7 @@
             0,
             6
           ],
-          "image": "profile_mainrotor/mainrotor.jpg",
+          "image": "profile_mainrotor/mainrotor.png",
           "name": "Main Rotor",
           "order": 5,
           "script": "profile_mainrotor/mainrotor.lua",
@@ -163,7 +163,7 @@
             0,
             6
           ],
-          "image": "profile_tailrotor/tailrotor.jpg",
+          "image": "profile_tailrotor/tailrotor.png",
           "name": "Tail Rotor",
           "order": 6,
           "script": "profile_tailrotor/tailrotor.lua",
@@ -175,7 +175,7 @@
             0,
             6
           ],
-          "image": "profile_rescue/rescue.jpg",
+          "image": "profile_rescue/rescue.png",
           "name": "Rescue",
           "order": 7,
           "script": "profile_rescue/rescue.lua",
@@ -187,7 +187,7 @@
             0,
             6
           ],
-          "image": "rates_advanced/rates.jpg",
+          "image": "rates_advanced/rates.png",
           "name": "Rates",
           "order": 8,
           "script": "rates_advanced/rates_advanced.lua",
@@ -214,13 +214,13 @@
       },
       "pages": [
         {
-          "image": "configuration.jpg",
+          "image": "configuration.png",
           "name": "Configuration",
           "script": "configuration.lua",
           "translation": "@i18n(app.modules.beepers.menu_configuration)@"
         },
         {
-          "image": "dshot.jpg",
+          "image": "dshot.png",
           "name": "ESC Beacon",
           "script": "dshot.lua",
           "translation": "@i18n(app.modules.beepers.menu_dshot)@"
@@ -246,19 +246,19 @@
       },
       "pages": [
         {
-          "image": "configuration.jpg",
+          "image": "configuration.png",
           "name": "Configuration",
           "script": "configuration.lua",
           "translation": "@i18n(app.modules.blackbox.menu_configuration)@"
         },
         {
-          "image": "logging.jpg",
+          "image": "logging.png",
           "name": "Logging",
           "script": "logging.lua",
           "translation": "@i18n(app.modules.blackbox.menu_logging)@"
         },
         {
-          "image": "status.jpg",
+          "image": "status.png",
           "name": "Status",
           "script": "status.lua",
           "translation": "@i18n(app.modules.blackbox.menu_status)@"
@@ -281,7 +281,7 @@
       "pages": [
         {
           "bgtask": true,
-          "image": "app/modules/developer/gfx/msp_speed.jpg",
+          "image": "app/modules/developer/gfx/msp_speed.png",
           "name": "MSP Speed",
           "offline": false,
           "script": "developer/tools/msp_speed.lua",
@@ -289,7 +289,7 @@
         },
         {
           "bgtask": true,
-          "image": "app/modules/developer/gfx/api_tester.jpg",
+          "image": "app/modules/developer/gfx/api_tester.png",
           "name": "API Tester",
           "offline": false,
           "script": "developer/tools/api_tester.lua",
@@ -297,7 +297,7 @@
         },
         {
           "bgtask": true,
-          "image": "app/modules/developer/gfx/msp_exp.jpg",
+          "image": "app/modules/developer/gfx/msp_exp.png",
           "name": "MSP Expermental",
           "offline": false,
           "script": "developer/tools/msp_exp.lua",
@@ -305,7 +305,7 @@
         },
         {
           "bgtask": true,
-          "image": "app/modules/developer/gfx/settings.jpg",
+          "image": "app/modules/developer/gfx/settings.png",
           "name": "Settings",
           "offline": true,
           "script": "settings/tools/development.lua",
@@ -324,7 +324,7 @@
       "pages": [
         {
           "bgtask": false,
-          "image": "rfstatus.jpg",
+          "image": "rfstatus.png",
           "name": "Status",
           "offline": false,
           "script": "rfstatus.lua",
@@ -332,7 +332,7 @@
         },
         {
           "bgtask": true,
-          "image": "sensors.jpg",
+          "image": "sensors.png",
           "name": "Sensors",
           "offline": true,
           "script": "sensors.lua",
@@ -340,7 +340,7 @@
         },
         {
           "bgtask": true,
-          "image": "fblsensors.jpg",
+          "image": "fblsensors.png",
           "name": "FBL Sensors",
           "offline": false,
           "script": "fblsensors.lua",
@@ -348,7 +348,7 @@
         },
         {
           "bgtask": true,
-          "image": "fblstatus.jpg",
+          "image": "fblstatus.png",
           "name": "FBL Status",
           "offline": false,
           "script": "fblstatus.lua",
@@ -356,7 +356,7 @@
         },
         {
           "bgtask": true,
-          "image": "info.jpg",
+          "image": "info.png",
           "name": "Info",
           "offline": true,
           "script": "info.lua",
@@ -384,25 +384,25 @@
       },
       "pages": [
         {
-          "image": "throttle.jpg",
+          "image": "throttle.png",
           "name": "Throttle",
           "script": "throttle.lua",
           "translation": "@i18n(app.modules.esc_motors.throttle)@"
         },
         {
-          "image": "telemetry.jpg",
+          "image": "telemetry.png",
           "name": "Telemetry",
           "script": "telemetry.lua",
           "translation": "@i18n(app.modules.esc_motors.telemetry)@"
         },
         {
-          "image": "rpm.jpg",
+          "image": "rpm.png",
           "name": "RPM",
           "script": "rpm.lua",
           "translation": "@i18n(app.modules.esc_motors.rpm)@"
         },
         {
-          "image": "app/modules/esc_tools/esc.jpg",
+          "image": "app/modules/esc_tools/esc.png",
           "loaderspeed": false,
           "name": "ESC Tools",
           "offline": false,
@@ -423,21 +423,21 @@
       },
       "pages": [
         {
-          "image": "pids/pids.jpg",
+          "image": "pids/pids.png",
           "name": "PIDs",
           "order": 1,
           "script": "pids/pids.lua",
           "translation": "@i18n(app.modules.pids.name)@"
         },
         {
-          "image": "rates/rates.jpg",
+          "image": "rates/rates.png",
           "name": "Rates",
           "order": 2,
           "script": "rates/rates.lua",
           "translation": "@i18n(app.modules.rates.name)@"
         },
         {
-          "image": "profile_governor/governor.jpg",
+          "image": "profile_governor/governor.png",
           "name": "Governor",
           "order": 3,
           "script": "profile_governor/governor.lua",
@@ -465,7 +465,7 @@
           "translation": "@i18n(app.modules.profile_governor.name)@"
         },
         {
-          "image": "app/gfx/advanced.jpg",
+          "image": "app/gfx/advanced.png",
           "menuId": "advanced_menu",
           "name": "Advanced",
           "order": 4,
@@ -493,25 +493,25 @@
       },
       "pages": [
         {
-          "image": "general.jpg",
+          "image": "general.png",
           "name": "General",
           "script": "general.lua",
           "translation": "@i18n(app.modules.governor.menu_general)@"
         },
         {
-          "image": "time.jpg",
+          "image": "time.png",
           "name": "Ramp Time",
           "script": "time.lua",
           "translation": "@i18n(app.modules.governor.menu_time)@"
         },
         {
-          "image": "filters.jpg",
+          "image": "filters.png",
           "name": "Filters",
           "script": "filters.lua",
           "translation": "@i18n(app.modules.governor.menu_filters)@"
         },
         {
-          "image": "curves.jpg",
+          "image": "curves.png",
           "name": "Bypass Curve",
           "script": "curves.lua",
           "translation": "@i18n(app.modules.governor.menu_curves)@"
@@ -543,7 +543,7 @@
             0,
             9
           ],
-          "image": "swash.jpg",
+          "image": "swash.png",
           "name": "Swash",
           "script": "swash.lua",
           "translation": "@i18n(app.modules.mixer.swash)@"
@@ -554,7 +554,7 @@
             0,
             9
           ],
-          "image": "swash.jpg",
+          "image": "swash.png",
           "name": "Swash",
           "script": "swash_legacy.lua",
           "translation": "@i18n(app.modules.mixer.swash)@"
@@ -565,7 +565,7 @@
             0,
             9
           ],
-          "image": "geometry.jpg",
+          "image": "geometry.png",
           "name": "Geometry",
           "script": "swashgeometry.lua",
           "translation": "@i18n(app.modules.mixer.geometry)@"
@@ -576,7 +576,7 @@
             0,
             9
           ],
-          "image": "tail.jpg",
+          "image": "tail.png",
           "name": "Tail",
           "script": "tail.lua",
           "translation": "@i18n(app.modules.mixer.tail)@"
@@ -587,13 +587,13 @@
             0,
             9
           ],
-          "image": "tail.jpg",
+          "image": "tail.png",
           "name": "Tail",
           "script": "tail_legacy.lua",
           "translation": "@i18n(app.modules.mixer.tail)@"
         },
         {
-          "image": "trims.jpg",
+          "image": "trims.png",
           "name": "Trims",
           "script": "trims.lua",
           "translation": "@i18n(app.modules.mixer.trims)@"
@@ -623,7 +623,7 @@
             0,
             9
           ],
-          "image": "battery.jpg",
+          "image": "battery.png",
           "name": "Battery",
           "script": "battery.lua",
           "translation": "@i18n(app.modules.power.battery_name)@"
@@ -634,25 +634,25 @@
             0,
             9
           ],
-          "image": "battery.jpg",
+          "image": "battery.png",
           "name": "Battery",
           "script": "battery_legacy.lua",
           "translation": "@i18n(app.modules.power.battery_name)@"
         },
         {
-          "image": "alerts.jpg",
+          "image": "alerts.png",
           "name": "Alerts",
           "script": "alerts.lua",
           "translation": "@i18n(app.modules.power.alert_name)@"
         },
         {
-          "image": "source.jpg",
+          "image": "source.png",
           "name": "Sources",
           "script": "source.lua",
           "translation": "@i18n(app.modules.power.source_name)@"
         },
         {
-          "image": "preferences.jpg",
+          "image": "preferences.png",
           "name": "Preferences",
           "script": "preferences.lua",
           "translation": "@i18n(app.modules.power.preferences_name)@"
@@ -678,13 +678,13 @@
       },
       "pages": [
         {
-          "image": "general.jpg",
+          "image": "general.png",
           "name": "General",
           "script": "general.lua",
           "translation": "@i18n(app.modules.governor.menu_general)@"
         },
         {
-          "image": "flags.jpg",
+          "image": "flags.png",
           "name": "Behaviour",
           "script": "flags.lua",
           "translation": "@i18n(app.modules.governor.menu_flags)@"
@@ -711,19 +711,19 @@
       },
       "pages": [
         {
-          "image": "advanced.jpg",
+          "image": "advanced.png",
           "name": "Advanced",
           "script": "advanced.lua",
           "translation": "@i18n(app.modules.rates_advanced.advanced)@"
         },
         {
-          "image": "cyclic_behaviour.jpg",
+          "image": "cyclic_behaviour.png",
           "name": "Cyclic Behaviour",
           "script": "cyclic_behaviour.lua",
           "translation": "@i18n(app.modules.rates_advanced.cyclic_behaviour)@"
         },
         {
-          "image": "table.jpg",
+          "image": "table.png",
           "name": "Rate Table",
           "script": "table.lua",
           "translation": "@i18n(app.modules.rates_advanced.table)@"
@@ -742,7 +742,7 @@
       },
       "pages": [
         {
-          "image": "modes/modes.jpg",
+          "image": "modes/modes.png",
           "loaderspeed": 0.05,
           "name": "Modes",
           "order": 1,
@@ -750,7 +750,7 @@
           "translation": "@i18n(app.modules.modes.name)@"
         },
         {
-          "image": "adjustments/adjustments.jpg",
+          "image": "adjustments/adjustments.png",
           "loaderspeed": 0.1,
           "name": "Adjustments",
           "order": 2,
@@ -758,28 +758,28 @@
           "translation": "@i18n(app.modules.adjustments.name)@"
         },
         {
-          "image": "failsafe/failsafe.jpg",
+          "image": "failsafe/failsafe.png",
           "name": "Failsafe",
           "order": 3,
           "script": "failsafe/failsafe.lua",
           "translation": "@i18n(app.modules.failsafe.name)@"
         },
         {
-          "image": "beepers/beepers.jpg",
+          "image": "beepers/beepers.png",
           "menuId": "beepers",
           "name": "Beepers",
           "order": 4,
           "translation": "@i18n(app.modules.beepers.name)@"
         },
         {
-          "image": "blackbox/blackbox.jpg",
+          "image": "blackbox/blackbox.png",
           "menuId": "blackbox",
           "name": "Blackbox",
           "order": 5,
           "translation": "@i18n(app.modules.blackbox.name)@"
         },
         {
-          "image": "stats/stats.jpg",
+          "image": "stats/stats.png",
           "name": "Stats",
           "order": 6,
           "script": "stats/stats.lua",
@@ -808,13 +808,13 @@
       },
       "pages": [
         {
-          "image": "pwm.jpg",
+          "image": "pwm.png",
           "name": "PWM Output",
           "script": "pwm.lua",
           "translation": "@i18n(app.modules.servos.pwm)@"
         },
         {
-          "image": "bus.jpg",
+          "image": "bus.png",
           "name": "BUS Output",
           "script": "bus.lua",
           "translation": "@i18n(app.modules.servos.bus)@"
@@ -840,21 +840,21 @@
       },
       "pages": [
         {
-          "image": "general.jpg",
+          "image": "general.png",
           "name": "General",
           "offline": true,
           "script": "tools/general.lua",
           "translation": "@i18n(app.modules.settings.txt_general)@"
         },
         {
-          "image": "shortcuts.jpg",
+          "image": "shortcuts.png",
           "name": "Shortcuts",
           "offline": true,
           "script": "tools/shortcuts.lua",
           "translation": "@i18n(app.modules.settings.shortcuts)@"
         },
         {
-          "image": "dashboard.jpg",
+          "image": "dashboard.png",
           "name": "Dashboard",
           "offline": true,
           "script": "tools/dashboard.lua",
@@ -866,21 +866,21 @@
             7,
             0
           ],
-          "image": "activelook.jpg",
+          "image": "activelook.png",
           "name": "ActiveLook",
           "offline": true,
           "script": "activelook.lua",
           "translation": "ActiveLook"
         },
         {
-          "image": "localizations.jpg",
+          "image": "localizations.png",
           "name": "Localization",
           "offline": true,
           "script": "tools/localizations.lua",
           "translation": "@i18n(app.modules.settings.localizations)@"
         },
         {
-          "image": "audio.jpg",
+          "image": "audio.png",
           "name": "Audio",
           "offline": true,
           "script": "tools/audio.lua",
@@ -908,14 +908,14 @@
       },
       "pages": [
         {
-          "image": "dashboard_theme.jpg",
+          "image": "dashboard_theme.png",
           "name": "Theme",
           "offline": true,
           "script": "dashboard_theme.lua",
           "translation": "@i18n(app.modules.settings.dashboard_theme)@"
         },
         {
-          "image": "dashboard_settings.jpg",
+          "image": "dashboard_settings.png",
           "name": "Settings",
           "offline": false,
           "script": "dashboard_settings.lua",
@@ -941,21 +941,21 @@
       },
       "pages": [
         {
-          "image": "audio_events.jpg",
+          "image": "audio_events.png",
           "name": "Events",
           "offline": true,
           "script": "audio_events.lua",
           "translation": "@i18n(app.modules.settings.txt_audio_events)@"
         },
         {
-          "image": "audio_switches.jpg",
+          "image": "audio_switches.png",
           "name": "Switches",
           "offline": true,
           "script": "audio_switches.lua",
           "translation": "@i18n(app.modules.settings.txt_audio_switches)@"
         },
         {
-          "image": "audio_timer.jpg",
+          "image": "audio_timer.png",
           "name": "Timer",
           "offline": true,
           "script": "audio_timer.lua",
@@ -973,7 +973,7 @@
       },
       "pages": [
         {
-          "image": "configuration/configuration.jpg",
+          "image": "configuration/configuration.png",
           "loaderspeed": 0.08,
           "name": "Configuration",
           "order": 1,
@@ -981,21 +981,21 @@
           "translation": "@i18n(app.modules.configuration.name)@"
         },
         {
-          "image": "radio_config/radio_config.jpg",
+          "image": "radio_config/radio_config.png",
           "name": "Radio Config",
           "order": 2,
           "script": "radio_config/radio_config.lua",
           "translation": "@i18n(app.modules.radio_config.name)@"
         },
         {
-          "image": "telemetry/telemetry.jpg",
+          "image": "telemetry/telemetry.png",
           "name": "Telemetry",
           "order": 3,
           "script": "telemetry/telemetry.lua",
           "translation": "@i18n(app.modules.telemetry.name)@"
         },
         {
-          "image": "accelerometer/acc.jpg",
+          "image": "accelerometer/acc.png",
           "loaderspeed": 0.08,
           "name": "Accelerometer",
           "order": 4,
@@ -1003,7 +1003,7 @@
           "translation": "@i18n(app.modules.accelerometer.name)@"
         },
         {
-          "image": "alignment/alignment.jpg",
+          "image": "alignment/alignment.png",
           "loaderspeed": 0.08,
           "name": "Alignment",
           "order": 5,
@@ -1011,14 +1011,14 @@
           "translation": "@i18n(app.modules.alignment.name)@"
         },
         {
-          "image": "ports/ports.jpg",
+          "image": "ports/ports.png",
           "name": "Ports",
           "order": 6,
           "script": "ports/ports.lua",
           "translation": "@i18n(app.modules.ports.name)@"
         },
         {
-          "image": "mixer/mixer.jpg",
+          "image": "mixer/mixer.png",
           "loaderspeed": 0.08,
           "menuId": "mixer",
           "name": "Mixer",
@@ -1026,7 +1026,7 @@
           "translation": "@i18n(app.modules.mixer.name)@"
         },
         {
-          "image": "servos/servos.jpg",
+          "image": "servos/servos.png",
           "loaderspeed": 0.08,
           "menuId": "servos_type",
           "name": "Servos",
@@ -1034,28 +1034,28 @@
           "translation": "@i18n(app.modules.servos.name)@"
         },
         {
-          "image": "failsafe/failsafe.jpg",
+          "image": "failsafe/failsafe.png",
           "menuId": "safety_menu",
           "name": "Controls",
           "order": 9,
           "translation": "@i18n(app.menu_section_controls)@"
         },
         {
-          "image": "power/power.jpg",
+          "image": "power/power.png",
           "menuId": "power",
           "name": "Power",
           "order": 10,
           "translation": "@i18n(app.modules.power.name)@"
         },
         {
-          "image": "esc_motors/esc.jpg",
+          "image": "esc_motors/esc.png",
           "menuId": "esc_motors",
           "name": "ESC & Motors",
           "order": 11,
           "translation": "@i18n(app.modules.esc_motors.name)@"
         },
         {
-          "image": "governor/governor.jpg",
+          "image": "governor/governor.png",
           "menuId": "governor",
           "name": "Governor",
           "order": 11,
@@ -1080,7 +1080,7 @@
             6
           ],
           "disabled": true,
-          "image": "copyprofiles/copy.jpg",
+          "image": "copyprofiles/copy.png",
           "name": "Copy Profiles",
           "offline": false,
           "order": 1,
@@ -1093,7 +1093,7 @@
             0,
             6
           ],
-          "image": "profile_select/select_profile.jpg",
+          "image": "profile_select/select_profile.png",
           "name": "Select Profile",
           "offline": false,
           "order": 2,
@@ -1101,7 +1101,7 @@
           "translation": "@i18n(app.modules.profile_select.name)@"
         },
         {
-          "image": "diagnostics/diagnostics.jpg",
+          "image": "diagnostics/diagnostics.png",
           "menuId": "diagnostics",
           "name": "Diagnostics",
           "offline": true,

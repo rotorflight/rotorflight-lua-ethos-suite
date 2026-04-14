@@ -16,9 +16,11 @@ local function wipeTable(t)
     for k in pairs(t) do t[k] = nil end
 end
 
-local function loadButtonBitmap(path)
+local function loadMaskCached(app, path)
     if type(path) ~= "string" or path == "" then return nil end
-    return lcd.loadBitmap(path)
+    local ui = app and app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
 end
 
 local function isManifestMenuRouterScript(script)
@@ -312,7 +314,7 @@ function container.create(cfg)
                 if prefs.general.iconsize ~= 0 then
                     local iconPath = iconPathFor(cfg, item)
                     if iconPath then
-                        app.gfx_buttons[moduleKey][i] = loadButtonBitmap(iconPath)
+                        app.gfx_buttons[moduleKey][i] = loadMaskCached(app, iconPath)
                     else
                         app.gfx_buttons[moduleKey][i] = nil
                     end

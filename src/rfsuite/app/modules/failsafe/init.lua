@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.failsafe.name)@", section = "hardware", script = "failsafe.lua", image = "failsafe.jpg", order = 3, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.failsafe.name)@", section = "hardware", script = "failsafe.lua", image = "failsafe.png", order = 3, ethosversion = {1, 6, 2}}
 
 return init

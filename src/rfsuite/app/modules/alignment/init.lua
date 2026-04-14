@@ -7,7 +7,7 @@ local init = {
     title = "@i18n(app.modules.alignment.name)@",
     section = "hardware",
     script = "alignment.lua",
-    image = "alignment.jpg",
+    image = "alignment.png",
     order = 5.5,
     ethosversion = {1, 6, 2}
 }

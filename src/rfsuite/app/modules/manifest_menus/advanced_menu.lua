@@ -17,7 +17,7 @@ return {
     },
     pages = {
         {
-            image = "filters/filters.jpg",
+            image = "filters/filters.png",
             name = "@i18n(app.modules.filters.name)@",
             order = 1,
             script = "filters/filters.lua",
@@ -25,7 +25,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_pidcontroller/pids-controller.jpg",
+            image = "profile_pidcontroller/pids-controller.png",
             name = "@i18n(app.modules.profile_pidcontroller.name)@",
             order = 2,
             script = "profile_pidcontroller/pidcontroller.lua",
@@ -33,7 +33,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_pidbandwidth/pids-bandwidth.jpg",
+            image = "profile_pidbandwidth/pids-bandwidth.png",
             name = "@i18n(app.modules.profile_pidbandwidth.name)@",
             order = 3,
             script = "profile_pidbandwidth/pidbandwidth.lua",
@@ -41,7 +41,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_autolevel/autolevel.jpg",
+            image = "profile_autolevel/autolevel.png",
             name = "@i18n(app.modules.profile_autolevel.name)@",
             order = 4,
             script = "profile_autolevel/autolevel.lua",
@@ -49,7 +49,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_mainrotor/mainrotor.jpg",
+            image = "profile_mainrotor/mainrotor.png",
             name = "@i18n(app.modules.profile_mainrotor.name)@",
             order = 5,
             script = "profile_mainrotor/mainrotor.lua",
@@ -57,7 +57,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_tailrotor/tailrotor.jpg",
+            image = "profile_tailrotor/tailrotor.png",
             name = "@i18n(app.modules.profile_tailrotor.name)@",
             order = 6,
             script = "profile_tailrotor/tailrotor.lua",
@@ -65,7 +65,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "profile_rescue/rescue.jpg",
+            image = "profile_rescue/rescue.png",
             name = "@i18n(app.modules.profile_rescue.name)@",
             order = 7,
             script = "profile_rescue/rescue.lua",
@@ -73,7 +73,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
-            image = "rates_advanced/rates.jpg",
+            image = "rates_advanced/rates.png",
             name = "@i18n(app.modules.rates_advanced.name)@",
             order = 8,
             script = "rates_advanced/rates_advanced.lua",
