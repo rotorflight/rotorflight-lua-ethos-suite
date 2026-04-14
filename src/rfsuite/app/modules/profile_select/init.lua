@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.profile_select.name)@", section = "tools", script = "select_profile.lua", image = "select_profile.jpg", order = 4, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.profile_select.name)@", section = "tools", script = "select_profile.lua", image = "select_profile.png", order = 4, ethosversion = {1, 6, 2}}
 
 return init

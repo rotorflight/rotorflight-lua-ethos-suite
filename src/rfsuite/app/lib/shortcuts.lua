@@ -173,7 +173,7 @@ local COPY_KEYS = {
 }
 
 local function resolvePage(menu, page)
-    local fallbackImage = "app/gfx/tools.jpg"
+    local fallbackImage = "app/gfx/tools.png"
     local out = {
         name = page.name,
         menuId = page.menuId,

@@ -25,32 +25,32 @@ return {
     pages = {
         {
             apiversion = { 12, 0, 9 },
-            image = "battery.jpg",
+            image = "battery.png",
             name = "@i18n(app.modules.power.battery_name)@",
             script = "battery.lua",
             shortcutId = "s_power_battery_lua_f67116c271",
         },
         {
             apiversionlt = { 12, 0, 9 },
-            image = "battery.jpg",
+            image = "battery.png",
             name = "@i18n(app.modules.power.battery_name)@",
             script = "battery_legacy.lua",
             shortcutId = "s_power_battery_legacy_lua_71177b8cf6",
         },
         {
-            image = "alerts.jpg",
+            image = "alerts.png",
             name = "@i18n(app.modules.power.alert_name)@",
             script = "alerts.lua",
             shortcutId = "s_power_alerts_lua_9fd7dbdc4d",
         },
         {
-            image = "source.jpg",
+            image = "source.png",
             name = "@i18n(app.modules.power.source_name)@",
             script = "source.lua",
             shortcutId = "s_power_source_lua_6d24f8cd57",
         },
         {
-            image = "preferences.jpg",
+            image = "preferences.png",
             name = "@i18n(app.modules.power.preferences_name)@",
             script = "preferences.lua",
             shortcutId = "s_power_preferences_lua_2bae48fe41",

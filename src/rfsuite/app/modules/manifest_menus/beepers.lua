@@ -25,13 +25,13 @@ return {
     },
     pages = {
         {
-            image = "configuration.jpg",
+            image = "configuration.png",
             name = "@i18n(app.modules.beepers.menu_configuration)@",
             script = "configuration.lua",
             shortcutId = "s_beepers_configuration_lua_3d60a90251",
         },
         {
-            image = "dshot.jpg",
+            image = "dshot.png",
             name = "@i18n(app.modules.beepers.menu_dshot)@",
             script = "dshot.lua",
             shortcutId = "s_beepers_dshot_lua_f1e47cbff2",

@@ -7,8 +7,10 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
 
-local function loadBitmap(path)
-    return lcd.loadBitmap(path)
+local function loadMask(path)
+    local ui = rfsuite.app and rfsuite.app.ui
+    if ui and ui.loadMask then return ui.loadMask(path) end
+    return lcd.loadMask(path)
 end
 
 local pages = {}
@@ -21,13 +23,13 @@ local MFG_INDEX = {
     {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
     {folder = "blheli_s", toolName = "BLHeli_S",                                  image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
     {folder = "bluejay", toolName = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@", image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
-    {folder = "flrtr", toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", image = "flrtr.jpg",     apiversion = {12, 0, 7}},
-    {folder = "hw5",   toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@",   image = "hobbywing.jpg", apiversion = {12, 0, 6}},
-    {folder = "omp",   toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@",   image = "omp.jpg",       apiversion = {12, 0, 9}},
-    {folder = "scorp", toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@", image = "scorpion.jpg",  apiversion = {12, 0, 6}},
-    {folder = "xdfly", toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@", image = "xdfly.jpg",     apiversion = {12, 0, 8}},
-    {folder = "yge",   toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@",   image = "yge.jpg",       apiversion = {12, 0, 6}},
-    {folder = "ztw",   toolName = "@i18n(app.modules.esc_tools.mfg.ztw.name)@",   image = "ztw.jpg",       apiversion = {12, 0, 9}}
+    {folder = "flrtr", toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", image = "flrtr.png",     apiversion = {12, 0, 7}},
+    {folder = "hw5",   toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@",   image = "hobbywing.png", apiversion = {12, 0, 6}},
+    {folder = "omp",   toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@",   image = "omp.png",       apiversion = {12, 0, 9}},
+    {folder = "scorp", toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@", image = "scorpion.png",  apiversion = {12, 0, 6}},
+    {folder = "xdfly", toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@", image = "xdfly.png",     apiversion = {12, 0, 8}},
+    {folder = "yge",   toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@",   image = "yge.png",       apiversion = {12, 0, 6}},
+    {folder = "ztw",   toolName = "@i18n(app.modules.esc_tools.mfg.ztw.name)@",   image = "ztw.png",       apiversion = {12, 0, 9}}
 }
 
 local function resolveModulePath(script)
@@ -219,7 +221,7 @@ local function openPage(opts)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then rfsuite.app.gfx_buttons["escmain"][childIdx] = loadBitmap("app/modules/esc_tools/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then rfsuite.app.gfx_buttons["escmain"][childIdx] = loadMask("app/modules/esc_tools/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["escmain"][childIdx] = nil
         end

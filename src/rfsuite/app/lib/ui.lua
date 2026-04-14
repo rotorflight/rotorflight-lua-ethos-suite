@@ -10,7 +10,6 @@ local lcdDrawText = lcd.drawText
 local lcdFont = lcd.font
 local lcdGetTextSize = lcd.getTextSize
 local lcdGetWindowSize = lcd.getWindowSize
-local lcdLoadBitmap = lcd.loadBitmap
 local lcdLoadMask = lcd.loadMask
 local osClock = os.clock
 local tableConcat = table.concat
@@ -1552,7 +1551,7 @@ function ui.openMainMenu(activesection)
                 bx = (buttonW + padding) * lc
 
                 if preferences.general.iconsize ~= 0 then
-                    app.gfx_buttons["mainmenu"][menuIndex] = lcdLoadBitmap(menuItem.image)
+                    app.gfx_buttons["mainmenu"][menuIndex] = ui.loadMask(menuItem.image)
                 else
                     app.gfx_buttons["mainmenu"][menuIndex] = nil
                 end

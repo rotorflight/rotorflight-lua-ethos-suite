@@ -26,19 +26,19 @@ return {
     },
     pages = {
         {
-            image = "advanced.jpg",
+            image = "advanced.png",
             name = "@i18n(app.modules.rates_advanced.advanced)@",
             script = "advanced.lua",
             shortcutId = "s_rates_advanced_advanced_lua_5673f8caee",
         },
         {
-            image = "cyclic_behaviour.jpg",
+            image = "cyclic_behaviour.png",
             name = "@i18n(app.modules.rates_advanced.cyclic_behaviour)@",
             script = "cyclic_behaviour.lua",
             shortcutId = "s_rates_advanced_cyclic_behaviour_lua_df5de615f1",
         },
         {
-            image = "table.jpg",
+            image = "table.png",
             name = "@i18n(app.modules.rates_advanced.table)@",
             script = "table.lua",
             shortcutId = "s_rates_advanced_table_lua_7e2b9c5584",

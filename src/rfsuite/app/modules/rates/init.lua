@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.rates.name)@", section = "main", script = "rates.lua", image = "rates.jpg", order = 2, ethosversion = {1, 6, 2}}
+local init = {title = "@i18n(app.modules.rates.name)@", section = "main", script = "rates.lua", image = "rates.png", order = 2, ethosversion = {1, 6, 2}}
 
 return init
