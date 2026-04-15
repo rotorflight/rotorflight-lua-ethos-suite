@@ -7,12 +7,24 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local fields = {}
-local total_bytes = rfsuite.preferences.developer.mspexpbytes
+local DEFAULT_EXP_BYTES = 8
 local fieldMap = {}
 
 local int8_dirty = false
 local uint8_dirty = false
 local enableWakeup = false
+
+local function normalizeByteCount(value)
+    value = tonumber(value) or DEFAULT_EXP_BYTES
+    value = math.floor(value)
+
+    if value < 1 then value = DEFAULT_EXP_BYTES end
+    if value > 16 then value = 16 end
+
+    return value
+end
+
+local total_bytes = normalizeByteCount(rfsuite.preferences.developer.mspexpbytes)
 
 local function uint8_to_int8(value)
     if type(value) ~= "number" then error("uint8_to_int8: value is not a number (got " .. tostring(value) .. ")") end
@@ -55,7 +67,7 @@ end
 
 local function generateMSPAPI(numLabels)
 
-    if numLabels > 16 then numLabels = 16 end
+    numLabels = normalizeByteCount(numLabels)
 
     local apidata = {api = {'EXPERIMENTAL'}, formdata = {labels = {}, fields = {}}}
 
@@ -70,7 +82,7 @@ local function generateMSPAPI(numLabels)
     return apidata
 end
 
-local apidata = generateMSPAPI(rfsuite.preferences.developer.mspexpbytes)
+local apidata = generateMSPAPI(total_bytes)
 
 local function periodicSync()
     update_int8()
@@ -78,13 +90,15 @@ local function periodicSync()
 end
 
 local function postLoad()
+    local receivedBytes = rfsuite.tasks.msp.api.apidata.receivedBytesCount
+    local receivedByteCount = receivedBytes and receivedBytes['EXPERIMENTAL'] or nil
 
     fieldMap = {}
     int8_dirty = false
     uint8_dirty = true
     enableWakeup = false
 
-    if rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL'] == 0 then
+    if type(receivedByteCount) ~= "number" or receivedByteCount <= 0 then
         rfsuite.app.triggers.closeProgressLoader = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.ui.disableAllNavigationFields()
@@ -92,9 +106,10 @@ local function postLoad()
         return
     end
 
-    if total_bytes ~= rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL'] then
+    receivedByteCount = normalizeByteCount(receivedByteCount)
 
-        rfsuite.preferences.developer.mspexpbytes = rfsuite.tasks.msp.api.apidata.receivedBytesCount['EXPERIMENTAL']
+    if total_bytes ~= receivedByteCount then
+        rfsuite.preferences.developer.mspexpbytes = receivedByteCount
         rfsuite.app.triggers.reloadFull = true
     end
 
