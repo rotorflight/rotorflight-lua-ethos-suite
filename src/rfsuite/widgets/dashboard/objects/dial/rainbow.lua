@@ -64,6 +64,7 @@ local getParam = utils.getParam
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThemeColorArray = utils.resolveThemeColorArray
+local resolveFont = utils.resolveFont
 local lastDisplayValue = nil
 
 local DEFAULT_BAND_LABELS = {"Low", "Med", "High"}
@@ -206,12 +207,12 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    lcd.font(_G[c.bandlabelfont] or FONT_XS)
+    lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
     local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
 
     local titleHeight = 0
     if c.title then
-        lcd.font(_G[c.titlefont] or FONT_XS)
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
         local _, th = lcd.getTextSize(c.title)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
@@ -249,7 +250,7 @@ function render.paint(x, y, w, h, box)
     end
 
     local sweep = (endAngle - startAngle + 360) % 360
-    lcd.font(_G[c.bandlabelfont] or FONT_XS)
+    lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
 
     local angleOffset = -30
 

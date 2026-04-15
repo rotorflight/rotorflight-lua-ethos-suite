@@ -65,6 +65,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local resolveFont = utils.resolveFont
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -176,7 +177,7 @@ function render.paint(x, y, w, h, box)
     utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, nil, nil, c.font, c.valuealign, box._dynamicTextColor or c.defaultTextColor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
 
     local fontList = c.fontList or {}
-    local baseFont = _G[c.rowfont] or _G[c.font] or FONT_L
+    local baseFont = resolveFont(c.rowfont, nil) or resolveFont(c.font, FONT_L)
 
     local baseIndex
     for i, f in ipairs(fontList) do
