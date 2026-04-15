@@ -107,6 +107,17 @@ local DASHBOARD_SUPPORTED_RESOLUTIONS = {
 }
 local DASHBOARD_THEME_WIDTHS = {800, 784, 640, 630, 480, 472}
 
+local FONT_BY_NAME = {
+    FONT_XXS = FONT_XXS,
+    FONT_XS = FONT_XS,
+    FONT_S = FONT_S,
+    FONT_STD = FONT_STD,
+    FONT_L = FONT_L,
+    FONT_XL = FONT_XL,
+    FONT_XXL = FONT_XXL,
+    FONT_XXXXL = FONT_XXXXL
+}
+
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
 
 local function variantFactorOrDefault(variantFactor)
@@ -575,6 +586,12 @@ function utils.resolveThemeColorArray(colorkey, arr, out)
     return resolved
 end
 
+function utils.resolveFont(font, fallback)
+    if type(font) == "number" then return font end
+    if type(font) == "string" then return FONT_BY_NAME[font] or fallback end
+    return fallback
+end
+
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
 
     if type(title) ~= "string" and type(title) ~= "number" then
@@ -612,8 +629,9 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             local _, vh = lcd.getTextSize("8")
             if vh < minValueFontH then minValueFontH = vh end
         end
-        if titlefont and _G[titlefont] then
-            actualTitleFont = _G[titlefont]
+        local resolvedTitleFont = utils.resolveFont(titlefont, nil)
+        if resolvedTitleFont then
+            actualTitleFont = resolvedTitleFont
             lcd.font(actualTitleFont)
             tsizeW, tsizeH = lcd.getTextSize(title)
         else
@@ -697,8 +715,9 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
         value_str_calc = string.gsub(value_str_calc, "[°]", ".")
 
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
-        if font and _G[font] then
-            valueFont = _G[font]
+        local resolvedValueFont = utils.resolveFont(font, nil)
+        if resolvedValueFont then
+            valueFont = resolvedValueFont
             lcd.font(valueFont)
 
             bestW, bestH = lcd.getTextSize(value_str_calc)

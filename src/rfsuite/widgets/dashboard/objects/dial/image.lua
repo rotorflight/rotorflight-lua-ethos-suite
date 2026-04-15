@@ -57,6 +57,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local resolveFont = utils.resolveFont
 
 function render.dirty(box)
 
@@ -208,7 +209,7 @@ function render.paint(x, y, w, h, box)
 
     local titleHeight = 0
     if c.title then
-        lcd.font(_G[c.titlefont] or FONT_XS)
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
         local _, th = lcd.getTextSize(c.title)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end

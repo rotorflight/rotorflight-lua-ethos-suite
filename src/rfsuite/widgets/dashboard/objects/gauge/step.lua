@@ -60,6 +60,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
+local resolveFont = utils.resolveFont
 
 function render.dirty(box)
 
@@ -192,7 +193,7 @@ function render.paint(x, y, w, h, box)
     local title_area_bottom = 0
 
     if title and title ~= "" then
-        lcd.font(_G[titlefont] or FONT_XS)
+        lcd.font(resolveFont(titlefont, FONT_XS))
         local _, tsizeH = lcd.getTextSize(title)
         if titlepos == "bottom" then
             title_area_bottom = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + titlespacing
