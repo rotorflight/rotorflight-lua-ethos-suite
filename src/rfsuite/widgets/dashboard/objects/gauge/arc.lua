@@ -58,7 +58,6 @@ local lcd = lcd
 
 local floor = math.floor
 local ceil = math.ceil
-local rep = string.rep
 local tostring = tostring
 
 local render = {}
@@ -68,6 +67,7 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -222,11 +222,7 @@ function render.wakeup(box)
     if arcmax and maxval ~= nil then displayMaxValue = cfg.transformFn(maxval) end
 
     if value == nil then
-        local maxDots = 3
-        if c._dotCount == nil then c._dotCount = 0 end
-        c._dotCount = (c._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", c._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(c)
         unit = nil
     end
 

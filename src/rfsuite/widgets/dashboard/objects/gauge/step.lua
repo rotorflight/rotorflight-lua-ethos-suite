@@ -52,7 +52,6 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 
 local floor = math.floor
-local rep = string.rep
 
 local render = {}
 
@@ -61,6 +60,7 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 
 function render.dirty(box)
 
@@ -114,11 +114,7 @@ function render.wakeup(box)
     end
 
     if value == nil then
-        local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
         unit = nil
     end
 
