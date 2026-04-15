@@ -34,8 +34,7 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
         FIELD_SPEC[#FIELD_SPEC + 1] = {"telem_sensor_slot_" .. i, "U8"}
     end
 end
-
-local SIM_RESPONSE = core.simResponse({
+local simResponse = {
     0,            -- telemetry_inverted
     1,            -- halfDuplex
     0, 0, 0, 0,   -- enableSensors
@@ -83,7 +82,9 @@ local SIM_RESPONSE = core.simResponse({
     0,            -- telem_sensor_slot_38
     0,            -- telem_sensor_slot_39
     0             -- telem_sensor_slot_40
-})
+}
+
+local SIM_RESPONSE = core.simResponse(simResponse)
 
 return core.createConfigAPI({
     name = API_NAME,

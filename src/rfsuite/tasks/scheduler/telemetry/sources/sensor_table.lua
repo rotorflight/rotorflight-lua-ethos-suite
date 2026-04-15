@@ -159,6 +159,7 @@ return {
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 6,
+        default_telemetry_sensor = true,
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
@@ -171,20 +172,12 @@ return {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        fallback_sensor = "fuel",
         transform = function(value)
             if value ~= nil and value < 0 then
                 return nil
             end
             return value
-        end,
-        default_telemetry_sensor = function()
-            return rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
-        end,
-        set_telemetry_sensors = function()
-            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
-                return 118
-            end
-            return nil
         end,
     },
 
@@ -195,15 +188,7 @@ return {
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
         unit_string = "mAh",
-        default_telemetry_sensor = function()
-            return rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
-        end,
-        set_telemetry_sensors = function()
-            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
-                return 119
-            end
-            return nil
-        end,
+        fallback_sensor = "consumption",
     },
 
     consumption = {
