@@ -11,46 +11,77 @@ local onNavMenu
 local lastVoltageMode = nil
 local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
 
-local apidata
-local function buildFields(apiIndex)
-    return {
-        {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1,        apikey = "smartfuel_model_type", type = 1},
-        {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = apiIndex, apikey = "smartfuel_source", type = 1},
-        {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = apiIndex, apikey = "stabilize_delay"},
-        {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = apiIndex, apikey = "stable_window"},
-        {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = apiIndex, apikey = "sag_multiplier_percent"},
-        {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = apiIndex, apikey = "voltage_fall_limit"},
-        {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = apiIndex, apikey = "fuel_drop_rate"},
-    }
+local function buildFields()
+    local fields = {}
+
+    if useFirmwareSmartFuel then
+        fields[#fields + 1] = {t = "@i18n(sensors.smartfuel)@", mspapi = 2, apikey = "smartfuel_remote_source", type = 1}
+    end
+
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 1, apikey = "smartfuel_source", type = 1}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 1, apikey = "stabilize_delay"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 1, apikey = "stable_window"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 1, apikey = "sag_multiplier_percent"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 1, apikey = "voltage_fall_limit"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 1, apikey = "fuel_drop_rate"}
+
+    return fields
 end
 
-if useFirmwareSmartFuel then
-    apidata = {
-        api = {
-            [1] = "BATTERY_INI",
-            [2] = "SMARTFUEL_CONFIG"
-        },
-        formdata = {
-            labels = {},
-            fields = buildFields(2)
+local function buildApiData()
+    if useFirmwareSmartFuel then
+        return {
+            api = {
+                [1] = "BATTERY_INI",
+                [2] = "BATTERY_CONFIG"
+            },
+            formdata = {
+                labels = {},
+                fields = buildFields()
+            }
         }
-    }
-else
-    apidata = {
+    end
+
+    return {
         api = {
             [1] = "BATTERY_INI"
         },
         formdata = {
             labels = {},
-            fields = buildFields(1)
+            fields = buildFields()
         }
     }
 end
+
+local apidata = buildApiData()
 
 local function postLoad(self)
     lastVoltageMode = nil
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
+end
+
+local function postSave(self)
+    if not useFirmwareSmartFuel then
+        return
+    end
+
+    local remoteSmartfuelSource = 0
+    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "smartfuel_remote_source" then
+            remoteSmartfuelSource = tonumber(f.value) or 0
+            break
+        end
+    end
+
+    rfsuite.session = rfsuite.session or {}
+    rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
+    rfsuite.session.batteryConfig.smartfuelRemoteSource = remoteSmartfuelSource
+
+    if rfsuite.tasks and rfsuite.tasks.sensors and type(rfsuite.tasks.sensors.resetSmart) == "function" then
+        rfsuite.tasks.sensors.resetSmart()
+    end
 end
 
 local function wakeup(self)
@@ -90,4 +121,4 @@ onNavMenu = function(self)
     return true
 end
 
-return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, event = event, onNavMenu = onNavMenu}
+return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, postSave = postSave, event = event, onNavMenu = onNavMenu}

@@ -10,6 +10,7 @@ data['help'] = {}
 data['help']['default'] = {"@i18n(app.modules.power.help_p1)@"}
 
 data['fields'] = {
+    ["smartfuel_remote_source"] = {t = "@i18n(sensors.smartfuel)@"},
     ["smartfuel_model_type"] = {t = "@i18n(app.modules.power.model_type)@"},
     ["smartfuel_source"] = {t = "@i18n(api.BATTERY_INI.smartfuel_source)@"},
     ["stabilize_delay"] = {t = "@i18n(api.BATTERY_INI.stabilize_delay)@"},

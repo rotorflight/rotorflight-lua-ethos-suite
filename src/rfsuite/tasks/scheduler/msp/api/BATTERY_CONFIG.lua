@@ -22,6 +22,12 @@ local TBL_BATTERY_SOURCE = {
     [4] = "@i18n(api.BATTERY_CONFIG.source_fbus)@"
 }
 
+local TBL_SMARTFUEL_SOURCE = {
+    "OFF",
+    "CURRENT",
+    "VOLTAGE"
+}
+
 -- Tuple layout:
 --   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
@@ -47,7 +53,10 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_5", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
 end
 
-local SIM_RESPONSE = core.simResponse({
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"smartfuel_remote_source", "U8", 0, 2, 0, nil, nil, nil, nil, nil, TBL_SMARTFUEL_SOURCE, -1}
+end
+local simResponse = {
     136, 19, -- batteryCapacity
     6,       -- batteryCellCount
     1,       -- voltageMeterSource
@@ -64,7 +73,13 @@ local SIM_RESPONSE = core.simResponse({
     108, 7,  -- batteryCapacity_3
     152, 8,  -- batteryCapacity_4
     196, 9   -- batteryCapacity_5
-})
+}
+
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+    simResponse[#simResponse + 1] = 0 -- smartfuel_remote_source
+end
+
+local SIM_RESPONSE = core.simResponse(simResponse)
 
 return core.createConfigAPI({
     name = API_NAME,

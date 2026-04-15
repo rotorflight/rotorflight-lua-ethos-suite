@@ -31,11 +31,17 @@ local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
 local cleanupSignature = nil
+local lastNativeSmartSensors = nil
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
 local function useNativeSmartSensors()
-    return system.getVersion().simulation ~= true and rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+    if system.getVersion().simulation == true then
+        return false
+    end
+
+    local batteryConfig = rfsuite.session and rfsuite.session.batteryConfig
+    return batteryConfig and (tonumber(batteryConfig.smartfuelRemoteSource) or 0) > 0
 end
 
 local function calculateFuel()
@@ -100,11 +106,27 @@ local function cleanupObsoleteSmartSensors()
 
     local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol
     local moduleId = session.telemetrySensor and session.telemetrySensor.module and session.telemetrySensor:module() or "?"
-    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId)}, ":")
+    local nativeSmartSensors = useNativeSmartSensors()
+    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId), tostring(nativeSmartSensors)}, ":")
     if cleanupSignature == signature then return end
     cleanupSignature = signature
 
-    if useNativeSmartSensors() then
+    if lastNativeSmartSensors ~= nativeSmartSensors then
+        resetFuel()
+        resetConsumption()
+        lastValue = {}
+        lastPush = {}
+    end
+    lastNativeSmartSensors = nativeSmartSensors
+
+    if nativeSmartSensors then
+        if protocol == "sport" then
+            dropObsoleteSensor(0x5251)
+            dropObsoleteSensor(0x5252)
+        elseif protocol == "crsf" then
+            dropObsoleteSensor(0x1015)
+            dropObsoleteSensor(0x1016)
+        end
         dropObsoleteSensor(0x5FE1)
         dropObsoleteSensor(0x5FE0)
         sensorCache[0x5FE1] = nil
@@ -242,6 +264,7 @@ function smart.reset()
     lastPush = {}
     lastModule = nil
     cleanupSignature = nil
+    lastNativeSmartSensors = nil
 
     resetFuel()
     resetConsumption()

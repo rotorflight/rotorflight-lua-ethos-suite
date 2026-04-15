@@ -125,9 +125,7 @@ if not TELEMETRY_STATIC_CACHE then
         [104] = {name = "DBG4", group = "debug"},
         [105] = {name = "DBG5", group = "debug"},
         [106] = {name = "DBG6", group = "debug"},
-        [107] = {name = "DBG7", group = "debug"},
-        [118] = {name = "Smart Fuel", group = "battery"},
-        [119] = {name = "Smart Consumption", group = "battery"}
+        [107] = {name = "DBG7", group = "debug"}
     }
 
     local groupTitleTag = {
@@ -558,10 +556,12 @@ local function wakeup()
 
                 clearTable(config)
                 if data and type(data.parsed) == "table" then
-                    for _, value in pairs(data.parsed) do
-                        local sensorId = tonumber(value)
-                        if sensorId and sensorId ~= 0 then
-                            rfsuite.app.Page.config[sensorId] = true
+                    for key, value in pairs(data.parsed) do
+                        if string.match(key, "^telem_sensor_slot_%d+$") then
+                            local sensorId = tonumber(value)
+                            if sensorId and sensorId ~= 0 then
+                                rfsuite.app.Page.config[sensorId] = true
+                            end
                         end
                     end
                 end
