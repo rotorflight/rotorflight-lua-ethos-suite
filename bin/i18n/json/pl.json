@@ -8149,8 +8149,8 @@
           "max_length": 8
         },
         "function_sport_input": {
-          "english": "S.PORT Input",
-          "translation": "S.PORT Input",
+          "english": "S.PORT Master",
+          "translation": "S.PORT Master",
           "needs_translation": true,
           "reverse_text": false
         },
