@@ -55,7 +55,6 @@ local lcd = lcd
 
 local min = math.min
 local max = math.max
-local rep = string.rep
 local ipairs = ipairs
 local tostring = tostring
 local tonumber = tonumber
@@ -66,6 +65,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -151,11 +151,7 @@ function render.wakeup(box)
 
     local displayValue
     if value == nil then
-
-        local maxDots = 3
-        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
     else
         displayValue = utils.transformValue(value, box)
     end

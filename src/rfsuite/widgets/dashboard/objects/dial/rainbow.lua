@@ -54,7 +54,6 @@ local lcd = lcd
 local sin = math.sin
 local cos = math.cos
 local rad = math.rad
-local rep = string.rep
 local ipairs = ipairs
 
 local render = {}
@@ -65,6 +64,7 @@ local resolveThresholdColor = utils.resolveThresholdColor
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThemeColorArray = utils.resolveThemeColorArray
 local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 local lastDisplayValue = nil
 
 local DEFAULT_BAND_LABELS = {"Low", "Med", "High"}
@@ -142,11 +142,7 @@ function render.wakeup(box)
     if value ~= nil then displayValue = utils.transformValue(value, box) end
 
     if value == nil then
-        local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
         unit = nil
     end
 

@@ -16,6 +16,7 @@ local sin = math.sin
 local cos = math.cos
 local rad = math.rad
 local format = string.format
+local rep = string.rep
 local ipairs = ipairs
 local pairs = pairs
 local tostring = tostring
@@ -826,6 +827,21 @@ function utils.getParam(box, key, ...)
     else
         return v
     end
+end
+
+function utils.getPulsingDots(box, counterKey, maxDots)
+    if type(box) ~= "table" then return "." end
+
+    local key = counterKey or "_dotCount"
+    local maxCount = tonumber(maxDots) or 3
+    if maxCount < 1 then maxCount = 1 end
+
+    local count = (tonumber(box[key]) or 0) + 1
+    if count > maxCount then count = 0 end
+    box[key] = count
+
+    if count == 0 then return "." end
+    return rep(".", count)
 end
 
 local function extractCapacityValue(v)

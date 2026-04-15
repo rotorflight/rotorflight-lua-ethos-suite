@@ -48,7 +48,6 @@ local rfsuite = require("rfsuite")
 local lcd = lcd
 
 local format = string.format
-local rep = string.rep
 local tostring = tostring
 local tonumber = tonumber
 
@@ -58,6 +57,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 
 function render.dirty(box)
 
@@ -143,11 +143,7 @@ function render.wakeup(box)
     if value ~= nil then displayValue = utils.transformValue(value, box) end
 
     if value == nil then
-        local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
         unit = nil
     end
 

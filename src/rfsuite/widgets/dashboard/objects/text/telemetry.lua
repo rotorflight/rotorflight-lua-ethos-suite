@@ -39,13 +39,13 @@ local system = system
 
 local floor = math.floor
 local ceil = math.ceil
-local rep = string.rep
 
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local getPulsingDots = utils.getPulsingDots
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -154,11 +154,7 @@ function render.wakeup(box)
     elseif inPostflight and box._lastValidValue ~= nil then
         displayValue = box._lastValidValue
     else
-
-        local maxDots = 3
-        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
     end
 
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor", localizedThresholds)

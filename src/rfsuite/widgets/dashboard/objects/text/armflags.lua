@@ -41,7 +41,6 @@ thresholds = {
 local rfsuite = require("rfsuite")
 
 local floor = math.floor
-local rep = string.rep
 
 local render = {}
 
@@ -49,6 +48,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local armingDisableFlagsToString = rfsuite.utils.armingDisableFlagsToString
+local getPulsingDots = utils.getPulsingDots
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -129,10 +129,7 @@ function render.wakeup(box)
     end
 
     if displayValue == nil and value == nil and disableflags == nil then
-        local maxDots = 3
-        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
     elseif displayValue == nil then
         displayValue = cfg.novalue
     end
