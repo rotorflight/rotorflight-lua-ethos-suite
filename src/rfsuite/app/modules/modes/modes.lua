@@ -744,14 +744,18 @@ local function queueSetModeRange(slotIndex, done, failed)
 end
 
 local function queueEepromWrite(done, failed)
-    local message = {
-        command = 250,
+    local ok, reason = rfsuite.utils.queueEepromWrite({
+        uuid = "modes.eeprom",
         processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("EEPROM write failed") end end,
-        simulatorResponse = {}
-    }
-    local ok, reason = queueDirect(message, "modes.eeprom")
-    if not ok and failed then failed(reason or "queue_rejected") end
+        errorHandler = function() if failed then failed("EEPROM write failed") end end
+    })
+    if not ok and failed then
+        if reason == "armed_blocked" then
+            failed(rfsuite.utils.getArmedSaveBlockedMessage())
+        else
+            failed(reason or "queue_rejected")
+        end
+    end
 end
 
 local function saveAllRanges()

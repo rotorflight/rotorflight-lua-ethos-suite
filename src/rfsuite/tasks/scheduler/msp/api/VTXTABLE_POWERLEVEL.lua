@@ -1,74 +1,75 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "VTXTABLE_POWERLEVEL"
+local OPTIONAL = false
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "power_level",  type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1}, mandatory = false },
-    { field = "power_value",  type = "U16", apiVersion = {12, 0, 6}, simResponse = {25, 0}, mandatory = false },
-    { field = "label_length", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {3}, mandatory = false },
-    { field = "label_1",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {50}, mandatory = false },
-    { field = "label_2",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {53}, mandatory = false },
-    { field = "label_3",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {77}, mandatory = false },
-}
--- LuaFormatter on
-
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = {
-    { field = "power_level",  type = "U8"  },
-    { field = "power_value",  type = "U16" },
-    { field = "label_length", type = "U8"  },
-    { field = "label_1",      type = "U8"  },
-    { field = "label_2",      type = "U8"  },
-    { field = "label_3",      type = "U8"  },
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"power_level", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"power_value", "U16", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"label_length", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"label_1", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"label_2", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL},
+    {"label_3", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, OPTIONAL}
 }
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then return nil, "parse_failed" end
-    return result
-end
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local WRITE_FIELD_SPEC = {
+    {"power_level", "U8"},
+    {"power_value", "U16"},
+    {"label_length", "U8"},
+    {"label_1", "U8"},
+    {"label_2", "U8"},
+    {"label_3", "U8"}
+}
+
+local SIM_RESPONSE = core.simResponse({
+    1, -- power_level
+    25, 0, -- power_value
+    3, -- label_length
+    50, -- label_1
+    53, -- label_2
+    77  -- label_3
+})
 
 local function buildReadPayload(payloadData, _, _, _, powerLevel)
     local readPower = tonumber(powerLevel)
-    if readPower == nil then readPower = tonumber(payloadData.power_level) end
-    if readPower == nil then readPower = 1 end
+    if readPower == nil then
+        readPower = tonumber(payloadData.power_level)
+    end
+    if readPower == nil then
+        readPower = 1
+    end
+
     return {readPower}
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    return core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = 138,
     writeCmd = 228,
-    minBytes = MSP_MIN_BYTES,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE,
-    parseRead = parseRead,
+    fields = FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
     buildReadPayload = buildReadPayload,
-    buildWritePayload = buildWritePayload,
-    writeRequiresStructure = true,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
     initialRebuildOnWrite = true,
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end
+    exports = {
+        simulatorResponse = SIM_RESPONSE
+    }
 })

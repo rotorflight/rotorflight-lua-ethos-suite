@@ -62,8 +62,15 @@ local function wakeup()
         return
     end
 
-
-    local governorMode = math.floor(rfsuite.app.Page.apidata.formdata.fields[FIELDS["GOVERNOR_MODE"]].value)
+    local governorModeField = rfsuite.app.Page.apidata.formdata.fields[FIELDS["GOVERNOR_MODE"]]
+    local governorMode = tonumber(governorModeField and governorModeField.value)
+    if governorMode == nil then
+        governorMode = tonumber(rfsuite.session.governorMode)
+    end
+    if governorMode == nil then
+        return
+    end
+    governorMode = math.floor(governorMode)
 
     if governorMode == 0 then   -- OFF
         formFields[FIELDS["GOVERNOR_THROTTLE_TYPE"]]:enable(false)

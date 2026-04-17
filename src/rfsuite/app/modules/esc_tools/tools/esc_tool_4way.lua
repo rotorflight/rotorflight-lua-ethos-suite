@@ -21,7 +21,8 @@ local foundESC = false
 local foundESCupdateTag = false
 local ESC
 local findTimeoutClock = os.clock()
-local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
+local findTimeoutDefault = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
+local findTimeout = findTimeoutDefault
 
 local modelLine
 local modelText
@@ -142,6 +143,13 @@ local function getEscDetailsRetryInterval()
     if interval == nil then interval = 0.9 end
     if interval < 0 then interval = 0 end
     return interval
+end
+
+local function getInitialConnectTimeout()
+    local timeout = tonumber(ESC and ESC.initialConnectTimeout)
+    if timeout == nil then timeout = findTimeoutDefault end
+    if timeout < 0 then timeout = 0 end
+    return timeout
 end
 
 local function getEsc4WayTargets()
@@ -859,6 +867,7 @@ local function loadEscConfig(folder)
     ESC = moduleOrErr
     escDetailsApi = nil
     escDetailsApiName = nil
+    findTimeout = getInitialConnectTimeout()
 
     if ESC.mspapi ~= nil then
         local API = getEscDetailsAPI()
@@ -1225,6 +1234,7 @@ local function closePage()
     esc2CheckApi = nil
     esc2CheckHandlersApi = nil
     ESC = nil
+    findTimeout = findTimeoutDefault
     modelLine = nil
     modelText = nil
     last4WayWriteTarget = nil
@@ -1347,6 +1357,18 @@ local function wakeup()
     end
 
     if foundESC == true and foundESCupdateTag == false then
+        local compatible = true
+        if ESC and type(ESC.isCompatibleEsc) == "function" then
+            compatible = (ESC.isCompatibleEsc(rfsuite.session and rfsuite.session.escBuffer or nil, escDetailsApi) == true)
+        end
+
+        if not compatible then
+            foundESCupdateTag = true
+            rfsuite.app.triggers.closeProgressLoader = true
+            setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@")
+            return
+        end
+
         foundESCupdateTag = true
 
         if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
@@ -1372,9 +1394,20 @@ local function wakeup()
 
     end
 
-    if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
-        rfsuite.app.dialogs.progress:close()
-        rfsuite.app.dialogs.progressDisplay = false
+    local progressTimedOut = false
+    if rfsuite.app and rfsuite.app.dialogs and rfsuite.app.dialogs.progressDisplay == true then
+        progressTimedOut = (rfsuite.app.dialogs.progressCounter or 0) >= 101
+    end
+
+    if foundESCupdateTag == false and ((findTimeoutClock <= os.clock() - findTimeout) or progressTimedOut) then
+        local dialogs = rfsuite.app and rfsuite.app.dialogs
+        if dialogs then
+            if dialogs.progress and dialogs.progress.close then
+                dialogs.progress:close()
+            end
+            dialogs.progress = nil
+            dialogs.progressDisplay = false
+        end
         rfsuite.app.triggers.isReady = true
 
         setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@")

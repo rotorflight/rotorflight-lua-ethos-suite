@@ -37,6 +37,11 @@ local function saveData()
     end
 
     local API = tasks.msp.api.load("GOVERNOR_CONFIG")
+    if not API then
+        rfutils.log("Save failed: GOVERNOR_CONFIG API unavailable", "error")
+        app.triggers.closeProgressLoader = true
+        return
+    end
     API.setRebuildOnWrite(true)
 
     -- restore snapshot values
@@ -55,18 +60,33 @@ local function saveData()
     end
 
     API.setCompleteHandler(function()
-        -- EEPROM commit
-        local EAPI = tasks.msp.api.load("EEPROM_WRITE")
-        EAPI.setCompleteHandler(function()
-            if app and app.ui and app.ui.setPageDirty then
-                app.ui.setPageDirty(false)
+        local ok, reason = rfutils.queueEepromWrite({
+            uuid = "governor.curves.eeprom",
+            processReply = function()
+                if app and app.ui and app.ui.setPageDirty then
+                    app.ui.setPageDirty(false)
+                end
+                app.triggers.closeProgressLoader = true
+            end,
+            errorHandler = function()
+                app.triggers.closeProgressLoader = true
             end
+        })
+        if not ok then
+            rfutils.log("Governor curves EEPROM enqueue rejected: " .. tostring(reason), "info")
             app.triggers.closeProgressLoader = true
-        end)
-        EAPI.write()
+        end
     end)
 
-    API.write()
+    API.setErrorHandler(function()
+        app.triggers.closeProgressLoader = true
+    end)
+
+    local ok, reason = API.write()
+    if not ok then
+        rfutils.log("Governor curves write enqueue rejected: " .. tostring(reason), "info")
+        app.triggers.closeProgressLoader = true
+    end
 end
 
 local function loadData()
@@ -110,6 +130,18 @@ local function loadData()
             rfutils.log("Governor Bypass Throttle Curves loaded", "info")   
             haveData = true
             isDirty = true
+
+            if formFields then
+                for i = 1, 9 do
+                    local field = formFields[i]
+                    local value = FORMDATA["GOVERNOR_CONFIG"]["gov_bypass_throttle_curve_" .. i] or 0
+                    if field and field.value then
+                        field:value(value)
+                    end
+                end
+            end
+
+            lcd.invalidate()
             
         end)
         API.setUUID("e2a1c5b3-7f4a-4c8e-9d2a-3b6f8e2dca12")
@@ -134,6 +166,9 @@ local function openPage(opts)
     app.uiState = app.uiStatus.pages
 
     local longPage = false
+
+    haveData = false
+    activeFieldIndex = nil
 
     form.clear()
 

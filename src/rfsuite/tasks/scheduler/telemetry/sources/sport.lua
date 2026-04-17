@@ -24,6 +24,7 @@ return {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0218},
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x021A}
             },
+    cell_voltage = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0910}},
     rpm = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}},
     current = {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
@@ -41,8 +42,12 @@ return {
     fuel = {
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600 }
             },
-    smartfuel = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}},
-    smartconsumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}},
+    smartfuel = {
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}
+            },
+    smartconsumption = {
+                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}
+            },
     consumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}},
     governor = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}},
     adj_f = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}},

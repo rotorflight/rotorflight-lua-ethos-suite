@@ -1,109 +1,99 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "TELEMETRY_CONFIG"
 local MSP_API_CMD_READ = 73
 local MSP_API_CMD_WRITE = 74
-local MSP_REBUILD_ON_WRITE = false
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "telemetry_inverted", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-    {field = "halfDuplex", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}},
-    {field = "enableSensors", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0, 0, 0, 0}},
-    {field = "pinSwap", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "crsf_telemetry_mode", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "crsf_telemetry_link_rate", type = "U16", apiVersion = {12, 0, 8}, simResponse = {250, 0}},
-    {field = "crsf_telemetry_link_ratio", type = "U16", apiVersion = {12, 0, 8}, simResponse = {8, 0}},
-    {field = "telem_sensor_slot_1", type = "U8", apiVersion = {12, 0, 8}, simResponse = {3}},
-    {field = "telem_sensor_slot_2", type = "U8", apiVersion = {12, 0, 8}, simResponse = {4}},
-    {field = "telem_sensor_slot_3", type = "U8", apiVersion = {12, 0, 8}, simResponse = {5}},
-    {field = "telem_sensor_slot_4", type = "U8", apiVersion = {12, 0, 8}, simResponse = {6}},
-    {field = "telem_sensor_slot_5", type = "U8", apiVersion = {12, 0, 8}, simResponse = {8}},
-    {field = "telem_sensor_slot_6", type = "U8", apiVersion = {12, 0, 8}, simResponse = {8}},
-    {field = "telem_sensor_slot_7", type = "U8", apiVersion = {12, 0, 8}, simResponse = {89}},
-    {field = "telem_sensor_slot_8", type = "U8", apiVersion = {12, 0, 8}, simResponse = {90}},
-    {field = "telem_sensor_slot_9", type = "U8", apiVersion = {12, 0, 8}, simResponse = {91}},
-    {field = "telem_sensor_slot_10", type = "U8", apiVersion = {12, 0, 8}, simResponse = {99}},
-    {field = "telem_sensor_slot_11", type = "U8", apiVersion = {12, 0, 8}, simResponse = {95}},
-    {field = "telem_sensor_slot_12", type = "U8", apiVersion = {12, 0, 8}, simResponse = {96}},
-    {field = "telem_sensor_slot_13", type = "U8", apiVersion = {12, 0, 8}, simResponse = {60}},
-    {field = "telem_sensor_slot_14", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}},
-    {field = "telem_sensor_slot_15", type = "U8", apiVersion = {12, 0, 8}, simResponse = {42}},
-    {field = "telem_sensor_slot_16", type = "U8", apiVersion = {12, 0, 8}, simResponse = {93}},
-    {field = "telem_sensor_slot_17", type = "U8", apiVersion = {12, 0, 8}, simResponse = {50}},
-    {field = "telem_sensor_slot_18", type = "U8", apiVersion = {12, 0, 8}, simResponse = {51}},
-    {field = "telem_sensor_slot_19", type = "U8", apiVersion = {12, 0, 8}, simResponse = {52}},
-    {field = "telem_sensor_slot_20", type = "U8", apiVersion = {12, 0, 8}, simResponse = {17}},
-    {field = "telem_sensor_slot_21", type = "U8", apiVersion = {12, 0, 8}, simResponse = {18}},
-    {field = "telem_sensor_slot_22", type = "U8", apiVersion = {12, 0, 8}, simResponse = {19}},
-    {field = "telem_sensor_slot_23", type = "U8", apiVersion = {12, 0, 8}, simResponse = {23}},
-    {field = "telem_sensor_slot_24", type = "U8", apiVersion = {12, 0, 8}, simResponse = {22}},
-    {field = "telem_sensor_slot_25", type = "U8", apiVersion = {12, 0, 8}, simResponse = {36}},
-    {field = "telem_sensor_slot_26", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_27", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_28", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_29", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_30", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_31", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_32", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_33", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_34", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_35", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_36", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_37", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_38", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_39", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}},
-    {field = "telem_sensor_slot_40", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"telemetry_inverted", "U8"},
+    {"halfDuplex", "U8"},
+    {"enableSensors", "U32"}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"pinSwap", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"crsf_telemetry_mode", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"crsf_telemetry_link_rate", "U16"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"crsf_telemetry_link_ratio", "U16"}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
+    for i = 1, 40 do
+        FIELD_SPEC[#FIELD_SPEC + 1] = {"telem_sensor_slot_" .. i, "U8"}
     end
-    return result
 end
+local simResponse = {
+    0,            -- telemetry_inverted
+    1,            -- halfDuplex
+    0, 0, 0, 0,   -- enableSensors
+    0,            -- pinSwap
+    0,            -- crsf_telemetry_mode
+    250, 0,       -- crsf_telemetry_link_rate
+    8, 0,         -- crsf_telemetry_link_ratio
+    3,            -- telem_sensor_slot_1
+    4,            -- telem_sensor_slot_2
+    5,            -- telem_sensor_slot_3
+    6,            -- telem_sensor_slot_4
+    8,            -- telem_sensor_slot_5
+    8,            -- telem_sensor_slot_6
+    89,           -- telem_sensor_slot_7
+    90,           -- telem_sensor_slot_8
+    91,           -- telem_sensor_slot_9
+    99,           -- telem_sensor_slot_10
+    95,           -- telem_sensor_slot_11
+    96,           -- telem_sensor_slot_12
+    60,           -- telem_sensor_slot_13
+    15,           -- telem_sensor_slot_14
+    42,           -- telem_sensor_slot_15
+    93,           -- telem_sensor_slot_16
+    50,           -- telem_sensor_slot_17
+    51,           -- telem_sensor_slot_18
+    52,           -- telem_sensor_slot_19
+    17,           -- telem_sensor_slot_20
+    18,           -- telem_sensor_slot_21
+    19,           -- telem_sensor_slot_22
+    23,           -- telem_sensor_slot_23
+    22,           -- telem_sensor_slot_24
+    36,           -- telem_sensor_slot_25
+    0,            -- telem_sensor_slot_26
+    0,            -- telem_sensor_slot_27
+    0,            -- telem_sensor_slot_28
+    0,            -- telem_sensor_slot_29
+    0,            -- telem_sensor_slot_30
+    0,            -- telem_sensor_slot_31
+    0,            -- telem_sensor_slot_32
+    0,            -- telem_sensor_slot_33
+    0,            -- telem_sensor_slot_34
+    0,            -- telem_sensor_slot_35
+    0,            -- telem_sensor_slot_36
+    0,            -- telem_sensor_slot_37
+    0,            -- telem_sensor_slot_38
+    0,            -- telem_sensor_slot_39
+    0             -- telem_sensor_slot_40
+}
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
+local SIM_RESPONSE = core.simResponse(simResponse)
 
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

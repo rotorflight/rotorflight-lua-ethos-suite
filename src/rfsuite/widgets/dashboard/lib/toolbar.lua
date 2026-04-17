@@ -82,6 +82,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
 local M = {}
 
 local toolbarMaskCache = {}
+local toolbarThemeFallbackCache = {}
 
 local function clearToolbarMaskCache(dashboard)
     for k in pairs(toolbarMaskCache) do toolbarMaskCache[k] = nil end
@@ -96,6 +97,38 @@ local function loadToolbarMask(path, lcd)
         toolbarMaskCache[path] = mask
     end
     return mask
+end
+
+local function getToolbarThemeFallbacks(lcd, isDark)
+    local key = isDark and "dark" or "light"
+    local palette = toolbarThemeFallbackCache[key]
+    if palette then return palette end
+
+    if isDark then
+        palette = {
+            default = lcd.RGB(255, 255, 255),
+            focus = lcd.RGB(255, 255, 255),
+            defaultBg = lcd.RGB(0, 0, 0),
+            focusBg = lcd.RGB(40, 40, 40)
+        }
+    else
+        palette = {
+            default = lcd.RGB(90, 90, 90),
+            focus = lcd.RGB(0, 0, 0),
+            defaultBg = lcd.RGB(255, 255, 255),
+            focusBg = lcd.RGB(230, 230, 230)
+        }
+    end
+
+    toolbarThemeFallbackCache[key] = palette
+    return palette
+end
+
+local function resolveToolbarThemeColor(lcd, themeColorKey, fallback)
+    if type(themeColorKey) == "number" then
+        return lcd.themeColor(themeColorKey)
+    end
+    return fallback
 end
 
 local function getToolbarBounds(dashboard, lcd)
@@ -155,6 +188,15 @@ local function getToolbarCache(dashboard)
     return dashboard._toolbarCache
 end
 
+function M.clearCaches(dashboard)
+    clearToolbarMaskCache(dashboard)
+    if dashboard then
+        dashboard._toolbarRects = nil
+        dashboard._toolbarItemsSorted = nil
+        dashboard._toolbarEnabled = nil
+    end
+end
+
 local function isItemEnabled(item, dashboard, rfsuite)
     if not item then return false end
     if type(item.enableFunction) == "function" then
@@ -199,12 +241,13 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
         return
     end
 
-    local themeDefault = lcd.themeColor(THEME_DEFAULT_COLOR)
-    local themeFocus = lcd.themeColor(THEME_FOCUS_COLOR)
-    local themeDefaultBg = lcd.themeColor(THEME_DEFAULT_BGCOLOR)
-    local themeFocusBg = lcd.themeColor(THEME_FOCUS_BGCOLOR)
-    local lineColor = themeFocus
     local isDark = lcd.darkMode()
+    local themeFallbacks = getToolbarThemeFallbacks(lcd, isDark)
+    local themeDefault = resolveToolbarThemeColor(lcd, THEME_DEFAULT_COLOR, themeFallbacks.default)
+    local themeFocus = resolveToolbarThemeColor(lcd, THEME_FOCUS_COLOR, themeFallbacks.focus)
+    local themeDefaultBg = resolveToolbarThemeColor(lcd, THEME_DEFAULT_BGCOLOR, themeFallbacks.defaultBg)
+    local themeFocusBg = resolveToolbarThemeColor(lcd, THEME_FOCUS_BGCOLOR, themeFallbacks.focusBg)
+    local lineColor = themeFocus
     if isDark then
         lcd.color(lcd.RGB(0, 0, 0, 0.99))
     else

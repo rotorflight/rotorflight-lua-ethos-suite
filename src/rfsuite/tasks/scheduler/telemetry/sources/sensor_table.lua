@@ -68,7 +68,12 @@ return {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
-        onchange = function(value) rfsuite.session.isArmed = (value == 1 or value == 3) end
+        onchange = function(value)
+            local armed = rfsuite.utils.armFlagsToIsArmed(value)
+            if armed ~= nil then
+                rfsuite.session.isArmed = armed
+            end
+        end
     },
 
     voltage = {
@@ -76,6 +81,16 @@ return {
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 3,
+        switch_alerts = true,
+        unit = UNIT_VOLT,
+        unit_string = "V",
+    },
+
+    cell_voltage = {
+        name = "Cell Voltage",
+        mandatory = false,
+        stats = true,
+        set_telemetry_sensors = 8,
         switch_alerts = true,
         unit = UNIT_VOLT,
         unit_string = "V",
@@ -154,6 +169,7 @@ return {
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 6,
+        default_telemetry_sensor = true,
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
@@ -166,6 +182,13 @@ return {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        fallback_sensor = "fuel",
+        transform = function(value)
+            if value ~= nil and value < 0 then
+                return nil
+            end
+            return value
+        end,
     },
 
     smartconsumption = {
@@ -175,6 +198,7 @@ return {
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
         unit_string = "mAh",
+        fallback_sensor = "consumption",
     },
 
     consumption = {

@@ -8,69 +8,105 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local onNavMenu
-local disableMultiplier
-local becAlert
-local rxBattAlert
+local lastVoltageMode = nil
+local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
 
-local apidata = {
-    api = {
-        [1] = 'BATTERY_INI'
-    },
-    formdata = {
-        labels = {},
-        fields = {
-            {t = "@i18n(app.modules.power.model_type)@",                 mspapi = 1, apikey = "smartfuel_model_type", type = 1},
-            {t = "@i18n(app.modules.power.calcfuel_local)@",             mspapi = 1, apikey = "calc_local", type = 1},
+local function buildFields()
+    local fields = {}
+
+    if useFirmwareSmartFuel then
+        fields[#fields + 1] = {t = "@i18n(sensors.smartfuel)@", mspapi = 2, apikey = "smartfuel_remote_source", type = 1}
+    end
+
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.model_type)@",                    mspapi = 1, apikey = "smartfuel_model_type", type = 1}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.calcfuel_local)@",                mspapi = 1, apikey = "smartfuel_source", type = 1}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",     mspapi = 1, apikey = "stabilize_delay"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_stable_window)@",       mspapi = 1, apikey = "stable_window"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",    mspapi = 1, apikey = "sag_multiplier_percent"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@",  mspapi = 1, apikey = "voltage_fall_limit"}
+    fields[#fields + 1] = {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",      mspapi = 1, apikey = "fuel_drop_rate"}
+
+    return fields
+end
+
+local function buildApiData()
+    if useFirmwareSmartFuel then
+        return {
+            api = {
+                [1] = "BATTERY_INI",
+                [2] = "BATTERY_CONFIG"
+            },
+            formdata = {
+                labels = {},
+                fields = buildFields()
+            }
+        }
+    end
+
+    return {
+        api = {
+            [1] = "BATTERY_INI"
+        },
+        formdata = {
+            labels = {},
+            fields = buildFields()
         }
     }
-}
+end
+
+local apidata = buildApiData()
 
 local function postLoad(self)
+    lastVoltageMode = nil
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
 end
 
+local function postSave(self)
+    if not useFirmwareSmartFuel then
+        return
+    end
+
+    local remoteSmartfuelSource = 0
+    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "smartfuel_remote_source" then
+            remoteSmartfuelSource = tonumber(f.value) or 0
+            break
+        end
+    end
+
+    rfsuite.session = rfsuite.session or {}
+    rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
+    rfsuite.session.batteryConfig.smartfuelRemoteSource = remoteSmartfuelSource
+
+    if rfsuite.tasks and rfsuite.tasks.sensors and type(rfsuite.tasks.sensors.resetSmart) == "function" then
+        rfsuite.tasks.sensors.resetSmart()
+    end
+end
+
 local function wakeup(self)
     if enableWakeup == false then return end
-
+    local voltageMode = false
     for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-        if f.apikey == "calc_local" then
-            local v = tonumber(f.value)
-            if v == 1 then
-                disableMultiplier = true
-            else
-                disableMultiplier = false
-            end
+        if f.apikey == "smartfuel_source" then
+            voltageMode = tonumber(f.value) == 1
+            break
         end
     end
 
-    if disableMultiplier == true then
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do if f.apikey == "sag_multiplier" then rfsuite.app.formFields[i]:enable(true) end end
-    else
-        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do if f.apikey == "sag_multiplier" then rfsuite.app.formFields[i]:enable(false) end end
+    if voltageMode == lastVoltageMode then
+        return
     end
-
-    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-        if f.apikey == "alert_type" then
-            local b = tonumber(f.value)
-            if b == 1 then
-                becAlert = true
-                rxBattAlert = false
-            elseif b == 2 then
-                becAlert = false
-                rxBattAlert = true
-            else
-                becAlert = false
-                rxBattAlert = false
-            end
-        end
-    end
+    lastVoltageMode = voltageMode
 
     for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-        if f.apikey == "becalertvalue" then
-            rfsuite.app.formFields[i]:enable(becAlert)
-        elseif f.apikey == "rxalertvalue" then
-            rfsuite.app.formFields[i]:enable(rxBattAlert)
+        if f.apikey == "voltage_fall_limit" or
+           f.apikey == "fuel_drop_rate" or
+           f.apikey == "sag_multiplier_percent" then
+            local fieldHandle = rfsuite.app.formFields[i]
+            if fieldHandle and fieldHandle.enable then
+                fieldHandle:enable(voltageMode)
+            end
         end
     end
 end
@@ -85,4 +121,4 @@ onNavMenu = function(self)
     return true
 end
 
-return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, event = event, onNavMenu = onNavMenu}
+return {wakeup = wakeup, apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, postSave = postSave, event = event, onNavMenu = onNavMenu}

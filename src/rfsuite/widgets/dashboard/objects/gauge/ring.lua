@@ -61,7 +61,6 @@ local floor = math.floor
 local min = math.min
 local max = math.max
 local format = string.format
-local rep = string.rep
 
 local render = {}
 
@@ -69,6 +68,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
+local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -150,11 +151,7 @@ function render.wakeup(box)
     if value ~= nil then displayValue = utils.transformValue(value, box) end
 
     if value == nil then
-        local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
         unit = nil
     end
 
@@ -227,7 +224,7 @@ function render.paint(x, y, w, h, box)
 
     local titleHeight = 0
     if c.title then
-        lcd.font(_G[c.titlefont] or FONT_XS)
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
         local _, th = lcd.getTextSize(c.title)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
@@ -263,7 +260,7 @@ function render.paint(x, y, w, h, box)
 
     if c.ringbatt and c.mahUnit then
 
-        lcd.font(_G[c.ringbattsubfont] or FONT_XS)
+        lcd.font(resolveFont(c.ringbattsubfont, FONT_XS))
         local tw, th = lcd.getTextSize(c.mahUnit)
 
         local padL = c.ringbattsubpaddingleft or c.ringbattsubpadding or 0
@@ -280,12 +277,12 @@ function render.paint(x, y, w, h, box)
             textX = x + (w - tw) / 2 + (padL - padR)
         end
 
-        lcd.font(_G[c.font] or FONT_STD)
+        lcd.font(resolveFont(c.font, FONT_STD))
         local _, mainH = lcd.getTextSize("0")
         local centerY = y + h / 2
         local textY = centerY + mainH / 2 + padT - padB
 
-        lcd.font(_G[c.ringbattsubfont] or FONT_XS)
+        lcd.font(resolveFont(c.ringbattsubfont, FONT_XS))
         lcd.color(c.textcolor)
         lcd.drawText(textX, textY, c.mahUnit)
     end

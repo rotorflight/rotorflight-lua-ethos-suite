@@ -1,89 +1,86 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "VTX_CONFIG"
 local MSP_API_CMD_READ = 88
 local MSP_API_CMD_WRITE = 89
-local MSP_REBUILD_ON_WRITE = true
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "device_type",      type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
-    { field = "band",             type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
-    { field = "channel",          type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
-    { field = "power",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
-    { field = "pit_mode",         type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
-    { field = "freq",             type = "U16", apiVersion = {12, 0, 6}, simResponse = {108, 22} },
-    { field = "device_ready",     type = "U8",  apiVersion = {12, 0, 6}, simResponse = {1} },
-    { field = "low_power_disarm", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} },
-    { field = "pit_mode_freq",    type = "U16", apiVersion = {12, 42}, simResponse = {0, 0} },
-    { field = "vtxtable_available", type = "U8", apiVersion = {12, 42}, simResponse = {1} },
-    { field = "vtxtable_bands",   type = "U8",  apiVersion = {12, 42}, simResponse = {5} },
-    { field = "vtxtable_channels",type = "U8",  apiVersion = {12, 42}, simResponse = {8} },
-    { field = "vtxtable_power_levels", type = "U8", apiVersion = {12, 42}, simResponse = {5} },
-}
--- LuaFormatter on
-
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = {
-    { field = "freq_or_bandchan",  type = "U16" },
-    { field = "power",             type = "U8"  },
-    { field = "pit_mode",          type = "U8"  },
-    { field = "low_power_disarm",  type = "U8"  },
-    { field = "pit_mode_freq",     type = "U16" },
-    { field = "band",              type = "U8"  },
-    { field = "channel",           type = "U8"  },
-    { field = "freq",              type = "U16" },
-    { field = "vtxtable_bands",    type = "U8"  },
-    { field = "vtxtable_channels", type = "U8"  },
-    { field = "vtxtable_power_levels", type = "U8" },
-    { field = "vtxtable_clear",    type = "U8"  },
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"device_type", "U8"},
+    {"band", "U8"},
+    {"channel", "U8"},
+    {"power", "U8"},
+    {"pit_mode", "U8"},
+    {"freq", "U16"},
+    {"device_ready", "U8"},
+    {"low_power_disarm", "U8"}
 }
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
+if rfsuite.utils.apiVersionCompare(">=", {12, 42}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"pit_mode_freq", "U16"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"vtxtable_available", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"vtxtable_bands", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"vtxtable_channels", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"vtxtable_power_levels", "U8"}
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local WRITE_FIELD_SPEC = {
+    {"freq_or_bandchan", "U16"},
+    {"power", "U8"},
+    {"pit_mode", "U8"},
+    {"low_power_disarm", "U8"},
+    {"pit_mode_freq", "U16"},
+    {"band", "U8"},
+    {"channel", "U8"},
+    {"freq", "U16"},
+    {"vtxtable_bands", "U8"},
+    {"vtxtable_channels", "U8"},
+    {"vtxtable_power_levels", "U8"},
+    {"vtxtable_clear", "U8"}
+}
 
-return factory.create({
+local SIM_RESPONSE = core.simResponse({
+    0,       -- device_type
+    1,       -- band
+    1,       -- channel
+    1,       -- power
+    0,       -- pit_mode
+    108, 22, -- freq
+    1,       -- device_ready
+    0,       -- low_power_disarm
+    0, 0,    -- pit_mode_freq
+    1,       -- vtxtable_available
+    5,       -- vtxtable_bands
+    8,       -- vtxtable_channels
+    5        -- vtxtable_power_levels
+})
+
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    writeRequiresStructure = true,
+    initialRebuildOnWrite = true,
+    fields = FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

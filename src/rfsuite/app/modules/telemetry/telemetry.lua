@@ -464,7 +464,7 @@ end
 local function getDefaultSensors(sensorListFromApi)
     local defaultSensors = {}
     for _, sensor in pairs(sensorListFromApi) do
-        if sensor["mandatory"] == true and sensor["set_telemetry_sensors"] ~= nil then
+        if (sensor["mandatory"] == true or sensor["default_telemetry_sensor"] == true) and sensor["set_telemetry_sensors"] ~= nil then
             local sensorId = tonumber(sensor["set_telemetry_sensors"])
             if sensorId then
                 table.insert(defaultSensors, sensorId)
@@ -556,10 +556,12 @@ local function wakeup()
 
                 clearTable(config)
                 if data and type(data.parsed) == "table" then
-                    for _, value in pairs(data.parsed) do
-                        local sensorId = tonumber(value)
-                        if sensorId and sensorId ~= 0 then
-                            rfsuite.app.Page.config[sensorId] = true
+                    for key, value in pairs(data.parsed) do
+                        if string.match(key, "^telem_sensor_slot_%d+$") then
+                            local sensorId = tonumber(value)
+                            if sensorId and sensorId ~= 0 then
+                                rfsuite.app.Page.config[sensorId] = true
+                            end
                         end
                     end
                 end

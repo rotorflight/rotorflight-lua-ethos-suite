@@ -28,13 +28,10 @@ local function copyTable(src)
 end
 
 local function saveToEeprom()
-    local mspEepromWrite = {
-        command = 250, 
+    local ok, reason = utils.queueEepromWrite({
         uuid = "eeprom.syncstats.timer",
-        simulatorResponse = {}, 
-        processReply = function() utils.log("EEPROM write command sent","info") end
-    }
-    local ok, reason = rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+        processReply = function() utils.log("EEPROM write command sent", "info") end
+    })
     if not ok then
         utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
     end

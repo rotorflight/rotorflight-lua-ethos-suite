@@ -48,6 +48,7 @@ local system_playHaptic = system.playHaptic
 
 local MAX_BATTERY_PROFILES = 6
 local PROFILE_HASH_BASE = 131
+local SMARTFUEL_RESYNC_GAP_S = 3.0
 
 local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
 local governorMap = {
@@ -276,6 +277,15 @@ local function smartfuelCallout(value, now)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = buildSmartfuelThresholds(smartfuelcallout)
     local calloutPkg, calloutFile, emptyPkg, emptyFile = resolveSmartfuelAudio()
+    local lastSmartfuelTime = lastEventTimes["smartfuel"]
+
+    -- If telemetry stalled and then resumed, do not "catch up" missed threshold
+    -- callouts in a burst. Re-sync to the recovered value and continue normally.
+    if value > 0 and lastSmartfuelTime and (now - lastSmartfuelTime) >= SMARTFUEL_RESYNC_GAP_S then
+        lastSmartfuelAnnounced = math_floor(value + 0.5)
+        resetLowFuelState()
+        return
+    end
 
     if value <= 0 then
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1

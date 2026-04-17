@@ -71,10 +71,11 @@ local function servoCenterFocusOn(self)
 end
 
 local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    return queueDirect(mspEepromWrite, "servo.pwmtool.eeprom")
-
+    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.pwmtool.eeprom"})
+    if not ok then
+        rfsuite.utils.log("Servo PWM EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
+    return ok, reason
 end
 
 local function saveServoCenter(self)

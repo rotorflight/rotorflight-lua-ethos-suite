@@ -11,10 +11,12 @@ local floor = math.floor
 local ceil = math.ceil
 local min = math.min
 local max = math.max
+local abs = math.abs
 local sin = math.sin
 local cos = math.cos
 local rad = math.rad
 local format = string.format
+local rep = string.rep
 local ipairs = ipairs
 local pairs = pairs
 local tostring = tostring
@@ -98,6 +100,24 @@ local NAMED_COLORS = {
 local resolveColorCache = {}
 local resolveColorTableCache = setmetatable({}, {__mode = "k"})
 local themeFallbackPaletteCache = {dark = nil, light = nil}
+local DASHBOARD_RESOLUTION_TOLERANCE = 12
+local DASHBOARD_SUPPORTED_RESOLUTIONS = {
+    {784, 294}, {784, 316}, {800, 458}, {800, 480},
+    {472, 191}, {472, 210}, {480, 301}, {480, 320},
+    {630, 236}, {630, 258}, {640, 338}, {640, 360}
+}
+local DASHBOARD_THEME_WIDTHS = {800, 784, 640, 630, 480, 472}
+
+local FONT_BY_NAME = {
+    FONT_XXS = FONT_XXS,
+    FONT_XS = FONT_XS,
+    FONT_S = FONT_S,
+    FONT_STD = FONT_STD,
+    FONT_L = FONT_L,
+    FONT_XL = FONT_XL,
+    FONT_XXL = FONT_XXL,
+    FONT_XXXXL = FONT_XXXXL
+}
 
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
 
@@ -135,16 +155,52 @@ local function getThemeFallbackPalette(isDark)
     return cached
 end
 
+local function findClosestDashboardResolution(W, H, supportedResolutions)
+    local bestRes, bestDistance
+    local resolutions = supportedResolutions or DASHBOARD_SUPPORTED_RESOLUTIONS
+
+    for _, res in ipairs(resolutions) do
+        local distance = abs(W - res[1]) + abs(H - res[2])
+        if bestDistance == nil or distance < bestDistance then
+            bestRes = res
+            bestDistance = distance
+        end
+    end
+
+    return bestRes, bestDistance
+end
+
+local function getClosestDashboardWidth(W)
+    local bestWidth, bestDistance
+
+    for i = 1, #DASHBOARD_THEME_WIDTHS do
+        local width = DASHBOARD_THEME_WIDTHS[i]
+        local distance = abs(W - width)
+        if bestDistance == nil or distance < bestDistance then
+            bestWidth = width
+            bestDistance = distance
+        end
+    end
+
+    return bestWidth
+end
+
+function utils.matchSupportedResolution(W, H, supportedResolutions, maxDistance)
+    local bestRes, bestDistance = findClosestDashboardResolution(W, H, supportedResolutions)
+    local tolerance = maxDistance or DASHBOARD_RESOLUTION_TOLERANCE
+
+    if bestRes and bestDistance ~= nil and bestDistance <= tolerance then
+        return bestRes[1], bestRes[2], bestDistance
+    end
+
+    return nil
+end
+
 function utils.isFullScreen(w, h)
+    local matchedW = utils.matchSupportedResolution(w, h)
 
-    if (w == 800 and (h == 458 or h == 480)) then return true end
-    if (w == 784 and (h == 294 or h == 316)) then return false end
-
-    if (w == 480 and (h == 301 or h == 320)) then return true end
-    if (w == 472 and (h == 191 or h == 210)) then return false end
-
-    if (w == 640 and (h == 338 or h == 360)) then return true end
-    if (w == 630 and (h == 236 or h == 258)) then return false end
+    if matchedW == 800 or matchedW == 480 or matchedW == 640 then return true end
+    if matchedW == 784 or matchedW == 472 or matchedW == 630 then return false end
 
     return nil
 end
@@ -154,9 +210,25 @@ function utils.isModelPrefsReady() return rfsuite and rfsuite.session and rfsuit
 function utils.resetBoxCache(box) if box._cache then for k in pairs(box._cache) do box._cache[k] = nil end end end
 
 function utils.supportedResolution(W, H, supportedResolutions)
+    return utils.matchSupportedResolution(W, H, supportedResolutions) ~= nil
+end
 
-    for _, res in ipairs(supportedResolutions) do if W == res[1] and H == res[2] then return true end end
-    return false
+function utils.getDashboardThemeOptionKey(W)
+    local matchedW = getClosestDashboardWidth(W)
+
+    if matchedW == 800 then
+        return "ls_full"
+    elseif matchedW == 784 then
+        return "ls_std"
+    elseif matchedW == 640 then
+        return "ss_full"
+    elseif matchedW == 630 then
+        return "ss_std"
+    elseif matchedW == 480 then
+        return "ms_full"
+    elseif matchedW == 472 then
+        return "ms_std"
+    end
 end
 
 function utils.drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
@@ -197,8 +269,9 @@ end
 
 function utils.getHeaderOptions()
     local W, H = lcd.getWindowSize()
+    local matchedW = getClosestDashboardWidth(W)
 
-    if W == 800 or W == 784 then
+    if matchedW == 800 or matchedW == 784 then
         return {
             height = 36,
             font = "FONT_L",
@@ -226,7 +299,7 @@ function utils.getHeaderOptions()
             roundradius = 15
         }
 
-    elseif W == 480 or W == 472 then
+    elseif matchedW == 480 or matchedW == 472 then
         return {
             height = 30,
             font = "FONT_L",
@@ -253,7 +326,7 @@ function utils.getHeaderOptions()
             roundradius = 10
         }
 
-    elseif W == 640 or W == 630 then
+    elseif matchedW == 640 or matchedW == 630 then
         return {
             height = 30,
             font = "FONT_L",
@@ -514,6 +587,12 @@ function utils.resolveThemeColorArray(colorkey, arr, out)
     return resolved
 end
 
+function utils.resolveFont(font, fallback)
+    if type(font) == "number" then return font end
+    if type(font) == "string" then return FONT_BY_NAME[font] or fallback end
+    return fallback
+end
+
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
 
     if type(title) ~= "string" and type(title) ~= "number" then
@@ -551,8 +630,9 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             local _, vh = lcd.getTextSize("8")
             if vh < minValueFontH then minValueFontH = vh end
         end
-        if titlefont and _G[titlefont] then
-            actualTitleFont = _G[titlefont]
+        local resolvedTitleFont = utils.resolveFont(titlefont, nil)
+        if resolvedTitleFont then
+            actualTitleFont = resolvedTitleFont
             lcd.font(actualTitleFont)
             tsizeW, tsizeH = lcd.getTextSize(title)
         else
@@ -594,9 +674,10 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
             imageCache = imageCache or {}
             local cacheKey = image or "default_image"
             bitmapPtr = imageCache[cacheKey]
+            if bitmapPtr == false then bitmapPtr = nil end
             if not bitmapPtr then
                 bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/gfx/logo.png")
-                imageCache[cacheKey] = bitmapPtr
+                imageCache[cacheKey] = bitmapPtr or false
             end
         elseif type(image) == "userdata" then
 
@@ -635,8 +716,9 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
         value_str_calc = string.gsub(value_str_calc, "[°]", ".")
 
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
-        if font and _G[font] then
-            valueFont = _G[font]
+        local resolvedValueFont = utils.resolveFont(font, nil)
+        if resolvedValueFont then
+            valueFont = resolvedValueFont
             lcd.font(valueFont)
 
             bestW, bestH = lcd.getTextSize(value_str_calc)
@@ -745,6 +827,21 @@ function utils.getParam(box, key, ...)
     else
         return v
     end
+end
+
+function utils.getPulsingDots(box, counterKey, maxDots)
+    if type(box) ~= "table" then return "." end
+
+    local key = counterKey or "_dotCount"
+    local maxCount = tonumber(maxDots) or 3
+    if maxCount < 1 then maxCount = 1 end
+
+    local count = (tonumber(box[key]) or 0) + 1
+    if count > maxCount then count = 0 end
+    box[key] = count
+
+    if count == 0 then return "." end
+    return rep(".", count)
 end
 
 local function extractCapacityValue(v)

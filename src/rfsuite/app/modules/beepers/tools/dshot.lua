@@ -212,8 +212,8 @@ local function performSave()
         updateSaveEnabled()
     end)
     API.setCompleteHandler(function()
-        local eepromWrite = {
-            command = 250,
+        local ok = rfsuite.utils.queueEepromWrite({
+            uuid = "beepers.dshot.eeprom",
             processReply = function()
                 state.saving = false
                 state.dirty = false
@@ -226,10 +226,8 @@ local function performSave()
                 app.triggers.closeSave = true
                 app.triggers.showSaveArmedWarning = true
                 updateSaveEnabled()
-            end,
-            simulatorResponse = {}
-        }
-        local ok = tasks.msp.mspQueue:add(eepromWrite)
+            end
+        })
         if not ok then
             state.saving = false
             app.triggers.closeSave = true

@@ -31,6 +31,7 @@ function battery.wakeup()
             local lvcPercentage = API.readValue("lvcPercentage")
             local consumptionWarningPercentage = API.readValue("consumptionWarningPercentage")
             local voltageMeterSource = API.readValue("voltageMeterSource")
+            local smartfuelRemoteSource = API.readValue("smartfuel_remote_source")
 
             rfsuite.session.batteryConfig = {}
             rfsuite.session.batteryConfig.voltageMeterSource = voltageMeterSource
@@ -42,6 +43,7 @@ function battery.wakeup()
             rfsuite.session.batteryConfig.vbatfullcellvoltage = vbatfullcellvoltage
             rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
+            rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(smartfuelRemoteSource) or 0
 
             rfsuite.session.batteryConfig.profiles = {}
             for i = 0, 5 do

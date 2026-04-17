@@ -9,6 +9,7 @@ local smart = {}
 
 local smartfuel = assert(loadfile("tasks/scheduler/sensors/lib/smartfuel.lua"))()
 local smartfuelvoltage = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelvoltage.lua"))()
+local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local log
 local tasks
@@ -29,28 +30,34 @@ local lastPush = {}
 local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
+local cleanupSignature = nil
+local lastNativeSmartSensors = nil
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
+local function useNativeSmartSensors()
+    if system.getVersion().simulation == true then
+        return false
+    end
+
+    local batteryConfig = rfsuite.session and rfsuite.session.batteryConfig
+    return batteryConfig and (tonumber(batteryConfig.smartfuelRemoteSource) or 0) > 0
+end
+
 local function calculateFuel()
-    local prefs = rfsuite.session.modelPreferences
-    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
+    if smartfuelprefs.getSource() == 1 then
         return smartfuelvoltage.calculate()
     end
     return smartfuel.calculate()
 end
 
 local function calculateConsumption()
-    local prefs = rfsuite.session.modelPreferences
-    if prefs and prefs.battery and prefs.battery.calc_local == 1 then
-        local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
-        local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
-        local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
-        if smartfuelPct then
-            local usableCapacity = capacity * (1 - warningPercentage / 100)
-            local usedPercent = 100 - smartfuelPct
-            return (usedPercent / 100) * usableCapacity
+    if smartfuelprefs.getSource() == 1 then
+        if smartfuelvoltage.getConsumption then
+            local consumption = smartfuelvoltage.getConsumption()
+            if consumption ~= nil then return consumption end
         end
+        return 0
     end
     return rfsuite.tasks.telemetry.getSensor("consumption") or 0
 end
@@ -73,9 +80,74 @@ end
 
 local function resetConsumption() end
 
-local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = UNIT_PERCENT, minimum = 0, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
+local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = UNIT_PERCENT, minimum = -1, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
 
 smart.sensors = smart_sensors
+
+local function dropObsoleteSensor(appId)
+    local source = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+    if not source then return end
+
+    local currentModule = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module()
+    if currentModule ~= nil and source.module and source:module() ~= currentModule then
+        return
+    end
+
+    if source.drop then
+        source:drop()
+    elseif source.reset then
+        source:reset()
+    end
+end
+
+local function cleanupObsoleteSmartSensors()
+    local session = rfsuite.session
+    if not (session and session.apiVersion and session.telemetrySensor) then return end
+
+    local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol
+    local moduleId = session.telemetrySensor and session.telemetrySensor.module and session.telemetrySensor:module() or "?"
+    local nativeSmartSensors = useNativeSmartSensors()
+    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId), tostring(nativeSmartSensors)}, ":")
+    if cleanupSignature == signature then return end
+    cleanupSignature = signature
+
+    if lastNativeSmartSensors ~= nativeSmartSensors then
+        resetFuel()
+        resetConsumption()
+        lastValue = {}
+        lastPush = {}
+    end
+    lastNativeSmartSensors = nativeSmartSensors
+
+    if nativeSmartSensors then
+        if protocol == "sport" then
+            dropObsoleteSensor(0x5251)
+            dropObsoleteSensor(0x5252)
+        elseif protocol == "crsf" then
+            dropObsoleteSensor(0x1015)
+            dropObsoleteSensor(0x1016)
+        end
+        dropObsoleteSensor(0x5FE1)
+        dropObsoleteSensor(0x5FE0)
+        sensorCache[0x5FE1] = nil
+        sensorCache[0x5FE0] = nil
+        negativeCache[0x5FE1] = nil
+        negativeCache[0x5FE0] = nil
+        lastValue[0x5FE1] = nil
+        lastValue[0x5FE0] = nil
+        lastPush[0x5FE1] = nil
+        lastPush[0x5FE0] = nil
+        return
+    end
+
+    if protocol == "sport" then
+        dropObsoleteSensor(0x5251)
+        dropObsoleteSensor(0x5252)
+    elseif protocol == "crsf" then
+        dropObsoleteSensor(0x1015)
+        dropObsoleteSensor(0x1016)
+    end
+end
 
 local function createOrUpdateSensor(appId, fieldMeta, value)
 
@@ -160,14 +232,19 @@ function smart.wakeup()
     if (os_clock() - lastWake) < interval then return end
     lastWake = os_clock()
 
+    cleanupObsoleteSmartSensors()
+
     for name, meta in pairs(smart_sensors) do
-        local value
-        if type(meta.value) == "function" then
-            value = meta.value()
-        else
-            value = meta.value
+        local shouldPublish = not ((name == "smartfuel" or name == "smartconsumption") and useNativeSmartSensors())
+        if shouldPublish then
+            local value
+            if type(meta.value) == "function" then
+                value = meta.value()
+            else
+                value = meta.value
+            end
+            createOrUpdateSensor(meta.appId, meta, value)
         end
-        createOrUpdateSensor(meta.appId, meta, value)
     end
 end
 
@@ -186,6 +263,8 @@ function smart.reset()
     lastValue = {}
     lastPush = {}
     lastModule = nil
+    cleanupSignature = nil
+    lastNativeSmartSensors = nil
 
     resetFuel()
     resetConsumption()

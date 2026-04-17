@@ -9,22 +9,19 @@ local MSP_API = "ESC_PARAMETERS_BLHELI_S"
 local toolName = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@"
 local ESC1_TARGET = 0
 local ESC2_TARGET = 1
-local BLUEJAY_MAIN_REVISION = 0
+local BLHELI_S_MAIN_REVISION = 16
 
 local function getPageValue(page, index)
+    if type(page) ~= "table" then return nil end
     return page[index]
 end
 
-local function getEscFamily(buffer)
-    local major = getPageValue(buffer, 3)
-    if major == BLUEJAY_MAIN_REVISION then
-        return "Bluejay"
-    end
-    return toolName
+local function getMainRevision(buffer)
+    return getPageValue(buffer, 3)
 end
 
 local function getEscModel(buffer)
-    return  getEscFamily(buffer)
+    return toolName
 end
 
 local function getEscVersion(buffer)
@@ -46,9 +43,21 @@ local function getEscFirmware(buffer)
     return "FW" .. tostring(major) .. "." .. tostring(minor)
 end
 
+local function isCompatibleEsc(buffer, api)
+    if api and api.readValue then
+        local mainRevision = api.readValue("main_revision")
+        if mainRevision ~= nil then
+            return mainRevision == BLHELI_S_MAIN_REVISION
+        end
+    end
+    return getMainRevision(buffer) == BLHELI_S_MAIN_REVISION
+end
+
 return {
     mspapi = MSP_API,
     toolName = toolName,
+    isCompatibleEsc = isCompatibleEsc,
+    mspBufferCache = true,
     force4WaySwitchOnEntry = true,
     esc4wayEsc1Target = ESC1_TARGET,
     esc4wayEsc2Target = ESC2_TARGET,
@@ -56,8 +65,9 @@ return {
     preSwitchTarget = 100,
     preSwitchWriteCount = 1,
     preSwitchDelay = 0.8,
+    initialConnectTimeout = 18.0,
     switchWriteCount = 1,
-    switchReadDelay = 4.0,
+    switchReadDelay = 5.0,
     postSaveSwitchCycle = true,
     postSaveSettleDelay = 1.0,
     postSaveResetTarget = 100,
@@ -85,7 +95,7 @@ return {
     escDetailsRetryInterval = 1.2,
     retrySwitchOnReadFail = true,
     readSwitchRetryCount = 3,
-    readSwitchRetryDelay = 0.25,
+    readSwitchRetryDelay = 1.5,
     powerCycle = false,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,

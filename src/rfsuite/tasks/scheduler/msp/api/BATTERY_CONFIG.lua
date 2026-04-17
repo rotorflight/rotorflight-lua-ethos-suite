@@ -1,89 +1,94 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "BATTERY_CONFIG"
 local MSP_API_CMD_READ = 32
 local MSP_API_CMD_WRITE = 33
-local MSP_REBUILD_ON_WRITE = false
 
-local tblBatterySource = {
+local TBL_BATTERY_SOURCE = {
     [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
     [2] = "@i18n(api.BATTERY_CONFIG.source_adc)@",
     [3] = "@i18n(api.BATTERY_CONFIG.source_esc)@",
-    [4] = "@i18n(api.BATTERY_CONFIG.source_fbus)@",
+    [4] = "@i18n(api.BATTERY_CONFIG.source_fbus)@"
 }
 
-local tblBatteryType = {
-    "1", "2", "3", "4", "5", "6"
+local TBL_SMARTFUEL_SOURCE = {
+    "OFF",
+    "CURRENT",
+    "VOLTAGE"
 }
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity", type = "U16", apiVersion = {12, 0, 6}, simResponse = {136, 19}, min = 0, max = 20000, step = 50, unit = "mAh", default = 0},
-    {field = "batteryCellCount", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}, min = 0, max = 24, unit = nil, default = 6},
-    {field = "voltageMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1},
-    {field = "currentMeterSource", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = tblBatterySource, tableIdxInc = -1},
-    {field = "vbatmincellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {74, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.3},
-    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {164, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.2},
-    {field = "vbatfullcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {154, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 4.1},
-    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = {12, 0, 6}, simResponse = {94, 1}, min = 0, decimals = 2, scale = 100, max = 500, unit = "V", default = 3.5},
-    {field = "lvcPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}},
-    {field = "consumptionWarningPercentage", type = "U8", apiVersion = {12, 0, 6}, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%"},
-    {field = "batteryCapacity_0", type = "U16", apiVersion = {12, 0, 9}, simResponse = {232, 3}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
-    {field = "batteryCapacity_1", type = "U16", apiVersion = {12, 0, 9}, simResponse = {20, 5}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
-    {field = "batteryCapacity_2", type = "U16", apiVersion = {12, 0, 9}, simResponse = {64, 6}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
-    {field = "batteryCapacity_3", type = "U16", apiVersion = {12, 0, 9}, simResponse = {108, 7}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
-    {field = "batteryCapacity_4", type = "U16", apiVersion = {12, 0, 9}, simResponse = {152, 8}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
-    {field = "batteryCapacity_5", type = "U16", apiVersion = {12, 0, 9}, simResponse = {196, 9}, min = 0, max = 40000, step = 10, unit = "mAh", default = 0},
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"batteryCapacity", "U16", 0, 20000, 0, "mAh", nil, nil, 50},
+    {"batteryCellCount", "U8", 0, 24, 6},
+    {"voltageMeterSource", "U8", nil, nil, nil, nil, nil, nil, nil, nil, TBL_BATTERY_SOURCE, -1},
+    {"currentMeterSource", "U8", nil, nil, nil, nil, nil, nil, nil, nil, TBL_BATTERY_SOURCE, -1},
+    {"vbatmincellvoltage", "U16", 0, 500, 3.3, "V", 2, 100},
+    {"vbatmaxcellvoltage", "U16", 0, 500, 4.2, "V", 2, 100},
+    {"vbatfullcellvoltage", "U16", 0, 500, 4.1, "V", 2, 100},
+    {"vbatwarningcellvoltage", "U16", 0, 500, 3.5, "V", 2, 100},
+    {"lvcPercentage", "U8"},
+    {"consumptionWarningPercentage", "U8", 0, 50, 35, "%"}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_0", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_1", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_2", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_3", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_4", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"batteryCapacity_5", "U16", 0, 40000, 0, "mAh", nil, nil, 10}
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"smartfuel_remote_source", "U8", 0, 2, 0, nil, nil, nil, nil, nil, TBL_SMARTFUEL_SOURCE, -1}
+end
+local simResponse = {
+    136, 19, -- batteryCapacity
+    6,       -- batteryCellCount
+    1,       -- voltageMeterSource
+    1,       -- currentMeterSource
+    74, 1,   -- vbatmincellvoltage
+    164, 1,  -- vbatmaxcellvoltage
+    154, 1,  -- vbatfullcellvoltage
+    94, 1,   -- vbatwarningcellvoltage
+    100,     -- lvcPercentage
+    30,      -- consumptionWarningPercentage
+    232, 3,  -- batteryCapacity_0
+    20, 5,   -- batteryCapacity_1
+    64, 6,   -- batteryCapacity_2
+    108, 7,  -- batteryCapacity_3
+    152, 8,  -- batteryCapacity_4
+    196, 9   -- batteryCapacity_5
+}
+
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+    simResponse[#simResponse + 1] = 0 -- smartfuel_remote_source
 end
 
-return factory.create({
+local SIM_RESPONSE = core.simResponse(simResponse)
+
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

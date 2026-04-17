@@ -35,19 +35,7 @@ local function getThemeValue(key)
 end
 
 local function getThemeOptionKey(W)
-    if W == 800 then
-        return "ls_full"
-    elseif W == 784 then
-        return "ls_std"
-    elseif W == 640 then
-        return "ss_full"
-    elseif W == 630 then
-        return "ss_std"
-    elseif W == 480 then
-        return "ms_full"
-    elseif W == 472 then
-        return "ms_std"
-    end
+    return utils.getDashboardThemeOptionKey(W)
 end
 
 local themeOptions = {

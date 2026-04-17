@@ -86,6 +86,7 @@ local MENU_TRANSITION_PROGRESS = false
 local NAV_FOCUS_ORDER = {"menu", "save", "reload", "tool", "help"}
 local ADMIN_OVERLAY_REFRESH_S = 0.50
 local ADMIN_OVERLAY_INVALIDATE_H = 20
+local APP_PAGE_CALLBACK_OWNER = "app.page"
 
 ui._adminOverlayState = ui._adminOverlayState or {
     lastInvalidateAt = 0,
@@ -310,6 +311,25 @@ local function refreshMenuLookupCache()
 
     menuLookupCache = cache
     return menuLookupCache
+end
+
+function ui.clearRuntimeCaches()
+    menuLookupCache = {menuRef = nil}
+    ui._helpCache = {}
+    ui._helpExistsCache = {}
+
+    if app then
+        app._mainMenuPressHandlers = nil
+        app._mainMenuPressSpecs = nil
+        app._navButtonContext = nil
+        app.headerTitle = nil
+        app.headerParentBreadcrumb = nil
+        if type(app.menuContextStack) == "table" then
+            for i = #app.menuContextStack, 1, -1 do
+                app.menuContextStack[i] = nil
+            end
+        end
+    end
 end
 
 local function getHeaderNavButtonHeight()
@@ -965,7 +985,10 @@ function ui.progressDisplay(title, message, speed)
     app.dialogs.progressSpeed = speedMult
 
     if session then session.mspTimeouts = 0 end
+    app.triggers.closeProgressLoader = false
+    app.triggers.closeProgressLoaderNoisProcessed = false
     app.dialogs.progressDisplay = true
+    app.dialogs.progressCounter = 0
     app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressTimedOut = false
     app.dialogs.progressBaseMessage = message
@@ -1077,6 +1100,10 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
+    if tasks and tasks.callback and tasks.callback.clearOwner then
+        tasks.callback.clearOwner(APP_PAGE_CALLBACK_OWNER)
+    end
+
     if preferences and preferences.developer and preferences.developer.memstats then
         local mem_kb = collectgarbage("count")
         local function tcount(t)
@@ -2245,7 +2272,103 @@ function ui.fieldHeader(title)
     app.ui.navigationButtons(metrics.windowWidth - 5, getHeaderNavButtonY(radio.linePaddingTop), metrics.buttonW, metrics.buttonH)
 end
 
+local function countNumericFormFields(formFields)
+    if type(formFields) ~= "table" then return 0 end
+    local count = 0
+    for key in pairs(formFields) do
+        if type(key) == "number" then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function countVisibleFieldDefinitions(fields)
+    if type(fields) ~= "table" then return 0 end
+
+    local count = 0
+    for _, field in ipairs(fields) do
+        if type(field) == "table" then
+            local visible = field.hidden ~= true
+            if visible and field.apiversion and not utils.apiVersionCompare(">=", field.apiversion) then visible = false end
+            if visible and field.apiversionlt and not utils.apiVersionCompare("<", field.apiversionlt) then visible = false end
+            if visible and field.apiversiongt and not utils.apiVersionCompare(">", field.apiversiongt) then visible = false end
+            if visible and field.apiversionlte and not utils.apiVersionCompare("<=", field.apiversionlte) then visible = false end
+            if visible and field.apiversiongte and not utils.apiVersionCompare(">=", field.apiversiongte) then visible = false end
+            if visible and field.enablefunction then
+                local ok, enabled = pcall(field.enablefunction)
+                visible = ok and enabled ~= false
+            end
+            if visible then
+                count = count + 1
+            end
+        end
+    end
+    return count
+end
+
+local function clearPageApiEntries(page)
+    if not (page and page.apidata and page.apidata.api) then return end
+
+    local mspApi = tasks and tasks.msp and tasks.msp.api
+    local clearEntry = mspApi and mspApi.clearEntry
+    local apidata = mspApi and mspApi.apidata
+
+    for _, entry in ipairs(page.apidata.api) do
+        local apiKey = type(entry) == "string" and entry or (type(entry) == "table" and entry.name or nil)
+        if apiKey then
+            if type(clearEntry) == "function" then
+                clearEntry(apiKey)
+            elseif apidata then
+                if apidata.values then apidata.values[apiKey] = nil end
+                if apidata.structure then apidata.structure[apiKey] = nil end
+                if apidata.receivedBytes then apidata.receivedBytes[apiKey] = nil end
+                if apidata.receivedBytesCount then apidata.receivedBytesCount[apiKey] = nil end
+                if apidata.positionmap then apidata.positionmap[apiKey] = nil end
+                if apidata.other then apidata.other[apiKey] = nil end
+            end
+        end
+    end
+end
+
 function ui.openPageRefresh(opts)
+    local page = app.Page
+    if not page then
+        if type(opts) == "table" then
+            ui.openPage(opts)
+        end
+        return
+    end
+
+    if page.openPage then
+        ui.openPage(opts)
+        return
+    end
+
+    local fields = page.apidata and page.apidata.formdata and page.apidata.formdata.fields or nil
+    if countVisibleFieldDefinitions(fields) > 0 and countNumericFormFields(app.formFields) == 0 then
+        ui.openPage(opts)
+        return
+    end
+
+    clearPageApiEntries(page)
+
+    if page.apidata then
+        if type(page.apidata.retryCount) == "table" then
+            wipeTable(page.apidata.retryCount)
+        else
+            page.apidata.retryCount = {}
+        end
+
+        if type(page.apidata.apiState) ~= "table" then
+            page.apidata.apiState = {}
+        end
+        page.apidata.apiState.currentIndex = 1
+        page.apidata.apiState.isProcessing = false
+    end
+
+    ui.enableAllFields()
+    ui.enableAllNavigationFields()
     app.triggers.isReady = false
 end
 
@@ -2457,7 +2580,15 @@ function ui.openPage(opts)
     if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
-            if session.apiVersion == nil then return end
+            if session.apiVersion == nil then
+                utils.log("Page open aborted: API version unavailable; returning to main menu", "info")
+                if app.triggers then
+                    app.triggers.closeProgressLoader = true
+                    app.triggers.closeProgressLoaderNoisProcessed = true
+                end
+                app._pendingMainMenuOpen = true
+                return
+            end
 
             local valid = (field.apiversion == nil or utils.apiVersionCompare(">=", field.apiversion)) and (field.apiversionlt == nil or utils.apiVersionCompare("<", field.apiversionlt)) and (field.apiversiongt == nil or utils.apiVersionCompare(">", field.apiversiongt)) and (field.apiversionlte == nil or utils.apiVersionCompare("<=", field.apiversionlte)) and (field.apiversiongte == nil or utils.apiVersionCompare(">=", field.apiversiongte)) and
                               (field.enablefunction == nil or field.enablefunction())
@@ -2957,6 +3088,7 @@ end
 
 function ui.requestPage()
     local log = utils.log
+    local callbackMeta = {owner = APP_PAGE_CALLBACK_OWNER}
 
     if not app.Page.apidata then return end
     if not app.Page.apidata.api and not app.Page.apidata.formdata then
@@ -3039,7 +3171,7 @@ function ui.requestPage()
             local base = 0.25
             local backoff = math.min(2.0, base * (2 ^ retryCount))
             local jitter = math.random() * 0.2
-            tasks.callback.inSeconds(backoff + jitter, processNextAPI)
+            tasks.callback.inSeconds(backoff + jitter, processNextAPI, callbackMeta)
             return
         end
 
@@ -3075,15 +3207,15 @@ function ui.requestPage()
             app.Page.apidata.retryCount[apiKey] = retryCount
             if retryCount < 3 then
                 log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "info")
-                tasks.callback.inSeconds(0.25, processNextAPI)
+                tasks.callback.inSeconds(0.25, processNextAPI, callbackMeta)
             else
                 log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
-                tasks.callback.inSeconds(0.25, processNextAPI)
+                tasks.callback.inSeconds(0.25, processNextAPI, callbackMeta)
             end
         end
 
-        tasks.callback.inSeconds(2, handleTimeout)
+        tasks.callback.inSeconds(2, handleTimeout, callbackMeta)
 
         API.setCompleteHandler(function(self, buf)
             if handled then return end
@@ -3117,7 +3249,7 @@ function ui.requestPage()
             state.currentIndex = state.currentIndex + 1
             API = nil
 
-            tasks.callback.inSeconds(0.5, processNextAPI)
+            tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
         end)
 
         API.setErrorHandler(function(self, err)
@@ -3133,11 +3265,11 @@ function ui.requestPage()
 
             if retryCount < 3 then
                 log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "info")
-                tasks.callback.inSeconds(0.5, processNextAPI)
+                tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
             else
                 log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
-                tasks.callback.inSeconds(0.5, processNextAPI)
+                tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
             end
         end)
 
@@ -3359,35 +3491,29 @@ function ui.saveSettings(sourcePage)
 end
 
 function ui.rebootFc(sourcePage)
-    local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
-    local armedByFlags = (armflags == 1 or armflags == 3)
     local rebootPage = sourcePage or app.Page
-    if (session and session.isArmed) or armedByFlags then
-        utils.log("Blocked reboot while armed", "info")
+    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("REBOOT")
+    if not rebootAPI then
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
-        app.triggers.showSaveArmedWarning = true
-        return false, "armed_blocked"
+        return false, "reboot_api_unavailable"
     end
 
     app.triggers.rebootInProgress = true
     app.pageState = app.pageStatus.rebooting
-    local ok, reason = tasks.msp.mspQueue:add({
-        command = 68,
-        uuid = "ui.reboot",
-        processReply = function(self, buf)
-            if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
-                app.Page = rebootPage
-            end
-            -- Keep the current page object alive across reboot transitions;
-            -- loader/request logic will refresh live values when connection resumes.
-            app.utils.invalidatePages({preserveCurrentPage = true})
-            app.triggers.isReady = false
-            utils.onReboot()
-        end,
-        simulatorResponse = {}
-    })
+    rebootAPI.setUUID("ui.reboot")
+    rebootAPI.setCompleteHandler(function(self, buf)
+        if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
+            app.Page = rebootPage
+        end
+        -- Keep the current page object alive across reboot transitions;
+        -- loader/request logic will refresh live values when connection resumes.
+        app.utils.invalidatePages({preserveCurrentPage = true})
+        app.triggers.isReady = false
+        utils.onReboot()
+    end)
+    local ok, reason = rebootAPI.write()
     if ok and app.dialogs then
         if app.dialogs.saveDisplay then
             app.triggers.closeSaveFake = true
@@ -3417,6 +3543,9 @@ function ui.rebootFc(sourcePage)
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
+        if reason == "armed_blocked" then
+            app.triggers.showSaveArmedWarning = true
+        end
     end
     return ok, reason
 end

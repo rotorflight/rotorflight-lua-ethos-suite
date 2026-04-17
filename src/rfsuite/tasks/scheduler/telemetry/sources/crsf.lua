@@ -16,6 +16,7 @@ return {
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
         {crsfId = 8},
     },
+    cell_voltage = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1021}},
     current = {
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
@@ -25,8 +26,12 @@ return {
 
     -- Fuel
     fuel = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}},
-    smartfuel = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}},
-    smartconsumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}},
+    smartfuel = {
+        {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1},
+    },
+    smartconsumption = {
+        {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0},
+    },
     consumption = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}},
 
     -- Temperature
