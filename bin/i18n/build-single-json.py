@@ -49,7 +49,7 @@ def main(argv=None):
         with out_path.open("w", encoding="utf-8", newline="\n") as f:
             json.dump(data, f, ensure_ascii=False, indent=2, sort_keys=True)
         written += 1
-        print(f"✔ Wrote {out_path}")
+        print(f"Wrote {out_path}")
 
     if errors:
         print("\nSome files could not be read/parsed:", file=sys.stderr)

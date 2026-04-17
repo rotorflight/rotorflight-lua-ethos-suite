@@ -41,49 +41,21 @@ jobs:
           echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
           echo "GH_TYPE=Snapshot" >> $GITHUB_ENV
 
-      - name: Build merged i18n JSON (${{ matrix.lang }})
-        run: python bin/i18n/build-single-json.py --only '${{ matrix.lang }}'
-
-      - name: Stage files for this locale
-        shell: bash
+      - name: Create release notes for package manifest
         run: |
-          STAGE="build/${{ matrix.lang }}/scripts"
-          mkdir -p "$STAGE"
-          rsync -a src/ "$STAGE"/
-          echo "STAGE=$STAGE" >> $GITHUB_ENV
-
-      - name: Resolve i18n tags (locale=${{ matrix.lang }})
-        run: |
-          python .vscode/scripts/resolve_i18n_tags.py \
-            --json "${{ env.STAGE }}/rfsuite/i18n/${{ matrix.lang }}.json" \
-            --root "${{ env.STAGE }}"
-
-      - name: Copy sound pack (locale=${{ matrix.lang }})
-        shell: bash
-        run: |
-          SRC="bin/sound-generator/soundpack/${{ matrix.lang }}"
-          if [ ! -d "$SRC" ]; then
-            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/soundpack/en"
-            SRC="bin/sound-generator/soundpack/en"
-          fi
-          DEST="${{ env.STAGE }}/rfsuite/audio/${{ matrix.lang }}"
-          rm -rf "$DEST"
-          mkdir -p "$DEST"
-          cp -a "$SRC/." "$DEST/"
-          echo "[AUDIO] Copied $SRC -> $DEST"
-
-      - name: Update version and config in staged main.lua
-        shell: bash
-        run: |
-          sed -E -i 's/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*")[^"]*(")/\1'${{ env.GIT_VER }}'\2/' "${{ env.STAGE }}/rfsuite/main.lua"
-          grep 'config\.' "${{ env.STAGE }}/rfsuite/main.lua" || true
+          python .github/scripts/extract-release-notes.py "${{ env.GIT_VER }}" Releases.md > Notes.md
+          sed -n '1,120p' Notes.md
 
       - name: Create snapshot ZIP (locale=${{ matrix.lang }})
         shell: bash
         run: |
           ART="rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip"
-          (cd "build/${{ matrix.lang }}" && zip -q -r -9 "../$ART" scripts)
-          mv "build/${{ matrix.lang }}/../$ART" .
+          python bin/package/build_package.py \
+            --lang '${{ matrix.lang }}' \
+            --artifact-version '${{ env.GIT_VER }}' \
+            --artifact-name "$ART" \
+            --release-notes-file Notes.md \
+            --output-dir .
           echo "ARTIFACT=$ART" >> $GITHUB_ENV
 
       - name: Upload per-locale artifact

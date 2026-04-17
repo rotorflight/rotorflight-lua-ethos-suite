@@ -15,9 +15,6 @@ jobs:
         # 👇 keep this in sync with push.yml (add/remove locales as needed)
         lang: [en, de, es, fr, it, nl, pt-br, no, cs, pl, he, zh-cn]
 
-    env:
-      STAGE: build/${{ matrix.lang }}/scripts
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,54 +32,13 @@ jobs:
           PR_NUMBER='${{ github.event.pull_request.number }}'
           echo "GIT_VER=PR-${PR_NUMBER}" >> $GITHUB_ENV
 
-      # Build merged i18n JSON only for this locale (into src/rfsuite/i18n/<lang>.json)
-      - name: Build merged i18n JSON (${{ matrix.lang }})
-        run: |
-          python bin/i18n/build-single-json.py --only '${{ matrix.lang }}'
-          test -f "src/rfsuite/i18n/${{ matrix.lang }}.json"
-      # Stage scripts/ into build/<lang>/scripts
-      - name: Stage scripts tree
-        run: |
-          rm -rf "${{ env.STAGE }}"
-          mkdir -p "${{ env.STAGE }}"
-          cp -a src/. "${{ env.STAGE }}/"
-
-      # Resolve @i18n(...)@ tags in the staged tree using the staged locale file
-      - name: Resolve i18n tags (locale=${{ matrix.lang }})
-        run: |
-          python .vscode/scripts/resolve_i18n_tags.py \
-            --json "${{ env.STAGE }}/rfsuite/i18n/${{ matrix.lang }}.json" \
-            --root "${{ env.STAGE }}"
-
-      # Copy sound pack for this locale into the staged tree (fallback to en)
-      - name: Copy sound pack (locale=${{ matrix.lang }})
-        run: |
-          SRC="bin/sound-generator/soundpack/${{ matrix.lang }}"
-          if [ ! -d "$SRC" ]; then
-            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/soundpack/en"
-            SRC="bin/sound-generator/soundpack/en"
-          fi
-          if [ -d "$SRC" ]; then
-            DEST="${{ env.STAGE }}/rfsuite/audio/${{ matrix.lang }}"
-            rm -rf "$DEST"
-            mkdir -p "$DEST"
-            cp -a "$SRC/." "$DEST/"
-            echo "[AUDIO] Copied $SRC -> $DEST"
-          else
-            echo "[AUDIO] No sound pack found (lang='${{ matrix.lang }}' or 'en'). Skipping."
-          fi
-
-      # Write PR version suffix into the *staged* main.lua
-      - name: Update version and config in staged main.lua
-        run: |
-          sed -E -i "s/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*\")[^\"]*(\")/\1${{ env.GIT_VER }}\2/" "${{ env.STAGE }}/rfsuite/main.lua"
-          grep 'config\.' "${{ env.STAGE }}/rfsuite/main.lua" || true
-
-      # Zip the staged scripts (includes i18n + audio for this locale)
       - name: Create rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip
         run: |
-          ( cd "build/${{ matrix.lang }}" && zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip" scripts )
-          mv "build/${{ matrix.lang }}/rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip" .
+          python bin/package/build_package.py \
+            --lang '${{ matrix.lang }}' \
+            --artifact-version '${{ env.GIT_VER }}' \
+            --artifact-name 'rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip' \
+            --output-dir .
 
       - name: Upload per-locale ZIP
         uses: actions/upload-artifact@v4
