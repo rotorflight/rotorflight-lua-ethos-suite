@@ -157,6 +157,11 @@ local SENSOR_DEFS = {
 }
 
 local function getMode()
+    local appGuiRunning = (rfsuite.app and rfsuite.app.guiIsRunning) == true
+    local previewMode = rfsuite.session and rfsuite.session.activelookPreviewMode
+    if appGuiRunning and (previewMode == "preflight" or previewMode == "inflight" or previewMode == "postflight") then
+        return previewMode
+    end
     local mode = rfsuite.flightmode and rfsuite.flightmode.current
     if mode == "preflight" or mode == "inflight" or mode == "postflight" then
         return mode

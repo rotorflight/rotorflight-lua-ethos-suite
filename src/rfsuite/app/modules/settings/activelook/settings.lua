@@ -14,6 +14,8 @@ local function openPage(opts)
     local title = opts.title
     local script = opts.script
 
+    common.clearPreviewMode()
+
     if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()
@@ -67,6 +69,7 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
+    common.clearPreviewMode()
     pageRuntime.openMenuContext()
     return true
 end
