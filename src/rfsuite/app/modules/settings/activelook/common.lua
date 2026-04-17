@@ -25,6 +25,7 @@ common.SENSOR_KEYS = {
     "fuel",
     "current",
     "voltage",
+    "cell_voltage",
     "headspeed"
 }
 
@@ -40,7 +41,8 @@ common.SENSOR_CHOICES = {
     {"@i18n(sensors.fuel)@", 9},
     {"@i18n(sensors.current)@", 10},
     {"@i18n(sensors.voltage)@", 11},
-    {"@i18n(sensors.headspeed)@", 12}
+    {"Cell Voltage", 12},
+    {"@i18n(sensors.headspeed)@", 13}
 }
 
 common.LAYOUT_KEYS = {

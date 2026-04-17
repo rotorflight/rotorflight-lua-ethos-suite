@@ -24,6 +24,7 @@ return {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0218},
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x021A}
             },
+    cell_voltage = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0910}},
     rpm = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}},
     current = {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},

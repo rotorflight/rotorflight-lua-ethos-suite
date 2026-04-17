@@ -125,6 +125,13 @@ local SENSOR_DEFS = {
         decimals = 1,
         suffix = "V"
     },
+    cell_voltage = {
+        label = "Cell Voltage",
+        icon = {small = 0, large = 32}, -- battery
+        value = function(_, _, _, getSensor) return getSensor("cell_voltage") end,
+        decimals = 1,
+        suffix = "V"
+    },
     headspeed = {
         label = "Headspeed",
         icon = {small = 26, large = 58}, -- speed

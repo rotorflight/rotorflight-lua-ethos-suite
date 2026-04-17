@@ -16,6 +16,7 @@ return {
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
         {crsfId = 8},
     },
+    cell_voltage = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1021}},
     current = {
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
         {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
