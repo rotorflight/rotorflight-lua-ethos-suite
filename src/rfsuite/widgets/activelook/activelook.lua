@@ -125,6 +125,13 @@ local SENSOR_DEFS = {
         decimals = 1,
         suffix = "V"
     },
+    cell_voltage = {
+        label = "Cell Voltage",
+        icon = {small = 0, large = 32}, -- battery
+        value = function(_, _, _, getSensor) return getSensor("cell_voltage") end,
+        decimals = 1,
+        suffix = "V"
+    },
     headspeed = {
         label = "Headspeed",
         icon = {small = 26, large = 58}, -- speed
@@ -157,6 +164,11 @@ local SENSOR_DEFS = {
 }
 
 local function getMode()
+    local appGuiRunning = (rfsuite.app and rfsuite.app.guiIsRunning) == true
+    local previewMode = rfsuite.session and rfsuite.session.activelookPreviewMode
+    if appGuiRunning and (previewMode == "preflight" or previewMode == "inflight" or previewMode == "postflight") then
+        return previewMode
+    end
     local mode = rfsuite.flightmode and rfsuite.flightmode.current
     if mode == "preflight" or mode == "inflight" or mode == "postflight" then
         return mode

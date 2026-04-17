@@ -86,6 +86,16 @@ return {
         unit_string = "V",
     },
 
+    cell_voltage = {
+        name = "Cell Voltage",
+        mandatory = false,
+        stats = true,
+        set_telemetry_sensors = 8,
+        switch_alerts = true,
+        unit = UNIT_VOLT,
+        unit_string = "V",
+    },
+
     rpm = {
         name = "@i18n(sensors.headspeed)@",
         mandatory = true,
