@@ -236,6 +236,7 @@ local function register_bg_task()
         wakeup = rfsuite.tasks.wakeup,
         event = rfsuite.tasks.event,
         init  = rfsuite.tasks.init,
+        close = rfsuite.tasks.close,
         read  = rfsuite.tasks.read,
         write = rfsuite.tasks.write
     })
