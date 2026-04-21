@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 from pathlib import PurePosixPath
@@ -63,15 +64,17 @@ def path_segments_match(path_parts: tuple[str, ...], pat_parts: tuple[str, ...])
     if len(path_parts) != len(pat_parts):
         return False
     for file_seg, pat_seg in zip(path_parts, pat_parts):
-        if pat_seg == "*":
-            continue
-        if file_seg != pat_seg:
+        # Wildcards are segment-scoped only and never match '/'.
+        if not fnmatch.fnmatchcase(file_seg, pat_seg):
             return False
     return True
 
 
 def expand_selector(pattern: str, zip_files: list[str]) -> set[str]:
     normalized = normalize_zip_path(pattern).lower()
+
+    if normalized == "**":
+        return set(zip_files)
 
     if normalized.endswith("/**"):
         prefix = normalized[:-3]
