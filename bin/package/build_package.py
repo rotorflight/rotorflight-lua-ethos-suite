@@ -249,6 +249,13 @@ def collect_files(package_root: Path) -> list[str]:
     return files
 
 
+def build_manifest_file_selectors(files: list[str]) -> list[str]:
+    if not files:
+        raise ValueError("Package must contain at least one file")
+    # This package zip is built from the app root, so a full selector is sufficient.
+    return ["**"]
+
+
 def load_release_notes(path: str | None, fmt: str) -> dict[str, str] | None:
     if not path:
         return None
@@ -365,6 +372,7 @@ def main() -> int:
         build_package_root(stage_scripts_dir, package_root, args.package_dir)
 
         files = collect_files(package_root)
+        manifest_files = build_manifest_file_selectors(files)
         release_notes = load_release_notes(args.release_notes_file, args.release_notes_format)
         write_manifest(
             package_root=package_root,
@@ -372,7 +380,7 @@ def main() -> int:
             package_key=args.package_key,
             version=manifest_version,
             folder=args.folder,
-            files=files,
+            files=manifest_files,
             release_notes=release_notes,
         )
         create_zip(package_root, zip_path)
@@ -384,7 +392,7 @@ def main() -> int:
 
     print(f"[package] Created {zip_path}")
     print(
-        f"[package] Manifest version={manifest_version}, folder={args.folder}, files={len(files)}"
+        f"[package] Manifest version={manifest_version}, folder={args.folder}, selectors={len(manifest_files)}, files={len(files)}"
     )
     return 0
 
