@@ -40,6 +40,11 @@ jobs:
             --artifact-name 'rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip' \
             --output-dir .
 
+      - name: Validate ETHOS package manifest
+        run: |
+          python bin/package/validate_ethos_manifest_zip.py \
+            'rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip'
+
       - name: Upload per-locale ZIP
         uses: actions/upload-artifact@v4
         with:

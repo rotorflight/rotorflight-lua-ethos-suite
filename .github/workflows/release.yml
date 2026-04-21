@@ -62,6 +62,11 @@ jobs:
             --output-dir .
           echo "ARTIFACT=$ART" >> $GITHUB_ENV
 
+      - name: Validate ETHOS package manifest
+        shell: bash
+        run: |
+          python bin/package/validate_ethos_manifest_zip.py "${{ env.ARTIFACT }}"
+
       - name: Upload per-locale artifact
         uses: actions/upload-artifact@v4
         with:

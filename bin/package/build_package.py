@@ -18,6 +18,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src"
 DEFAULT_PACKAGE_DIR = "rfsuite"
+ETHOS_MANIFEST_FILE = "ethos_lua_manifest.json"
 
 MAIN_VERSION_RE = re.compile(
     r"version\s*=\s*\{[^}]*major\s*=\s*(\d+),\s*minor\s*=\s*(\d+),\s*revision\s*=\s*(\d+),\s*suffix\s*=\s*\"([^\"]*)\"",
@@ -28,11 +29,15 @@ MAIN_SUFFIX_RE = re.compile(
     re.DOTALL,
 )
 MANIFEST_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+MANIFEST_KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+MANIFEST_FOLDER_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+MANIFEST_NAME_MAX = 128
+RELEASE_NOTES_MAX = 32000
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build an ETHOS Suite-installable package zip with manifest.json."
+        description="Build an ETHOS Suite-installable package zip with ethos_lua_manifest.json."
     )
     parser.add_argument("--lang", required=True, help="Locale to package, for example en or fr.")
     parser.add_argument(
@@ -51,12 +56,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--package-name",
         default="Rotorflight Lua Ethos Suite",
-        help="Display name written into manifest.json.",
+        help="Display name written into ethos_lua_manifest.json.",
     )
     parser.add_argument(
         "--package-key",
         default="org.rotorflight.ethos-suite",
-        help="Stable package key written into manifest.json.",
+        help="Stable package key written into ethos_lua_manifest.json.",
     )
     parser.add_argument(
         "--folder",
@@ -84,13 +89,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--release-notes-file",
-        help="Optional UTF-8 file to embed as manifest releaseNotes content.",
+        help="Optional UTF-8 file to embed as ethos manifest releaseNotes content.",
     )
     parser.add_argument(
         "--release-notes-format",
         choices=("markdown", "text"),
         default="markdown",
-        help="Release notes format written into manifest.json.",
+        help="Release notes format written into ethos_lua_manifest.json.",
     )
     return parser.parse_args()
 
@@ -235,11 +240,12 @@ def collect_files(package_root: Path) -> list[str]:
         if not path.is_file():
             continue
         rel = path.relative_to(package_root).as_posix()
-        if rel.lower() == "manifest.json":
+        if rel.lower() == ETHOS_MANIFEST_FILE:
             continue
         files.append(rel)
-    if "main.lua" not in files and "main.luac" not in files:
-        raise ValueError("Package must include main.lua or main.luac at package root")
+    file_names = {Path(rel).name.lower() for rel in files}
+    if "main.lua" not in file_names and "main.luac" not in file_names:
+        raise ValueError("Package must include main.lua or main.luac")
     return files
 
 
@@ -249,7 +255,36 @@ def load_release_notes(path: str | None, fmt: str) -> dict[str, str] | None:
     content = Path(path).read_text(encoding="utf-8").strip()
     if not content:
         return None
+    if len(content) > RELEASE_NOTES_MAX:
+        raise ValueError(
+            f"releaseNotes content exceeds {RELEASE_NOTES_MAX} characters"
+        )
     return {"format": fmt, "content": content}
+
+
+def validate_manifest_inputs(
+    package_name: str,
+    package_key: str,
+    version: str,
+    folder: str,
+    files: list[str],
+) -> None:
+    if not package_name or len(package_name) > MANIFEST_NAME_MAX:
+        raise ValueError(
+            f"Manifest name must be 1-{MANIFEST_NAME_MAX} characters"
+        )
+    if not MANIFEST_KEY_RE.fullmatch(package_key):
+        raise ValueError(
+            "Manifest key must be 1-128 chars, start with letter/digit, and use only letters, digits, '.', '_', ':', '-'"
+        )
+    if not MANIFEST_VERSION_RE.fullmatch(version):
+        raise ValueError("Manifest version must be numeric X.Y.Z")
+    if not MANIFEST_FOLDER_RE.fullmatch(folder):
+        raise ValueError(
+            "Manifest folder must be 1-64 chars, start with letter/digit, and use only letters, digits, '.', '_', '-'"
+        )
+    if not files:
+        raise ValueError("Manifest files must contain at least one file")
 
 
 def write_manifest(
@@ -261,6 +296,7 @@ def write_manifest(
     files: list[str],
     release_notes: dict[str, str] | None,
 ) -> None:
+    validate_manifest_inputs(package_name, package_key, version, folder, files)
     manifest: dict[str, object] = {
         "manifestVersion": 1,
         "name": package_name,
@@ -271,7 +307,7 @@ def write_manifest(
     }
     if release_notes:
         manifest["releaseNotes"] = release_notes
-    manifest_path = package_root / "manifest.json"
+    manifest_path = package_root / ETHOS_MANIFEST_FILE
     manifest_path.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
