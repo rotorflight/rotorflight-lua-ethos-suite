@@ -35,55 +35,21 @@ jobs:
           echo "GIT_VER=commit-${SHORT_SHA}" >> $GITHUB_ENV
           echo "sha7=${SHORT_SHA}" >> $GITHUB_OUTPUT
 
-      # Build merged JSON for the specific locale (writes to src/rfsuite/i18n/<locale>.json)
-      - name: Build i18n for this locale
-        run: python bin/i18n/build-single-json.py --only ${{ matrix.lang }}
-
-      # Stage a per-locale copy to avoid mutating the repo
-      - name: Stage files for this locale
-        shell: bash
-        run: |
-          STAGE="build/${{ matrix.lang }}/scripts"
-          mkdir -p "$STAGE"
-          rsync -a src/ "$STAGE"/
-          echo "STAGE=$STAGE" >> $GITHUB_ENV
-
-      # Update version in the staged copy
-      - name: Update version and config in main.lua (staged)
-        run: |
-          sed -E -i "s/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*\")[^\"]*(\")/\1${{ env.GIT_VER }}\2/" "${{ env.STAGE }}/rfsuite/main.lua"
-          grep 'config\.' "${{ env.STAGE }}/rfsuite/main.lua" || true
-
-      # Resolve @i18n(...)@ tags in the staged tree using the chosen locale
-      - name: Resolve i18n tags (locale=${{ matrix.lang }})
-        run: |
-          python .vscode/scripts/resolve_i18n_tags.py \
-            --json "${{ env.STAGE }}/rfsuite/i18n/${{ matrix.lang }}.json" \
-            --root "${{ env.STAGE }}"
-
-      # Copy sound pack for this locale into the staged tree
-      - name: Copy sound pack (locale=${{ matrix.lang }})
-        shell: bash
-        run: |
-          SRC="bin/sound-generator/soundpack/${{ matrix.lang }}"
-          if [ ! -d "$SRC" ]; then
-            echo "[AUDIO] $SRC not found; falling back to bin/sound-generator/soundpack/en"
-            SRC="bin/sound-generator/soundpack/en"
-          fi
-          DEST="${{ env.STAGE }}/rfsuite/audio/${{ matrix.lang }}"
-          rm -rf "$DEST"
-          mkdir -p "$DEST"
-          cp -a "$SRC/." "$DEST/"
-          echo "[AUDIO] Copied $SRC -> $DEST"
-
-      # Zip only the staged scripts folder for this locale
       - name: Create rotorflight-lua-ethos-suite-<lang>-commit-<sha7>.zip
         shell: bash
         run: |
           ART="rotorflight-lua-ethos-suite-${{ matrix.lang }}-${{ env.GIT_VER }}.zip"
-          (cd build/${{ matrix.lang }} && zip -q -r -9 "../$ART" scripts)
-          mv "build/${{ matrix.lang }}/../$ART" .
+          python bin/package/build_package.py \
+            --lang '${{ matrix.lang }}' \
+            --artifact-version '${{ env.GIT_VER }}' \
+            --artifact-name "$ART" \
+            --output-dir .
           echo "ARTIFACT=$ART" >> $GITHUB_ENV
+
+      - name: Validate ETHOS package manifest
+        shell: bash
+        run: |
+          python bin/package/validate_ethos_manifest_zip.py "${{ env.ARTIFACT }}"
 
       - name: Upload per-locale artifact
         uses: actions/upload-artifact@v4
