@@ -8439,6 +8439,12 @@
           "reverse_text": false,
           "max_length": 8
         },
+        "function_sport_input": {
+          "english": "S.PORT Master",
+          "translation": "S.PORT Master",
+          "needs_translation": true,
+          "reverse_text": false
+        },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "translation": "Telemetry FrSky",

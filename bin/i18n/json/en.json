@@ -7252,6 +7252,12 @@
           "needs_translation": false,
           "translation": "SBus Out"
         },
+        "function_sport_input": {
+          "english": "S.PORT Master",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "S.PORT Master"
+        },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "max_length": 15,

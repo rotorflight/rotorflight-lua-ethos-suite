@@ -8227,6 +8227,12 @@
           "reverse_text": false,
           "translation": "SBus Out"
         },
+        "function_sport_input": {
+          "english": "S.PORT Master",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "S.PORT Master"
+        },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "max_length": 15,
