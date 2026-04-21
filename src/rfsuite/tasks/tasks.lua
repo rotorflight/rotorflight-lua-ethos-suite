@@ -1107,6 +1107,62 @@ function tasks.setTelemetryTypeChanged()
     rfsuite.utils.session()
 end
 
+function tasks.close()
+
+    cleanupClosedAppRuntime()
+
+    for _, task in ipairs(tasksList) do
+        local mod = tasks[task.name]
+        if mod and type(mod.reset) == "function" then
+            mod.reset()
+        end
+        tasks[task.name] = nil
+    end
+
+    for name, mod in pairs(events) do
+        if type(mod) == "table" and type(mod.reset) == "function" then
+            mod.reset()
+        end
+        events[name] = nil
+    end
+
+    tasksList = {}
+    tasksListNonSpread = {}
+    tasksListSpread = {}
+    nonSpreadCount = 0
+
+    tasks._initState = "start"
+    tasks._initMetadata = nil
+    tasks._initKeys = nil
+    tasks._initByName = nil
+    tasks._metaByName = nil
+    tasks._initIndex = 1
+    tasks._justInitialized = false
+    tasks.begin = true
+    tasks.heartbeat = nil
+
+    currentTelemetrySensor = nil
+    lastTelemetryType = nil
+    lastSensorName = nil
+    lastCheckAt = nil
+    schedulerTick = 0
+    lastAppGuiRunning = false
+    lastArmedState = false
+    lastFlightModeValue = nil
+    lastTelemetryUp = nil
+    lastOptionalTaskCheckAt = 0
+    connectAttemptStartedAt = nil
+    connectAttemptResetCooldownUntil = 0
+    hadSession = false
+    flightResetEventSrc = nil
+    flightResetEventPrimed = false
+    lastFlightResetEventState = false
+
+    tlm = nil
+
+    utils.log("[scheduler] background task closed and runtime state cleaned", "info")
+end
+
 function tasks.read() end
 function tasks.write() end
 
@@ -1155,6 +1211,7 @@ function tasks.unload(name)
 
     -- Remove a task from scheduler lists and release its module.
     local mod = tasks[name]
+    if mod and type(mod.close) == "function" then mod.close() end
     if mod and mod.reset then mod.reset() end
 
     if name == "msp" then
@@ -1165,6 +1222,9 @@ function tasks.unload(name)
     local removed = nil
     for i, t in ipairs(tasksList) do
         if t.name == name then
+        if mod and type(mod.close) == "function" then
+            mod.close()
+        end
             removed = t
             table_remove(tasksList, i)
             break
@@ -1172,6 +1232,9 @@ function tasks.unload(name)
     end
 
     if removed then
+        if type(mod) == "table" and type(mod.close) == "function" then
+            mod.close()
+        end
         local list = removed.spreadschedule and tasksListSpread or tasksListNonSpread
         for i, t in ipairs(list) do
             if t.name == name then

@@ -42,6 +42,15 @@ function logger.reset()
     logger.queue.reset()
 end
 
+function logger.close()
+    if logger.queue.close then
+        logger.queue.close()
+    else
+        logger.queue.flush()
+        logger.queue.reset()
+    end
+end
+
 function logger.add(message, level)
     local dev = rfsuite.preferences.developer
     logger.queue.config.min_print_level = dev.loglevel
