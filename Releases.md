@@ -1,3 +1,11 @@
+# 2.3.0-RC2
+
+Release candidate version for 2.3.0-RC2 Rotorflight
+
+- 4 Way ESC Improvements
+- New Frsky Packaging Format
+- Speed Improvements
+
 # 2.3.0-RC1
 
 Release candidate version for 2.3.0-RC1 Rotorflight
