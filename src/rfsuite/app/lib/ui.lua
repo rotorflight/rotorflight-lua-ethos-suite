@@ -746,7 +746,7 @@ local function progressDialogWakeup()
 
     if not app.triggers.closeProgressLoader then
         app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
-        if app.dialogs.progressCounter > 50 and session.apiVersion and not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then print("No API version yet") end
+        if app.dialogs.progressCounter > 50 and session.apiVersion and not utils.isSupportedMspApiVersion(apiV) then print("No API version yet") end
     elseif isProcessing then
         app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
     elseif app.triggers.closeProgressLoader and tasks.msp and tasks.msp.mspQueue:isProcessed() then

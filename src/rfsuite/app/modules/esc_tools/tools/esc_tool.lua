@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local escMspV2 = assert(loadfile("app/modules/esc_tools/tools/esc_msp_v2.lua"))()
 local lcd = lcd
 
 local function loadMask(path)
@@ -32,6 +33,7 @@ local escDetailsNextReadAt = 0
 local escDetailsApiName
 local escDetailsApi
 local escDetailsHandlersApi
+local escHeaderV2
 
 local modelLine
 local modelText
@@ -67,6 +69,14 @@ local function setModelHeaderText(text)
     if not ok then
         -- Fallback for older widget types: recreate once
         modelText = form.addStaticText(modelLine, modelTextPos, text or "")
+    end
+end
+
+local function updateEscHeaderText()
+    if escDetails.model ~= nil and escDetails.version ~= nil and escDetails.firmware ~= nil then
+        local text = escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
+        rfsuite.escHeaderLineText = text
+        setModelHeaderText(text)
     end
 end
 
@@ -308,6 +318,30 @@ local function getESCDetails()
 
 end
 
+local function fetchEscHeaderV2()
+    if not escHeaderV2 or not escHeaderV2.isAvailable() or escHeaderV2.pending() or escHeaderV2.requested() or foundESC ~= true then
+        return
+    end
+
+    escHeaderV2.fetch(function(data)
+        if type(data.model) == "string" and data.model ~= "" then
+            escDetails.model = data.model
+        end
+        if type(data.version) == "string" then
+            escDetails.version = data.version
+        end
+        if type(data.firmware) == "string" then
+            escDetails.firmware = data.firmware
+        end
+
+        rfsuite.session.escDetails = escDetails
+
+        if foundESCupdateTag then
+            updateEscHeaderText()
+        end
+    end)
+end
+
 local function updatePowercycleLoaderMessage()
     if not powercycleLoader or not powercycleLoaderBaseMessage then return end
     if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.updateProgressDialogMessage then
@@ -372,6 +406,11 @@ local function openPage(opts)
     mspBytes = nil
     escDetailsApi = nil
     escDetailsApiName = nil
+    if not escHeaderV2 then
+        escHeaderV2 = escMspV2.new()
+    else
+        escHeaderV2.reset()
+    end
 
     ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
 
@@ -532,8 +571,15 @@ local function closePage()
     if ESC and ESC.mspapi then
         clearEscQueueEntries(ESC.mspapi)
     end
+    clearEscQueueEntries("ESC_NAME")
+    clearEscQueueEntries("ESC_DETAILS")
     detachEscApiHandlers(escDetailsApi)
     clearEscApiCache()
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry("ESC_NAME")
+        api.clearEntry("ESC_DETAILS")
+    end
     clearEscMaskCache()
     clearButtonCache(toolButtonMeta, toolButtonHandlers)
 
@@ -546,6 +592,9 @@ local function closePage()
     escDetailsApi = nil
     escDetailsApiName = nil
     escDetailsHandlersApi = nil
+    if escHeaderV2 then
+        escHeaderV2.reset()
+    end
     mspSignature = nil
     mspBytes = nil
     foundESC = false
@@ -577,14 +626,14 @@ local function wakeup()
         getESCDetails()
     end
 
+    if foundESC == true then
+        fetchEscHeaderV2()
+    end
+
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
 
-        if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
-            local text = escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
-            rfsuite.escHeaderLineText = text
-            setModelHeaderText(text)
-        end
+        updateEscHeaderText()
 
         for i, v in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
 

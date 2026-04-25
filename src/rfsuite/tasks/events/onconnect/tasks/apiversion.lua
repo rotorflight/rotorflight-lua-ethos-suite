@@ -84,7 +84,7 @@ function apiversion.wakeup()
             if version then
                 local apiVersionString = string.format("%.2f", version)
 
-                if not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionString) then
+                if not rfsuite.utils.isSupportedMspApiVersion(apiVersionString) then
                     rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "info")
                     rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "connect")
                     rfsuite.session.apiVersionInvalid = true
@@ -93,6 +93,11 @@ function apiversion.wakeup()
                     rfsuite.config.mspProtocolVersion = restoreProto
                     clearApiEntry()
                     return
+                end
+
+                if not rfsuite.utils.isKnownMspApiVersion(apiVersionString) then
+                    rfsuite.utils.log("Newer API version detected; treating as supported: " .. apiVersionString, "info")
+                    rfsuite.utils.log("Newer API version detected; treating as supported: " .. apiVersionString, "connect")
                 end
 
                 local wantProto = probeProto
