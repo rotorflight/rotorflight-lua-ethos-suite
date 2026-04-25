@@ -170,7 +170,7 @@ local function mainMenuIconEnableDisable()
         local apiV = tostring(rfsuite.session.apiVersion)
         local connected = (rfsuite.session and rfsuite.session.isConnected) == true
         local postConnectComplete = (rfsuite.session and rfsuite.session.postConnectComplete) == true
-        local supportedApi = rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV)
+        local supportedApi = rfsuite.session.apiVersion and rfsuite.utils.isSupportedMspApiVersion(apiV)
         local modeTag
         if not connected then
             modeTag = "offline"

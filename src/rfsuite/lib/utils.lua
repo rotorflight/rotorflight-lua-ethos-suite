@@ -725,20 +725,29 @@ local function versionParts(value)
     return parts
 end
 
-function utils.apiVersionCompare(op, req)
-    local a, b = versionParts(rfsuite.session.apiVersion or "12.06"), versionParts(req)
-    if #a == 0 or #b == 0 then return false end
+local function compareVersionValues(a, b)
+    local versionA = versionParts(a)
+    local versionB = versionParts(b)
 
-    local len = math.max(#a, #b)
-    local cmp = 0
+    if #versionA == 0 or #versionB == 0 then
+        return nil
+    end
+
+    local len = math.max(#versionA, #versionB)
     for i = 1, len do
-        local ai = a[i] or 0
-        local bi = b[i] or 0
+        local ai = versionA[i] or 0
+        local bi = versionB[i] or 0
         if ai ~= bi then
-            cmp = (ai > bi) and 1 or -1
-            break
+            return (ai > bi) and 1 or -1
         end
     end
+
+    return 0
+end
+
+function utils.apiVersionCompare(op, req)
+    local cmp = compareVersionValues(rfsuite.session.apiVersion or "12.06", req)
+    if cmp == nil then return false end
 
     if op == ">" then return cmp == 1 end
     if op == "<" then return cmp == -1 end
@@ -748,6 +757,49 @@ function utils.apiVersionCompare(op, req)
     if op == "!=" or op == "~=" then return cmp ~= 0 end
 
     return false
+end
+
+function utils.isKnownMspApiVersion(version)
+    local supported = rfsuite.config and rfsuite.config.supportedMspApiVersion
+    if type(supported) ~= "table" then
+        supported = {"12.07", "12.08", "12.09", "12.10"}
+    end
+
+    local candidate = version
+    if candidate == nil and rfsuite.session then
+        candidate = rfsuite.session.apiVersion
+    end
+
+    if candidate == nil then
+        return false
+    end
+
+    return utils.stringInArray(supported, tostring(candidate))
+end
+
+function utils.isSupportedMspApiVersion(version)
+    local supported = rfsuite.config and rfsuite.config.supportedMspApiVersion
+    if type(supported) ~= "table" then
+        supported = {"12.07", "12.08", "12.09", "12.10"}
+    end
+
+    local candidate = version
+    if candidate == nil and rfsuite.session then
+        candidate = rfsuite.session.apiVersion
+    end
+
+    if candidate == nil then
+        return false
+    end
+
+    candidate = tostring(candidate)
+    if utils.stringInArray(supported, candidate) then
+        return true
+    end
+
+    local latestKnown = supported[#supported]
+    local cmp = compareVersionValues(candidate, latestKnown)
+    return cmp ~= nil and cmp >= 0
 end
 
 function utils.muteSensorLostWarnings()

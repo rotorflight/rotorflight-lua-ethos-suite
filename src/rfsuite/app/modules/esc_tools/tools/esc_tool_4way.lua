@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local escMspV2 = assert(loadfile("app/modules/esc_tools/tools/esc_msp_v2.lua"))()
 local lcd = lcd
 
 local function loadMask(path)
@@ -64,6 +65,7 @@ local escDetailsApiName
 local escDetailsApi
 local escSwitchApi
 local escDetailsHandlersApi
+local escHeaderV2
 local esc2CheckApi
 local esc2CheckHandlersApi
 local selectorButtonsReadyState
@@ -121,6 +123,23 @@ local function setModelHeaderText(text)
     if not ok then
         -- Fallback for older widget types: recreate once
         modelText = form.addStaticText(modelLine, modelTextPos, text or "")
+    end
+end
+
+local function updateEscHeaderText()
+    if escDetails.model ~= nil and escDetails.version ~= nil and escDetails.firmware ~= nil then
+        local prefix = ""
+        local target = rfsuite.session and rfsuite.session.esc4WayTarget or 0
+        local _, esc2Target = getEsc4WayTargets()
+        if target == esc2Target then
+            prefix = "ESC2 - "
+        else
+            prefix = "ESC1 - "
+        end
+
+        local text = prefix .. escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
+        rfsuite.escHeaderLineText = text
+        setModelHeaderText(text)
     end
 end
 
@@ -373,6 +392,30 @@ local function onEscDetailsReadError()
     scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
     scheduleEscReadRecovery()
     mspBusy = false
+end
+
+local function fetchEscHeaderV2()
+    if not escHeaderV2 or not escHeaderV2.isAvailable() or escHeaderV2.pending() or escHeaderV2.requested() or foundESC ~= true then
+        return
+    end
+
+    escHeaderV2.fetch(function(data)
+        if type(data.model) == "string" and data.model ~= "" then
+            escDetails.model = data.model
+        end
+        if type(data.version) == "string" then
+            escDetails.version = data.version
+        end
+        if type(data.firmware) == "string" then
+            escDetails.firmware = data.firmware
+        end
+
+        rfsuite.session.escDetails = escDetails
+
+        if foundESCupdateTag then
+            updateEscHeaderText()
+        end
+    end)
 end
 
 local function installEscDetailsHandlers(api)
@@ -867,6 +910,11 @@ local function loadEscConfig(folder)
     ESC = moduleOrErr
     escDetailsApi = nil
     escDetailsApiName = nil
+    if not escHeaderV2 then
+        escHeaderV2 = escMspV2.new()
+    else
+        escHeaderV2.reset()
+    end
     findTimeout = getInitialConnectTimeout()
 
     if ESC.mspapi ~= nil then
@@ -1199,8 +1247,12 @@ local function closePage()
     detachEscApiHandlers(escDetailsApi)
     detachEscApiHandlers(esc2CheckApi)
     clearEscQueueEntries(ESC and ESC.mspapi)
+    clearEscQueueEntries("ESC_NAME")
+    clearEscQueueEntries("ESC_DETAILS")
     clearEscQueueEntries("4WIF_ESC_FWD_PROG")
     clearEscQueueEntries("MOTOR_CONFIG")
+    clearApiCacheEntry("ESC_NAME")
+    clearApiCacheEntry("ESC_DETAILS")
     clearApiCacheEntry("4WIF_ESC_FWD_PROG")
     clearApiCacheEntry("MOTOR_CONFIG")
 
@@ -1230,6 +1282,9 @@ local function closePage()
     escDetailsApi = nil
     escDetailsApiName = nil
     escDetailsHandlersApi = nil
+    if escHeaderV2 then
+        escHeaderV2.reset()
+    end
     escSwitchApi = nil
     esc2CheckApi = nil
     esc2CheckHandlersApi = nil
@@ -1356,6 +1411,10 @@ local function wakeup()
         end
     end
 
+    if foundESC == true then
+        fetchEscHeaderV2()
+    end
+
     if foundESC == true and foundESCupdateTag == false then
         local compatible = true
         if ESC and type(ESC.isCompatibleEsc) == "function" then
@@ -1371,19 +1430,7 @@ local function wakeup()
 
         foundESCupdateTag = true
 
-        if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
-            local prefix = ""
-            local target = rfsuite.session and rfsuite.session.esc4WayTarget or 0
-            local _, esc2Target = getEsc4WayTargets()
-            if target == esc2Target then
-                prefix = "ESC2 - "
-            else
-                prefix = "ESC1 - "
-            end
-            local text = prefix .. escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
-            rfsuite.escHeaderLineText = text
-            setModelHeaderText(text)
-        end
+        updateEscHeaderText()
 
         for i, v in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
 
