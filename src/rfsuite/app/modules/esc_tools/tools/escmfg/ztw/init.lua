@@ -64,4 +64,4 @@ local function getActiveFields(inputTable)
 
 end
 
-return {mspapi = MSP_API, toolName = toolName, powerCycle = false, mspBufferCache = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, getActiveFields = getActiveFields}
+return {mspapi = MSP_API, toolName = toolName, escSensorProtocolId = 7, powerCycle = false, mspBufferCache = true, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, getActiveFields = getActiveFields}

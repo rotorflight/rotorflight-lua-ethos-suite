@@ -56,6 +56,8 @@ end
 return {
     mspapi = MSP_API,
     toolName = toolName,
+    escSensorProtocolId = 1,
+    escSensorProtocolPotential = true,
     isCompatibleEsc = isCompatibleEsc,
     mspBufferCache = true,
     force4WaySwitchOnEntry = true,

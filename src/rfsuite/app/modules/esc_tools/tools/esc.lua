@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local lcd = lcd
+local osClock = os.clock
 
 local function loadMask(path)
     local ui = rfsuite.app and rfsuite.app.ui
@@ -16,9 +17,22 @@ end
 local pages = {}
 local DEFAULT_TOOL_SCRIPT = "esc_tools/tools/esc_tool.lua"
 local FOUR_WAY_TOOL_SCRIPT = "esc_tools/tools/esc_tool_4way.lua"
+local ESC_SENSOR_CONFIG_API = "ESC_SENSOR_CONFIG"
+local ESC_SENSOR_CONFIG_MIN_API_VERSION = {12, 0, 6}
+local ESC_SENSOR_CONFIG_TIMEOUT = 3.0
 local function noop() end
 local pageButtonMeta = {}
 local pageButtonHandlers = {}
+local mfgProtocolMeta = {}
+local detectedProtocolId = nil
+local protocolFilterReady = false
+local protocolReadPending = false
+local protocolReadAttempted = false
+local protocolReadDeadline = nil
+local protocolRequestToken = 0
+local openPage
+local closePage
+
 local MFG_INDEX = {
     {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
     {folder = "blheli_s", toolName = "BLHeli_S",                                  image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
@@ -45,23 +59,110 @@ local function resolveModulePath(script)
     return modulePath, relativeScript
 end
 
+local function clearProtocolMetaCache()
+    for k in pairs(mfgProtocolMeta) do
+        mfgProtocolMeta[k] = nil
+    end
+end
+
+local function resetProtocolDetectionState()
+    protocolRequestToken = protocolRequestToken + 1
+    detectedProtocolId = nil
+    protocolFilterReady = false
+    protocolReadPending = false
+    protocolReadAttempted = false
+    protocolReadDeadline = nil
+end
+
+local function normalizeProtocolIds(rawIds)
+    if type(rawIds) == "number" then
+        return {math.floor(rawIds)}, true
+    end
+    if type(rawIds) ~= "table" then
+        return nil, false
+    end
+
+    local ids = {}
+    for i = 1, #rawIds do
+        local value = tonumber(rawIds[i])
+        if value ~= nil then
+            ids[#ids + 1] = math.floor(value)
+        end
+    end
+    return ids, #ids > 0
+end
+
+local function getMfgProtocolMeta(folder)
+    local cached = mfgProtocolMeta[folder]
+    if cached then return cached end
+
+    local meta = {hasMapping = false, ids = nil, potential = false}
+    local ok, escMeta = pcall(function()
+        return assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
+    end)
+
+    if ok and type(escMeta) == "table" then
+        local ids, hasMapping = normalizeProtocolIds(escMeta.escSensorProtocolIds or escMeta.escSensorProtocolId)
+        meta.hasMapping = hasMapping
+        meta.ids = ids
+        meta.potential = escMeta.escSensorProtocolPotential == true
+    end
+
+    mfgProtocolMeta[folder] = meta
+    return meta
+end
+
+local function matchesDetectedProtocol(entry)
+    local meta = getMfgProtocolMeta(entry.folder)
+    if meta.hasMapping ~= true or detectedProtocolId == nil then
+        return true
+    end
+
+    for i = 1, #meta.ids do
+        if meta.ids[i] == detectedProtocolId then
+            return true
+        end
+    end
+    return false
+end
+
+local function canDetectEscProtocol()
+    local tasks = rfsuite.tasks
+    local msp = tasks and tasks.msp
+    local api = msp and msp.api
+    return rfsuite.session.apiVersion
+        and rfsuite.utils.apiVersionCompare(">=", ESC_SENSOR_CONFIG_MIN_API_VERSION)
+        and type(api) == "table"
+        and type(api.load) == "function"
+end
+
+local function computeEntryDisabled(entry)
+    if entry.apiversion and rfsuite.session.apiVersion and not rfsuite.utils.apiVersionCompare(">=", entry.apiversion) then
+        return true
+    end
+    if canDetectEscProtocol() then
+        if protocolReadPending == true or protocolFilterReady ~= true then
+            return true
+        end
+        if not matchesDetectedProtocol(entry) then
+            return true
+        end
+    end
+    return false
+end
+
 local function buildEscPages()
     for i = 1, #pages do
         pages[i] = nil
     end
 
     for i, entry in ipairs(MFG_INDEX) do
-        local disabled = false
-        if entry.apiversion and rfsuite.session.apiVersion and not rfsuite.utils.apiVersionCompare(">=", entry.apiversion) then
-            disabled = true
-        end
-
         pages[i] = {
             folder = entry.folder,
             toolName = entry.toolName,
             image = entry.image,
             script = entry.script or DEFAULT_TOOL_SCRIPT,
-            disabled = disabled
+            disabled = computeEntryDisabled(entry)
         }
     end
 
@@ -139,14 +240,126 @@ local function getMainButtonHandler(childIdx)
     return handler
 end
 
-local function openPage(opts)
+local function getStoredSelectedIdx()
+    local selectedIdx = tonumber(rfsuite.preferences.menulastselected["escmain"]) or 1
+    if selectedIdx < 1 then selectedIdx = 1 end
+    if selectedIdx > #pages then selectedIdx = #pages end
+    if selectedIdx < 1 then selectedIdx = 1 end
+    rfsuite.preferences.menulastselected["escmain"] = selectedIdx
+    return selectedIdx
+end
 
+local function getFocusIndex()
+    local selectedIdx = getStoredSelectedIdx()
+    if pages[selectedIdx] and pages[selectedIdx].disabled ~= true then
+        return selectedIdx
+    end
+
+    for i = 1, #pages do
+        if pages[i].disabled ~= true then
+            return i
+        end
+    end
+    return nil
+end
+
+local function applyButtonStates()
+    local focusIdx = getFocusIndex()
+
+    for childIdx, entry in ipairs(MFG_INDEX) do
+        local disabled = computeEntryDisabled(entry)
+        if pages[childIdx] then
+            pages[childIdx].disabled = disabled
+        end
+
+        local button = rfsuite.app.formFields[childIdx]
+        if button and button.enable then
+            button:enable(disabled ~= true)
+        end
+        if focusIdx == childIdx and button and button.focus then
+            button:focus()
+        end
+    end
+
+    if focusIdx == nil then
+        local menuButton = rfsuite.app.formNavigationFields and rfsuite.app.formNavigationFields.menu
+        if menuButton and menuButton.focus then
+            menuButton:focus()
+        end
+    end
+end
+
+local function isEscPageActive()
+    return rfsuite.app and rfsuite.app.Page and rfsuite.app.Page.openPage == openPage
+end
+
+local function requestEscProtocol()
+    if protocolReadAttempted == true or protocolReadPending == true or not canDetectEscProtocol() then
+        return
+    end
+
+    local API = rfsuite.tasks.msp.api.load(ESC_SENSOR_CONFIG_API)
+    if not API then
+        protocolReadAttempted = true
+        return
+    end
+
+    protocolReadAttempted = true
+    protocolReadPending = true
+    protocolReadDeadline = osClock() + ESC_SENSOR_CONFIG_TIMEOUT
+    protocolRequestToken = protocolRequestToken + 1
+    local requestToken = protocolRequestToken
+
+    API.setCompleteHandler(function()
+        if requestToken ~= protocolRequestToken then return end
+
+        local value = tonumber(API.readValue and API.readValue("protocol") or nil)
+        if value ~= nil then
+            detectedProtocolId = math.floor(value)
+            protocolFilterReady = true
+        else
+            detectedProtocolId = nil
+            protocolFilterReady = false
+        end
+
+        protocolReadPending = false
+        protocolReadDeadline = nil
+
+        if isEscPageActive() then
+            applyButtonStates()
+        end
+    end)
+
+    API.setErrorHandler(function()
+        if requestToken ~= protocolRequestToken then return end
+
+        detectedProtocolId = nil
+        protocolFilterReady = false
+        protocolReadPending = false
+        protocolReadDeadline = nil
+
+        if isEscPageActive() then
+            applyButtonStates()
+        end
+    end)
+
+    local ok = API.read()
+    if ok == false then
+        protocolReadPending = false
+        protocolReadDeadline = nil
+    end
+end
+
+openPage = function(opts)
     local pidx = opts.idx
     local title = opts.title
     local script = opts.script
     local _, relativeScript = resolveModulePath(script)
+    local mspProtocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol
 
-    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    if mspProtocol then
+        mspProtocol.mspIntervalOveride = nil
+    end
     rfsuite.session.escDetails = nil
     rfsuite.session.escBuffer = nil
 
@@ -180,7 +393,6 @@ local function openPage(opts)
     end
 
     if rfsuite.preferences.general.iconsize == 1 then
-
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = rfsuite.app.radio.buttonWidthSmall
         buttonH = rfsuite.app.radio.buttonHeightSmall
@@ -188,7 +400,6 @@ local function openPage(opts)
     end
 
     if rfsuite.preferences.general.iconsize == 2 then
-
         padding = rfsuite.app.radio.buttonPadding
         buttonW = rfsuite.app.radio.buttonWidth
         buttonH = rfsuite.app.radio.buttonHeight
@@ -198,20 +409,17 @@ local function openPage(opts)
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
+    resetProtocolDetectionState()
+    requestEscProtocol()
     pages = buildEscPages()
     clearButtonMeta()
-    local selectedIdx = tonumber(rfsuite.preferences.menulastselected["escmain"]) or 1
-    if selectedIdx < 1 then selectedIdx = 1 end
-    if selectedIdx > #pages then selectedIdx = #pages end
-    if selectedIdx < 1 then selectedIdx = 1 end
-    rfsuite.preferences.menulastselected["escmain"] = selectedIdx
+    getStoredSelectedIdx()
 
     local lc = 0
     local bx = 0
     local y = 0
 
     for childIdx, pvalue in ipairs(pages) do
-
         if lc == 0 then
             if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
             if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
@@ -221,7 +429,9 @@ local function openPage(opts)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then rfsuite.app.gfx_buttons["escmain"][childIdx] = loadMask("app/modules/esc_tools/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["escmain"][childIdx] == nil then
+                rfsuite.app.gfx_buttons["escmain"][childIdx] = loadMask("app/modules/esc_tools/tools/escmfg/" .. pvalue.folder .. "/" .. pvalue.image)
+            end
         else
             rfsuite.app.gfx_buttons["escmain"][childIdx] = nil
         end
@@ -242,22 +452,31 @@ local function openPage(opts)
             press = getMainButtonHandler(childIdx)
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[childIdx]:enable(false) end
-
-        if selectedIdx == childIdx then rfsuite.app.formFields[childIdx]:focus() end
-
         lc = lc + 1
-
         if lc == numPerRow then lc = 0 end
-
     end
 
+    applyButtonStates()
     rfsuite.app.triggers.closeProgressLoader = true
-
-    return
 end
 
-local function closePage()
+local function wakeup()
+    if protocolReadPending == true and protocolReadDeadline ~= nil and osClock() >= protocolReadDeadline then
+        protocolRequestToken = protocolRequestToken + 1
+        protocolReadPending = false
+        protocolReadDeadline = nil
+        detectedProtocolId = nil
+        protocolFilterReady = false
+
+        if isEscPageActive() then
+            applyButtonStates()
+        end
+    end
+end
+
+closePage = function()
+    resetProtocolDetectionState()
+    clearProtocolMetaCache()
     if rfsuite.app and rfsuite.app.gfx_buttons then
         rfsuite.app.gfx_buttons["escmain"] = nil
     end
@@ -277,6 +496,7 @@ rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 return {
     pages = pages,
     openPage = openPage,
+    wakeup = wakeup,
     close = closePage,
     onNavMenu = onNavMenu,
     event = function(_, category, value) return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu}) end,
