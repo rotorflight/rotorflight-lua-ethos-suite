@@ -313,9 +313,9 @@ local function requestEscProtocol()
     API.setCompleteHandler(function()
         if requestToken ~= protocolRequestToken then return end
 
-        local value = tonumber(API.readValue and API.readValue("protocol") or nil)
+        local value = rfsuite.utils.getEffectiveEscSensorProtocol(API.readValue and API.readValue("protocol") or nil)
         if value ~= nil then
-            detectedProtocolId = math.floor(value)
+            detectedProtocolId = value
             protocolFilterReady = true
         else
             detectedProtocolId = nil

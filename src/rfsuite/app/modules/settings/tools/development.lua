@@ -78,6 +78,15 @@ local function openPage(opts)
         end, function(newValue)
             settings.tailmode_override = newValue
         end)
+
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("ESC Telemetry Protocol")
+        rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, rfsuite.utils.esc_sensor_protocol_choices(), function()
+            return settings.escprotocol_override or 0
+        end, function(newValue)
+            settings.escprotocol_override = newValue
+        end)
     end    
 
     formFieldCount = formFieldCount + 1

@@ -122,6 +122,7 @@ local userpref_defaults = {
         mspexpbytes = 8,
         apiversion = 2,
         tailmode_override = 0,
+        escprotocol_override = 0,
         overlaystats = false,
         overlaygrid = false,
         overlaystatsadmin = false

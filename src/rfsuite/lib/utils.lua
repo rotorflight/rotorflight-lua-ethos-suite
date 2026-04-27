@@ -184,6 +184,50 @@ function utils.msp_version_array_to_indexed()
     return arr
 end
 
+function utils.esc_sensor_protocol_choices()
+    return {
+        {"NONE", 0},
+        {"BLHELI32", 1},
+        {"HOBBYWING V4", 2},
+        {"HOBBYWING V5", 3},
+        {"SCORPION", 4},
+        {"KONTRONIK", 5},
+        {"OMP", 6},
+        {"ZTW", 7},
+        {"APD", 8},
+        {"OPENYGE", 9},
+        {"FLYROTOR", 10},
+        {"GRAUPNER", 11},
+        {"XDFLY", 12},
+        {"FrSky F.BUS", 13},
+        {"RECORD", 14}
+    }
+end
+
+function utils.getSimulatorEscProtocolOverride()
+    if not (system and system.getVersion and system.getVersion().simulation == true) then
+        return nil
+    end
+
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    local override = tonumber(dev and dev.escprotocol_override)
+    if override == nil then return nil end
+    override = math.floor(override)
+    if override < 0 or override > 14 then return nil end
+    return override
+end
+
+function utils.getEffectiveEscSensorProtocol(value)
+    local override = utils.getSimulatorEscProtocolOverride()
+    if override ~= nil then
+        return override
+    end
+
+    value = tonumber(value)
+    if value == nil then return nil end
+    return math.floor(value)
+end
+
 function utils.armingDisableFlagsToString(flags)
 
     local ARMING_DISABLE_FLAG_TAG = {
