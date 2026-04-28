@@ -6690,6 +6690,13 @@
           "max_length": 29,
           "reverse_text": false
         },
+        "remove_blades_warning": {
+          "english": "Please remove blades from heli",
+          "translation": "Please remove blades from heli",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
         "searching": {
           "english": "Searching",
           "translation": "Zoeken",
@@ -8443,7 +8450,8 @@
           "english": "S.PORT Master",
           "translation": "S.PORT Master",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
@@ -10397,6 +10405,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 25
+        },
+        "txt_show_esc_tools_warning": {
+          "english": "ESC tools safety prompt",
+          "translation": "ESC tools safety prompt",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
         },
         "battery_profile_event": {
           "english": "Battery",

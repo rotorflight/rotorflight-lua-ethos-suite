@@ -61,7 +61,8 @@ local userpref_defaults = {
         save_armed_warning = true,
         toolbar_timeout = 10,
         show_battery_profile_startup = true,
-        show_confirmation_dialog = false
+        show_confirmation_dialog = false,
+        show_esc_tools_warning = true
     },
     localizations = {
         temperature_unit = 0,

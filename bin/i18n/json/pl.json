@@ -8443,7 +8443,8 @@
           "english": "S.PORT Master",
           "translation": "S.PORT Master",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",

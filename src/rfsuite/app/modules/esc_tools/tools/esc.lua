@@ -32,6 +32,89 @@ local protocolReadDeadline = nil
 local protocolRequestToken = 0
 local openPage
 local closePage
+local onNavMenu
+local entryWarningPending = false
+local entryWarningDelayTicks = 0
+local entryWarningTitle = nil
+local entryWarningDialog = nil
+local entryWarningStartedAt = nil
+local ENTRY_WARNING_DURATION = 8.0
+
+local function prefBool(value, default)
+    if value == nil then return default end
+    if value == true or value == "true" or value == 1 or value == "1" then return true end
+    if value == false or value == "false" or value == 0 or value == "0" then return false end
+    return default
+end
+
+local function openProgressDialog(...)
+    if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
+        local arg1 = select(1, ...)
+        if type(arg1) == "table" then
+            arg1.progress = true
+            return form.openWaitDialog(arg1)
+        end
+        local title = arg1
+        local message = select(2, ...)
+        return form.openWaitDialog({title = title, message = message, progress = true})
+    end
+    return form.openProgressDialog(...)
+end
+
+local function closeEntryWarningDialog()
+    if not entryWarningDialog then return end
+    local dialog = entryWarningDialog
+    entryWarningDialog = nil
+    entryWarningStartedAt = nil
+    if dialog.close then
+        pcall(dialog.close, dialog)
+    end
+end
+
+local function showEntryWarningDialog(title)
+    closeEntryWarningDialog()
+    entryWarningDialog = openProgressDialog(title, "@i18n(app.modules.esc_tools.remove_blades_warning)@")
+    if not entryWarningDialog then return end
+    entryWarningStartedAt = osClock()
+    if entryWarningDialog.value then
+        entryWarningDialog:value(0)
+    end
+    if entryWarningDialog.closeAllowed then
+        entryWarningDialog:closeAllowed(false)
+    end
+    if rfsuite.utils and rfsuite.utils.playFileCommon then
+        rfsuite.utils.playFileCommon("beep.wav")
+    end
+end
+
+local function clearEntryWarningState()
+    entryWarningPending = false
+    entryWarningDelayTicks = 0
+    entryWarningTitle = nil
+    closeEntryWarningDialog()
+end
+
+local function queueEntryWarning(title)
+    entryWarningPending = true
+    entryWarningDelayTicks = 1
+    entryWarningTitle = title
+end
+
+local function shouldQueueEntryWarning(opts)
+    if not prefBool(rfsuite.preferences.general.show_esc_tools_warning, true) then
+        return false
+    end
+    if type(opts) ~= "table" then
+        return false
+    end
+    if rfsuite.app and rfsuite.app._openedFromShortcuts == true then
+        return false
+    end
+    if type(opts.returnStack) == "table" then
+        return false
+    end
+    return true
+end
 
 local MFG_INDEX = {
     {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
@@ -456,8 +539,13 @@ openPage = function(opts)
         if lc == numPerRow then lc = 0 end
     end
 
+    clearEntryWarningState()
     applyButtonStates()
     rfsuite.app.triggers.closeProgressLoader = true
+
+    if shouldQueueEntryWarning(opts) then
+        queueEntryWarning(title)
+    end
 end
 
 local function wakeup()
@@ -472,9 +560,43 @@ local function wakeup()
             applyButtonStates()
         end
     end
+
+    if entryWarningDialog then
+        if not isEscPageActive() then
+            closeEntryWarningDialog()
+            return
+        end
+
+        local elapsed = osClock() - (entryWarningStartedAt or osClock())
+        if entryWarningDialog.value then
+            local pct = math.floor((elapsed / ENTRY_WARNING_DURATION) * 100)
+            if pct < 0 then pct = 0 end
+            if pct > 100 then pct = 100 end
+            entryWarningDialog:value(pct)
+        end
+        if elapsed >= ENTRY_WARNING_DURATION then
+            closeEntryWarningDialog()
+            return
+        end
+    end
+
+    if entryWarningPending ~= true then return end
+    if not isEscPageActive() then
+        clearEntryWarningState()
+        return
+    end
+    if entryWarningDelayTicks > 0 then
+        entryWarningDelayTicks = entryWarningDelayTicks - 1
+        return
+    end
+
+    local title = entryWarningTitle or rfsuite.app.lastTitle or "@i18n(app.modules.esc_tools.name)@"
+    clearEntryWarningState()
+    showEntryWarningDialog(title)
 end
 
 closePage = function()
+    clearEntryWarningState()
     resetProtocolDetectionState()
     clearProtocolMetaCache()
     if rfsuite.app and rfsuite.app.gfx_buttons then
@@ -485,7 +607,7 @@ closePage = function()
     clearEscMaskCache()
 end
 
-local function onNavMenu()
+onNavMenu = function()
     closePage()
     pageRuntime.openMenuContext({defaultSection = "system"})
     return true

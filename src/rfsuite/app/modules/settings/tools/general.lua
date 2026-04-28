@@ -113,6 +113,11 @@ local function openPage(opts)
         return prefBool(config.show_confirmation_dialog, true)
     end, function(newValue) config.show_confirmation_dialog = newValue end)
 
+    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_show_esc_tools_warning)@")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
+        return prefBool(config.show_esc_tools_warning, true)
+    end, function(newValue) config.show_esc_tools_warning = newValue end)
+
     line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_syncname)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
 
