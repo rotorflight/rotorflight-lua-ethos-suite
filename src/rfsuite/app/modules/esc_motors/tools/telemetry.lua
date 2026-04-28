@@ -8,6 +8,7 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local formFields = rfsuite.app.formFields
+local simulatorProtocolOverride = nil
 
 local FIELDKEY = {
     PROTOCOL = 1,
@@ -38,6 +39,12 @@ local apidata = {
 }
 
 local function postLoad(self)
+    simulatorProtocolOverride = rfsuite.utils.getSimulatorEscProtocolOverride()
+    local protocolField = rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata and rfsuite.app.Page.apidata.formdata.fields and rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.PROTOCOL]
+    local effectiveProtocol = protocolField and (simulatorProtocolOverride ~= nil and simulatorProtocolOverride or rfsuite.utils.getEffectiveEscSensorProtocol(protocolField.value)) or nil
+    if protocolField and effectiveProtocol ~= nil then
+        protocolField.value = effectiveProtocol
+    end
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
 end
@@ -50,7 +57,10 @@ end
 local function wakeup() 
     if not enableWakeup then return end
 
-    local protocolValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.PROTOCOL].value
+    local protocolValue = simulatorProtocolOverride
+    if protocolValue == nil then
+        protocolValue = rfsuite.app.Page.apidata.formdata.fields[FIELDKEY.PROTOCOL].value
+    end
     if protocolValue == nil then
         protocolValue = 0
     else

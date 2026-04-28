@@ -39,4 +39,4 @@ local function getEscFirmware(self)
     return version
 end
 
-return {mspapi = MSP_API, toolName = toolName, powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
+return {mspapi = MSP_API, toolName = toolName, escSensorProtocolId = 10, powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}

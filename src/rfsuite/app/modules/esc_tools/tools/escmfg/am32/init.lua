@@ -43,6 +43,8 @@ end
 return {
     mspapi = "ESC_PARAMETERS_AM32",           -- MSP API used for AM32 read/write fields.
     toolName = toolName,                      -- Tool label shown in headers.
+    escSensorProtocolId = 1,                  -- BLHELI32 telemetry indicates potential 4-way compatibility.
+    escSensorProtocolPotential = true,        -- 4-way cannot distinguish AM32 from the other BLHeli families.
     mspBufferCache = true,                    -- Keep the raw ESC buffer available when returning from child pages.
     force4WaySwitchOnEntry = true,            -- Always send target select when entering a selected ESC.
     esc4wayEsc1Target = 0,                    -- 4WIF target id for ESC1 button.

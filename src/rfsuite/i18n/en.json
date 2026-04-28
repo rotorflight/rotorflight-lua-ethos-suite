@@ -5748,6 +5748,12 @@
           "needs_translation": false,
           "translation": "Please power cycle the ESC..."
         },
+        "remove_blades_warning": {
+          "english": "Please remove blades from heli",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "Please remove blades from heli"
+        },
         "searching": {
           "english": "Searching",
           "max_length": 9,
@@ -7072,7 +7078,7 @@
         },
         "function_sport_input": {
           "english": "S.PORT Master",
-          "max_length": 12,
+          "max_length": 13,
           "needs_translation": false,
           "translation": "S.PORT Master"
         },
@@ -9535,6 +9541,12 @@
           "max_length": 25,
           "needs_translation": false,
           "translation": "Battery Type confirmation"
+        },
+        "txt_show_esc_tools_warning": {
+          "english": "ESC tools safety prompt",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "ESC tools safety prompt"
         },
         "txt_small": {
           "english": "SMALL",

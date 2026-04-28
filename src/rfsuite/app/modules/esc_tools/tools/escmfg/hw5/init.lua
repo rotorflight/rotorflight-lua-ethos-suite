@@ -23,5 +23,5 @@ local function getEscVersion(buffer) return getText(buffer, 19, 34) end
 
 local function getEscFirmware(buffer) return getText(buffer, 3, 18) end
 
-return {mspapi = "ESC_PARAMETERS_HW5", toolName = toolName, powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, mspHeaderBytes = mspHeaderBytes}
+return {mspapi = "ESC_PARAMETERS_HW5", toolName = toolName, escSensorProtocolId = 3, powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware, mspHeaderBytes = mspHeaderBytes}
 

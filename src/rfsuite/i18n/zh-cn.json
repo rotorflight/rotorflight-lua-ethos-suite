@@ -8229,6 +8229,7 @@
         },
         "function_sport_input": {
           "english": "S.PORT Master",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "S.PORT Master"
