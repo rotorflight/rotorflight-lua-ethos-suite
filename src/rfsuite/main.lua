@@ -167,7 +167,54 @@ rfsuite.config.bgTaskKey = "rf2bg"
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
 rfsuite.ethos_events = assert(loadfile("lib/ethos_events.lua", "t", _ENV))()
 
-rfsuite.app = assert(loadfile("app/app.lua"))(rfsuite.config)
+local function createLazyAppProxy()
+    local loadedModule = nil
+
+    local function ensureAppModule()
+        if loadedModule ~= nil then
+            return loadedModule
+        end
+
+        loadedModule = assert(loadfile("app/app.lua"))(rfsuite.config)
+        rfsuite.app = loadedModule
+        return loadedModule
+    end
+
+    local proxy = {}
+    setmetatable(proxy, {
+        __index = function(_, key)
+            local mod = loadedModule
+            if mod then
+                return mod[key]
+            end
+
+            if key == "guiIsRunning" or key == "escPowerCycleLoader" then
+                return false
+            end
+            if key == "tasks" or key == "triggers" or key == "ui" or key == "Page" or key == "formFields" then
+                return nil
+            end
+
+            return ensureAppModule()[key]
+        end,
+        __newindex = function(_, key, value)
+            ensureAppModule()[key] = value
+        end
+    })
+
+    local function callAppMethod(method, ...)
+        local mod = ensureAppModule()
+        local fn = mod and mod[method]
+        if type(fn) == "function" then
+            return fn(...)
+        end
+    end
+
+    return proxy, callAppMethod
+end
+
+local callAppMethod
+rfsuite.app, callAppMethod = createLazyAppProxy()
 
 rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(rfsuite.config)
 
@@ -221,13 +268,13 @@ end
 
 local function register_main_tool()
     rfsuite.sysIndex['app'] = system.registerSystemTool({
-        event  = rfsuite.app.event,
         name   = rfsuite.config.toolName,
         icon   = rfsuite.config.icon,
-        create = rfsuite.app.create,
-        wakeup = rfsuite.app.wakeup,
-        paint  = rfsuite.app.paint,
-        close  = rfsuite.app.close
+        event  = function(...) return callAppMethod("event", ...) end,
+        create = function(...) return callAppMethod("create", ...) end,
+        wakeup = function(...) return callAppMethod("wakeup", ...) end,
+        paint  = function(...) return callAppMethod("paint", ...) end,
+        close  = function(...) return callAppMethod("close", ...) end
     })
 end
 
@@ -238,7 +285,7 @@ local function register_bg_task()
         wakeup = rfsuite.tasks.wakeup,
         event = rfsuite.tasks.event,
         init  = rfsuite.tasks.init,
-        close = rfsuite.tasks.close,
+        done = rfsuite.tasks.done,
         read  = rfsuite.tasks.read,
         write = rfsuite.tasks.write
     })

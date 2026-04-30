@@ -1107,7 +1107,7 @@ function tasks.setTelemetryTypeChanged()
     rfsuite.utils.session()
 end
 
-function tasks.close()
+function tasks.done()
 
     cleanupClosedAppRuntime()
 
@@ -1160,7 +1160,7 @@ function tasks.close()
 
     tlm = nil
 
-    utils.log("[scheduler] background task closed and runtime state cleaned", "info")
+    print("[scheduler] background task closed and runtime state cleaned") -- Avoid utils.log here since it may rely on tasks/events that are now cleared.
 end
 
 function tasks.read() end
