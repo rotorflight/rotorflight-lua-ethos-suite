@@ -1209,7 +1209,7 @@ local function render()
     local width = app.lcdWidth
     local h = app.radio.navbuttonHeight
     local y = app.radio.linePaddingTop
-    local rightPadding = 8
+    local rightPadding = 10
     local gap = 6
     local wSet = math.max(42, math.floor(width * 0.14))
     local wLive = math.floor(width * 0.18)

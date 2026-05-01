@@ -184,7 +184,7 @@ local function addModeRangeLine(rangeIndex, modeRange)
     local h = app.radio.navbuttonHeight
     local y = app.radio.linePaddingTop
 
-    local rightPadding = 8
+    local rightPadding = 10
     local gap = 6
 
     -- Line 1: range label + live pulse + Set action
@@ -597,7 +597,7 @@ local function render()
     local width = app.lcdWidth
     local h = app.radio.navbuttonHeight
     local y = app.radio.linePaddingTop
-    local rightPadding = 8
+    local rightPadding = 10
     local buttonW = math.floor(width * 0.24)
     local buttonH = h
 
