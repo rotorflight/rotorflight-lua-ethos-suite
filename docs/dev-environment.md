@@ -34,19 +34,18 @@ python -m pip --version
 
 ## Common Tasks and Dependencies
 ### Python packages used by repo tooling
-From the main README’s dev guide:
+Install the shared development requirements:
 
 ```bash
-pip install tqdm
-pip install serial
-pip install pywin32
-pip install hid
-pip install debugpy
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 Notes:
-- `pywin32` and the HID DLL step are Windows-specific.
-- If you work outside Windows, you can skip Windows-only dependencies unless you need the updater GUI or HID support.
+- Use `pyserial`, not the unrelated `serial` package.
+- `pywin32` is Windows-specific and is skipped automatically by `requirements.txt` on other platforms.
+- On Windows, the HID DLL step may still be needed if `hidapi.dll` is not found.
+- On macOS, install the native HID library first: `brew install hidapi`.
 
 ### 1) i18n sync
 Used in CI and when updating translations:

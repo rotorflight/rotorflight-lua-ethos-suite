@@ -188,20 +188,22 @@ See `docs/dev-environment.md` for the full developer environment setup guide.
 -   Install libraries
     
     ```bash
-    pip install tqdm
-    pip install serial
-    pip install pywin32 
-    pip install hid
-    pip install debugpy
+    python -m pip install -r requirements.txt
     ```
 
--    Install this package 
+-   On Windows, install this package if radio HID control cannot find `hidapi.dll`:
 
      https://github.com/libusb/hidapi/releases/tag/hidapi-0.15.0
 
      Simply copy the dll's for your architecture into c:\windows\system32
 
-- Install vscode extention 'ethos'
+-   On macOS, install the native HID library before installing Python packages:
+
+    ```bash
+    brew install hidapi
+    ```
+
+- Install the VS Code extension `Ethos`
 
 
 ### VS Code Tasks

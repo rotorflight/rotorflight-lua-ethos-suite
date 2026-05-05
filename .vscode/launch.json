@@ -69,6 +69,28 @@
       "preLaunchTask": "Radio: Serial Debug"
     },
     {
+      "name": "Simulator: Open Controls",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "ethos.OpenControls"
+    },
+    {
+      "name": "Simulator: Open Telemetry",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "ethos.OpenTelemetry"
+    },
+    {
       "name": "Run RFSuite Sensor Tool",
       "type": "debugpy",
       "request": "launch",
