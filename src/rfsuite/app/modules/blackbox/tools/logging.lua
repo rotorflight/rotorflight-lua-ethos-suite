@@ -270,7 +270,7 @@ local function performSave()
     API.setCompleteHandler(function()
         local ok = rfsuite.utils.queueEepromWrite({
             uuid = "blackbox.logging.eeprom",
-            processReply = function()
+            completeHandler = function()
                 state.saving = false
                 state.dirty = false
                 syncSessionSnapshot()

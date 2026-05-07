@@ -434,10 +434,7 @@ function MspQueueController:processQueue()
         if self.currentMessage._replyId then
             rfsuite.bus.emit("msp.response." .. self.currentMessage._replyId, {buf = buf, command = cmd})
         end
-        if self.currentMessage.processReply then
-            self.currentMessage:processReply(buf)
-        end
-        if self.currentMessage._replyId or self.currentMessage.processReply then
+        if self.currentMessage._replyId then
             if cmd and LOG_ENABLED_MSP() then
                 local rwState
                 if self.currentMessage.isWrite ~= nil then

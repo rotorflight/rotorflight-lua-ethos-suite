@@ -360,7 +360,7 @@ local function performSave()
     API.setCompleteHandler(function()
         local ok = rfsuite.utils.queueEepromWrite({
             uuid = "blackbox.configuration.eeprom",
-            processReply = function()
+            completeHandler = function()
                 state.saving = false
                 state.dirty = false
                 if rfsuite.session and rfsuite.session.blackbox then

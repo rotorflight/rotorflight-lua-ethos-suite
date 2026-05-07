@@ -62,7 +62,7 @@ local function saveData()
     API.setCompleteHandler(function()
         local ok, reason = rfutils.queueEepromWrite({
             uuid = "governor.curves.eeprom",
-            processReply = function()
+            completeHandler = function()
                 if app and app.ui and app.ui.setPageDirty then
                     app.ui.setPageDirty(false)
                 end

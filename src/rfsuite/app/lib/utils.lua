@@ -195,7 +195,7 @@ function utils.settingsSaved(savedPage)
     local page = savedPage or app.Page
     local eepromWrite = {
         uuid = "app.settingsSaved.eeprom",
-        processReply = function(self, buf)
+        completeHandler = function()
             app.triggers.closeSave = true
             if page and page.postEepromWrite then page.postEepromWrite() end
             if page and page.reboot then

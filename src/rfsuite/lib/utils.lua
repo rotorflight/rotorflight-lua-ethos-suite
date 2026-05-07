@@ -157,7 +157,7 @@ function utils.queueEepromWrite(opts)
         return false, "eeprom_api_unavailable"
     end
 
-    local completeHandler = opts.completeHandler or opts.processReply
+    local completeHandler = opts.completeHandler
     local errorHandler = opts.errorHandler
     local uuid = opts.uuid
 
