@@ -436,7 +436,8 @@ function core.createReadOnlyAPI(spec)
     local state = {
         mspData = nil,
         timeout = nil,
-        uuid = nil
+        uuid = nil,
+        busContext = nil
     }
 
     local function setCompleteHandler(fn)
@@ -451,6 +452,10 @@ function core.createReadOnlyAPI(spec)
             error("Error handler requires function")
         end
         errorHandler = fn
+    end
+
+    local function setContext(ctx)
+        state.busContext = ctx
     end
 
     local function read(...)
@@ -468,6 +473,7 @@ function core.createReadOnlyAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
+        local _ctx = state.busContext
         bus.once("msp.response." .. _replyId, function(data)
             local buf = data.buf
             if type(customParser) == "function" then
@@ -490,10 +496,10 @@ function core.createReadOnlyAPI(spec)
                 }
             end
             if completeHandler then completeHandler(nil, buf) end
-        end)
+        end, _ctx)
         bus.once("msp.error." .. _replyId, function(data)
             if errorHandler then errorHandler(nil, data.err) end
-        end)
+        end, _ctx)
 
         local message = {
             command = spec.readCmd,
@@ -576,6 +582,7 @@ function core.createReadOnlyAPI(spec)
         setUUID = setUUID,
         setTimeout = setTimeout,
         setRebuildOnWrite = setRebuildOnWrite,
+        setContext = setContext,
         __rfReadStructure = {},
         __rfWriteStructure = {}
     }
@@ -629,6 +636,7 @@ function core.createConfigAPI(spec)
         payloadData = {},
         timeout = nil,
         uuid = nil,
+        busContext = nil,
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
@@ -646,6 +654,10 @@ function core.createConfigAPI(spec)
         errorHandler = fn
     end
 
+    local function setContext(ctx)
+        state.busContext = ctx
+    end
+
     local function read(...)
         if not operationSupported(spec, "read") then
             return false, "read_not_supported"
@@ -661,6 +673,7 @@ function core.createConfigAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
+        local _ctx = state.busContext
         bus.once("msp.response." .. _replyId, function(data)
             local buf = data.buf
             local customParser = spec.parseRead
@@ -685,10 +698,10 @@ function core.createConfigAPI(spec)
                 }
             end
             if completeHandler then completeHandler(nil, buf) end
-        end)
+        end, _ctx)
         bus.once("msp.error." .. _replyId, function(data)
             if errorHandler then errorHandler(nil, data.err) end
-        end)
+        end, _ctx)
 
         local message = {
             command = spec.readCmd,
@@ -745,13 +758,14 @@ function core.createConfigAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
+        local _ctx = state.busContext
         bus.once("msp.response." .. _replyId, function(data)
             state.mspWriteComplete = true
             if completeHandler then completeHandler(nil, data.buf) end
-        end)
+        end, _ctx)
         bus.once("msp.error." .. _replyId, function(data)
             if errorHandler then errorHandler(nil, data.err) end
-        end)
+        end, _ctx)
 
         local message = {
             command = spec.writeCmd,
@@ -831,6 +845,7 @@ function core.createConfigAPI(spec)
         setUUID = setUUID,
         setTimeout = setTimeout,
         setRebuildOnWrite = setRebuildOnWrite,
+        setContext = setContext,
         __rfReadStructure = readStructure,
         __rfWriteStructure = writeStructure
     }
@@ -870,6 +885,7 @@ function core.createCustomAPI(spec)
         payloadData = {},
         uuid = nil,
         timeout = nil,
+        busContext = nil,
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
@@ -888,6 +904,10 @@ function core.createCustomAPI(spec)
         if completeHandler then
             completeHandler(self, buf)
         end
+    end
+
+    local function setContext(ctx)
+        state.busContext = ctx
     end
 
     local function read(...)
@@ -918,6 +938,7 @@ function core.createCustomAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
+        local _ctx = state.busContext
         bus.once("msp.response." .. _replyId, function(data)
             local buf = data.buf
             local parser = spec.parseRead
@@ -940,10 +961,10 @@ function core.createCustomAPI(spec)
                 completeNow = #buf >= (spec.minBytes or 0)
             end
             if completeNow then emitComplete(nil, buf) end
-        end)
+        end, _ctx)
         bus.once("msp.error." .. _replyId, function(data)
             dispatchError(nil, data.err)
-        end)
+        end, _ctx)
 
         local message = {
             command = spec.readCmd,
@@ -1017,13 +1038,14 @@ function core.createCustomAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
+        local _ctx = state.busContext
         bus.once("msp.response." .. _replyId, function(data)
             state.mspWriteComplete = true
             emitComplete(nil, data.buf)
-        end)
+        end, _ctx)
         bus.once("msp.error." .. _replyId, function(data)
             dispatchError(nil, data.err)
-        end)
+        end, _ctx)
 
         local message = {
             command = spec.writeCmd,
@@ -1120,6 +1142,7 @@ function core.createCustomAPI(spec)
         setUUID = setUUID,
         setTimeout = setTimeout,
         setRebuildOnWrite = setRebuildOnWrite,
+        setContext = setContext,
         __rfReadStructure = readStructure,
         __rfWriteStructure = writeStructure
     }
@@ -1163,8 +1186,13 @@ function core.createWriteOnlyAPI(spec)
         payloadData = {},
         timeout = nil,
         uuid = nil,
+        busContext = nil,
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
+
+    local function setContext(ctx)
+        state.busContext = ctx
+    end
 
     local function setCompleteHandler(fn)
         if type(fn) ~= "function" then
@@ -1207,13 +1235,14 @@ function core.createWriteOnlyAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
+        local _ctx = state.busContext
         bus.once("msp.response." .. _replyId, function(data)
             state.mspWriteComplete = true
             if completeHandler then completeHandler(nil, data.buf) end
-        end)
+        end, _ctx)
         bus.once("msp.error." .. _replyId, function(data)
             if errorHandler then errorHandler(nil, data.err) end
-        end)
+        end, _ctx)
 
         local message = {
             command = spec.writeCmd,
@@ -1289,6 +1318,7 @@ function core.createWriteOnlyAPI(spec)
         setUUID = setUUID,
         setTimeout = setTimeout,
         setRebuildOnWrite = setRebuildOnWrite,
+        setContext = setContext,
         __rfReadStructure = {},
         __rfWriteStructure = {}
     }

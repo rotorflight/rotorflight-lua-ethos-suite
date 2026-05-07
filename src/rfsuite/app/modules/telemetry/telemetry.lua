@@ -22,10 +22,7 @@ local FEATURE_ENABLED_BITMAP = nil
 local telemetryBuffer = {}
 local lastSessionRef = nil
 local lastLinkReady = false
-local lifecycleEpoch = 0
-local activeApiRefs = setmetatable({}, {__mode = "v"})
-local activeApiRefSeq = 0
-local NOOP_HANDLER = function() end
+local busContext = nil
 local TELEMETRY_PENDING_UUIDS = {
     ["d2a1c5b3-8f4a-3c8e-9d2a-3b6f8e2d9a1c"] = true, -- FEATURE_CONFIG read
     ["a23e4567-e89b-12d3-a456-426614174001"] = true, -- TELEMETRY_CONFIG read
@@ -208,32 +205,8 @@ local function clearTable(tbl)
 end
 
 local function beginLifecycle()
-    lifecycleEpoch = lifecycleEpoch + 1
-    return lifecycleEpoch
-end
-
-local function isLifecycleActive(epoch)
-    return epoch == lifecycleEpoch and enableWakeup == true
-end
-
-local function trackApi(api)
-    if type(api) == "table" then
-        activeApiRefSeq = activeApiRefSeq + 1
-        activeApiRefs[activeApiRefSeq] = api
-    end
-    return api
-end
-
-local function releaseApiRefs()
-    for key, api in pairs(activeApiRefs) do
-        if type(api) == "table" then
-            if api.setCompleteHandler then pcall(api.setCompleteHandler, NOOP_HANDLER) end
-            if api.setErrorHandler then pcall(api.setErrorHandler, NOOP_HANDLER) end
-            if api.setUUID then pcall(api.setUUID, nil) end
-        end
-        activeApiRefs[key] = nil
-    end
-    activeApiRefSeq = 0
+    if busContext then rfsuite.bus.offContext(busContext) end
+    busContext = "telemetry:" .. tostring(math.floor((os and os.clock and os.clock() or 0) * 1000000))
 end
 
 local function purgePendingTelemetryMessages()
@@ -436,11 +409,10 @@ local function openPage(opts)
 end
 
 local function rebootFC()
-    local epoch = lifecycleEpoch
-    local RAPI = trackApi(rfsuite.tasks.msp.api.load("REBOOT"))
+    local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    RAPI.setContext(busContext)
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
-    RAPI.setCompleteHandler(function(self)
-        if not isLifecycleActive(epoch) then return end
+    RAPI.setCompleteHandler(function()
         rfsuite.utils.log("Rebooting FC", "info")
         rfsuite.utils.onReboot()
     end)
@@ -448,11 +420,10 @@ local function rebootFC()
 end
 
 local function applySettings()
-    local epoch = lifecycleEpoch
-    local EAPI = trackApi(rfsuite.tasks.msp.api.load("EEPROM_WRITE"))
+    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    EAPI.setContext(busContext)
     EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
-    EAPI.setCompleteHandler(function(self)
-        if not isLifecycleActive(epoch) then return end
+    EAPI.setCompleteHandler(function()
         rfsuite.utils.log("Writing to EEPROM", "info")
         rebootFC()
     end)
@@ -521,12 +492,11 @@ local function wakeup()
 
     if linkReady and not rfsuite.app.Page.configLoaded and not configLoading then
         configLoading = true
-        local epoch = lifecycleEpoch
 
-        -- first load the feature config 
-        local FAPI = trackApi(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"))
-        FAPI.setCompleteHandler(function(self, buf)
-                if not isLifecycleActive(epoch) then return end
+        -- first load the feature config
+        local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+        FAPI.setContext(busContext)
+        FAPI.setCompleteHandler(function()
                 local d = FAPI.data()
                 FEATURE_ENABLED_BITMAP = nil
                 if d and type(d.parsed) == "table" then
@@ -538,9 +508,9 @@ local function wakeup()
         FAPI.read()
 
         -- now load the telemetry config
-        local API = trackApi(rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG"))
+        local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        API.setContext(busContext)
         API.setCompleteHandler(function(self, buf)
-            if not isLifecycleActive(epoch) then return end
             if rfsuite.app.Page then
                 setFormFieldsEnabled(true)
 
@@ -576,7 +546,6 @@ local function wakeup()
             rfsuite.app.triggers.closeProgressLoader = true
         end)
         API.setErrorHandler(function()
-            if not isLifecycleActive(epoch) then return end
             configLoading = false
             if rfsuite.app and rfsuite.app.Page then
                 if isLinkReady() then
@@ -616,7 +585,8 @@ local function wakeup()
 
                 local newBitmap = bitmap | FEATURE_TELEMETRY_MASK
 
-                local FAPI = trackApi(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"))
+                local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+                FAPI.setContext(busContext)
                 FAPI.setUUID("enable-telemetry-feature")
                 FAPI.setValue("enabledFeatures", newBitmap)
                 FAPI.write()
@@ -637,18 +607,16 @@ local function wakeup()
             end
         end
 
-        local epoch = lifecycleEpoch
-        local WRITEAPI = trackApi(rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG"))
+        local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        WRITEAPI.setContext(busContext)
         WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174120")
-        WRITEAPI.setCompleteHandler(function(self, buf)
-            if not isLifecycleActive(epoch) then return end
+        WRITEAPI.setCompleteHandler(function()
             rfsuite.utils.log("Telemetry config written, now writing to EEPROM", "info")
             snapshotConfig(config, SAVED_CONFIG)
             refreshSaveState()
             applySettings()
         end)
-        WRITEAPI.setErrorHandler(function(self, buf)
-            if not isLifecycleActive(epoch) then return end
+        WRITEAPI.setErrorHandler(function()
             rfsuite.utils.log("Write to fbl failed.", "info")
         end)
 
@@ -705,7 +673,6 @@ local function close()
     beginLifecycle()
     enableWakeup = false
     purgePendingTelemetryMessages()
-    releaseApiRefs()
     clearTelemetryApiEntries()
     if rfsuite.app and rfsuite.app.triggers then
         rfsuite.app.triggers.closeProgressLoader = true
