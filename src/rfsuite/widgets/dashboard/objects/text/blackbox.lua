@@ -104,7 +104,9 @@ local function eraseDataflash()
         utils.registerProgressDialog(progress, progressBaseMessage)
     end
 
-    local message = {command = 72, processReply = function() isErase = false end}
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function() isErase = false end)
+    local message = {command = 72, _replyId = _replyId}
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 

@@ -732,11 +732,17 @@ local function queueSetModeRange(slotIndex, done, failed)
         clamp(extra.linkedTo or 0, 0, 255)
     }
 
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function()
+        if done then done() end
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        if failed then failed("SET_MODE_RANGE failed at slot " .. tostring(slotIndex)) end
+    end)
     local message = {
         command = 35,
         payload = payload,
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("SET_MODE_RANGE failed at slot " .. tostring(slotIndex)) end end,
+        _replyId = _replyId,
         simulatorResponse = {}
     }
     local ok, reason = queueDirect(message, string.format("modes.slot.%d", slotIndex))
@@ -746,7 +752,7 @@ end
 local function queueEepromWrite(done, failed)
     local ok, reason = rfsuite.utils.queueEepromWrite({
         uuid = "modes.eeprom",
-        processReply = function() if done then done() end end,
+        completeHandler = function() if done then done() end end,
         errorHandler = function() if failed then failed("EEPROM write failed") end end
     })
     if not ok and failed then

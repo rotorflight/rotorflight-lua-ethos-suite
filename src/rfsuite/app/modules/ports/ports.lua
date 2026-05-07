@@ -336,11 +336,17 @@ local function queueSetSerialPort(port, done, failed)
         port.blackbox_baud_index
     }
 
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function()
+        if done then done() end
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        if failed then failed("@i18n(app.modules.ports.error_serial_write_failed_for)@ " .. portLabel(port.identifier)) end
+    end)
     local message = {
         command = MSP_SET_SERIAL_CONFIG,
         payload = payload,
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_serial_write_failed_for)@ " .. portLabel(port.identifier)) end end,
+        _replyId = _replyId,
         simulatorResponse = {}
     }
 
@@ -351,7 +357,7 @@ end
 local function queueEepromWrite(done, failed)
     local ok, reason = rfsuite.utils.queueEepromWrite({
         uuid = "ports.eeprom",
-        processReply = function() if done then done() end end,
+        completeHandler = function() if done then done() end end,
         errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end
     })
     if not ok and failed then

@@ -120,40 +120,46 @@ local function requestBlackboxPrereqs()
     end)
     BAPI.read()
 
+    local dfReplyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. dfReplyId, function(evtData)
+        local buf = evtData.buf
+        if buf then
+            local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
+            media.dataflashSupported = (flags & 2) ~= 0
+        end
+        dataflashStatusReady = true
+        onPrereqDone()
+    end)
+    rfsuite.bus.once("msp.error." .. dfReplyId, function()
+        dataflashStatusReady = true
+        onPrereqDone()
+    end)
     local dataflashMessage = {
         command = 70,
-        processReply = function(self, buf)
-            if buf then
-                local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
-                media.dataflashSupported = (flags & 2) ~= 0
-            end
-            dataflashStatusReady = true
-            onPrereqDone()
-        end,
-        errorHandler = function()
-            dataflashStatusReady = true
-            onPrereqDone()
-        end,
+        _replyId = dfReplyId,
         simulatorResponse = {3, 235, 3, 0, 0, 0, 0, 214, 7, 0, 0, 0, 0}
     }
     if not queueDirect(dataflashMessage, "blackbox-menu-dataflash") then
         dataflashStatusReady = true
     end
 
+    local sdReplyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. sdReplyId, function(evtData)
+        local buf = evtData.buf
+        if buf then
+            local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
+            media.sdcardSupported = (flags & 0x01) ~= 0
+        end
+        sdcardStatusReady = true
+        onPrereqDone()
+    end)
+    rfsuite.bus.once("msp.error." .. sdReplyId, function()
+        sdcardStatusReady = true
+        onPrereqDone()
+    end)
     local sdcardMessage = {
         command = 79,
-        processReply = function(self, buf)
-            if buf then
-                local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
-                media.sdcardSupported = (flags & 0x01) ~= 0
-            end
-            sdcardStatusReady = true
-            onPrereqDone()
-        end,
-        errorHandler = function()
-            sdcardStatusReady = true
-            onPrereqDone()
-        end,
+        _replyId = sdReplyId,
         simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     }
     if not queueDirect(sdcardMessage, "blackbox-menu-sdcard") then

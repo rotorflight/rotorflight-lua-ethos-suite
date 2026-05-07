@@ -22,13 +22,13 @@ local function queueDirect(message, uuid)
 end
 
 local function setPidProfile(profileIndex)
-    local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
+    local message = {command = 210, payload = {profileIndex}, simulatorResponse = {}}
     return queueDirect(message, string.format("profile.pid.%d", profileIndex))
 end
 
 local function setRateProfile(profileIndex)
     profileIndex = profileIndex + 128
-    local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
+    local message = {command = 210, payload = {profileIndex}, simulatorResponse = {}}
     return queueDirect(message, string.format("profile.rate.%d", profileIndex))
 end
 

@@ -166,16 +166,18 @@ local function requestAttitude()
     local sim = system.getVersion().simulation
     local simResponse = sim and buildSimulatedAttitudeResponse(now) or {}
 
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        parseAttitude(data.buf)
+        state.pendingAttitude = false
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        state.pendingAttitude = false
+    end)
     return tasks.msp.mspQueue:add({
         command = MSP_ATTITUDE,
         uuid = "alignment.attitude",
-        processReply = function(_, buf)
-            parseAttitude(buf)
-            state.pendingAttitude = false
-        end,
-        errorHandler = function()
-            state.pendingAttitude = false
-        end,
+        _replyId = _replyId,
         simulatorResponse = simResponse
     })
 end

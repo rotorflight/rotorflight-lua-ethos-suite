@@ -323,19 +323,21 @@ local function queueRead(command, apiname, parser, simulatorResponse)
     state.pending = apiname
     state.pendingAt = osClock()
 
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local ok = parser(data.buf)
+        state.pending = nil
+        state.lastStateText = ok and "OK" or "INVALID"
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        state.pending = nil
+        state.lastStateText = "INVALID"
+    end)
     return tasks.msp.mspQueue:add({
         command = command,
         apiname = apiname,
         uuid = "fblsensors." .. apiname,
-        processReply = function(self, buf)
-            local ok = parser(buf)
-            state.pending = nil
-            state.lastStateText = ok and "OK" or "INVALID"
-        end,
-        errorHandler = function()
-            state.pending = nil
-            state.lastStateText = "INVALID"
-        end,
+        _replyId = _replyId,
         simulatorResponse = simulatorResponse
     })
 end

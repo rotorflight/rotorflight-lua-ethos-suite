@@ -138,7 +138,11 @@ local function wakeup()
             return
         end
 
-        local message = {command = 183, payload = payload, processReply = function(self, buf) rfsuite.app.triggers.closeProgressLoader = true end, simulatorResponse = {}}
+        local _replyId = rfsuite.utils.uuid()
+        rfsuite.bus.once("msp.response." .. _replyId, function()
+            rfsuite.app.triggers.closeProgressLoader = true
+        end)
+        local message = {command = 183, payload = payload, _replyId = _replyId, simulatorResponse = {}}
         local ok, reason = queueDirect(message, string.format("copyprofiles.%d.%d.%d", payload[1], payload[2], payload[3]))
         if not ok then
             rfsuite.utils.log("Copy profiles enqueue rejected: " .. tostring(reason), "info")

@@ -92,25 +92,28 @@ function helpers.servoBusEnabled(callback)
     end
 
     if (rfsuite.session.servoBusEnabled == nil) then
+        local _replyId = rfsuite.utils.uuid()
+        rfsuite.bus.once("msp.response." .. _replyId, function(data)
+            local buf = data.buf
+            local serialData = {}
+
+            buf.offset = 1
+            for i = 1, 6 do
+                serialData[i] = {}
+                serialData[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                serialData[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
+                serialData[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                serialData[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                serialData[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                serialData[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+            end
+
+            rfsuite.session.servoBusEnabled = processSerialConfig(serialData)
+            if callback then callback(rfsuite.session.servoBusEnabled) end
+        end)
         local message = {
             command = 54,
-            processReply = function(self, buf)
-                local data = {}
-
-                buf.offset = 1
-                for i = 1, 6 do
-                    data[i] = {}
-                    data[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
-                    data[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                end
-
-                rfsuite.session.servoBusEnabled  = processSerialConfig(data)
-                if callback then callback(rfsuite.session.servoBusEnabled) end
-            end,
+            _replyId = _replyId,
             simulatorResponse = {20 , 1  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 0  , 0  , 0  , 8  , 0  , 5  , 4  , 0  , 5  , 1  , 0  , 4  , 0  , 0  , 5  , 4  , 0  , 5  , 2  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 3  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 4  , 64 , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 5  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  }
         }
         rfsuite.tasks.msp.mspQueue:add(message)

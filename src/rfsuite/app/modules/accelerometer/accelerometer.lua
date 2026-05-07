@@ -59,14 +59,16 @@ local function wakeup()
 
     if calibrate == true and calibrateQueued == false then
 
+        local _replyId = rfsuite.utils.uuid()
+        rfsuite.bus.once("msp.response." .. _replyId, function()
+            rfsuite.utils.log("Accelerometer calibrated.", "info")
+            calibrate = false
+            calibrateQueued = false
+            applySettings()
+        end)
         local message = {
             command = 205,
-            processReply = function(self, buf)
-                rfsuite.utils.log("Accelerometer calibrated.", "info")
-                calibrate = false
-                calibrateQueued = false
-                applySettings()
-            end,
+            _replyId = _replyId,
             simulatorResponse = {},
             uuid = "accelerometer-calibration"
         }

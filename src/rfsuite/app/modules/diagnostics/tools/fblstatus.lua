@@ -76,86 +76,87 @@ local function getSimulatorTimeResponse()
 end
 
 local function getFblTime()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        buf.offset = 1
+        status.fblYear = tasks.msp.mspHelper.readU16(buf)
+        buf.offset = 3
+        status.fblMonth = tasks.msp.mspHelper.readU8(buf)
+        buf.offset = 4
+        status.fblDay = tasks.msp.mspHelper.readU8(buf)
+        buf.offset = 5
+        status.fblHour = tasks.msp.mspHelper.readU8(buf)
+        buf.offset = 6
+        status.fblMinute = tasks.msp.mspHelper.readU8(buf)
+        buf.offset = 7
+        status.fblSecond = tasks.msp.mspHelper.readU8(buf)
+        buf.offset = 8
+        status.fblMillis = tasks.msp.mspHelper.readU16(buf)
+    end)
     local message = {
         command = 247,
-        processReply = function(self, buf)
-
-            buf.offset = 1
-            status.fblYear = tasks.msp.mspHelper.readU16(buf)
-            buf.offset = 3
-            status.fblMonth = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 4
-            status.fblDay = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 5
-            status.fblHour = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 6
-            status.fblMinute = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 7
-            status.fblSecond = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 8
-            status.fblMillis = tasks.msp.mspHelper.readU16(buf)
-
-        end,
+        _replyId = _replyId,
         simulatorResponse = getSimulatorTimeResponse()
     }
-
     return queueDirect(message, "fbl.time")
 end
 
 local function getStatus()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        buf.offset = 12
+        status.realTimeLoad = tasks.msp.mspHelper.readU16(buf)
+        status.cpuLoad = tasks.msp.mspHelper.readU16(buf)
+        buf.offset = 18
+        status.armingDisableFlags = tasks.msp.mspHelper.readU32(buf)
+        buf.offset = 24
+        status.profile = tasks.msp.mspHelper.readU8(buf)
+        buf.offset = 26
+        status.rateProfile = tasks.msp.mspHelper.readU8(buf)
+    end)
     local message = {
         command = 101,
-        processReply = function(self, buf)
-
-            buf.offset = 12
-            status.realTimeLoad = tasks.msp.mspHelper.readU16(buf)
-            status.cpuLoad = tasks.msp.mspHelper.readU16(buf)
-            buf.offset = 18
-            status.armingDisableFlags = tasks.msp.mspHelper.readU32(buf)
-            buf.offset = 24
-            status.profile = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 26
-            status.rateProfile = tasks.msp.mspHelper.readU8(buf)
-
-        end,
+        _replyId = _replyId,
         simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
     }
-
     return queueDirect(message, "fbl.status")
 end
 
 local function getDataflashSummary()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        local flags = tasks.msp.mspHelper.readU8(buf)
+        summary.ready = (flags & 1) ~= 0
+        summary.supported = (flags & 2) ~= 0
+        summary.sectors = tasks.msp.mspHelper.readU32(buf)
+        summary.totalSize = tasks.msp.mspHelper.readU32(buf)
+        summary.usedSize = tasks.msp.mspHelper.readU32(buf)
+    end)
     local message = {
         command = 70,
-        processReply = function(self, buf)
-
-            local flags = tasks.msp.mspHelper.readU8(buf)
-            summary.ready = (flags & 1) ~= 0
-            summary.supported = (flags & 2) ~= 0
-            summary.sectors = tasks.msp.mspHelper.readU32(buf)
-            summary.totalSize = tasks.msp.mspHelper.readU32(buf)
-            summary.usedSize = tasks.msp.mspHelper.readU32(buf)
-
-        end,
+        _replyId = _replyId,
         simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
     }
     return queueDirect(message, "fbl.dataflash")
 end
 
 local function eraseDataflash()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function()
+        summary = {}
+        setFieldValue(1, "")
+        setFieldValue(2, "")
+        setFieldValue(3, "")
+        setFieldValue(4, "")
+        setFieldValue(5, "")
+        setFieldValue(6, "")
+    end)
     local message = {
         command = 72,
-        processReply = function(self, buf)
-
-            summary = {}
-
-            setFieldValue(1, "")
-            setFieldValue(2, "")
-            setFieldValue(3, "")
-            setFieldValue(4, "")
-            setFieldValue(5, "")
-            setFieldValue(6, "")
-        end,
+        _replyId = _replyId,
         simulatorResponse = {}
     }
     return queueDirect(message, "fbl.erase")

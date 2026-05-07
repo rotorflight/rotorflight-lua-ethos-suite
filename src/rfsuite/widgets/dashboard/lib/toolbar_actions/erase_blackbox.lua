@@ -89,20 +89,19 @@ local function doErase()
         API.read()
     end
 
-    local message = {
-        command = 72,
-        processReply = function()
-            logInfo("Dataflash erase: MSP erase reply received")
-            if eraseProgress then
-                eraseProgress:close()
-            end
-            eraseProgress = nil
-            eraseProgressBaseMessage = nil
-            eraseProgressMspStatusLast = nil
-            eraseProgressCounter = nil
-            readDataflashSummary()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function()
+        logInfo("Dataflash erase: MSP erase reply received")
+        if eraseProgress then
+            eraseProgress:close()
         end
-    }
+        eraseProgress = nil
+        eraseProgressBaseMessage = nil
+        eraseProgressMspStatusLast = nil
+        eraseProgressCounter = nil
+        readDataflashSummary()
+    end)
+    local message = {command = 72, _replyId = _replyId}
     local ok, reason = rfsuite.tasks.msp.mspQueue:add(message)
     if ok == false then
         logInfo("Dataflash erase: MSP queue rejected message (" .. tostring(reason) .. ")")

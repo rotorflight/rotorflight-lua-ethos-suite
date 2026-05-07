@@ -288,74 +288,18 @@ local function wakeup(self)
 end
 
 local function getServoConfigurations(callback, callbackParam)
-    local message = {
-        command = 120,
-        processReply = function(self, buf)
-            buf.offset = 1
-            servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        buf.offset = 1
+        servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
-            rfsuite.session.servoCount = servoCount
+        rfsuite.session.servoCount = servoCount
 
-            rfsuite.utils.log("Servo count " .. tostring(servoCount), "info")
-            for i = 0, servoCount - 1 do
-                local config = {}
+        rfsuite.utils.log("Servo count " .. tostring(servoCount), "info")
+        for i = 0, servoCount - 1 do
+            local config = {}
 
-                config.name = servoTable[servoIndex + 1]['title']
-                config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
-                config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
-                config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
-                config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
-
-                if config.flags == 1 or config.flags == 3 then
-                    config.reverse = 1
-                else
-                    config.reverse = 0
-                end
-
-                if config.flags == 2 or config.flags == 3 then
-                    config.geometry = 1
-                else
-                    config.geometry = 0
-                end
-
-                configs[i] = config
-
-            end
-            callback(callbackParam)
-        end,
-
-        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-    }
-    return queueDirect(message, "servo.cfg.bulk")
-end
-
-
-local function getServoConfigurationsIndexed(callback, callbackParam)
-
-    -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
-    -- Payload must contain exactly 1 byte: the servo index (0-based).
-    local readIndex = currentServoReadIndex()
-    local message = {
-        command = 125,
-        payload = {readIndex},
-        uuid = string.format("servo.cfg.%d", readIndex),
-        errorHandler = function()
-            getServoConfigurations(callback, callbackParam)
-        end,
-        processReply = function(self, buf)
-            buf.offset = 1
-
-            -- Ensure we have a servoCount for any "all servos" operations (override on/off).
-            if not servoCount then
-                servoCount = rfsuite.session.servoCount or (servoTable and #servoTable) or 0
-                rfsuite.session.servoCount = servoCount
-            end
-
-            local config = configs[servoIndex] or {}
             config.name = servoTable[servoIndex + 1]['title']
             config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
             config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
@@ -378,11 +322,71 @@ local function getServoConfigurationsIndexed(callback, callbackParam)
                 config.geometry = 0
             end
 
-            configs[servoIndex] = config
+            configs[i] = config
+        end
+        callback(callbackParam)
+    end)
+    local message = {
+        command = 120,
+        _replyId = _replyId,
+        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
+    }
+    return queueDirect(message, "servo.cfg.bulk")
+end
 
-            if callback then callback(callbackParam) end
-        end,
 
+local function getServoConfigurationsIndexed(callback, callbackParam)
+
+    -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
+    -- Payload must contain exactly 1 byte: the servo index (0-based).
+    local readIndex = currentServoReadIndex()
+
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        buf.offset = 1
+
+        -- Ensure we have a servoCount for any "all servos" operations (override on/off).
+        if not servoCount then
+            servoCount = rfsuite.session.servoCount or (servoTable and #servoTable) or 0
+            rfsuite.session.servoCount = servoCount
+        end
+
+        local config = configs[servoIndex] or {}
+        config.name = servoTable[servoIndex + 1]['title']
+        config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
+        config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
+        config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
+        config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
+        config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
+        config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
+        config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
+        config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
+
+        if config.flags == 1 or config.flags == 3 then
+            config.reverse = 1
+        else
+            config.reverse = 0
+        end
+
+        if config.flags == 2 or config.flags == 3 then
+            config.geometry = 1
+        else
+            config.geometry = 0
+        end
+
+        configs[servoIndex] = config
+
+        if callback then callback(callbackParam) end
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        getServoConfigurations(callback, callbackParam)
+    end)
+    local message = {
+        command = 125,
+        payload = {readIndex},
+        uuid = string.format("servo.cfg.%d", readIndex),
+        _replyId = _replyId,
         -- 8x U16 fields (16 bytes). Values: mid=1500, min=1000, max=2000, rneg=1000, rpos=1000, rate=100, speed=0, flags=0
         simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
     }

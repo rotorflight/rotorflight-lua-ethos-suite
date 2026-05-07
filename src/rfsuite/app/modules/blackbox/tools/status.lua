@@ -105,43 +105,51 @@ local function updateStatusFields()
 end
 
 local function pollDataflashSummary()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        local flags = mspHelper.readU8(buf)
+        status.dataflash.ready = (flags & 1) ~= 0
+        status.dataflash.supported = (flags & 2) ~= 0
+        mspHelper.readU32(buf)
+        status.dataflash.totalSize = mspHelper.readU32(buf)
+        status.dataflash.usedSize = mspHelper.readU32(buf)
+    end)
     local message = {
         command = 70,
-        processReply = function(self, buf)
-            local flags = mspHelper.readU8(buf)
-            status.dataflash.ready = (flags & 1) ~= 0
-            status.dataflash.supported = (flags & 2) ~= 0
-            mspHelper.readU32(buf)
-            status.dataflash.totalSize = mspHelper.readU32(buf)
-            status.dataflash.usedSize = mspHelper.readU32(buf)
-        end,
+        _replyId = _replyId,
         simulatorResponse = {3, 235, 3, 0, 0, 0, 0, 214, 7, 0, 0, 0, 0}
     }
     return queueDirect(message, "blackbox.status.dataflash")
 end
 
 local function pollSDCardSummary()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local buf = data.buf
+        local flags = mspHelper.readU8(buf)
+        status.sdcard.supported = (flags & 0x01) ~= 0
+        status.sdcard.state = mspHelper.readU8(buf)
+        status.sdcard.filesystemLastError = mspHelper.readU8(buf)
+        status.sdcard.freeSizeKB = mspHelper.readU32(buf)
+        status.sdcard.totalSizeKB = mspHelper.readU32(buf)
+    end)
     local message = {
         command = 79,
-        processReply = function(self, buf)
-            local flags = mspHelper.readU8(buf)
-            status.sdcard.supported = (flags & 0x01) ~= 0
-            status.sdcard.state = mspHelper.readU8(buf)
-            status.sdcard.filesystemLastError = mspHelper.readU8(buf)
-            status.sdcard.freeSizeKB = mspHelper.readU32(buf)
-            status.sdcard.totalSizeKB = mspHelper.readU32(buf)
-        end,
+        _replyId = _replyId,
         simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     }
     return queueDirect(message, "blackbox.status.sdcard")
 end
 
 local function eraseDataflash()
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function()
+        status.eraseInProgress = true
+    end)
     local message = {
         command = 72,
-        processReply = function(self, buf)
-            status.eraseInProgress = true
-        end,
+        _replyId = _replyId,
         simulatorResponse = {}
     }
     return queueDirect(message, "blackbox.status.erase")

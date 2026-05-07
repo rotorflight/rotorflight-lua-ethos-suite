@@ -621,20 +621,22 @@ end
 local function readAdjustmentRangeSlot(slotIndex, onComplete, onError)
     slotIndex = clamp(math.floor(slotIndex or 1), 1, ADJUSTMENT_RANGE_MAX)
 
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function(data)
+        local parsed = parseAdjustmentRangeRecord(data.buf)
+        if not parsed then
+            if onError then onError("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex)) end
+            return
+        end
+        if onComplete then onComplete(parsed) end
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        if onError then onError("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end
+    end)
     local message = {
         command = 156,
         payload = {slotIndex - 1},
-        processReply = function(_, buf)
-            local parsed = parseAdjustmentRangeRecord(buf)
-            if not parsed then
-                if onError then onError("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex)) end
-                return
-            end
-            if onComplete then onComplete(parsed) end
-        end,
-        errorHandler = function()
-            if onError then onError("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end
-        end,
+        _replyId = _replyId,
         simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0}
     }
 
@@ -1635,11 +1637,17 @@ local function queueSetAdjustmentRange(slotIndex, done, failed)
         clamp(adjRange.adjStep, ADJ_STEP_MIN, ADJ_STEP_MAX)
     }
 
+    local _replyId = rfsuite.utils.uuid()
+    rfsuite.bus.once("msp.response." .. _replyId, function()
+        if done then done() end
+    end)
+    rfsuite.bus.once("msp.error." .. _replyId, function()
+        if failed then failed("SET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end
+    end)
     local message = {
         command = 53,
         payload = payload,
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("SET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end end,
+        _replyId = _replyId,
         simulatorResponse = {}
     }
 
@@ -1650,7 +1658,7 @@ end
 local function queueEepromWrite(done, failed)
     local ok, reason = rfsuite.utils.queueEepromWrite({
         uuid = "adjustments.eeprom",
-        processReply = function() if done then done() end end,
+        completeHandler = function() if done then done() end end,
         errorHandler = function() if failed then failed("EEPROM write failed") end end
     })
 
