@@ -18,6 +18,9 @@ local firstWakeup = true
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 local lastInFlight = nil
+local _appGuiRunning = false
+rfsuite.bus.on("app.gui.started", function() _appGuiRunning = true end)
+rfsuite.bus.on("app.gui.stopped", function() _appGuiRunning = false end)
  
 
 --[[
@@ -409,7 +412,7 @@ function msp.wakeup()
     local armSource = tasks.telemetry.getSensorSource("armflags")
     if not armSource then return end
     local isArmed = armSource:value()
-    local isAdmin = (rfsuite.app and rfsuite.app.guiIsRunning) or false
+    local isAdmin = _appGuiRunning
 
     local isConnected = rfsuite.session.isConnected == true
 

@@ -217,6 +217,7 @@ function tasks.wakeup()
         active = false
         rfsuite.utils.log("Postconnect: [complete]", "info")
         rfsuite.session.postConnectComplete = true
+        rfsuite.bus.emit("app.fc.postconnect")
         return
     end
 

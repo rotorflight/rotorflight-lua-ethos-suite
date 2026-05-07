@@ -18,6 +18,10 @@ local utils = rfsuite.utils
 
 local api = {}
 
+local _appGuiRunning = false
+rfsuite.bus.on("app.gui.started", function() _appGuiRunning = true end)
+rfsuite.bus.on("app.gui.stopped", function() _appGuiRunning = false end)
+
 api._fileExistsCache = {}
 api._fileExistsCacheOrder = {}
 api._fileExistsCacheMax = 24
@@ -314,8 +318,7 @@ function api.isDeltaCacheEnabled(apiName)
     if apiName and api._deltaCacheByApi[apiName] ~= nil then
         return api._deltaCacheByApi[apiName]
     end
-    local app = rfsuite and rfsuite.app
-    if not (app and app.guiIsRunning) then
+    if not _appGuiRunning then
         return false
     end
     return api._deltaCacheDefault == true

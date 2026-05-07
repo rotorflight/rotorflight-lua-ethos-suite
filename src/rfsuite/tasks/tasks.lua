@@ -856,12 +856,6 @@ function tasks.wakeup_protected()
         return
     end
 
-    local appGuiRunning = (rfsuite.app and rfsuite.app.guiIsRunning) == true
-    if lastAppGuiRunning and not appGuiRunning then
-        cleanupClosedAppRuntime()
-    end
-    lastAppGuiRunning = appGuiRunning
-
     -- Progressive task loading to avoid long stalls on a single tick.
     if tasks._initState == "loadNextTask" then
         local key = tasks._initKeys[tasks._initIndex]
@@ -1345,5 +1339,11 @@ function tasks.reload(name)
 
     return ok
 end
+
+rfsuite.bus.on("app.gui.started", function() lastAppGuiRunning = true end)
+rfsuite.bus.on("app.gui.stopped", function()
+    lastAppGuiRunning = false
+    cleanupClosedAppRuntime()
+end)
 
 return tasks

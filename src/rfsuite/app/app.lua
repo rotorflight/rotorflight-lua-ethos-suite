@@ -77,6 +77,7 @@ end
 
 -- Make sure this is set - even if not initialised
 app.guiIsRunning = false
+local _guiStarted = false
 
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
@@ -87,6 +88,13 @@ end
 
 function app.wakeup_protected()
     app.guiIsRunning = true
+    if not _guiStarted then
+        _guiStarted = true
+        rfsuite.bus.emit("app.gui.started")
+        rfsuite.bus.on("app.reboot.complete", function()
+            app.triggers.rebootInProgress = false
+        end, "app")
+    end
 
     -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
     if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
@@ -400,6 +408,9 @@ function app.close()
     rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
 
     app.guiIsRunning = false
+    _guiStarted = false
+    rfsuite.bus.emit("app.gui.stopped")
+    rfsuite.bus.offContext("app")
     app.offlineMode = false
     app.escPowerCycleLoader = false
 

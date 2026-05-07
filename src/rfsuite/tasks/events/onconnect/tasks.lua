@@ -97,6 +97,7 @@ end
 local function resetSessionFlags()
     rfsuite.session = rfsuite.session or {}
     rfsuite.session.isConnected = false
+    rfsuite.bus.emit("app.fc.disconnected")
 end
 
 local function resetQueuesAndState()
@@ -289,9 +290,8 @@ function tasks.wakeup()
             end
 
             rfsuite.session.isConnected = true
-            if rfsuite.app and rfsuite.app.triggers then
-                rfsuite.app.triggers.rebootInProgress = false
-            end
+            rfsuite.bus.emit("app.fc.connected")
+            rfsuite.bus.emit("app.reboot.complete")
             rfsuite.utils.log("Connection [established].", "info")
             rfsuite.utils.log("Connection [established].", "connect")
         end
