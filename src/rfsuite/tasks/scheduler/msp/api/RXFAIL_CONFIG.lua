@@ -115,28 +115,31 @@ return core.createCustomAPI({
     parseRead = parseRead,
     customWrite = function(suppliedPayload, state, emitComplete, emitError)
         local queue = rfsuite.tasks.msp.mspQueue
+        local bus   = rfsuite.bus
+        local utils = rfsuite.utils
         local timeout = state.timeout
 
         local baseUuid = state.uuid
         if not baseUuid then
-            local utils = rfsuite and rfsuite.utils
             baseUuid = (utils and utils.uuid and utils.uuid()) or tostring(os.clock())
         end
 
         state.mspWriteComplete = false
 
         if suppliedPayload then
+            local _replyId = (utils and utils.uuid and utils.uuid()) or tostring(os.clock())
+            bus.once("msp.response." .. _replyId, function(data)
+                state.mspWriteComplete = true
+                emitComplete(nil, data.buf)
+            end)
+            bus.once("msp.error." .. _replyId, function(data)
+                emitError(nil, data.err)
+            end)
             return queue:add({
                 command = 78,
                 apiname = API_NAME,
                 payload = suppliedPayload,
-                processReply = function(self, buf)
-                    state.mspWriteComplete = true
-                    emitComplete(self, buf)
-                end,
-                errorHandler = function(self, err)
-                    emitError(self, err)
-                end,
+                _replyId = _replyId,
                 simulatorResponse = {},
                 uuid = baseUuid,
                 timeout = timeout
@@ -162,24 +165,25 @@ return core.createCustomAPI({
             end
 
             idx = idx + 1
-            local message = {
+            local _replyId = (utils and utils.uuid and utils.uuid()) or tostring(os.clock())
+            bus.once("msp.response." .. _replyId, function()
+                sendNext()
+            end)
+            bus.once("msp.error." .. _replyId, function(data)
+                emitError(nil, data.err)
+            end)
+
+            local ok, reason = queue:add({
                 command = 78,
                 apiname = API_NAME,
                 payload = item.payload,
-                processReply = function()
-                    sendNext()
-                end,
-                errorHandler = function(self, err)
-                    emitError(self, err)
-                end,
+                _replyId = _replyId,
                 simulatorResponse = {},
                 uuid = tostring(baseUuid) .. "-" .. tostring(item.index + 1),
                 timeout = timeout
-            }
-
-            local ok, reason = queue:add(message)
+            })
             if not ok then
-                emitError(message, reason)
+                emitError(nil, reason)
                 return false, reason
             end
 

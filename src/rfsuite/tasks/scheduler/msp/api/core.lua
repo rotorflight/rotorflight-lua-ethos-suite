@@ -438,42 +438,6 @@ function core.createReadOnlyAPI(spec)
         timeout = nil,
         uuid = nil
     }
-    local onError
-
-    local function processReply(self, buf)
-        if type(customParser) == "function" then
-            local parsed, parseErr = customParser(buf, mspHelper, state)
-            if not parsed then
-                onError(self, parseErr or "parse_failed")
-                return
-            end
-            if parsed.structure == nil then
-                parsed.structure = {}
-            end
-            if parsed.receivedBytesCount == nil then
-                parsed.receivedBytesCount = #buf
-            end
-            state.mspData = parsed
-        else
-            state.mspData = {
-                parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
-                structure = {},
-                buffer = buf,
-                positionmap = nil,
-                other = nil,
-                receivedBytesCount = #buf
-            }
-        end
-        if completeHandler then
-            completeHandler(self, buf)
-        end
-    end
-
-    onError = function(self, errMsg)
-        if errorHandler then
-            errorHandler(self, errMsg)
-        end
-    end
 
     local function setCompleteHandler(fn)
         if type(fn) ~= "function" then
@@ -502,12 +466,40 @@ function core.createReadOnlyAPI(spec)
             payload = spec.readPayload
         end
 
+        local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
+        local bus = rfsuite.bus
+        bus.once("msp.response." .. _replyId, function(data)
+            local buf = data.buf
+            if type(customParser) == "function" then
+                local parsed, parseErr = customParser(buf, mspHelper, state)
+                if not parsed then
+                    if errorHandler then errorHandler(nil, parseErr or "parse_failed") end
+                    return
+                end
+                if parsed.structure == nil then parsed.structure = {} end
+                if parsed.receivedBytesCount == nil then parsed.receivedBytesCount = #buf end
+                state.mspData = parsed
+            else
+                state.mspData = {
+                    parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
+                    structure = {},
+                    buffer = buf,
+                    positionmap = nil,
+                    other = nil,
+                    receivedBytesCount = #buf
+                }
+            end
+            if completeHandler then completeHandler(nil, buf) end
+        end)
+        bus.once("msp.error." .. _replyId, function(data)
+            if errorHandler then errorHandler(nil, data.err) end
+        end)
+
         local message = {
             command = spec.readCmd,
             apiname = spec.name,
             minBytes = minBytes,
-            processReply = processReply,
-            errorHandler = onError,
+            _replyId = _replyId,
             simulatorResponse = spec.simulatorResponseRead,
             timeout = state.timeout,
             uuid = state.uuid,
@@ -640,54 +632,6 @@ function core.createConfigAPI(spec)
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
-    local function emitComplete(self, buf)
-        if completeHandler then
-            completeHandler(self, buf)
-        end
-    end
-
-    local function dispatchError(self, errMsg)
-        if errorHandler then
-            errorHandler(self, errMsg)
-        end
-    end
-
-    local function handleReadReply(self, buf)
-        local customParser = spec.parseRead
-        if type(customParser) == "function" then
-            local parsed, parseErr = customParser(buf, mspHelper, state)
-            if not parsed then
-                dispatchError(self, parseErr or "parse_failed")
-                return
-            end
-            if parsed.structure == nil then
-                parsed.structure = readStructure
-            end
-            if parsed.positionmap == nil then
-                parsed.positionmap = positionmap
-            end
-            if parsed.receivedBytesCount == nil then
-                parsed.receivedBytesCount = #buf
-            end
-            state.mspData = parsed
-        else
-            state.mspData = {
-                parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
-                structure = readStructure,
-                buffer = buf,
-                positionmap = positionmap,
-                other = nil,
-                receivedBytesCount = #buf
-            }
-        end
-        emitComplete(self, buf)
-    end
-
-    local function handleWriteReply(self, buf)
-        state.mspWriteComplete = true
-        emitComplete(self, buf)
-    end
-
     local function setCompleteHandler(fn)
         if type(fn) ~= "function" then
             error("Complete handler requires function")
@@ -715,12 +659,42 @@ function core.createConfigAPI(spec)
             payload = spec.readPayload
         end
 
+        local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
+        local bus = rfsuite.bus
+        bus.once("msp.response." .. _replyId, function(data)
+            local buf = data.buf
+            local customParser = spec.parseRead
+            if type(customParser) == "function" then
+                local parsed, parseErr = customParser(buf, mspHelper, state)
+                if not parsed then
+                    if errorHandler then errorHandler(nil, parseErr or "parse_failed") end
+                    return
+                end
+                if parsed.structure == nil then parsed.structure = readStructure end
+                if parsed.positionmap == nil then parsed.positionmap = positionmap end
+                if parsed.receivedBytesCount == nil then parsed.receivedBytesCount = #buf end
+                state.mspData = parsed
+            else
+                state.mspData = {
+                    parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
+                    structure = readStructure,
+                    buffer = buf,
+                    positionmap = positionmap,
+                    other = nil,
+                    receivedBytesCount = #buf
+                }
+            end
+            if completeHandler then completeHandler(nil, buf) end
+        end)
+        bus.once("msp.error." .. _replyId, function(data)
+            if errorHandler then errorHandler(nil, data.err) end
+        end)
+
         local message = {
             command = spec.readCmd,
             apiname = spec.name,
             minBytes = minBytes,
-            processReply = handleReadReply,
-            errorHandler = dispatchError,
+            _replyId = _replyId,
             simulatorResponse = spec.simulatorResponseRead,
             timeout = state.timeout,
             uuid = state.uuid,
@@ -769,12 +743,21 @@ function core.createConfigAPI(spec)
             end
         end
 
+        local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
+        local bus = rfsuite.bus
+        bus.once("msp.response." .. _replyId, function(data)
+            state.mspWriteComplete = true
+            if completeHandler then completeHandler(nil, data.buf) end
+        end)
+        bus.once("msp.error." .. _replyId, function(data)
+            if errorHandler then errorHandler(nil, data.err) end
+        end)
+
         local message = {
             command = spec.writeCmd,
             apiname = spec.name,
             payload = payload,
-            processReply = handleWriteReply,
-            errorHandler = dispatchError,
+            _replyId = _replyId,
             simulatorResponse = spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE,
             timeout = state.timeout,
             uuid = resolveWriteUUID(spec, state)
@@ -907,48 +890,6 @@ function core.createCustomAPI(spec)
         end
     end
 
-    local function handleReadReply(self, buf)
-        local parser = spec.parseRead
-        local parsed, parseErr
-
-        if type(parser) == "function" then
-            parsed, parseErr = parser(buf, mspHelper, state)
-        else
-            parsed = {
-                parsed = {},
-                buffer = buf,
-                receivedBytesCount = #buf
-            }
-        end
-
-        if not parsed then
-            dispatchError(self, parseErr or "parse_failed")
-            return
-        end
-
-        if parsed.structure == nil then
-            parsed.structure = readStructure
-        end
-
-        state.mspData = parsed
-
-        local completeNow
-        if type(spec.readCompleteCondition) == "function" then
-            completeNow = spec.readCompleteCondition(parsed, buf, spec, state)
-        else
-            completeNow = #buf >= (spec.minBytes or 0)
-        end
-
-        if completeNow then
-            emitComplete(self, buf)
-        end
-    end
-
-    local function handleWriteReply(self, buf)
-        state.mspWriteComplete = true
-        emitComplete(self, buf)
-    end
-
     local function read(...)
         if not operationSupported(spec, "read") then
             return false, "read_not_supported"
@@ -975,12 +916,40 @@ function core.createCustomAPI(spec)
             payload = spec.readPayload
         end
 
+        local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
+        local bus = rfsuite.bus
+        bus.once("msp.response." .. _replyId, function(data)
+            local buf = data.buf
+            local parser = spec.parseRead
+            local parsed, parseErr
+            if type(parser) == "function" then
+                parsed, parseErr = parser(buf, mspHelper, state)
+            else
+                parsed = {parsed = {}, buffer = buf, receivedBytesCount = #buf}
+            end
+            if not parsed then
+                dispatchError(nil, parseErr or "parse_failed")
+                return
+            end
+            if parsed.structure == nil then parsed.structure = readStructure end
+            state.mspData = parsed
+            local completeNow
+            if type(spec.readCompleteCondition) == "function" then
+                completeNow = spec.readCompleteCondition(parsed, buf, spec, state)
+            else
+                completeNow = #buf >= (spec.minBytes or 0)
+            end
+            if completeNow then emitComplete(nil, buf) end
+        end)
+        bus.once("msp.error." .. _replyId, function(data)
+            dispatchError(nil, data.err)
+        end)
+
         local message = {
             command = spec.readCmd,
             apiname = spec.name,
             minBytes = spec.minBytes or 0,
-            processReply = handleReadReply,
-            errorHandler = dispatchError,
+            _replyId = _replyId,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseRead or EMPTY_SIM_RESPONSE, state, "read", ...),
             uuid = state.uuid,
             timeout = state.timeout,
@@ -1046,12 +1015,21 @@ function core.createCustomAPI(spec)
             end
         end
 
+        local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
+        local bus = rfsuite.bus
+        bus.once("msp.response." .. _replyId, function(data)
+            state.mspWriteComplete = true
+            emitComplete(nil, data.buf)
+        end)
+        bus.once("msp.error." .. _replyId, function(data)
+            dispatchError(nil, data.err)
+        end)
+
         local message = {
             command = spec.writeCmd,
             apiname = spec.name,
             payload = payload,
-            processReply = handleWriteReply,
-            errorHandler = dispatchError,
+            _replyId = _replyId,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE, state, "write", suppliedPayload, ...),
             uuid = resolveWriteUUID(spec, state),
             timeout = state.timeout
@@ -1188,23 +1166,6 @@ function core.createWriteOnlyAPI(spec)
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
-    local function emitComplete(self, buf)
-        if completeHandler then
-            completeHandler(self, buf)
-        end
-    end
-
-    local function dispatchError(self, errMsg)
-        if errorHandler then
-            errorHandler(self, errMsg)
-        end
-    end
-
-    local function handleWriteReply(self, buf)
-        state.mspWriteComplete = true
-        emitComplete(self, buf)
-    end
-
     local function setCompleteHandler(fn)
         if type(fn) ~= "function" then
             error("Complete handler requires function")
@@ -1244,12 +1205,21 @@ function core.createWriteOnlyAPI(spec)
             end
         end
 
+        local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
+        local bus = rfsuite.bus
+        bus.once("msp.response." .. _replyId, function(data)
+            state.mspWriteComplete = true
+            if completeHandler then completeHandler(nil, data.buf) end
+        end)
+        bus.once("msp.error." .. _replyId, function(data)
+            if errorHandler then errorHandler(nil, data.err) end
+        end)
+
         local message = {
             command = spec.writeCmd,
             apiname = spec.name,
             payload = payload,
-            processReply = handleWriteReply,
-            errorHandler = dispatchError,
+            _replyId = _replyId,
             simulatorResponse = spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE,
             timeout = state.timeout,
             uuid = resolveWriteUUID(spec, state)

@@ -399,6 +399,7 @@ function MspQueueController:processQueue()
             local modeSuffix = getRwModeSuffix(msg, rwState, false)
             utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
+        if msg and msg._replyId then rfsuite.bus.emit("msp.error." .. msg._replyId, {err = "timeout", command = msg.command}) end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
@@ -430,8 +431,13 @@ function MspQueueController:processQueue()
         or (cmd == self.currentMessage.command and err and self.currentMessage.completeOnErrorReplyAttempt and self.retryCount >= self.currentMessage.completeOnErrorReplyAttempt)
         or (self.currentMessage.command == 68 and self.retryCount == 2) then
 
+        if self.currentMessage._replyId then
+            rfsuite.bus.emit("msp.response." .. self.currentMessage._replyId, {buf = buf, command = cmd})
+        end
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
+        end
+        if self.currentMessage._replyId or self.currentMessage.processReply then
             if cmd and LOG_ENABLED_MSP() then
                 local rwState
                 if self.currentMessage.isWrite ~= nil then
@@ -554,6 +560,7 @@ function MspQueueController:processQueue()
         if session then
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
         end
+        if msg and msg._replyId then rfsuite.bus.emit("msp.error." .. msg._replyId, {err = "max_retries", command = msg.command}) end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
         if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         local page = rfsuite.app and rfsuite.app.Page
