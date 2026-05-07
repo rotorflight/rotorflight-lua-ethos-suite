@@ -7300,6 +7300,12 @@
           "needs_translation": false,
           "translation": "Fuel Rise Rate"
         },
+        "smartfuel_name": {
+          "english": "SmartFuel",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "SmartFuel"
+        },
         "smartfuel_sag_compensation": {
           "english": "Sag Compensation Factor",
           "max_length": 23,
