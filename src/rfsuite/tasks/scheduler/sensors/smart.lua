@@ -30,29 +30,99 @@ local lastPush = {}
 local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
-local cleanupSignature = nil
-local lastNativeSmartSensors = nil
+local modeSignature = nil
+local lastSmartFuelMode = nil
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
-local function useNativeSmartSensors()
+local mirror_sources = {
+    sport = {
+        smartfuel = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600},
+        smartconsumption = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
+    },
+    crsf = {
+        smartfuel = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014},
+        smartconsumption = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}
+    }
+}
+
+local function getProtocol()
+    return rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol
+end
+
+local function getFirmwareSmartFuelSource()
     if system.getVersion().simulation == true then
-        return false
+        return nil
+    end
+
+    if not rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+        return nil
     end
 
     local batteryConfig = rfsuite.session and rfsuite.session.batteryConfig
-    return batteryConfig and (tonumber(batteryConfig.smartfuelRemoteSource) or 0) > 0
+    return batteryConfig and tonumber(batteryConfig.smartfuelRemoteSource)
+end
+
+local function useFirmwareSmartFuel()
+    local source = getFirmwareSmartFuelSource()
+    return source ~= nil and source > 0
+end
+
+local function useLocalVoltageSmartFuel()
+    return smartfuelprefs.getSource() == 1
+end
+
+local function getSmartFuelMode()
+    if useFirmwareSmartFuel() then
+        return "firmware"
+    elseif useLocalVoltageSmartFuel() then
+        return "voltage"
+    end
+    return "current"
+end
+
+local function getSmartFuelModeDetail(mode)
+    local firmwareSource = getFirmwareSmartFuelSource()
+    local localSource = smartfuelprefs.getSource()
+    local remoteLabel = firmwareSource == 1 and "CURRENT" or firmwareSource == 2 and "VOLTAGE" or firmwareSource == 0 and "OFF" or "n/a"
+    local localLabel = localSource == 1 and "VOLTAGE" or "CURRENT"
+    if mode == "firmware" then
+        return "firmware " .. remoteLabel
+    end
+    return "local " .. localLabel .. " (firmware " .. remoteLabel .. ")"
+end
+
+local function getMirrorSensorValue(name)
+    local protocol = getProtocol()
+    local sources = protocol and mirror_sources[protocol]
+    local query = sources and sources[name]
+    if not query then return nil end
+
+    local source = system_getSource(query)
+    if not source or (source.state and source:state() == false) then
+        return nil
+    end
+
+    return source:value()
 end
 
 local function calculateFuel()
-    if smartfuelprefs.getSource() == 1 then
+    if useFirmwareSmartFuel() then
+        return getMirrorSensorValue("smartfuel")
+    end
+
+    if useLocalVoltageSmartFuel() then
         return smartfuelvoltage.calculate()
     end
     return smartfuel.calculate()
 end
 
 local function calculateConsumption()
-    if smartfuelprefs.getSource() == 1 then
+    if useFirmwareSmartFuel() then
+        return getMirrorSensorValue("smartconsumption")
+    end
+
+    if useLocalVoltageSmartFuel() then
         if smartfuelvoltage.getConsumption then
             local consumption = smartfuelvoltage.getConsumption()
             if consumption ~= nil then return consumption end
@@ -84,69 +154,29 @@ local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = 
 
 smart.sensors = smart_sensors
 
-local function dropObsoleteSensor(appId)
-    local source = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-    if not source then return end
-
-    local currentModule = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module()
-    if currentModule ~= nil and source.module and source:module() ~= currentModule then
-        return
-    end
-
-    if source.drop then
-        source:drop()
-    elseif source.reset then
-        source:reset()
-    end
-end
-
-local function cleanupObsoleteSmartSensors()
+local function syncSmartSensorMode()
     local session = rfsuite.session
     if not (session and session.apiVersion and session.telemetrySensor) then return end
 
-    local protocol = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol
+    local protocol = getProtocol()
     local moduleId = session.telemetrySensor and session.telemetrySensor.module and session.telemetrySensor:module() or "?"
-    local nativeSmartSensors = useNativeSmartSensors()
-    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId), tostring(nativeSmartSensors)}, ":")
-    if cleanupSignature == signature then return end
-    cleanupSignature = signature
+    local smartFuelMode = getSmartFuelMode()
+    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId), smartFuelMode}, ":")
+    if modeSignature == signature then return end
+    modeSignature = signature
 
-    if lastNativeSmartSensors ~= nativeSmartSensors then
+    if lastSmartFuelMode ~= smartFuelMode then
         resetFuel()
         resetConsumption()
         lastValue = {}
         lastPush = {}
-    end
-    lastNativeSmartSensors = nativeSmartSensors
-
-    if nativeSmartSensors then
-        if protocol == "sport" then
-            dropObsoleteSensor(0x5251)
-            dropObsoleteSensor(0x5252)
-        elseif protocol == "crsf" then
-            dropObsoleteSensor(0x1015)
-            dropObsoleteSensor(0x1016)
+        if log then
+            local msg = "Smart Fuel mode: " .. getSmartFuelModeDetail(smartFuelMode)
+            log(msg, "info")
+            log(msg, "connect")
         end
-        dropObsoleteSensor(0x5FE1)
-        dropObsoleteSensor(0x5FE0)
-        sensorCache[0x5FE1] = nil
-        sensorCache[0x5FE0] = nil
-        negativeCache[0x5FE1] = nil
-        negativeCache[0x5FE0] = nil
-        lastValue[0x5FE1] = nil
-        lastValue[0x5FE0] = nil
-        lastPush[0x5FE1] = nil
-        lastPush[0x5FE0] = nil
-        return
     end
-
-    if protocol == "sport" then
-        dropObsoleteSensor(0x5251)
-        dropObsoleteSensor(0x5252)
-    elseif protocol == "crsf" then
-        dropObsoleteSensor(0x1015)
-        dropObsoleteSensor(0x1016)
-    end
+    lastSmartFuelMode = smartFuelMode
 end
 
 local function createOrUpdateSensor(appId, fieldMeta, value)
@@ -232,19 +262,16 @@ function smart.wakeup()
     if (os_clock() - lastWake) < interval then return end
     lastWake = os_clock()
 
-    cleanupObsoleteSmartSensors()
+    syncSmartSensorMode()
 
     for name, meta in pairs(smart_sensors) do
-        local shouldPublish = not ((name == "smartfuel" or name == "smartconsumption") and useNativeSmartSensors())
-        if shouldPublish then
-            local value
-            if type(meta.value) == "function" then
-                value = meta.value()
-            else
-                value = meta.value
-            end
-            createOrUpdateSensor(meta.appId, meta, value)
+        local value
+        if type(meta.value) == "function" then
+            value = meta.value()
+        else
+            value = meta.value
         end
+        createOrUpdateSensor(meta.appId, meta, value)
     end
 end
 
@@ -263,8 +290,8 @@ function smart.reset()
     lastValue = {}
     lastPush = {}
     lastModule = nil
-    cleanupSignature = nil
-    lastNativeSmartSensors = nil
+    modeSignature = nil
+    lastSmartFuelMode = nil
 
     resetFuel()
     resetConsumption()

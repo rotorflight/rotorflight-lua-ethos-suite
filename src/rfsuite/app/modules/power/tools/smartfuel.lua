@@ -37,9 +37,8 @@ local apidata = {
 local function getVoltageMode()
     local src = tonumber(sourceField.value) or 0
     if useFirmwareSmartFuel then
-        -- OFF(0)=local voltage calc, CURRENT(1)=remote current, VOLTAGE(2)=remote voltage
-        -- Tuning params relevant for both OFF and VOLTAGE (both voltage-based)
-        return src ~= 1
+        -- OFF(0)=local Smart Fuel, CURRENT(1)=firmware current, VOLTAGE(2)=firmware voltage
+        return src == 0
     else
         -- Current Sensor(0), Voltage Sensor(1)
         return src == 1

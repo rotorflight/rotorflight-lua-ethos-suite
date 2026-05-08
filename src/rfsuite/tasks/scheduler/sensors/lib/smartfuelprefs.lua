@@ -21,6 +21,23 @@ local function getNumericField(batteryPrefs, key, fallback)
     return value
 end
 
+local function getScaledField(key, fallback, minValue, maxValue, scale)
+    local value = getNumericField(getBatteryPrefs(), key, fallback)
+    if value == nil then return fallback end
+
+    if scale and scale > 1 and maxValue and value > maxValue then
+        local guard = 0
+        while value > maxValue and guard < 4 do
+            value = value / scale
+            guard = guard + 1
+        end
+    end
+
+    if minValue and value < minValue then return minValue end
+    if maxValue and value > maxValue then return maxValue end
+    return value
+end
+
 function prefs.getSource()
     local batteryPrefs = getBatteryPrefs()
     local source = getNumericField(batteryPrefs, "smartfuel_source", nil)
@@ -31,24 +48,24 @@ function prefs.getSource()
 end
 
 function prefs.getStabilizeDelaySeconds()
-    return getNumericField(getBatteryPrefs(), "stabilize_delay", 1500) / 1000
+    return getScaledField("stabilize_delay", 1500, 0, 10000, 1000) / 1000
 end
 
 function prefs.getStableWindowVolts()
-    return getNumericField(getBatteryPrefs(), "stable_window", 15) / 100
+    return getScaledField("stable_window", 15, 0, 100, 100) / 100
 end
 
 function prefs.getVoltageFallPerSecond()
-    return getNumericField(getBatteryPrefs(), "voltage_fall_limit", 5) / 100
+    return getScaledField("voltage_fall_limit", 5, 0, 100, 100) / 100
 end
 
 function prefs.getFuelDropPerSecond()
-    return getNumericField(getBatteryPrefs(), "fuel_drop_rate", 10) / 10
+    return getScaledField("fuel_drop_rate", 10, 0, 500, 10) / 10
 end
 
 function prefs.getSagMultiplier()
     local batteryPrefs = getBatteryPrefs()
-    local sagMultiplierPercent = getNumericField(batteryPrefs, "sag_multiplier_percent", nil)
+    local sagMultiplierPercent = getScaledField("sag_multiplier_percent", nil, 0, 200, 100)
     if sagMultiplierPercent ~= nil then
         return sagMultiplierPercent / 100
     end
