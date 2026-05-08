@@ -1152,6 +1152,10 @@ function ui.cleanupCurrentPage()
         ), "debug")
     end
 
+    -- Snapshot apidata before calling close() — some pages nil it inside close() which
+    -- would cause the cleanup block below to be silently skipped.
+    local _savedApidata = app.Page and app.Page.apidata
+
     -- Let the current page release resources.
     if app.Page then
         local hook = app.Page.close or app.Page.onClose or app.Page.destroy
@@ -1163,7 +1167,8 @@ function ui.cleanupCurrentPage()
         end
     end
 
-    if app.Page and app.Page.apidata then
+    if app.Page and _savedApidata then
+        app.Page.apidata = app.Page.apidata or _savedApidata
         -- Drop cached MSP API data for just this page's APIs.
         if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and app.Page.apidata.api then
             local apidata = tasks.msp.api.apidata
