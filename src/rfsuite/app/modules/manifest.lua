@@ -557,6 +557,12 @@ return {
                     shortcutId = "s_power_source_lua_6d24f8cd57",
                 },
                 {
+                    image = "smartfuel.png",
+                    name = "@i18n(app.modules.power.smartfuel_name)@",
+                    script = "smartfuel.lua",
+                    shortcutId = "s_power_smartfuel_lua_e08268e43e",
+                },
+                {
                     image = "preferences.png",
                     name = "@i18n(app.modules.power.preferences_name)@",
                     script = "preferences.lua",

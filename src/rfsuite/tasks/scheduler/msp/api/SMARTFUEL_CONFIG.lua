@@ -16,8 +16,8 @@ local MSP_API_CMD_READ = 0x3006
 local MSP_API_CMD_WRITE = 0x3007
 
 local sourceTable = {
-    "@i18n(api.BATTERY_INI.tbl_off)@",
-    "@i18n(api.BATTERY_INI.tbl_on)@"
+    "CURRENT",
+    "VOLTAGE"
 }
 
 -- Tuple layout:
@@ -31,6 +31,28 @@ local FIELD_SPEC = {
     {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
     {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1}
 }
+local WRITE_STRUCTURE = select(1, core.buildStructure(FIELD_SPEC))
+
+local function getRemoteSmartFuelSource()
+    local page = rfsuite.app and rfsuite.app.Page
+    local fields = page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields
+
+    for _, field in ipairs(fields or {}) do
+        if field.apikey == "smartfuel_remote_source" then
+            return tonumber(field.value) or 0
+        end
+    end
+
+    -- Fall back to the session value maintained by preferences.postSave and
+    -- smartfuel.postLoad so that writes from the smartfuel tuning page still
+    -- produce the correct smartfuel_source even without the field on screen.
+    local batteryConfig = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
+    if batteryConfig and batteryConfig.smartfuelRemoteSource ~= nil then
+        return tonumber(batteryConfig.smartfuelRemoteSource)
+    end
+
+    return nil
+end
 
 local SIM_RESPONSE = core.simResponse({
     0,       -- smartfuel_source
@@ -47,6 +69,14 @@ return core.createConfigAPI({
     writeCmd = MSP_API_CMD_WRITE,
     minApiVersion = {12, 0, 10},
     fields = FIELD_SPEC,
+    buildWritePayload = function(payloadData)
+        local remoteSource = getRemoteSmartFuelSource()
+        if remoteSource ~= nil then
+            payloadData.smartfuel_source = remoteSource == 2 and 1 or 0
+        end
+
+        return core.buildFullPayload(API_NAME, payloadData, WRITE_STRUCTURE)
+    end,
     simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
     exports = {
