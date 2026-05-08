@@ -2885,6 +2885,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
     end
 
     if v.unit and not f.unit then
+        f.unit = v.unit
         if f.type ~= 1 then
             --log("Injecting unit: " .. v.unit, "debug")
             if formField.suffix then formField:suffix(v.unit) end
@@ -2949,7 +2950,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
         end
     end
 
-    if v.help then
+    if v.help and not f.help then
         f.help = v.help
         --log("Injecting help: {}", "debug")
         if formField.help then formField:help(v.help) end
