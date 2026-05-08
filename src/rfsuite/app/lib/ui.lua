@@ -1208,6 +1208,13 @@ function ui.cleanupCurrentPage()
         app.Page.apidata = nil
     end
 
+    -- Release Ethos-side form references before wiping Lua refs.
+    -- form.clear() causes Ethos to drop its C++ references to form field callback
+    -- closures synchronously, so the subsequent GC cycle can collect them along
+    -- with any page data they captured.  Without this, those closures survive until
+    -- the *next* navigation's GC run.
+    form.clear()
+
     wipeTable(app.formFields)
     wipeTable(app.formLines)
     wipeTable(app.formNavigationFields)
