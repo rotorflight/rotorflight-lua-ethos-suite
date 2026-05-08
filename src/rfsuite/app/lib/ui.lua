@@ -1220,6 +1220,7 @@ function ui.cleanupCurrentPage()
     app.fieldHelpTxt = nil
     app._fieldHelpSection = nil
     ui._helpCache = {}
+    ui._helpExistsCache = {}
     if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.clearHelpCache then
         tasks.msp.api.clearHelpCache()
     end
