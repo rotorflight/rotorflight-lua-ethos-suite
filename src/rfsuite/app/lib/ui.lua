@@ -1100,6 +1100,10 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
+    if rfsuite.bus and app._activeBusContext then
+        rfsuite.bus.offContext(app._activeBusContext)
+        app._activeBusContext = nil
+    end
     if tasks and tasks.callback and tasks.callback.clearOwner then
         tasks.callback.clearOwner(APP_PAGE_CALLBACK_OWNER)
     end
@@ -2491,6 +2495,7 @@ function ui.openPage(opts)
     -- Ensure previous page releases resources before loading a new one.
     ui.cleanupCurrentPage()
 
+    app._activeBusContext = "page:" .. tostring(os.clock())
     app.uiState = app.uiStatus.pages
     app.triggers.isReady = false
     app.lastLabel = nil

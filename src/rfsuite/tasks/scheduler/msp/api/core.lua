@@ -473,7 +473,7 @@ function core.createReadOnlyAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
-        local _ctx = state.busContext
+        local _ctx = state.busContext or (rfsuite.app and rfsuite.app._activeBusContext)
         bus.once("msp.response." .. _replyId, function(data)
             local buf = data.buf
             if type(customParser) == "function" then
@@ -673,7 +673,7 @@ function core.createConfigAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
-        local _ctx = state.busContext
+        local _ctx = state.busContext or (rfsuite.app and rfsuite.app._activeBusContext)
         bus.once("msp.response." .. _replyId, function(data)
             local buf = data.buf
             local customParser = spec.parseRead
@@ -758,7 +758,7 @@ function core.createConfigAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
-        local _ctx = state.busContext
+        local _ctx = state.busContext or (rfsuite.app and rfsuite.app._activeBusContext)
         bus.once("msp.response." .. _replyId, function(data)
             state.mspWriteComplete = true
             if completeHandler then completeHandler(nil, data.buf) end
@@ -938,7 +938,7 @@ function core.createCustomAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
-        local _ctx = state.busContext
+        local _ctx = state.busContext or (rfsuite.app and rfsuite.app._activeBusContext)
         bus.once("msp.response." .. _replyId, function(data)
             local buf = data.buf
             local parser = spec.parseRead
@@ -1038,7 +1038,7 @@ function core.createCustomAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
-        local _ctx = state.busContext
+        local _ctx = state.busContext or (rfsuite.app and rfsuite.app._activeBusContext)
         bus.once("msp.response." .. _replyId, function(data)
             state.mspWriteComplete = true
             emitComplete(nil, data.buf)
@@ -1235,7 +1235,7 @@ function core.createWriteOnlyAPI(spec)
 
         local _replyId = (utils.uuid and utils.uuid()) or tostring(os_clock())
         local bus = rfsuite.bus
-        local _ctx = state.busContext
+        local _ctx = state.busContext or (rfsuite.app and rfsuite.app._activeBusContext)
         bus.once("msp.response." .. _replyId, function(data)
             state.mspWriteComplete = true
             if completeHandler then completeHandler(nil, data.buf) end
