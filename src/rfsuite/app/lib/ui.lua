@@ -2933,6 +2933,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
     end
 
     if v.tableEthos and not f.tableEthos then
+        f.tableEthos = v.tableEthos
         local tbldata = v.tableEthos
         if f.type == 1 then
             --log("Injecting table: {}", "debug")
