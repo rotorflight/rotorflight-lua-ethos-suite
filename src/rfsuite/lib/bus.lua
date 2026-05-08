@@ -71,7 +71,7 @@ end
 
 function bus.offContext(context)
     local cs = _byCtx[context]
-    if not cs then return end
+    if not cs then return 0 end
     local ids = {}
     for id in pairs(cs) do ids[#ids + 1] = id end
     _byCtx[context] = nil
@@ -86,6 +86,7 @@ function bus.offContext(context)
             _subs[id] = nil
         end
     end
+    return #ids
 end
 
 function bus.emit(topic, data)

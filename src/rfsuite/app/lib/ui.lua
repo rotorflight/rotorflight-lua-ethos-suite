@@ -1101,7 +1101,10 @@ end
 
 function ui.cleanupCurrentPage()
     if rfsuite.bus and app._activeBusContext then
-        rfsuite.bus.offContext(app._activeBusContext)
+        local cancelled = rfsuite.bus.offContext(app._activeBusContext)
+        if cancelled > 0 then
+            utils.log(string.format("[bus] page close pruned %d pending subscription(s) on context '%s'", cancelled, app._activeBusContext), "info")
+        end
         app._activeBusContext = nil
     end
     if tasks and tasks.callback and tasks.callback.clearOwner then
