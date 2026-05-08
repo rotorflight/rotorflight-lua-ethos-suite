@@ -182,7 +182,6 @@ return {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
-        fallback_sensor = "fuel",
         transform = function(value)
             if value ~= nil and value < 0 then
                 return nil
@@ -198,7 +197,6 @@ return {
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
         unit_string = "mAh",
-        fallback_sensor = "consumption",
     },
 
     consumption = {

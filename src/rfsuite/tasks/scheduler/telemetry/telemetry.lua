@@ -332,11 +332,6 @@ function telemetry.getSensorSource(name)
         end
     end
 
-    local fallbackSensor = entry.fallback_sensor
-    if fallbackSensor and fallbackSensor ~= name then
-        return telemetry.getSensorSource(fallbackSensor)
-    end
-
     return nil
 end
 
