@@ -55,7 +55,7 @@ local function getFirmwareSmartFuelSource()
         return nil
     end
 
-    if not rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
+    if not rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
         return nil
     end
 

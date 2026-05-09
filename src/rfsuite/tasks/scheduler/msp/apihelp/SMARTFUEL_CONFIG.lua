@@ -4,6 +4,7 @@
 ]] --
 
 return {
+    ["smartfuel_remote_source"] = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@",
     ["smartfuel_source"] = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@",
     ["stabilize_delay"] = "@i18n(api.SMARTFUEL_CONFIG.stabilize_delay)@",
     ["stable_window"] = "@i18n(api.SMARTFUEL_CONFIG.stable_window)@",

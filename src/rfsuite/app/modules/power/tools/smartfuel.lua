@@ -9,17 +9,17 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local enableWakeup = false
 local onNavMenu
 local lastVoltageMode = nil
-local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 9})
 
 -- Field index 1: source selector (different field/API per version)
 -- Fields 2-6: voltage-algorithm tuning params (always mspapi=1)
 local sourceField = useFirmwareSmartFuel
-    and {t = "@i18n(sensors.smartfuel)@", mspapi = 2, apikey = "smartfuel_remote_source", type = 1}
+    and {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_remote_source", type = 1}
     or  {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_source",        type = 1}
 
 local apidata = {
     api = useFirmwareSmartFuel
-        and {[1] = "SMARTFUEL_CONFIG", [2] = "BATTERY_CONFIG"}
+        and {[1] = "SMARTFUEL_CONFIG"}
         or  {[1] = "BATTERY_INI"},
     formdata = {
         labels = {},
@@ -47,14 +47,9 @@ end
 
 local function postLoad(self)
     if useFirmwareSmartFuel then
-        local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
-                       and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
-        local batteryValues = values and values.BATTERY_CONFIG
-        if batteryValues and batteryValues.smartfuel_remote_source ~= nil then
-            rfsuite.session = rfsuite.session or {}
-            rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
-            rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(batteryValues.smartfuel_remote_source) or 0
-        end
+        rfsuite.session = rfsuite.session or {}
+        rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
+        rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(sourceField.value) or 0
     end
     lastVoltageMode = nil
     rfsuite.app.triggers.closeProgressLoader = true
