@@ -26,7 +26,8 @@ common.SENSOR_KEYS = {
     "current",
     "voltage",
     "cell_voltage",
-    "headspeed"
+    "headspeed",
+    "consumption"
 }
 
 common.SENSOR_CHOICES = {
@@ -42,7 +43,8 @@ common.SENSOR_CHOICES = {
     {"@i18n(sensors.current)@", 10},
     {"@i18n(sensors.voltage)@", 11},
     {"Cell Voltage", 12},
-    {"@i18n(sensors.headspeed)@", 13}
+    {"@i18n(sensors.headspeed)@", 13},
+    {"@i18n(widgets.dashboard.consumed_mah)@", 14}
 }
 
 common.LAYOUT_KEYS = {

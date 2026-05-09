@@ -111,6 +111,17 @@ local SENSOR_DEFS = {
         decimals = 0,
         suffix = "%"
     },
+    consumption = {
+        label = "Consumed mAh",
+        icon = {small = 19, large = 51}, -- power
+        value = function(_, _, _, getSensor)
+            local consumption = getSensor("smartconsumption")
+            if consumption == nil then consumption = getSensor("consumption") end
+            return consumption
+        end,
+        decimals = 0,
+        suffix = "mAh"
+    },
     current = {
         label = "Current",
         icon = {small = 19, large = 51}, -- power
