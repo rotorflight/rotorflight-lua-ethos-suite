@@ -26,7 +26,20 @@ common.SENSOR_KEYS = {
     "current",
     "voltage",
     "cell_voltage",
-    "headspeed"
+    "headspeed",
+    "consumption",
+    "temp_esc_max",
+    "temp_mcu_max",
+    "link_min",
+    "link_max",
+    "fuel_min",
+    "fuel_max",
+    "current_min",
+    "current_max",
+    "voltage_min",
+    "voltage_max",
+    "headspeed_min",
+    "headspeed_max"
 }
 
 common.SENSOR_CHOICES = {
@@ -42,7 +55,20 @@ common.SENSOR_CHOICES = {
     {"@i18n(sensors.current)@", 10},
     {"@i18n(sensors.voltage)@", 11},
     {"Cell Voltage", 12},
-    {"@i18n(sensors.headspeed)@", 13}
+    {"@i18n(sensors.headspeed)@", 13},
+    {"@i18n(widgets.dashboard.consumed_mah)@", 14},
+    {"Max ESC Temp", 15},
+    {"Max MCU Temp", 16},
+    {"Min Link", 17},
+    {"Max Link", 18},
+    {"Min Fuel", 19},
+    {"Max Fuel", 20},
+    {"Min Current", 21},
+    {"Max Current", 22},
+    {"Min Voltage", 23},
+    {"Max Voltage", 24},
+    {"Min Headspeed", 25},
+    {"Max Headspeed", 26}
 }
 
 common.LAYOUT_KEYS = {
@@ -132,6 +158,7 @@ function common.applyDefaults(target)
     if cfg.layout_postflight == nil or cfg.layout_postflight == "" then cfg.layout_postflight = "two_top_two_bottom" end
     if cfg.offset_x == nil then cfg.offset_x = 0 end
     if cfg.offset_y == nil then cfg.offset_y = 0 end
+    if cfg.display_switch == nil then cfg.display_switch = "" end
     return cfg
 end
 
