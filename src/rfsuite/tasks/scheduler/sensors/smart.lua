@@ -60,7 +60,7 @@ local function getFirmwareSmartFuelSource()
     end
 
     local batteryConfig = rfsuite.session and rfsuite.session.batteryConfig
-    return batteryConfig and tonumber(batteryConfig.smartfuelRemoteSource)
+    return batteryConfig and tonumber(batteryConfig.smartfuel)
 end
 
 local function useFirmwareSmartFuel()
@@ -69,7 +69,11 @@ local function useFirmwareSmartFuel()
 end
 
 local function useLocalVoltageSmartFuel()
-    return smartfuelprefs.getSource() == 1
+    if smartfuelprefs.getSource() == 1 then
+        return true
+    end
+    local bc = rfsuite.session and rfsuite.session.batteryConfig
+    return bc ~= nil and (bc.batteryCapacity == nil or bc.batteryCapacity == 0)
 end
 
 local function getSmartFuelMode()
@@ -84,7 +88,7 @@ end
 local function getSmartFuelModeDetail(mode)
     local firmwareSource = getFirmwareSmartFuelSource()
     local localSource = smartfuelprefs.getSource()
-    local remoteLabel = firmwareSource == 1 and "CURRENT" or firmwareSource == 2 and "VOLTAGE" or firmwareSource == 0 and "OFF" or "n/a"
+    local remoteLabel = (firmwareSource ~= nil and firmwareSource > 0) and "ON" or "OFF"
     local localLabel = localSource == 1 and "VOLTAGE" or "CURRENT"
     if mode == "firmware" then
         return "firmware " .. remoteLabel

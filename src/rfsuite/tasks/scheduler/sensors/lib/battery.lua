@@ -41,13 +41,13 @@ local function readSmartFuelConfig(config)
 
     local smartFuelAPI = rfsuite.tasks.msp.api.load("SMARTFUEL_CONFIG")
     smartFuelAPI.setCompleteHandler(function()
-        config.smartfuelRemoteSource = tonumber(smartFuelAPI.readValue("smartfuel_remote_source")) or 0
+        config.smartfuel = tonumber(smartFuelAPI.readValue("smartfuel")) or 0
         finalizeBatteryConfig(config)
     end)
 
     smartFuelAPI.setErrorHandler(function(self, err)
         log("Failed to read smart fuel config via MSP: " .. err, "info")
-        config.smartfuelRemoteSource = 0
+        config.smartfuel = 0
         finalizeBatteryConfig(config)
     end)
 
@@ -86,7 +86,7 @@ function battery.wakeup()
             config.vbatfullcellvoltage = vbatfullcellvoltage
             config.lvcPercentage = lvcPercentage
             config.consumptionWarningPercentage = consumptionWarningPercentage
-            config.smartfuelRemoteSource = 0
+            config.smartfuel = 0
 
             config.profiles = {}
             for i = 0, 5 do

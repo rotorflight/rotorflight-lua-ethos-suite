@@ -10,7 +10,12 @@ data['help'] = {}
 data['help']['default'] = {"@i18n(app.modules.power.help_p1)@"}
 
 data['fields'] = {
-    ["smartfuel_remote_source"] = {t = "@i18n(sensors.smartfuel)@"},
+    -- SMARTFUEL_CONFIG (firmware >= 12.9)
+    ["smartfuel"] = {t = "@i18n(sensors.smartfuel)@"},
+    ["smartfuel_voltage_fall_rate"] = {t = "@i18n(api.SMARTFUEL_CONFIG.voltage_fall_limit)@"},
+    ["smartfuel_charge_drop_rate"] = {t = "@i18n(api.SMARTFUEL_CONFIG.fuel_drop_rate)@"},
+    ["smartfuel_sag_multiplier"] = {t = "@i18n(api.SMARTFUEL_CONFIG.sag_multiplier_percent)@"},
+    -- BATTERY_INI (firmware < 12.9 / local prefs)
     ["smartfuel_model_type"] = {t = "@i18n(app.modules.power.model_type)@"},
     ["smartfuel_source"] = {t = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@"},
     ["stabilize_delay"] = {t = "@i18n(api.SMARTFUEL_CONFIG.stabilize_delay)@"},
