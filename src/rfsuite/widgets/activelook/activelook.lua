@@ -23,6 +23,8 @@ local PREFLIGHT_TOP_FONT = 3
 local PREFLIGHT_BOTTOM_FONT = 1
 
 local getSensorValue
+local getSensorStatValue
+local getSensorStatValueWithUnit
 
 local FONT_PX = {
     [1] = 24,
@@ -122,6 +124,28 @@ local SENSOR_DEFS = {
         decimals = 0,
         suffix = "mAh"
     },
+    fuel_min = {
+        label = "Min Fuel",
+        icon = {small = 1, large = 33}, -- battery-low
+        value = function()
+            local fuel = getSensorStatValue("smartfuel", "min")
+            if fuel == nil then fuel = getSensorStatValue("fuel", "min") end
+            return fuel
+        end,
+        decimals = 0,
+        suffix = "%"
+    },
+    fuel_max = {
+        label = "Max Fuel",
+        icon = {small = 1, large = 33}, -- battery-low
+        value = function()
+            local fuel = getSensorStatValue("smartfuel", "max")
+            if fuel == nil then fuel = getSensorStatValue("fuel", "max") end
+            return fuel
+        end,
+        decimals = 0,
+        suffix = "%"
+    },
     current = {
         label = "Current",
         icon = {small = 19, large = 51}, -- power
@@ -129,10 +153,38 @@ local SENSOR_DEFS = {
         decimals = 1,
         suffix = "A"
     },
+    current_min = {
+        label = "Min Current",
+        icon = {small = 19, large = 51}, -- power
+        value = function() return getSensorStatValue("current", "min") end,
+        decimals = 1,
+        suffix = "A"
+    },
+    current_max = {
+        label = "Max Current",
+        icon = {small = 19, large = 51}, -- power
+        value = function() return getSensorStatValue("current", "max") end,
+        decimals = 1,
+        suffix = "A"
+    },
     voltage = {
         label = "Voltage",
         icon = {small = 0, large = 32}, -- battery
         value = function(_, _, _, getSensor) return getSensor("voltage") end,
+        decimals = 1,
+        suffix = "V"
+    },
+    voltage_min = {
+        label = "Min Voltage",
+        icon = {small = 0, large = 32}, -- battery
+        value = function() return getSensorStatValue("voltage", "min") end,
+        decimals = 1,
+        suffix = "V"
+    },
+    voltage_max = {
+        label = "Max Voltage",
+        icon = {small = 0, large = 32}, -- battery
+        value = function() return getSensorStatValue("voltage", "max") end,
         decimals = 1,
         suffix = "V"
     },
@@ -150,10 +202,32 @@ local SENSOR_DEFS = {
         decimals = 0,
         suffix = ""
     },
+    headspeed_min = {
+        label = "Min Headspeed",
+        icon = {small = 26, large = 58}, -- speed
+        value = function() return getSensorStatValue("rpm", "min") end,
+        decimals = 0,
+        suffix = ""
+    },
+    headspeed_max = {
+        label = "Max Headspeed",
+        icon = {small = 26, large = 58}, -- speed
+        value = function() return getSensorStatValue("rpm", "max") end,
+        decimals = 0,
+        suffix = ""
+    },
     temp_esc = {
         label = "ESC Temp",
         value = function(_, _, _, getSensor, getSensorUnit)
             return getSensorUnit("temp_esc")
+        end,
+        decimals = 0,
+        useUnit = true
+    },
+    temp_esc_max = {
+        label = "Max ESC Temp",
+        value = function()
+            return getSensorStatValueWithUnit("temp_esc", "max")
         end,
         decimals = 0,
         useUnit = true
@@ -166,9 +240,29 @@ local SENSOR_DEFS = {
         decimals = 0,
         useUnit = true
     },
+    temp_mcu_max = {
+        label = "Max MCU Temp",
+        value = function()
+            return getSensorStatValueWithUnit("temp_mcu", "max")
+        end,
+        decimals = 0,
+        useUnit = true
+    },
     link = {
         label = "Link",
         value = function(_, _, _, getSensor) return getSensor("link") end,
+        decimals = 0,
+        suffix = "dB"
+    },
+    link_min = {
+        label = "Min Link",
+        value = function() return getSensorStatValue("link", "min") end,
+        decimals = 0,
+        suffix = "dB"
+    },
+    link_max = {
+        label = "Max Link",
+        value = function() return getSensorStatValue("link", "max") end,
         decimals = 0,
         suffix = "dB"
     }
@@ -201,6 +295,31 @@ local function getSensorValueWithUnit(name)
     if not getter then return nil end
     local value, _, minor = getter(name)
     return value, minor
+end
+
+getSensorStatValue = function(name, statType)
+    local telemetry = rfsuite.tasks and rfsuite.tasks.telemetry
+    local statsTable = telemetry and telemetry.sensorStats
+    if not statsTable then return nil end
+    local stats = statsTable[name]
+    if not stats then return nil end
+    return stats[statType or "max"]
+end
+
+getSensorStatValueWithUnit = function(name, statType)
+    local value = getSensorStatValue(name, statType)
+    if value == nil then return nil end
+
+    local telemetry = rfsuite.tasks and rfsuite.tasks.telemetry
+    local sensorDef = telemetry and telemetry.sensorTable and telemetry.sensorTable[name]
+    local unit = sensorDef and sensorDef.unit_string or nil
+    local localize = sensorDef and sensorDef.localizations
+    if localize and type(localize) == "function" then
+        local localizedValue, _, localizedUnit = localize(value)
+        if localizedValue ~= nil then value = localizedValue end
+        if localizedUnit ~= nil then unit = localizedUnit end
+    end
+    return value, unit
 end
 
 local function toNumber(value)
