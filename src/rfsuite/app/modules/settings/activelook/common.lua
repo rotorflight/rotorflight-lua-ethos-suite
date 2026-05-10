@@ -158,6 +158,7 @@ function common.applyDefaults(target)
     if cfg.layout_postflight == nil or cfg.layout_postflight == "" then cfg.layout_postflight = "two_top_two_bottom" end
     if cfg.offset_x == nil then cfg.offset_x = 0 end
     if cfg.offset_y == nil then cfg.offset_y = 0 end
+    if cfg.display_switch == nil then cfg.display_switch = "" end
     return cfg
 end
 

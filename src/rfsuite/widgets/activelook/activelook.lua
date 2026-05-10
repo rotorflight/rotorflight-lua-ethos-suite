@@ -26,6 +26,8 @@ local getSensorValue
 local getSensorStatValue
 local getSensorStatValueWithUnit
 
+local system_getSource = system.getSource
+
 local FONT_PX = {
     [1] = 24,
     [2] = 38,
@@ -412,6 +414,50 @@ local function loadLayoutChoice(stateKey)
     return choice
 end
 
+local function getDisplaySwitchSource(context, prefs)
+    local switchValue = prefs and prefs.display_switch or nil
+    if switchValue == nil or switchValue == "" then
+        context.displaySwitchKey = nil
+        context.displaySwitchSource = nil
+        return nil
+    end
+
+    if context.displaySwitchKey == switchValue and context.displaySwitchSource ~= nil then
+        return context.displaySwitchSource
+    end
+
+    context.displaySwitchKey = switchValue
+    context.displaySwitchSource = nil
+
+    local scategory, smember = tostring(switchValue):match("([^,]+),([^,]+)")
+    scategory = tonumber(scategory)
+    smember = tonumber(smember)
+    if scategory and smember then
+        context.displaySwitchSource = system_getSource({category = scategory, member = smember})
+    end
+    return context.displaySwitchSource
+end
+
+local function displayEnabled(context, prefs)
+    local source = getDisplaySwitchSource(context, prefs)
+    if not source then return true end
+    return source:state() ~= true
+end
+
+local function clearDisplay(context)
+    if context.layout and not context.displayBlanked then
+        context.layout:clearAndDisplayExtended({
+            x = 0,
+            y = 0,
+            text = "",
+            commands = {}
+        })
+    end
+    context.displayBlanked = true
+    context.lastMode = nil
+    context.lastConfigKey = nil
+end
+
 local function layoutKey(layout)
     return concat(layout, "|")
 end
@@ -537,6 +583,7 @@ local function render(context, values, icons, modeKey, configKeyValue, slots)
 
     context.lastMode = modeKey
     context.lastConfigKey = configKeyValue
+    context.displayBlanked = false
     for i = 1, #values do
         context.lastValues[i] = values[i]
         context.lastIcons[i] = icons[i]
@@ -643,6 +690,9 @@ local function create()
         lastConfigKey = nil,
         lastValues = {},
         lastIcons = {},
+        displayBlanked = false,
+        displaySwitchKey = nil,
+        displaySwitchSource = nil,
         inflight = false,
         inflightStart = nil,
         lastFlightSeconds = 0,
@@ -653,6 +703,7 @@ end
 local function wakeup(context)
     if rfsuite.session and rfsuite.session.activelookReset then
         rfsuite.session.activelookReset = false
+        clearDisplay(context)
         context.layout = nil
         context.lastMode = nil
         context.lastConfigKey = nil
@@ -661,6 +712,11 @@ local function wakeup(context)
     end
 
     local prefs = rfsuite.preferences and rfsuite.preferences.activelook or {}
+    if not displayEnabled(context, prefs) then
+        clearDisplay(context)
+        return
+    end
+
     local offsetX = clamp(tonumber(prefs.offset_x) or 0, -20, 20)
     local offsetY = clamp(tonumber(prefs.offset_y) or 0, -20, 20)
     if context.offsetX ~= offsetX or context.offsetY ~= offsetY then
