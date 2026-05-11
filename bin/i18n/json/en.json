@@ -187,6 +187,30 @@
       }
     },
     "SMARTFUEL_CONFIG": {
+      "smartfuel_mode": {
+        "english": "Choose whether firmware SmartFuel is disabled, voltage-estimated, or current-limited.",
+        "max_length": 86,
+        "needs_translation": false,
+        "translation": "Choose whether firmware SmartFuel is disabled, voltage-estimated, or current-limited."
+      },
+      "voltage_drop_rate": {
+        "english": "Maximum downward slew rate for the filtered per-cell voltage used by SmartFuel.",
+        "max_length": 83,
+        "needs_translation": false,
+        "translation": "Maximum downward slew rate for the filtered per-cell voltage used by SmartFuel."
+      },
+      "charge_drop_rate": {
+        "english": "Maximum rate the displayed SmartFuel percentage may decrease.",
+        "max_length": 61,
+        "needs_translation": false,
+        "translation": "Maximum rate the displayed SmartFuel percentage may decrease."
+      },
+      "sag_gain": {
+        "english": "Sag compensation gain applied from cyclic and collective stick load while airborne.",
+        "max_length": 82,
+        "needs_translation": false,
+        "translation": "Sag compensation gain applied from cyclic and collective stick load while airborne."
+      },
       "smartfuel_source": {
         "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
         "max_length": 101,
@@ -7052,6 +7076,24 @@
           "translation": "Stable Window",
           "max_length": 13
         },
+        "smartfuel_voltage_drop_rate": {
+          "english": "Voltage Drop Rate",
+          "needs_translation": false,
+          "translation": "Voltage Drop Rate",
+          "max_length": 18
+        },
+        "smartfuel_charge_drop_rate": {
+          "english": "Charge Drop Rate",
+          "needs_translation": false,
+          "translation": "Charge Drop Rate",
+          "max_length": 16
+        },
+        "smartfuel_sag_gain": {
+          "english": "Sag Gain",
+          "needs_translation": false,
+          "translation": "Sag Gain",
+          "max_length": 8
+        },
         "smartfuel_voltage_fall_limit": {
           "english": "Voltage Fall Limit",
           "needs_translation": false,
@@ -7069,6 +7111,12 @@
           "needs_translation": false,
           "translation": "Fuel Rise Rate",
           "max_length": 14
+        },
+        "smartfuel_name": {
+          "english": "SmartFuel",
+          "needs_translation": false,
+          "translation": "SmartFuel",
+          "max_length": 9
         },
         "smartfuel_sag_compensation": {
           "english": "Sag Compensation Factor",

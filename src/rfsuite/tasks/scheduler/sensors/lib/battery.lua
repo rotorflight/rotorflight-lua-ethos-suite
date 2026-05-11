@@ -41,7 +41,7 @@ local function readSmartFuelConfig(config)
 
     local smartFuelAPI = rfsuite.tasks.msp.api.load("SMARTFUEL_CONFIG")
     smartFuelAPI.setCompleteHandler(function()
-        config.smartfuelRemoteSource = tonumber(smartFuelAPI.readValue("smartfuel_remote_source")) or 0
+        config.smartfuelRemoteSource = tonumber(smartFuelAPI.readValue("smartfuel_mode")) or 0
         finalizeBatteryConfig(config)
     end)
 

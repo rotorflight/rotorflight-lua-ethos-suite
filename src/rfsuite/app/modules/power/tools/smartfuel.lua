@@ -8,14 +8,29 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local onNavMenu
-local lastVoltageMode = nil
+local lastTuningActive = nil
 local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 9})
 
 -- Field index 1: source selector (different field/API per version)
--- Fields 2-6: voltage-algorithm tuning params (always mspapi=1)
 local sourceField = useFirmwareSmartFuel
-    and {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_remote_source", type = 1}
+    and {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_mode", type = 1}
     or  {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_source",        type = 1}
+
+local firmwareFields = {
+    sourceField,
+    {t = "@i18n(app.modules.power.smartfuel_voltage_drop_rate)@", mspapi = 1, apikey = "voltage_drop_rate"},
+    {t = "@i18n(app.modules.power.smartfuel_charge_drop_rate)@",  mspapi = 1, apikey = "charge_drop_rate"},
+    {t = "@i18n(app.modules.power.smartfuel_sag_gain)@",          mspapi = 1, apikey = "sag_gain"},
+}
+
+local legacyFields = {
+    sourceField,
+    {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",    mspapi = 1, apikey = "stabilize_delay"},
+    {t = "@i18n(app.modules.power.smartfuel_stable_window)@",      mspapi = 1, apikey = "stable_window"},
+    {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",   mspapi = 1, apikey = "sag_multiplier_percent"},
+    {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@", mspapi = 1, apikey = "voltage_fall_limit"},
+    {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",     mspapi = 1, apikey = "fuel_drop_rate"},
+}
 
 local apidata = {
     api = useFirmwareSmartFuel
@@ -23,26 +38,24 @@ local apidata = {
         or  {[1] = "BATTERY_INI"},
     formdata = {
         labels = {},
-        fields = {
-            sourceField,
-            {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",    mspapi = 1, apikey = "stabilize_delay"},
-            {t = "@i18n(app.modules.power.smartfuel_stable_window)@",      mspapi = 1, apikey = "stable_window"},
-            {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",   mspapi = 1, apikey = "sag_multiplier_percent"},
-            {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@", mspapi = 1, apikey = "voltage_fall_limit"},
-            {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",     mspapi = 1, apikey = "fuel_drop_rate"},
-        }
+        fields = useFirmwareSmartFuel and firmwareFields or legacyFields
     }
 }
 
 local function getVoltageMode()
     local src = tonumber(sourceField.value) or 0
     if useFirmwareSmartFuel then
-        -- OFF(0)=local Smart Fuel, CURRENT(1)=firmware current, VOLTAGE(2)=firmware voltage
-        return src == 0
+        -- mode: 0=OFF, 1=VOLTAGE, 2=CURRENT
+        return src == 1
     else
-        -- Current Sensor(0), Voltage Sensor(1)
+        -- Legacy: 0=Current Sensor, 1=Voltage Sensor
         return src == 1
     end
+end
+
+local function isTuningActive()
+    local src = tonumber(sourceField.value) or 0
+    return src ~= 0
 end
 
 local function postLoad(self)
@@ -51,7 +64,7 @@ local function postLoad(self)
         rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
         rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(sourceField.value) or 0
     end
-    lastVoltageMode = nil
+    lastTuningActive = nil
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
 end
@@ -70,12 +83,28 @@ end
 local function wakeup(self)
     if not enableWakeup then return end
 
-    local voltageMode = getVoltageMode()
-    if voltageMode == lastVoltageMode then return end
-    lastVoltageMode = voltageMode
+    local tuningActive = isTuningActive()
 
-    -- Fields 1-3 always active (source, stabilize_delay, stable_window)
-    -- Fields 4-6 are voltage-specific (sag_multiplier_percent, voltage_fall_limit, fuel_drop_rate)
+    if tuningActive == lastTuningActive then return end
+    lastTuningActive = tuningActive
+
+    if useFirmwareSmartFuel then
+        for i = 2, #apidata.formdata.fields do
+            local fieldHandle = rfsuite.app.formFields[i]
+            if not fieldHandle or not fieldHandle.enable then break end
+            fieldHandle:enable(tuningActive)
+        end
+        return
+    end
+
+    for i = 2, 3 do
+        local fieldHandle = rfsuite.app.formFields[i]
+        if fieldHandle and fieldHandle.enable then
+            fieldHandle:enable(true)
+        end
+    end
+
+    local voltageMode = getVoltageMode()
     for i = 4, #apidata.formdata.fields do
         local fieldHandle = rfsuite.app.formFields[i]
         if not fieldHandle or not fieldHandle.enable then break end
