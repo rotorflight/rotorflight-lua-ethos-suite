@@ -12,29 +12,34 @@ if msp and not msp.apicore then
 end
 
 local API_NAME = "SMARTFUEL_CONFIG"
-local MSP_API_CMD_READ = 0x4000
-local MSP_API_CMD_WRITE = 0x4001
+local MSP_API_CMD_READ = 0x3006
+local MSP_API_CMD_WRITE = 0x3007
 
 local sourceTable = {
     "OFF (LOCAL)",
-    "ON (FBL)"
+    "CURRENT",
+    "VOLTAGE"
 }
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"smartfuel", "U8", 0, 1, 0, nil, nil, nil, nil, nil, sourceTable, -1},
-    {"smartfuel_voltage_fall_rate", "U16", 0, 100, 5, "V/s", 2, 100, 1},
-    {"smartfuel_charge_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
-    {"smartfuel_sag_multiplier", "U16", 0, 200, 70, "x", 2, 100, 1}
+    {"smartfuel_remote_source", "U8", 0, 2, 0, nil, nil, nil, nil, nil, sourceTable, -1},
+    {"stabilize_delay", "U16", 0, 10000, 1500, "s", 1, 1000, 1},
+    {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
+    {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
+    {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
+    {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1}
 }
 
 local SIM_RESPONSE = core.simResponse({
-    0,       -- smartfuel (OFF)
-    5, 0,    -- smartfuel_voltage_fall_rate
-    10, 0,   -- smartfuel_charge_drop_rate
-    70, 0    -- smartfuel_sag_multiplier
+    0,       -- smartfuel_remote_source
+    220, 5,  -- stabilize_delay
+    15, 0,   -- stable_window
+    5, 0,    -- voltage_fall_limit
+    10, 0,   -- fuel_drop_rate
+    70, 0    -- sag_multiplier_percent
 })
 
 return core.createConfigAPI({

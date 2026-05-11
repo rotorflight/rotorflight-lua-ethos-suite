@@ -4,8 +4,11 @@
 ]] --
 
 return {
-    ["smartfuel"] = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@",
-    ["smartfuel_voltage_fall_rate"] = "@i18n(api.SMARTFUEL_CONFIG.voltage_fall_limit)@",
-    ["smartfuel_charge_drop_rate"] = "@i18n(api.SMARTFUEL_CONFIG.fuel_drop_rate)@",
-    ["smartfuel_sag_multiplier"] = "@i18n(api.SMARTFUEL_CONFIG.sag_multiplier_percent)@",
+    ["smartfuel_remote_source"] = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@",
+    ["smartfuel_source"] = "@i18n(api.SMARTFUEL_CONFIG.smartfuel_source)@",
+    ["stabilize_delay"] = "@i18n(api.SMARTFUEL_CONFIG.stabilize_delay)@",
+    ["stable_window"] = "@i18n(api.SMARTFUEL_CONFIG.stable_window)@",
+    ["voltage_fall_limit"] = "@i18n(api.SMARTFUEL_CONFIG.voltage_fall_limit)@",
+    ["fuel_drop_rate"] = "@i18n(api.SMARTFUEL_CONFIG.fuel_drop_rate)@",
+    ["sag_multiplier_percent"] = "@i18n(api.SMARTFUEL_CONFIG.sag_multiplier_percent)@",
 }
