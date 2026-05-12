@@ -55,6 +55,10 @@ end
 
 local function isTuningActive()
     local src = tonumber(sourceField.value) or 0
+    if useFirmwareSmartFuel then
+        -- mode: 0=OFF, 1=VOLTAGE, 2=CURRENT
+        return src == 1
+    end
     return src ~= 0
 end
 
