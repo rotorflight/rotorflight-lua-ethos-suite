@@ -6,6 +6,7 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
 local system = system
+local _G = _G
 
 local floor = math.floor
 local ceil = math.ceil
@@ -99,7 +100,9 @@ local NAMED_COLORS = {
 
 local resolveColorCache = {}
 local resolveColorTableCache = setmetatable({}, {__mode = "k"})
-local themeFallbackPaletteCache = {dark = nil, light = nil}
+local dashboardThemePaletteCache = {dark = nil, light = nil, signature = nil, palette = nil}
+local themeFallbackPaletteCache = {dark = nil, light = nil, signature = nil, palette = nil}
+local themeStateCache = {signature = nil, state = nil}
 local DASHBOARD_RESOLUTION_TOLERANCE = 12
 local DASHBOARD_SUPPORTED_RESOLUTIONS = {
     {784, 294}, {784, 316}, {800, 458}, {800, 480},
@@ -119,6 +122,46 @@ local FONT_BY_NAME = {
     FONT_XXXXL = FONT_XXXXL
 }
 
+local THEME_STATE_KEYS = {
+    {"primaryColor", "THEME_PRIMARY_COLOR"},
+    {"primaryBgColor", "THEME_PRIMARY_BGCOLOR"},
+    {"secondaryColor", "THEME_SECONDARY_COLOR"},
+    {"secondaryBgColor", "THEME_SECONDARY_BGCOLOR"},
+    {"focusColor", "THEME_FOCUS_COLOR"},
+    {"focusBgColor", "THEME_FOCUS_BGCOLOR"},
+    {"highlightColor", "THEME_HIGHLIGHT_COLOR"},
+    {"highlightInvertColor", "THEME_HIGHLIGHT_INVERT_COLOR"},
+    {"disableColor", "THEME_DISABLE_COLOR"},
+    {"warningColor", "THEME_WARNING_COLOR"},
+    {"activeColor", "THEME_ACTIVE_COLOR"},
+    {"inactiveColor", "THEME_INACTIVE_COLOR"},
+    {"buttonBorderActiveColor", "THEME_BUTTON_BORDER_ACTIVE_COLOR"},
+    {"buttonBorderColor", "THEME_BUTTON_BORDER_COLOR"},
+    {"mixerOutputColor", "THEME_MIXER_OUTPUT_COLOR"},
+    {"pageBgColor", "THEME_PAGE_BGCOLOR"}
+}
+
+local THEME_SIGNATURE_KEYS = {
+    "THEME_PRIMARY_COLOR",
+    "THEME_PRIMARY_BGCOLOR",
+    "THEME_SECONDARY_COLOR",
+    "THEME_SECONDARY_BGCOLOR",
+    "THEME_FOCUS_COLOR",
+    "THEME_FOCUS_BGCOLOR",
+    "THEME_HIGHLIGHT_COLOR",
+    "THEME_HIGHLIGHT_INVERT_COLOR",
+    "THEME_DISABLE_COLOR",
+    "THEME_WARNING_COLOR",
+    "THEME_ACTIVE_COLOR",
+    "THEME_INACTIVE_COLOR",
+    "THEME_BUTTON_BORDER_ACTIVE_COLOR",
+    "THEME_BUTTON_BORDER_COLOR",
+    "THEME_MIXER_OUTPUT_COLOR",
+    "THEME_PAGE_BGCOLOR"
+}
+
+local function rgb(r, g, b, a) return lcd.RGB(r, g, b, a or 1) end
+
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
 
 local function variantFactorOrDefault(variantFactor)
@@ -135,23 +178,210 @@ local function buildVariantColor(base, prefix, factor)
     return lcd.RGB(clampColorByte(base[1] + (255 - base[1]) * factor), clampColorByte(base[2] + (255 - base[2]) * factor), clampColorByte(base[3] + (255 - base[3]) * factor), 1)
 end
 
-local function getThemeFallbackPalette(isDark)
-    local key = isDark and "dark" or "light"
-    local cached = themeFallbackPaletteCache[key]
-    if cached then return cached end
+local function isLegacyDarkMode()
+    return type(lcd.darkMode) == "function" and lcd.darkMode() == true
+end
 
-    local fillOrFrame = isDark and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    local white = lcd.RGB(255, 255, 255)
-    cached = {
-        fillcolor = fillOrFrame,
-        fillbgcolor = fillOrFrame,
-        framecolor = fillOrFrame,
-        textcolor = white,
-        titlecolor = white,
-        accentcolor = white,
-        defaultColor = fillOrFrame
+local function resolveThemeConstant(name)
+    if type(lcd.themeColor) ~= "function" then return nil end
+    local key = _G[name]
+    if type(key) ~= "number" then return nil end
+    return lcd.themeColor(key)
+end
+
+local function buildThemeSignature()
+    if type(lcd.themeColor) == "function" then
+        local signature = 5381
+        local hasAnyThemeColor = false
+
+        for i = 1, #THEME_SIGNATURE_KEYS do
+            local color = resolveThemeConstant(THEME_SIGNATURE_KEYS[i])
+            if type(color) == "number" then
+                signature = ((signature * 33) + (color % 2147483647)) % 2147483647
+                hasAnyThemeColor = true
+            end
+        end
+
+        if hasAnyThemeColor then return signature end
+    end
+
+    return isLegacyDarkMode() and 1 or 0
+end
+
+local function buildLegacyDashboardPalette(isDark)
+    if isDark then
+        return {
+            textcolor = rgb(255, 255, 255),
+            titlecolor = rgb(255, 255, 255),
+            bgcolor = rgb(0, 0, 0),
+            fillcolor = rgb(0, 188, 4),
+            fillwarncolor = rgb(255, 165, 0),
+            fillcritcolor = rgb(255, 0, 0),
+            fillbgcolor = rgb(185, 185, 185),
+            accentcolor = rgb(255, 255, 255),
+            rssifillcolor = rgb(0, 188, 4),
+            rssifillbgcolor = rgb(90, 90, 90),
+            txaccentcolor = rgb(185, 185, 185),
+            txfillcolor = rgb(0, 188, 4),
+            txbgfillcolor = rgb(90, 90, 90),
+            tbbgcolor = rgb(35, 35, 35),
+            cntextcolor = rgb(255, 255, 255),
+            tbtextcolor = rgb(255, 255, 255),
+            panelbg = rgb(40, 40, 40),
+            paneldarkbg = rgb(25, 25, 25),
+            panelbgline = rgb(65, 65, 65)
+        }
+    end
+
+    return {
+        textcolor = rgb(80, 80, 80),
+        titlecolor = rgb(80, 80, 80),
+        bgcolor = rgb(255, 255, 255),
+        fillcolor = rgb(144, 238, 144),
+        fillwarncolor = rgb(255, 200, 100),
+        fillcritcolor = rgb(255, 102, 102),
+        fillbgcolor = rgb(211, 211, 211),
+        accentcolor = rgb(90, 90, 90),
+        rssifillcolor = rgb(144, 238, 144),
+        rssifillbgcolor = rgb(185, 185, 185),
+        txaccentcolor = rgb(255, 255, 255),
+        txfillcolor = rgb(144, 238, 144),
+        txbgfillcolor = rgb(185, 185, 185),
+        tbbgcolor = rgb(90, 90, 90),
+        cntextcolor = rgb(255, 255, 255),
+        tbtextcolor = rgb(255, 255, 255),
+        panelbg = rgb(90, 90, 90),
+        paneldarkbg = rgb(185, 185, 185),
+        panelbgline = rgb(80, 80, 80)
     }
-    themeFallbackPaletteCache[key] = cached
+end
+
+local function getLegacyDashboardPalette(isDark)
+    local key = isDark and "dark" or "light"
+    local cached = dashboardThemePaletteCache[key]
+    if cached then return cached end
+    cached = buildLegacyDashboardPalette(isDark)
+    dashboardThemePaletteCache[key] = cached
+    return cached
+end
+
+local function buildLegacyThemeState(isDark)
+    if isDark then
+        return {
+            usesThemeColors = false,
+            primaryColor = rgb(255, 255, 255),
+            primaryBgColor = rgb(0, 0, 0),
+            secondaryColor = rgb(185, 185, 185),
+            secondaryBgColor = rgb(40, 40, 40),
+            focusColor = rgb(255, 255, 255),
+            focusBgColor = rgb(40, 40, 40),
+            highlightColor = rgb(0, 188, 4),
+            highlightInvertColor = rgb(0, 0, 0),
+            disableColor = rgb(112, 112, 112),
+            warningColor = rgb(255, 165, 0),
+            activeColor = rgb(0, 188, 4),
+            inactiveColor = rgb(255, 0, 0),
+            buttonBorderActiveColor = rgb(255, 255, 255),
+            buttonBorderColor = rgb(90, 90, 90),
+            mixerOutputColor = rgb(0, 188, 4),
+            pageBgColor = rgb(16, 16, 16)
+        }
+    end
+
+    return {
+        usesThemeColors = false,
+        primaryColor = rgb(90, 90, 90),
+        primaryBgColor = rgb(255, 255, 255),
+        secondaryColor = rgb(117, 117, 117),
+        secondaryBgColor = rgb(211, 211, 211),
+        focusColor = rgb(0, 0, 0),
+        focusBgColor = rgb(230, 230, 230),
+        highlightColor = rgb(144, 238, 144),
+        highlightInvertColor = rgb(255, 255, 255),
+        disableColor = rgb(144, 144, 144),
+        warningColor = rgb(255, 200, 100),
+        activeColor = rgb(144, 238, 144),
+        inactiveColor = rgb(255, 102, 102),
+        buttonBorderActiveColor = rgb(69, 78, 87),
+        buttonBorderColor = rgb(160, 160, 160),
+        mixerOutputColor = rgb(16, 64, 224),
+        pageBgColor = rgb(209, 208, 208)
+    }
+end
+
+local function getThemeStateInternal()
+    local signature = buildThemeSignature()
+    local cached = themeStateCache.state
+    if cached and themeStateCache.signature == signature then return cached, signature end
+
+    local legacyState = buildLegacyThemeState(isLegacyDarkMode())
+    if type(lcd.themeColor) == "function" then
+        local state = {usesThemeColors = false}
+        local hasAnyThemeColor = false
+
+        for i = 1, #THEME_STATE_KEYS do
+            local fieldName = THEME_STATE_KEYS[i][1]
+            local color = resolveThemeConstant(THEME_STATE_KEYS[i][2])
+            if type(color) == "number" then
+                state[fieldName] = color
+                hasAnyThemeColor = true
+            end
+        end
+
+        if hasAnyThemeColor then
+            for k, v in pairs(legacyState) do
+                if state[k] == nil then state[k] = v end
+            end
+            state.usesThemeColors = true
+            themeStateCache.signature = signature
+            themeStateCache.state = state
+            return state, signature
+        end
+    end
+
+    themeStateCache.signature = signature
+    themeStateCache.state = legacyState
+    return legacyState, signature
+end
+
+local function getThemeFallbackPalette()
+    local state, signature = getThemeStateInternal()
+
+    if not state.usesThemeColors then
+        local key = isLegacyDarkMode() and "dark" or "light"
+        local cached = themeFallbackPaletteCache[key]
+        if cached then return cached end
+
+        local fillOrFrame = isLegacyDarkMode() and rgb(40, 40, 40) or rgb(240, 240, 240)
+        cached = {
+            fillcolor = fillOrFrame,
+            fillbgcolor = fillOrFrame,
+            framecolor = fillOrFrame,
+            textcolor = rgb(255, 255, 255),
+            titlecolor = rgb(255, 255, 255),
+            accentcolor = rgb(255, 255, 255),
+            bgcolor = fillOrFrame,
+            defaultColor = fillOrFrame
+        }
+        themeFallbackPaletteCache[key] = cached
+        return cached
+    end
+
+    local cached = themeFallbackPaletteCache.palette
+    if cached and themeFallbackPaletteCache.signature == signature then return cached end
+
+    cached = {
+        fillcolor = state.activeColor,
+        fillbgcolor = state.secondaryBgColor,
+        framecolor = state.buttonBorderColor,
+        textcolor = state.primaryColor,
+        titlecolor = state.primaryColor,
+        accentcolor = state.secondaryColor,
+        bgcolor = state.primaryBgColor,
+        defaultColor = state.primaryColor
+    }
+    themeFallbackPaletteCache.signature = signature
+    themeFallbackPaletteCache.palette = cached
     return cached
 end
 
@@ -356,11 +586,53 @@ function utils.getHeaderOptions()
 end
 
 function utils.themeColors()
-    local colorMode = {
-        dark = {textcolor = "white", titlecolor = "white", bgcolor = "black", fillcolor = "green", fillwarncolor = "orange", fillcritcolor = "red", fillbgcolor = "grey", accentcolor = "white", rssifillcolor = "green", rssifillbgcolor = "darkgrey", txaccentcolor = "grey", txfillcolor = "green", txbgfillcolor = "darkgrey", tbbgcolor = "headergrey", cntextcolor = "white", tbtextcolor = "white", panelbg = "bggrey", paneldarkbg = "bgdarkgrey", panelbgline = "bglines"},
-        light = {textcolor = "lmgrey", titlecolor = "lmgrey", bgcolor = "white", fillcolor = "lightgreen", fillwarncolor = "lightorange", fillcritcolor = "lightred", fillbgcolor = "lightgrey", accentcolor = "darkgrey", rssifillcolor = "lightgreen", rssifillbgcolor = "grey", txaccentcolor = "white", txfillcolor = "lightgreen", txbgfillcolor = "grey", tbbgcolor = "darkgrey", cntextcolor = "white", tbtextcolor = "white", panelbg = "darkgrey", paneldarkbg = "grey", panelbgline = "lmgrey"}
+    local state, signature = getThemeStateInternal()
+
+    if not state.usesThemeColors then
+        return getLegacyDashboardPalette(isLegacyDarkMode())
+    end
+
+    local cached = dashboardThemePaletteCache.palette
+    if cached and dashboardThemePaletteCache.signature == signature then return cached end
+
+    cached = {
+        textcolor = state.primaryColor,
+        titlecolor = state.primaryColor,
+        bgcolor = state.primaryBgColor,
+        fillcolor = state.activeColor,
+        fillwarncolor = state.warningColor,
+        fillcritcolor = state.inactiveColor,
+        fillbgcolor = state.secondaryBgColor,
+        accentcolor = state.secondaryColor,
+        rssifillcolor = state.activeColor,
+        rssifillbgcolor = state.secondaryBgColor,
+        txaccentcolor = state.buttonBorderActiveColor,
+        txfillcolor = state.activeColor,
+        txbgfillcolor = state.buttonBorderColor,
+        tbbgcolor = state.secondaryBgColor,
+        cntextcolor = state.primaryColor,
+        tbtextcolor = state.primaryColor,
+        panelbg = state.primaryBgColor,
+        paneldarkbg = state.secondaryBgColor,
+        panelbgline = state.buttonBorderColor
     }
-    return lcd.darkMode() and colorMode.dark or colorMode.light
+    dashboardThemePaletteCache.signature = signature
+    dashboardThemePaletteCache.palette = cached
+    return cached
+end
+
+function utils.getThemeSignature()
+    return buildThemeSignature()
+end
+
+function utils.getThemeState()
+    local state = getThemeStateInternal()
+    return state
+end
+
+function utils.getThemeOutlineColor()
+    local state = getThemeStateInternal()
+    return state.primaryColor
 end
 
 function utils.standardHeaderLayout(headeropts) return {height = headeropts.height, cols = 7, rows = 1} end
@@ -491,7 +763,7 @@ function utils.screenError(msg, border, pct, padX, padY)
     if not padY then padY = 4 end
 
     local w, h = lcd.getWindowSize()
-    local isDarkMode = lcd.darkMode()
+    local state = getThemeStateInternal()
 
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
 
@@ -511,8 +783,7 @@ function utils.screenError(msg, border, pct, padX, padY)
 
     lcd.font(bestFont)
 
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
+    lcd.color(state.primaryColor)
 
     local x = (w - bestW) / 2
     local y = (h - bestH) / 2
@@ -570,7 +841,7 @@ function utils.resolveThemeColor(colorkey, value)
         if resolved then return resolved end
     end
 
-    local palette = getThemeFallbackPalette(lcd.darkMode())
+    local palette = getThemeFallbackPalette()
     return palette[colorkey] or palette.defaultColor
 end
 
@@ -812,11 +1083,7 @@ end
 
 function utils.setBackgroundColourBasedOnTheme()
     local w, h = lcd.getWindowSize()
-    if lcd.darkMode() then
-        lcd.color(lcd.RGB(16, 16, 16))
-    else
-        lcd.color(lcd.RGB(209, 208, 208))
-    end
+    lcd.color(getThemeStateInternal().pageBgColor)
     lcd.drawFilledRectangle(0, 0, w, h)
 end
 

@@ -97,11 +97,19 @@ return {
 Example **`preflight.lua`**:
 
 ```lua
+local function themeColor(constName, fallback)
+  if type(lcd.themeColor) == "function" then
+    local key = _G[constName]
+    if type(key) == "number" then return lcd.themeColor(key) end
+  end
+  return fallback
+end
+
 return {
   layout = {
-    selectcolor  = lcd.RGB(255,128,0),
+    selectcolor  = themeColor("THEME_FOCUS_COLOR", lcd.RGB(255,128,0)),
     selectborder = 3,
-    defaultbg    = "black",
+    defaultbg    = themeColor("THEME_PRIMARY_BGCOLOR", lcd.RGB(0,0,0)),
   },
   boxes = {
     { col = 1, row = 1, type = "text", subtype = "telemetry", source = "altitude", title = "ALT", unit = "m" },
@@ -112,6 +120,8 @@ return {
   }
 }
 ```
+
+For custom rendering in theme examples, prefer `lcd.themeColor(...)` with a fallback like the helper above instead of branching directly on `lcd.darkMode()`. That keeps examples compatible with both newer themed radios and older dark/light-only radios.
 
 ---
 

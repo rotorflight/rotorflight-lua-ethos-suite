@@ -28,15 +28,29 @@ SEE THE TOP OF EACH WIDGET OBJECT FILE.
 --------------------------------------------------------------------------------
 ]]
  local rfsuite = require("rfsuite")
+
+local function themeColor(constName, fallback)
+    if type(lcd.themeColor) == "function" then
+        local key = _G[constName]
+        if type(key) == "number" then return lcd.themeColor(key) end
+    end
+    return fallback
+end
+
+local function legacyDarkMode()
+    return type(lcd.darkMode) == "function" and lcd.darkMode() == true
+end
+
+local primaryColor = themeColor("THEME_PRIMARY_COLOR", legacyDarkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(90, 90, 90))
+local primaryBgColor = themeColor("THEME_PRIMARY_BGCOLOR", legacyDarkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+local borderColor = themeColor("THEME_BUTTON_BORDER_COLOR", lcd.RGB(100, 100, 100))
 -- Custom render function for a box
 local function customPaintFunction(x, y, w, h)
     local msg = "Render Function"
-    local isDarkMode = lcd.darkMode()
-    lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(primaryBgColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
+    lcd.color(primaryColor)
 
     local tsizeW, tsizeH = lcd.getTextSize(msg)
     local tx = x + (w - tsizeW) / 2
@@ -64,7 +78,7 @@ local layout = {
     cols = 4,
     rows = 4,
     padding = 4,
-    showgrid = lcd.RGB(100, 100, 100),  -- or any color you prefer
+    showgrid = borderColor,  -- or any color you prefer
     showstats = true  -- or any color you prefer
 }
 
