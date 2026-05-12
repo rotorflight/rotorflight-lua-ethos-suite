@@ -16,7 +16,7 @@ local MSP_API_CMD_READ = 0x4000
 local MSP_API_CMD_WRITE = 0x4001
 
 local modeTable = {
-    "OFF",
+    "OFF (LOCAL)",
     "VOLTAGE",
     "CURRENT"
 }
