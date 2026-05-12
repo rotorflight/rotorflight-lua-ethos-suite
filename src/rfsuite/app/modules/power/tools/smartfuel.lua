@@ -24,7 +24,6 @@ local firmwareFields = {
 }
 
 local legacyFields = {
-    sourceField,
     {t = "@i18n(app.modules.power.smartfuel_voltage_drop_rate)@", mspapi = 1, apikey = "voltage_drop_rate"},
     {t = "@i18n(app.modules.power.smartfuel_charge_drop_rate)@",  mspapi = 1, apikey = "charge_drop_rate"},
     {t = "@i18n(app.modules.power.smartfuel_sag_gain)@",          mspapi = 1, apikey = "sag_gain"},
@@ -57,8 +56,8 @@ local function isTuningActive()
         -- VOLTAGE (1): params apply; CURRENT (2): params do not apply
         return src == 1
     end
-    -- Legacy (<12.9): source 0=current (no params), 1=voltage (params apply)
-    return src ~= 0
+    -- Legacy (<12.9): read source from preferences (not form field)
+    return getLocalSource() == 1
 end
 
 local function postLoad(self)
@@ -91,7 +90,8 @@ local function wakeup(self)
     if tuningActive == lastTuningActive then return end
     lastTuningActive = tuningActive
 
-    for i = 2, #apidata.formdata.fields do
+    local paramStart = useFirmwareSmartFuel and 2 or 1
+    for i = paramStart, #apidata.formdata.fields do
         local fieldHandle = rfsuite.app.formFields[i]
         if not fieldHandle or not fieldHandle.enable then break end
         fieldHandle:enable(tuningActive)
