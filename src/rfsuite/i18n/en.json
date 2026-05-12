@@ -102,10 +102,10 @@
         "translation": "RXBatt"
       },
       "calcfuel_local": {
-        "english": "Calculate Fuel Using",
-        "max_length": 20,
+        "english": "Local fuel source",
+        "max_length": 17,
         "needs_translation": false,
-        "translation": "Calculate Fuel Using"
+        "translation": "Local fuel source"
       },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
