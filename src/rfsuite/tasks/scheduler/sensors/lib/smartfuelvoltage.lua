@@ -1,5 +1,5 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
+  Copyright (C) 2026 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
@@ -7,29 +7,33 @@ local rfsuite = require("rfsuite")
 local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local os_clock = os.clock
-local math_abs = math.abs
 local math_floor = math.floor
 local math_min = math.min
 local math_max = math.max
+local math_exp = math.exp
 local table_insert = table.insert
 local table_remove = table.remove
 
+-- ── State ────────────────────────────────────────────────────────────────────
+
+local chargeLevel        = 0.0
+local initialChargeLevel = 0.0
+local lastCellVoltage    = 0.0
+local initialCellVoltage = 0.0
+local lastTimestamp      = nil
+local virtualConsumption = nil
+local wasEverArmed       = false
 local batteryConfigCache = nil
-local lastVoltages = {}
+
+-- Stabilise tracking (values fixed as constants; see smartfuelprefs)
+local lastVoltages      = {}
 local maxVoltageSamples = 5
-local voltageStableTime = nil
 local voltageStabilised = false
 local stabilizeNotBefore = nil
-local voltageThreshold = 0.15
-local telemetry
-local currentMode = rfsuite.flightmode.current or "preflight"
-local lastMode = currentMode
+local lastMode          = nil
+local telemetry         = nil
 
-local lastFuelPercent = nil
-local lastFuelTimestamp = nil
-local virtualConsumption = nil
-
-local lastFilteredVoltage = nil
+-- ── Helpers ──────────────────────────────────────────────────────────────────
 
 local function normalizeBatteryProfileIndex(value)
     local n = tonumber(value)
@@ -40,42 +44,81 @@ local function normalizeBatteryProfileIndex(value)
     return nil
 end
 
-local function fallingLimitedFilter(current_v, prev_v, dt)
-    if not prev_v then return current_v end
-    local max_drop = dt * smartfuelprefs.getVoltageFallPerSecond()
-    if current_v >= prev_v then
-        return current_v
-    else
-        return math_max(current_v, prev_v - max_drop)
+-- Only permits the value to fall at maxDrop per call; rises are instant.
+local function slewDownLimit(current, target, maxDrop)
+    if target < current then
+        return math_max(target, current - maxDrop)
     end
+    return target
 end
 
-local dischargeCurveTable = {}
-for i = 0, 120 do
-    local v = 3.00 + i * 0.01
-    local a, b = 12, 3.7
-    local percent = 100 / (1 + math.exp(-a * (v - b)))
-    dischargeCurveTable[i + 1] = math_floor(math_min(100, math_max(0, percent)) + 0.5)
+-- Sigmoid mapping identical to firmware smartFuelChargeLevelFromVoltage().
+-- Maps cellVoltage onto a 0.0–1.0 fraction using minV..fullV as the span,
+-- scaled into the 3.0–4.2 V reference range before applying the curve.
+local function chargeLevelFromVoltage(cellVoltage, minV, fullV)
+    if cellVoltage >= fullV then return 1.0 end
+    if cellVoltage <= minV  then return 0.0 end
+
+    local scaledV = 3.0 + (cellVoltage - minV) / (fullV - minV) * 1.2
+    scaledV = math_max(3.0, math_min(4.2, scaledV))
+    return math_max(0.0, math_min(1.0, 1.0 / (1.0 + math_exp(-12.0 * (scaledV - 3.7)))))
 end
+
+-- Stick-load approximation matching firmware formula:
+--   stickLoad = collective² + cyclic × 0.2
+-- RX values assumed ±500 normalised range.
+local function getStickLoadFactor()
+    local rx = rfsuite.session.rx and rfsuite.session.rx.values
+    if not rx then return 0 end
+    local collective = math_min(1.0, math.abs(rx.collective or 0) / 500.0)
+    local cyclic     = math_min(1.0, math_max(math.abs(rx.aileron or 0), math.abs(rx.elevator or 0)) / 500.0)
+    return math_min(1.0, collective * collective + cyclic * 0.2)
+end
+
+-- Sag compensation: add sagGain × stickLoad to per-cell voltage, inflight only.
+-- Matches firmware smartFuelApplySagCompensation() / isAirborne() guard.
+local function applySagCompensation(cellVoltage)
+    if rfsuite.flightmode.current ~= "inflight" then return cellVoltage end
+    return cellVoltage + smartfuelprefs.getSagGain() * getStickLoadFactor()
+end
+
+local function getPackCapacity(bc)
+    local batType = telemetry and telemetry.getSensor and telemetry.getSensor("battery_profile")
+    local idx = normalizeBatteryProfileIndex(batType)
+    if idx ~= nil then rfsuite.session.activeBatteryType = idx end
+
+    local capacity = bc.batteryCapacity
+    local active   = rfsuite.session.activeBatteryType
+    if active and bc.profiles and bc.profiles[active] and bc.profiles[active] > 0 then
+        capacity = bc.profiles[active]
+    end
+    return capacity
+end
+
+-- ── Reset helpers ─────────────────────────────────────────────────────────────
 
 local function resetVoltageTracking()
-    lastVoltages = {}
-    voltageStableTime = nil
+    lastVoltages     = {}
     voltageStabilised = false
+end
+
+local function resetFuelState(now)
+    chargeLevel        = 0.0
+    initialChargeLevel = 0.0
+    lastCellVoltage    = 0.0
+    initialCellVoltage = 0.0
+    lastTimestamp      = nil
+    virtualConsumption = nil
+    wasEverArmed       = false
+    stabilizeNotBefore = now and (now + smartfuelprefs.getStabilizeDelaySeconds()) or nil
+    resetVoltageTracking()
 end
 
 local function resetState()
     batteryConfigCache = nil
-    stabilizeNotBefore = nil
-    lastFuelPercent = nil
-    lastFuelTimestamp = nil
-    virtualConsumption = nil
-    lastFilteredVoltage = nil
-    lastRpm = nil
-    telemetry = nil
-    currentMode = rfsuite.flightmode.current or "preflight"
-    lastMode = currentMode
-    resetVoltageTracking()
+    telemetry          = nil
+    lastMode           = nil
+    resetFuelState(nil)
 end
 
 local function isVoltageStable()
@@ -85,113 +128,10 @@ local function isVoltageStable()
         if v < vmin then vmin = v end
         if v > vmax then vmax = v end
     end
-    return (vmax - vmin) <= voltageThreshold
+    return (vmax - vmin) <= smartfuelprefs.getStableWindowVolts()
 end
 
-local function shouldResetForModeChange(previousMode, nextMode)
-    if previousMode == nextMode then return false end
-    if nextMode ~= "preflight" then return false end
-    return rfsuite.session and rfsuite.session.isArmed == false
-end
-
-local function getPackCapacity(bc)
-    local batType = telemetry and telemetry.getSensor and telemetry.getSensor("battery_profile")
-    local normalizedBatType = normalizeBatteryProfileIndex(batType)
-    if normalizedBatType ~= nil then
-        rfsuite.session.activeBatteryType = normalizedBatType
-    end
-
-    local packCapacity = bc.batteryCapacity
-    local activeProfile = rfsuite.session.activeBatteryType
-    if activeProfile and bc.profiles and bc.profiles[activeProfile] then
-        local pCap = bc.profiles[activeProfile]
-        if pCap and pCap > 0 then
-            packCapacity = pCap
-        end
-    end
-
-    return packCapacity
-end
-
-local function getUsableCapacity(packCapacity, reserve)
-    if reserve > 60 or reserve < 15 then
-        reserve = 35
-    end
-
-    local usableCapacity = packCapacity * (1 - reserve / 100)
-    if usableCapacity < 10 then
-        usableCapacity = packCapacity
-    end
-
-    return usableCapacity, reserve
-end
-
-local function getStickLoadFactor()
-    local rx = rfsuite.session.rx.values
-    if not rx then return 0 end
-    local sum = 1.0 * math_abs(rx.aileron or 0) + 1.0 * math_abs(rx.elevator or 0) + 1.2 * math_abs(rx.collective or 0)
-    return math_min(1.0, sum / 3000)
-end
-
-local lastRpm = nil
-local function getRpmDropFactor()
-    local rpm = telemetry and telemetry.getSensor and telemetry.getSensor("rpm") or nil
-    if not rpm or rpm < 100 then return 0 end
-    if not lastRpm then
-        lastRpm = rpm;
-        return 0
-    end
-    local drop = (lastRpm - rpm) / lastRpm
-    lastRpm = rpm
-    return math_max(0, drop)
-
-end
-
-local function applySagCompensation(voltage)
-    if rfsuite.flightmode.current ~= "inflight" then return voltage end
-    local multiplier = smartfuelprefs.getSagMultiplier()
-    local sagFactor = math_max(getStickLoadFactor(), getRpmDropFactor())
-
-    local compensationScale = multiplier ^ 1.5
-    return voltage + (compensationScale * sagFactor * 0.5)
-end
-
-local function fuelPercentageCalcByVoltage(voltage, cellCount)
-    local bc = rfsuite.session.batteryConfig
-    local minV = bc.vbatmincellvoltage or 3.30
-    local fullV = bc.vbatfullcellvoltage or 4.10
-    local reserve = bc.consumptionWarningPercentage or 30
-    local voltagePerCell = voltage / cellCount
-
-    if voltagePerCell >= fullV then
-        return 100
-    elseif voltagePerCell <= minV then
-        return 0
-    end
-
-    local sigmoidMin, sigmoidMax = 3.00, 4.20
-    local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
-    scaledV = math_max(sigmoidMin, math_min(sigmoidMax, scaledV))
-
-    local tableIndex = math_floor((scaledV - sigmoidMin) / 0.01) + 1
-    tableIndex = math_max(1, math_min(#dischargeCurveTable, tableIndex))
-
-    if reserve > 60 or reserve < 15 then
-        reserve = 35
-    end
-
-    local rawPercent = dischargeCurveTable[tableIndex]
-    local usableSpan = 100 - reserve
-    if usableSpan <= 0 then
-        return rawPercent
-    end
-
-    if rawPercent <= reserve then
-        return 0
-    end
-
-    return ((rawPercent - reserve) / usableSpan) * 100
-end
+-- ── Main calculation ──────────────────────────────────────────────────────────
 
 local function smartFuelCalc()
     if not telemetry then telemetry = rfsuite.tasks.telemetry end
@@ -201,18 +141,22 @@ local function smartFuelCalc()
         return nil
     end
 
-    local bc = rfsuite.session.batteryConfig
+    local bc           = rfsuite.session.batteryConfig
+    local cellCount    = bc.batteryCellCount
+    local minV         = bc.vbatmincellvoltage  or 3.30
+    local fullV        = bc.vbatfullcellvoltage or 4.10
     local packCapacity = getPackCapacity(bc)
-    local configSig = table.concat({bc.batteryCellCount, packCapacity, bc.consumptionWarningPercentage, bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage}, ":")
 
+    if packCapacity < 10 or cellCount == 0 or fullV <= minV then
+        resetState()
+        return nil
+    end
+
+    -- Reset when battery config changes
+    local configSig = table.concat({cellCount, packCapacity, bc.vbatmincellvoltage, bc.vbatfullcellvoltage}, ":")
     if configSig ~= batteryConfigCache then
         batteryConfigCache = configSig
-        lastFuelPercent = nil
-        lastFuelTimestamp = nil
-        virtualConsumption = nil
-        lastFilteredVoltage = nil
-        resetVoltageTracking()
-        stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
+        resetFuelState(os_clock())
     end
 
     local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
@@ -222,82 +166,82 @@ local function smartFuelCalc()
         return nil
     end
 
-    local now = os_clock()
-    currentMode = rfsuite.flightmode.current or "preflight"
+    local now         = os_clock()
+    local currentMode = rfsuite.flightmode.current or "preflight"
+    if lastMode == nil then lastMode = currentMode end
 
-    if shouldResetForModeChange(lastMode, currentMode) then
-        rfsuite.utils.log("Flight mode changed – resetting voltage state", "info")
-        lastFuelPercent = nil
-        lastFuelTimestamp = nil
-        virtualConsumption = nil
-        lastFilteredVoltage = nil
-        resetVoltageTracking()
-        stabilizeNotBefore = now + smartfuelprefs.getStabilizeDelaySeconds()
+    -- Reset on return to preflight-disarmed (battery swap / re-land)
+    if lastMode ~= currentMode and currentMode == "preflight" and rfsuite.session.isArmed == false then
+        resetFuelState(now)
         lastMode = currentMode
         return nil
     end
     lastMode = currentMode
 
-    voltageThreshold = smartfuelprefs.getStableWindowVolts()
-
+    -- Stabilise delay
     if stabilizeNotBefore and now < stabilizeNotBefore then return nil end
 
+    -- Wait for voltage to be stable before seeding
     table_insert(lastVoltages, voltage)
     if #lastVoltages > maxVoltageSamples then table_remove(lastVoltages, 1) end
 
     if not voltageStabilised then
         if isVoltageStable() then
-            rfsuite.utils.log("Voltage stabilized at: " .. voltage, "info")
             voltageStabilised = true
         else
-            rfsuite.utils.log("Waiting for voltage to stabilize...", "info")
             return nil
         end
     end
 
-    if #lastVoltages >= 2 and rfsuite.flightmode.current == "preflight" then
+    -- If voltage jumps up in preflight (battery swap), reseed
+    if #lastVoltages >= 2 and currentMode == "preflight" and rfsuite.session.isArmed == false then
         local prev = lastVoltages[#lastVoltages - 1]
-        if voltage > prev + voltageThreshold then
-            rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
-            lastFuelPercent = nil
-            lastFuelTimestamp = nil
-            virtualConsumption = nil
-            lastFilteredVoltage = nil
-            resetVoltageTracking()
-            stabilizeNotBefore = os_clock() + smartfuelprefs.getStabilizeDelaySeconds()
+        if voltage > prev + smartfuelprefs.getStableWindowVolts() then
+            resetFuelState(now)
             return nil
         end
     end
 
-    local filteredVoltage = fallingLimitedFilter(voltage, lastFilteredVoltage, os_clock() - (lastFuelTimestamp or os_clock()))
-    local compensatedVoltage = applySagCompensation(filteredVoltage / bc.batteryCellCount) * bc.batteryCellCount
-    local targetPercent = fuelPercentageCalcByVoltage(compensatedVoltage, bc.batteryCellCount)
-    local usableCapacity = getUsableCapacity(packCapacity, bc.consumptionWarningPercentage or 30)
-    if usableCapacity < 10 then return nil end
+    -- ── Core algorithm (matches firmware smartFuelUpdate) ─────────────────────
 
-    local targetConsumption = usableCapacity * (100 - targetPercent) / 100
-    local isPreflightDisarmed = currentMode == "preflight" and rfsuite.session.isArmed == false
+    local isArmed = rfsuite.session.isArmed == true
+    if isArmed then wasEverArmed = true end
 
-    -- Seed once from stabilized resting voltage, then hold that estimate until flight begins.
-    -- A meaningful voltage rise in preflight still triggers the reset/reseed path above.
-    if virtualConsumption == nil then
-        virtualConsumption = targetConsumption
-    elseif not isPreflightDisarmed and lastFuelTimestamp then
-        local dt = now - lastFuelTimestamp
-        local maxConsumptionIncrease = dt * smartfuelprefs.getFuelDropPerSecond() * usableCapacity / 100
-        if targetConsumption > virtualConsumption then
-            virtualConsumption = math_min(targetConsumption, virtualConsumption + maxConsumptionIncrease)
-        end
+    local dt = (lastTimestamp and now > lastTimestamp) and (now - lastTimestamp) or 0
+
+    -- Per-cell voltage with falling slew limit
+    local cellVoltage = voltage / cellCount
+    if initialCellVoltage == 0 then initialCellVoltage = cellVoltage end
+
+    if lastCellVoltage > 0 then
+        cellVoltage = slewDownLimit(lastCellVoltage, cellVoltage, smartfuelprefs.getVoltageFallPerSecond() * dt)
+    end
+    lastCellVoltage = cellVoltage
+
+    -- Sag compensation then sigmoid → charge estimation
+    local compensatedVoltage = applySagCompensation(cellVoltage)
+    local estimation         = chargeLevelFromVoltage(compensatedVoltage, minV, fullV)
+
+    -- Seed initial level on first valid sample
+    if initialChargeLevel == 0 then initialChargeLevel = estimation end
+    estimation = math_min(initialChargeLevel, estimation)
+
+    -- Charge-level slew: only restrict rate once armed (or previously armed)
+    if isArmed or wasEverArmed then
+        chargeLevel = slewDownLimit(chargeLevel > 0 and chargeLevel or estimation,
+                                    estimation,
+                                    smartfuelprefs.getChargeDropRatePerSecond() * dt)
+    else
+        chargeLevel = estimation
     end
 
-    local percent = 100 - (virtualConsumption / usableCapacity * 100)
-    percent = math_max(0, math_min(100, percent))
+    chargeLevel = math_max(0.0, math_min(chargeLevel, initialChargeLevel))
 
-    lastFuelPercent = percent
-    lastFuelTimestamp = now
-    lastFilteredVoltage = filteredVoltage
+    -- Virtual consumption derived from charge fraction change since start
+    virtualConsumption = (initialChargeLevel - chargeLevel) * packCapacity
 
-    return math_floor(percent + 0.5)
+    lastTimestamp = now
+    return math_floor(chargeLevel * 100 + 0.5)
 end
 
 local function getConsumption()

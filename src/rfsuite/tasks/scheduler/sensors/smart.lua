@@ -106,13 +106,26 @@ local function getMirrorSensorValue(name)
     return source:value()
 end
 
+-- Scale a raw 0–100 fuel value so that consumptionWarningPercentage → 0%,
+-- making the gauge consistent with the current-sensor path which already uses
+-- the usable span.  The same transformation is applied to both FBL telemetry
+-- and local-voltage outputs so there is a single conversion point.
+local function normalizeToUsableScale(raw)
+    if raw == nil then return nil end
+    local bc      = rfsuite.session and rfsuite.session.batteryConfig
+    local reserve = bc and bc.consumptionWarningPercentage or 30
+    if reserve < 15 or reserve > 60 then reserve = 35 end
+    local span    = 100.0 - reserve
+    return math.max(0, math.min(100, math.floor((raw - reserve) / span * 100 + 0.5)))
+end
+
 local function calculateFuel()
     if useFirmwareSmartFuel() then
-        return getMirrorSensorValue("smartfuel")
+        return normalizeToUsableScale(getMirrorSensorValue("smartfuel"))
     end
 
     if useLocalVoltageSmartFuel() then
-        return smartfuelvoltage.calculate()
+        return normalizeToUsableScale(smartfuelvoltage.calculate())
     end
     return smartfuel.calculate()
 end
