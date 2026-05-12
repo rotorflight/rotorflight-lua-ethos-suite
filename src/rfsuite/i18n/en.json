@@ -102,10 +102,10 @@
         "translation": "RXBatt"
       },
       "calcfuel_local": {
-        "english": "Local fuel source",
-        "max_length": 17,
+        "english": "Calculate Fuel Using",
+        "max_length": 20,
         "needs_translation": false,
-        "translation": "Local fuel source"
+        "translation": "Calculate Fuel Using"
       },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
@@ -7229,10 +7229,10 @@
           "translation": "BEC Alert Value"
         },
         "calcfuel_local": {
-          "english": "Calculate Fuel Using",
-          "max_length": 20,
+          "english": "Local fuel source",
+          "max_length": 17,
           "needs_translation": false,
-          "translation": "Calculate Fuel Using"
+          "translation": "Local fuel source"
         },
         "capacity": {
           "english": "Capacity",

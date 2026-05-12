@@ -40,12 +40,24 @@ local apidata = {
     }
 }
 
+local function getLocalSource()
+    local bat = rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery
+    if not bat then return 0 end
+    local v = tonumber(bat.smartfuel_source) or tonumber(bat.calc_local) or 0
+    return v
+end
+
 local function isTuningActive()
     local src = tonumber(sourceField.value) or 0
     if useFirmwareSmartFuel then
-        -- mode: 0=OFF, 1=VOLTAGE, 2=CURRENT
+        if src == 0 then
+            -- OFF (LOCAL): params apply only when local source is voltage (1)
+            return getLocalSource() == 1
+        end
+        -- VOLTAGE (1): params apply; CURRENT (2): params do not apply
         return src == 1
     end
+    -- Legacy (<12.9): source 0=current (no params), 1=voltage (params apply)
     return src ~= 0
 end
 
