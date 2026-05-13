@@ -383,11 +383,7 @@ local function buildBoxes(W)
             type = "func",
             subtype = "func",
             paint = function(x, y, w, h, box, cache, t)
-                if lcd.darkMode() then
-                    lcd.color(lcd.RGB(255, 255, 255))
-                else
-                    lcd.color(lcd.RGB(90, 90, 90))
-                end
+                lcd.color(utils.getThemeOutlineColor())
                 lcd.drawRectangle(x, y, w, h, battbpad)
             end,
         },

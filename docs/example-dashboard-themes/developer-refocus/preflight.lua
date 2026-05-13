@@ -18,6 +18,22 @@
 
 local activeLayoutIndex = 1  -- 1 or 2
 
+local function themeColor(constName, fallback)
+    if type(lcd.themeColor) == "function" then
+        local key = _G[constName]
+        if type(key) == "number" then return lcd.themeColor(key) end
+    end
+    return fallback
+end
+
+local function legacyDarkMode()
+    return type(lcd.darkMode) == "function" and lcd.darkMode() == true
+end
+
+local primaryColor = themeColor("THEME_PRIMARY_COLOR", legacyDarkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(90, 90, 90))
+local focusColor = themeColor("THEME_FOCUS_COLOR", primaryColor)
+local primaryBgColor = themeColor("THEME_PRIMARY_BGCOLOR", legacyDarkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+
 -- must be delared before the layout and boxes so its available to the layout
 local function customRenderFunction(x, y, w, h)
     -- Custom rendering logic goes here
@@ -28,13 +44,11 @@ local function customRenderFunction(x, y, w, h)
     local msg = "Render Function"
 
     -- Example: Draw a rectangle with a custom color
-    local isDarkMode = lcd.darkMode()
-    lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(primaryBgColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Example: Draw some text
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
+    lcd.color(primaryColor)
 
     -- display in the center of the box
     -- note.  x, y are the top-left coordinates of the box
@@ -61,7 +75,7 @@ local layout1 = {
     cols = 4,
     rows = 4,
     padding = 4,
-    selectcolor = lcd.RGB(255, 255, 255),
+    selectcolor = focusColor,
     selectborder = 2
 }
 
@@ -86,7 +100,7 @@ local layout2 = {
     cols = 4,
     rows = 4,
     padding = 4,
-    selectcolor = lcd.RGB(255, 255, 255),
+    selectcolor = focusColor,
     selectborder = 2
 }
 

@@ -82,7 +82,6 @@ local DEFAULT_TOOLBAR_ITEMS = {
 local M = {}
 
 local toolbarMaskCache = {}
-local toolbarThemeFallbackCache = {}
 
 local function clearToolbarMaskCache(dashboard)
     for k in pairs(toolbarMaskCache) do toolbarMaskCache[k] = nil end
@@ -99,33 +98,13 @@ local function loadToolbarMask(path, lcd)
     return mask
 end
 
-local function getToolbarThemeFallbacks(lcd, isDark)
-    local key = isDark and "dark" or "light"
-    local palette = toolbarThemeFallbackCache[key]
-    if palette then return palette end
-
-    if isDark then
-        palette = {
-            default = lcd.RGB(255, 255, 255),
-            focus = lcd.RGB(255, 255, 255),
-            defaultBg = lcd.RGB(0, 0, 0),
-            focusBg = lcd.RGB(40, 40, 40)
-        }
-    else
-        palette = {
-            default = lcd.RGB(90, 90, 90),
-            focus = lcd.RGB(0, 0, 0),
-            defaultBg = lcd.RGB(255, 255, 255),
-            focusBg = lcd.RGB(230, 230, 230)
-        }
-    end
-
-    toolbarThemeFallbackCache[key] = palette
-    return palette
-end
-
 local function resolveToolbarThemeColor(lcd, themeColorKey, fallback)
-    if type(themeColorKey) == "number" then
+    if type(themeColorKey) == "number"
+        and rfsuite
+        and rfsuite.utils
+        and rfsuite.utils.ethosVersionAtLeast
+        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
+        and type(lcd.themeColor) == "function" then
         return lcd.themeColor(themeColorKey)
     end
     return fallback
@@ -241,18 +220,14 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
         return
     end
 
-    local isDark = lcd.darkMode()
-    local themeFallbacks = getToolbarThemeFallbacks(lcd, isDark)
-    local themeDefault = resolveToolbarThemeColor(lcd, THEME_DEFAULT_COLOR, themeFallbacks.default)
-    local themeFocus = resolveToolbarThemeColor(lcd, THEME_FOCUS_COLOR, themeFallbacks.focus)
-    local themeDefaultBg = resolveToolbarThemeColor(lcd, THEME_DEFAULT_BGCOLOR, themeFallbacks.defaultBg)
-    local themeFocusBg = resolveToolbarThemeColor(lcd, THEME_FOCUS_BGCOLOR, themeFallbacks.focusBg)
+    local themeState = dashboard and dashboard.utils and dashboard.utils.getThemeState and dashboard.utils.getThemeState() or nil
+    local themeDefault = resolveToolbarThemeColor(lcd, THEME_DEFAULT_COLOR, (themeState and themeState.primaryColor) or lcd.RGB(90, 90, 90))
+    local themeFocus = resolveToolbarThemeColor(lcd, THEME_FOCUS_COLOR, (themeState and themeState.focusColor) or lcd.RGB(0, 0, 0))
+    local themeDefaultBg = resolveToolbarThemeColor(lcd, THEME_DEFAULT_BGCOLOR, (themeState and themeState.primaryBgColor) or lcd.RGB(255, 255, 255))
+    local themeFocusBg = resolveToolbarThemeColor(lcd, THEME_FOCUS_BGCOLOR, (themeState and themeState.focusBgColor) or lcd.RGB(230, 230, 230))
+    local surfaceBg = (themeState and themeState.usesThemeColors and themeState.pageBgColor) or themeDefaultBg
     local lineColor = themeFocus
-    if isDark then
-        lcd.color(lcd.RGB(0, 0, 0, 0.99))
-    else
-        lcd.color(lcd.RGB(255, 255, 255, 0.99))
-    end
+    lcd.color(surfaceBg)
     lcd.drawFilledRectangle(x, y, w, barH)
     lcd.color(lineColor)
     lcd.drawFilledRectangle(x, y, w, 4)

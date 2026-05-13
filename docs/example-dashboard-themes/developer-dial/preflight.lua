@@ -28,7 +28,25 @@ SEE THE TOP OF EACH WIDGET OBJECT FILE.
 --------------------------------------------------------------------------------
 ]]
  local rfsuite = require("rfsuite")
- 
+
+local function themeColor(constName, fallback)
+    if type(lcd.themeColor) == "function" then
+        local key = _G[constName]
+        if type(key) == "number" then return lcd.themeColor(key) end
+    end
+    return fallback
+end
+
+local function legacyDarkMode()
+    return type(lcd.darkMode) == "function" and lcd.darkMode() == true
+end
+
+local primaryColor = themeColor("THEME_PRIMARY_COLOR", legacyDarkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(90, 90, 90))
+local secondaryBgColor = themeColor("THEME_SECONDARY_BGCOLOR", legacyDarkMode() and lcd.RGB(90, 90, 90) or lcd.RGB(211, 211, 211))
+local activeColor = themeColor("THEME_ACTIVE_COLOR", lcd.RGB(0, 188, 4))
+local warningColor = themeColor("THEME_WARNING_COLOR", lcd.RGB(255, 165, 0))
+local inactiveColor = themeColor("THEME_INACTIVE_COLOR", lcd.RGB(255, 0, 0))
+
 local layout = {
     cols = 3,
     rows = 3,
@@ -48,8 +66,8 @@ local boxes = {
         titlefont = "FONT_XXS",
         source = "voltage",
         decimals = 1,
-        needlecolor = "white",
-        needlehubcolor = "white",
+        needlecolor = primaryColor,
+        needlehubcolor = primaryColor,
         valuepaddingtop = 70,
         dial = 1,
         font = "FONT_S",
@@ -68,9 +86,9 @@ local boxes = {
         min = 0,
         max = 2000,
         thresholds = {
-            { value = 1000,  fillcolor = "green" },
-            { value = 1500,  fillcolor = "orange" },
-            { value = 2000,  fillcolor = "red" },
+            { value = 1000,  fillcolor = activeColor },
+            { value = 1500,  fillcolor = warningColor },
+            { value = 2000,  fillcolor = inactiveColor },
         },
         titlepos = "bottom",
         unit = "",
@@ -88,12 +106,12 @@ local boxes = {
         min = 0, 
         max = 140,
         transform = "floor", 
-        fillbgcolor = "lightgrey",
+        fillbgcolor = secondaryBgColor,
         thickness = 10,
         thresholds = {
-            { value = 70,  fillcolor = "green"  },
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red"    }
+            { value = 70,  fillcolor = activeColor },
+            { value = 90,  fillcolor = warningColor },
+            { value = 140, fillcolor = inactiveColor }
         }
     },
 
@@ -117,13 +135,13 @@ local boxes = {
         batteryframe = true,
         title = "FUEL",
         titlepos = "bottom",
-        textcolor = "white",
+        textcolor = primaryColor,
         valuepaddingbottom = 20,
         transform = "floor",
         thresholds = {
-            { value = 20,  fillcolor = "red"},
-            { value = 50,  fillcolor = "orange"},
-            { value = 100,  fillcolor = "green"},
+            { value = 20,  fillcolor = inactiveColor},
+            { value = 50,  fillcolor = warningColor},
+            { value = 100,  fillcolor = activeColor},
         },
     },
 
@@ -145,9 +163,9 @@ local boxes = {
             return math.max(0, cells * maxV)
         end,
         title = "VOLTAGE",
-        textcolor = "white",
+        textcolor = primaryColor,
         titlepos = "bottom",
-        fillcolor = "green",
+        fillcolor = activeColor,
         roundradius = 8,
         valuepaddingbottom = 20,
         thresholds = {
@@ -167,7 +185,7 @@ local boxes = {
                     local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
                     return cells * warnV * 1.2
                 end,
-                fillbgcolor = "orange",
+                fillbgcolor = warningColor,
             }
         }
     },
@@ -193,8 +211,8 @@ local boxes = {
         end,
         title = "VOLTAGE",
         titlepos = "bottom",
-        fillcolor = "green",
-        textcolor = "white",
+        fillcolor = activeColor,
+        textcolor = primaryColor,
         valuepaddingbottom = 20,
         thresholds = {
             {
@@ -204,7 +222,7 @@ local boxes = {
                     local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
                     return cells * minV * 1.2
                 end,
-                fillcolor = "red"
+                fillcolor = inactiveColor
             },
             {
                 value = function()
@@ -213,7 +231,7 @@ local boxes = {
                     local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
                     return cells * warnV * 1.2
                 end,
-                fillcolor = "orange"
+                fillcolor = warningColor
             }
         },        
     },
