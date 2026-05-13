@@ -4,6 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local _G = _G
 
 local toolbox = {}
 local wakeupScheduler
@@ -14,6 +15,62 @@ local BUSY_WAKEUP_RUN_NUM = 2
 local BUSY_WAKEUP_RUN_DEN = 3
 
 local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}, [6] = {object = "timer", name = "@i18n(widgets.dashboard.flight_time)@"}}
+local themeColorCache = {usesThemeColors = nil, primary = nil, secondary = nil, colors = nil, legacyDark = nil, legacyColors = nil}
+
+local function rgb(r, g, b, a) return lcd.RGB(r, g, b, a or 1) end
+
+local function isLegacyDarkMode()
+    return type(lcd.darkMode) == "function" and lcd.darkMode() == true
+end
+
+local function supportsSystemThemeColors()
+    return rfsuite
+        and rfsuite.utils
+        and rfsuite.utils.ethosVersionAtLeast
+        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
+        or false
+end
+
+local function resolveThemeConstant(name)
+    if not supportsSystemThemeColors() then return nil end
+    if type(lcd.themeColor) ~= "function" then return nil end
+    local key = _G[name]
+    if type(key) ~= "number" then return nil end
+    return lcd.themeColor(key)
+end
+
+local function getThemeColors()
+    local primary = resolveThemeConstant("THEME_PRIMARY_COLOR")
+    local secondary = resolveThemeConstant("THEME_SECONDARY_COLOR")
+
+    if type(primary) == "number" or type(secondary) == "number" then
+        if themeColorCache.colors == nil
+            or themeColorCache.usesThemeColors ~= true
+            or themeColorCache.primary ~= primary
+            or themeColorCache.secondary ~= secondary then
+            themeColorCache.usesThemeColors = true
+            themeColorCache.primary = primary
+            themeColorCache.secondary = secondary
+            themeColorCache.colors = {
+                title = secondary or primary or rgb(77, 73, 77),
+                text = primary or secondary or rgb(77, 73, 77),
+                message = primary or secondary or rgb(90, 90, 90)
+            }
+        end
+        return themeColorCache.colors
+    end
+
+    local isDark = isLegacyDarkMode()
+    if themeColorCache.legacyColors == nil or themeColorCache.legacyDark ~= isDark then
+        themeColorCache.legacyDark = isDark
+        themeColorCache.legacyColors = {
+            title = isDark and rgb(154, 154, 154) or rgb(77, 73, 77),
+            text = isDark and rgb(255, 255, 255) or rgb(77, 73, 77),
+            message = isDark and rgb(255, 255, 255) or rgb(90, 90, 90)
+        }
+    end
+    return themeColorCache.legacyColors
+end
 
 local function generateWidgetList(tbl)
     local widgets = {}
@@ -58,7 +115,7 @@ local function screenError(msg, border, pct, padX, padY)
     if not padY then padY = 4 end
 
     local w, h = lcd.getWindowSize()
-    local isDarkMode = lcd.darkMode()
+    local themeColors = getThemeColors()
 
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
 
@@ -78,8 +135,7 @@ local function screenError(msg, border, pct, padX, padY)
 
     lcd.font(bestFont)
 
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
+    lcd.color(themeColors.message)
 
     local x = (w - bestW) / 2
     local y = (h - bestH) / 2
@@ -111,12 +167,9 @@ function toolbox.paint(widget)
     local title = toolBoxList[widget.object].name
 
     local w, h = lcd.getWindowSize()
-    local isDarkMode = lcd.darkMode()
+    local themeColors = getThemeColors()
 
     local offsetY = 0
-
-    local TITLE_COLOR = lcd.darkMode() and lcd.RGB(154, 154, 154) or lcd.RGB(77, 73, 77)
-    local TEXT_COLOR = lcd.darkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(77, 73, 77)
 
     if widget.title then
         local fonts = {FONT_XXS, FONT_XS, FONT_S}
@@ -139,12 +192,9 @@ function toolbox.paint(widget)
 
         lcd.font(bestFont)
 
-        local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-        lcd.color(textColor)
-
         local x = (w - bestW) / 2
         local y = bestH / 4
-        lcd.color(TITLE_COLOR)
+        lcd.color(themeColors.title)
         lcd.drawText(x, y, title)
 
         offsetY = bestH - 3
@@ -175,7 +225,7 @@ function toolbox.paint(widget)
 
         local x = (w - bestW) / 2
         local y = (h - bestH) / 2 + offsetY
-        lcd.color(TEXT_COLOR)
+        lcd.color(themeColors.text)
         lcd.drawText(x, y, msg)
     elseif type(msg) == "function" then
         msg()

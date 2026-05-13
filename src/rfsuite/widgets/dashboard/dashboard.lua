@@ -172,7 +172,8 @@ dashboard.overlayMessage = nil
 
 dashboard.objectsByType = {}
 
-local darkModeState = lcd.darkMode()
+local themeStateSignature = nil
+local nextThemeStateCheck = 0
 
 dashboard._moduleCache = dashboard._moduleCache or {}
 
@@ -1343,6 +1344,11 @@ end
 function dashboard.reload_active_theme_only(force)
     dashboard.utils.resetImageCache()
 
+    if dashboard.utils and dashboard.utils.getThemeSignature then
+        themeStateSignature = dashboard.utils.getThemeSignature()
+        nextThemeStateCheck = 0
+    end
+
     local state = dashboard.flightmode or "preflight"
     local theme = getThemeForState(state)
 
@@ -1412,6 +1418,11 @@ function dashboard.reload_themes(force)
 
     clearTableKeys(dashboard.renders)
 
+    if dashboard.utils and dashboard.utils.getThemeSignature then
+        themeStateSignature = dashboard.utils.getThemeSignature()
+        nextThemeStateCheck = 0
+    end
+
     dashboard.reload_active_theme_only(force)
 
     statePreloadIndex = 1
@@ -1475,6 +1486,8 @@ function dashboard.create()
     dashboard._lastInvalidateTime = 0
     dashboard._hg_cycles = 0
     dashboard.overlayMessage = nil
+    themeStateSignature = dashboard.utils.getThemeSignature and dashboard.utils.getThemeSignature() or nil
+    nextThemeStateCheck = 0
 
     firstWakeup = true
     firstWakeupCustomTheme = true
@@ -1836,9 +1849,14 @@ function dashboard.wakeup_protected(widget)
 
     if unsupportedResolution then return end
 
-    if lcd.darkMode() ~= darkModeState then
-        darkModeState = lcd.darkMode()
-        dashboard.reload_themes(true)
+    local now = clock()
+    if now >= nextThemeStateCheck then
+        nextThemeStateCheck = now + 0.25
+        local currentThemeSignature = dashboard.utils.getThemeSignature and dashboard.utils.getThemeSignature() or nil
+        if currentThemeSignature ~= themeStateSignature then
+            themeStateSignature = currentThemeSignature
+            dashboard.reload_themes(true)
+        end
     end
 
     if firstWakeup then
