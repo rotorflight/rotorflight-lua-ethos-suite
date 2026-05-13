@@ -182,7 +182,16 @@ local function isLegacyDarkMode()
     return type(lcd.darkMode) == "function" and lcd.darkMode() == true
 end
 
+local function supportsSystemThemeColors()
+    return rfsuite
+        and rfsuite.utils
+        and rfsuite.utils.ethosVersionAtLeast
+        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
+        or false
+end
+
 local function resolveThemeConstant(name)
+    if not supportsSystemThemeColors() then return nil end
     if type(lcd.themeColor) ~= "function" then return nil end
     local key = _G[name]
     if type(key) ~= "number" then return nil end
@@ -190,7 +199,7 @@ local function resolveThemeConstant(name)
 end
 
 local function buildThemeSignature()
-    if type(lcd.themeColor) == "function" then
+    if supportsSystemThemeColors() then
         local signature = 5381
         local hasAnyThemeColor = false
 
@@ -315,7 +324,7 @@ local function getThemeStateInternal()
     if cached and themeStateCache.signature == signature then return cached, signature end
 
     local legacyState = buildLegacyThemeState(isLegacyDarkMode())
-    if type(lcd.themeColor) == "function" then
+    if supportsSystemThemeColors() then
         local state = {usesThemeColors = false}
         local hasAnyThemeColor = false
 

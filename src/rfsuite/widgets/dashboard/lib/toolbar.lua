@@ -99,7 +99,12 @@ local function loadToolbarMask(path, lcd)
 end
 
 local function resolveToolbarThemeColor(lcd, themeColorKey, fallback)
-    if type(themeColorKey) == "number" and type(lcd.themeColor) == "function" then
+    if type(themeColorKey) == "number"
+        and rfsuite
+        and rfsuite.utils
+        and rfsuite.utils.ethosVersionAtLeast
+        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
+        and type(lcd.themeColor) == "function" then
         return lcd.themeColor(themeColorKey)
     end
     return fallback
