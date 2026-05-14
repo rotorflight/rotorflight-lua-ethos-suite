@@ -96,6 +96,8 @@ local qConnect = Ring(80)
 
 -- Separate rolling buffer for on-screen "connect" display.
 local qConnectView = Ring(160)
+local qSessionView = Ring(160)
+local sessionSeq = 0
 
 local lastPrint, lastDisk, lastConnect = os_clock(), os_clock(), os_clock()
 
@@ -162,6 +164,11 @@ local function getPrefix(cfg)
     return rawp or ""
 end
 
+local function pushSessionView(e)
+    qSessionView:push(e)
+    sessionSeq = sessionSeq + 1
+end
+
 function logs.log(message, level)
     local cfg = logs.config
     if not cfg.enabled then return end
@@ -183,7 +190,8 @@ function logs.log(message, level)
     
     -- Capture prefix (timestamp) at creation time for accuracy
     local pfx = getPrefix(cfg)
-    local e = { msg = message, lvl = lvl, pfx = pfx }
+    local e = { msg = message, lvl = lvl, level = level or "info", pfx = pfx }
+    pushSessionView(e)
 
     -- ROUTING RULES
     -- info  : show info/error on console
@@ -209,14 +217,16 @@ function logs.add(message, level)
     if level == "connect" then
         local cfg = logs.config
         local pfx = getPrefix(cfg)
-        local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
+        local e = { msg = message, lvl = LEVEL.info, level = "connect", pfx = pfx }
         qConnect:push(e)
         qConnectView:push(e)
+        pushSessionView(e)
     elseif level == "console" then
         local cfg = logs.config
         local pfx = getPrefix(cfg)
-        local e = { msg = message, lvl = LEVEL.info, pfx = pfx }
+        local e = { msg = message, lvl = LEVEL.info, level = "console", pfx = pfx }
         qConsole:push(e)
+        pushSessionView(e)
     else
         logs.log(message, level)
     end
@@ -399,6 +409,46 @@ function logs.getConnectLines(maxLines, opts)
 
     local out = {}
     for i = #lines, 1, -1 do out[#out + 1] = lines[i] end
+    return out
+end
+
+function logs.getSessionSeq()
+    return sessionSeq
+end
+
+function logs.getSessionLines(maxLines, opts, out)
+    maxLines = tonumber(maxLines) or 12
+    if maxLines < 1 then return {} end
+
+    out = out or {}
+    for i = #out, 1, -1 do out[i] = nil end
+
+    local n = qSessionView.n
+    if n == 0 then return out end
+
+    local cfg = logs.config
+    local count = maxLines
+    if count > n then count = n end
+
+    local first = n - count + 1
+    local idx = ((qSessionView.h + first - 2) % qSessionView.c) + 1
+    for _ = 1, count do
+        local e = qSessionView.d[idx]
+        if e and e.msg then
+            local pfx = e.pfx
+            if pfx == nil then pfx = getPrefix(cfg) end
+            if opts and opts.noTimestamp then pfx = stripLeadingTimestamp(pfx) end
+
+            local levelName = e.level or "info"
+            if opts and opts.noLevel then
+                out[#out + 1] = pfx .. e.msg
+            else
+                out[#out + 1] = pfx .. "[" .. levelName .. "] " .. e.msg
+            end
+        end
+        idx = (idx % qSessionView.c) + 1
+    end
+
     return out
 end
 

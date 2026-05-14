@@ -361,6 +361,13 @@
           "offline": true,
           "script": "info.lua",
           "translation": "@i18n(app.modules.info.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "session_logs.png",
+          "name": "Session Logs",
+          "offline": true,
+          "script": "session_logs.lua"
         }
       ],
       "scriptPrefix": "diagnostics/tools/",

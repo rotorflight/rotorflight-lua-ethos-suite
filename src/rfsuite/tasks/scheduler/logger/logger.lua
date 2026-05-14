@@ -62,6 +62,14 @@ function logger.getConnectLines(n)
     return logger.queue.getConnectLines(n)
 end
 
+function logger.getSessionSeq()
+    return logger.queue.getSessionSeq()
+end
+
+function logger.getSessionLines(n, opts, out)
+    return logger.queue.getSessionLines(n, opts, out)
+end
+
 function logger.flush()
     logger.queue.flush()
 end
