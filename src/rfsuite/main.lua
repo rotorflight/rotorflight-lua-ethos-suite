@@ -58,6 +58,7 @@ local userpref_defaults = {
         save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
+        dashboard_startup_log_close = 0,
         save_armed_warning = true,
         toolbar_timeout = 10,
         show_battery_profile_startup = true,

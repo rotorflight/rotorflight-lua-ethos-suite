@@ -6690,6 +6690,13 @@
           "reverse_text": false,
           "translation": "请对ESC断电重启..."
         },
+        "remove_blades_warning": {
+          "english": "Please remove blades from heli",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Please remove blades from heli"
+        },
         "searching": {
           "english": "Searching",
           "max_length": 9,
@@ -10896,6 +10903,27 @@
           "reverse_text": false,
           "translation": "折叠导航栏"
         },
+        "txt_dashboard_startup_log_close": {
+          "english": "Dashboard startup log",
+          "max_length": 21,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Dashboard startup log"
+        },
+        "txt_dashboard_startup_log_close_connected": {
+          "english": "CONNECTION",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "CONNECTION"
+        },
+        "txt_dashboard_startup_log_close_ready": {
+          "english": "READY",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "READY"
+        },
         "txt_debug": {
           "english": "DEBUG",
           "max_length": 5,
@@ -11098,6 +11126,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Battery Type confirmation"
+        },
+        "txt_show_esc_tools_warning": {
+          "english": "ESC tools safety prompt",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "ESC tools safety prompt"
         },
         "txt_small": {
           "english": "SMALL",

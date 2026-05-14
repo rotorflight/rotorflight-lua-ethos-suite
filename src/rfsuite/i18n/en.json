@@ -7330,12 +7330,6 @@
           "needs_translation": false,
           "translation": "Fuel Rise Rate"
         },
-        "smartfuel_name": {
-          "english": "SmartFuel",
-          "max_length": 9,
-          "needs_translation": false,
-          "translation": "SmartFuel"
-        },
         "smartfuel_sag_compensation": {
           "english": "Sag Compensation Factor",
           "max_length": 23,
@@ -9415,6 +9409,24 @@
           "max_length": 19,
           "needs_translation": false,
           "translation": "Collapse Navigation"
+        },
+        "txt_dashboard_startup_log_close": {
+          "english": "Dashboard startup log",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Dashboard startup log"
+        },
+        "txt_dashboard_startup_log_close_connected": {
+          "english": "CONNECTION",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "CONNECTION"
+        },
+        "txt_dashboard_startup_log_close_ready": {
+          "english": "READY",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "READY"
         },
         "txt_debug": {
           "english": "DEBUG",

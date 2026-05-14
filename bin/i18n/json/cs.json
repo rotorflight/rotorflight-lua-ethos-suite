@@ -10980,6 +10980,27 @@
           "max_length": 13,
           "reverse_text": false
         },
+        "txt_dashboard_startup_log_close": {
+          "english": "Dashboard startup log",
+          "translation": "Dashboard startup log",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "txt_dashboard_startup_log_close_connected": {
+          "english": "CONNECTION",
+          "translation": "CONNECTION",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "txt_dashboard_startup_log_close_ready": {
+          "english": "READY",
+          "translation": "READY",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
         "txt_iconsize": {
           "english": "Icon Size",
           "translation": "Velikost ikony",
