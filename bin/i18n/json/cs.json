@@ -8227,6 +8227,13 @@
           "reverse_text": false,
           "max_length": 14
         },
+        "smartfuel_name": {
+          "english": "SmartFuel",
+          "translation": "SmartFuel",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
         "smartfuel_sag_compensation": {
           "english": "Sag Compensation Factor",
           "translation": "Sag Compensation Factor",
