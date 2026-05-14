@@ -6690,6 +6690,13 @@
           "reverse_text": false,
           "max_length": 29
         },
+        "remove_blades_warning": {
+          "english": "Please remove blades from heli",
+          "translation": "Please remove blades from heli",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
         "searching": {
           "english": "Searching",
           "translation": "Procurando",
@@ -10399,6 +10406,13 @@
           "reverse_text": false,
           "max_length": 25
         },
+        "txt_show_esc_tools_warning": {
+          "english": "ESC tools safety prompt",
+          "translation": "ESC tools safety prompt",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
         "battery_profile_event": {
           "english": "Battery",
           "translation": "Battery",
@@ -10965,6 +10979,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 13
+        },
+        "txt_dashboard_startup_log_close": {
+          "english": "Dashboard startup log",
+          "translation": "Dashboard startup log",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "txt_dashboard_startup_log_close_connected": {
+          "english": "CONNECTION",
+          "translation": "CONNECTION",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "txt_dashboard_startup_log_close_ready": {
+          "english": "READY",
+          "translation": "READY",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
         },
         "txt_iconsize": {
           "english": "Icon Size",

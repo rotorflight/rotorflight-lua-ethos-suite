@@ -9434,6 +9434,24 @@
           "needs_translation": false,
           "translation": "CLOSE AT 100%"
         },
+        "txt_dashboard_startup_log_close": {
+          "english": "Dashboard startup log",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Dashboard startup log"
+        },
+        "txt_dashboard_startup_log_close_connected": {
+          "english": "CONNECTION",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "CONNECTION"
+        },
+        "txt_dashboard_startup_log_close_ready": {
+          "english": "READY",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "READY"
+        },
         "txt_iconsize": {
           "english": "Icon Size",
           "max_length": 9,
