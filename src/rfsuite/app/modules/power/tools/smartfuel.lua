@@ -10,6 +10,8 @@ local enableWakeup = false
 local onNavMenu
 local lastTuningActive = nil
 local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 9})
+local TUNING_FIELD_START = useFirmwareSmartFuel and 2 or 1
+local INI_SECTION = "battery"
 
 -- Field index 1: source selector (different field/API per version)
 local sourceField = useFirmwareSmartFuel
@@ -44,6 +46,12 @@ local function getLocalSource()
     if not bat then return 0 end
     local v = tonumber(bat.smartfuel_source) or tonumber(bat.calc_local) or 0
     return v
+end
+
+if useFirmwareSmartFuel then
+    sourceField.postEdit = function(self, value)
+        lastTuningActive = nil
+    end
 end
 
 local function isTuningActive()
@@ -83,11 +91,65 @@ local function resetSmartfuel()
     end
 end
 
+local function getTuningValue(key)
+    local fields = apidata.formdata.fields
+    for i = TUNING_FIELD_START, #fields do
+        local field = fields[i]
+        if field and field.apikey == key then
+            return tonumber(field.value)
+        end
+    end
+    return nil
+end
+
+local function writeLocalSmartfuelSettings()
+    if not useFirmwareSmartFuel then return end
+
+    local session = rfsuite.session
+    local mcuId = session and session.mcu_id
+    if not mcuId then return end
+
+    local iniFile = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. mcuId .. ".ini"
+    local ini = rfsuite.ini
+    local tbl = ini.load_ini_file(iniFile) or {}
+
+    local voltageDropRate = getTuningValue("voltage_drop_rate")
+    local chargeDropRate = getTuningValue("charge_drop_rate")
+    local sagGain = getTuningValue("sag_gain")
+
+    if voltageDropRate ~= nil then
+        voltageDropRate = math.floor(voltageDropRate + 0.5)
+        ini.setvalue(tbl, INI_SECTION, "voltage_drop_rate", voltageDropRate)
+    end
+    if chargeDropRate ~= nil then
+        chargeDropRate = math.floor(chargeDropRate * 100 + 0.5)
+        ini.setvalue(tbl, INI_SECTION, "charge_drop_rate", chargeDropRate)
+    end
+    if sagGain ~= nil then
+        sagGain = math.floor(sagGain + 0.5)
+        ini.setvalue(tbl, INI_SECTION, "sag_gain", sagGain)
+    end
+
+    local ok, err = ini.save_ini_file(iniFile, tbl)
+    if not ok then
+        rfsuite.utils.log("Failed to save local SmartFuel settings: " .. tostring(err or iniFile), "info")
+        return
+    end
+
+    local batteryPrefs = session.modelPreferences and session.modelPreferences[INI_SECTION]
+    if batteryPrefs then
+        if voltageDropRate ~= nil then batteryPrefs.voltage_drop_rate = voltageDropRate end
+        if chargeDropRate ~= nil then batteryPrefs.charge_drop_rate = chargeDropRate end
+        if sagGain ~= nil then batteryPrefs.sag_gain = sagGain end
+    end
+end
+
 local function postSave(self)
     if useFirmwareSmartFuel then
         rfsuite.session = rfsuite.session or {}
         rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
         rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(sourceField.value) or 0
+        writeLocalSmartfuelSettings()
     end
     resetSmartfuel()
 end
@@ -100,8 +162,7 @@ local function wakeup(self)
     if tuningActive == lastTuningActive then return end
     lastTuningActive = tuningActive
 
-    local paramStart = useFirmwareSmartFuel and 2 or 1
-    for i = paramStart, #apidata.formdata.fields do
+    for i = TUNING_FIELD_START, #apidata.formdata.fields do
         local fieldHandle = rfsuite.app.formFields[i]
         if not fieldHandle or not fieldHandle.enable then break end
         fieldHandle:enable(tuningActive)
