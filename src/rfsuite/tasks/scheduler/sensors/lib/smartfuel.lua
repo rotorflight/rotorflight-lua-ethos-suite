@@ -277,9 +277,12 @@ local function smartFuelCalc()
     if consumption and fuelStartingConsumption and packCapacity > 0 then
         local used = consumption - fuelStartingConsumption
         local percentUsed = used / packCapacity * 100
-        local remaining = math_max(0, fuelStartingPercent - percentUsed)
+        local remaining = fuelStartingPercent - percentUsed
+        local warningPercent = bc.consumptionWarningPercentage or 0
+        local usableRange = math_max(1, fuelStartingPercent - warningPercent)
+        local adjusted = math_max(0, remaining - warningPercent)
         logSmartFuelStatus("ready", "consumption")
-        return clampFuelBounceback(math_floor(math_min(100, remaining) + 0.5))
+        return clampFuelBounceback(math_floor(math_min(100, adjusted / usableRange * 100) + 0.5))
     else
 
         if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then

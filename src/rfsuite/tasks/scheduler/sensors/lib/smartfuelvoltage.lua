@@ -22,6 +22,7 @@ local lastCellVoltage    = 0.0
 local initialCellVoltage = 0.0
 local lastTimestamp      = nil
 local virtualConsumption = nil
+local initialConsumption = nil
 local wasEverArmed       = false
 local batteryConfigCache = nil
 
@@ -109,6 +110,7 @@ local function resetFuelState(now)
     initialCellVoltage = 0.0
     lastTimestamp      = nil
     virtualConsumption = nil
+    initialConsumption = nil
     wasEverArmed       = false
     stabilizeNotBefore = now and (now + smartfuelprefs.getStabilizeDelaySeconds()) or nil
     resetVoltageTracking()
@@ -153,13 +155,14 @@ local function smartFuelCalc()
     end
 
     -- Reset when battery config changes
-    local configSig = table.concat({cellCount, packCapacity, bc.vbatmincellvoltage, bc.vbatfullcellvoltage}, ":")
+    local configSig = table.concat({cellCount, packCapacity, bc.vbatmincellvoltage, bc.vbatfullcellvoltage, bc.consumptionWarningPercentage}, ":")
     if configSig ~= batteryConfigCache then
         batteryConfigCache = configSig
         resetFuelState(os_clock())
     end
 
-    local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
+    local voltage     = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
+    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
     if not voltage or voltage < 2 then
         resetVoltageTracking()
         stabilizeNotBefore = nil
@@ -227,6 +230,9 @@ local function smartFuelCalc()
         chargeLevel = estimation
         initialChargeLevel = estimation
     end
+    if initialConsumption == nil and consumption ~= nil then
+        initialConsumption = consumption
+    end
     estimation = math_min(initialChargeLevel, estimation)
 
     -- Charge-level slew: only restrict rate once armed (or previously armed)
@@ -237,6 +243,13 @@ local function smartFuelCalc()
         nextChargeLevel = estimation
     end
 
+    -- Current mode: also constrain by consumption estimate (mirrors firmware SMARTFUEL_MODE_CURRENT)
+    if smartfuelprefs.getSource() == 0 and consumption ~= nil and initialConsumption ~= nil and packCapacity > 0 then
+        local used = consumption - initialConsumption
+        local curr_estimate = initialChargeLevel - used / packCapacity
+        nextChargeLevel = math_min(nextChargeLevel, curr_estimate)
+    end
+
     nextChargeLevel = math_min(nextChargeLevel, chargeLevel)
     chargeLevel = math_max(0.0, math_min(nextChargeLevel, initialChargeLevel))
 
@@ -244,10 +257,21 @@ local function smartFuelCalc()
     virtualConsumption = (initialChargeLevel - chargeLevel) * packCapacity
 
     lastTimestamp = now
-    return math_floor(chargeLevel * 100 + 0.5)
+    local warningFrac = (bc.consumptionWarningPercentage or 0) / 100
+    local usableRange = math_max(0.01, initialChargeLevel - warningFrac)
+    local adjusted    = math_max(0.0, chargeLevel - warningFrac)
+    return math_floor(math_min(1.0, adjusted / usableRange) * 100 + 0.5)
 end
 
 local function getConsumption()
+    -- Current mode: actual consumed mAh from current sensor
+    if smartfuelprefs.getSource() == 0 then
+        if initialConsumption == nil then return nil end
+        local rawConsumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
+        if rawConsumption == nil then return nil end
+        return math_floor(math_max(rawConsumption - initialConsumption, 0) + 0.5)
+    end
+    -- Voltage mode: virtual consumption derived from charge fraction change
     if virtualConsumption == nil then return nil end
     return math_floor(math_max(virtualConsumption, 0) + 0.5)
 end
