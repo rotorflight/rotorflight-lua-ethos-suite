@@ -55,17 +55,7 @@ if useFirmwareSmartFuel then
 end
 
 local function isTuningActive()
-    local src = tonumber(sourceField.value) or 0
-    if useFirmwareSmartFuel then
-        if src == 0 then
-            -- OFF (LOCAL): params apply only when local source is voltage (1)
-            return getLocalSource() == 1
-        end
-        -- VOLTAGE (1): params apply; CURRENT (2): params do not apply
-        return src == 1
-    end
-    -- Legacy (<12.9): read source from preferences (not form field)
-    return getLocalSource() == 1
+    return true
 end
 
 local function postLoad(self)

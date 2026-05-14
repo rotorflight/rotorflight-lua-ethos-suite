@@ -28,7 +28,6 @@ local negativeCache = {}
 local lastValue = {}
 local lastPush = {}
 local lastModule = nil
-local firmwareInitialFuel = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
 local modeSignature = nil
@@ -111,15 +110,9 @@ local function calculateFuel()
     if useFirmwareSmartFuel() then
         local rawFuel = getMirrorSensorValue("smartfuel")
         if rawFuel == nil then return nil end
-        if firmwareInitialFuel == nil then
-            firmwareInitialFuel = rawFuel
-        elseif rawFuel > firmwareInitialFuel + 5 then
-            -- battery swap: firmware jumped up, reseed
-            firmwareInitialFuel = rawFuel
-        end
         local bc = rfsuite.session and rfsuite.session.batteryConfig
         local warningPercent = bc and (bc.consumptionWarningPercentage or 0) or 0
-        local usableRange = math.max(1, firmwareInitialFuel - warningPercent)
+        local usableRange = math.max(1, 100 - warningPercent)
         local adjusted = math.max(0, rawFuel - warningPercent)
         return math.floor(math.min(100, adjusted / usableRange * 100) + 0.5)
     end
@@ -142,7 +135,6 @@ end
 local function resetFuel()
     smartfuel.reset()
     smartfuelvoltage.reset()
-    firmwareInitialFuel = nil
 end
 
 local function clamp(v, minv, maxv)
@@ -300,7 +292,6 @@ function smart.reset()
     lastModule = nil
     modeSignature = nil
     lastSmartFuelMode = nil
-    firmwareInitialFuel = nil
 
     resetFuel()
     resetConsumption()

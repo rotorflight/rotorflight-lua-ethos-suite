@@ -258,7 +258,7 @@ local function smartFuelCalc()
 
     lastTimestamp = now
     local warningFrac = (bc.consumptionWarningPercentage or 0) / 100
-    local usableRange = math_max(0.01, initialChargeLevel - warningFrac)
+    local usableRange = math_max(0.01, 1.0 - warningFrac)
     local adjusted    = math_max(0.0, chargeLevel - warningFrac)
     return math_floor(math_min(1.0, adjusted / usableRange) * 100 + 0.5)
 end

@@ -279,7 +279,7 @@ local function smartFuelCalc()
         local percentUsed = used / packCapacity * 100
         local remaining = fuelStartingPercent - percentUsed
         local warningPercent = bc.consumptionWarningPercentage or 0
-        local usableRange = math_max(1, fuelStartingPercent - warningPercent)
+        local usableRange = math_max(1, 100 - warningPercent)
         local adjusted = math_max(0, remaining - warningPercent)
         logSmartFuelStatus("ready", "consumption")
         return clampFuelBounceback(math_floor(math_min(100, adjusted / usableRange * 100) + 0.5))
