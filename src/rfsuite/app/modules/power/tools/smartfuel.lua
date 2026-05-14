@@ -71,15 +71,25 @@ local function postLoad(self)
     enableWakeup = true
 end
 
+local function resetSmartfuel()
+    local sensors = rfsuite.tasks and rfsuite.tasks.sensors
+    if sensors and type(sensors.resetSmart) == "function" then
+        sensors.resetSmart()
+    end
+
+    local eventTelemetry = rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.telemetry
+    if eventTelemetry and type(eventTelemetry.resetSmartfuelAlertState) == "function" then
+        eventTelemetry.resetSmartfuelAlertState()
+    end
+end
+
 local function postSave(self)
     if useFirmwareSmartFuel then
         rfsuite.session = rfsuite.session or {}
         rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
         rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(sourceField.value) or 0
     end
-    if rfsuite.tasks and rfsuite.tasks.sensors and type(rfsuite.tasks.sensors.resetSmart) == "function" then
-        rfsuite.tasks.sensors.resetSmart()
-    end
+    resetSmartfuel()
 end
 
 local function wakeup(self)

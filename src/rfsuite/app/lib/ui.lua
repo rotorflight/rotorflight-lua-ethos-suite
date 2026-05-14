@@ -20,6 +20,11 @@ local rfutils = rfsuite.utils
 
 local ui = {}
 
+local function refreshSession()
+    session = rfsuite.session
+    return session
+end
+
 local function wipeTable(t)
     if type(t) ~= "table" then return end
     for k in pairs(t) do t[k] = nil end
@@ -2472,6 +2477,8 @@ function ui.openPage(opts)
     if type(opts) ~= "table" then
         error("ui.openPage expects a table")
     end
+
+    refreshSession()
 
     local idx = opts.idx
     local title = opts.title

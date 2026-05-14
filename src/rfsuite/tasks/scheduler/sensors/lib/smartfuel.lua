@@ -63,7 +63,6 @@ end
 local function fuelPercentageFromVoltage(voltage, cellCount, bc)
     local minV = bc.vbatmincellvoltage or 3.30
     local fullV = bc.vbatfullcellvoltage or 4.10
-    local reserve = bc.consumptionWarningPercentage or 30
 
     local voltagePerCell = voltage / cellCount
 
@@ -79,21 +78,7 @@ local function fuelPercentageFromVoltage(voltage, cellCount, bc)
     local index = math_floor((scaledV - sigmoidMin) / 0.01) + 1
     index = math_max(1, math_min(#dischargeCurveTable, index))
 
-    if reserve > 60 or reserve < 15 then
-        reserve = 35
-    end
-
-    local rawPercent = dischargeCurveTable[index]
-    local usableSpan = 100 - reserve
-    if usableSpan <= 0 then
-        return rawPercent
-    end
-
-    if rawPercent <= reserve then
-        return 0
-    end
-
-    return ((rawPercent - reserve) / usableSpan) * 100
+    return dischargeCurveTable[index]
 end
 
 local function resetVoltageTracking()
@@ -264,13 +249,7 @@ local function smartFuelCalc()
         end
     end
 
-    local cellCount, reserve, maxCellV, minCellV, fullCellV = bc.batteryCellCount, bc.consumptionWarningPercentage, bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
-
-    if reserve > 60 then
-        reserve = 35
-    elseif reserve < 15 then
-        reserve = 35
-    end
+    local cellCount, maxCellV, minCellV, fullCellV = bc.batteryCellCount, bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
 
     if packCapacity < 10 or cellCount == 0 or maxCellV <= minCellV or fullCellV <= 0 then
         fuelStartingPercent = nil
@@ -279,9 +258,6 @@ local function smartFuelCalc()
         logSmartFuelStatus("invalid battery config", table.concat({tostring(packCapacity), tostring(cellCount), tostring(maxCellV), tostring(minCellV), tostring(fullCellV)}, "/"))
         return nil
     end
-
-    local usableCapacity = packCapacity * (1 - reserve / 100)
-    if usableCapacity < 10 then usableCapacity = packCapacity end
 
     local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
 
@@ -292,14 +268,16 @@ local function smartFuelCalc()
         else
             fuelStartingPercent = 0
         end
-        local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
-        fuelStartingConsumption = (consumption or 0) - estimatedUsed
+    end
+
+    if fuelStartingConsumption == nil and consumption ~= nil then
+        fuelStartingConsumption = consumption
     end
 
     if consumption and fuelStartingConsumption and packCapacity > 0 then
         local used = consumption - fuelStartingConsumption
-        local percentUsed = used / usableCapacity * 100
-        local remaining = math_max(0, 100 - percentUsed)
+        local percentUsed = used / packCapacity * 100
+        local remaining = math_max(0, fuelStartingPercent - percentUsed)
         logSmartFuelStatus("ready", "consumption")
         return clampFuelBounceback(math_floor(math_min(100, remaining) + 0.5))
     else

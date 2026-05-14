@@ -23,6 +23,22 @@ local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
+local function resetSmartfuel()
+    local sensors = rfsuite.tasks and rfsuite.tasks.sensors
+    if sensors and type(sensors.resetSmart) == "function" then
+        sensors.resetSmart()
+    end
+
+    local eventTelemetry = rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.telemetry
+    if eventTelemetry and type(eventTelemetry.resetSmartfuelAlertState) == "function" then
+        eventTelemetry.resetSmartfuelAlertState()
+    end
+end
+
+local function postSave(self)
+    resetSmartfuel()
+end
+
 local function event(widget, category, value, x, y)
     return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
@@ -32,4 +48,4 @@ onNavMenu = function(self)
     return true
 end
 
-return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, event = event, onNavMenu = onNavMenu}
+return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, postSave = postSave, event = event, onNavMenu = onNavMenu}
