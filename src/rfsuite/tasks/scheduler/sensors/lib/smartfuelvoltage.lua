@@ -223,19 +223,22 @@ local function smartFuelCalc()
     local estimation         = chargeLevelFromVoltage(compensatedVoltage, minV, fullV)
 
     -- Seed initial level on first valid sample
-    if initialChargeLevel == 0 then initialChargeLevel = estimation end
+    if initialChargeLevel == 0 then
+        chargeLevel = estimation
+        initialChargeLevel = estimation
+    end
     estimation = math_min(initialChargeLevel, estimation)
 
     -- Charge-level slew: only restrict rate once armed (or previously armed)
+    local nextChargeLevel
     if isArmed or wasEverArmed then
-        chargeLevel = slewDownLimit(chargeLevel > 0 and chargeLevel or estimation,
-                                    estimation,
-                                    smartfuelprefs.getChargeDropRatePerSecond() * dt)
+        nextChargeLevel = slewDownLimit(chargeLevel, estimation, smartfuelprefs.getChargeDropRatePerSecond() * dt)
     else
-        chargeLevel = estimation
+        nextChargeLevel = estimation
     end
 
-    chargeLevel = math_max(0.0, math_min(chargeLevel, initialChargeLevel))
+    nextChargeLevel = math_min(nextChargeLevel, chargeLevel)
+    chargeLevel = math_max(0.0, math_min(nextChargeLevel, initialChargeLevel))
 
     -- Virtual consumption derived from charge fraction change since start
     virtualConsumption = (initialChargeLevel - chargeLevel) * packCapacity
