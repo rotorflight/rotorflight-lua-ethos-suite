@@ -22,13 +22,11 @@ local batteryConfigCache = {
     batteryCellCount = 0,
     vbatwarningcellvoltage = 0,
     vbatmincellvoltage = 0,
-    consumptionWarningPercentage = 0,
     profileSig = 0,
     hasAnyBatteryCapacity = false,
     hasAnyProfileCapacity = false,
     profileCaps = {},
     smartfuelModelType = 0,
-    smartfuelEndAtZero = 1,
     modelPrefs = nil
 }
 
@@ -45,8 +43,6 @@ local utils = rfsuite.utils
 local os_clock = os.clock
 local math_floor = math.floor
 local math_abs = math.abs
-local math_min = math.min
-local math_max = math.max
 local system_playNumber = system.playNumber
 local system_playHaptic = system.playHaptic
 
@@ -103,12 +99,10 @@ local function resetBatteryConfigCache()
     batteryConfigCache.batteryCellCount = 0
     batteryConfigCache.vbatwarningcellvoltage = 0
     batteryConfigCache.vbatmincellvoltage = 0
-    batteryConfigCache.consumptionWarningPercentage = 0
     batteryConfigCache.profileSig = 0
     batteryConfigCache.hasAnyBatteryCapacity = false
     batteryConfigCache.hasAnyProfileCapacity = false
     batteryConfigCache.smartfuelModelType = 0
-    batteryConfigCache.smartfuelEndAtZero = 1
     batteryConfigCache.modelPrefs = nil
     clearProfileCaps(batteryConfigCache.profileCaps)
 end
@@ -169,12 +163,7 @@ local function refreshBatteryConfigCache()
     local batteryCellCount = tonumber(bc.batteryCellCount) or 0
     local vbatwarningcellvoltage = tonumber(bc.vbatwarningcellvoltage) or 0
     local vbatmincellvoltage = tonumber(bc.vbatmincellvoltage) or 0
-    local consumptionWarningPercentage = tonumber(bc.consumptionWarningPercentage) or 0
-    local modelPrefs = (session.modelPreferences and session.modelPreferences.battery) or {}
-    local smartfuelModelType = tonumber(modelPrefs.smartfuel_model_type) or 0
-    local smartfuelEndAtZero = tonumber(modelPrefs.smartfuel_end_at_zero)
-    if smartfuelEndAtZero == nil then smartfuelEndAtZero = 1 end
-    local profileSig = buildProfileSignature(profiles)
+        local profileSig = buildProfileSignature(profiles)
 
     if batteryConfigCache.config == bc and
         batteryConfigCache.profiles == profiles and
@@ -182,10 +171,6 @@ local function refreshBatteryConfigCache()
         batteryConfigCache.batteryCellCount == batteryCellCount and
         batteryConfigCache.vbatwarningcellvoltage == vbatwarningcellvoltage and
         batteryConfigCache.vbatmincellvoltage == vbatmincellvoltage and
-        batteryConfigCache.consumptionWarningPercentage == consumptionWarningPercentage and
-        batteryConfigCache.modelPrefs == modelPrefs and
-        batteryConfigCache.smartfuelModelType == smartfuelModelType and
-        batteryConfigCache.smartfuelEndAtZero == smartfuelEndAtZero and
         batteryConfigCache.profileSig == profileSig then
         return batteryConfigCache
     end
@@ -196,7 +181,6 @@ local function refreshBatteryConfigCache()
     batteryConfigCache.batteryCellCount = batteryCellCount
     batteryConfigCache.vbatwarningcellvoltage = vbatwarningcellvoltage
     batteryConfigCache.vbatmincellvoltage = vbatmincellvoltage
-    batteryConfigCache.consumptionWarningPercentage = consumptionWarningPercentage
     batteryConfigCache.profileSig = profileSig
 
     local profileCaps = batteryConfigCache.profileCaps
@@ -205,9 +189,9 @@ local function refreshBatteryConfigCache()
     batteryConfigCache.hasAnyProfileCapacity = hasProfileCapacity
     batteryConfigCache.hasAnyBatteryCapacity = (batteryCapacity > 0) or hasProfileCapacity
 
+    local modelPrefs = (session.modelPreferences and session.modelPreferences.battery) or {}
     batteryConfigCache.modelPrefs = modelPrefs
-    batteryConfigCache.smartfuelModelType = smartfuelModelType
-    batteryConfigCache.smartfuelEndAtZero = smartfuelEndAtZero
+    batteryConfigCache.smartfuelModelType = tonumber(modelPrefs.smartfuel_model_type) or 0
 
     return batteryConfigCache
 end
@@ -220,13 +204,6 @@ local function smartfuelIsElectricModel()
     if cellCount ~= 0 then return true end
 
     return bcCache.hasAnyBatteryCapacity
-end
-
-local function getSmartfuelEmptyThreshold()
-    local bcCache = refreshBatteryConfigCache()
-    if not bcCache then return 0 end
-    if bcCache.smartfuelEndAtZero ~= 0 then return 0 end
-    return math_floor(math_max(0, math_min(100, bcCache.consumptionWarningPercentage or 0)) + 0.5)
 end
 
 -- Returns callout and empty audio in one call, calling smartfuelIsElectricModel only once.
@@ -300,7 +277,6 @@ local function smartfuelCallout(value, now)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = buildSmartfuelThresholds(smartfuelcallout)
     local calloutPkg, calloutFile, emptyPkg, emptyFile = resolveSmartfuelAudio()
-    local emptyThreshold = getSmartfuelEmptyThreshold()
     local lastSmartfuelTime = lastEventTimes["smartfuel"]
 
     -- If telemetry stalled and then resumed, do not "catch up" missed threshold
@@ -311,7 +287,7 @@ local function smartfuelCallout(value, now)
         return
     end
 
-    if value <= emptyThreshold then
+    if value <= 0 then
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
         local haptic = eventPrefs.smartfuelhaptic and true or false
 
