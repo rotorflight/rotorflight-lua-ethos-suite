@@ -24,6 +24,7 @@ local lastTimestamp      = nil
 local virtualConsumption = nil
 local initialConsumption = nil
 local wasEverArmed       = false
+local wasEverInFlight    = false
 local batteryConfigCache = nil
 
 -- Stabilise tracking (values fixed as constants; see smartfuelprefs)
@@ -112,6 +113,7 @@ local function resetFuelState(now)
     virtualConsumption = nil
     initialConsumption = nil
     wasEverArmed       = false
+    wasEverInFlight    = false
     stabilizeNotBefore = now and (now + smartfuelprefs.getStabilizeDelaySeconds()) or nil
     resetVoltageTracking()
 end
@@ -209,6 +211,7 @@ local function smartFuelCalc()
 
     local isArmed = rfsuite.session.isArmed == true
     if isArmed then wasEverArmed = true end
+    if currentMode == "inflight" then wasEverInFlight = true end
 
     local dt = (lastTimestamp and now > lastTimestamp) and (now - lastTimestamp) or 0
 
@@ -265,7 +268,7 @@ local function smartFuelCalc()
     virtualConsumption = (initialChargeLevel - chargeLevel) * packCapacity
 
     lastTimestamp = now
-    if not smartfuelprefs.getEndAtZeroEnabled() then
+    if not smartfuelprefs.getEndAtZeroEnabled() or not wasEverInFlight then
         return math_floor(math_min(1.0, chargeLevel) * 100 + 0.5)
     end
 

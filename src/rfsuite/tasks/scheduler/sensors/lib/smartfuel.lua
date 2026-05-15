@@ -29,6 +29,7 @@ local lastMode = rfsuite.flightmode.current or "preflight"
 local currentMode = rfsuite.flightmode.current or "preflight"
 local lastSensorMode
 local lastLocalFuelStatus
+local wasEverInFlight = false
 
 local function logSmartFuelStatus(status, detail)
     if lastLocalFuelStatus == status then return end
@@ -101,6 +102,7 @@ local function resetState()
     stabilizeNotBefore = nil
     lastSensorMode = nil
     lastLocalFuelStatus = nil
+    wasEverInFlight = false
     telemetry = nil
     currentMode = rfsuite.flightmode.current or "preflight"
     lastMode = currentMode
@@ -200,6 +202,7 @@ local function smartFuelCalc()
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         lastFuelPercent = nil
+        wasEverInFlight = false
 
         resetVoltageTracking()
 
@@ -211,6 +214,7 @@ local function smartFuelCalc()
     end
 
     lastMode = currentMode
+    if currentMode == "inflight" then wasEverInFlight = true end
 
     voltageThreshold = smartfuelprefs.getStableWindowVolts()
 
@@ -278,7 +282,7 @@ local function smartFuelCalc()
         local used = consumption - fuelStartingConsumption
         local percentUsed = used / packCapacity * 100
         local remaining = fuelStartingPercent - percentUsed
-        if not smartfuelprefs.getEndAtZeroEnabled() then
+        if not smartfuelprefs.getEndAtZeroEnabled() or not wasEverInFlight then
             logSmartFuelStatus("ready", "consumption")
             return clampFuelBounceback(math_floor(math_min(100, math_max(0, remaining)) + 0.5))
         end

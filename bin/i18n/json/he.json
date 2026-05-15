@@ -160,7 +160,7 @@
         "max_length": 101
       },
       "smartfuel_end_at_zero": {
-        "english": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage.",
+        "english": "After flight starts, scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Before flight, the raw startup percentage is shown.",
         "translation": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage.",
         "needs_translation": true,
         "reverse_text": false

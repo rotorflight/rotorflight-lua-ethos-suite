@@ -138,10 +138,10 @@
         "translation": "Choose whether local SmartFuel is derived from measured current consumption, estimated from pack voltage, or combined. Combined uses the more pessimistic of voltage and current consumption."
       },
       "smartfuel_end_at_zero": {
-        "english": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage.",
-        "max_length": 132,
+        "english": "After flight starts, scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Before flight, the raw startup percentage is shown.",
+        "max_length": 154,
         "needs_translation": false,
-        "translation": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage."
+        "translation": "After flight starts, scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Before flight, the raw startup percentage is shown."
       },
       "stabilize_delay": {
         "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",

@@ -153,7 +153,7 @@
         "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
       },
       "smartfuel_end_at_zero": {
-        "english": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage.",
+        "english": "After flight starts, scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Before flight, the raw startup percentage is shown.",
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage."

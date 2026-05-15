@@ -32,6 +32,7 @@ local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
 local modeSignature = nil
 local lastSmartFuelMode = nil
+local mirrorWasEverInFlight = false
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
@@ -111,7 +112,10 @@ local function calculateFuel()
     if useFirmwareSmartFuel() then
         local rawFuel = getMirrorSensorValue("smartfuel")
         if rawFuel == nil then return nil end
-        if not smartfuelprefs.getEndAtZeroEnabled() then
+
+        local currentMode = rfsuite.flightmode and rfsuite.flightmode.current
+        if currentMode == "inflight" then mirrorWasEverInFlight = true end
+        if not smartfuelprefs.getEndAtZeroEnabled() or not mirrorWasEverInFlight then
             return math.floor(math.min(100, math.max(0, rawFuel)) + 0.5)
         end
 
@@ -297,6 +301,7 @@ function smart.reset()
     lastModule = nil
     modeSignature = nil
     lastSmartFuelMode = nil
+    mirrorWasEverInFlight = false
 
     resetFuel()
     resetConsumption()
