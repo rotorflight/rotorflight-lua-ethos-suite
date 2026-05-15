@@ -152,8 +152,14 @@
         "reverse_text": false,
         "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
       },
+      "smartfuel_end_at_zero": {
+        "english": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage."
+      },
       "smartfuel_source": {
-        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
+        "english": "Choose whether local SmartFuel is derived from measured current consumption, estimated from pack voltage, or combined. Combined uses the more pessimistic of voltage and current consumption.",
         "max_length": 101,
         "needs_translation": true,
         "reverse_text": false,
@@ -180,12 +186,36 @@
         "reverse_text": false,
         "translation": "Auto"
       },
+      "tbl_combined": {
+        "english": "Combined",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Combined"
+      },
+      "tbl_current": {
+        "english": "Current Sensor",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Current Sensor"
+      },
+      "tbl_disabled": {
+        "english": "Disabled",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Disabled"
+      },
       "tbl_electric": {
         "english": "Electric",
         "max_length": 8,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Electric"
+      },
+      "tbl_enabled": {
+        "english": "Enabled",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Enabled"
       },
       "tbl_nitro": {
         "english": "Nitro",
@@ -207,6 +237,12 @@
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Voltage sensor"
+      },
+      "tbl_voltage": {
+        "english": "Voltage Sensor",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Voltage Sensor"
       },
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
@@ -2870,6 +2906,12 @@
       }
     },
     "SMARTFUEL_CONFIG": {
+      "charge_drop_rate": {
+        "english": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking."
+      },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
         "max_length": 84,
@@ -2884,12 +2926,24 @@
         "reverse_text": false,
         "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
       },
+      "sag_gain": {
+        "english": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable."
+      },
       "sag_multiplier_percent": {
         "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
         "max_length": 126,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
+      },
+      "smartfuel_mode": {
+        "english": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption."
       },
       "smartfuel_source": {
         "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
@@ -2911,6 +2965,12 @@
         "needs_translation": true,
         "reverse_text": false,
         "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
+      },
+      "voltage_drop_rate": {
+        "english": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking."
       },
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
@@ -8384,7 +8444,7 @@
           "translation": "BEC Alarm Waarde"
         },
         "calcfuel_local": {
-          "english": "Calculate Fuel Using",
+          "english": "Local fuel source",
           "max_length": 20,
           "needs_translation": false,
           "reverse_text": false,
@@ -8481,6 +8541,18 @@
           "reverse_text": false,
           "translation": "Selected"
         },
+        "smartfuel_charge_drop_rate": {
+          "english": "Charge Drop Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Charge Drop Rate"
+        },
+        "smartfuel_end_at_zero": {
+          "english": "End at Zero",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "End at Zero"
+        },
         "smartfuel_fuel_drop_rate": {
           "english": "Fuel Drop Rate",
           "max_length": 14,
@@ -8509,6 +8581,12 @@
           "reverse_text": false,
           "translation": "Sag Compensation Factor"
         },
+        "smartfuel_sag_gain": {
+          "english": "Sag Gain",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Sag Gain"
+        },
         "smartfuel_stabilize_delay": {
           "english": "Stabilize Delay",
           "max_length": 15,
@@ -8522,6 +8600,12 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Stable Window"
+        },
+        "smartfuel_voltage_drop_rate": {
+          "english": "Voltage Drop Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Voltage Drop Rate"
         },
         "smartfuel_voltage_fall_limit": {
           "english": "Voltage Fall Limit",

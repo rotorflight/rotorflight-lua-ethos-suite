@@ -131,11 +131,17 @@
         "needs_translation": false,
         "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
       },
-      "smartfuel_source": {
-        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
-        "max_length": 101,
+      "smartfuel_end_at_zero": {
+        "english": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage.",
+        "max_length": 132,
         "needs_translation": false,
-        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
+        "translation": "Scale SmartFuel so the gauge reaches 0% at the configured consumption warning level. Disable to show the raw SmartFuel percentage."
+      },
+      "smartfuel_source": {
+        "english": "Choose whether local SmartFuel is derived from measured current consumption, estimated from pack voltage, or combined. Combined uses the more pessimistic of voltage and current consumption.",
+        "max_length": 170,
+        "needs_translation": false,
+        "translation": "Choose whether local SmartFuel is derived from measured current consumption, estimated from pack voltage, or combined. Combined uses the more pessimistic of voltage and current consumption."
       },
       "stabilize_delay": {
         "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
@@ -155,11 +161,35 @@
         "needs_translation": false,
         "translation": "Auto"
       },
+      "tbl_combined": {
+        "english": "Combined",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "Combined"
+      },
+      "tbl_current": {
+        "english": "Current Sensor",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "Current Sensor"
+      },
+      "tbl_disabled": {
+        "english": "Disabled",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "Disabled"
+      },
       "tbl_electric": {
         "english": "Electric",
         "max_length": 8,
         "needs_translation": false,
         "translation": "Electric"
+      },
+      "tbl_enabled": {
+        "english": "Enabled",
+        "max_length": 7,
+        "needs_translation": false,
+        "translation": "Enabled"
       },
       "tbl_nitro": {
         "english": "Nitro",
@@ -174,6 +204,12 @@
         "translation": "Current Sensor"
       },
       "tbl_on": {
+        "english": "Voltage Sensor",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "Voltage Sensor"
+      },
+      "tbl_voltage": {
         "english": "Voltage Sensor",
         "max_length": 14,
         "needs_translation": false,
@@ -7317,6 +7353,12 @@
           "max_length": 16,
           "needs_translation": false,
           "translation": "Charge Drop Rate"
+        },
+        "smartfuel_end_at_zero": {
+          "english": "End at Zero",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "End at Zero"
         },
         "smartfuel_fuel_drop_rate": {
           "english": "Fuel Drop Rate",

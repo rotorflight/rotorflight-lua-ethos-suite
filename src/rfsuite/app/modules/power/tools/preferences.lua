@@ -15,6 +15,7 @@ local apidata = {
         fields = {
             {t = "@i18n(app.modules.power.model_type)@",    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
             {t = "@i18n(app.modules.power.calcfuel_local)@", mspapi = 1, apikey = "smartfuel_source",    type = 1},
+            {t = "@i18n(app.modules.power.smartfuel_end_at_zero)@", mspapi = 1, apikey = "smartfuel_end_at_zero", type = 1},
         }
     }
 }

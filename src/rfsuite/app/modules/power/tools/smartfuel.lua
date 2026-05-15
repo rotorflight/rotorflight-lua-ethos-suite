@@ -55,9 +55,13 @@ if useFirmwareSmartFuel then
 end
 
 local function isTuningActive()
-    if not useFirmwareSmartFuel then return true end
-    local source = tonumber(sourceField.value) or 0
-    return source == 1 or source == 3
+    if useFirmwareSmartFuel then
+        local source = tonumber(sourceField.value) or 0
+        return source == 1 or source == 3
+    end
+
+    local source = getLocalSource()
+    return source == 1 or source == 2
 end
 
 local function postLoad(self)
