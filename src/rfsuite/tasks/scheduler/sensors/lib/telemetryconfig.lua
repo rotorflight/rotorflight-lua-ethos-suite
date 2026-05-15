@@ -23,15 +23,22 @@ function telemetryconfig.wakeup()
         mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
-            local data = API.data().parsed
+            local apiData = API.data()
+            local data = apiData.parsed
+            local rawBuffer = apiData.buffer
 
             local slots = {}
+            local configBuffer = {}
             for i = 1, 40 do
                 local key = "telem_sensor_slot_" .. i
                 slots[i] = tonumber(data[key]) or 0
             end
+            for i = 1, #rawBuffer do
+                configBuffer[i] = rawBuffer[i]
+            end
 
             rfsuite.session.telemetryConfig = slots
+            rfsuite.session.telemetryConfigBuffer = configBuffer
             rfsuite.session.crsfTelemetryConfig = {
                 mode = tonumber(data["crsf_telemetry_mode"]) or 0,
                 linkRate = tonumber(data["crsf_telemetry_link_rate"]) or 0,
@@ -74,6 +81,7 @@ end
 function telemetryconfig.reset()
 
     rfsuite.session.telemetryConfig = nil
+    rfsuite.session.telemetryConfigBuffer = nil
     rfsuite.session.crsfTelemetryConfig = nil
     mspCallMade = false
 end

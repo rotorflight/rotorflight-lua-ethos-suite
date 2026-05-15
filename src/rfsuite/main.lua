@@ -49,6 +49,7 @@ local userpref_defaults = {
         iconsize = 2,
         shortcuts_mixed_in = true,
         syncname = false,
+        elrs_sync_mode = 2,
         developer_tools = false,
         gimbalsupression = 0.85,
         txbatt_type = 0,

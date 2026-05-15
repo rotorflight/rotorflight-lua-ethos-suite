@@ -7,6 +7,7 @@ local rfsuite = require("rfsuite")
 
 local elrslink = {}
 
+local math_floor = math.floor
 local os_clock = os.clock
 local string_find = string.find
 local string_gmatch = string.gmatch
@@ -28,12 +29,16 @@ local CRSF_ADDRESS_ELRS_LUA = 0xEF
 
 local ELRS_SERIAL_ID = 0x454C5253
 local TYPE_TEXT_SELECTION = 9
+local TELEMETRY_CONFIG_API_NAME = "TELEMETRY_CONFIG"
 
 local DISCOVERY_TIMEOUT_SECONDS = 4.0
 local READ_TIMEOUT_MAX_SECONDS = 8.0
 local READ_TIMEOUT_SECONDS = 0.5
 local PING_RETRY_SECONDS = 1.0
 local WRITE_DELAY_SECONDS = 0.25
+local SYNC_MODE_OFF = 0
+local SYNC_MODE_ROTORFLIGHT_TO_ELRS = 1
+local SYNC_MODE_ELRS_TO_ROTORFLIGHT = 2
 local STD_TLM_RATIO_BY_PACKET_RATE = {
     [25] = 8,
     [50] = 16,
@@ -79,6 +84,54 @@ local function clearPendingWrites()
     end
     pendingWriteCount = 0
     pendingWriteIndex = 1
+end
+
+local function clearApiEntry(apiName)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if api and type(api.clearEntry) == "function" then
+        api.clearEntry(apiName)
+    end
+end
+
+local function getSyncMode()
+    local prefs = rfsuite.preferences and rfsuite.preferences.general
+    local value = tonumber(prefs and prefs.elrs_sync_mode)
+
+    if value == SYNC_MODE_ROTORFLIGHT_TO_ELRS or value == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
+        return value
+    end
+
+    return SYNC_MODE_OFF
+end
+
+local function syncModeLabel(mode)
+    if mode == SYNC_MODE_ROTORFLIGHT_TO_ELRS then
+        return "Rotorflight -> ELRS"
+    end
+    if mode == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
+        return "ELRS -> Rotorflight"
+    end
+    return "Off"
+end
+
+local function copyNumericBuffer(source)
+    if type(source) ~= "table" then return nil end
+
+    local buffer = {}
+    for i = 1, #source do
+        buffer[i] = source[i]
+    end
+
+    return buffer
+end
+
+local function writeU16Le(buffer, offset, value)
+    local number = math_floor(tonumber(value) or 0)
+    if number < 0 then number = 0 end
+    if number > 65535 then number = 65535 end
+
+    buffer[offset] = number % 256
+    buffer[offset + 1] = math_floor(number / 256)
 end
 
 local function getSensor()
@@ -393,9 +446,218 @@ local function telemetryModeLabel(mode)
     return tostring(mode)
 end
 
+local function syncRotorflightToElrs(fcConfig)
+    local rateTargetIndex = nil
+    local rateTargetLabel = nil
+    local ratioTargetIndex = nil
+    local ratioTargetLabel = nil
+
+    clearPendingWrites()
+
+    ratioTargetIndex, ratioTargetLabel = findRatioTarget(ratioField, fcConfig.linkRatio)
+    rateTargetIndex, rateTargetLabel = findRateTarget(rateField, fcConfig.linkRate)
+
+    if ratioField and ratioTargetIndex ~= nil and ratioField.selectedIndex ~= ratioTargetIndex then
+        enqueueWrite("ratio", ratioField, ratioTargetIndex, ratioTargetLabel)
+    end
+
+    -- Write rate last because changing the air rate can briefly drop and re-establish the link.
+    if rateField and rateTargetIndex ~= nil and rateField.selectedIndex ~= rateTargetIndex then
+        enqueueWrite("rate", rateField, rateTargetIndex, rateTargetLabel)
+    end
+
+    if pendingWriteCount > 0 then
+        local actions = {}
+        for i = 1, pendingWriteCount do
+            local action = pendingWrites[i]
+            actions[#actions + 1] = tostring(action.fieldName) .. " -> " .. tostring(action.label)
+        end
+
+        rfsuite.utils.log(
+            "Syncing ELRS module to Rotorflight: " .. table.concat(actions, ", "),
+            "connect"
+        )
+
+        if ratioField == nil then
+            rfsuite.utils.log("ELRS sync could not find the module telemetry-ratio field", "info")
+        elseif ratioTargetIndex == nil then
+            rfsuite.utils.log(
+                "ELRS sync could not map Rotorflight ratio 1:" .. tostring(fcConfig.linkRatio) .. " to a module option",
+                "info"
+            )
+        end
+
+        if rateField == nil then
+            rfsuite.utils.log("ELRS sync could not find the module packet-rate field", "info")
+        elseif rateTargetIndex == nil then
+            rfsuite.utils.log(
+                "ELRS sync could not map Rotorflight rate " .. tostring(fcConfig.linkRate) .. "Hz to a module option",
+                "info"
+            )
+        end
+
+        state = "write"
+        nextActionAt = 0
+        return
+    end
+
+    if rateField == nil then
+        rfsuite.utils.log("ELRS sync could not find the module packet-rate field", "info")
+    elseif rateTargetIndex == nil then
+        rfsuite.utils.log(
+            "ELRS sync could not map Rotorflight rate " .. tostring(fcConfig.linkRate) .. "Hz to a module option",
+            "info"
+        )
+    end
+
+    if ratioField == nil then
+        rfsuite.utils.log("ELRS sync could not find the module telemetry-ratio field", "info")
+    elseif ratioTargetIndex == nil then
+        rfsuite.utils.log(
+            "ELRS sync could not map Rotorflight ratio 1:" .. tostring(fcConfig.linkRatio) .. " to a module option",
+            "info"
+        )
+    end
+
+    if rateField and ratioField and rateTargetIndex == rateField.selectedIndex and ratioTargetIndex == ratioField.selectedIndex then
+        rfsuite.utils.log("ELRS module already follows Rotorflight", "connect")
+    end
+
+    completeTask()
+end
+
+local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, moduleRatioText, ratioKind, effectiveRatio)
+    local session = rfsuite.session
+    local sourceBuffer = session and session.telemetryConfigBuffer
+
+    if type(moduleRate) ~= "number" then
+        rfsuite.utils.log(
+            "ELRS sync could not determine a numeric packet rate from " .. tostring(moduleRateText or "?"),
+            "info"
+        )
+        completeTask()
+        return
+    end
+
+    if type(effectiveRatio) ~= "number" then
+        if ratioKind == "off" then
+            rfsuite.utils.log(
+                "ELRS sync could not map telemetry ratio " .. tostring(moduleRatioText or "?") .. " to a Rotorflight numeric ratio",
+                "info"
+            )
+        else
+            rfsuite.utils.log(
+                "ELRS sync could not resolve telemetry ratio " .. tostring(moduleRatioText or "?") .. " to a numeric 1:n value",
+                "info"
+            )
+        end
+        completeTask()
+        return
+    end
+
+    if type(sourceBuffer) ~= "table" or #sourceBuffer < 12 then
+        rfsuite.utils.log("ELRS sync could not update Rotorflight because the telemetry-config buffer was unavailable", "info")
+        completeTask()
+        return
+    end
+
+    if fcConfig.linkRate == moduleRate and fcConfig.linkRatio == effectiveRatio then
+        if ratioKind == "race" then
+            rfsuite.utils.log(
+                "Rotorflight already matches ELRS numerically (Race still becomes Off while armed on the module)",
+                "connect"
+            )
+        else
+            rfsuite.utils.log("Rotorflight already follows ELRS numerically", "connect")
+        end
+        completeTask()
+        return
+    end
+
+    local writeBuffer = copyNumericBuffer(sourceBuffer)
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load
+        and rfsuite.tasks.msp.api.load(TELEMETRY_CONFIG_API_NAME)
+
+    if not writeBuffer or not api then
+        rfsuite.utils.log("ELRS sync could not open the Rotorflight telemetry configuration for writing", "info")
+        completeTask()
+        return
+    end
+
+    writeU16Le(writeBuffer, 9, moduleRate)
+    writeU16Le(writeBuffer, 11, effectiveRatio)
+
+    if ratioKind == "race" then
+        rfsuite.utils.log(
+            "ELRS Race mode is being synced to Rotorflight as the disarmed numeric ratio 1:" .. tostring(effectiveRatio),
+            "info"
+        )
+    end
+
+    rfsuite.utils.log(
+        "Syncing Rotorflight telemetry to match ELRS: rate=" .. tostring(moduleRateText) .. ", ratio=1:" .. tostring(effectiveRatio),
+        "connect"
+    )
+
+    clearApiEntry(TELEMETRY_CONFIG_API_NAME)
+    api.setUUID("elrslink.telemetry.write")
+    api.setCompleteHandler(function()
+        clearApiEntry(TELEMETRY_CONFIG_API_NAME)
+
+        if session then
+            session.telemetryConfigBuffer = copyNumericBuffer(writeBuffer)
+            session.crsfTelemetryConfig = {
+                mode = fcConfig.mode,
+                linkRate = moduleRate,
+                linkRatio = effectiveRatio
+            }
+        end
+
+        rfsuite.utils.log(
+            "Rotorflight telemetry now matches ELRS: mode="
+                .. telemetryModeLabel(fcConfig.mode)
+                .. ", rate="
+                .. tostring(moduleRate)
+                .. ", ratio=1:"
+                .. tostring(effectiveRatio),
+            "connect"
+        )
+
+        local ok, reason = rfsuite.utils.queueEepromWrite({
+            uuid = "eeprom.elrslink.postconnect",
+            processReply = function()
+                rfsuite.utils.log("Saved Rotorflight telemetry sync to EEPROM", "info")
+                completeTask()
+            end,
+            errorHandler = function()
+                rfsuite.utils.log("EEPROM write failed after ELRS telemetry sync", "info")
+                completeTask()
+            end
+        })
+
+        if not ok then
+            rfsuite.utils.log("EEPROM enqueue rejected after ELRS telemetry sync (" .. tostring(reason) .. ")", "info")
+            completeTask()
+        end
+    end)
+    api.setErrorHandler(function(_, reason)
+        clearApiEntry(TELEMETRY_CONFIG_API_NAME)
+        rfsuite.utils.log("Failed to sync Rotorflight telemetry from ELRS (" .. tostring(reason) .. ")", "info")
+        completeTask()
+    end)
+
+    local ok, reason = api.write(writeBuffer)
+    if not ok then
+        clearApiEntry(TELEMETRY_CONFIG_API_NAME)
+        rfsuite.utils.log("Rotorflight telemetry sync write was rejected (" .. tostring(reason) .. ")", "info")
+        completeTask()
+    end
+end
+
 local function finalize()
     local session = rfsuite.session
     local fcConfig = session and session.crsfTelemetryConfig
+    local syncMode = getSyncMode()
 
     if rateField then moduleRateLabel = rateField.selectedLabel end
     if ratioField then moduleRatioLabel = ratioField.selectedLabel end
@@ -404,10 +666,6 @@ local function finalize()
     local explicitRatio, ratioKind = parseRatioLabel(moduleRatioLabel)
     local effectiveRatio = resolveEffectiveRatio(moduleRate, ratioKind, explicitRatio)
     local ratioSummary = formatRatioSummary(moduleRatioLabel, ratioKind, effectiveRatio)
-    local rateTargetIndex = nil
-    local rateTargetLabel = nil
-    local ratioTargetIndex = nil
-    local ratioTargetLabel = nil
 
     session.elrsLinkConfig = {
         packetRateLabel = moduleRateLabel,
@@ -437,8 +695,6 @@ local function finalize()
     end
 
     if fcConfig then
-        clearPendingWrites()
-
         rfsuite.utils.log(
             "Rotorflight CRSF telemetry: mode="
                 .. telemetryModeLabel(fcConfig.mode)
@@ -448,78 +704,22 @@ local function finalize()
                 .. tostring(fcConfig.linkRatio),
             "info"
         )
-
-        ratioTargetIndex, ratioTargetLabel = findRatioTarget(ratioField, fcConfig.linkRatio)
-        rateTargetIndex, rateTargetLabel = findRateTarget(rateField, fcConfig.linkRate)
-
-        if ratioField and ratioTargetIndex ~= nil and ratioField.selectedIndex ~= ratioTargetIndex then
-            enqueueWrite("ratio", ratioField, ratioTargetIndex, ratioTargetLabel)
-        end
-
-        -- Write rate last because changing the air rate can briefly drop and re-establish the link.
-        if rateField and rateTargetIndex ~= nil and rateField.selectedIndex ~= rateTargetIndex then
-            enqueueWrite("rate", rateField, rateTargetIndex, rateTargetLabel)
-        end
-
-        if pendingWriteCount > 0 then
-            local actions = {}
-            for i = 1, pendingWriteCount do
-                local action = pendingWrites[i]
-                actions[#actions + 1] = tostring(action.fieldName) .. " -> " .. tostring(action.label)
-            end
-
-            rfsuite.utils.log(
-                "Syncing ELRS module to Rotorflight: " .. table.concat(actions, ", "),
-                "connect"
-            )
-
-            if ratioField == nil then
-                rfsuite.utils.log("ELRS sync could not find the module telemetry-ratio field", "info")
-            elseif ratioTargetIndex == nil then
-                rfsuite.utils.log(
-                    "ELRS sync could not map Rotorflight ratio 1:" .. tostring(fcConfig.linkRatio) .. " to a module option",
-                    "info"
-                )
-            end
-
-            if rateField == nil then
-                rfsuite.utils.log("ELRS sync could not find the module packet-rate field", "info")
-            elseif rateTargetIndex == nil then
-                rfsuite.utils.log(
-                    "ELRS sync could not map Rotorflight rate " .. tostring(fcConfig.linkRate) .. "Hz to a module option",
-                    "info"
-                )
-            end
-
-            state = "write"
-            nextActionAt = 0
-            return
-        end
-
-        if rateField == nil then
-            rfsuite.utils.log("ELRS sync could not find the module packet-rate field", "info")
-        elseif rateTargetIndex == nil then
-            rfsuite.utils.log(
-                "ELRS sync could not map Rotorflight rate " .. tostring(fcConfig.linkRate) .. "Hz to a module option",
-                "info"
-            )
-        end
-
-        if ratioField == nil then
-            rfsuite.utils.log("ELRS sync could not find the module telemetry-ratio field", "info")
-        elseif ratioTargetIndex == nil then
-            rfsuite.utils.log(
-                "ELRS sync could not map Rotorflight ratio 1:" .. tostring(fcConfig.linkRatio) .. " to a module option",
-                "info"
-            )
-        end
-
-        if rateField and ratioField and rateTargetIndex == rateField.selectedIndex and ratioTargetIndex == ratioField.selectedIndex then
-            rfsuite.utils.log("ELRS module already follows Rotorflight", "connect")
-        end
     end
 
-    completeTask()
+    if syncMode == SYNC_MODE_OFF then
+        rfsuite.utils.log("ELRS telemetry sync is Off; leaving both sides unchanged", "info")
+        completeTask()
+        return
+    end
+
+    rfsuite.utils.log("ELRS telemetry sync mode: " .. syncModeLabel(syncMode), "debug")
+
+    if syncMode == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
+        syncElrsToRotorflight(fcConfig, moduleRate, moduleRateLabel, moduleRatioLabel, ratioKind, effectiveRatio)
+        return
+    end
+
+    syncRotorflightToElrs(fcConfig)
 end
 
 local function shouldSkip()
@@ -553,6 +753,7 @@ local function resetState()
     ratioField = nil
     moduleRateLabel = nil
     moduleRatioLabel = nil
+    clearApiEntry(TELEMETRY_CONFIG_API_NAME)
     clearFieldData()
     clearPendingWrites()
 end
