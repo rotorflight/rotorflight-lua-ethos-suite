@@ -29,7 +29,6 @@ local lastMode = rfsuite.flightmode.current or "preflight"
 local currentMode = rfsuite.flightmode.current or "preflight"
 local lastSensorMode
 local lastLocalFuelStatus
-local wasEverInFlight = false
 
 local function logSmartFuelStatus(status, detail)
     if lastLocalFuelStatus == status then return end
@@ -102,7 +101,6 @@ local function resetState()
     stabilizeNotBefore = nil
     lastSensorMode = nil
     lastLocalFuelStatus = nil
-    wasEverInFlight = false
     telemetry = nil
     currentMode = rfsuite.flightmode.current or "preflight"
     lastMode = currentMode
@@ -202,7 +200,6 @@ local function smartFuelCalc()
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         lastFuelPercent = nil
-        wasEverInFlight = false
 
         resetVoltageTracking()
 
@@ -214,7 +211,6 @@ local function smartFuelCalc()
     end
 
     lastMode = currentMode
-    if currentMode == "inflight" then wasEverInFlight = true end
 
     voltageThreshold = smartfuelprefs.getStableWindowVolts()
 
@@ -282,16 +278,8 @@ local function smartFuelCalc()
         local used = consumption - fuelStartingConsumption
         local percentUsed = used / packCapacity * 100
         local remaining = fuelStartingPercent - percentUsed
-        if not smartfuelprefs.getEndAtZeroEnabled() or not wasEverInFlight then
-            logSmartFuelStatus("ready", "consumption")
-            return clampFuelBounceback(math_floor(math_min(100, math_max(0, remaining)) + 0.5))
-        end
-
-        local warningPercent = bc.consumptionWarningPercentage or 0
-        local usableRange = math_max(1, 100 - warningPercent)
-        local adjusted = math_max(0, remaining - warningPercent)
         logSmartFuelStatus("ready", "consumption")
-        return clampFuelBounceback(math_floor(math_min(100, adjusted / usableRange * 100) + 0.5))
+        return clampFuelBounceback(math_floor(math_min(100, math_max(0, remaining)) + 0.5))
     else
 
         if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then

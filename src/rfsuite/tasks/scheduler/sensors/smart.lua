@@ -32,7 +32,6 @@ local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
 local modeSignature = nil
 local lastSmartFuelMode = nil
-local mirrorWasEverInFlight = false
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
@@ -69,16 +68,15 @@ local function useFirmwareSmartFuel()
     return source ~= nil and source > 0
 end
 
+local function useLocalVoltageSmartFuel()
+    return smartfuelprefs.getSource() == 1
+end
+
 local function getSmartFuelMode()
     if useFirmwareSmartFuel() then
         return "firmware"
-    end
-
-    local localSource = smartfuelprefs.getSource()
-    if localSource == 1 then
+    elseif useLocalVoltageSmartFuel() then
         return "voltage"
-    elseif localSource == 2 then
-        return "combined"
     end
     return "current"
 end
@@ -87,7 +85,7 @@ local function getSmartFuelModeDetail(mode)
     local firmwareSource = getFirmwareSmartFuelSource()
     local localSource = smartfuelprefs.getSource()
     local remoteLabel = firmwareSource == 1 and "VOLTAGE" or firmwareSource == 2 and "CURRENT" or firmwareSource == 3 and "COMBINED" or firmwareSource == 0 and "OFF" or "n/a"
-    local localLabel = localSource == 1 and "VOLTAGE" or localSource == 2 and "COMBINED" or "CURRENT"
+    local localLabel = localSource == 1 and "VOLTAGE" or "CURRENT"
     if mode == "firmware" then
         return "firmware " .. remoteLabel
     end
@@ -112,18 +110,7 @@ local function calculateFuel()
     if useFirmwareSmartFuel() then
         local rawFuel = getMirrorSensorValue("smartfuel")
         if rawFuel == nil then return nil end
-
-        local currentMode = rfsuite.flightmode and rfsuite.flightmode.current
-        if currentMode == "inflight" then mirrorWasEverInFlight = true end
-        if not smartfuelprefs.getEndAtZeroEnabled() or not mirrorWasEverInFlight then
-            return math.floor(math.min(100, math.max(0, rawFuel)) + 0.5)
-        end
-
-        local bc = rfsuite.session and rfsuite.session.batteryConfig
-        local warningPercent = bc and (bc.consumptionWarningPercentage or 0) or 0
-        local usableRange = math.max(1, 100 - warningPercent)
-        local adjusted = math.max(0, rawFuel - warningPercent)
-        return math.floor(math.min(100, adjusted / usableRange * 100) + 0.5)
+        return math.floor(math.min(100, math.max(0, rawFuel)) + 0.5)
     end
 
     return smartfuelvoltage.calculate()
@@ -301,7 +288,6 @@ function smart.reset()
     lastModule = nil
     modeSignature = nil
     lastSmartFuelMode = nil
-    mirrorWasEverInFlight = false
 
     resetFuel()
     resetConsumption()
