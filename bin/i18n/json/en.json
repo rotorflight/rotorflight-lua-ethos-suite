@@ -2468,10 +2468,10 @@
     },
     "SMARTFUEL_CONFIG": {
       "charge_drop_rate": {
-        "english": "Limits how fast the fuel percentage can drop per second, applied to the final output after the voltage-to-charge curve. Only becomes active once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking.",
+        "english": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking.",
         "max_length": 280,
         "needs_translation": false,
-        "translation": "Limits how fast the fuel percentage can drop per second, applied to the final output after the voltage-to-charge curve. Only becomes active once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking."
+        "translation": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking."
       },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
@@ -2486,10 +2486,10 @@
         "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
       },
       "sag_gain": {
-        "english": "Compensates for voltage sag under collective and cyclic load while airborne. The correction is added to per-cell voltage before the fuel curve, partially offsetting load-induced dips. Higher values apply more compensation; set to 0 to disable.",
+        "english": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable.",
         "max_length": 248,
         "needs_translation": false,
-        "translation": "Compensates for voltage sag under collective and cyclic load while airborne. The correction is added to per-cell voltage before the fuel curve, partially offsetting load-induced dips. Higher values apply more compensation; set to 0 to disable."
+        "translation": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable."
       },
       "sag_multiplier_percent": {
         "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
@@ -2498,10 +2498,10 @@
         "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
       },
       "smartfuel_mode": {
-        "english": "Choose whether firmware SmartFuel is disabled, voltage-estimated, or current-limited.",
-        "max_length": 86,
+        "english": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption.",
+        "max_length": 164,
         "needs_translation": false,
-        "translation": "Choose whether firmware SmartFuel is disabled, voltage-estimated, or current-limited."
+        "translation": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption."
       },
       "smartfuel_source": {
         "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
@@ -2522,10 +2522,10 @@
         "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
       },
       "voltage_drop_rate": {
-        "english": "Limits how fast the measured per-cell voltage can fall (mV/s). Filters out brief voltage dips caused by load spikes before they reach the fuel curve. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking.",
+        "english": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking.",
         "max_length": 258,
         "needs_translation": false,
-        "translation": "Limits how fast the measured per-cell voltage can fall (mV/s). Filters out brief voltage dips caused by load spikes before they reach the fuel curve. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking."
+        "translation": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking."
       },
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",

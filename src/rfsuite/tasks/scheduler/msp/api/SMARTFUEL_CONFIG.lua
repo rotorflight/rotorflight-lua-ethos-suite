@@ -18,14 +18,15 @@ local MSP_API_CMD_WRITE = 0x4001
 local modeTable = {
     "OFF (LOCAL)",
     "VOLTAGE",
-    "CURRENT"
+    "CURRENT",
+    "COMBINED"
 }
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"smartfuel_mode", "U8", 0, 2, 0, nil, nil, nil, nil, nil, modeTable, -1},
+    {"smartfuel_mode", "U8", 0, 3, 0, nil, nil, nil, nil, nil, modeTable, -1},
     {"voltage_drop_rate", "U8", 0, 250, 10, "mV/s", nil, nil, 1},
     {"charge_drop_rate", "U8", 0, 250, 50, "%/s", 2, 100, 1},
     {"sag_gain", "U8", 0, 100, 40, "%", nil, nil, 1}

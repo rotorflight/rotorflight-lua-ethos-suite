@@ -84,7 +84,7 @@ end
 local function getSmartFuelModeDetail(mode)
     local firmwareSource = getFirmwareSmartFuelSource()
     local localSource = smartfuelprefs.getSource()
-    local remoteLabel = firmwareSource == 1 and "VOLTAGE" or firmwareSource == 2 and "CURRENT" or firmwareSource == 0 and "OFF" or "n/a"
+    local remoteLabel = firmwareSource == 1 and "VOLTAGE" or firmwareSource == 2 and "CURRENT" or firmwareSource == 3 and "COMBINED" or firmwareSource == 0 and "OFF" or "n/a"
     local localLabel = localSource == 1 and "VOLTAGE" or "CURRENT"
     if mode == "firmware" then
         return "firmware " .. remoteLabel
