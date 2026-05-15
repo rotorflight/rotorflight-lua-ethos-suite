@@ -32,6 +32,11 @@ function telemetryconfig.wakeup()
             end
 
             rfsuite.session.telemetryConfig = slots
+            rfsuite.session.crsfTelemetryConfig = {
+                mode = tonumber(data["crsf_telemetry_mode"]) or 0,
+                linkRate = tonumber(data["crsf_telemetry_link_rate"]) or 0,
+                linkRatio = tonumber(data["crsf_telemetry_link_ratio"]) or 0
+            }
 
             local parts = {}
             for i, v in ipairs(slots) do 
@@ -44,6 +49,15 @@ function telemetryconfig.wakeup()
             if log then 
                 log("Updated telemetry sensors: " .. slotsStr, "info") 
                 log("Updated telemetry sensors: " .. tostring(#parts) .. " of " .. tostring(#slots), "connect")
+                log(
+                    "CRSF telemetry config: mode="
+                        .. tostring(rfsuite.session.crsfTelemetryConfig.mode)
+                        .. ", rate="
+                        .. tostring(rfsuite.session.crsfTelemetryConfig.linkRate)
+                        .. ", ratio="
+                        .. tostring(rfsuite.session.crsfTelemetryConfig.linkRatio),
+                    "info"
+                )
             end    
         end)
         API.setErrorHandler(function(self, err)
@@ -60,6 +74,7 @@ end
 function telemetryconfig.reset()
 
     rfsuite.session.telemetryConfig = nil
+    rfsuite.session.crsfTelemetryConfig = nil
     mspCallMade = false
 end
 

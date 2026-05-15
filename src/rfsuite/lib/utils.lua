@@ -61,6 +61,8 @@ function utils.session()
         telemetryModule = nil,
         telemetryModelChanged = nil,
         telemetryConfig = nil,
+        crsfTelemetryConfig = nil,
+        elrsLinkConfig = nil,
         telemetryModuleNumber = nil,
 
         mspBusy = false,
