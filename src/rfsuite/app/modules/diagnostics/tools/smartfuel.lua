@@ -10,6 +10,7 @@ local app = rfsuite.app
 local tasks = rfsuite.tasks
 local session = rfsuite.session
 local system_getSource = system.getSource
+local system_getVersion = system.getVersion
 local os_clock = os.clock
 local math_floor = math.floor
 local math_max = math.max
@@ -40,6 +41,11 @@ local LOCAL_SOURCE_LABELS = {
 }
 
 local SENSOR_MAP = {
+    sim = {
+        protocol = "Simulator / MSP",
+        fuel = {label = "MSP fuel", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5007}, unit = "%"},
+        consumption = {label = "MSP mAh", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5008}, unit = "mAh"},
+    },
     sport = {
         protocol = "FBus / S.Port",
         fuel = {label = "0x0600", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, unit = "%"},
@@ -57,7 +63,13 @@ local SMART_SENSORS = {
     consumption = {label = "0x5FE0", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}, unit = "mAh"},
 }
 
+local function isSimulation()
+    local version = system_getVersion()
+    return version and version.simulation == true
+end
+
 local function getProtocol()
+    if isSimulation() then return "sim" end
     return tasks and tasks.msp and tasks.msp.protocol and tasks.msp.protocol.mspProtocol
 end
 
@@ -119,8 +131,8 @@ end
 local function formatSensor(sourceDef)
     if not sourceDef then return "n/a" end
     local value, present = sourceValue(sourceDef)
-    if not present then return sourceDef.label .. " -> -" end
-    return sourceDef.label .. " -> " .. formatNumber(value, 0) .. (sourceDef.unit and (" " .. sourceDef.unit) or "")
+    if not present then return sourceDef.label .. ": -" end
+    return sourceDef.label .. ": " .. formatNumber(value, 0) .. (sourceDef.unit and (" " .. sourceDef.unit) or "")
 end
 
 local function setField(key, value, color)
@@ -174,15 +186,17 @@ updateValues = function()
 
     local prefs = getBatteryPrefs() or {}
     local bc = session and session.batteryConfig or {}
-    local voltageDrop = (firmwareConfig and firmwareConfig.voltageDropRate) or tonumber(prefs.voltage_drop_rate) or 10
-    local chargeDrop = (firmwareConfig and firmwareConfig.chargeDropRate) or tonumber(prefs.charge_drop_rate) or 50
-    local sagGain = (firmwareConfig and firmwareConfig.sagGain) or tonumber(prefs.sag_gain) or 40
+    local firmwareSource = getFirmwareSource()
+    local usingFirmware = firmwareSource and firmwareSource > 0
+    local voltageDrop = (usingFirmware and firmwareConfig and firmwareConfig.voltageDropRate) or tonumber(prefs.voltage_drop_rate) or 10
+    local chargeDrop = (usingFirmware and firmwareConfig and firmwareConfig.chargeDropRate) or tonumber(prefs.charge_drop_rate) or 50
+    local sagGain = (usingFirmware and firmwareConfig and firmwareConfig.sagGain) or tonumber(prefs.sag_gain) or 40
     local capacity = tonumber(bc.batteryCapacity) or 0
     local reserve = tonumber(bc.consumptionWarningPercentage) or 0
 
     if chargeDrop > 250 then chargeDrop = chargeDrop / 100 end
 
-    setField("tuning_source", firmwareConfig and "Firmware MSP" or "Local preferences")
+    setField("tuning_source", usingFirmware and "Firmware MSP" or "Local prefs")
     setField("voltage_slew", formatNumber(voltageDrop, 0) .. " mV/s")
     setField("charge_slew", formatNumber(chargeDrop / 100, 2) .. " %/s")
     setField("sag_gain", formatNumber(sagGain, 0) .. "%")
@@ -209,12 +223,12 @@ local function openPage(opts)
 
     addLine("protocol", "Protocol")
     addLine("mode", "Active mode")
-    addLine("mode_detail", "Mode sources")
+    addLine("mode_detail", "FBL / local")
     addLine("tuning_source", "Tuning source")
     addLine("source_fuel", "Source fuel")
-    addLine("source_consumption", "Source consumption")
+    addLine("source_consumption", "Source mAh")
     addLine("dest_fuel", "Smart Fuel")
-    addLine("dest_consumption", "Smart Consumption")
+    addLine("dest_consumption", "Smart mAh")
     addLine("voltage_slew", "Voltage slew")
     addLine("charge_slew", "Charge slew")
     addLine("sag_gain", "Sag gain")
