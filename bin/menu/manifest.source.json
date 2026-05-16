@@ -340,6 +340,14 @@
         },
         {
           "bgtask": true,
+          "image": "smartfuel.png",
+          "name": "SmartFuel",
+          "offline": false,
+          "script": "smartfuel.lua",
+          "translation": "@i18n(app.modules.power.smartfuel_name)@"
+        },
+        {
+          "bgtask": true,
           "image": "fblsensors.png",
           "name": "FBL Sensors",
           "offline": false,
