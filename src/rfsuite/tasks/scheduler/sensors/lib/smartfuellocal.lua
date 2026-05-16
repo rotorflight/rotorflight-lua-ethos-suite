@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
+local smartfuelreserve = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelreserve.lua"))()
 
 local os_clock = os.clock
 local math_floor = math.floor
@@ -265,14 +266,7 @@ local function smartFuelCalc()
     virtualConsumption = (initialChargeLevel - chargeLevel) * packCapacity
 
     lastTimestamp = now
-    if not smartfuelprefs.getEndAtZeroEnabled() then
-        return math_floor(math_min(1.0, chargeLevel) * 100 + 0.5)
-    end
-
-    local warningFrac = (bc.consumptionWarningPercentage or 0) / 100
-    local usableRange = math_max(0.01, 1.0 - warningFrac)
-    local adjusted    = math_max(0.0, chargeLevel - warningFrac)
-    return math_floor(math_min(1.0, adjusted / usableRange) * 100 + 0.5)
+    return smartfuelreserve.applyPercent(math_min(1.0, chargeLevel) * 100, bc.consumptionWarningPercentage, smartfuelprefs.getEndAtZeroEnabled())
 end
 
 local function getConsumption()

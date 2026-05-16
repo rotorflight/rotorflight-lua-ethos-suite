@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local smartfuelreserve = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelreserve.lua"))()
 
 local app = rfsuite.app
 local tasks = rfsuite.tasks
@@ -199,6 +200,11 @@ updateValues = function()
     local sagGain = (usingFirmware and firmwareConfig and firmwareConfig.sagGain) or tonumber(prefs.sag_gain) or 40
     local capacity = tonumber(bc.batteryCapacity) or 0
     local reserve = tonumber(bc.consumptionWarningPercentage) or 0
+    local rawFuel = nil
+    if usingFirmware and protocol and protocol.fuel then
+        rawFuel = sourceValue(protocol.fuel)
+    end
+    local targetFuel = smartfuelreserve.applyPercent(rawFuel, reserve, true)
 
     if chargeDrop > 250 then chargeDrop = chargeDrop / 100 end
 
@@ -208,6 +214,7 @@ updateValues = function()
     setField("sag_gain", formatNumber(sagGain, 0) .. "%")
     setField("capacity", formatNumber(capacity, 0) .. " mAh")
     setField("reserve", formatNumber(reserve, 0) .. "%")
+    setField("reserve_target", targetFuel and (formatNumber(targetFuel, 0) .. "%") or "-")
 end
 
 local function openPage(opts)
@@ -240,6 +247,7 @@ local function openPage(opts)
     addLine("sag_gain", "Sag gain")
     addLine("capacity", "Pack capacity")
     addLine("reserve", "Reserve alert")
+    addLine("reserve_target", "Reserve target")
 
     readFirmwareConfig()
     updateValues()
