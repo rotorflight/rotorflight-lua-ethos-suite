@@ -12,6 +12,7 @@ local session = rfsuite.session
 local system_getSource = system.getSource
 local os_clock = os.clock
 local math_floor = math.floor
+local math_max = math.max
 
 local enableWakeup = false
 local lastWakeup = 0
@@ -20,11 +21,9 @@ local firmwareConfig
 local firmwareReadStarted = false
 local updateValues
 
-local w = lcd.getWindowSize()
-local btnW = 100
-local btnWs = btnW - (btnW * 20) / 100
-local xRight = w - 15
-local valuePos = {x = xRight - btnW - btnWs - 5 - btnWs, y = app.radio.linePaddingTop, w = 260, h = app.radio.navbuttonHeight}
+local screenW = lcd.getWindowSize()
+local valueX = math_max(120, math_floor(screenW * 0.28))
+local valuePos = {x = valueX, y = app.radio.linePaddingTop, w = screenW - valueX - 8, h = app.radio.navbuttonHeight}
 
 local fields = {}
 
@@ -43,19 +42,19 @@ local LOCAL_SOURCE_LABELS = {
 local SENSOR_MAP = {
     sport = {
         protocol = "FBus / S.Port",
-        fuel = {label = "[0x0600] Fuel", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, unit = "%"},
-        consumption = {label = "[0x5250] Consumption", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}, unit = "mAh"},
+        fuel = {label = "0x0600", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, unit = "%"},
+        consumption = {label = "0x5250", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}, unit = "mAh"},
     },
     crsf = {
         protocol = "CRSF / ELRS",
-        fuel = {label = "[0x1014] Charge Level", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, unit = "%"},
-        consumption = {label = "[0x1013] Consumption", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}, unit = "mAh"},
+        fuel = {label = "0x1014", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, unit = "%"},
+        consumption = {label = "0x1013", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}, unit = "mAh"},
     },
 }
 
 local SMART_SENSORS = {
-    fuel = {label = "[0x5FE1] Smart Fuel", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}, unit = "%"},
-    consumption = {label = "[0x5FE0] Smart Consumption", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}, unit = "mAh"},
+    fuel = {label = "0x5FE1", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1}, unit = "%"},
+    consumption = {label = "0x5FE0", query = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0}, unit = "mAh"},
 }
 
 local function getProtocol()
