@@ -20,16 +20,16 @@ local tonumber = tonumber
 local pairs = pairs
 local math_floor = math.floor
 
-local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
 local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
 local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.tbl_electric)@", "@i18n(api.BATTERY_INI.tbl_nitro)@"}
+local smartFuelLocalSources = {"CURRENT", "VOLTAGE", "COMBINED"}
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
 local FIELD_SPEC = {
     {"smartfuel_model_type", "U8", 0, 2, 0, nil, nil, nil, nil, nil, modelTypes, -1},
-    {"smartfuel_source", "U8", 0, 1, 0, nil, nil, nil, nil, nil, offOn, -1},
+    {"smartfuel_source", "U8", 0, 2, 0, nil, nil, nil, nil, nil, smartFuelLocalSources, -1},
     {"voltage_drop_rate", "U8", 0, 250, 10, "mV/s", nil, nil, 1},
     {"charge_drop_rate", "U8", 0, 250, 50, "%/s", 2, 100, 1},
     {"sag_gain", "U8", 0, 100, 40, "%", nil, nil, 1},
