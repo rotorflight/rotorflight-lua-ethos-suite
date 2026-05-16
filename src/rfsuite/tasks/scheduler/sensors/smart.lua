@@ -72,15 +72,16 @@ local function useFirmwareSmartFuel()
     return source ~= nil and source > 0
 end
 
-local function useLocalVoltageSmartFuel()
-    return smartfuelprefs.getSource() == 1
-end
-
 local function getSmartFuelMode()
     if useFirmwareSmartFuel() then
         return "firmware"
-    elseif useLocalVoltageSmartFuel() then
+    end
+
+    local localSource = smartfuelprefs.getSource()
+    if localSource == 1 then
         return "voltage"
+    elseif localSource == 2 then
+        return "combined"
     end
     return "current"
 end
@@ -89,7 +90,7 @@ local function getSmartFuelModeDetail(mode)
     local firmwareSource = getFirmwareSmartFuelSource()
     local localSource = smartfuelprefs.getSource()
     local remoteLabel = firmwareSource == 1 and "VOLTAGE" or firmwareSource == 2 and "CURRENT" or firmwareSource == 3 and "COMBINED" or firmwareSource == 0 and "OFF" or "n/a"
-    local localLabel = localSource == 1 and "VOLTAGE" or "CURRENT"
+    local localLabel = localSource == 1 and "VOLTAGE" or localSource == 2 and "COMBINED" or "CURRENT"
     if mode == "firmware" then
         return "firmware " .. remoteLabel
     end
@@ -129,10 +130,15 @@ local function calculateFuel()
     if useFirmwareSmartFuel() then
         local rawFuel = getMirrorSensorValue("smartfuel")
         if rawFuel == nil then return nil end
+
+        if not smartfuelprefs.getEndAtZeroEnabled() then
+            return math_floor(math_min(100, math_max(0, rawFuel)) + 0.5)
+        end
+
         return remapFuelToUsablePercent(rawFuel)
     end
 
-    return remapFuelToUsablePercent(smartfuelvoltage.calculate())
+    return smartfuelvoltage.calculate()
 end
 
 local function calculateConsumption()

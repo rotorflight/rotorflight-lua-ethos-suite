@@ -278,8 +278,16 @@ local function smartFuelCalc()
         local used = consumption - fuelStartingConsumption
         local percentUsed = used / packCapacity * 100
         local remaining = fuelStartingPercent - percentUsed
+        if not smartfuelprefs.getEndAtZeroEnabled() then
+            logSmartFuelStatus("ready", "consumption")
+            return clampFuelBounceback(math_floor(math_min(100, math_max(0, remaining)) + 0.5))
+        end
+
+        local warningPercent = bc.consumptionWarningPercentage or 0
+        local usableRange = math_max(1, 100 - warningPercent)
+        local adjusted = math_max(0, remaining - warningPercent)
         logSmartFuelStatus("ready", "consumption")
-        return clampFuelBounceback(math_floor(math_min(100, math_max(0, remaining)) + 0.5))
+        return clampFuelBounceback(math_floor(math_min(100, adjusted / usableRange * 100) + 0.5))
     else
 
         if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then
@@ -287,7 +295,14 @@ local function smartFuelCalc()
             return nil
         end
         logSmartFuelStatus("ready", "voltage estimate")
-        return clampFuelBounceback(fuelStartingPercent)
+        if not smartfuelprefs.getEndAtZeroEnabled() then
+            return clampFuelBounceback(fuelStartingPercent)
+        end
+
+        local warningPercent = bc.consumptionWarningPercentage or 0
+        local usableRange = math_max(1, 100 - warningPercent)
+        local adjusted = math_max(0, fuelStartingPercent - warningPercent)
+        return clampFuelBounceback(math_floor(math_min(100, adjusted / usableRange * 100) + 0.5))
     end
 end
 

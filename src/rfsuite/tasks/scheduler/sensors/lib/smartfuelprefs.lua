@@ -45,10 +45,15 @@ end
 function prefs.getSource()
     local batteryPrefs = getBatteryPrefs()
     local source = getNumericField(batteryPrefs, "smartfuel_source", nil)
-    if source ~= nil then
-        return source
+    if source == nil then
+        source = getNumericField(batteryPrefs, "calc_local", 0)
     end
-    return getNumericField(batteryPrefs, "calc_local", 0)
+    if source >= 0 and source <= 2 then return source end
+    return 0
+end
+
+function prefs.getEndAtZeroEnabled()
+    return getNumericField(getBatteryPrefs(), "smartfuel_end_at_zero", 1) ~= 0
 end
 
 -- Returns the fixed stabilize delay (seconds). No longer INI-backed.

@@ -38,6 +38,7 @@ local SOURCE_LABELS = {
 local LOCAL_SOURCE_LABELS = {
     [0] = "CURRENT",
     [1] = "VOLTAGE",
+    [2] = "COMBINED",
 }
 
 local SENSOR_MAP = {
@@ -174,20 +175,25 @@ updateValues = function()
     local protocolKey = getProtocol()
     local protocol = SENSOR_MAP[protocolKey]
     local protocolText = protocol and protocol.protocol or tostring(protocolKey or "Unknown")
+    local prefs = getBatteryPrefs() or {}
+    local bc = session and session.batteryConfig or {}
+    local firmwareSource = getFirmwareSource()
+    local usingFirmware = firmwareSource and firmwareSource > 0
+    local localSource = getLocalSource()
 
     setField("protocol", protocolText)
     setField("mode", getMode())
     setField("mode_detail", getModeDetail())
 
-    setField("source_fuel", formatSensor(protocol and protocol.fuel))
+    if usingFirmware then
+        setField("source_fuel", formatSensor(protocol and protocol.fuel))
+    else
+        setField("source_fuel", "Local " .. (LOCAL_SOURCE_LABELS[localSource] or tostring(localSource)))
+    end
     setField("source_consumption", formatSensor(protocol and protocol.consumption))
     setField("dest_fuel", formatSensor(SMART_SENSORS.fuel))
     setField("dest_consumption", formatSensor(SMART_SENSORS.consumption))
 
-    local prefs = getBatteryPrefs() or {}
-    local bc = session and session.batteryConfig or {}
-    local firmwareSource = getFirmwareSource()
-    local usingFirmware = firmwareSource and firmwareSource > 0
     local voltageDrop = (usingFirmware and firmwareConfig and firmwareConfig.voltageDropRate) or tonumber(prefs.voltage_drop_rate) or 10
     local chargeDrop = (usingFirmware and firmwareConfig and firmwareConfig.chargeDropRate) or tonumber(prefs.charge_drop_rate) or 50
     local sagGain = (usingFirmware and firmwareConfig and firmwareConfig.sagGain) or tonumber(prefs.sag_gain) or 40
@@ -225,7 +231,7 @@ local function openPage(opts)
     addLine("mode", "Active mode")
     addLine("mode_detail", "FBL / local")
     addLine("tuning_source", "Tuning source")
-    addLine("source_fuel", "Source fuel")
+    addLine("source_fuel", "Fuel input")
     addLine("source_consumption", "Source mAh")
     addLine("dest_fuel", "Smart Fuel")
     addLine("dest_consumption", "Smart mAh")
