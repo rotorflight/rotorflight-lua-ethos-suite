@@ -37,6 +37,20 @@ On CRSF/ELRS the percentage sensor is named `Charge Level`. On FBus/S.Port the
 same semantic value is exposed as `Fuel`. RF Suite normalizes both into
 `Smart Fuel`.
 
+`0x5250` is a FrSky custom/DIY S.Port app ID in the `0x5100..0x5FFE`
+range. It is still a real FC-emitted telemetry value: Rotorflight sends
+`BATTERY_CONSUMPTION` on `0x5250`, and RF Suite creates/discovers the Ethos
+sensor named `Consumption` for that app ID. RF Suite's own `0x5FE0`
+`Smart Consumption` sensor is the virtual wrapper that mirrors or derives from
+that source.
+
+Because `0x5250` is not a built-in FrSky sensor, RF Suite provisions it from the
+FC telemetry configuration. Telemetry slot `5` maps to S.Port app ID `0x5250`;
+when that slot is enabled, RF Suite creates an Ethos S.Port sensor with app ID
+`0x5250` and the name `Consumption`. Once the sensor exists, Ethos can populate
+it from incoming Rotorflight S.Port frames, and RF Suite can read it with
+`system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250})`.
+
 ## Telemetry Defaults
 
 The telemetry configuration app applies defaults from sensors marked
