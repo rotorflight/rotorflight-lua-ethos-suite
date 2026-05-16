@@ -80,7 +80,7 @@ sensors exist.
 
 Firmware SmartFuel is used when all of these are true:
 
-- The connected firmware API is at least `12.09`.
+- The connected firmware API is at least `12.0.9`.
 - RF Suite can read `SMARTFUEL_CONFIG`.
 - The firmware SmartFuel mode is not `OFF`.
 
@@ -99,6 +99,9 @@ Real telemetry percent sensor
         |
         v
 RF Suite mirrors raw percentage
+        |
+        v
+Reserve/consumption warning remap
         |
         v
 [0x5FE1] Smart Fuel
@@ -122,10 +125,14 @@ In firmware mode, RF Suite does not recalculate the source fuel percentage. It
 mirrors the firmware value, then remaps the configured reserve/consumption
 warning percentage to `0%` for the virtual Smart Fuel sensor.
 
+That reserve remap is always applied in firmware SmartFuel mode. There is no
+preference that disables the virtual Smart Fuel sensor ending at `0%` when the
+raw firmware fuel value reaches the configured reserve.
+
 ## Local SmartFuel Flow
 
-Local SmartFuel is used when firmware SmartFuel is unavailable or disabled and
-RF Suite is configured to calculate SmartFuel locally.
+Local SmartFuel is used when firmware SmartFuel is unavailable or disabled. This
+includes firmware before API `12.0.9` and firmware SmartFuel mode `OFF`.
 
 Local calculations use the normal telemetry aggregator inputs, mainly:
 
@@ -133,6 +140,14 @@ Local calculations use the normal telemetry aggregator inputs, mainly:
 - Cell count and battery configuration
 - Current/consumption where available
 - Local SmartFuel preferences
+
+The local path supports three source modes:
+
+| Local source | Behavior |
+| --- | --- |
+| Current | Seeds starting charge from voltage, then subtracts consumed mAh from that starting point. |
+| Voltage | Uses the voltage-derived charge estimate only. |
+| Combined | Uses the lower/more pessimistic value from voltage and current. |
 
 ### Local Voltage Mode
 
@@ -144,6 +159,9 @@ Voltage telemetry + battery profile
         |
         v
 Local SmartFuel voltage estimate
+        |
+        v
+Reserve/consumption warning remap
         |
         v
 [0x5FE1] Smart Fuel
@@ -168,6 +186,21 @@ but consumption is based on the real consumed mAh telemetry delta since the
 local SmartFuel reset.
 
 ```text
+Voltage-derived initial charge
+        |
+        v
+Initial charge - consumed mAh / pack capacity
+        |
+        v
+Reserve/consumption warning remap
+        |
+        v
+[0x5FE1] Smart Fuel
+```
+
+Smart Consumption in local current and combined modes is:
+
+```text
 Real Consumption - initial Consumption
         |
         v
@@ -184,7 +217,12 @@ RF Suite chooses the SmartFuel source in this order:
 1. Firmware SmartFuel, when supported and enabled.
 2. Local voltage SmartFuel, when the local SmartFuel source preference is
    voltage.
-3. Local current SmartFuel, otherwise.
+3. Local combined SmartFuel, when the local SmartFuel source preference is
+   combined.
+4. Local current SmartFuel, otherwise.
+
+Firmware SmartFuel `OFF` and firmware before API `12.0.9` both use the local
+path.
 
 When the source mode changes, RF Suite resets SmartFuel state and republishes
 the virtual sensors so widgets and callouts use the new data path cleanly.
@@ -200,15 +238,22 @@ For example, with a `30%` reserve, a raw source value of `30%` is published as
 `0%` Smart Fuel, while a raw source value of `100%` is still published as
 `100%`.
 
+The same reserve remap is shared by firmware and local SmartFuel paths. A raw
+source value of `63%` with a `30%` reserve is published as `47%` Smart Fuel.
+
 ## Implementation Pointers
 
 Important files:
 
 | File | Role |
 | --- | --- |
-| `src/rfsuite/tasks/scheduler/sensors/smart.lua` | Creates `[0x5FE1] Smart Fuel` and `[0x5FE0] Smart Consumption`, mirrors firmware sensors, and selects local versus firmware mode. |
-| `src/rfsuite/tasks/scheduler/sensors/lib/smartfuelvoltage.lua` | Local voltage/current SmartFuel calculation and virtual consumption calculation. |
+| `src/rfsuite/tasks/scheduler/sensors/smart.lua` | Creates `[0x5FE1] Smart Fuel` and `[0x5FE0] Smart Consumption`, then routes to firmware or local SmartFuel. |
+| `src/rfsuite/tasks/scheduler/sensors/lib/smartfuelfbl.lua` | Firmware/FBL SmartFuel path. Mirrors the firmware fuel and consumption sensors, then applies the reserve remap to fuel. |
+| `src/rfsuite/tasks/scheduler/sensors/lib/smartfuellocal.lua` | Local/off and legacy `<12.0.9` SmartFuel path. Handles local current, voltage, combined, and virtual consumption. |
+| `src/rfsuite/tasks/scheduler/sensors/lib/smartfuelreserve.lua` | Shared reserve remap used by SmartFuel paths. Maps the configured consumption warning percentage to `0%`. |
+| `src/rfsuite/tasks/scheduler/sensors/lib/smartfuelprefs.lua` | Local SmartFuel source and tuning preferences. |
 | `src/rfsuite/tasks/scheduler/sensors/frsky_sid_lookup.lua` | Maps telemetry slot `5` to `0x5250` and slot `6` to `0x0600` for FBus/S.Port. |
 | `src/rfsuite/tasks/scheduler/sensors/elrs_sid_lookup.lua` | Maps telemetry slot `5` to `0x1013` and slot `6` to `0x1014` for CRSF/ELRS. |
 | `src/rfsuite/tasks/scheduler/telemetry/sources/sensor_table.lua` | Defines telemetry defaults and the public `fuel`, `consumption`, `smartfuel`, and `smartconsumption` source metadata. |
 | `src/rfsuite/tasks/scheduler/events/tasks/telemetry.lua` | Handles SmartFuel callouts and the usable-fuel empty alert. |
+| `src/rfsuite/app/modules/diagnostics/tools/smartfuel.lua` | Diagnostics page for active SmartFuel mode, raw input, virtual output, reserve value, and reserve-adjusted target. |
