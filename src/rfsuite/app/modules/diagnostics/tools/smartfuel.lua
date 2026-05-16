@@ -204,7 +204,7 @@ updateValues = function()
     if usingFirmware and protocol and protocol.fuel then
         rawFuel = sourceValue(protocol.fuel)
     end
-    local targetFuel = smartfuelreserve.applyPercent(rawFuel, reserve, true)
+    local targetFuel = smartfuelreserve.applyPercent(rawFuel, reserve)
 
     if chargeDrop > 250 then chargeDrop = chargeDrop / 100 end
 

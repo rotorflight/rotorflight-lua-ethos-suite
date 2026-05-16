@@ -4,7 +4,6 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 local smartfuelreserve = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelreserve.lua"))()
 
 local fbl = {}
@@ -75,7 +74,7 @@ function fbl.calculateFuel()
     local bc = rfsuite.session and rfsuite.session.batteryConfig
     local warningPercent = bc and bc.consumptionWarningPercentage or 0
 
-    return smartfuelreserve.applyPercent(fuel, warningPercent, smartfuelprefs.getEndAtZeroEnabled())
+    return smartfuelreserve.applyPercent(fuel, warningPercent)
 end
 
 function fbl.calculateConsumption()
