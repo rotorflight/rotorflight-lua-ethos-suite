@@ -15,6 +15,7 @@ local EMPTY_TEXT = "No session log entries"
 local MAX_LINES = 80
 local REFRESH_INTERVAL = 0.25
 local DISPLAY_MAX_CHARS = 120
+local SESSION_LOG_OPTS = {levels = {info = true, debug = true}}
 
 local logLines = {}
 local displayedLines = {}
@@ -41,7 +42,7 @@ local function refreshLines(force)
     lastSeq = seq
 
     if logger and logger.getSessionLines then
-        logger.getSessionLines(MAX_LINES, nil, logLines)
+        logger.getSessionLines(MAX_LINES, SESSION_LOG_OPTS, logLines)
     else
         for i = #logLines, 1, -1 do logLines[i] = nil end
     end
