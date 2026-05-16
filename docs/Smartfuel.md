@@ -10,7 +10,7 @@ RF Suite exposes two suite-owned virtual sensors:
 
 | Suite sensor | App ID | Unit | Purpose |
 | --- | ---: | --- | --- |
-| Smart Fuel | `0x5FE1` | `%` | Normalized remaining fuel/charge percentage for dashboard widgets, callouts, and stats. |
+| Smart Fuel | `0x5FE1` | `%` | Normalized usable fuel/charge percentage for dashboard widgets, callouts, and stats. |
 | Smart Consumption | `0x5FE0` | `mAh` | Normalized consumed capacity value paired with Smart Fuel. |
 
 These are local Ethos DIY sensors created by RF Suite. They are not FC telemetry
@@ -118,9 +118,9 @@ RF Suite mirrors raw mAh
 [0x5FE0] Smart Consumption
 ```
 
-In firmware mode, RF Suite does not recalculate the fuel percentage. It mirrors
-the firmware value and clamps it to the expected `0..100` range for the virtual
-sensor.
+In firmware mode, RF Suite does not recalculate the source fuel percentage. It
+mirrors the firmware value, then remaps the configured reserve/consumption
+warning percentage to `0%` for the virtual Smart Fuel sensor.
 
 ## Local SmartFuel Flow
 
@@ -191,12 +191,14 @@ the virtual sensors so widgets and callouts use the new data path cleanly.
 
 ## Alerts And Gauge Values
 
-`Smart Fuel` is published as the raw remaining percentage from the active source.
-The gauge is not remapped so that reserve becomes `0%`.
+`Smart Fuel` is published as usable remaining percentage from the active source.
+For electric models, the configured reserve/consumption warning percentage is
+treated as empty and remapped to `0%`, because reaching reserve means the pilot
+should land rather than continue discharging the pack.
 
-The empty battery alert is separate from the gauge remap. RF Suite treats the
-configured reserve/consumption warning percentage as effectively empty for
-alerting, because reaching reserve means the pilot should land.
+For example, with a `30%` reserve, a raw source value of `30%` is published as
+`0%` Smart Fuel, while a raw source value of `100%` is still published as
+`100%`.
 
 ## Implementation Pointers
 
@@ -209,4 +211,4 @@ Important files:
 | `src/rfsuite/tasks/scheduler/sensors/frsky_sid_lookup.lua` | Maps telemetry slot `5` to `0x5250` and slot `6` to `0x0600` for FBus/S.Port. |
 | `src/rfsuite/tasks/scheduler/sensors/elrs_sid_lookup.lua` | Maps telemetry slot `5` to `0x1013` and slot `6` to `0x1014` for CRSF/ELRS. |
 | `src/rfsuite/tasks/scheduler/telemetry/sources/sensor_table.lua` | Defines telemetry defaults and the public `fuel`, `consumption`, `smartfuel`, and `smartconsumption` source metadata. |
-| `src/rfsuite/tasks/scheduler/events/tasks/telemetry.lua` | Handles SmartFuel callouts and the reserve-based empty alert threshold. |
+| `src/rfsuite/tasks/scheduler/events/tasks/telemetry.lua` | Handles SmartFuel callouts and the usable-fuel empty alert. |

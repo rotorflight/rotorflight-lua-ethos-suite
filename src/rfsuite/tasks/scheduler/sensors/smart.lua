@@ -16,6 +16,10 @@ local tasks
 
 local os_clock = os.clock
 local math_abs = math.abs
+local math_floor = math.floor
+local math_min = math.min
+local math_max = math.max
+local tonumber = tonumber
 local interval = 1
 local lastWake = os_clock()
 local system_getSource = system.getSource
@@ -106,14 +110,29 @@ local function getMirrorSensorValue(name)
     return source:value()
 end
 
+local function remapFuelToUsablePercent(value)
+    if value == nil then return nil end
+
+    local fuel = math_min(100, math_max(0, tonumber(value) or 0))
+    local batteryConfig = rfsuite.session and rfsuite.session.batteryConfig
+    local reserve = batteryConfig and tonumber(batteryConfig.consumptionWarningPercentage) or 0
+
+    reserve = math_min(99, math_max(0, reserve or 0))
+    if reserve > 0 then
+        fuel = (fuel - reserve) * 100 / (100 - reserve)
+    end
+
+    return math_floor(math_min(100, math_max(0, fuel)) + 0.5)
+end
+
 local function calculateFuel()
     if useFirmwareSmartFuel() then
         local rawFuel = getMirrorSensorValue("smartfuel")
         if rawFuel == nil then return nil end
-        return math.floor(math.min(100, math.max(0, rawFuel)) + 0.5)
+        return remapFuelToUsablePercent(rawFuel)
     end
 
-    return smartfuelvoltage.calculate()
+    return remapFuelToUsablePercent(smartfuelvoltage.calculate())
 end
 
 local function calculateConsumption()

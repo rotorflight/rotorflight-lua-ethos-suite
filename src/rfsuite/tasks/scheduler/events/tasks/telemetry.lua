@@ -214,9 +214,7 @@ local function smartfuelIsElectricModel()
 end
 
 local function getSmartfuelEmptyThreshold()
-    local bcCache = refreshBatteryConfigCache()
-    if not bcCache then return 0 end
-    return math_floor(math_max(0, math_min(100, bcCache.consumptionWarningPercentage or 0)) + 0.5)
+    return 0
 end
 
 -- Returns callout and empty audio in one call, calling smartfuelIsElectricModel only once.
