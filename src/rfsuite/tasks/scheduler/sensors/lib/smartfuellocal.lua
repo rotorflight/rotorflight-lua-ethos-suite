@@ -266,7 +266,7 @@ local function smartFuelCalc()
     virtualConsumption = (initialChargeLevel - chargeLevel) * packCapacity
 
     lastTimestamp = now
-    return smartfuelreserve.applyPercent(math_min(1.0, chargeLevel) * 100, bc.consumptionWarningPercentage, smartfuelprefs.getEndAtZeroEnabled())
+    return smartfuelreserve.applyPercent(math_min(1.0, chargeLevel) * 100, bc.consumptionWarningPercentage)
 end
 
 local function getConsumption()
