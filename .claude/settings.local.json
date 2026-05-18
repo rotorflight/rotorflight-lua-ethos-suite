@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python build-single-json.py --only en)",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}

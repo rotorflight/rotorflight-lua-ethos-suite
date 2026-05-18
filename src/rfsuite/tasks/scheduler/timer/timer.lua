@@ -161,6 +161,12 @@ function timer.wakeup()
     local timerSession = session.timer
     local prefs = session.modelPreferences
     local flightMode = rfsuite.flightmode.current
+    local flightActive = flightMode == "inflight"
+    local flightmodeTask = tasks and tasks.events and tasks.events.flightmode
+
+    if flightmodeTask and type(flightmodeTask.inFlight) == "function" then
+        flightActive = flightmodeTask.inFlight()
+    end
 
     lastFlightMode = flightMode
 
@@ -180,7 +186,7 @@ function timer.wakeup()
     end    
 
 
-    if flightMode == "inflight" then
+    if flightActive then
         if not timerSession.start then timerSession.start = now end
 
         local currentSegment = now - timerSession.start
@@ -203,7 +209,7 @@ function timer.wakeup()
         timerSession.live = timerSession.session or 0
     end
 
-    if flightMode == "postflight" and timerSession.start then finalizeFlightSegment(now) end
+    if not flightActive and timerSession.start then finalizeFlightSegment(now) end
 end
 
 return timer

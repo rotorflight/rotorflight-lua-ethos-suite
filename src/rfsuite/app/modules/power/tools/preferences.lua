@@ -13,13 +13,30 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.power.model_type)@", mspapi = 1, apikey = "smartfuel_model_type", type = 1},
+            {t = "@i18n(app.modules.power.model_type)@",    mspapi = 1, apikey = "smartfuel_model_type", type = 1},
+            {t = "@i18n(app.modules.power.calcfuel_local)@", mspapi = 1, apikey = "smartfuel_source",    type = 1},
         }
     }
 }
 
 local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
+end
+
+local function resetSmartfuel()
+    local sensors = rfsuite.tasks and rfsuite.tasks.sensors
+    if sensors and type(sensors.resetSmart) == "function" then
+        sensors.resetSmart()
+    end
+
+    local eventTelemetry = rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.telemetry
+    if eventTelemetry and type(eventTelemetry.resetSmartfuelAlertState) == "function" then
+        eventTelemetry.resetSmartfuelAlertState()
+    end
+end
+
+local function postSave(self)
+    resetSmartfuel()
 end
 
 local function event(widget, category, value, x, y)
@@ -31,4 +48,4 @@ onNavMenu = function(self)
     return true
 end
 
-return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, event = event, onNavMenu = onNavMenu}
+return {apidata = apidata, eepromWrite = true, reboot = false, API = {}, postLoad = postLoad, postSave = postSave, event = event, onNavMenu = onNavMenu}

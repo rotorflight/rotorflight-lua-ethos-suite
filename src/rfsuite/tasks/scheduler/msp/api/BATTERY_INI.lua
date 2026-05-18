@@ -20,21 +20,19 @@ local tonumber = tonumber
 local pairs = pairs
 local math_floor = math.floor
 
-local offOn = {"@i18n(api.BATTERY_INI.tbl_off)@", "@i18n(api.BATTERY_INI.tbl_on)@"}
 local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
 local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.tbl_electric)@", "@i18n(api.BATTERY_INI.tbl_nitro)@"}
+local smartFuelLocalSources = {"CURRENT", "VOLTAGE", "COMBINED"}
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
 local FIELD_SPEC = {
     {"smartfuel_model_type", "U8", 0, 2, 0, nil, nil, nil, nil, nil, modelTypes, -1},
-    {"smartfuel_source", "U8", 0, 1, 0, nil, nil, nil, nil, nil, offOn, -1},
-    {"stabilize_delay", "U16", 0, 10000, 1500, "s", 1, 1000, 1},
-    {"stable_window", "U16", 0, 100, 15, "V", 2, 100, 1},
-    {"voltage_fall_limit", "U16", 0, 100, 5, "V/s", 2, 100, 1},
-    {"fuel_drop_rate", "U16", 0, 500, 10, "%/s", 1, 10, 1},
-    {"sag_multiplier_percent", "U16", 0, 200, 70, "x", 2, 100, 1},
+    {"smartfuel_source", "U8", 0, 2, 0, nil, nil, nil, nil, nil, smartFuelLocalSources, -1},
+    {"voltage_drop_rate", "U8", 0, 250, 10, "mV/s", nil, nil, 1},
+    {"charge_drop_rate", "U8", 0, 250, 50, "%/s", 2, 100, 1},
+    {"sag_gain", "U8", 0, 100, 40, "%", nil, nil, 1},
     {"alert_type", "U8", 0, 2, 0, nil, nil, nil, nil, nil, alertTypes, -1},
     {"becalertvalue", "U8", 30, 140, 6.5, "V", 1, 10, 1},
     {"rxalertvalue", "U8", 30, 140, 7.5, "V", 1, 10, 1},
@@ -78,11 +76,6 @@ local function loadParsedFromINI()
         local raw = ini.getvalue(tbl, INI_SECTION, entry.field)
         if raw == nil and entry.field == "smartfuel_source" then
             raw = ini.getvalue(tbl, INI_SECTION, "calc_local")
-        elseif raw == nil and entry.field == "sag_multiplier_percent" then
-            local legacyRaw = ini.getvalue(tbl, INI_SECTION, "sag_multiplier")
-            if legacyRaw ~= nil then
-                raw = tonumber(legacyRaw) * 100
-            end
         end
 
         if raw ~= nil then
@@ -139,23 +132,20 @@ return core.createCustomAPI({
             if entry and entry.scale then
                 v = math_floor(v * entry.scale + 0.5)
             end
-            if k == "smartfuel_source" or k == "smartfuel_model_type" or k == "alert_type" then
+            if k == "smartfuel_source" or k == "smartfuel_model_type" or k == "alert_type"
+                or k == "voltage_drop_rate" or k == "sag_gain" then
                 v = math_floor(v)
             end
 
             ini.setvalue(tbl, INI_SECTION, k, v)
             if k == "smartfuel_source" then
                 ini.setvalue(tbl, INI_SECTION, "calc_local", v)
-            elseif k == "sag_multiplier_percent" then
-                ini.setvalue(tbl, INI_SECTION, "sag_multiplier", v / 100)
             end
 
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then
                 rfsuite.session.modelPreferences[INI_SECTION][k] = v
                 if k == "smartfuel_source" then
                     rfsuite.session.modelPreferences[INI_SECTION].calc_local = v
-                elseif k == "sag_multiplier_percent" then
-                    rfsuite.session.modelPreferences[INI_SECTION].sag_multiplier = v / 100
                 end
             end
         end

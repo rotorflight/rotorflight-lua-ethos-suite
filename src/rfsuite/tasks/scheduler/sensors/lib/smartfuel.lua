@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
+local smartfuelreserve = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelreserve.lua"))()
 
 local os_clock = os.clock
 local math_floor = math.floor
@@ -16,6 +17,7 @@ local table_remove = table.remove
 local batteryConfigCache = nil
 local fuelStartingPercent = nil
 local fuelStartingConsumption = nil
+local lastFuelPercent = nil
 
 local lastVoltages = {}
 local maxVoltageSamples = 5
@@ -62,7 +64,6 @@ end
 local function fuelPercentageFromVoltage(voltage, cellCount, bc)
     local minV = bc.vbatmincellvoltage or 3.30
     local fullV = bc.vbatfullcellvoltage or 4.10
-    local reserve = bc.consumptionWarningPercentage or 30
 
     local voltagePerCell = voltage / cellCount
 
@@ -78,21 +79,7 @@ local function fuelPercentageFromVoltage(voltage, cellCount, bc)
     local index = math_floor((scaledV - sigmoidMin) / 0.01) + 1
     index = math_max(1, math_min(#dischargeCurveTable, index))
 
-    if reserve > 60 or reserve < 15 then
-        reserve = 35
-    end
-
-    local rawPercent = dischargeCurveTable[index]
-    local usableSpan = 100 - reserve
-    if usableSpan <= 0 then
-        return rawPercent
-    end
-
-    if rawPercent <= reserve then
-        return 0
-    end
-
-    return ((rawPercent - reserve) / usableSpan) * 100
+    return dischargeCurveTable[index]
 end
 
 local function resetVoltageTracking()
@@ -111,6 +98,7 @@ local function resetState()
     batteryConfigCache = nil
     fuelStartingPercent = nil
     fuelStartingConsumption = nil
+    lastFuelPercent = nil
     stabilizeNotBefore = nil
     lastSensorMode = nil
     lastLocalFuelStatus = nil
@@ -118,6 +106,15 @@ local function resetState()
     currentMode = rfsuite.flightmode.current or "preflight"
     lastMode = currentMode
     resetVoltageTracking()
+end
+
+local function clampFuelBounceback(fuel)
+    if fuel == nil then return nil end
+    if lastFuelPercent ~= nil and fuel > lastFuelPercent then
+        fuel = lastFuelPercent
+    end
+    lastFuelPercent = fuel
+    return fuel
 end
 
 local function isVoltageStable()
@@ -168,6 +165,7 @@ local function smartFuelCalc()
         batteryConfigCache = configSig
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
+        lastFuelPercent = nil
         resetVoltageTracking()
         local delay = startStabilizeDelay()
         logSmartFuelStatus("battery config changed", "delay=" .. tostring(delay))
@@ -177,6 +175,7 @@ local function smartFuelCalc()
     if lastSensorMode ~= sensorMode then
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
+        lastFuelPercent = nil
         resetVoltageTracking()
         lastSensorMode = sensorMode
         local delay = startStabilizeDelay()
@@ -201,6 +200,7 @@ local function smartFuelCalc()
 
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
+        lastFuelPercent = nil
 
         resetVoltageTracking()
 
@@ -242,6 +242,7 @@ local function smartFuelCalc()
             rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
             fuelStartingPercent = nil
             fuelStartingConsumption = nil
+            lastFuelPercent = nil
             resetVoltageTracking()
             startStabilizeDelay()
             logSmartFuelStatus("voltage increased reset")
@@ -249,23 +250,15 @@ local function smartFuelCalc()
         end
     end
 
-    local cellCount, reserve, maxCellV, minCellV, fullCellV = bc.batteryCellCount, bc.consumptionWarningPercentage, bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
-
-    if reserve > 60 then
-        reserve = 35
-    elseif reserve < 15 then
-        reserve = 35
-    end
+    local cellCount, maxCellV, minCellV, fullCellV = bc.batteryCellCount, bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
 
     if packCapacity < 10 or cellCount == 0 or maxCellV <= minCellV or fullCellV <= 0 then
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
+        lastFuelPercent = nil
         logSmartFuelStatus("invalid battery config", table.concat({tostring(packCapacity), tostring(cellCount), tostring(maxCellV), tostring(minCellV), tostring(fullCellV)}, "/"))
         return nil
     end
-
-    local usableCapacity = packCapacity * (1 - reserve / 100)
-    if usableCapacity < 10 then usableCapacity = packCapacity end
 
     local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
 
@@ -276,16 +269,18 @@ local function smartFuelCalc()
         else
             fuelStartingPercent = 0
         end
-        local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
-        fuelStartingConsumption = (consumption or 0) - estimatedUsed
+    end
+
+    if fuelStartingConsumption == nil and consumption ~= nil then
+        fuelStartingConsumption = consumption
     end
 
     if consumption and fuelStartingConsumption and packCapacity > 0 then
         local used = consumption - fuelStartingConsumption
-        local percentUsed = used / usableCapacity * 100
-        local remaining = math_max(0, 100 - percentUsed)
+        local percentUsed = used / packCapacity * 100
+        local remaining = fuelStartingPercent - percentUsed
         logSmartFuelStatus("ready", "consumption")
-        return math_floor(math_min(100, remaining) + 0.5)
+        return clampFuelBounceback(smartfuelreserve.applyPercent(remaining, bc.consumptionWarningPercentage, smartfuelprefs.getEndAtZeroEnabled()))
     else
 
         if not voltageStabilised or (stabilizeNotBefore and os_clock() < stabilizeNotBefore) then
@@ -293,7 +288,7 @@ local function smartFuelCalc()
             return nil
         end
         logSmartFuelStatus("ready", "voltage estimate")
-        return fuelStartingPercent
+        return clampFuelBounceback(smartfuelreserve.applyPercent(fuelStartingPercent, bc.consumptionWarningPercentage, smartfuelprefs.getEndAtZeroEnabled()))
     end
 end
 

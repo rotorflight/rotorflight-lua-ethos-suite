@@ -8,57 +8,132 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 
 local enableWakeup = false
 local onNavMenu
-local lastVoltageMode = nil
-local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+local lastTuningActive = nil
+local useFirmwareSmartFuel = rfsuite.utils.apiVersionCompare(">=", {12, 0, 9})
+local TUNING_FIELD_START = useFirmwareSmartFuel and 2 or 1
+local INI_SECTION = "battery"
 
 -- Field index 1: source selector (different field/API per version)
--- Fields 2-6: voltage-algorithm tuning params (always mspapi=1)
 local sourceField = useFirmwareSmartFuel
-    and {t = "@i18n(sensors.smartfuel)@", mspapi = 2, apikey = "smartfuel_remote_source", type = 1}
+    and {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_mode", type = 1}
     or  {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_source",        type = 1}
+
+local firmwareFields = {
+    sourceField,
+    {t = "@i18n(app.modules.power.smartfuel_voltage_drop_rate)@", mspapi = 1, apikey = "voltage_drop_rate"},
+    {t = "@i18n(app.modules.power.smartfuel_charge_drop_rate)@",  mspapi = 1, apikey = "charge_drop_rate"},
+    {t = "@i18n(app.modules.power.smartfuel_sag_gain)@",          mspapi = 1, apikey = "sag_gain"},
+}
+
+local legacyFields = {
+    {t = "@i18n(app.modules.power.smartfuel_voltage_drop_rate)@", mspapi = 1, apikey = "voltage_drop_rate"},
+    {t = "@i18n(app.modules.power.smartfuel_charge_drop_rate)@",  mspapi = 1, apikey = "charge_drop_rate"},
+    {t = "@i18n(app.modules.power.smartfuel_sag_gain)@",          mspapi = 1, apikey = "sag_gain"},
+}
 
 local apidata = {
     api = useFirmwareSmartFuel
-        and {[1] = "SMARTFUEL_CONFIG", [2] = "BATTERY_CONFIG"}
+        and {[1] = "SMARTFUEL_CONFIG"}
         or  {[1] = "BATTERY_INI"},
     formdata = {
         labels = {},
-        fields = {
-            sourceField,
-            {t = "@i18n(app.modules.power.smartfuel_stabilize_delay)@",    mspapi = 1, apikey = "stabilize_delay"},
-            {t = "@i18n(app.modules.power.smartfuel_stable_window)@",      mspapi = 1, apikey = "stable_window"},
-            {t = "@i18n(app.modules.power.smartfuel_sag_compensation)@",   mspapi = 1, apikey = "sag_multiplier_percent"},
-            {t = "@i18n(app.modules.power.smartfuel_voltage_fall_limit)@", mspapi = 1, apikey = "voltage_fall_limit"},
-            {t = "@i18n(app.modules.power.smartfuel_fuel_drop_rate)@",     mspapi = 1, apikey = "fuel_drop_rate"},
-        }
+        fields = useFirmwareSmartFuel and firmwareFields or legacyFields
     }
 }
 
-local function getVoltageMode()
-    local src = tonumber(sourceField.value) or 0
-    if useFirmwareSmartFuel then
-        -- OFF(0)=local Smart Fuel, CURRENT(1)=firmware current, VOLTAGE(2)=firmware voltage
-        return src == 0
-    else
-        -- Current Sensor(0), Voltage Sensor(1)
-        return src == 1
+local function getLocalSource()
+    local bat = rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery
+    if not bat then return 0 end
+    local v = tonumber(bat.smartfuel_source) or tonumber(bat.calc_local) or 0
+    return v
+end
+
+if useFirmwareSmartFuel then
+    sourceField.postEdit = function(self, value)
+        lastTuningActive = nil
     end
+end
+
+local function isTuningActive()
+    if not useFirmwareSmartFuel then return true end
+    local source = tonumber(sourceField.value) or 0
+    return source == 1 or source == 3
 end
 
 local function postLoad(self)
     if useFirmwareSmartFuel then
-        local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
-                       and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
-        local batteryValues = values and values.BATTERY_CONFIG
-        if batteryValues and batteryValues.smartfuel_remote_source ~= nil then
-            rfsuite.session = rfsuite.session or {}
-            rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
-            rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(batteryValues.smartfuel_remote_source) or 0
-        end
+        rfsuite.session = rfsuite.session or {}
+        rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
+        rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(sourceField.value) or 0
     end
-    lastVoltageMode = nil
+    lastTuningActive = nil
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
+end
+
+local function resetSmartfuel()
+    local sensors = rfsuite.tasks and rfsuite.tasks.sensors
+    if sensors and type(sensors.resetSmart) == "function" then
+        sensors.resetSmart()
+    end
+
+    local eventTelemetry = rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.telemetry
+    if eventTelemetry and type(eventTelemetry.resetSmartfuelAlertState) == "function" then
+        eventTelemetry.resetSmartfuelAlertState()
+    end
+end
+
+local function getTuningValue(key)
+    local fields = apidata.formdata.fields
+    for i = TUNING_FIELD_START, #fields do
+        local field = fields[i]
+        if field and field.apikey == key then
+            return tonumber(field.value)
+        end
+    end
+    return nil
+end
+
+local function writeLocalSmartfuelSettings()
+    if not useFirmwareSmartFuel then return end
+
+    local session = rfsuite.session
+    local mcuId = session and session.mcu_id
+    if not mcuId then return end
+
+    local iniFile = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. mcuId .. ".ini"
+    local ini = rfsuite.ini
+    local tbl = ini.load_ini_file(iniFile) or {}
+
+    local voltageDropRate = getTuningValue("voltage_drop_rate")
+    local chargeDropRate = getTuningValue("charge_drop_rate")
+    local sagGain = getTuningValue("sag_gain")
+
+    if voltageDropRate ~= nil then
+        voltageDropRate = math.floor(voltageDropRate + 0.5)
+        ini.setvalue(tbl, INI_SECTION, "voltage_drop_rate", voltageDropRate)
+    end
+    if chargeDropRate ~= nil then
+        chargeDropRate = math.floor(chargeDropRate * 100 + 0.5)
+        ini.setvalue(tbl, INI_SECTION, "charge_drop_rate", chargeDropRate)
+    end
+    if sagGain ~= nil then
+        sagGain = math.floor(sagGain + 0.5)
+        ini.setvalue(tbl, INI_SECTION, "sag_gain", sagGain)
+    end
+
+    local ok, err = ini.save_ini_file(iniFile, tbl)
+    if not ok then
+        rfsuite.utils.log("Failed to save local SmartFuel settings: " .. tostring(err or iniFile), "info")
+        return
+    end
+
+    local batteryPrefs = session.modelPreferences and session.modelPreferences[INI_SECTION]
+    if batteryPrefs then
+        if voltageDropRate ~= nil then batteryPrefs.voltage_drop_rate = voltageDropRate end
+        if chargeDropRate ~= nil then batteryPrefs.charge_drop_rate = chargeDropRate end
+        if sagGain ~= nil then batteryPrefs.sag_gain = sagGain end
+    end
 end
 
 local function postSave(self)
@@ -66,25 +141,23 @@ local function postSave(self)
         rfsuite.session = rfsuite.session or {}
         rfsuite.session.batteryConfig = rfsuite.session.batteryConfig or {}
         rfsuite.session.batteryConfig.smartfuelRemoteSource = tonumber(sourceField.value) or 0
+        writeLocalSmartfuelSettings()
     end
-    if rfsuite.tasks and rfsuite.tasks.sensors and type(rfsuite.tasks.sensors.resetSmart) == "function" then
-        rfsuite.tasks.sensors.resetSmart()
-    end
+    resetSmartfuel()
 end
 
 local function wakeup(self)
     if not enableWakeup then return end
 
-    local voltageMode = getVoltageMode()
-    if voltageMode == lastVoltageMode then return end
-    lastVoltageMode = voltageMode
+    local tuningActive = isTuningActive()
 
-    -- Fields 1-3 always active (source, stabilize_delay, stable_window)
-    -- Fields 4-6 are voltage-specific (sag_multiplier_percent, voltage_fall_limit, fuel_drop_rate)
-    for i = 4, #apidata.formdata.fields do
+    if tuningActive == lastTuningActive then return end
+    lastTuningActive = tuningActive
+
+    for i = TUNING_FIELD_START, #apidata.formdata.fields do
         local fieldHandle = rfsuite.app.formFields[i]
         if not fieldHandle or not fieldHandle.enable then break end
-        fieldHandle:enable(voltageMode)
+        fieldHandle:enable(tuningActive)
     end
 end
 

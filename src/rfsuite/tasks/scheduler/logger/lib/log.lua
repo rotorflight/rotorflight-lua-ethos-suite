@@ -427,6 +427,42 @@ function logs.getSessionLines(maxLines, opts, out)
     if n == 0 then return out end
 
     local cfg = logs.config
+    local includeLevels = opts and opts.levels
+
+    if includeLevels then
+        local startOffset
+        local matches = 0
+
+        for offset = n, 1, -1 do
+            local e = qSessionView.d[((qSessionView.h + offset - 2) % qSessionView.c) + 1]
+            if e and e.msg and includeLevels[e.level or "info"] then
+                matches = matches + 1
+                startOffset = offset
+                if matches >= maxLines then break end
+            end
+        end
+
+        if not startOffset then return out end
+
+        for offset = startOffset, n do
+            local e = qSessionView.d[((qSessionView.h + offset - 2) % qSessionView.c) + 1]
+            if e and e.msg and includeLevels[e.level or "info"] then
+                local pfx = e.pfx
+                if pfx == nil then pfx = getPrefix(cfg) end
+                if opts and opts.noTimestamp then pfx = stripLeadingTimestamp(pfx) end
+
+                local levelName = e.level or "info"
+                if opts and opts.noLevel then
+                    out[#out + 1] = pfx .. e.msg
+                else
+                    out[#out + 1] = pfx .. "[" .. levelName .. "] " .. e.msg
+                end
+            end
+        end
+
+        return out
+    end
+
     local count = maxLines
     if count > n then count = n end
 

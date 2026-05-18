@@ -34,6 +34,14 @@ return {
         },
         {
             bgtask = true,
+            image = "smartfuel.png",
+            name = "@i18n(app.modules.power.smartfuel_name)@",
+            offline = false,
+            script = "smartfuel.lua",
+            shortcutId = "s_diagnostics_smartfuel_lua_b5746f8b8c",
+        },
+        {
+            bgtask = true,
             image = "fblsensors.png",
             name = "@i18n(app.modules.fblsensors.name)@",
             offline = false,
