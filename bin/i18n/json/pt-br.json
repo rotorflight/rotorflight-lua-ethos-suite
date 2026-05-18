@@ -3451,581 +3451,581 @@
           "reverse_text": false,
           "max_length": 11
         },
-        "fn_0": {
+        "fn_none": {
           "english": "None",
           "translation": "None",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 4
         },
-        "fn_1": {
+        "fn_rate_profile": {
           "english": "Rate Profile",
           "translation": "Rate Profile",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_2": {
+        "fn_pid_profile": {
           "english": "PID Profile",
           "translation": "PID Profile",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 11
         },
-        "fn_3": {
+        "fn_led_profile": {
           "english": "LED Profile",
           "translation": "LED Profile",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 11
         },
-        "fn_4": {
+        "fn_osd_profile": {
           "english": "OSD Profile",
           "translation": "OSD Profile",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 11
         },
-        "fn_5": {
+        "fn_pitch_rate": {
           "english": "Pitch Rate",
           "translation": "Pitch Rate",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 10
         },
-        "fn_6": {
+        "fn_roll_rate": {
           "english": "Roll Rate",
           "translation": "Roll Rate",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 9
         },
-        "fn_7": {
+        "fn_yaw_rate": {
           "english": "Yaw Rate",
           "translation": "Yaw Rate",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 8
         },
-        "fn_8": {
+        "fn_pitch_rc_rate": {
           "english": "Pitch RC Rate",
           "translation": "Pitch RC Rate",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 13
         },
-        "fn_9": {
+        "fn_roll_rc_rate": {
           "english": "Roll RC Rate",
           "translation": "Roll RC Rate",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_10": {
+        "fn_yaw_rc_rate": {
           "english": "Yaw RC Rate",
           "translation": "Yaw RC Rate",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 11
         },
-        "fn_11": {
+        "fn_pitch_rc_expo": {
           "english": "Pitch RC Expo",
           "translation": "Pitch RC Expo",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 13
         },
-        "fn_12": {
+        "fn_roll_rc_expo": {
           "english": "Roll RC Expo",
           "translation": "Roll RC Expo",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_13": {
+        "fn_yaw_rc_expo": {
           "english": "Yaw RC Expo",
           "translation": "Yaw RC Expo",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 11
         },
-        "fn_14": {
+        "fn_pitch_p": {
           "english": "Pitch P",
           "translation": "Pitch P",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 7
         },
-        "fn_15": {
+        "fn_pitch_i": {
           "english": "Pitch I",
           "translation": "Pitch I",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 7
         },
-        "fn_16": {
+        "fn_pitch_d": {
           "english": "Pitch D",
           "translation": "Pitch D",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 7
         },
-        "fn_17": {
+        "fn_pitch_f": {
           "english": "Pitch F",
           "translation": "Pitch F",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 7
         },
-        "fn_18": {
+        "fn_roll_p": {
           "english": "Roll P",
           "translation": "Roll P",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 6
         },
-        "fn_19": {
+        "fn_roll_i": {
           "english": "Roll I",
           "translation": "Roll I",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 6
         },
-        "fn_20": {
+        "fn_roll_d": {
           "english": "Roll D",
           "translation": "Roll D",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 6
         },
-        "fn_21": {
+        "fn_roll_f": {
           "english": "Roll F",
           "translation": "Roll F",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 6
         },
-        "fn_22": {
+        "fn_yaw_p": {
           "english": "Yaw P",
           "translation": "Yaw P",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 5
         },
-        "fn_23": {
+        "fn_yaw_i": {
           "english": "Yaw I",
           "translation": "Yaw I",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 5
         },
-        "fn_24": {
+        "fn_yaw_d": {
           "english": "Yaw D",
           "translation": "Yaw D",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 5
         },
-        "fn_25": {
+        "fn_yaw_f": {
           "english": "Yaw F",
           "translation": "Yaw F",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 5
         },
-        "fn_26": {
+        "fn_yaw_cw_stop_gain": {
           "english": "Yaw CW Stop Gain",
           "translation": "Yaw CW Stop Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
-        "fn_27": {
+        "fn_yaw_ccw_stop_gain": {
           "english": "Yaw CCW Stop Gain",
           "translation": "Yaw CCW Stop Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_28": {
+        "fn_yaw_cyclic_ff": {
           "english": "Yaw Cyclic FF",
           "translation": "Yaw Cyclic FF",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 13
         },
-        "fn_29": {
+        "fn_yaw_collective_ff": {
           "english": "Yaw Collective FF",
           "translation": "Yaw Collective FF",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_30": {
+        "fn_yaw_collective_dyn": {
           "english": "Yaw Collective Dyn",
           "translation": "Yaw Collective Dyn",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 18
         },
-        "fn_31": {
+        "fn_yaw_collective_decay": {
           "english": "Yaw Collective Decay",
           "translation": "Yaw Collective Decay",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 20
         },
-        "fn_32": {
+        "fn_pitch_collective_ff": {
           "english": "Pitch Collective FF",
           "translation": "Pitch Collective FF",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 19
         },
-        "fn_33": {
+        "fn_pitch_gyro_cutoff": {
           "english": "Pitch Gyro Cutoff",
           "translation": "Pitch Gyro Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_34": {
+        "fn_roll_gyro_cutoff": {
           "english": "Roll Gyro Cutoff",
           "translation": "Roll Gyro Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
-        "fn_35": {
+        "fn_yaw_gyro_cutoff": {
           "english": "Yaw Gyro Cutoff",
           "translation": "Yaw Gyro Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 15
         },
-        "fn_36": {
+        "fn_pitch_dterm_cutoff": {
           "english": "Pitch Dterm Cutoff",
           "translation": "Pitch Dterm Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 18
         },
-        "fn_37": {
+        "fn_roll_dterm_cutoff": {
           "english": "Roll Dterm Cutoff",
           "translation": "Roll Dterm Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_38": {
+        "fn_yaw_dterm_cutoff": {
           "english": "Yaw Dterm Cutoff",
           "translation": "Yaw Dterm Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
-        "fn_39": {
+        "fn_rescue_climb_collective": {
           "english": "Rescue Climb Collective",
           "translation": "Rescue Climb Collective",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 23
         },
-        "fn_40": {
+        "fn_rescue_hover_collective": {
           "english": "Rescue Hover Collective",
           "translation": "Rescue Hover Collective",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 23
         },
-        "fn_41": {
+        "fn_rescue_hover_altitude": {
           "english": "Rescue Hover Altitude",
           "translation": "Rescue Hover Altitude",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 21
         },
-        "fn_42": {
+        "fn_rescue_alt_p": {
           "english": "Rescue Alt P",
           "translation": "Rescue Alt P",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_43": {
+        "fn_rescue_alt_i": {
           "english": "Rescue Alt I",
           "translation": "Rescue Alt I",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_44": {
+        "fn_rescue_alt_d": {
           "english": "Rescue Alt D",
           "translation": "Rescue Alt D",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_45": {
+        "fn_angle_level_gain": {
           "english": "Angle Level Gain",
           "translation": "Angle Level Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
-        "fn_46": {
+        "fn_horizon_level_gain": {
           "english": "Horizon Level Gain",
           "translation": "Horizon Level Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 18
         },
-        "fn_47": {
+        "fn_acro_trainer_gain": {
           "english": "Acro Trainer Gain",
           "translation": "Acro Trainer Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_48": {
+        "fn_governor_gain": {
           "english": "Governor Gain",
           "translation": "Governor Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 13
         },
-        "fn_49": {
+        "fn_governor_p": {
           "english": "Governor P",
           "translation": "Governor P",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 10
         },
-        "fn_50": {
+        "fn_governor_i": {
           "english": "Governor I",
           "translation": "Governor I",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 10
         },
-        "fn_51": {
+        "fn_governor_d": {
           "english": "Governor D",
           "translation": "Governor D",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 10
         },
-        "fn_52": {
+        "fn_governor_f": {
           "english": "Governor F",
           "translation": "Governor F",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 10
         },
-        "fn_53": {
+        "fn_governor_tta": {
           "english": "Governor TTA",
           "translation": "Governor TTA",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },
-        "fn_54": {
+        "fn_governor_cyclic_ff": {
           "english": "Governor Cyclic FF",
           "translation": "Governor Cyclic FF",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 18
         },
-        "fn_55": {
+        "fn_governor_collective_ff": {
           "english": "Governor Collective FF",
           "translation": "Governor Collective FF",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 22
         },
-        "fn_56": {
+        "fn_pitch_b": {
           "english": "Pitch B",
           "translation": "Pitch B",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 7
         },
-        "fn_57": {
+        "fn_roll_b": {
           "english": "Roll B",
           "translation": "Roll B",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 6
         },
-        "fn_58": {
+        "fn_yaw_b": {
           "english": "Yaw B",
           "translation": "Yaw B",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 5
         },
-        "fn_59": {
+        "fn_pitch_o": {
           "english": "Pitch O",
           "translation": "Pitch O",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 7
         },
-        "fn_60": {
+        "fn_roll_o": {
           "english": "Roll O",
           "translation": "Roll O",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 6
         },
-        "fn_61": {
+        "fn_cross_coupling_gain": {
           "english": "Cross Coupling Gain",
           "translation": "Cross Coupling Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 19
         },
-        "fn_62": {
+        "fn_cross_coupling_ratio": {
           "english": "Cross Coupling Ratio",
           "translation": "Cross Coupling Ratio",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 20
         },
-        "fn_63": {
+        "fn_cross_coupling_cutoff": {
           "english": "Cross Coupling Cutoff",
           "translation": "Cross Coupling Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 21
         },
-        "fn_64": {
+        "fn_acc_trim_pitch": {
           "english": "Acc Trim Pitch",
           "translation": "Acc Trim Pitch",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 14
         },
-        "fn_65": {
+        "fn_acc_trim_roll": {
           "english": "Acc Trim Roll",
           "translation": "Acc Trim Roll",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 13
         },
-        "fn_66": {
+        "fn_yaw_inertia_precomp_gain": {
           "english": "Yaw Inertia Precomp Gain",
           "translation": "Yaw Inertia Precomp Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 24
         },
-        "fn_67": {
+        "fn_yaw_inertia_precomp_cutoff": {
           "english": "Yaw Inertia Precomp Cutoff",
           "translation": "Yaw Inertia Precomp Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 26
         },
-        "fn_68": {
+        "fn_pitch_setpoint_boost_gain": {
           "english": "Pitch Setpoint Boost Gain",
           "translation": "Pitch Setpoint Boost Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 25
         },
-        "fn_69": {
+        "fn_roll_setpoint_boost_gain": {
           "english": "Roll Setpoint Boost Gain",
           "translation": "Roll Setpoint Boost Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 24
         },
-        "fn_70": {
+        "fn_yaw_setpoint_boost_gain": {
           "english": "Yaw Setpoint Boost Gain",
           "translation": "Yaw Setpoint Boost Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 23
         },
-        "fn_71": {
+        "fn_col_setpoint_boost_gain": {
           "english": "Col Setpoint Boost Gain",
           "translation": "Col Setpoint Boost Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 23
         },
-        "fn_72": {
+        "fn_yaw_dyn_ceiling_gain": {
           "english": "Yaw Dyn Ceiling Gain",
           "translation": "Yaw Dyn Ceiling Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 20
         },
-        "fn_73": {
+        "fn_yaw_dyn_deadband_gain": {
           "english": "Yaw Dyn Deadband Gain",
           "translation": "Yaw Dyn Deadband Gain",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 21
         },
-        "fn_74": {
+        "fn_yaw_dyn_deadband_filter": {
           "english": "Yaw Dyn Deadband Filter",
           "translation": "Yaw Dyn Deadband Filter",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 23
         },
-        "fn_75": {
+        "fn_yaw_precomp_cutoff": {
           "english": "Yaw Precomp Cutoff",
           "translation": "Yaw Precomp Cutoff",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 18
         },
-        "fn_76": {
+        "fn_gov_idle_throttle": {
           "english": "Gov Idle Throttle",
           "translation": "Gov Idle Throttle",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_77": {
+        "fn_gov_auto_throttle": {
           "english": "Gov Auto Throttle",
           "translation": "Gov Auto Throttle",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 17
         },
-        "fn_78": {
+        "fn_gov_max_throttle": {
           "english": "Gov Max Throttle",
           "translation": "Gov Max Throttle",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
-        "fn_79": {
+        "fn_gov_min_throttle": {
           "english": "Gov Min Throttle",
           "translation": "Gov Min Throttle",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
-        "fn_80": {
+        "fn_gov_headspeed": {
           "english": "Gov Headspeed",
           "translation": "Gov Headspeed",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 13
         },
-        "fn_81": {
+        "fn_gov_yaw_ff": {
           "english": "Gov Yaw FF",
           "translation": "Gov Yaw FF",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 10
         },
-        "fn_82": {
+        "fn_battery_profile": {
           "english": "Battery Profile",
           "translation": "Battery Profile",
           "needs_translation": true,
@@ -11753,11 +11753,11 @@
           "max_length": 15
         },
         "esc_threshold": {
-          "english": "Threshold (Â°)",
+          "english": "Threshold (Ã‚Â°)",
           "translation": "Limite (°)",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 14
+          "max_length": 16
         },
         "fahrenheit": {
           "english": "Fahrenheit",
@@ -13198,616 +13198,616 @@
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_1": {
+    "sensor_heartbeat": {
       "english": "Heartbeat",
       "translation": "Heartbeat",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_3": {
+    "sensor_voltage": {
       "english": "Voltage",
       "translation": "Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_4": {
+    "sensor_current": {
       "english": "Current",
       "translation": "Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_5": {
+    "sensor_consumption": {
       "english": "Consumption",
       "translation": "Consumption",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_6": {
+    "sensor_charge_level": {
       "english": "Charge Level",
       "translation": "Charge Level",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_7": {
+    "sensor_cell_count": {
       "english": "Cell Count",
       "translation": "Cell Count",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 10
     },
-    "sensor_8": {
+    "sensor_cell_voltage": {
       "english": "Cell Voltage",
       "translation": "Cell Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_9": {
+    "sensor_cell_voltages": {
       "english": "Cell Voltages",
       "translation": "Cell Voltages",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_10": {
+    "sensor_ctrl": {
       "english": "Ctrl",
       "translation": "Ctrl",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_11": {
+    "sensor_pitch_control": {
       "english": "Pitch Control",
       "translation": "Pitch Control",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_12": {
+    "sensor_roll_control": {
       "english": "Roll Control",
       "translation": "Roll Control",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_13": {
+    "sensor_yaw_control": {
       "english": "Yaw Control",
       "translation": "Yaw Control",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_14": {
+    "sensor_coll_control": {
       "english": "Coll Control",
       "translation": "Coll Control",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_15": {
+    "sensor_throttle_pct": {
       "english": "Throttle %",
       "translation": "Throttle %",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 10
     },
-    "sensor_17": {
+    "sensor_esc1_voltage": {
       "english": "ESC1 Voltage",
       "translation": "ESC1 Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_18": {
+    "sensor_esc1_current": {
       "english": "ESC1 Current",
       "translation": "ESC1 Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_19": {
+    "sensor_esc1_consump": {
       "english": "ESC1 Consump",
       "translation": "ESC1 Consump",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_20": {
+    "sensor_esc1_erpm": {
       "english": "ESC1 eRPM",
       "translation": "ESC1 eRPM",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_21": {
+    "sensor_esc1_pwm": {
       "english": "ESC1 PWM",
       "translation": "ESC1 PWM",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_22": {
+    "sensor_esc1_throttle": {
       "english": "ESC1 Throttle",
       "translation": "ESC1 Throttle",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_23": {
+    "sensor_esc1_temp": {
       "english": "ESC1 Temp",
       "translation": "ESC1 Temp",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_24": {
+    "sensor_esc1_temp2": {
       "english": "ESC1 Temp 2",
       "translation": "ESC1 Temp 2",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_25": {
+    "sensor_esc1_bec_volt": {
       "english": "ESC1 BEC Volt",
       "translation": "ESC1 BEC Volt",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_26": {
+    "sensor_esc1_bec_curr": {
       "english": "ESC1 BEC Curr",
       "translation": "ESC1 BEC Curr",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_27": {
+    "sensor_esc1_status": {
       "english": "ESC1 Status",
       "translation": "ESC1 Status",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_28": {
+    "sensor_esc1_model_id": {
       "english": "ESC1 Model ID",
       "translation": "ESC1 Model ID",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_30": {
+    "sensor_esc2_voltage": {
       "english": "ESC2 Voltage",
       "translation": "ESC2 Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_31": {
+    "sensor_esc2_current": {
       "english": "ESC2 Current",
       "translation": "ESC2 Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_32": {
+    "sensor_esc2_consump": {
       "english": "ESC2 Consump",
       "translation": "ESC2 Consump",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_33": {
+    "sensor_esc2_erpm": {
       "english": "ESC2 eRPM",
       "translation": "ESC2 eRPM",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_36": {
+    "sensor_esc2_temp": {
       "english": "ESC2 Temp",
       "translation": "ESC2 Temp",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_41": {
+    "sensor_esc2_model_id": {
       "english": "ESC2 Model ID",
       "translation": "ESC2 Model ID",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_42": {
+    "sensor_esc_voltage": {
       "english": "ESC Voltage",
       "translation": "ESC Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_43": {
+    "sensor_bec_voltage": {
       "english": "BEC Voltage",
       "translation": "BEC Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_44": {
+    "sensor_bus_voltage": {
       "english": "BUS Voltage",
       "translation": "BUS Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_45": {
+    "sensor_mcu_voltage": {
       "english": "MCU Voltage",
       "translation": "MCU Voltage",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_46": {
+    "sensor_esc_current": {
       "english": "ESC Current",
       "translation": "ESC Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_47": {
+    "sensor_bec_current": {
       "english": "BEC Current",
       "translation": "BEC Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_48": {
+    "sensor_bus_current": {
       "english": "BUS Current",
       "translation": "BUS Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_49": {
+    "sensor_mcu_current": {
       "english": "MCU Current",
       "translation": "MCU Current",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_50": {
+    "sensor_esc_temp": {
       "english": "ESC Temp",
       "translation": "ESC Temp",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_51": {
+    "sensor_bec_temp": {
       "english": "BEC Temp",
       "translation": "BEC Temp",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_52": {
+    "sensor_mcu_temp": {
       "english": "MCU Temp",
       "translation": "MCU Temp",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_57": {
+    "sensor_heading": {
       "english": "Heading",
       "translation": "Heading",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_58": {
+    "sensor_altitude": {
       "english": "Altitude",
       "translation": "Altitude",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_59": {
+    "sensor_vspeed": {
       "english": "VSpeed",
       "translation": "VSpeed",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 6
     },
-    "sensor_60": {
+    "sensor_headspeed": {
       "english": "Headspeed",
       "translation": "Headspeed",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_61": {
+    "sensor_tailspeed": {
       "english": "Tailspeed",
       "translation": "Tailspeed",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_64": {
+    "sensor_attd": {
       "english": "Attd",
       "translation": "Attd",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_65": {
+    "sensor_pitch_attitude": {
       "english": "Pitch Attitude",
       "translation": "Pitch Attitude",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 14
     },
-    "sensor_66": {
+    "sensor_roll_attitude": {
       "english": "Roll Attitude",
       "translation": "Roll Attitude",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_67": {
+    "sensor_yaw_attitude": {
       "english": "Yaw Attitude",
       "translation": "Yaw Attitude",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_68": {
+    "sensor_accl": {
       "english": "Accl",
       "translation": "Accl",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_69": {
+    "sensor_accel_x": {
       "english": "Accel X",
       "translation": "Accel X",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_70": {
+    "sensor_accel_y": {
       "english": "Accel Y",
       "translation": "Accel Y",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_71": {
+    "sensor_accel_z": {
       "english": "Accel Z",
       "translation": "Accel Z",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_73": {
+    "sensor_gps_sats": {
       "english": "GPS Sats",
       "translation": "GPS Sats",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_74": {
+    "sensor_gps_pdop": {
       "english": "GPS PDOP",
       "translation": "GPS PDOP",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_75": {
+    "sensor_gps_hdop": {
       "english": "GPS HDOP",
       "translation": "GPS HDOP",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_76": {
+    "sensor_gps_vdop": {
       "english": "GPS VDOP",
       "translation": "GPS VDOP",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_77": {
+    "sensor_gps_coord": {
       "english": "GPS Coord",
       "translation": "GPS Coord",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_78": {
+    "sensor_gps_altitude": {
       "english": "GPS Altitude",
       "translation": "GPS Altitude",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_79": {
+    "sensor_gps_heading": {
       "english": "GPS Heading",
       "translation": "GPS Heading",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_80": {
+    "sensor_gps_speed": {
       "english": "GPS Speed",
       "translation": "GPS Speed",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 9
     },
-    "sensor_81": {
+    "sensor_gps_home_dist": {
       "english": "GPS Home Dist",
       "translation": "GPS Home Dist",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 13
     },
-    "sensor_82": {
+    "sensor_gps_home_dir": {
       "english": "GPS Home Dir",
       "translation": "GPS Home Dir",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_85": {
+    "sensor_cpu_load": {
       "english": "CPU Load",
       "translation": "CPU Load",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_86": {
+    "sensor_sys_load": {
       "english": "SYS Load",
       "translation": "SYS Load",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_87": {
+    "sensor_rt_load": {
       "english": "RT Load",
       "translation": "RT Load",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 7
     },
-    "sensor_88": {
+    "sensor_model_id": {
       "english": "Model ID",
       "translation": "Model ID",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_89": {
+    "sensor_flight_mode": {
       "english": "Flight Mode",
       "translation": "Flight Mode",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_90": {
+    "sensor_arming_flags": {
       "english": "Arming Flags",
       "translation": "Arming Flags",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_91": {
+    "sensor_arming_disable": {
       "english": "Arming Disable",
       "translation": "Arming Disable",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 14
     },
-    "sensor_92": {
+    "sensor_rescue": {
       "english": "Rescue",
       "translation": "Rescue",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 6
     },
-    "sensor_93": {
+    "sensor_governor": {
       "english": "Governor",
       "translation": "Governor",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 8
     },
-    "sensor_95": {
+    "sensor_pid_profile": {
       "english": "PID Profile",
       "translation": "PID Profile",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_96": {
+    "sensor_rate_profile": {
       "english": "Rate Profile",
       "translation": "Rate Profile",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 12
     },
-    "sensor_97": {
+    "sensor_battery_profile": {
       "english": "Battery Profile",
       "translation": "Battery Profile",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 15
     },
-    "sensor_98": {
+    "sensor_led_profile": {
       "english": "LED Profile",
       "translation": "LED Profile",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 11
     },
-    "sensor_99": {
+    "sensor_adj": {
       "english": "ADJ",
       "translation": "ADJ",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 3
     },
-    "sensor_100": {
+    "sensor_dbg0": {
       "english": "DBG0",
       "translation": "DBG0",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_101": {
+    "sensor_dbg1": {
       "english": "DBG1",
       "translation": "DBG1",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_102": {
+    "sensor_dbg2": {
       "english": "DBG2",
       "translation": "DBG2",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_103": {
+    "sensor_dbg3": {
       "english": "DBG3",
       "translation": "DBG3",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_104": {
+    "sensor_dbg4": {
       "english": "DBG4",
       "translation": "DBG4",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_105": {
+    "sensor_dbg5": {
       "english": "DBG5",
       "translation": "DBG5",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_106": {
+    "sensor_dbg6": {
       "english": "DBG6",
       "translation": "DBG6",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 4
     },
-    "sensor_107": {
+    "sensor_dbg7": {
       "english": "DBG7",
       "translation": "DBG7",
       "needs_translation": true,
