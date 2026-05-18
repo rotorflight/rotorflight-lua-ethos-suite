@@ -9,6 +9,10 @@ local prefs = {}
 
 local tonumber = tonumber
 
+-- Settle-time parameters are no longer user-editable; values here are the fixed defaults.
+local STABILIZE_DELAY_SECONDS = 1.5
+local STABLE_WINDOW_VOLTS     = 0.15
+
 local function getBatteryPrefs()
     local modelPreferences = rfsuite.session and rfsuite.session.modelPreferences
     return modelPreferences and modelPreferences.battery or nil
@@ -41,35 +45,40 @@ end
 function prefs.getSource()
     local batteryPrefs = getBatteryPrefs()
     local source = getNumericField(batteryPrefs, "smartfuel_source", nil)
-    if source ~= nil then
-        return source
+    if source == nil then
+        source = getNumericField(batteryPrefs, "calc_local", 0)
     end
-    return getNumericField(batteryPrefs, "calc_local", 0)
+    if source >= 0 and source <= 2 then return source end
+    return 0
 end
 
+function prefs.getEndAtZeroEnabled()
+    return getNumericField(getBatteryPrefs(), "smartfuel_end_at_zero", 1) ~= 0
+end
+
+-- Returns the fixed stabilize delay (seconds). No longer INI-backed.
 function prefs.getStabilizeDelaySeconds()
-    return getScaledField("stabilize_delay", 1500, 0, 10000, 1000) / 1000
+    return STABILIZE_DELAY_SECONDS
 end
 
+-- Returns the fixed stable-window threshold (volts). No longer INI-backed.
 function prefs.getStableWindowVolts()
-    return getScaledField("stable_window", 15, 0, 100, 100) / 100
+    return STABLE_WINDOW_VOLTS
 end
 
+-- Returns voltage slew-down limit in V/s (firmware: voltage_drop_rate mV/s ÷ 1000).
 function prefs.getVoltageFallPerSecond()
-    return getScaledField("voltage_fall_limit", 5, 0, 100, 100) / 100
+    return getScaledField("voltage_drop_rate", 10, 0, 250, nil) / 1000
 end
 
-function prefs.getFuelDropPerSecond()
-    return getScaledField("fuel_drop_rate", 10, 0, 500, 10) / 10
+-- Returns charge slew-down limit as a fraction/s (firmware: charge_drop_rate ÷ 10000).
+function prefs.getChargeDropRatePerSecond()
+    return getScaledField("charge_drop_rate", 50, 0, 250, 100) / 10000
 end
 
-function prefs.getSagMultiplier()
-    local batteryPrefs = getBatteryPrefs()
-    local sagMultiplierPercent = getScaledField("sag_multiplier_percent", nil, 0, 200, 100)
-    if sagMultiplierPercent ~= nil then
-        return sagMultiplierPercent / 100
-    end
-    return getNumericField(batteryPrefs, "sag_multiplier", 0.7)
+-- Returns sag-gain as a 0.0–1.0 multiplier (firmware: sag_gain% ÷ 100).
+function prefs.getSagGain()
+    return getScaledField("sag_gain", 40, 0, 100, nil) / 100
 end
 
 return prefs

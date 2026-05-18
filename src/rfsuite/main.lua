@@ -58,6 +58,7 @@ local userpref_defaults = {
         save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
+        dashboard_startup_log_close = 0,
         save_armed_warning = true,
         toolbar_timeout = 10,
         show_battery_profile_startup = true,
@@ -156,6 +157,9 @@ if rfsuite.preferences then
     local dev = rfsuite.preferences.developer
     if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then
         gen.mspstatusdialog = dev.mspstatusdialog
+    end
+    if gen and gen.elrs_sync_mode ~= nil then
+        gen.elrs_sync_mode = nil
     end
 end
 

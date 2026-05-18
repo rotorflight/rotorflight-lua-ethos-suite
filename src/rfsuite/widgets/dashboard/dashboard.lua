@@ -689,6 +689,24 @@ local function getOnpressBoxIndices()
     return indices
 end
 
+local function getStartupLogCloseMode()
+    local general = rfsuite.preferences and rfsuite.preferences.general
+    return tonumber(general and general.dashboard_startup_log_close) or 0
+end
+
+local function isStartupBatteryStepComplete(session)
+    if not session or session.showBatteryTypeStartup ~= true then return true end
+    return session.batteryDialogShown == true
+end
+
+local function shouldShowStartupOverlay(state)
+    local session = rfsuite.session
+    if not session or state == "postflight" then return false end
+    if not session.isConnected then return true end
+    return getStartupLogCloseMode() == 1 and
+        (session.postConnectComplete ~= true or not isStartupBatteryStepComplete(session))
+end
+
 function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
@@ -702,7 +720,7 @@ function dashboard.computeOverlayMessage()
         if not tasks or not tasks.active or not tasks.active() then return "[ERROR] Background task is not enabled" end
     end
 
-    if not rfsuite.session.isConnected and state ~= "postflight" then
+    if shouldShowStartupOverlay(state) then
         local v = rfsuite.config.version
         local verStr
 

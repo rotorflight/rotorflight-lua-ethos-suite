@@ -23,15 +23,27 @@ function telemetryconfig.wakeup()
         mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
-            local data = API.data().parsed
+            local apiData = API.data()
+            local data = apiData.parsed
+            local rawBuffer = apiData.buffer
 
             local slots = {}
+            local configBuffer = {}
             for i = 1, 40 do
                 local key = "telem_sensor_slot_" .. i
                 slots[i] = tonumber(data[key]) or 0
             end
+            for i = 1, #rawBuffer do
+                configBuffer[i] = rawBuffer[i]
+            end
 
             rfsuite.session.telemetryConfig = slots
+            rfsuite.session.telemetryConfigBuffer = configBuffer
+            rfsuite.session.crsfTelemetryConfig = {
+                mode = tonumber(data["crsf_telemetry_mode"]) or 0,
+                linkRate = tonumber(data["crsf_telemetry_link_rate"]) or 0,
+                linkRatio = tonumber(data["crsf_telemetry_link_ratio"]) or 0
+            }
 
             local parts = {}
             for i, v in ipairs(slots) do 
@@ -44,6 +56,15 @@ function telemetryconfig.wakeup()
             if log then 
                 log("Updated telemetry sensors: " .. slotsStr, "info") 
                 log("Updated telemetry sensors: " .. tostring(#parts) .. " of " .. tostring(#slots), "connect")
+                log(
+                    "CRSF telemetry config: mode="
+                        .. tostring(rfsuite.session.crsfTelemetryConfig.mode)
+                        .. ", rate="
+                        .. tostring(rfsuite.session.crsfTelemetryConfig.linkRate)
+                        .. ", ratio="
+                        .. tostring(rfsuite.session.crsfTelemetryConfig.linkRatio),
+                    "info"
+                )
             end    
         end)
         API.setErrorHandler(function(self, err)
@@ -60,6 +81,8 @@ end
 function telemetryconfig.reset()
 
     rfsuite.session.telemetryConfig = nil
+    rfsuite.session.telemetryConfigBuffer = nil
+    rfsuite.session.crsfTelemetryConfig = nil
     mspCallMade = false
 end
 

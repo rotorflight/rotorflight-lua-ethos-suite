@@ -124,34 +124,6 @@
         "max_length": 20,
         "reverse_text": false
       },
-      "smartfuel_source": {
-        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
-        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 101
-      },
-      "stabilize_delay": {
-        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
-        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 122
-      },
-      "stable_window": {
-        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
-        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 141
-      },
-      "voltage_fall_limit": {
-        "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
-        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 113
-      },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
         "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
@@ -166,12 +138,40 @@
         "reverse_text": false,
         "max_length": 92
       },
+      "sag_multiplier": {
+        "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
+        "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
+        "needs_translation": true,
+        "max_length": 73,
+        "reverse_text": false
+      },
       "sag_multiplier_percent": {
         "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
         "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 126
+      },
+      "smartfuel_source": {
+        "english": "Choose whether local SmartFuel uses current consumption, pack voltage, or combined mode. Combined uses the more pessimistic of voltage and current consumption.",
+        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 159
+      },
+      "stabilize_delay": {
+        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 122
+      },
+      "stable_window": {
+        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 141
       },
       "tbl_auto": {
         "english": "Auto",
@@ -194,13 +194,6 @@
         "reverse_text": false,
         "max_length": 5
       },
-      "sag_multiplier": {
-        "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-        "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-        "needs_translation": true,
-        "max_length": 73,
-        "reverse_text": false
-      },
       "tbl_off": {
         "english": "Current Sensor",
         "translation": "Current Sensor",
@@ -214,29 +207,6 @@
         "needs_translation": true,
         "max_length": 14,
         "reverse_text": false
-      }
-    },
-    "SMARTFUEL_CONFIG": {
-      "smartfuel_source": {
-        "english": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
-        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 101
-      },
-      "stabilize_delay": {
-        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
-        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 122
-      },
-      "stable_window": {
-        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
-        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 141
       },
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
@@ -244,27 +214,6 @@
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 113
-      },
-      "fuel_drop_rate": {
-        "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
-        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 84
-      },
-      "fuel_rise_rate": {
-        "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
-        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 92
-      },
-      "sag_multiplier_percent": {
-        "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
-        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 126
       }
     },
     "ESC_PARAMETERS_FLYROTOR": {
@@ -2621,20 +2570,6 @@
       }
     },
     "RC_TUNING": {
-      "tbl_off": {
-        "english": "OFF",
-        "translation": "OFF",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 3
-      },
-      "tbl_on": {
-        "english": "ON",
-        "translation": "ON",
-        "needs_translation": true,
-        "reverse_text": false,
-        "max_length": 2
-      },
       "accel_limit_1": {
         "english": "Maximum acceleration of the craft in response to a stick movement.",
         "translation": "Maks Aks of the craft in response to a stick movement.",
@@ -2746,6 +2681,20 @@
         "needs_translation": true,
         "max_length": 28,
         "reverse_text": false
+      },
+      "tbl_off": {
+        "english": "OFF",
+        "translation": "OFF",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 3
+      },
+      "tbl_on": {
+        "english": "ON",
+        "translation": "ON",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 2
       },
       "yaw_dynamic_ceiling_gain": {
         "english": "The maximum gain applied to the yaw dynamic ceiling.",
@@ -2918,6 +2867,85 @@
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 3
+      }
+    },
+    "SMARTFUEL_CONFIG": {
+      "charge_drop_rate": {
+        "english": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking.",
+        "translation": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 262
+      },
+      "fuel_drop_rate": {
+        "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
+        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 84
+      },
+      "fuel_rise_rate": {
+        "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
+        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 92
+      },
+      "sag_gain": {
+        "english": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable.",
+        "translation": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 180
+      },
+      "sag_multiplier_percent": {
+        "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
+        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 126
+      },
+      "smartfuel_mode": {
+        "english": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption.",
+        "translation": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 176
+      },
+      "smartfuel_source": {
+        "english": "Choose whether local SmartFuel uses current consumption, pack voltage, or combined mode. Combined uses the more pessimistic of voltage and current consumption.",
+        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 159
+      },
+      "stabilize_delay": {
+        "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 122
+      },
+      "stable_window": {
+        "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 141
+      },
+      "voltage_drop_rate": {
+        "english": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking.",
+        "translation": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 207
+      },
+      "voltage_fall_limit": {
+        "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
+        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 113
       }
     }
   },
@@ -4740,6 +4768,266 @@
           "reverse_text": false
         }
       },
+      "elrs_telemetry": {
+        "action": {
+          "english": "Action",
+          "translation": "Action",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "action_elrs_to_rf": {
+          "english": "ELRS -> RF",
+          "translation": "ELRS -> RF",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "action_probe": {
+          "english": "Probe",
+          "translation": "Probe",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "action_probe_only": {
+          "english": "Probe only",
+          "translation": "Probe only",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "action_rf_to_elrs": {
+          "english": "RF -> ELRS",
+          "translation": "RF -> ELRS",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "actions": {
+          "english": "Actions",
+          "translation": "Actions",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "elrs_module": {
+          "english": "ELRS Module",
+          "translation": "ELRS Module",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "mode_custom": {
+          "english": "custom",
+          "translation": "custom",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "mode_native": {
+          "english": "native",
+          "translation": "native",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "name": {
+          "english": "ELRS Telemetry",
+          "translation": "ELRS Telemetry",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "rotorflight": {
+          "english": "Rotorflight",
+          "translation": "Rotorflight",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_connect_first": {
+          "english": "Connect to a model first",
+          "translation": "Connect to a model first",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_elrs_matches_rf": {
+          "english": "ELRS module already matches Rotorflight",
+          "translation": "ELRS module already matches Rotorflight",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_elrs_probe_complete": {
+          "english": "ELRS module probe complete",
+          "translation": "ELRS module probe complete",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_elrs_updated": {
+          "english": "ELRS module updated from Rotorflight",
+          "translation": "ELRS module updated from Rotorflight",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_idle": {
+          "english": "Idle",
+          "translation": "Idle",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_no_module": {
+          "english": "No ELRS TX module responded",
+          "translation": "No ELRS TX module responded",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_not_probed": {
+          "english": "Not probed yet",
+          "translation": "Not probed yet",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_pinging_module": {
+          "english": "Pinging ELRS module",
+          "translation": "Pinging ELRS module",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_probe_complete": {
+          "english": "Probe complete",
+          "translation": "Probe complete",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_probe_requested": {
+          "english": "Probe requested",
+          "translation": "Probe requested",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_read_timeout": {
+          "english": "ELRS module read timed out",
+          "translation": "ELRS module read timed out",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_reading_module": {
+          "english": "Reading ELRS module parameters",
+          "translation": "Reading ELRS module parameters",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_requires_active_link": {
+          "english": "This tool requires an active CRSF link",
+          "translation": "This tool requires an active CRSF link",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_requires_crsf": {
+          "english": "This tool requires CRSF telemetry",
+          "translation": "This tool requires CRSF telemetry",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_rf_matches_elrs": {
+          "english": "Rotorflight already matches ELRS",
+          "translation": "Rotorflight already matches ELRS",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_rotorflight_config_not_ready": {
+          "english": "Rotorflight telemetry config was not ready",
+          "translation": "Rotorflight telemetry config was not ready",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_rotorflight_save_failed": {
+          "english": "Rotorflight sync failed while saving",
+          "translation": "Rotorflight sync failed while saving",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_rotorflight_updated": {
+          "english": "Rotorflight updated from ELRS",
+          "translation": "Rotorflight updated from ELRS",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_rotorflight_write_failed": {
+          "english": "Rotorflight sync write failed",
+          "translation": "Rotorflight sync write failed",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_rotorflight_write_rejected": {
+          "english": "Rotorflight sync write was rejected",
+          "translation": "Rotorflight sync write was rejected",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_saving_rotorflight": {
+          "english": "Saving Rotorflight telemetry",
+          "translation": "Saving Rotorflight telemetry",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_sensor_unavailable": {
+          "english": "CRSF sensor unavailable",
+          "translation": "CRSF sensor unavailable",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_sync_requested": {
+          "english": "Sync requested: ",
+          "translation": "Sync requested: ",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_unavailable_armed": {
+          "english": "Unavailable while armed",
+          "translation": "Unavailable while armed",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_unavailable_inflight": {
+          "english": "Unavailable while in flight",
+          "translation": "Unavailable while in flight",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_unavailable_simulation": {
+          "english": "Unavailable in simulation",
+          "translation": "Unavailable in simulation",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_waiting_rotorflight_config": {
+          "english": "Waiting for Rotorflight telemetry config",
+          "translation": "Waiting for Rotorflight telemetry config",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_waiting_telemetry_config": {
+          "english": "Waiting for telemetry config",
+          "translation": "Waiting for telemetry config",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_writing_elrs": {
+          "english": "Writing ELRS module settings",
+          "translation": "Writing ELRS module settings",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_writing_prefix": {
+          "english": "Writing ",
+          "translation": "Writing ",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_writing_rotorflight": {
+          "english": "Writing Rotorflight telemetry settings",
+          "translation": "Writing Rotorflight telemetry settings",
+          "needs_translation": true,
+          "reverse_text": false
+        }
+      },
       "esc_motors": {
         "consumption_correction": {
           "english": "Consumption Correction",
@@ -4934,12 +5222,26 @@
               "reverse_text": false,
               "max_length": 8
             },
+            "autoadvance": {
+              "english": "Auto Advance",
+              "translation": "Auto Advance",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 12
+            },
             "basic": {
               "english": "Basic",
               "translation": "Basic",
               "needs_translation": true,
               "reverse_text": false,
               "max_length": 5
+            },
+            "beepvolume": {
+              "english": "Beep Volume",
+              "translation": "Beep Volume",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 11
             },
             "bidirectionalmode": {
               "english": "Bidirectional Mode",
@@ -4969,6 +5271,13 @@
               "reverse_text": false,
               "max_length": 17
             },
+            "currentlimit": {
+              "english": "Current Limit",
+              "translation": "Current Limit",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 13
+            },
             "direction": {
               "english": "Direction",
               "translation": "Direction",
@@ -4976,12 +5285,12 @@
               "reverse_text": false,
               "max_length": 9
             },
-            "currentlimit": {
-              "english": "Current Limit",
-              "translation": "Current Limit",
+            "limits": {
+              "english": "Limits",
+              "translation": "Limits",
               "needs_translation": true,
               "reverse_text": false,
-              "max_length": 13
+              "max_length": 6
             },
             "lowvoltagecutoff": {
               "english": "Low Voltage Cutoff",
@@ -4996,13 +5305,6 @@
               "needs_translation": true,
               "reverse_text": false,
               "max_length": 21
-            },
-            "limits": {
-              "english": "Limits",
-              "translation": "Limits",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 6
             },
             "motorkv": {
               "english": "Motor KV",
@@ -5025,26 +5327,19 @@
               "reverse_text": false,
               "max_length": 4
             },
-            "pwmfrequency": {
-              "english": "PWM Frequency",
-              "translation": "PWM Frequency",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 13
-            },
-            "beepvolume": {
-              "english": "Beep Volume",
-              "translation": "Beep Volume",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 11
-            },
             "protocol": {
               "english": "Protocol",
               "translation": "Protocol",
               "needs_translation": true,
               "reverse_text": false,
               "max_length": 8
+            },
+            "pwmfrequency": {
+              "english": "PWM Frequency",
+              "translation": "PWM Frequency",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 13
             },
             "rcarreversing": {
               "english": "RC Car Reversing",
@@ -5109,13 +5404,6 @@
               "reverse_text": false,
               "max_length": 18
             },
-            "startuppower": {
-              "english": "Startup Power",
-              "translation": "Startup Power",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 13
-            },
             "stallprotection": {
               "english": "Stall Protection",
               "translation": "Stall Protection",
@@ -5123,26 +5411,19 @@
               "reverse_text": false,
               "max_length": 16
             },
+            "startuppower": {
+              "english": "Startup Power",
+              "translation": "Startup Power",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 13
+            },
             "stuckrotorprotection": {
               "english": "Stuck Rotor Protection",
               "translation": "Stuck Rotor Protection",
               "needs_translation": true,
               "reverse_text": false,
               "max_length": 22
-            },
-            "telemetryinterval": {
-              "english": "Telemetry Interval",
-              "translation": "Telemetry Interval",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 18
-            },
-            "temperaturelimit": {
-              "english": "Temperature Limit",
-              "translation": "Temperature Limit",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 17
             },
             "tbl_brake_active": {
               "english": "Active Brake",
@@ -5207,6 +5488,20 @@
               "reverse_text": false,
               "max_length": 8
             },
+            "telemetryinterval": {
+              "english": "Telemetry Interval",
+              "translation": "Telemetry Interval",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 18
+            },
+            "temperaturelimit": {
+              "english": "Temperature Limit",
+              "translation": "Temperature Limit",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 17
+            },
             "timing": {
               "english": "Timing",
               "translation": "Timing",
@@ -5227,13 +5522,6 @@
               "needs_translation": true,
               "reverse_text": false,
               "max_length": 22
-            },
-            "autoadvance": {
-              "english": "Auto Advance",
-              "translation": "Auto Advance",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 12
             }
           },
           "blheli_s": {
@@ -5463,19 +5751,19 @@
               "reverse_text": false,
               "max_length": 13
             },
-            "rampupstartpower": {
-              "english": "Rampup Start Power",
-              "translation": "Rampup Start Power",
-              "needs_translation": true,
-              "reverse_text": false,
-              "max_length": 18
-            },
             "rampuppower": {
               "english": "Rampup Power",
               "translation": "Rampup Power",
               "needs_translation": true,
               "reverse_text": false,
               "max_length": 12
+            },
+            "rampupstartpower": {
+              "english": "Rampup Start Power",
+              "translation": "Rampup Start Power",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 18
             },
             "startupbeep": {
               "english": "Startup Beep",
@@ -6689,6 +6977,13 @@
           "needs_translation": true,
           "max_length": 29,
           "reverse_text": false
+        },
+        "remove_blades_warning": {
+          "english": "Please remove blades from heli",
+          "translation": "Please remove blades from heli",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
         },
         "searching": {
           "english": "Searching",
@@ -8164,13 +8459,6 @@
           "max_length": 7,
           "reverse_text": false
         },
-        "capacity": {
-          "english": "Capacity",
-          "translation": "Capacity",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 8
-        },
         "bec_voltage_alert": {
           "english": "BEC Alert Value",
           "translation": "BEC Alert Value",
@@ -8179,53 +8467,18 @@
           "reverse_text": false
         },
         "calcfuel_local": {
-          "english": "Calculate Fuel Using",
+          "english": "Local fuel source",
           "translation": "Calculate Fuel Using",
           "needs_translation": true,
-          "max_length": 20,
+          "max_length": 17,
           "reverse_text": false
         },
-        "smartfuel_stabilize_delay": {
-          "english": "Stabilize Delay",
-          "translation": "Stabilize Delay",
+        "capacity": {
+          "english": "Capacity",
+          "translation": "Capacity",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 15
-        },
-        "smartfuel_stable_window": {
-          "english": "Stable Window",
-          "translation": "Stable Window",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 13
-        },
-        "smartfuel_voltage_fall_limit": {
-          "english": "Voltage Fall Limit",
-          "translation": "Voltage Fall Limit",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 18
-        },
-        "smartfuel_fuel_drop_rate": {
-          "english": "Fuel Drop Rate",
-          "translation": "Fuel Drop Rate",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 14
-        },
-        "smartfuel_fuel_rise_rate": {
-          "english": "Fuel Rise Rate",
-          "translation": "Fuel Rise Rate",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 14
-        },
-        "smartfuel_sag_compensation": {
-          "english": "Sag Compensation Factor",
-          "translation": "Sag Compensation Factor",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 23
+          "max_length": 8
         },
         "cell_count": {
           "english": "Cell Count",
@@ -8269,13 +8522,6 @@
           "max_length": 16,
           "reverse_text": false
         },
-        "model_type": {
-          "english": "Power Type",
-          "translation": "Model Type",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 10
-        },
         "min_cell_voltage": {
           "english": "Min Cell Voltage",
           "translation": "Min Cell Voltage",
@@ -8283,11 +8529,32 @@
           "max_length": 16,
           "reverse_text": false
         },
+        "model_type": {
+          "english": "Power Type",
+          "translation": "Model Type",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
         "name": {
           "english": "Power",
           "translation": "Power",
           "needs_translation": true,
           "max_length": 5,
+          "reverse_text": false
+        },
+        "preferences_name": {
+          "english": "Preferences",
+          "translation": "Preferences",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "rx_voltage_alert": {
+          "english": "RxBatt Alert Value",
+          "translation": "RxBatt Alert Value",
+          "needs_translation": true,
+          "max_length": 18,
           "reverse_text": false
         },
         "selected": {
@@ -8297,12 +8564,75 @@
           "reverse_text": false,
           "max_length": 8
         },
-        "rx_voltage_alert": {
-          "english": "RxBatt Alert Value",
-          "translation": "RxBatt Alert Value",
+        "smartfuel_charge_drop_rate": {
+          "english": "Charge Drop Rate",
+          "translation": "Charge Drop Rate",
           "needs_translation": true,
-          "max_length": 18,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "smartfuel_fuel_drop_rate": {
+          "english": "Fuel Drop Rate",
+          "translation": "Fuel Drop Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "smartfuel_fuel_rise_rate": {
+          "english": "Fuel Rise Rate",
+          "translation": "Fuel Rise Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "smartfuel_name": {
+          "english": "SmartFuel",
+          "translation": "SmartFuel",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "smartfuel_sag_compensation": {
+          "english": "Sag Compensation Factor",
+          "translation": "Sag Compensation Factor",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "smartfuel_sag_gain": {
+          "english": "Sag Gain",
+          "translation": "Sag Gain",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "smartfuel_stabilize_delay": {
+          "english": "Stabilize Delay",
+          "translation": "Stabilize Delay",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "smartfuel_stable_window": {
+          "english": "Stable Window",
+          "translation": "Stable Window",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "smartfuel_voltage_drop_rate": {
+          "english": "Voltage Drop Rate",
+          "translation": "Voltage Drop Rate",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "smartfuel_voltage_fall_limit": {
+          "english": "Voltage Fall Limit",
+          "translation": "Voltage Fall Limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
         },
         "source_name": {
           "english": "Sources",
@@ -8310,13 +8640,6 @@
           "needs_translation": true,
           "max_length": 7,
           "reverse_text": false
-        },
-        "preferences_name": {
-          "english": "Preferences",
-          "translation": "Preferences",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 11
         },
         "timer": {
           "english": "Flight Time Alarm",
@@ -9847,27 +10170,6 @@
         }
       },
       "rates_advanced": {
-        "cyclic_behaviour": {
-          "english": "Cyclic Behaviour",
-          "translation": "Cyclic Behaviour",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
-        },
-        "cyclic_polarity": {
-          "english": "Polar coordinates",
-          "translation": "Cyclic polar",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 17
-        },
-        "cyclic_ring": {
-          "english": "Cyclic ring",
-          "translation": "Cyclic ring",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 11
-        },
         "acc_limit": {
           "english": "Accelerometer Limit",
           "translation": "Accelerometer Limit",
@@ -9888,6 +10190,27 @@
           "needs_translation": true,
           "max_length": 3,
           "reverse_text": false
+        },
+        "cyclic_behaviour": {
+          "english": "Cyclic Behaviour",
+          "translation": "Cyclic Behaviour",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "cyclic_polarity": {
+          "english": "Polar coordinates",
+          "translation": "Cyclic polar",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 17
+        },
+        "cyclic_ring": {
+          "english": "Cyclic ring",
+          "translation": "Cyclic ring",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
         },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",
@@ -10378,41 +10701,6 @@
         }
       },
       "settings": {
-        "txt_toolbar_timeout": {
-          "english": "Dash-bar auto-close",
-          "translation": "Dash-bar auto-close",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 19
-        },
-        "txt_show_battery_profile_connect": {
-          "english": "Battery Type on connect",
-          "translation": "Battery Type on connect",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 23
-        },
-        "txt_show_confirmation_dialog": {
-          "english": "Battery Type confirmation",
-          "translation": "Battery Type confirmation",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 25
-        },
-        "battery_profile_event": {
-          "english": "Battery",
-          "translation": "Battery",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 7
-        },
-        "battery_capacity_callout": {
-          "english": "Battery capacity",
-          "translation": "Battery capacity",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
-        },
         "adj_callouts": {
           "english": "Adjustment Callouts",
           "translation": "Justerings varsler",
@@ -10454,6 +10742,20 @@
           "needs_translation": false,
           "max_length": 5,
           "reverse_text": false
+        },
+        "battery_capacity_callout": {
+          "english": "Battery capacity",
+          "translation": "Battery capacity",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "battery_profile_event": {
+          "english": "Battery",
+          "translation": "Battery",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
         },
         "celcius": {
           "english": "Celsius",
@@ -10903,6 +11205,13 @@
           "max_length": 18,
           "reverse_text": false
         },
+        "txt_cachestats": {
+          "english": "Log cache stats",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Log cache stats"
+        },
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
           "translation": "Collapse Unused Menu Entries",
@@ -10966,6 +11275,27 @@
           "max_length": 13,
           "reverse_text": false
         },
+        "txt_dashboard_startup_log_close": {
+          "english": "Dashboard startup log",
+          "translation": "Dashboard startup log",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "txt_dashboard_startup_log_close_connected": {
+          "english": "CONNECTION",
+          "translation": "CONNECTION",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "txt_dashboard_startup_log_close_ready": {
+          "english": "READY",
+          "translation": "READY",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
         "txt_iconsize": {
           "english": "Icon Size",
           "translation": "Ikon storrelse",
@@ -10987,13 +11317,6 @@
           "max_length": 5,
           "reverse_text": false
         },
-        "txt_loglevel": {
-          "english": "Log level",
-          "translation": "Log level",
-          "needs_translation": true,
-          "max_length": 9,
-          "reverse_text": false
-        },
         "txt_logevents": {
           "english": "Log events",
           "translation": "Log events",
@@ -11001,19 +11324,19 @@
           "reverse_text": false,
           "max_length": 10
         },
+        "txt_loglevel": {
+          "english": "Log level",
+          "translation": "Log level",
+          "needs_translation": true,
+          "max_length": 9,
+          "reverse_text": false
+        },
         "txt_memusage": {
           "english": "Log memory usage",
           "translation": "Logg minnebruk",
           "needs_translation": false,
           "max_length": 16,
           "reverse_text": false
-        },
-        "txt_cachestats": {
-          "english": "Log cache stats",
-          "max_length": 15,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Log cache stats"
         },
         "txt_mspdata": {
           "english": "Log msp data",
@@ -11035,20 +11358,6 @@
           "needs_translation": true,
           "max_length": 20,
           "reverse_text": false
-        },
-        "txt_smartfuel_autodetect_model_type": {
-          "english": "Autodetect Model Type",
-          "translation": "Autodetect Model Type",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 21
-        },
-        "txt_smartfuel_force_nitro": {
-          "english": "Force Model Type: Nitro",
-          "translation": "Force Model Type: Nitro",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 23
         },
         "txt_objectprofiler": {
           "english": "Log dashboard speed",
@@ -11120,12 +11429,47 @@
           "reverse_text": false,
           "max_length": 21
         },
+        "txt_show_battery_profile_connect": {
+          "english": "Battery Type on connect",
+          "translation": "Battery Type on connect",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
+        "txt_show_confirmation_dialog": {
+          "english": "Battery Type confirmation",
+          "translation": "Battery Type confirmation",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 25
+        },
+        "txt_show_esc_tools_warning": {
+          "english": "ESC tools safety prompt",
+          "translation": "ESC tools safety prompt",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
         "txt_small": {
           "english": "SMALL",
           "translation": "SMALL",
           "needs_translation": true,
           "max_length": 5,
           "reverse_text": false
+        },
+        "txt_smartfuel_autodetect_model_type": {
+          "english": "Autodetect Model Type",
+          "translation": "Autodetect Model Type",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "txt_smartfuel_force_nitro": {
+          "english": "Force Model Type: Nitro",
+          "translation": "Force Model Type: Nitro",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -11147,6 +11491,13 @@
           "needs_translation": true,
           "max_length": 4,
           "reverse_text": false
+        },
+        "txt_toolbar_timeout": {
+          "english": "Dash-bar auto-close",
+          "translation": "Dash-bar auto-close",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
         },
         "voltage": {
           "english": "Voltage",
@@ -11375,19 +11726,19 @@
       "max_length": 38,
       "reverse_text": false
     },
-    "msg_lua_memory_critical_title": {
-      "english": "Lua memory critically low",
-      "translation": "Lua memory critically low",
-      "needs_translation": true,
-      "reverse_text": false,
-      "max_length": 25
-    },
     "msg_lua_memory_critical_restart_radio": {
       "english": "Please powercycle the radio to ensure system stability",
       "translation": "Please powercycle the radio to ensure system stability",
       "needs_translation": true,
       "reverse_text": false,
       "max_length": 54
+    },
+    "msg_lua_memory_critical_title": {
+      "english": "Lua memory critically low",
+      "translation": "Lua memory critically low",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 25
     },
     "msg_model_changed_reset": {
       "english": "Model changed, resetting session",
@@ -11894,12 +12245,6 @@
         "needs_translation": false,
         "reverse_text": false
       },
-      "no_profiles": {
-        "english": "No battery profiles configured.",
-        "max_length": 33,
-        "needs_translation": false,
-        "reverse_text": false
-      },
       "msg_battery_selected": {
         "english": "Selected battery:",
         "translation": "Selected battery:",
@@ -11913,6 +12258,12 @@
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 42
+      },
+      "no_profiles": {
+        "english": "No battery profiles configured.",
+        "max_length": 33,
+        "needs_translation": false,
+        "reverse_text": false
       },
       "select_title": {
         "english": "Select Battery",

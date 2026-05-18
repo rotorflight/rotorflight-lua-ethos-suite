@@ -332,11 +332,27 @@
         },
         {
           "bgtask": true,
+          "image": "elrs_link.png",
+          "name": "ELRS Telemetry",
+          "offline": false,
+          "script": "elrs_telemetry.lua",
+          "translation": "@i18n(app.modules.elrs_telemetry.name)@"
+        },
+        {
+          "bgtask": true,
           "image": "sensors.png",
           "name": "Sensors",
           "offline": true,
           "script": "sensors.lua",
           "translation": "@i18n(app.modules.validate_sensors.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "smartfuel.png",
+          "name": "SmartFuel",
+          "offline": false,
+          "script": "smartfuel.lua",
+          "translation": "@i18n(app.modules.power.smartfuel_name)@"
         },
         {
           "bgtask": true,
@@ -361,6 +377,13 @@
           "offline": true,
           "script": "info.lua",
           "translation": "@i18n(app.modules.info.name)@"
+        },
+        {
+          "bgtask": true,
+          "image": "session_logs.png",
+          "name": "Session Logs",
+          "offline": true,
+          "script": "session_logs.lua"
         }
       ],
       "scriptPrefix": "diagnostics/tools/",
