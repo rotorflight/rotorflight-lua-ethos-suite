@@ -332,6 +332,14 @@
         },
         {
           "bgtask": true,
+          "image": "elrs_link.png",
+          "name": "ELRS Telemetry",
+          "offline": false,
+          "script": "elrs_telemetry.lua",
+          "translation": "@i18n(app.modules.elrs_telemetry.name)@"
+        },
+        {
+          "bgtask": true,
           "image": "sensors.png",
           "name": "Sensors",
           "offline": true,

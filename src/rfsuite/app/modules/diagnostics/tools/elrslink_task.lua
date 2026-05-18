@@ -71,6 +71,42 @@ local moduleRatioLabel = nil
 local pendingWrites = {}
 local pendingWriteCount = 0
 local pendingWriteIndex = 1
+local manualSyncMode = SYNC_MODE_OFF
+local statusText = "Idle"
+local T = {
+    actionProbeOnly = "@i18n(app.modules.elrs_telemetry.action_probe_only)@",
+    actionRfToElrs = "@i18n(app.modules.elrs_telemetry.action_rf_to_elrs)@",
+    actionElrsToRf = "@i18n(app.modules.elrs_telemetry.action_elrs_to_rf)@",
+    idle = "@i18n(app.modules.elrs_telemetry.status_idle)@",
+    writingElrs = "@i18n(app.modules.elrs_telemetry.status_writing_elrs)@",
+    elrsMatchesRf = "@i18n(app.modules.elrs_telemetry.status_elrs_matches_rf)@",
+    elrsProbeComplete = "@i18n(app.modules.elrs_telemetry.status_elrs_probe_complete)@",
+    rfMatchesElrs = "@i18n(app.modules.elrs_telemetry.status_rf_matches_elrs)@",
+    writingRotorflight = "@i18n(app.modules.elrs_telemetry.status_writing_rotorflight)@",
+    savingRotorflight = "@i18n(app.modules.elrs_telemetry.status_saving_rotorflight)@",
+    rotorflightUpdated = "@i18n(app.modules.elrs_telemetry.status_rotorflight_updated)@",
+    rotorflightSaveFailed = "@i18n(app.modules.elrs_telemetry.status_rotorflight_save_failed)@",
+    rotorflightWriteFailed = "@i18n(app.modules.elrs_telemetry.status_rotorflight_write_failed)@",
+    rotorflightWriteRejected = "@i18n(app.modules.elrs_telemetry.status_rotorflight_write_rejected)@",
+    probeComplete = "@i18n(app.modules.elrs_telemetry.status_probe_complete)@",
+    readingModule = "@i18n(app.modules.elrs_telemetry.status_reading_module)@",
+    requiresActiveLink = "@i18n(app.modules.elrs_telemetry.status_requires_active_link)@",
+    waitingRotorflightConfig = "@i18n(app.modules.elrs_telemetry.status_waiting_rotorflight_config)@",
+    rotorflightConfigNotReady = "@i18n(app.modules.elrs_telemetry.status_rotorflight_config_not_ready)@",
+    pingingModule = "@i18n(app.modules.elrs_telemetry.status_pinging_module)@",
+    noModule = "@i18n(app.modules.elrs_telemetry.status_no_module)@",
+    readTimeout = "@i18n(app.modules.elrs_telemetry.status_read_timeout)@",
+    sensorUnavailable = "@i18n(app.modules.elrs_telemetry.status_sensor_unavailable)@",
+    writingPrefix = "@i18n(app.modules.elrs_telemetry.status_writing_prefix)@",
+    elrsUpdated = "@i18n(app.modules.elrs_telemetry.status_elrs_updated)@",
+    unavailableSimulation = "@i18n(app.modules.elrs_telemetry.status_unavailable_simulation)@",
+    connectFirst = "@i18n(app.modules.elrs_telemetry.status_connect_first)@",
+    requiresCrsf = "@i18n(app.modules.elrs_telemetry.status_requires_crsf)@",
+    unavailableInFlight = "@i18n(app.modules.elrs_telemetry.status_unavailable_inflight)@",
+    unavailableArmed = "@i18n(app.modules.elrs_telemetry.status_unavailable_armed)@",
+    probeRequested = "@i18n(app.modules.elrs_telemetry.status_probe_requested)@",
+    syncRequested = "@i18n(app.modules.elrs_telemetry.status_sync_requested)@"
+}
 
 local function clearFieldData()
     for i = #fieldData, 1, -1 do
@@ -94,24 +130,28 @@ local function clearApiEntry(apiName)
 end
 
 local function getSyncMode()
-    local prefs = rfsuite.preferences and rfsuite.preferences.general
-    local value = tonumber(prefs and prefs.elrs_sync_mode)
-
-    if value == SYNC_MODE_ROTORFLIGHT_TO_ELRS or value == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
-        return value
-    end
-
-    return SYNC_MODE_OFF
+    return manualSyncMode
 end
 
 local function syncModeLabel(mode)
     if mode == SYNC_MODE_ROTORFLIGHT_TO_ELRS then
-        return "Rotorflight -> ELRS"
+        return T.actionRfToElrs
     end
     if mode == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
-        return "ELRS -> Rotorflight"
+        return T.actionElrsToRf
     end
-    return "Off"
+    return T.actionProbeOnly
+end
+
+local function normalizeSyncMode(mode)
+    if mode == SYNC_MODE_ROTORFLIGHT_TO_ELRS or mode == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
+        return mode
+    end
+    return SYNC_MODE_OFF
+end
+
+local function setStatus(text)
+    statusText = text or T.idle
 end
 
 local function copyNumericBuffer(source)
@@ -475,8 +515,9 @@ local function syncRotorflightToElrs(fcConfig)
 
         rfsuite.utils.log(
             "Syncing ELRS module to Rotorflight: " .. table.concat(actions, ", "),
-            "connect"
+            "info"
         )
+        setStatus(T.writingElrs)
 
         if ratioField == nil then
             rfsuite.utils.log("ELRS sync could not find the module telemetry-ratio field", "info")
@@ -520,7 +561,10 @@ local function syncRotorflightToElrs(fcConfig)
     end
 
     if rateField and ratioField and rateTargetIndex == rateField.selectedIndex and ratioTargetIndex == ratioField.selectedIndex then
-        rfsuite.utils.log("ELRS module already follows Rotorflight", "connect")
+        rfsuite.utils.log("ELRS module already follows Rotorflight", "info")
+        setStatus(T.elrsMatchesRf)
+    else
+        setStatus(T.elrsProbeComplete)
     end
 
     completeTask()
@@ -565,10 +609,12 @@ local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, modul
         if ratioKind == "race" then
             rfsuite.utils.log(
                 "Rotorflight already matches ELRS numerically (Race still becomes Off while armed on the module)",
-                "connect"
+                "info"
             )
+            setStatus(T.rfMatchesElrs)
         else
-            rfsuite.utils.log("Rotorflight already follows ELRS numerically", "connect")
+            rfsuite.utils.log("Rotorflight already follows ELRS numerically", "info")
+            setStatus(T.rfMatchesElrs)
         end
         completeTask()
         return
@@ -596,11 +642,12 @@ local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, modul
 
     rfsuite.utils.log(
         "Syncing Rotorflight telemetry to match ELRS: rate=" .. tostring(moduleRateText) .. ", ratio=1:" .. tostring(effectiveRatio),
-        "connect"
+        "info"
     )
+    setStatus(T.writingRotorflight)
 
     clearApiEntry(TELEMETRY_CONFIG_API_NAME)
-    api.setUUID("elrslink.telemetry.write")
+    api.setUUID("diagnostics.elrslink.telemetry.write")
     api.setCompleteHandler(function()
         clearApiEntry(TELEMETRY_CONFIG_API_NAME)
 
@@ -620,29 +667,34 @@ local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, modul
                 .. tostring(moduleRate)
                 .. ", ratio=1:"
                 .. tostring(effectiveRatio),
-            "connect"
+            "info"
         )
+        setStatus(T.savingRotorflight)
 
         local ok, reason = rfsuite.utils.queueEepromWrite({
-            uuid = "eeprom.elrslink.postconnect",
+            uuid = "eeprom.elrslink.diagnostics",
             processReply = function()
                 rfsuite.utils.log("Saved Rotorflight telemetry sync to EEPROM", "info")
+                setStatus(T.rotorflightUpdated)
                 completeTask()
             end,
             errorHandler = function()
                 rfsuite.utils.log("EEPROM write failed after ELRS telemetry sync", "info")
+                setStatus(T.rotorflightSaveFailed)
                 completeTask()
             end
         })
 
         if not ok then
             rfsuite.utils.log("EEPROM enqueue rejected after ELRS telemetry sync (" .. tostring(reason) .. ")", "info")
+            setStatus(T.rotorflightSaveFailed)
             completeTask()
         end
     end)
     api.setErrorHandler(function(_, reason)
         clearApiEntry(TELEMETRY_CONFIG_API_NAME)
         rfsuite.utils.log("Failed to sync Rotorflight telemetry from ELRS (" .. tostring(reason) .. ")", "info")
+        setStatus(T.rotorflightWriteFailed)
         completeTask()
     end)
 
@@ -650,6 +702,7 @@ local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, modul
     if not ok then
         clearApiEntry(TELEMETRY_CONFIG_API_NAME)
         rfsuite.utils.log("Rotorflight telemetry sync write was rejected (" .. tostring(reason) .. ")", "info")
+        setStatus(T.rotorflightWriteRejected)
         completeTask()
     end
 end
@@ -681,7 +734,7 @@ local function finalize()
     if moduleRateLabel and moduleRatioLabel then
         rfsuite.utils.log(
             "ELRS module link: rate=" .. tostring(moduleRateLabel) .. ", ratio=" .. ratioSummary,
-            "connect"
+            "info"
         )
     else
         rfsuite.utils.log(
@@ -708,6 +761,7 @@ local function finalize()
 
     if syncMode == SYNC_MODE_OFF then
         rfsuite.utils.log("ELRS telemetry sync is Off; leaving both sides unchanged", "info")
+        setStatus(T.probeComplete)
         completeTask()
         return
     end
@@ -773,6 +827,7 @@ local function handleDeviceInfo(data)
     clearFieldData()
     state = "read"
     nextActionAt = 0
+    setStatus(T.readingModule)
 
     if fieldCount <= 0 then
         finalize()
@@ -846,6 +901,7 @@ function elrslink.wakeup()
     if taskComplete then return end
 
     if shouldSkip() then
+        setStatus(T.requiresActiveLink)
         taskComplete = true
         return
     end
@@ -853,8 +909,10 @@ function elrslink.wakeup()
     if type(session.crsfTelemetryConfig) ~= "table" then
         if configWaitStartedAt == 0 then
             configWaitStartedAt = now
+            setStatus(T.waitingRotorflightConfig)
         elseif (now - configWaitStartedAt) >= DISCOVERY_TIMEOUT_SECONDS then
             rfsuite.utils.log("Skipping ELRS link probe because CRSF telemetry config was not ready", "info")
+            setStatus(T.rotorflightConfigNotReady)
             taskComplete = true
         end
         return
@@ -866,6 +924,7 @@ function elrslink.wakeup()
         state = "ping"
         nextActionAt = 0
         rfsuite.utils.log("Starting ELRS link probe", "debug")
+        setStatus(T.pingingModule)
     end
 
     processIncomingFrames()
@@ -873,12 +932,14 @@ function elrslink.wakeup()
 
     if state == "ping" and probeStartedAt > 0 and (now - probeStartedAt) >= DISCOVERY_TIMEOUT_SECONDS then
         rfsuite.utils.log("No ELRS TX module responded to the CRSF parameter probe", "info")
+        setStatus(T.noModule)
         taskComplete = true
         return
     end
 
     if state == "read" and probeStartedAt > 0 and (now - probeStartedAt) >= READ_TIMEOUT_MAX_SECONDS then
         rfsuite.utils.log("ELRS link probe timed out while reading module parameters", "info")
+        setStatus(T.readTimeout)
         finalize()
         return
     end
@@ -886,6 +947,7 @@ function elrslink.wakeup()
     local crsfSensor = getSensor()
     if not crsfSensor then
         rfsuite.utils.log("CRSF sensor unavailable for ELRS link probe", "info")
+        setStatus(T.sensorUnavailable)
         taskComplete = true
         return
     end
@@ -921,8 +983,9 @@ function elrslink.wakeup()
 
         rfsuite.utils.log(
             "ELRS sync: set " .. tostring(action.fieldName) .. " to " .. tostring(action.label),
-            "connect"
+            "info"
         )
+        setStatus(T.writingPrefix .. tostring(action.fieldName))
 
         if action.fieldKind == "rate" and rateField then
             rateField.selectedIndex = action.value
@@ -939,6 +1002,7 @@ function elrslink.wakeup()
             if action.fieldKind == "rate" then
                 rfsuite.utils.log("ELRS sync requested a packet-rate change; the link may reconnect briefly", "info")
             end
+            setStatus(T.elrsUpdated)
             completeTask()
         else
             nextActionAt = now + WRITE_DELAY_SECONDS
@@ -946,14 +1010,85 @@ function elrslink.wakeup()
     end
 end
 
-function elrslink.reset()
+function elrslink.start(mode)
+    local session = rfsuite.session
+    local armed = rfsuite.utils and rfsuite.utils.resolveArmedState and rfsuite.utils.resolveArmedState()
+
+    manualSyncMode = normalizeSyncMode(mode)
     resetState()
+
+    if system and system.getVersion and system.getVersion().simulation == true then
+        setStatus(T.unavailableSimulation)
+        taskComplete = true
+        return false
+    end
+
+    if not session or session.isConnected ~= true then
+        setStatus(T.connectFirst)
+        taskComplete = true
+        return false
+    end
+
+    if session.telemetryType ~= "crsf" then
+        setStatus(T.requiresCrsf)
+        taskComplete = true
+        return false
+    end
+
+    if rfsuite.utils and rfsuite.utils.inFlight and rfsuite.utils.inFlight() then
+        setStatus(T.unavailableInFlight)
+        taskComplete = true
+        return false
+    end
+
+    if armed == true then
+        setStatus(T.unavailableArmed)
+        taskComplete = true
+        return false
+    end
+
+    if manualSyncMode == SYNC_MODE_OFF then
+        setStatus(T.probeRequested)
+    else
+        setStatus(T.syncRequested .. syncModeLabel(manualSyncMode))
+    end
+
+    return true
+end
+
+function elrslink.reset()
+    manualSyncMode = SYNC_MODE_OFF
+    resetState()
+    taskComplete = true
+    setStatus(T.idle)
 end
 
 function elrslink.isComplete()
     return taskComplete
 end
 
+function elrslink.isRunning()
+    return not taskComplete
+end
+
+function elrslink.getStatus()
+    return statusText
+end
+
+function elrslink.getMode()
+    return manualSyncMode
+end
+
+function elrslink.getModeLabel()
+    return syncModeLabel(manualSyncMode)
+end
+
+elrslink.MODE_PROBE = SYNC_MODE_OFF
+elrslink.MODE_ROTORFLIGHT_TO_ELRS = SYNC_MODE_ROTORFLIGHT_TO_ELRS
+elrslink.MODE_ELRS_TO_ROTORFLIGHT = SYNC_MODE_ELRS_TO_ROTORFLIGHT
+
 resetState()
+taskComplete = true
+setStatus(T.idle)
 
 return elrslink

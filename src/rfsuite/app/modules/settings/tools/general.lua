@@ -124,19 +124,6 @@ local function openPage(opts)
     line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_syncname)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
 
-    line = addFieldLine(integrationPanel, "ELRS Telemetry Sync")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
-        line,
-        nil,
-        {{"Off", 0}, {"Rotorflight -> ELRS", 1}, {"ELRS -> Rotorflight", 2}},
-        function()
-            return tonumber(config.elrs_sync_mode) or 0
-        end,
-        function(newValue)
-            config.elrs_sync_mode = newValue
-        end
-    )
-
     line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_mspstatusdialog)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.mspstatusdialog == nil then return true end

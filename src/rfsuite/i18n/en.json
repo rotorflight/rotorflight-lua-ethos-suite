@@ -4097,6 +4097,266 @@
           "translation": "Diagnostics"
         }
       },
+      "elrs_telemetry": {
+        "action": {
+          "english": "Action",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Action"
+        },
+        "action_elrs_to_rf": {
+          "english": "ELRS -> RF",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "ELRS -> RF"
+        },
+        "action_probe": {
+          "english": "Probe",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Probe"
+        },
+        "action_probe_only": {
+          "english": "Probe only",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Probe only"
+        },
+        "action_rf_to_elrs": {
+          "english": "RF -> ELRS",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "RF -> ELRS"
+        },
+        "actions": {
+          "english": "Actions",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Actions"
+        },
+        "elrs_module": {
+          "english": "ELRS Module",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "ELRS Module"
+        },
+        "mode_custom": {
+          "english": "custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "custom"
+        },
+        "mode_native": {
+          "english": "native",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "native"
+        },
+        "name": {
+          "english": "ELRS Telemetry",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "ELRS Telemetry"
+        },
+        "rotorflight": {
+          "english": "Rotorflight",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Rotorflight"
+        },
+        "status": {
+          "english": "Status",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Status"
+        },
+        "status_connect_first": {
+          "english": "Connect to a model first",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Connect to a model first"
+        },
+        "status_elrs_matches_rf": {
+          "english": "ELRS module already matches Rotorflight",
+          "max_length": 39,
+          "needs_translation": false,
+          "translation": "ELRS module already matches Rotorflight"
+        },
+        "status_elrs_probe_complete": {
+          "english": "ELRS module probe complete",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "ELRS module probe complete"
+        },
+        "status_elrs_updated": {
+          "english": "ELRS module updated from Rotorflight",
+          "max_length": 36,
+          "needs_translation": false,
+          "translation": "ELRS module updated from Rotorflight"
+        },
+        "status_idle": {
+          "english": "Idle",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Idle"
+        },
+        "status_no_module": {
+          "english": "No ELRS TX module responded",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "No ELRS TX module responded"
+        },
+        "status_not_probed": {
+          "english": "Not probed yet",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Not probed yet"
+        },
+        "status_pinging_module": {
+          "english": "Pinging ELRS module",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Pinging ELRS module"
+        },
+        "status_probe_complete": {
+          "english": "Probe complete",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Probe complete"
+        },
+        "status_probe_requested": {
+          "english": "Probe requested",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Probe requested"
+        },
+        "status_read_timeout": {
+          "english": "ELRS module read timed out",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "ELRS module read timed out"
+        },
+        "status_reading_module": {
+          "english": "Reading ELRS module parameters",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "Reading ELRS module parameters"
+        },
+        "status_requires_active_link": {
+          "english": "This tool requires an active CRSF link",
+          "max_length": 38,
+          "needs_translation": false,
+          "translation": "This tool requires an active CRSF link"
+        },
+        "status_requires_crsf": {
+          "english": "This tool requires CRSF telemetry",
+          "max_length": 33,
+          "needs_translation": false,
+          "translation": "This tool requires CRSF telemetry"
+        },
+        "status_rf_matches_elrs": {
+          "english": "Rotorflight already matches ELRS",
+          "max_length": 32,
+          "needs_translation": false,
+          "translation": "Rotorflight already matches ELRS"
+        },
+        "status_rotorflight_config_not_ready": {
+          "english": "Rotorflight telemetry config was not ready",
+          "max_length": 42,
+          "needs_translation": false,
+          "translation": "Rotorflight telemetry config was not ready"
+        },
+        "status_rotorflight_save_failed": {
+          "english": "Rotorflight sync failed while saving",
+          "max_length": 36,
+          "needs_translation": false,
+          "translation": "Rotorflight sync failed while saving"
+        },
+        "status_rotorflight_updated": {
+          "english": "Rotorflight updated from ELRS",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "Rotorflight updated from ELRS"
+        },
+        "status_rotorflight_write_failed": {
+          "english": "Rotorflight sync write failed",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "Rotorflight sync write failed"
+        },
+        "status_rotorflight_write_rejected": {
+          "english": "Rotorflight sync write was rejected",
+          "max_length": 35,
+          "needs_translation": false,
+          "translation": "Rotorflight sync write was rejected"
+        },
+        "status_saving_rotorflight": {
+          "english": "Saving Rotorflight telemetry",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Saving Rotorflight telemetry"
+        },
+        "status_sensor_unavailable": {
+          "english": "CRSF sensor unavailable",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "CRSF sensor unavailable"
+        },
+        "status_sync_requested": {
+          "english": "Sync requested: ",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Sync requested: "
+        },
+        "status_unavailable_armed": {
+          "english": "Unavailable while armed",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Unavailable while armed"
+        },
+        "status_unavailable_inflight": {
+          "english": "Unavailable while in flight",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Unavailable while in flight"
+        },
+        "status_unavailable_simulation": {
+          "english": "Unavailable in simulation",
+          "max_length": 25,
+          "needs_translation": false,
+          "translation": "Unavailable in simulation"
+        },
+        "status_waiting_rotorflight_config": {
+          "english": "Waiting for Rotorflight telemetry config",
+          "max_length": 40,
+          "needs_translation": false,
+          "translation": "Waiting for Rotorflight telemetry config"
+        },
+        "status_waiting_telemetry_config": {
+          "english": "Waiting for telemetry config",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Waiting for telemetry config"
+        },
+        "status_writing_elrs": {
+          "english": "Writing ELRS module settings",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Writing ELRS module settings"
+        },
+        "status_writing_prefix": {
+          "english": "Writing ",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Writing "
+        },
+        "status_writing_rotorflight": {
+          "english": "Writing Rotorflight telemetry settings",
+          "max_length": 38,
+          "needs_translation": false,
+          "translation": "Writing Rotorflight telemetry settings"
+        }
+      },
       "esc_motors": {
         "consumption_correction": {
           "english": "Consumption Correction",

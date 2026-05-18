@@ -26,6 +26,14 @@ return {
         },
         {
             bgtask = true,
+            image = "elrs_link.png",
+            name = "@i18n(app.modules.elrs_telemetry.name)@",
+            offline = false,
+            script = "elrs_telemetry.lua",
+            shortcutId = "s_diagnostics_elrs_telemetry_lua_5af0394dfc",
+        },
+        {
+            bgtask = true,
             image = "sensors.png",
             name = "@i18n(app.modules.validate_sensors.name)@",
             offline = true,

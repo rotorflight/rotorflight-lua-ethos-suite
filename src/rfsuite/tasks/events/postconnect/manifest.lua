@@ -12,5 +12,4 @@ return {
     { name = "announceCraftname" },
     { name = "rxmap" },    
     { name = "syncstats" },
-    { name = "elrslink" },
 }

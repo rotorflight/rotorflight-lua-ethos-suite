@@ -49,7 +49,6 @@ local userpref_defaults = {
         iconsize = 2,
         shortcuts_mixed_in = true,
         syncname = false,
-        elrs_sync_mode = 2,
         developer_tools = false,
         gimbalsupression = 0.85,
         txbatt_type = 0,
@@ -158,6 +157,9 @@ if rfsuite.preferences then
     local dev = rfsuite.preferences.developer
     if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then
         gen.mspstatusdialog = dev.mspstatusdialog
+    end
+    if gen and gen.elrs_sync_mode ~= nil then
+        gen.elrs_sync_mode = nil
     end
 end
 
