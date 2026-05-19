@@ -34,9 +34,9 @@
       "batteryProfile": {
         "english": "Selected battery profile (1-6)",
         "max_length": 30,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Selected battery profile (0-5)"
+        "translation": "Perfil de bateria selecionado"
       },
       "source_adc": {
         "english": "Battery ADC",
@@ -55,7 +55,7 @@
       "source_fbus": {
         "english": "FrSky F.BUS",
         "max_length": 11,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "FrSky F.BUS"
       },
@@ -127,16 +127,16 @@
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
         "max_length": 84,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
+        "translation": "Taxa máxima de queda do SmartFuel no modo tensão durante o voo."
       },
       "fuel_rise_rate": {
         "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
         "max_length": 92,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
+        "translation": "Taxa máxima de recuperação do SmartFuel no modo tensão após redução de carga."
       },
       "sag_multiplier": {
         "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
@@ -148,49 +148,49 @@
       "sag_multiplier_percent": {
         "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
         "max_length": 126,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
+        "translation": "Fator de compensação de sag no modo tensão. 0,70x é o padrão, 1,00x neutro, valores maiores aumentam a compensação."
       },
       "smartfuel_source": {
         "english": "Choose whether local SmartFuel uses current consumption, pack voltage, or combined mode. Combined uses the more pessimistic of voltage and current consumption.",
         "max_length": 159,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
+        "translation": "Escolha se o SmartFuel usa consumo de corrente, tensão do pack ou modo combinado. Combinado usa o mais pessimista entre tensão e corrente."
       },
       "stabilize_delay": {
         "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
         "max_length": 122,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
+        "translation": "Tempo que o SmartFuel aguarda após ligar ou resetar antes de iniciar a estabilização nos modos corrente e tensão."
       },
       "stable_window": {
         "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
         "max_length": 141,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
+        "translation": "Variação máxima de tensão do pack durante a estabilização antes do SmartFuel ser considerado estável nos modos corrente e tensão."
       },
       "tbl_auto": {
         "english": "Auto",
         "max_length": 4,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Auto"
       },
       "tbl_electric": {
         "english": "Electric",
         "max_length": 8,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Electric"
+        "translation": "Elétrico"
       },
       "tbl_nitro": {
         "english": "Nitro",
         "max_length": 5,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Nitro"
       },
@@ -211,9 +211,9 @@
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
         "max_length": 113,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel."
+        "translation": "Limita a queda da tensão filtrada no modo tensão para reduzir picos de sag que afetam o SmartFuel."
       }
     },
     "ESC_PARAMETERS_FLYROTOR": {
@@ -2685,16 +2685,16 @@
       "tbl_off": {
         "english": "OFF",
         "max_length": 3,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "OFF"
+        "translation": "DES"
       },
       "tbl_on": {
         "english": "ON",
         "max_length": 2,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "ON"
+        "translation": "LG"
       },
       "yaw_dynamic_ceiling_gain": {
         "english": "The maximum gain applied to the yaw dynamic ceiling.",
@@ -2873,79 +2873,79 @@
       "charge_drop_rate": {
         "english": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking.",
         "max_length": 262,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Limits how fast the fuel percentage can drop per second on the voltage track. Only applies in Voltage and Combined modes once the model has been armed. Lower values give a more stable gauge during aggressive flying; higher values allow faster discharge tracking."
+        "translation": "Limita a queda do percentual de combustível por segundo na trilha de tensão. Válido nos modos Tensão e Combinado após armar. Valores baixos = gauge mais estável; valores altos = rastreamento mais rápido."
       },
       "fuel_drop_rate": {
         "english": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying.",
         "max_length": 84,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Maximum rate the reported SmartFuel value may decrease in voltage mode while flying."
+        "translation": "Taxa máxima de queda do SmartFuel no modo tensão durante o voo."
       },
       "fuel_rise_rate": {
         "english": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced.",
         "max_length": 92,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Maximum rate the reported SmartFuel value may recover in voltage mode after load is reduced."
+        "translation": "Taxa máxima de recuperação do SmartFuel no modo tensão após redução de carga."
       },
       "sag_gain": {
         "english": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable.",
         "max_length": 180,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Compensates for voltage sag under collective and cyclic load while airborne. Only applies in Voltage and Combined modes. Higher values apply more compensation; set to 0 to disable."
+        "translation": "Compensa queda de tensão sob carga coletiva e cíclica no ar. Válido nos modos Tensão e Combinado. Valores maiores = mais compensação; 0 = desabilitado."
       },
       "sag_multiplier_percent": {
         "english": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation.",
         "max_length": 126,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Sag compensation factor used in voltage mode. 0.70x is the default, 1.00x is neutral, and larger values increase compensation."
+        "translation": "Fator de compensação de sag no modo tensão. 0,70x é o padrão, 1,00x neutro, valores maiores aumentam a compensação."
       },
       "smartfuel_mode": {
         "english": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption.",
         "max_length": 176,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Choose whether firmware SmartFuel is disabled, voltage-estimated, current consumption based, or combined. Combined uses the more pessimistic of voltage and current consumption."
+        "translation": "Define se o SmartFuel do firmware está desabilitado, estimado por tensão, baseado em corrente ou combinado. Combinado usa o mais pessimista."
       },
       "smartfuel_source": {
         "english": "Choose whether local SmartFuel uses current consumption, pack voltage, or combined mode. Combined uses the more pessimistic of voltage and current consumption.",
         "max_length": 159,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Choose whether SmartFuel is derived from measured current consumption or estimated from pack voltage."
+        "translation": "Escolha se o SmartFuel usa consumo de corrente, tensão do pack ou modo combinado. Combinado usa o mais pessimista entre tensão e corrente."
       },
       "stabilize_delay": {
         "english": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes.",
         "max_length": 122,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "How long SmartFuel waits after power-up or reset before beginning startup stabilization in both current and voltage modes."
+        "translation": "Tempo que o SmartFuel aguarda após ligar ou resetar antes de iniciar a estabilização nos modos corrente e tensão."
       },
       "stable_window": {
         "english": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes.",
         "max_length": 141,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Maximum allowed pack-voltage variation during startup stabilization before SmartFuel is treated as settled in both current and voltage modes."
+        "translation": "Variação máxima de tensão do pack durante a estabilização antes do SmartFuel ser considerado estável nos modos corrente e tensão."
       },
       "voltage_drop_rate": {
         "english": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking.",
         "max_length": 207,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Limits how fast the measured per-cell voltage can fall (mV/s). Only applies in Voltage and Combined modes. Lower values produce a smoother but slower-responding estimate; higher values allow faster tracking."
+        "translation": "Limita a velocidade de queda da tensão por célula (mV/s). Válido nos modos Tensão e Combinado. Valores baixos = estimativa mais suave; valores altos = rastreamento mais rápido."
       },
       "voltage_fall_limit": {
         "english": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel.",
         "max_length": 113,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Limits how quickly filtered voltage may fall in voltage mode to reduce brief load-sag spikes affecting SmartFuel."
+        "translation": "Limita a queda da tensão filtrada no modo tensão para reduzir picos de sag que afetam o SmartFuel."
       }
     }
   },
@@ -2953,7 +2953,7 @@
     "btn_add": {
       "english": "Add",
       "max_length": 3,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Add"
     },
@@ -3016,9 +3016,9 @@
     "header_shortcuts": {
       "english": "Shortcuts",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Shortcuts"
+      "translation": "Atalhos"
     },
     "header_system": {
       "english": "System",
@@ -3037,16 +3037,16 @@
     "menu_section_controls": {
       "english": "Controls",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Controls"
+      "translation": "Controle"
     },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Flight Tuning"
+      "translation": "Ajuste de Voo"
     },
     "menu_section_hardware": {
       "english": "Hardware",
@@ -3058,30 +3058,30 @@
     "menu_section_mechanics": {
       "english": "Mechanics",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Mechanics"
+      "translation": "Mecânica"
     },
     "menu_section_profiles": {
       "english": "Profiles",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Profiles"
+      "translation": "Perfis"
     },
     "menu_section_safety": {
       "english": "Safety",
       "max_length": 6,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Safety"
+      "translation": "Segur."
     },
     "menu_section_shortcuts": {
       "english": "Shortcuts",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Shortcuts"
+      "translation": "Atalhos"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -3230,581 +3230,581 @@
         "fn_acc_trim_pitch": {
           "english": "Acc Trim Pitch",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Acc Trim Pitch"
         },
         "fn_acc_trim_roll": {
           "english": "Acc Trim Roll",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Acc Trim Roll"
         },
         "fn_acro_trainer_gain": {
           "english": "Acro Trainer Gain",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Acro Trainer Gain"
         },
         "fn_angle_level_gain": {
           "english": "Angle Level Gain",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Angle Level Gain"
         },
         "fn_battery_profile": {
           "english": "Battery Profile",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery Profile"
+          "translation": "Perfil Bateria"
         },
         "fn_col_setpoint_boost_gain": {
           "english": "Col Setpoint Boost Gain",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Col Setpoint Boost Gain"
         },
         "fn_cross_coupling_cutoff": {
           "english": "Cross Coupling Cutoff",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Cross Coupling Cutoff"
         },
         "fn_cross_coupling_gain": {
           "english": "Cross Coupling Gain",
           "max_length": 19,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Cross Coupling Gain"
         },
         "fn_cross_coupling_ratio": {
           "english": "Cross Coupling Ratio",
           "max_length": 20,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Cross Coupling Ratio"
         },
         "fn_gov_auto_throttle": {
           "english": "Gov Auto Throttle",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gov Auto Throttle"
         },
         "fn_gov_headspeed": {
           "english": "Gov Headspeed",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gov Headspeed"
         },
         "fn_gov_idle_throttle": {
           "english": "Gov Idle Throttle",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gov Idle Throttle"
         },
         "fn_gov_max_throttle": {
           "english": "Gov Max Throttle",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gov Max Throttle"
         },
         "fn_gov_min_throttle": {
           "english": "Gov Min Throttle",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gov Min Throttle"
         },
         "fn_gov_yaw_ff": {
           "english": "Gov Yaw FF",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gov Yaw FF"
         },
         "fn_governor_collective_ff": {
           "english": "Governor Collective FF",
           "max_length": 22,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor Collective FF"
         },
         "fn_governor_cyclic_ff": {
           "english": "Governor Cyclic FF",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor Cyclic FF"
         },
         "fn_governor_d": {
           "english": "Governor D",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor D"
         },
         "fn_governor_f": {
           "english": "Governor F",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor F"
         },
         "fn_governor_gain": {
           "english": "Governor Gain",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor Gain"
         },
         "fn_governor_i": {
           "english": "Governor I",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor I"
         },
         "fn_governor_p": {
           "english": "Governor P",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor P"
         },
         "fn_governor_tta": {
           "english": "Governor TTA",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Governor TTA"
         },
         "fn_horizon_level_gain": {
           "english": "Horizon Level Gain",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Horizon Level Gain"
         },
         "fn_led_profile": {
           "english": "LED Profile",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "LED Profile"
+          "translation": "Perfil LED"
         },
         "fn_none": {
           "english": "None",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "None"
+          "translation": "Nada"
         },
         "fn_osd_profile": {
           "english": "OSD Profile",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "OSD Profile"
+          "translation": "Perfil OSD"
         },
         "fn_pid_profile": {
           "english": "PID Profile",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "PID Profile"
+          "translation": "Perfil PID"
         },
         "fn_pitch_b": {
           "english": "Pitch B",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch B"
         },
         "fn_pitch_collective_ff": {
           "english": "Pitch Collective FF",
           "max_length": 19,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch Collective FF"
         },
         "fn_pitch_d": {
           "english": "Pitch D",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch D"
         },
         "fn_pitch_dterm_cutoff": {
           "english": "Pitch Dterm Cutoff",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch Dterm Cutoff"
         },
         "fn_pitch_f": {
           "english": "Pitch F",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch F"
         },
         "fn_pitch_gyro_cutoff": {
           "english": "Pitch Gyro Cutoff",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch Gyro Cutoff"
         },
         "fn_pitch_i": {
           "english": "Pitch I",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch I"
         },
         "fn_pitch_o": {
           "english": "Pitch O",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch O"
         },
         "fn_pitch_p": {
           "english": "Pitch P",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch P"
         },
         "fn_pitch_rate": {
           "english": "Pitch Rate",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch Rate"
         },
         "fn_pitch_rc_expo": {
           "english": "Pitch RC Expo",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch RC Expo"
         },
         "fn_pitch_rc_rate": {
           "english": "Pitch RC Rate",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch RC Rate"
         },
         "fn_pitch_setpoint_boost_gain": {
           "english": "Pitch Setpoint Boost Gain",
           "max_length": 25,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch Setpoint Boost Gain"
         },
         "fn_rate_profile": {
           "english": "Rate Profile",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rate Profile"
+          "translation": "Perfil Rate"
         },
         "fn_rescue_alt_d": {
           "english": "Rescue Alt D",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Rescue Alt D"
         },
         "fn_rescue_alt_i": {
           "english": "Rescue Alt I",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Rescue Alt I"
         },
         "fn_rescue_alt_p": {
           "english": "Rescue Alt P",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Rescue Alt P"
         },
         "fn_rescue_climb_collective": {
           "english": "Rescue Climb Collective",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rescue Climb Collective"
+          "translation": "Rescue Subida Colet."
         },
         "fn_rescue_hover_altitude": {
           "english": "Rescue Hover Altitude",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rescue Hover Altitude"
+          "translation": "Rescue Altitude Hover"
         },
         "fn_rescue_hover_collective": {
           "english": "Rescue Hover Collective",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rescue Hover Collective"
+          "translation": "Rescue Hover Coletivo"
         },
         "fn_roll_b": {
           "english": "Roll B",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll B"
         },
         "fn_roll_d": {
           "english": "Roll D",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll D"
         },
         "fn_roll_dterm_cutoff": {
           "english": "Roll Dterm Cutoff",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll Dterm Cutoff"
         },
         "fn_roll_f": {
           "english": "Roll F",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll F"
         },
         "fn_roll_gyro_cutoff": {
           "english": "Roll Gyro Cutoff",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll Gyro Cutoff"
         },
         "fn_roll_i": {
           "english": "Roll I",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll I"
         },
         "fn_roll_o": {
           "english": "Roll O",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll O"
         },
         "fn_roll_p": {
           "english": "Roll P",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll P"
         },
         "fn_roll_rate": {
           "english": "Roll Rate",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll Rate"
         },
         "fn_roll_rc_expo": {
           "english": "Roll RC Expo",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll RC Expo"
         },
         "fn_roll_rc_rate": {
           "english": "Roll RC Rate",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll RC Rate"
         },
         "fn_roll_setpoint_boost_gain": {
           "english": "Roll Setpoint Boost Gain",
           "max_length": 24,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Roll Setpoint Boost Gain"
         },
         "fn_yaw_b": {
           "english": "Yaw B",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw B"
         },
         "fn_yaw_ccw_stop_gain": {
           "english": "Yaw CCW Stop Gain",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw CCW Stop Gain"
         },
         "fn_yaw_collective_decay": {
           "english": "Yaw Collective Decay",
           "max_length": 20,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Collective Decay"
         },
         "fn_yaw_collective_dyn": {
           "english": "Yaw Collective Dyn",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Collective Dyn"
         },
         "fn_yaw_collective_ff": {
           "english": "Yaw Collective FF",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Collective FF"
         },
         "fn_yaw_cw_stop_gain": {
           "english": "Yaw CW Stop Gain",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw CW Stop Gain"
         },
         "fn_yaw_cyclic_ff": {
           "english": "Yaw Cyclic FF",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Cyclic FF"
         },
         "fn_yaw_d": {
           "english": "Yaw D",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw D"
         },
         "fn_yaw_dterm_cutoff": {
           "english": "Yaw Dterm Cutoff",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Dterm Cutoff"
         },
         "fn_yaw_dyn_ceiling_gain": {
           "english": "Yaw Dyn Ceiling Gain",
           "max_length": 20,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Dyn Ceiling Gain"
         },
         "fn_yaw_dyn_deadband_filter": {
           "english": "Yaw Dyn Deadband Filter",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Dyn Deadband Filter"
         },
         "fn_yaw_dyn_deadband_gain": {
           "english": "Yaw Dyn Deadband Gain",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Dyn Deadband Gain"
         },
         "fn_yaw_f": {
           "english": "Yaw F",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw F"
         },
         "fn_yaw_gyro_cutoff": {
           "english": "Yaw Gyro Cutoff",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Gyro Cutoff"
         },
         "fn_yaw_i": {
           "english": "Yaw I",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw I"
         },
         "fn_yaw_inertia_precomp_cutoff": {
           "english": "Yaw Inertia Precomp Cutoff",
           "max_length": 26,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Inertia Precomp Cutoff"
         },
         "fn_yaw_inertia_precomp_gain": {
           "english": "Yaw Inertia Precomp Gain",
           "max_length": 24,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Inertia Precomp Gain"
         },
         "fn_yaw_p": {
           "english": "Yaw P",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw P"
         },
         "fn_yaw_precomp_cutoff": {
           "english": "Yaw Precomp Cutoff",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Precomp Cutoff"
         },
         "fn_yaw_rate": {
           "english": "Yaw Rate",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Rate"
         },
         "fn_yaw_rc_expo": {
           "english": "Yaw RC Expo",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw RC Expo"
         },
         "fn_yaw_rc_rate": {
           "english": "Yaw RC Rate",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw RC Rate"
         },
         "fn_yaw_setpoint_boost_gain": {
           "english": "Yaw Setpoint Boost Gain",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Yaw Setpoint Boost Gain"
         },
@@ -5351,7 +5351,7 @@
         "name": {
           "english": "Developer",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Developer"
         }
@@ -5369,303 +5369,303 @@
         "action": {
           "english": "Action",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Action"
+          "translation": "Ação"
         },
         "action_elrs_to_rf": {
           "english": "ELRS -> RF",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "ELRS -> RF"
         },
         "action_probe": {
           "english": "Probe",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe"
+          "translation": "Sonda"
         },
         "action_probe_only": {
           "english": "Probe only",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe only"
+          "translation": "Só sondar"
         },
         "action_rf_to_elrs": {
           "english": "RF -> ELRS",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "RF -> ELRS"
         },
         "actions": {
           "english": "Actions",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Actions"
+          "translation": "Ações"
         },
         "elrs_module": {
           "english": "ELRS Module",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS Module"
+          "translation": "Módulo ELRS"
         },
         "mode_custom": {
           "english": "custom",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "custom"
         },
         "mode_native": {
           "english": "native",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "native"
+          "translation": "nativo"
         },
         "name": {
           "english": "ELRS Telemetry",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "ELRS Telemetry"
         },
         "rotorflight": {
           "english": "Rotorflight",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Rotorflight"
         },
         "status": {
           "english": "Status",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Status"
         },
         "status_connect_first": {
           "english": "Connect to a model first",
           "max_length": 24,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Connect to a model first"
+          "translation": "Conecte ao modelo"
         },
         "status_elrs_matches_rf": {
           "english": "ELRS module already matches Rotorflight",
           "max_length": 39,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module already matches Rotorflight"
+          "translation": "ELRS já corresponde ao Rotorflight"
         },
         "status_elrs_probe_complete": {
           "english": "ELRS module probe complete",
           "max_length": 26,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module probe complete"
+          "translation": "Sonda ELRS concluída"
         },
         "status_elrs_updated": {
           "english": "ELRS module updated from Rotorflight",
           "max_length": 36,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module updated from Rotorflight"
+          "translation": "ELRS atualizado pelo Rotorflight"
         },
         "status_idle": {
           "english": "Idle",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Idle"
         },
         "status_no_module": {
           "english": "No ELRS TX module responded",
           "max_length": 27,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "No ELRS TX module responded"
+          "translation": "ELRS TX não encontrado"
         },
         "status_not_probed": {
           "english": "Not probed yet",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Not probed yet"
+          "translation": "Não sondado"
         },
         "status_pinging_module": {
           "english": "Pinging ELRS module",
           "max_length": 19,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Pinging ELRS module"
+          "translation": "Sondando ELRS"
         },
         "status_probe_complete": {
           "english": "Probe complete",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe complete"
+          "translation": "Sonda concl."
         },
         "status_probe_requested": {
           "english": "Probe requested",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe requested"
+          "translation": "Sonda requis."
         },
         "status_read_timeout": {
           "english": "ELRS module read timed out",
           "max_length": 26,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module read timed out"
+          "translation": "Timeout leitura ELRS"
         },
         "status_reading_module": {
           "english": "Reading ELRS module parameters",
           "max_length": 30,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Reading ELRS module parameters"
+          "translation": "Lendo parâm. ELRS"
         },
         "status_requires_active_link": {
           "english": "This tool requires an active CRSF link",
           "max_length": 38,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "This tool requires an active CRSF link"
+          "translation": "Link CRSF ativo necessário"
         },
         "status_requires_crsf": {
           "english": "This tool requires CRSF telemetry",
           "max_length": 33,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "This tool requires CRSF telemetry"
+          "translation": "Telemetria CRSF necessária"
         },
         "status_rf_matches_elrs": {
           "english": "Rotorflight already matches ELRS",
           "max_length": 32,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight already matches ELRS"
+          "translation": "Rotorflight já combina com ELRS"
         },
         "status_rotorflight_config_not_ready": {
           "english": "Rotorflight telemetry config was not ready",
           "max_length": 42,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight telemetry config was not ready"
+          "translation": "Config. telemetria RF não pronta"
         },
         "status_rotorflight_save_failed": {
           "english": "Rotorflight sync failed while saving",
           "max_length": 36,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight sync failed while saving"
+          "translation": "Falha ao salvar sync Rotorflight"
         },
         "status_rotorflight_updated": {
           "english": "Rotorflight updated from ELRS",
           "max_length": 29,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight updated from ELRS"
+          "translation": "RF atualizado pelo ELRS"
         },
         "status_rotorflight_write_failed": {
           "english": "Rotorflight sync write failed",
           "max_length": 29,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight sync write failed"
+          "translation": "Falha na escrita sync RF"
         },
         "status_rotorflight_write_rejected": {
           "english": "Rotorflight sync write was rejected",
           "max_length": 35,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight sync write was rejected"
+          "translation": "Escrita sync Rotorflight rejeitada"
         },
         "status_saving_rotorflight": {
           "english": "Saving Rotorflight telemetry",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Saving Rotorflight telemetry"
+          "translation": "Salvando telemetria RF"
         },
         "status_sensor_unavailable": {
           "english": "CRSF sensor unavailable",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "CRSF sensor unavailable"
+          "translation": "Sensor CRSF indisp."
         },
         "status_sync_requested": {
           "english": "Sync requested: ",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Sync requested: "
+          "translation": "Sync solicitado:"
         },
         "status_unavailable_armed": {
           "english": "Unavailable while armed",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Unavailable while armed"
+          "translation": "Indisp. quando armado"
         },
         "status_unavailable_inflight": {
           "english": "Unavailable while in flight",
           "max_length": 27,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Unavailable while in flight"
+          "translation": "Indisponível durante o voo"
         },
         "status_unavailable_simulation": {
           "english": "Unavailable in simulation",
           "max_length": 25,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Unavailable in simulation"
+          "translation": "Indisponível em simulação"
         },
         "status_waiting_rotorflight_config": {
           "english": "Waiting for Rotorflight telemetry config",
           "max_length": 40,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Waiting for Rotorflight telemetry config"
+          "translation": "Aguardando config. telemetria RF"
         },
         "status_waiting_telemetry_config": {
           "english": "Waiting for telemetry config",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Waiting for telemetry config"
+          "translation": "Aguard. config. telemetria"
         },
         "status_writing_elrs": {
           "english": "Writing ELRS module settings",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Writing ELRS module settings"
+          "translation": "Escrevendo config. ELRS"
         },
         "status_writing_prefix": {
           "english": "Writing ",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Writing "
+          "translation": "Escrev. "
         },
         "status_writing_rotorflight": {
           "english": "Writing Rotorflight telemetry settings",
           "max_length": 38,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Writing Rotorflight telemetry settings"
+          "translation": "Escrevendo config. telem. RF"
         }
       },
       "esc_motors": {
@@ -5858,580 +5858,580 @@
             "advanced": {
               "english": "Advanced",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Advanced"
+              "translation": "Avançado"
             },
             "autoadvance": {
               "english": "Auto Advance",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Auto Advance"
+              "translation": "Auto Avanço"
             },
             "basic": {
               "english": "Basic",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Basic"
+              "translation": "Básic"
             },
             "beepvolume": {
               "english": "Beep Volume",
               "max_length": 11,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Beep Volume"
+              "translation": "Volume Beep"
             },
             "bidirectionalmode": {
               "english": "Bidirectional Mode",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Bidirectional Mode"
+              "translation": "Modo Bidirecional"
             },
             "brakeonstop": {
               "english": "Brake on Stop",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Brake on Stop"
+              "translation": "Freio ao Stop"
             },
             "brakestrength": {
               "english": "Brake Strength",
               "max_length": 14,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Brake Strength"
+              "translation": "Força do Freio"
             },
             "complementary_pwm": {
               "english": "Complementary PWM",
               "max_length": 17,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Complementary PWM"
+              "translation": "PWM Complementar"
             },
             "currentlimit": {
               "english": "Current Limit",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Current Limit"
+              "translation": "Lim. Corrente"
             },
             "direction": {
               "english": "Direction",
               "max_length": 9,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Direction"
+              "translation": "Direção"
             },
             "limits": {
               "english": "Limits",
               "max_length": 6,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Limits"
+              "translation": "Limite"
             },
             "lowvoltagecutoff": {
               "english": "Low Voltage Cutoff",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Low Voltage Cutoff"
+              "translation": "Corte Baixa Tensão"
             },
             "lowvoltagethreshold": {
               "english": "Low Voltage Threshold",
               "max_length": 21,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Low Voltage Threshold"
+              "translation": "Limiar Baixa Tensão"
             },
             "motorkv": {
               "english": "Motor KV",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Motor KV"
             },
             "motorpoles": {
               "english": "Motor Poles",
               "max_length": 11,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motor Poles"
+              "translation": "Polos Motor"
             },
             "name": {
               "english": "AM32",
               "max_length": 4,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "AM32"
             },
             "protocol": {
               "english": "Protocol",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Protocol"
             },
             "pwmfrequency": {
               "english": "PWM Frequency",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "PWM Frequency"
+              "translation": "Freq. PWM"
             },
             "rcarreversing": {
               "english": "RC Car Reversing",
               "max_length": 16,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "RC Car Reversing"
+              "translation": "Inversão RC Car"
             },
             "runningbrake": {
               "english": "Running Brake",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Running Brake"
+              "translation": "Freio em Mov."
             },
             "servodeadband": {
               "english": "Servo Dead Band",
               "max_length": 15,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Servo Dead Band"
+              "translation": "Dead Band Servo"
             },
             "servohighthreshold": {
               "english": "Servo High Threshold",
               "max_length": 20,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Servo High Threshold"
+              "translation": "Limiar Alto Servo"
             },
             "servolowthreshold": {
               "english": "Servo Low Threshold",
               "max_length": 19,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Servo Low Threshold"
+              "translation": "Limiar Baixo Servo"
             },
             "servoneutral": {
               "english": "Servo Neutral",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Servo Neutral"
+              "translation": "Neutro Servo"
             },
             "sinemoderange": {
               "english": "Sine Mode Range",
               "max_length": 15,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Sine Mode Range"
+              "translation": "Faixa Modo Sine"
             },
             "sinepowermode": {
               "english": "Sine Power Mode",
               "max_length": 15,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Sine Power Mode"
+              "translation": "Modo Sine"
             },
             "sinusoidalstartup": {
               "english": "Sinusoidal Startup",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Sinusoidal Startup"
+              "translation": "Partida Sinusoidal"
             },
             "stallprotection": {
               "english": "Stall Protection",
               "max_length": 16,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Stall Protection"
+              "translation": "Prot. Stall"
             },
             "startuppower": {
               "english": "Startup Power",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Startup Power"
+              "translation": "Pot. Partida"
             },
             "stuckrotorprotection": {
               "english": "Stuck Rotor Protection",
               "max_length": 22,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Stuck Rotor Protection"
+              "translation": "Prot. Rotor Travado"
             },
             "tbl_brake_active": {
               "english": "Active Brake",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Active Brake"
+              "translation": "Freio Ativo"
             },
             "tbl_brake_brake": {
               "english": "Brake",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Brake"
+              "translation": "Freio"
             },
             "tbl_brake_off": {
               "english": "Off",
               "max_length": 3,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Off"
+              "translation": "Des"
             },
             "tbl_lvc_abs": {
               "english": "Absolute",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Absolute"
+              "translation": "Absoluto"
             },
             "tbl_lvc_cell": {
               "english": "Cell Based",
               "max_length": 10,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Cell Based"
+              "translation": "Por Célula"
             },
             "tbl_lvc_off": {
               "english": "Off",
               "max_length": 3,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Off"
+              "translation": "Des"
             },
             "tbl_pwm_fixed": {
               "english": "Fixed",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Fixed"
+              "translation": "Fixo"
             },
             "tbl_pwm_rpm": {
               "english": "By RPM",
               "max_length": 6,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "By RPM"
+              "translation": "P/RPM"
             },
             "tbl_pwm_variable": {
               "english": "Variable",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Variable"
+              "translation": "Variável"
             },
             "telemetryinterval": {
               "english": "Telemetry Interval",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Telemetry Interval"
+              "translation": "Intervalo Telem."
             },
             "temperaturelimit": {
               "english": "Temperature Limit",
               "max_length": 17,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Temperature Limit"
+              "translation": "Lim. Temperatura"
             },
             "timing": {
               "english": "Timing",
               "max_length": 6,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Timing"
             },
             "usehallsensors": {
               "english": "Use Hall Sensors",
               "max_length": 16,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Use Hall Sensors"
+              "translation": "Usar Sens. Hall"
             },
             "variablepwmfrequency": {
               "english": "Variable PWM Frequency",
               "max_length": 22,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Variable PWM Frequency"
+              "translation": "Freq. PWM Variável"
             }
           },
           "blheli_s": {
             "advanced": {
               "english": "Advanced",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Advanced"
+              "translation": "Avançado"
             },
             "basic": {
               "english": "Basic",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Basic"
+              "translation": "Básic"
             },
             "beacondelay": {
               "english": "Beacon Delay",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Beacon Delay"
             },
             "beaconstrength": {
               "english": "Beacon Strength",
               "max_length": 15,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Beacon Strength"
+              "translation": "Força Beacon"
             },
             "beepstrength": {
               "english": "Beep Strength",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Beep Strength"
+              "translation": "Força Beep"
             },
             "brakeonstop": {
               "english": "Brake on Stop",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Brake on Stop"
+              "translation": "Freio ao Stop"
             },
             "demagcompensation": {
               "english": "Demag Compensation",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Demag Compensation"
+              "translation": "Comp. Desmagnet."
             },
             "input": {
               "english": "Input",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Input"
+              "translation": "Entra"
             },
             "motordirection": {
               "english": "Motor Direction",
               "max_length": 15,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motor Direction"
+              "translation": "Dir. do Motor"
             },
             "motortiming": {
               "english": "Motor Timing",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motor Timing"
+              "translation": "Timing Motor"
             },
             "name": {
               "english": "BLHeli_S",
               "max_length": 8,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "BLHeli_S"
             },
             "ppmcenterthrottle": {
               "english": "PPM Center Throttle",
               "max_length": 19,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "PPM Center Throttle"
+              "translation": "PPM Centro Throttle"
             },
             "ppmmaxthrottle": {
               "english": "PPM Max Throttle",
               "max_length": 16,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "PPM Max Throttle"
             },
             "ppmminthrottle": {
               "english": "PPM Min Throttle",
               "max_length": 16,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "PPM Min Throttle"
             },
             "startuppower": {
               "english": "Startup Power",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Startup Power"
+              "translation": "Pot. Partida"
             },
             "temperatureprotection": {
               "english": "Temperature Protection",
               "max_length": 22,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Temperature Protection"
+              "translation": "Proteção Temperatura"
             },
             "waitingforesc": {
               "english": "Waiting for ESC...",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Waiting for ESC..."
+              "translation": "Aguardando ESC..."
             }
           },
           "bluejay": {
             "beacon": {
               "english": "Beacon",
               "max_length": 6,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Beacon"
             },
             "brake": {
               "english": "Brake",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Brake"
+              "translation": "Freio"
             },
             "brakingmode": {
               "english": "Braking Mode",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Braking Mode"
+              "translation": "Modo Freio"
             },
             "brakingstrength": {
               "english": "Braking Strength",
               "max_length": 16,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Braking Strength"
+              "translation": "Força do Freio"
             },
             "dithering": {
               "english": "Dithering",
               "max_length": 9,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Dithering"
             },
             "forceedtarm": {
               "english": "Force EDT Arm",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Force EDT Arm"
             },
             "general": {
               "english": "General",
               "max_length": 7,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "General"
+              "translation": "Geral"
             },
             "ledcontrol": {
               "english": "LED Control",
               "max_length": 11,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "LED Control"
+              "translation": "Controle"
             },
             "lowrpmpowerprotection": {
               "english": "Low RPM Power Protection",
               "max_length": 24,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Low RPM Power Protection"
+              "translation": "Prot. Pot. Baixo RPM"
             },
             "maxstartuppower": {
               "english": "Max Startup Power",
               "max_length": 17,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Max Startup Power"
+              "translation": "Pot. Máx. Partida"
             },
             "minstartuppower": {
               "english": "Min Startup Power",
               "max_length": 17,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Min Startup Power"
+              "translation": "Pot. Mín. Partida"
             },
             "name": {
               "english": "Bluejay",
               "max_length": 7,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
               "translation": "Bluejay"
             },
             "other": {
               "english": "Other",
               "max_length": 5,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Other"
+              "translation": "Outro"
             },
             "powerrating": {
               "english": "Power Rating",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Power Rating"
+              "translation": "Potência"
             },
             "pwmfrequency": {
               "english": "PWM Frequency",
               "max_length": 13,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "PWM Frequency"
+              "translation": "Freq. PWM"
             },
             "rampuppower": {
               "english": "Rampup Power",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Rampup Power"
+              "translation": "Pot. Ramp."
             },
             "rampupstartpower": {
               "english": "Rampup Start Power",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Rampup Start Power"
+              "translation": "Pot. Início Ramp."
             },
             "startupbeep": {
               "english": "Startup Beep",
               "max_length": 12,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Startup Beep"
+              "translation": "Beep Partida"
             },
             "threshold48to24": {
               "english": "48kHz -> 24kHz Threshold",
               "max_length": 24,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "48kHz -> 24kHz Threshold"
+              "translation": "48kHz -> 24kHz Limiar"
             },
             "threshold96to48": {
               "english": "96kHz -> 48kHz Threshold",
               "max_length": 24,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "96kHz -> 48kHz Threshold"
+              "translation": "96kHz -> 48kHz Limiar"
             },
             "waitingforesc": {
               "english": "Waiting for ESC...",
               "max_length": 18,
-              "needs_translation": true,
+              "needs_translation": false,
               "reverse_text": false,
-              "translation": "Waiting for ESC..."
+              "translation": "Aguardando ESC..."
             }
           },
           "flrtr": {
@@ -7621,9 +7621,9 @@
         "remove_blades_warning": {
           "english": "Please remove blades from heli",
           "max_length": 30,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Please remove blades from heli"
+          "translation": "Retire as pás do heli"
         },
         "searching": {
           "english": "Searching",
@@ -7786,149 +7786,149 @@
         "name": {
           "english": "FBL Sensors",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "FBL Sensors"
+          "translation": "Sensores"
         },
         "sensor_accel_x": {
           "english": "Accel X",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Accel X"
         },
         "sensor_accel_y": {
           "english": "Accel Y",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Accel Y"
         },
         "sensor_accel_z": {
           "english": "Accel Z",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Accel Z"
         },
         "sensor_altitude": {
           "english": "Altitude",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Altitude"
         },
         "sensor_debug_0": {
           "english": "Debug 0",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 0"
         },
         "sensor_debug_1": {
           "english": "Debug 1",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 1"
         },
         "sensor_debug_2": {
           "english": "Debug 2",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 2"
         },
         "sensor_debug_3": {
           "english": "Debug 3",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 3"
         },
         "sensor_debug_4": {
           "english": "Debug 4",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 4"
         },
         "sensor_debug_5": {
           "english": "Debug 5",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 5"
         },
         "sensor_debug_6": {
           "english": "Debug 6",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 6"
         },
         "sensor_debug_7": {
           "english": "Debug 7",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Debug 7"
         },
         "sensor_gyro_x": {
           "english": "Gyro X",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gyro X"
         },
         "sensor_gyro_y": {
           "english": "Gyro Y",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gyro Y"
         },
         "sensor_gyro_z": {
           "english": "Gyro Z",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Gyro Z"
         },
         "sensor_mag_x": {
           "english": "Mag X",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Mag X"
         },
         "sensor_mag_y": {
           "english": "Mag Y",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Mag Y"
         },
         "sensor_mag_z": {
           "english": "Mag Z",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Mag Z"
         },
         "sensor_sonar": {
           "english": "Sonar",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Sonar"
         },
         "source": {
           "english": "Source",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Source"
+          "translation": "Fonte"
         }
       },
       "fblstatus": {
@@ -8742,16 +8742,16 @@
         "disable_swash_override": {
           "english": "Disable swash setup mode",
           "max_length": 24,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Disable swash setup mode"
+          "translation": "Desativar modo prato"
         },
         "disable_swash_override_message": {
           "english": "Disable swash setup mode and return mixer control to the flight controller.",
           "max_length": 75,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Disable swash setup mode and return mixer control to the flight controller."
+          "translation": "Desativa modo prato e retorna controle do mixer ao controlador de voo."
         },
         "elevator_direction": {
           "english": "Elevator Direction",
@@ -8763,16 +8763,16 @@
         "enable_swash_override": {
           "english": "Enable swash setup mode",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Enable swash setup mode"
+          "translation": "Ativar modo prato"
         },
         "enable_swash_override_message": {
           "english": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller.",
           "max_length": 159,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \r\n\r\nLive changes from this page are sent to the flight controller."
+          "translation": "Ativa override do mixer para mover os sticks ao ajustar a geometria do prato. Alterações ao vivo são enviadas ao controlador de voo."
         },
         "geo_correction": {
           "english": "Geo Correction",
@@ -8819,23 +8819,23 @@
         "swash_override": {
           "english": "Swash Setup Mode",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Swash Setup Mode"
+          "translation": "Modo Setup Prato"
         },
         "swash_override_disabling": {
           "english": "Disabling swash setup mode...",
           "max_length": 29,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Disabling swash setup mode..."
+          "translation": "Desativando modo prato..."
         },
         "swash_override_enabling": {
           "english": "Enabling swash setup mode...",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Enabling swash setup mode..."
+          "translation": "Ativando modo prato..."
         },
         "swash_phase": {
           "english": "Phase Angle",
@@ -8940,156 +8940,156 @@
         "active_ranges": {
           "english": "Active ranges:",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Active ranges:"
+          "translation": "Faixas Ativas:"
         },
         "auto_detect_active": {
           "english": "Auto-detect active: toggle desired AUX channel",
           "max_length": 46,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Auto-detect active: toggle desired AUX channel"
+          "translation": "Auto-detect ativo: use o canal AUX desejado"
         },
         "load_error": {
           "english": "Load error:",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Load error:"
+          "translation": "Erro Carga:"
         },
         "loading": {
           "english": "Loading mode data...",
           "max_length": 20,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Loading mode data..."
+          "translation": "Carregando modos..."
         },
         "loading_config": {
           "english": "Loading mode configuration",
           "max_length": 26,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Loading mode configuration"
+          "translation": "Carregando config. do modo"
         },
         "max_label": {
           "english": "Max",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Max"
+          "translation": "Máx"
         },
         "min_label": {
           "english": "Min",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Min"
+          "translation": "Mín"
         },
         "mode": {
           "english": "Mode",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Mode"
+          "translation": "Modo"
         },
         "msg_auto_detect_lock_first": {
           "english": "Auto-detect is active for this row. Toggle to lock AUX first.",
           "max_length": 61,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Auto-detect is active for this row. Toggle to lock AUX first."
+          "translation": "Auto-detect ativo. Comute o AUX para travar primeiro."
         },
         "msg_auto_detect_lock_save": {
           "english": "Auto-detect is active. Toggle the desired AUX channel first.",
           "max_length": 60,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Auto-detect is active. Toggle the desired AUX channel first."
+          "translation": "Auto-detect ativo. Comute primeiro o canal AUX desejado."
         },
         "msg_live_channel_unavailable": {
           "english": "Live channel value unavailable.",
           "max_length": 31,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Live channel value unavailable."
+          "translation": "Canal ao vivo indisponível."
         },
         "msg_no_free_slots": {
           "english": "No free mode slots remain. Delete an existing range first.",
           "max_length": 58,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "No free mode slots remain. Delete an existing range first."
+          "translation": "Sem slots de modo. Exclua um range existente primeiro."
         },
         "msg_use_current": {
           "english": "Use current value",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Use current value"
+          "translation": "Usar valor atual"
         },
         "name": {
           "english": "Modes",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Modes"
+          "translation": "Modos"
         },
         "no_modes": {
           "english": "No modes reported by FC.",
           "max_length": 24,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "No modes reported by FC."
+          "translation": "FC não reportou modos."
         },
         "no_ranges": {
           "english": "No ranges configured for this mode.",
           "max_length": 35,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "No ranges configured for this mode."
+          "translation": "Nenhuma faixa neste modo."
         },
         "range": {
           "english": "Range",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Range"
+          "translation": "Faixa"
         },
         "save_error": {
           "english": "Save error:",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Save error:"
+          "translation": "Erro Salvar"
         },
         "saving_config": {
           "english": "Saving mode configuration",
           "max_length": 25,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Saving mode configuration"
+          "translation": "Salvando config. do modo"
         },
         "set": {
           "english": "Set",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Set"
+          "translation": "Def"
         },
         "set_range_title": {
           "english": "Set Range",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Set Range"
         },
         "unsaved_changes": {
           "english": "Unsaved changes",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Unsaved changes"
+          "translation": "Não salvo"
         }
       },
       "msp_exp": {
@@ -9452,7 +9452,7 @@
         "function_sport_input": {
           "english": "S.PORT Master",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "S.PORT Master"
         },
@@ -9608,9 +9608,9 @@
         "capacity": {
           "english": "Capacity",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Capacity"
+          "translation": "Capac."
         },
         "cell_count": {
           "english": "Cell Count",
@@ -9664,9 +9664,9 @@
         "model_type": {
           "english": "Power Type",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Model Type"
+          "translation": "Tipo Mod."
         },
         "name": {
           "english": "Power",
@@ -9678,9 +9678,9 @@
         "preferences_name": {
           "english": "Preferences",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Preferences"
+          "translation": "Preferêncs."
         },
         "rx_voltage_alert": {
           "english": "RxBatt Alert Value",
@@ -9692,79 +9692,79 @@
         "selected": {
           "english": "Selected",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Selected"
+          "translation": "Selec."
         },
         "smartfuel_charge_drop_rate": {
           "english": "Charge Drop Rate",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Charge Drop Rate"
+          "translation": "Taxa Queda Carga"
         },
         "smartfuel_fuel_drop_rate": {
           "english": "Fuel Drop Rate",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Fuel Drop Rate"
+          "translation": "Taxa de Queda"
         },
         "smartfuel_fuel_rise_rate": {
           "english": "Fuel Rise Rate",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Fuel Rise Rate"
+          "translation": "Taxa de Subida"
         },
         "smartfuel_name": {
           "english": "SmartFuel",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "SmartFuel"
         },
         "smartfuel_sag_compensation": {
           "english": "Sag Compensation Factor",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Sag Compensation Factor"
+          "translation": "Fator Compens. Sag"
         },
         "smartfuel_sag_gain": {
           "english": "Sag Gain",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Sag Gain"
         },
         "smartfuel_stabilize_delay": {
           "english": "Stabilize Delay",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Stabilize Delay"
+          "translation": "Atraso Estab."
         },
         "smartfuel_stable_window": {
           "english": "Stable Window",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Stable Window"
+          "translation": "Janela Est."
         },
         "smartfuel_voltage_drop_rate": {
           "english": "Voltage Drop Rate",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Voltage Drop Rate"
+          "translation": "Taxa Queda Tensão"
         },
         "smartfuel_voltage_fall_limit": {
           "english": "Voltage Fall Limit",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Voltage Fall Limit"
+          "translation": "Lim. Queda Tensão"
         },
         "source_name": {
           "english": "Sources",
@@ -10832,9 +10832,9 @@
         "cyclic": {
           "english": "Cyclic",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Cyclic"
+          "translation": "Cíclic"
         },
         "expo": {
           "english": "Expo",
@@ -11121,23 +11121,23 @@
         "cyclic_behaviour": {
           "english": "Cyclic Behaviour",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Cyclic Behaviour"
+          "translation": "Comportamento"
         },
         "cyclic_polarity": {
           "english": "Polar coordinates",
           "max_length": 17,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Cyclic polar"
+          "translation": "Coord. Polares"
         },
         "cyclic_ring": {
           "english": "Cyclic ring",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Cyclic ring"
+          "translation": "Anel Cíclic"
         },
         "dyn_ceiling_gain": {
           "english": "Dynamic ceiling gain",
@@ -11673,16 +11673,16 @@
         "battery_capacity_callout": {
           "english": "Battery capacity",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery capacity"
+          "translation": "Capac. Bateria"
         },
         "battery_profile_event": {
           "english": "Battery",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery"
+          "translation": "Bateria"
         },
         "celcius": {
           "english": "Celsius",
@@ -11953,9 +11953,9 @@
         "panel_engine": {
           "english": "Engine",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Engine"
+          "translation": "Motor"
         },
         "panel_integration": {
           "english": "Integration",
@@ -11995,23 +11995,23 @@
         "shortcuts": {
           "english": "Shortcuts",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Shortcuts"
+          "translation": "Atalhos"
         },
         "shortcuts_group": {
           "english": "Category",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Category"
+          "translation": "Categ."
         },
         "shortcuts_none": {
           "english": "No shortcut sources available.",
           "max_length": 30,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "No shortcut sources available."
+          "translation": "Sem fontes de atalho."
         },
         "temperature_unit": {
           "english": "Temperature Unit",
@@ -12023,9 +12023,9 @@
         "timer_alert_interval": {
           "english": "Alert Interval",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Alert Interval"
+          "translation": "Interv. Alerta"
         },
         "timer_alert_period": {
           "english": "Alert Period",
@@ -12051,30 +12051,30 @@
         "timer_elapsed_beep": {
           "english": "Beep",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Beep"
         },
         "timer_elapsed_elapsed": {
           "english": "Timer Elapsed",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Timer Elapsed"
+          "translation": "Tempo Decor."
         },
         "timer_elapsed_multi_beep": {
           "english": "Multi Beep",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Multi Beep"
         },
         "timer_elapsed_seconds": {
           "english": "Timer Seconds",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Timer Seconds"
+          "translation": "Segundos Tim."
         },
         "timer_postalert": {
           "english": "Post-timer Alert",
@@ -12177,30 +12177,30 @@
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
           "max_length": 19,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Collapse Navigation"
+          "translation": "Recolher Navegação"
         },
         "txt_dashboard_startup_log_close": {
           "english": "Dashboard startup log",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Dashboard startup log"
+          "translation": "Log início dashboard"
         },
         "txt_dashboard_startup_log_close_connected": {
           "english": "CONNECTION",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "CONNECTION"
+          "translation": "CONECTADO"
         },
         "txt_dashboard_startup_log_close_ready": {
           "english": "READY",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "READY"
+          "translation": "PRON."
         },
         "txt_debug": {
           "english": "DEBUG",
@@ -12282,9 +12282,9 @@
         "txt_logevents": {
           "english": "Log events",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Log events"
+          "translation": "Log Event."
         },
         "txt_loglevel": {
           "english": "Log level",
@@ -12310,9 +12310,9 @@
         "txt_msprwlog": {
           "english": "Log MSP read/write",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Log MSP read/write"
+          "translation": "Log MSP r/w"
         },
         "txt_mspstatusdialog": {
           "english": "MSP Activity Display",
@@ -12394,23 +12394,23 @@
         "txt_show_battery_profile_connect": {
           "english": "Battery Type on connect",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery Type on connect"
+          "translation": "Tipo Bateria na Conexão"
         },
         "txt_show_confirmation_dialog": {
           "english": "Battery Type confirmation",
           "max_length": 25,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Battery Type confirmation"
+          "translation": "Confirmação Tipo Bateria"
         },
         "txt_show_esc_tools_warning": {
           "english": "ESC tools safety prompt",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ESC tools safety prompt"
+          "translation": "Aviso de Segurança ESC"
         },
         "txt_small": {
           "english": "SMALL",
@@ -12422,16 +12422,16 @@
         "txt_smartfuel_autodetect_model_type": {
           "english": "Autodetect Model Type",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Autodetect Model Type"
+          "translation": "Detect. Tipo Modelo"
         },
         "txt_smartfuel_force_nitro": {
           "english": "Force Model Type: Nitro",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Force Model Type: Nitro"
+          "translation": "Forçar Tipo: Nitro"
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -12457,9 +12457,9 @@
         "txt_toolbar_timeout": {
           "english": "Dash-bar auto-close",
           "max_length": 19,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Dash-bar auto-close"
+          "translation": "Auto-fechar barra"
         },
         "voltage": {
           "english": "Voltage",
@@ -12691,16 +12691,16 @@
     "msg_lua_memory_critical_restart_radio": {
       "english": "Please powercycle the radio to ensure system stability",
       "max_length": 54,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Please powercycle the radio to ensure system stability"
+      "translation": "Reinicie o rádio para garantir estabilidade do sistema"
     },
     "msg_lua_memory_critical_title": {
       "english": "Lua memory critically low",
       "max_length": 25,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Lua memory critically low"
+      "translation": "Memória Lua crítica"
     },
     "msg_model_changed_reset": {
       "english": "Model changed, resetting session",
@@ -12954,9 +12954,9 @@
     "battery_profile": {
       "english": "Battery Profile",
       "max_length": 15,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Battery Profile"
+      "translation": "Perfil Bateria"
     },
     "bec_voltage": {
       "english": "Bec voltage",
@@ -13080,7 +13080,7 @@
     "vfr": {
       "english": "VFR",
       "max_length": 3,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "VFR"
     },
@@ -13201,616 +13201,616 @@
     "sensor_accel_x": {
       "english": "Accel X",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Accel X"
     },
     "sensor_accel_y": {
       "english": "Accel Y",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Accel Y"
     },
     "sensor_accel_z": {
       "english": "Accel Z",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Accel Z"
     },
     "sensor_accl": {
       "english": "Accl",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Accl"
     },
     "sensor_adj": {
       "english": "ADJ",
       "max_length": 3,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ADJ"
     },
     "sensor_altitude": {
       "english": "Altitude",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Altitude"
     },
     "sensor_arming_disable": {
       "english": "Arming Disable",
       "max_length": 14,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Arming Disable"
+      "translation": "Arm. Desativ."
     },
     "sensor_arming_flags": {
       "english": "Arming Flags",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Arming Flags"
+      "translation": "Flags Arm."
     },
     "sensor_attd": {
       "english": "Attd",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Attd"
     },
     "sensor_battery_profile": {
       "english": "Battery Profile",
       "max_length": 15,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Battery Profile"
+      "translation": "Perfil Bateria"
     },
     "sensor_bec_current": {
       "english": "BEC Current",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "BEC Current"
+      "translation": "BEC Corr."
     },
     "sensor_bec_temp": {
       "english": "BEC Temp",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "BEC Temp"
     },
     "sensor_bec_voltage": {
       "english": "BEC Voltage",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "BEC Voltage"
+      "translation": "BEC Tensão"
     },
     "sensor_bus_current": {
       "english": "BUS Current",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "BUS Current"
+      "translation": "BUS Corr."
     },
     "sensor_bus_voltage": {
       "english": "BUS Voltage",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "BUS Voltage"
+      "translation": "BUS Tensão"
     },
     "sensor_cell_count": {
       "english": "Cell Count",
       "max_length": 10,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Cell Count"
+      "translation": "Qtd. Cel."
     },
     "sensor_cell_voltage": {
       "english": "Cell Voltage",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Cell Voltage"
+      "translation": "Tensão Cel."
     },
     "sensor_cell_voltages": {
       "english": "Cell Voltages",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Cell Voltages"
+      "translation": "Tens. Células"
     },
     "sensor_charge_level": {
       "english": "Charge Level",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Charge Level"
+      "translation": "Nível Carga"
     },
     "sensor_coll_control": {
       "english": "Coll Control",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Coll Control"
     },
     "sensor_consumption": {
       "english": "Consumption",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Consumption"
+      "translation": "Consumo"
     },
     "sensor_cpu_load": {
       "english": "CPU Load",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "CPU Load"
     },
     "sensor_ctrl": {
       "english": "Ctrl",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Ctrl"
     },
     "sensor_current": {
       "english": "Current",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Current"
+      "translation": "Corr."
     },
     "sensor_dbg0": {
       "english": "DBG0",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG0"
     },
     "sensor_dbg1": {
       "english": "DBG1",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG1"
     },
     "sensor_dbg2": {
       "english": "DBG2",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG2"
     },
     "sensor_dbg3": {
       "english": "DBG3",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG3"
     },
     "sensor_dbg4": {
       "english": "DBG4",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG4"
     },
     "sensor_dbg5": {
       "english": "DBG5",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG5"
     },
     "sensor_dbg6": {
       "english": "DBG6",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG6"
     },
     "sensor_dbg7": {
       "english": "DBG7",
       "max_length": 4,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "DBG7"
     },
     "sensor_esc1_bec_curr": {
       "english": "ESC1 BEC Curr",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 BEC Curr"
     },
     "sensor_esc1_bec_volt": {
       "english": "ESC1 BEC Volt",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 BEC Volt"
     },
     "sensor_esc1_consump": {
       "english": "ESC1 Consump",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC1 Consump"
+      "translation": "ESC1 Consum."
     },
     "sensor_esc1_current": {
       "english": "ESC1 Current",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC1 Current"
+      "translation": "ESC1 Corr."
     },
     "sensor_esc1_erpm": {
       "english": "ESC1 eRPM",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 eRPM"
     },
     "sensor_esc1_model_id": {
       "english": "ESC1 Model ID",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 Model ID"
     },
     "sensor_esc1_pwm": {
       "english": "ESC1 PWM",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 PWM"
     },
     "sensor_esc1_status": {
       "english": "ESC1 Status",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 Status"
     },
     "sensor_esc1_temp": {
       "english": "ESC1 Temp",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 Temp"
     },
     "sensor_esc1_temp2": {
       "english": "ESC1 Temp 2",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 Temp 2"
     },
     "sensor_esc1_throttle": {
       "english": "ESC1 Throttle",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC1 Throttle"
     },
     "sensor_esc1_voltage": {
       "english": "ESC1 Voltage",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC1 Voltage"
+      "translation": "ESC1 Tensão"
     },
     "sensor_esc2_consump": {
       "english": "ESC2 Consump",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC2 Consump"
+      "translation": "ESC2 Consum."
     },
     "sensor_esc2_current": {
       "english": "ESC2 Current",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC2 Current"
+      "translation": "ESC2 Corr."
     },
     "sensor_esc2_erpm": {
       "english": "ESC2 eRPM",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC2 eRPM"
     },
     "sensor_esc2_model_id": {
       "english": "ESC2 Model ID",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC2 Model ID"
     },
     "sensor_esc2_temp": {
       "english": "ESC2 Temp",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC2 Temp"
     },
     "sensor_esc2_voltage": {
       "english": "ESC2 Voltage",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC2 Voltage"
+      "translation": "ESC2 Tensão"
     },
     "sensor_esc_current": {
       "english": "ESC Current",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC Current"
+      "translation": "ESC Corr."
     },
     "sensor_esc_temp": {
       "english": "ESC Temp",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "ESC Temp"
     },
     "sensor_esc_voltage": {
       "english": "ESC Voltage",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "ESC Voltage"
+      "translation": "ESC Tensão"
     },
     "sensor_flight_mode": {
       "english": "Flight Mode",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Flight Mode"
+      "translation": "Modo Voo"
     },
     "sensor_governor": {
       "english": "Governor",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Governor"
     },
     "sensor_gps_altitude": {
       "english": "GPS Altitude",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS Altitude"
     },
     "sensor_gps_coord": {
       "english": "GPS Coord",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS Coord"
     },
     "sensor_gps_hdop": {
       "english": "GPS HDOP",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS HDOP"
     },
     "sensor_gps_heading": {
       "english": "GPS Heading",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "GPS Heading"
+      "translation": "GPS Rumo"
     },
     "sensor_gps_home_dir": {
       "english": "GPS Home Dir",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "GPS Home Dir"
+      "translation": "GPS Dir Casa"
     },
     "sensor_gps_home_dist": {
       "english": "GPS Home Dist",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "GPS Home Dist"
+      "translation": "GPS Dist Casa"
     },
     "sensor_gps_pdop": {
       "english": "GPS PDOP",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS PDOP"
     },
     "sensor_gps_sats": {
       "english": "GPS Sats",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS Sats"
     },
     "sensor_gps_speed": {
       "english": "GPS Speed",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS Speed"
     },
     "sensor_gps_vdop": {
       "english": "GPS VDOP",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS VDOP"
     },
     "sensor_heading": {
       "english": "Heading",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Heading"
+      "translation": "Rumo"
     },
     "sensor_headspeed": {
       "english": "Headspeed",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Headspeed"
     },
     "sensor_heartbeat": {
       "english": "Heartbeat",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Heartbeat"
     },
     "sensor_led_profile": {
       "english": "LED Profile",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "LED Profile"
+      "translation": "Perfil LED"
     },
     "sensor_mcu_current": {
       "english": "MCU Current",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "MCU Current"
+      "translation": "MCU Corr."
     },
     "sensor_mcu_temp": {
       "english": "MCU Temp",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "MCU Temp"
     },
     "sensor_mcu_voltage": {
       "english": "MCU Voltage",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "MCU Voltage"
+      "translation": "MCU Tensão"
     },
     "sensor_model_id": {
       "english": "Model ID",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Model ID"
     },
     "sensor_pid_profile": {
       "english": "PID Profile",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "PID Profile"
+      "translation": "Perfil PID"
     },
     "sensor_pitch_attitude": {
       "english": "Pitch Attitude",
       "max_length": 14,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Pitch Attitude"
+      "translation": "Atitude Pitch"
     },
     "sensor_pitch_control": {
       "english": "Pitch Control",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Pitch Control"
     },
     "sensor_rate_profile": {
       "english": "Rate Profile",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Rate Profile"
+      "translation": "Perfil Rate"
     },
     "sensor_rescue": {
       "english": "Rescue",
       "max_length": 6,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Rescue"
     },
     "sensor_roll_attitude": {
       "english": "Roll Attitude",
       "max_length": 13,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Roll Attitude"
+      "translation": "Atitude Roll"
     },
     "sensor_roll_control": {
       "english": "Roll Control",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Roll Control"
     },
     "sensor_rt_load": {
       "english": "RT Load",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "RT Load"
     },
     "sensor_sys_load": {
       "english": "SYS Load",
       "max_length": 8,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "SYS Load"
     },
     "sensor_tailspeed": {
       "english": "Tailspeed",
       "max_length": 9,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Tailspeed"
     },
     "sensor_throttle_pct": {
       "english": "Throttle %",
       "max_length": 10,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Throttle %"
     },
     "sensor_voltage": {
       "english": "Voltage",
       "max_length": 7,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Voltage"
+      "translation": "Tensão"
     },
     "sensor_vspeed": {
       "english": "VSpeed",
       "max_length": 6,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "VSpeed"
     },
     "sensor_yaw_attitude": {
       "english": "Yaw Attitude",
       "max_length": 12,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Yaw Attitude"
+      "translation": "Atitude Yaw"
     },
     "sensor_yaw_control": {
       "english": "Yaw Control",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
       "translation": "Yaw Control"
     }
@@ -13820,9 +13820,9 @@
       "name": {
         "english": "Arming Flags",
         "max_length": 12,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Arming Flags"
+        "translation": "Flags Arm."
       }
     },
     "battery": {
@@ -13835,16 +13835,16 @@
       "msg_battery_selected": {
         "english": "Selected battery:",
         "max_length": 17,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Selected battery:"
+        "translation": "Bat. selecionada:"
       },
       "msg_select_battery": {
         "english": "Please select the battery you want to use:",
         "max_length": 42,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Please select the battery you want to use:"
+        "translation": "Selecione a bateria que deseja usar:"
       },
       "no_profiles": {
         "english": "No battery profiles configured.",
@@ -13876,7 +13876,7 @@
       "name": {
         "english": "Black Box",
         "max_length": 9,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Black Box"
       }
@@ -13885,18 +13885,18 @@
       "name": {
         "english": "Craft Image",
         "max_length": 11,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Craft Image"
+        "translation": "Imagem Mod."
       }
     },
     "craftname": {
       "name": {
         "english": "Craft Name",
         "max_length": 10,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Craft Name"
+        "translation": "Nome Mod."
       }
     },
     "dashboard": {
@@ -13910,16 +13910,16 @@
       "battery": {
         "english": "Battery",
         "max_length": 7,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Battery"
+        "translation": "Bateria"
       },
       "battery_profile": {
         "english": "Battery Profile",
         "max_length": 15,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Battery Profile"
+        "translation": "Perfil Bateria"
       },
       "bec_voltage": {
         "english": "BEC Voltage",
@@ -14169,7 +14169,7 @@
       "setup": {
         "english": "Setup",
         "max_length": 5,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Setup"
       },
@@ -14339,7 +14339,7 @@
       "name": {
         "english": "Governor",
         "max_length": 8,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
         "translation": "Governor"
       }
@@ -14348,16 +14348,16 @@
       "configure_title": {
         "english": "Title",
         "max_length": 5,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Title"
+        "translation": "Títul"
       },
       "configure_widget_type": {
         "english": "Widget type",
         "max_length": 11,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Widget type"
+        "translation": "Tipo Widget"
       }
     }
   }
