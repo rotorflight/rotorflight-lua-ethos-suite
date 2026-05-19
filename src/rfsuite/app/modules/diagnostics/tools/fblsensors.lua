@@ -20,25 +20,25 @@ local MSP_SONAR = 58
 local MSP_DEBUG = 254
 
 local SOURCES = {
-    {label = "Gyro X", packet = "raw_imu", group = "gyro", idx = 1},
-    {label = "Gyro Y", packet = "raw_imu", group = "gyro", idx = 2},
-    {label = "Gyro Z", packet = "raw_imu", group = "gyro", idx = 3},
-    {label = "Accel X", packet = "raw_imu", group = "accel", idx = 1},
-    {label = "Accel Y", packet = "raw_imu", group = "accel", idx = 2},
-    {label = "Accel Z", packet = "raw_imu", group = "accel", idx = 3},
-    {label = "Mag X", packet = "raw_imu", group = "mag", idx = 1},
-    {label = "Mag Y", packet = "raw_imu", group = "mag", idx = 2},
-    {label = "Mag Z", packet = "raw_imu", group = "mag", idx = 3},
-    {label = "Altitude", packet = "altitude"},
-    {label = "Sonar", packet = "sonar"},
-    {label = "Debug 0", packet = "debug", idx = 1},
-    {label = "Debug 1", packet = "debug", idx = 2},
-    {label = "Debug 2", packet = "debug", idx = 3},
-    {label = "Debug 3", packet = "debug", idx = 4},
-    {label = "Debug 4", packet = "debug", idx = 5},
-    {label = "Debug 5", packet = "debug", idx = 6},
-    {label = "Debug 6", packet = "debug", idx = 7},
-    {label = "Debug 7", packet = "debug", idx = 8},
+    {label = "@i18n(app.modules.fblsensors.sensor_gyro_x)@", packet = "raw_imu", group = "gyro", idx = 1},
+    {label = "@i18n(app.modules.fblsensors.sensor_gyro_y)@", packet = "raw_imu", group = "gyro", idx = 2},
+    {label = "@i18n(app.modules.fblsensors.sensor_gyro_z)@", packet = "raw_imu", group = "gyro", idx = 3},
+    {label = "@i18n(app.modules.fblsensors.sensor_accel_x)@", packet = "raw_imu", group = "accel", idx = 1},
+    {label = "@i18n(app.modules.fblsensors.sensor_accel_y)@", packet = "raw_imu", group = "accel", idx = 2},
+    {label = "@i18n(app.modules.fblsensors.sensor_accel_z)@", packet = "raw_imu", group = "accel", idx = 3},
+    {label = "@i18n(app.modules.fblsensors.sensor_mag_x)@", packet = "raw_imu", group = "mag", idx = 1},
+    {label = "@i18n(app.modules.fblsensors.sensor_mag_y)@", packet = "raw_imu", group = "mag", idx = 2},
+    {label = "@i18n(app.modules.fblsensors.sensor_mag_z)@", packet = "raw_imu", group = "mag", idx = 3},
+    {label = "@i18n(app.modules.fblsensors.sensor_altitude)@", packet = "altitude"},
+    {label = "@i18n(app.modules.fblsensors.sensor_sonar)@", packet = "sonar"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_0)@", packet = "debug", idx = 1},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_1)@", packet = "debug", idx = 2},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_2)@", packet = "debug", idx = 3},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_3)@", packet = "debug", idx = 4},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_4)@", packet = "debug", idx = 5},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_5)@", packet = "debug", idx = 6},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_6)@", packet = "debug", idx = 7},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_7)@", packet = "debug", idx = 8},
 }
 
 local state = {
@@ -385,9 +385,9 @@ local function openPage(opts)
     if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
     form.clear()
-    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@ / FBL Sensors")
+    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.fblsensors.name)@")
 
-    local line = form.addLine("Source")
+    local line = form.addLine("@i18n(app.modules.fblsensors.source)@")
     app.formFields[1] = form.addChoiceField(line, nil, state.sourceChoices, function()
         return state.selectedSourceIdx
     end, function(v)

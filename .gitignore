@@ -9,6 +9,7 @@ simulator/*
 deploy.json
 *.pyc
 *.pyc
+.claude
 bin/updater/src/rfsuite_updater_work
 bin/updater/src/build
 bin/updater/src/build_embed

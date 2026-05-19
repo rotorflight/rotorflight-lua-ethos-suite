@@ -133,4 +133,4 @@ local function onNavMenu()
     return true
 end
 
-return {apidata = apidata, title = "Experimental", navButtons = {menu = true, save = true, reload = true, help = true}, onNavMenu = onNavMenu, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, preUnload = preUnload, API = {}}
+return {apidata = apidata, title = "@i18n(app.modules.msp_exp.name)@", navButtons = {menu = true, save = true, reload = true, help = true}, onNavMenu = onNavMenu, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, preUnload = preUnload, API = {}}
