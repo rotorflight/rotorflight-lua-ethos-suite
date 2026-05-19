@@ -353,6 +353,14 @@ local function getThemeStateInternal()
     return legacyState, signature
 end
 
+local function resolveDashboardSurfaceBg(state)
+    local surfaceBg = state and state.secondaryBgColor
+    if surfaceBg == state.pageBgColor then surfaceBg = state.buttonBorderColor end
+    if surfaceBg == state.pageBgColor then surfaceBg = state.primaryBgColor end
+    if surfaceBg == nil then surfaceBg = state.pageBgColor or state.primaryBgColor end
+    return surfaceBg
+end
+
 local function getThemeFallbackPalette()
     local state, signature = getThemeStateInternal()
 
@@ -386,7 +394,7 @@ local function getThemeFallbackPalette()
         textcolor = state.primaryColor,
         titlecolor = state.primaryColor,
         accentcolor = state.secondaryColor,
-        bgcolor = state.primaryBgColor,
+        bgcolor = resolveDashboardSurfaceBg(state),
         defaultColor = state.primaryColor
     }
     themeFallbackPaletteCache.signature = signature
@@ -607,7 +615,7 @@ function utils.themeColors()
     cached = {
         textcolor = state.primaryColor,
         titlecolor = state.primaryColor,
-        bgcolor = state.primaryBgColor,
+        bgcolor = resolveDashboardSurfaceBg(state),
         fillcolor = state.activeColor,
         fillwarncolor = state.warningColor,
         fillcritcolor = state.inactiveColor,
