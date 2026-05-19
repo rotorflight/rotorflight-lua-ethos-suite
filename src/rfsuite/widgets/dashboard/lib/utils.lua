@@ -162,7 +162,100 @@ local THEME_SIGNATURE_KEYS = {
 
 local function rgb(r, g, b, a) return lcd.RGB(r, g, b, a or 1) end
 
+local COLOR_WHITE = rgb(255, 255, 255)
+local COLOR_BLACK = rgb(0, 0, 0)
+local GAUGE_TRAFFIC_GREEN = rgb(0, 188, 4)
+local GAUGE_TRAFFIC_AMBER = rgb(255, 170, 0)
+local GAUGE_TRAFFIC_RED = rgb(224, 64, 64)
+
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
+
+local function normalizeThemeColor(color)
+    if type(color) ~= "number" then return nil end
+    if color > 0xFFFF then
+        local upper = (color >> 16) & 0xFFFF
+        if upper ~= 0 then return upper end
+    end
+    return color & 0xFFFF
+end
+
+local function rgb565ToRgb888(color)
+    local packed = normalizeThemeColor(color)
+    if not packed then return nil end
+    local r5 = (packed >> 11) & 0x1F
+    local g6 = (packed >> 5) & 0x3F
+    local b5 = packed & 0x1F
+    return (r5 * 527 + 23) >> 6, (g6 * 259 + 33) >> 6, (b5 * 527 + 23) >> 6
+end
+
+local function blendThemeColors(colorA, colorB, factor)
+    local r1, g1, b1 = rgb565ToRgb888(colorA)
+    local r2, g2, b2 = rgb565ToRgb888(colorB)
+    if r1 == nil or r2 == nil then return colorA or colorB end
+    local t = type(factor) == "number" and max(0, min(1, factor)) or 0.5
+    return lcd.RGB(clampColorByte(r1 + (r2 - r1) * t), clampColorByte(g1 + (g2 - g1) * t), clampColorByte(b1 + (b2 - b1) * t), 1)
+end
+
+local function relativeLuminanceChannel(channel)
+    local normalized = channel / 255
+    if normalized <= 0.04045 then return normalized / 12.92 end
+    return ((normalized + 0.055) / 1.055) ^ 2.4
+end
+
+local function relativeLuminance(color)
+    local red, green, blue = rgb565ToRgb888(color)
+    if red == nil then return nil end
+    return 0.2126 * relativeLuminanceChannel(red) + 0.7152 * relativeLuminanceChannel(green) + 0.0722 * relativeLuminanceChannel(blue)
+end
+
+local function contrastRatio(colorA, colorB)
+    local luminanceA = relativeLuminance(colorA)
+    local luminanceB = relativeLuminance(colorB)
+    if luminanceA == nil or luminanceB == nil then return nil end
+    local lighter = max(luminanceA, luminanceB)
+    local darker = min(luminanceA, luminanceB)
+    return (lighter + 0.05) / (darker + 0.05)
+end
+
+local function chooseContrastTarget(background)
+    local whiteContrast = contrastRatio(COLOR_WHITE, background)
+    local blackContrast = contrastRatio(COLOR_BLACK, background)
+    if whiteContrast == nil then return COLOR_BLACK end
+    if blackContrast == nil or whiteContrast >= blackContrast then return COLOR_WHITE end
+    return COLOR_BLACK
+end
+
+local function ensureThemeColorContrast(color, background, minRatio)
+    if color == nil or background == nil or minRatio == nil then return color end
+
+    local bestColor = color
+    local bestRatio = contrastRatio(color, background)
+    if bestRatio == nil or bestRatio >= minRatio then return color end
+
+    local target = chooseContrastTarget(background)
+    for i = 1, 6 do
+        local adjusted = blendThemeColors(color, target, i * 0.15)
+        local adjustedRatio = contrastRatio(adjusted, background)
+        if adjustedRatio and adjustedRatio > bestRatio then
+            bestColor = adjusted
+            bestRatio = adjustedRatio
+        end
+        if adjustedRatio and adjustedRatio >= minRatio then return adjusted end
+    end
+
+    return bestColor
+end
+
+local function resolveGaugeThresholdPalette(state, background)
+    local fillcolor = state.activeColor or state.mixerOutputColor or GAUGE_TRAFFIC_GREEN
+    local fillwarncolor = GAUGE_TRAFFIC_AMBER
+    local fillcritcolor = GAUGE_TRAFFIC_RED
+    background = background or state.secondaryBgColor or state.primaryBgColor or state.pageBgColor
+    fillcolor = ensureThemeColorContrast(fillcolor, background, 2.2)
+    fillwarncolor = ensureThemeColorContrast(fillwarncolor, background, 2.2)
+    fillcritcolor = ensureThemeColorContrast(fillcritcolor, background, 2.4)
+    return fillcolor, fillwarncolor, fillcritcolor
+end
 
 local function variantFactorOrDefault(variantFactor)
     if type(variantFactor) == "number" then
@@ -612,13 +705,16 @@ function utils.themeColors()
     local cached = dashboardThemePaletteCache.palette
     if cached and dashboardThemePaletteCache.signature == signature then return cached end
 
+    local surfaceBg = resolveDashboardSurfaceBg(state)
+    local fillcolor, fillwarncolor, fillcritcolor = resolveGaugeThresholdPalette(state, surfaceBg)
+
     cached = {
         textcolor = state.primaryColor,
         titlecolor = state.primaryColor,
-        bgcolor = resolveDashboardSurfaceBg(state),
-        fillcolor = state.activeColor,
-        fillwarncolor = state.warningColor,
-        fillcritcolor = state.inactiveColor,
+        bgcolor = surfaceBg,
+        fillcolor = fillcolor,
+        fillwarncolor = fillwarncolor,
+        fillcritcolor = fillcritcolor,
         fillbgcolor = state.secondaryBgColor,
         accentcolor = state.secondaryColor,
         rssifillcolor = state.activeColor,
