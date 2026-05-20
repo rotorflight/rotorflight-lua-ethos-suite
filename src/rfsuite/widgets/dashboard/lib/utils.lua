@@ -173,6 +173,7 @@ local COLOR_BLACK = rgb(0, 0, 0)
 local GAUGE_TRAFFIC_GREEN = rgb(0, 188, 4)
 local GAUGE_TRAFFIC_AMBER = rgb(255, 170, 0)
 local GAUGE_TRAFFIC_RED = rgb(224, 64, 64)
+local ETHOS_THEME_MIN_VERSION = {26, 1, 0}
 
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
 
@@ -281,12 +282,15 @@ local function isLegacyDarkMode()
     return type(lcd.darkMode) == "function" and lcd.darkMode() == true
 end
 
+local _supportsThemeChecked = false
+local _supportsTheme = false
+
 local function supportsSystemThemeColors()
-    return rfsuite
-        and rfsuite.utils
-        and rfsuite.utils.ethosVersionAtLeast
-        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
-        or false
+    if not _supportsThemeChecked and rfsuite and rfsuite.utils and rfsuite.utils.ethosVersionAtLeast then
+        _supportsTheme = rfsuite.utils.ethosVersionAtLeast(ETHOS_THEME_MIN_VERSION) == true
+        _supportsThemeChecked = true
+    end
+    return _supportsTheme
 end
 
 local function resolveThemeConstant(name)
@@ -298,21 +302,26 @@ local function resolveThemeConstant(name)
 end
 
 local function buildThemeSignature()
-    if supportsSystemThemeColors() then
-        local signature = 5381
-        local hasAnyThemeColor = false
-
-        for i = 1, #THEME_SIGNATURE_KEYS do
-            local color = resolveThemeConstant(THEME_SIGNATURE_KEYS[i])
+    if not supportsSystemThemeColors() then
+        return isLegacyDarkMode() and 1 or 0
+    end
+    local themeColorFn = lcd.themeColor
+    if type(themeColorFn) ~= "function" then
+        return isLegacyDarkMode() and 1 or 0
+    end
+    local signature = 5381
+    local hasAnyThemeColor = false
+    for i = 1, #THEME_SIGNATURE_KEYS do
+        local key = _G[THEME_SIGNATURE_KEYS[i]]
+        if type(key) == "number" then
+            local color = themeColorFn(key)
             if type(color) == "number" then
                 signature = ((signature * 33) + (color % 2147483647)) % 2147483647
                 hasAnyThemeColor = true
             end
         end
-
-        if hasAnyThemeColor then return signature end
     end
-
+    if hasAnyThemeColor then return signature end
     return isLegacyDarkMode() and 1 or 0
 end
 
