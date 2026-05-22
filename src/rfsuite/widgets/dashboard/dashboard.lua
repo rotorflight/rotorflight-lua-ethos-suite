@@ -114,6 +114,7 @@ local gestureActive = false
 local gestureStartX = 0
 local gestureStartY = 0
 local gestureTriggered = false
+local gestureConsumeUntilTouchEnd = false
 local GESTURE_MIN_DY = 20
 local GESTURE_MAX_DX = 40
 
@@ -1657,6 +1658,20 @@ function dashboard.event(widget, category, value, x, y)
                 end
     end
 
+    if gestureConsumeUntilTouchEnd and category == EVT_TOUCH then
+        if system and system.killEvents then
+            if TOUCH_START then system.killEvents(TOUCH_START) end
+            if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+            if TOUCH_END then system.killEvents(TOUCH_END) end
+        end
+        if value == TOUCH_END then
+            gestureConsumeUntilTouchEnd = false
+            gestureActive = false
+            gestureTriggered = false
+        end
+        return true
+    end
+
     if toolbar and toolbar.handleEvent and toolbar.handleEvent(dashboard, widget, category, value, x, y, lcd) then
         return true
     end
@@ -1687,6 +1702,12 @@ function dashboard.event(widget, category, value, x, y)
             if math.abs(dx) <= GESTURE_MAX_DX then
                 if dy <= -GESTURE_MIN_DY then
                     gestureTriggered = true
+                    gestureConsumeUntilTouchEnd = true
+                    if system and system.killEvents then
+                        if TOUCH_START then system.killEvents(TOUCH_START) end
+                        if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                        if TOUCH_END then system.killEvents(TOUCH_END) end
+                    end
                     dashboard.toolbarVisible = true
                     if not dashboard.selectedToolbarIndex then
                         dashboard.selectedToolbarIndex = 1
@@ -1698,6 +1719,12 @@ function dashboard.event(widget, category, value, x, y)
                     return true
                 elseif dy >= GESTURE_MIN_DY then
                     gestureTriggered = true
+                    gestureConsumeUntilTouchEnd = true
+                    if system and system.killEvents then
+                        if TOUCH_START then system.killEvents(TOUCH_START) end
+                        if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                        if TOUCH_END then system.killEvents(TOUCH_END) end
+                    end
                     dashboard.toolbarVisible = false
                     dashboard.selectedToolbarIndex = nil
                     toolbarOpenedAt = 0
