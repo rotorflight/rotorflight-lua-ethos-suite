@@ -489,6 +489,20 @@ local function resolveDashboardHeaderTextColor(state, headerBg)
     return ensureThemeColorContrast(headerText, headerBg, 3.0)
 end
 
+local function resolveDashboardPanelColors(state)
+    local primary = state and state.primaryBgColor
+    local secondary = state and state.secondaryBgColor
+    if primary == nil then return secondary, secondary end
+    if secondary == nil then return primary, primary end
+
+    local primaryLuminance = relativeLuminance(primary)
+    local secondaryLuminance = relativeLuminance(secondary)
+    if primaryLuminance ~= nil and secondaryLuminance ~= nil and secondaryLuminance < primaryLuminance then
+        return secondary, primary
+    end
+    return primary, secondary
+end
+
 local function resolveGaugeTrackBg(state, background)
     if state == nil then return ensureThemeColorContrast(background, background, 2.0) end
 
@@ -781,6 +795,7 @@ function utils.themeColors()
     local headerText = resolveDashboardHeaderTextColor(state, headerBg) or state.primaryColor
     local headerGaugeTrackBg = resolveGaugeTrackBg(state, headerBg)
     local fillcolor, fillwarncolor, fillcritcolor = resolveGaugeThresholdPalette(state, surfaceBg)
+    local panelBg, panelAltBg = resolveDashboardPanelColors(state)
 
     cached = {
         textcolor = state.primaryColor,
@@ -800,8 +815,8 @@ function utils.themeColors()
         cntextcolor = headerText,
         tbtextcolor = headerText,
         rssitextcolor = headerText,
-        panelbg = state.primaryBgColor,
-        paneldarkbg = state.secondaryBgColor,
+        panelbg = panelBg,
+        paneldarkbg = panelAltBg,
         panelbgline = state.buttonBorderColor
     }
     dashboardThemePaletteCache.signature = signature
