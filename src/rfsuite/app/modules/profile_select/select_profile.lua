@@ -53,10 +53,41 @@ local function configureProfileChoice(fieldIndex, count)
     end
 end
 
+local function setProfileFieldValue(fieldIndex, activeValue, statusValue, count)
+    local fields = apidata.formdata.fields
+    local field = fields and fields[fieldIndex]
+    if not field then return end
+
+    count = tonumber(count) or MAX_PROFILE_COUNT
+    if count < 1 then count = 1 end
+    if count > MAX_PROFILE_COUNT then count = MAX_PROFILE_COUNT end
+
+    local active = tonumber(activeValue)
+    if active and active >= 1 and active <= count then
+        field.value = active - 1
+        return
+    end
+
+    local status = tonumber(statusValue)
+    if status and status >= 0 and status < count then
+        field.value = status
+    end
+end
+
 local function postLoad(self)
     local status = rfsuite.tasks.msp.api.apidata.values and rfsuite.tasks.msp.api.apidata.values.STATUS
     configureProfileChoice(1, status and status.pid_profile_count)
     configureProfileChoice(2, status and status.control_rate_profile_count)
+
+    if rfsuite.app and rfsuite.app.utils then
+        rfsuite.app.utils.getCurrentProfile()
+        rfsuite.app.utils.getCurrentRateProfile()
+    end
+
+    local session = rfsuite.session
+    setProfileFieldValue(1, session and session.activeProfile, status and status.current_pid_profile_index, status and status.pid_profile_count)
+    setProfileFieldValue(2, session and session.activeRateProfile, status and status.current_control_rate_profile_index, status and status.control_rate_profile_count)
+
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
