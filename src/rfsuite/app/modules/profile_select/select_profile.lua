@@ -9,62 +9,10 @@ local wakeupScheduler = os.clock()
 local triggerSave = false
 local triggerSaveCounter = false
 local triggerMSPWrite = false
-local pidChoices = {}
-local rateChoices = {}
-
-local PID_FIELD_INDEX = 1
-local RATE_FIELD_INDEX = 2
 
 local apidata = {api = {[1] = "STATUS"}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.profile_select.pid_profile)@", type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "@i18n(app.modules.profile_select.rate_profile)@", type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}}
 
-local function rebuildChoiceLabels(target, count)
-    for i = #target, 1, -1 do
-        target[i] = nil
-    end
-
-    local limit = math.floor(tonumber(count) or 0)
-    for i = 1, limit do
-        target[i] = tostring(i)
-    end
-
-    return limit
-end
-
-local function applyProfileChoices(fieldIndex, count, labels)
-    local app = rfsuite.app
-    local fields = app and app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields
-    local formFields = app and app.formFields
-    local convertPageValueTable = app and app.utils and app.utils.convertPageValueTable
-    local field = fields and fields[fieldIndex]
-    local formField = formFields and formFields[fieldIndex]
-
-    if not field or not formField or type(convertPageValueTable) ~= "function" then return end
-
-    local limit = rebuildChoiceLabels(labels, count)
-    field.table = labels
-    field.tableIdxInc = -1
-    field.min = 0
-    field.max = math.max(0, limit - 1)
-
-    if formField.values then
-        formField:values(convertPageValueTable(labels, -1))
-    end
-    if formField.enable then
-        formField:enable(limit > 0)
-    end
-end
-
-local function postLoad(self)
-    local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
-    local status = values and values.STATUS
-
-    if status then
-        applyProfileChoices(PID_FIELD_INDEX, status.pid_profile_count, pidChoices)
-        applyProfileChoices(RATE_FIELD_INDEX, status.control_rate_profile_count, rateChoices)
-    end
-
-    rfsuite.app.triggers.closeProgressLoader = true
-end
+local function postLoad(self) rfsuite.app.triggers.closeProgressLoader = true end
 
 local function postRead(self) end
 
