@@ -10,9 +10,55 @@ local triggerSave = false
 local triggerSaveCounter = false
 local triggerMSPWrite = false
 
-local apidata = {api = {[1] = "STATUS"}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.profile_select.pid_profile)@", type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "@i18n(app.modules.profile_select.rate_profile)@", type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}}
+local MAX_PROFILE_COUNT = 6
+local PROFILE_LABELS = {"1", "2", "3", "4", "5", "6"}
+local profileChoiceTables = {}
 
-local function postLoad(self) rfsuite.app.triggers.closeProgressLoader = true end
+local apidata = {api = {[1] = "STATUS"}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.profile_select.pid_profile)@", value = 0, min = 0, max = 5, tableIdxInc = -1, table = PROFILE_LABELS, type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "@i18n(app.modules.profile_select.rate_profile)@", value = 0, min = 0, max = 5, tableIdxInc = -1, table = PROFILE_LABELS, type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}}
+
+local function profileChoiceTable(count)
+    count = tonumber(count) or MAX_PROFILE_COUNT
+    if count < 1 then count = 1 end
+    if count > MAX_PROFILE_COUNT then count = MAX_PROFILE_COUNT end
+
+    local choices = profileChoiceTables[count]
+    if not choices then
+        choices = {}
+        for i = 1, count do
+            choices[i] = PROFILE_LABELS[i]
+        end
+        profileChoiceTables[count] = choices
+    end
+    return choices
+end
+
+local function configureProfileChoice(fieldIndex, count)
+    local fields = apidata.formdata.fields
+    local field = fields and fields[fieldIndex]
+    if not field then return end
+
+    local choices = profileChoiceTable(count)
+    field.table = choices
+    field.tableIdxInc = -1
+    field.min = 0
+    field.max = #choices - 1
+
+    if field.value == nil or field.value < field.min or field.value > field.max then
+        field.value = field.min
+    end
+
+    local formField = rfsuite.app and rfsuite.app.formFields and rfsuite.app.formFields[fieldIndex]
+    if formField and formField.values then
+        formField:values(rfsuite.app.utils.convertPageValueTable(choices, field.tableIdxInc))
+    end
+end
+
+local function postLoad(self)
+    local status = rfsuite.tasks.msp.api.apidata.values and rfsuite.tasks.msp.api.apidata.values.STATUS
+    configureProfileChoice(1, status and status.pid_profile_count)
+    configureProfileChoice(2, status and status.control_rate_profile_count)
+    rfsuite.app.triggers.closeProgressLoader = true
+end
 
 local function postRead(self) end
 
@@ -22,11 +68,13 @@ local function queueDirect(message, uuid)
 end
 
 local function setPidProfile(profileIndex)
+    profileIndex = tonumber(profileIndex) or 0
     local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
     return queueDirect(message, string.format("profile.pid.%d", profileIndex))
 end
 
 local function setRateProfile(profileIndex)
+    profileIndex = tonumber(profileIndex) or 0
     profileIndex = profileIndex + 128
     local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
     return queueDirect(message, string.format("profile.rate.%d", profileIndex))
