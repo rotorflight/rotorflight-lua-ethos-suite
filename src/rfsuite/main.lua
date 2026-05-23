@@ -113,9 +113,8 @@ local userpref_defaults = {
     },
     switches = {},
     developer = {
-        loglevel = "info",
-        logmsp = true,
-        logmsprw = true,
+        loglevel = "off",
+        logmsp = false,
         logobjprof = false,
         logmspQueue = false,
         logevents = false,

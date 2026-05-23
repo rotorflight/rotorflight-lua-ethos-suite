@@ -66,6 +66,11 @@ local function sigEquals(a, aN, b, bN)
     return true
 end
 
+local function isDashboardLogPanelEnabled()
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    return dev and dev.loglevel ~= nil and dev.loglevel ~= "off"
+end
+
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
 -- Holding inactive themes resident smooths the first state transition, but
 -- costs a noticeable amount of Lua RAM. Keep it off by default on Ethos.
@@ -1777,7 +1782,7 @@ function dashboard.event(widget, category, value, x, y)
                     toolbarOpenedAt = 0
                     dashboard._toolbarLastActive = 0
                     dashboard._toolbarCloseAt = 0
-                    if not wasToolbarVisible then
+                    if not wasToolbarVisible and isDashboardLogPanelEnabled() then
                         dashboard.debugLogPanelVisible = true
                         dashboard._debugLogPanelLastActive = now
                         dashboard._debugLogPanelSeq = nil
