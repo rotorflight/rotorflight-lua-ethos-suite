@@ -134,12 +134,15 @@ local THEME_STATE_KEYS = {
     {"highlightColor", "THEME_HIGHLIGHT_COLOR"},
     {"highlightInvertColor", "THEME_HIGHLIGHT_INVERT_COLOR"},
     {"disableColor", "THEME_DISABLE_COLOR"},
+    {"safeColor", "THEME_SAFE_COLOR"},
     {"warningColor", "THEME_WARNING_COLOR"},
+    {"errorColor", "THEME_ERROR_COLOR"},
     {"activeColor", "THEME_ACTIVE_COLOR"},
     {"inactiveColor", "THEME_INACTIVE_COLOR"},
     {"buttonBorderActiveColor", "THEME_BUTTON_BORDER_ACTIVE_COLOR"},
     {"buttonBorderColor", "THEME_BUTTON_BORDER_COLOR"},
     {"mixerOutputColor", "THEME_MIXER_OUTPUT_COLOR"},
+    {"safeContrastingColor", "THEME_SAFE_CONTRASTING_COLOR"},
     {"pageBgColor", "THEME_PAGE_BGCOLOR"},
     {"topLcdBgColor", "THEME_TOPLCD_BGCOLOR"}
 }
@@ -156,12 +159,15 @@ local THEME_SIGNATURE_KEYS = {
     "THEME_HIGHLIGHT_COLOR",
     "THEME_HIGHLIGHT_INVERT_COLOR",
     "THEME_DISABLE_COLOR",
+    "THEME_SAFE_COLOR",
     "THEME_WARNING_COLOR",
+    "THEME_ERROR_COLOR",
     "THEME_ACTIVE_COLOR",
     "THEME_INACTIVE_COLOR",
     "THEME_BUTTON_BORDER_ACTIVE_COLOR",
     "THEME_BUTTON_BORDER_COLOR",
     "THEME_MIXER_OUTPUT_COLOR",
+    "THEME_SAFE_CONTRASTING_COLOR",
     "THEME_PAGE_BGCOLOR",
     "THEME_TOPLCD_BGCOLOR"
 }
@@ -254,9 +260,9 @@ local function ensureThemeColorContrast(color, background, minRatio)
 end
 
 local function resolveGaugeThresholdPalette(state, background)
-    local fillcolor = state.activeColor or state.mixerOutputColor or GAUGE_TRAFFIC_GREEN
-    local fillwarncolor = GAUGE_TRAFFIC_AMBER
-    local fillcritcolor = GAUGE_TRAFFIC_RED
+    local fillcolor = state.safeColor or state.activeColor or state.mixerOutputColor or GAUGE_TRAFFIC_GREEN
+    local fillwarncolor = state.warningColor or GAUGE_TRAFFIC_AMBER
+    local fillcritcolor = state.errorColor or state.inactiveColor or GAUGE_TRAFFIC_RED
     background = background or state.secondaryBgColor or state.primaryBgColor or state.pageBgColor
     fillcolor = ensureThemeColorContrast(fillcolor, background, 2.2)
     fillwarncolor = ensureThemeColorContrast(fillwarncolor, background, 2.2)
@@ -399,12 +405,15 @@ local function buildLegacyThemeState(isDark)
             highlightColor = rgb(0, 188, 4),
             highlightInvertColor = rgb(0, 0, 0),
             disableColor = rgb(112, 112, 112),
+            safeColor = rgb(0, 188, 4),
             warningColor = rgb(255, 165, 0),
+            errorColor = rgb(255, 0, 0),
             activeColor = rgb(0, 188, 4),
             inactiveColor = rgb(255, 0, 0),
             buttonBorderActiveColor = rgb(255, 255, 255),
             buttonBorderColor = rgb(90, 90, 90),
             mixerOutputColor = rgb(0, 188, 4),
+            safeContrastingColor = rgb(0, 0, 0),
             pageBgColor = rgb(16, 16, 16),
             topLcdBgColor = rgb(35, 35, 35)
         }
@@ -423,12 +432,15 @@ local function buildLegacyThemeState(isDark)
         highlightColor = rgb(144, 238, 144),
         highlightInvertColor = rgb(255, 255, 255),
         disableColor = rgb(144, 144, 144),
+        safeColor = rgb(144, 238, 144),
         warningColor = rgb(255, 200, 100),
+        errorColor = rgb(255, 102, 102),
         activeColor = rgb(144, 238, 144),
         inactiveColor = rgb(255, 102, 102),
         buttonBorderActiveColor = rgb(69, 78, 87),
         buttonBorderColor = rgb(160, 160, 160),
         mixerOutputColor = rgb(16, 64, 224),
+        safeContrastingColor = rgb(0, 0, 0),
         pageBgColor = rgb(209, 208, 208),
         topLcdBgColor = rgb(230, 230, 230)
     }
@@ -563,9 +575,10 @@ local function getThemeFallbackPalette()
 
     local surfaceBg = resolveDashboardSurfaceBg(state)
     local trackBg = resolveGaugeTrackBg(state, surfaceBg)
+    local fillcolor = state.safeColor or state.activeColor
 
     cached = {
-        fillcolor = state.activeColor,
+        fillcolor = fillcolor,
         fillbgcolor = trackBg,
         framecolor = state.buttonBorderColor,
         textcolor = state.primaryColor,
@@ -806,10 +819,10 @@ function utils.themeColors()
         fillcritcolor = fillcritcolor,
         fillbgcolor = gaugeTrackBg,
         accentcolor = state.secondaryColor,
-        rssifillcolor = state.activeColor,
+        rssifillcolor = fillcolor,
         rssifillbgcolor = headerGaugeTrackBg,
         txaccentcolor = state.buttonBorderActiveColor,
-        txfillcolor = state.activeColor,
+        txfillcolor = fillcolor,
         txbgfillcolor = headerGaugeTrackBg,
         tbbgcolor = headerBg,
         cntextcolor = headerText,
