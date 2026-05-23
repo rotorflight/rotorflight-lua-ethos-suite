@@ -91,6 +91,7 @@ local toolbarOpenedAt = 0
 
 local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dashboard/"
 local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
+local debugLogPanel = compile(dashboardLibPath .. "lib/debug_log_panel.lua")()
 local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
 local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
 local toolbarLaunchApp = compile(dashboardLibPath .. "lib/toolbar_actions/launch_app.lua")()
@@ -115,12 +116,15 @@ local gestureStartX = 0
 local gestureStartY = 0
 local gestureTriggered = false
 local gestureConsumeUntilTouchEnd = false
+local gestureConsumeStartedAt = 0
 local GESTURE_MIN_DY = 20
 local GESTURE_MAX_DX = 40
+local GESTURE_CONSUME_TIMEOUT = 0.75
 
 dashboard.toolbarVisible = dashboard.toolbarVisible or false
 dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
+dashboard.debugLogPanelVisible = dashboard.debugLogPanelVisible or false
 
 local LOADER_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
 
@@ -366,6 +370,7 @@ local function clearDashboardRuntimeCaches()
     end
 
     if toolbar and toolbar.clearCaches then toolbar.clearCaches(dashboard) end
+    if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
     if rfsuite.utils and rfsuite.utils.clearImageCaches then rfsuite.utils.clearImageCaches() end
 
     local session = rfsuite.session
@@ -419,6 +424,16 @@ local function clearDashboardRuntimeCaches()
     dashboard.selectedBoxIndex = nil
     dashboard.toolbarVisible = false
     dashboard.selectedToolbarIndex = nil
+    dashboard.debugLogPanelVisible = false
+    dashboard._debugLogPanelLastActive = 0
+    dashboard._debugLogPanelLastInvalidate = 0
+    dashboard._debugLogPanelLastStatsInvalidate = 0
+    dashboard._debugLogPanelSeq = nil
+    dashboard._debugLogPanelLevel = nil
+    gestureConsumeUntilTouchEnd = false
+    gestureConsumeStartedAt = 0
+    gestureActive = false
+    gestureTriggered = false
     dashboard.currentWidgetPath = nil
     dashboard.overlayMessage = nil
     unsupportedResolution = false
@@ -1590,6 +1605,9 @@ function dashboard.paint(widget)
     if toolbar and toolbar.draw then
         toolbar.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
     end
+    if debugLogPanel and debugLogPanel.draw then
+        debugLogPanel.draw(dashboard, lcd, FONT_S, FONT_XS, FONT_XXS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR)
+    end
 
     if objectProfiler then _profReportIfDue() end
 end
@@ -1625,6 +1643,11 @@ function dashboard.event(widget, category, value, x, y)
 
     if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
         local now = clock()
+        if dashboard.debugLogPanelVisible then
+            dashboard.debugLogPanelVisible = false
+            dashboard._debugLogPanelLastActive = 0
+            if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+        end
         dashboard.toolbarVisible = true
         if not dashboard.selectedToolbarIndex then
             dashboard.selectedToolbarIndex = 1
@@ -1659,33 +1682,48 @@ function dashboard.event(widget, category, value, x, y)
     end
 
     if gestureConsumeUntilTouchEnd and category == EVT_TOUCH then
-        if system and system.killEvents then
-            if TOUCH_START then system.killEvents(TOUCH_START) end
-            if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
-            if TOUCH_END then system.killEvents(TOUCH_END) end
-        end
-        if value == TOUCH_END then
+        local consumeNow = clock()
+        local staleConsume = gestureConsumeStartedAt > 0 and (consumeNow - gestureConsumeStartedAt) >= GESTURE_CONSUME_TIMEOUT
+        if value == TOUCH_START or staleConsume then
             gestureConsumeUntilTouchEnd = false
             gestureActive = false
             gestureTriggered = false
+            gestureConsumeStartedAt = 0
+        else
+            if system and system.killEvents then
+                if TOUCH_START then system.killEvents(TOUCH_START) end
+                if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                if TOUCH_END then system.killEvents(TOUCH_END) end
+            end
+            if value == TOUCH_END then
+                gestureConsumeUntilTouchEnd = false
+                gestureActive = false
+                gestureTriggered = false
+                gestureConsumeStartedAt = 0
+            end
+            return true
         end
-        return true
     end
 
     if toolbar and toolbar.handleEvent and toolbar.handleEvent(dashboard, widget, category, value, x, y, lcd) then
         return true
     end
 
-    -- Gesture start (touch down) anywhere
-    if category == EVT_TOUCH and (value == TOUCH_END or value == TOUCH_START) and x and y then
-        local W, H = lcd.getWindowSize()
+    -- Gesture start/end anywhere
+    if category == EVT_TOUCH and value == TOUCH_START and x and y then
         gestureActive = true
         gestureStartX = x or 0
         gestureStartY = y or 0
         gestureTriggered = false
+        gestureConsumeStartedAt = 0
+    elseif category == EVT_TOUCH and value == TOUCH_END then
+        gestureActive = false
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
     end
 
     if category == EVT_TOUCH and value == TOUCH_MOVE then
+        local now = clock()
         isSliding = true
         isSlidingStart = clock()
 
@@ -1703,36 +1741,61 @@ function dashboard.event(widget, category, value, x, y)
                 if dy <= -GESTURE_MIN_DY then
                     gestureTriggered = true
                     gestureConsumeUntilTouchEnd = true
+                    gestureConsumeStartedAt = now
                     if system and system.killEvents then
                         if TOUCH_START then system.killEvents(TOUCH_START) end
                         if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
                         if TOUCH_END then system.killEvents(TOUCH_END) end
                     end
-                    dashboard.toolbarVisible = true
-                    if not dashboard.selectedToolbarIndex then
-                        dashboard.selectedToolbarIndex = 1
+                    if dashboard.debugLogPanelVisible then
+                        dashboard.debugLogPanelVisible = false
+                        dashboard._debugLogPanelLastActive = 0
+                        if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+                    else
+                        dashboard.toolbarVisible = true
+                        if not dashboard.selectedToolbarIndex then
+                            dashboard.selectedToolbarIndex = 1
+                        end
+                        toolbarOpenedAt = now
+                        dashboard._toolbarLastActive = now
+                        dashboard._toolbarCloseAt = 0
                     end
-                    toolbarOpenedAt = now
-                    dashboard._toolbarLastActive = now
-                    dashboard._toolbarCloseAt = 0
                     lcd.invalidate(widget)
                     return true
                 elseif dy >= GESTURE_MIN_DY then
                     gestureTriggered = true
                     gestureConsumeUntilTouchEnd = true
+                    gestureConsumeStartedAt = now
                     if system and system.killEvents then
                         if TOUCH_START then system.killEvents(TOUCH_START) end
                         if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
                         if TOUCH_END then system.killEvents(TOUCH_END) end
                     end
+                    local wasToolbarVisible = dashboard.toolbarVisible
                     dashboard.toolbarVisible = false
                     dashboard.selectedToolbarIndex = nil
                     toolbarOpenedAt = 0
+                    dashboard._toolbarLastActive = 0
+                    dashboard._toolbarCloseAt = 0
+                    if not wasToolbarVisible then
+                        dashboard.debugLogPanelVisible = true
+                        dashboard._debugLogPanelLastActive = now
+                        dashboard._debugLogPanelSeq = nil
+                    end
                     lcd.invalidate(widget)
                     return true
                 end
             end
         end
+    end
+
+    if debugLogPanel and debugLogPanel.handleEvent and debugLogPanel.handleEvent(dashboard, widget, category, value, x, y, lcd) then
+        if category == EVT_TOUCH and value == TOUCH_END then
+            gestureActive = false
+            gestureTriggered = false
+            gestureConsumeStartedAt = 0
+        end
+        return true
     end
 
     if (not dashboard.toolbarVisible) and category == EVT_KEY and lcd.hasFocus() then
@@ -1853,6 +1916,32 @@ function dashboard.wakeup_protected(widget)
         toolbarOpenedAt = 0
         dashboard._toolbarLastActive = 0
         lcd.invalidate(widget)
+    end
+
+    if dashboard.debugLogPanelVisible then
+        if (dashboard._debugLogPanelLastActive or 0) == 0 then
+            dashboard._debugLogPanelLastActive = now
+        end
+        local logger = rfsuite.tasks and rfsuite.tasks.logger or nil
+        local seq = logger and logger.getSessionSeq and logger.getSessionSeq() or 0
+        local level = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.loglevel or "off"
+        local seqChanged = seq ~= (dashboard._debugLogPanelSeq or -1)
+        local levelChanged = level ~= dashboard._debugLogPanelLevel
+        local statsDue = now - (dashboard._debugLogPanelLastStatsInvalidate or 0) >= 0.5
+        if (seqChanged or levelChanged or statsDue) and now - (dashboard._debugLogPanelLastInvalidate or 0) >= 0.25 then
+            dashboard._debugLogPanelSeq = seq
+            dashboard._debugLogPanelLevel = level
+            dashboard._debugLogPanelLastInvalidate = now
+            if statsDue then dashboard._debugLogPanelLastStatsInvalidate = now end
+            lcd.invalidate(widget)
+        end
+    end
+
+    if gestureConsumeUntilTouchEnd and gestureConsumeStartedAt > 0 and (now - gestureConsumeStartedAt) >= GESTURE_CONSUME_TIMEOUT then
+        gestureConsumeUntilTouchEnd = false
+        gestureActive = false
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
     end
 
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
