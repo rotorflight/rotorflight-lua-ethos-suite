@@ -11941,7 +11941,7 @@
         "english": "Altitude Max",
         "max_length": 12,
         "needs_translation": false,
-        "translation": "Altitide Max"
+        "translation": "Altitude Max"
       },
       "battery": {
         "english": "Battery",
