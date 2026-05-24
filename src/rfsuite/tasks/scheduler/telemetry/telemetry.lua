@@ -30,7 +30,6 @@ local os_clock = os.clock
 local sys_getSource = system.getSource
 local sys_getVersion = system.getVersion
 local t_insert = table.insert
-local t_remove = table.remove
 local t_pairs = pairs
 local t_ipairs = ipairs
 local t_type = type
@@ -45,32 +44,23 @@ local cache_hits, cache_misses = 0, 0
 
 local HOT_SIZE = 20
 local hot_list, hot_index = {}, {}
+local hot_next_evict = 1
 
-local function reindex_hot_from(startIndex)
-    local start = startIndex or 1
-    for i = start, #hot_list do
-        hot_index[hot_list[i]] = i
-    end
-end
-
+-- O(1) always: hits return immediately; eviction uses round-robin (no shifting).
 local function mark_hot(key)
-    local idx = hot_index[key]
+    if hot_index[key] then return end
 
-    if idx and idx >= 1 and idx <= #hot_list then
-        t_remove(hot_list, idx)
-        reindex_hot_from(idx)
-
-    elseif #hot_list >= HOT_SIZE then
-        local old = t_remove(hot_list, 1)
-        if old ~= nil then
-            hot_index[old] = nil
-            sensors[old] = nil
-        end
-        reindex_hot_from(1)
+    if #hot_list < HOT_SIZE then
+        hot_list[#hot_list + 1] = key
+        hot_index[key] = #hot_list
+    else
+        local evict_key = hot_list[hot_next_evict]
+        hot_index[evict_key] = nil
+        sensors[evict_key] = nil
+        hot_list[hot_next_evict] = key
+        hot_index[key] = hot_next_evict
+        hot_next_evict = hot_next_evict % HOT_SIZE + 1
     end
-
-    t_insert(hot_list, key)
-    hot_index[key] = #hot_list
 end
 
 function telemetry._debugStats() return {hits = cache_hits, misses = cache_misses, hot_size = #hot_list, hot_list = hot_list} end
@@ -135,6 +125,7 @@ local activeSourceMode, activeSourceTable = nil, nil
 local function clearRuntimeCaches()
     sensors = setmetatable({}, {__mode = "v"})
     hot_list, hot_index = {}, {}
+    hot_next_evict = 1
     filteredOnchangeSensors = nil
     lastSensorValues = {}
     onchangeInitialized = false

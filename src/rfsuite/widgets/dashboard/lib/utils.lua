@@ -123,6 +123,8 @@ local FONT_BY_NAME = {
 }
 
 local THEME_STATE_KEYS = {
+    {"defaultColor", "THEME_DEFAULT_COLOR"},
+    {"defaultBgColor", "THEME_DEFAULT_BGCOLOR"},
     {"primaryColor", "THEME_PRIMARY_COLOR"},
     {"primaryBgColor", "THEME_PRIMARY_BGCOLOR"},
     {"secondaryColor", "THEME_SECONDARY_COLOR"},
@@ -132,16 +134,22 @@ local THEME_STATE_KEYS = {
     {"highlightColor", "THEME_HIGHLIGHT_COLOR"},
     {"highlightInvertColor", "THEME_HIGHLIGHT_INVERT_COLOR"},
     {"disableColor", "THEME_DISABLE_COLOR"},
+    {"safeColor", "THEME_SAFE_COLOR"},
     {"warningColor", "THEME_WARNING_COLOR"},
+    {"errorColor", "THEME_ERROR_COLOR"},
     {"activeColor", "THEME_ACTIVE_COLOR"},
     {"inactiveColor", "THEME_INACTIVE_COLOR"},
     {"buttonBorderActiveColor", "THEME_BUTTON_BORDER_ACTIVE_COLOR"},
     {"buttonBorderColor", "THEME_BUTTON_BORDER_COLOR"},
     {"mixerOutputColor", "THEME_MIXER_OUTPUT_COLOR"},
-    {"pageBgColor", "THEME_PAGE_BGCOLOR"}
+    {"safeContrastingColor", "THEME_SAFE_CONTRASTING_COLOR"},
+    {"pageBgColor", "THEME_PAGE_BGCOLOR"},
+    {"topLcdBgColor", "THEME_TOPLCD_BGCOLOR"}
 }
 
 local THEME_SIGNATURE_KEYS = {
+    "THEME_DEFAULT_COLOR",
+    "THEME_DEFAULT_BGCOLOR",
     "THEME_PRIMARY_COLOR",
     "THEME_PRIMARY_BGCOLOR",
     "THEME_SECONDARY_COLOR",
@@ -151,18 +159,116 @@ local THEME_SIGNATURE_KEYS = {
     "THEME_HIGHLIGHT_COLOR",
     "THEME_HIGHLIGHT_INVERT_COLOR",
     "THEME_DISABLE_COLOR",
+    "THEME_SAFE_COLOR",
     "THEME_WARNING_COLOR",
+    "THEME_ERROR_COLOR",
     "THEME_ACTIVE_COLOR",
     "THEME_INACTIVE_COLOR",
     "THEME_BUTTON_BORDER_ACTIVE_COLOR",
     "THEME_BUTTON_BORDER_COLOR",
     "THEME_MIXER_OUTPUT_COLOR",
-    "THEME_PAGE_BGCOLOR"
+    "THEME_SAFE_CONTRASTING_COLOR",
+    "THEME_PAGE_BGCOLOR",
+    "THEME_TOPLCD_BGCOLOR"
 }
 
 local function rgb(r, g, b, a) return lcd.RGB(r, g, b, a or 1) end
 
+local COLOR_WHITE = rgb(255, 255, 255)
+local COLOR_BLACK = rgb(0, 0, 0)
+local GAUGE_TRAFFIC_GREEN = rgb(0, 188, 4)
+local GAUGE_TRAFFIC_AMBER = rgb(255, 170, 0)
+local GAUGE_TRAFFIC_RED = rgb(224, 64, 64)
+local ETHOS_THEME_MIN_VERSION = {26, 1, 0}
+
 local function clampColorByte(v) return max(0, min(255, floor(v + 0.5))) end
+
+local function normalizeThemeColor(color)
+    if type(color) ~= "number" then return nil end
+    if color > 0xFFFF then
+        local upper = (color >> 16) & 0xFFFF
+        if upper ~= 0 then return upper end
+    end
+    return color & 0xFFFF
+end
+
+local function rgb565ToRgb888(color)
+    local packed = normalizeThemeColor(color)
+    if not packed then return nil end
+    local r5 = (packed >> 11) & 0x1F
+    local g6 = (packed >> 5) & 0x3F
+    local b5 = packed & 0x1F
+    return (r5 * 527 + 23) >> 6, (g6 * 259 + 33) >> 6, (b5 * 527 + 23) >> 6
+end
+
+local function blendThemeColors(colorA, colorB, factor)
+    local r1, g1, b1 = rgb565ToRgb888(colorA)
+    local r2, g2, b2 = rgb565ToRgb888(colorB)
+    if r1 == nil or r2 == nil then return colorA or colorB end
+    local t = type(factor) == "number" and max(0, min(1, factor)) or 0.5
+    return lcd.RGB(clampColorByte(r1 + (r2 - r1) * t), clampColorByte(g1 + (g2 - g1) * t), clampColorByte(b1 + (b2 - b1) * t), 1)
+end
+
+local function relativeLuminanceChannel(channel)
+    local normalized = channel / 255
+    if normalized <= 0.04045 then return normalized / 12.92 end
+    return ((normalized + 0.055) / 1.055) ^ 2.4
+end
+
+local function relativeLuminance(color)
+    local red, green, blue = rgb565ToRgb888(color)
+    if red == nil then return nil end
+    return 0.2126 * relativeLuminanceChannel(red) + 0.7152 * relativeLuminanceChannel(green) + 0.0722 * relativeLuminanceChannel(blue)
+end
+
+local function contrastRatio(colorA, colorB)
+    local luminanceA = relativeLuminance(colorA)
+    local luminanceB = relativeLuminance(colorB)
+    if luminanceA == nil or luminanceB == nil then return nil end
+    local lighter = max(luminanceA, luminanceB)
+    local darker = min(luminanceA, luminanceB)
+    return (lighter + 0.05) / (darker + 0.05)
+end
+
+local function chooseContrastTarget(background)
+    local whiteContrast = contrastRatio(COLOR_WHITE, background)
+    local blackContrast = contrastRatio(COLOR_BLACK, background)
+    if whiteContrast == nil then return COLOR_BLACK end
+    if blackContrast == nil or whiteContrast >= blackContrast then return COLOR_WHITE end
+    return COLOR_BLACK
+end
+
+local function ensureThemeColorContrast(color, background, minRatio)
+    if color == nil or background == nil or minRatio == nil then return color end
+
+    local bestColor = color
+    local bestRatio = contrastRatio(color, background)
+    if bestRatio == nil or bestRatio >= minRatio then return color end
+
+    local target = chooseContrastTarget(background)
+    for i = 1, 6 do
+        local adjusted = blendThemeColors(color, target, i * 0.15)
+        local adjustedRatio = contrastRatio(adjusted, background)
+        if adjustedRatio and adjustedRatio > bestRatio then
+            bestColor = adjusted
+            bestRatio = adjustedRatio
+        end
+        if adjustedRatio and adjustedRatio >= minRatio then return adjusted end
+    end
+
+    return bestColor
+end
+
+local function resolveGaugeThresholdPalette(state, background)
+    local fillcolor = state.safeColor or state.activeColor or state.mixerOutputColor or GAUGE_TRAFFIC_GREEN
+    local fillwarncolor = state.warningColor or GAUGE_TRAFFIC_AMBER
+    local fillcritcolor = state.errorColor or state.inactiveColor or GAUGE_TRAFFIC_RED
+    background = background or state.secondaryBgColor or state.primaryBgColor or state.pageBgColor
+    fillcolor = ensureThemeColorContrast(fillcolor, background, 2.2)
+    fillwarncolor = ensureThemeColorContrast(fillwarncolor, background, 2.2)
+    fillcritcolor = ensureThemeColorContrast(fillcritcolor, background, 2.4)
+    return fillcolor, fillwarncolor, fillcritcolor
+end
 
 local function variantFactorOrDefault(variantFactor)
     if type(variantFactor) == "number" then
@@ -182,12 +288,15 @@ local function isLegacyDarkMode()
     return type(lcd.darkMode) == "function" and lcd.darkMode() == true
 end
 
+local _supportsThemeChecked = false
+local _supportsTheme = false
+
 local function supportsSystemThemeColors()
-    return rfsuite
-        and rfsuite.utils
-        and rfsuite.utils.ethosVersionAtLeast
-        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
-        or false
+    if not _supportsThemeChecked and rfsuite and rfsuite.utils and rfsuite.utils.ethosVersionAtLeast then
+        _supportsTheme = rfsuite.utils.ethosVersionAtLeast(ETHOS_THEME_MIN_VERSION) == true
+        _supportsThemeChecked = true
+    end
+    return _supportsTheme
 end
 
 local function resolveThemeConstant(name)
@@ -199,21 +308,26 @@ local function resolveThemeConstant(name)
 end
 
 local function buildThemeSignature()
-    if supportsSystemThemeColors() then
-        local signature = 5381
-        local hasAnyThemeColor = false
-
-        for i = 1, #THEME_SIGNATURE_KEYS do
-            local color = resolveThemeConstant(THEME_SIGNATURE_KEYS[i])
+    if not supportsSystemThemeColors() then
+        return isLegacyDarkMode() and 1 or 0
+    end
+    local themeColorFn = lcd.themeColor
+    if type(themeColorFn) ~= "function" then
+        return isLegacyDarkMode() and 1 or 0
+    end
+    local signature = 5381
+    local hasAnyThemeColor = false
+    for i = 1, #THEME_SIGNATURE_KEYS do
+        local key = _G[THEME_SIGNATURE_KEYS[i]]
+        if type(key) == "number" then
+            local color = themeColorFn(key)
             if type(color) == "number" then
                 signature = ((signature * 33) + (color % 2147483647)) % 2147483647
                 hasAnyThemeColor = true
             end
         end
-
-        if hasAnyThemeColor then return signature end
     end
-
+    if hasAnyThemeColor then return signature end
     return isLegacyDarkMode() and 1 or 0
 end
 
@@ -236,6 +350,7 @@ local function buildLegacyDashboardPalette(isDark)
             tbbgcolor = rgb(35, 35, 35),
             cntextcolor = rgb(255, 255, 255),
             tbtextcolor = rgb(255, 255, 255),
+            rssitextcolor = rgb(255, 255, 255),
             panelbg = rgb(40, 40, 40),
             paneldarkbg = rgb(25, 25, 25),
             panelbgline = rgb(65, 65, 65)
@@ -259,6 +374,7 @@ local function buildLegacyDashboardPalette(isDark)
         tbbgcolor = rgb(90, 90, 90),
         cntextcolor = rgb(255, 255, 255),
         tbtextcolor = rgb(255, 255, 255),
+        rssitextcolor = rgb(255, 255, 255),
         panelbg = rgb(90, 90, 90),
         paneldarkbg = rgb(185, 185, 185),
         panelbgline = rgb(80, 80, 80)
@@ -278,6 +394,8 @@ local function buildLegacyThemeState(isDark)
     if isDark then
         return {
             usesThemeColors = false,
+            defaultColor = rgb(255, 255, 255),
+            defaultBgColor = rgb(35, 35, 35),
             primaryColor = rgb(255, 255, 255),
             primaryBgColor = rgb(0, 0, 0),
             secondaryColor = rgb(185, 185, 185),
@@ -287,18 +405,24 @@ local function buildLegacyThemeState(isDark)
             highlightColor = rgb(0, 188, 4),
             highlightInvertColor = rgb(0, 0, 0),
             disableColor = rgb(112, 112, 112),
+            safeColor = rgb(0, 188, 4),
             warningColor = rgb(255, 165, 0),
+            errorColor = rgb(255, 0, 0),
             activeColor = rgb(0, 188, 4),
             inactiveColor = rgb(255, 0, 0),
             buttonBorderActiveColor = rgb(255, 255, 255),
             buttonBorderColor = rgb(90, 90, 90),
             mixerOutputColor = rgb(0, 188, 4),
-            pageBgColor = rgb(16, 16, 16)
+            safeContrastingColor = rgb(0, 0, 0),
+            pageBgColor = rgb(16, 16, 16),
+            topLcdBgColor = rgb(35, 35, 35)
         }
     end
 
     return {
         usesThemeColors = false,
+        defaultColor = rgb(90, 90, 90),
+        defaultBgColor = rgb(230, 230, 230),
         primaryColor = rgb(90, 90, 90),
         primaryBgColor = rgb(255, 255, 255),
         secondaryColor = rgb(117, 117, 117),
@@ -308,13 +432,17 @@ local function buildLegacyThemeState(isDark)
         highlightColor = rgb(144, 238, 144),
         highlightInvertColor = rgb(255, 255, 255),
         disableColor = rgb(144, 144, 144),
+        safeColor = rgb(144, 238, 144),
         warningColor = rgb(255, 200, 100),
+        errorColor = rgb(255, 102, 102),
         activeColor = rgb(144, 238, 144),
         inactiveColor = rgb(255, 102, 102),
         buttonBorderActiveColor = rgb(69, 78, 87),
         buttonBorderColor = rgb(160, 160, 160),
         mixerOutputColor = rgb(16, 64, 224),
-        pageBgColor = rgb(209, 208, 208)
+        safeContrastingColor = rgb(0, 0, 0),
+        pageBgColor = rgb(209, 208, 208),
+        topLcdBgColor = rgb(230, 230, 230)
     }
 end
 
@@ -353,6 +481,72 @@ local function getThemeStateInternal()
     return legacyState, signature
 end
 
+local function resolveDashboardSurfaceBg(state)
+    local surfaceBg = state and state.secondaryBgColor
+    if surfaceBg == state.pageBgColor then surfaceBg = state.buttonBorderColor end
+    if surfaceBg == state.pageBgColor then surfaceBg = state.primaryBgColor end
+    if surfaceBg == nil then surfaceBg = state.pageBgColor or state.primaryBgColor end
+    return surfaceBg
+end
+
+local function resolveDashboardHeaderBg(state, surfaceBg)
+    local headerBg = state and (state.topLcdBgColor or state.defaultBgColor or state.focusBgColor or state.secondaryBgColor)
+    if headerBg == nil then return surfaceBg end
+    return headerBg
+end
+
+local function resolveDashboardHeaderTextColor(state, headerBg)
+    local headerText = state and (state.defaultColor or state.primaryColor or state.focusColor)
+    if headerText == nil then return nil end
+    return ensureThemeColorContrast(headerText, headerBg, 3.0)
+end
+
+local function resolveDashboardPanelColors(state)
+    local primary = state and state.primaryBgColor
+    local secondary = state and state.secondaryBgColor
+    if primary == nil then return secondary, secondary end
+    if secondary == nil then return primary, primary end
+
+    local primaryLuminance = relativeLuminance(primary)
+    local secondaryLuminance = relativeLuminance(secondary)
+    if primaryLuminance ~= nil and secondaryLuminance ~= nil and secondaryLuminance < primaryLuminance then
+        return secondary, primary
+    end
+    return primary, secondary
+end
+
+local function resolveGaugeTrackBg(state, background)
+    if state == nil then return ensureThemeColorContrast(background, background, 2.0) end
+
+    local candidates = {
+        state.secondaryBgColor,
+        state.buttonBorderColor,
+        state.focusBgColor,
+        state.defaultBgColor,
+        state.primaryBgColor,
+        state.secondaryColor
+    }
+    local bestColor = nil
+    local bestRatio = nil
+
+    for i = 1, #candidates do
+        local candidate = candidates[i]
+        if candidate ~= nil and candidate ~= background then
+            local ratio = contrastRatio(candidate, background)
+            if ratio ~= nil then
+                if ratio >= 2.0 then return candidate end
+                if bestRatio == nil or ratio > bestRatio then
+                    bestColor = candidate
+                    bestRatio = ratio
+                end
+            end
+        end
+    end
+
+    if bestColor ~= nil then return ensureThemeColorContrast(bestColor, background, 2.0) end
+    return ensureThemeColorContrast(background, background, 2.0)
+end
+
 local function getThemeFallbackPalette()
     local state, signature = getThemeStateInternal()
 
@@ -379,14 +573,18 @@ local function getThemeFallbackPalette()
     local cached = themeFallbackPaletteCache.palette
     if cached and themeFallbackPaletteCache.signature == signature then return cached end
 
+    local surfaceBg = resolveDashboardSurfaceBg(state)
+    local trackBg = resolveGaugeTrackBg(state, surfaceBg)
+    local fillcolor = state.safeColor or state.activeColor
+
     cached = {
-        fillcolor = state.activeColor,
-        fillbgcolor = state.secondaryBgColor,
+        fillcolor = fillcolor,
+        fillbgcolor = trackBg,
         framecolor = state.buttonBorderColor,
         textcolor = state.primaryColor,
         titlecolor = state.primaryColor,
         accentcolor = state.secondaryColor,
-        bgcolor = state.primaryBgColor,
+        bgcolor = surfaceBg,
         defaultColor = state.primaryColor
     }
     themeFallbackPaletteCache.signature = signature
@@ -604,25 +802,34 @@ function utils.themeColors()
     local cached = dashboardThemePaletteCache.palette
     if cached and dashboardThemePaletteCache.signature == signature then return cached end
 
+    local surfaceBg = resolveDashboardSurfaceBg(state)
+    local gaugeTrackBg = resolveGaugeTrackBg(state, surfaceBg)
+    local headerBg = gaugeTrackBg or resolveDashboardHeaderBg(state, surfaceBg)
+    local headerText = resolveDashboardHeaderTextColor(state, headerBg) or state.primaryColor
+    local headerGaugeTrackBg = resolveGaugeTrackBg(state, headerBg)
+    local fillcolor, fillwarncolor, fillcritcolor = resolveGaugeThresholdPalette(state, surfaceBg)
+    local panelBg, panelAltBg = resolveDashboardPanelColors(state)
+
     cached = {
         textcolor = state.primaryColor,
         titlecolor = state.primaryColor,
-        bgcolor = state.primaryBgColor,
-        fillcolor = state.activeColor,
-        fillwarncolor = state.warningColor,
-        fillcritcolor = state.inactiveColor,
-        fillbgcolor = state.secondaryBgColor,
+        bgcolor = surfaceBg,
+        fillcolor = fillcolor,
+        fillwarncolor = fillwarncolor,
+        fillcritcolor = fillcritcolor,
+        fillbgcolor = gaugeTrackBg,
         accentcolor = state.secondaryColor,
-        rssifillcolor = state.activeColor,
-        rssifillbgcolor = state.secondaryBgColor,
+        rssifillcolor = fillcolor,
+        rssifillbgcolor = headerGaugeTrackBg,
         txaccentcolor = state.buttonBorderActiveColor,
-        txfillcolor = state.activeColor,
-        txbgfillcolor = state.buttonBorderColor,
-        tbbgcolor = state.secondaryBgColor,
-        cntextcolor = state.primaryColor,
-        tbtextcolor = state.primaryColor,
-        panelbg = state.primaryBgColor,
-        paneldarkbg = state.secondaryBgColor,
+        txfillcolor = fillcolor,
+        txbgfillcolor = headerGaugeTrackBg,
+        tbbgcolor = headerBg,
+        cntextcolor = headerText,
+        tbtextcolor = headerText,
+        rssitextcolor = headerText,
+        panelbg = panelBg,
+        paneldarkbg = panelAltBg,
         panelbgline = state.buttonBorderColor
     }
     dashboardThemePaletteCache.signature = signature

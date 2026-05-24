@@ -278,7 +278,7 @@ local function onToolMenu(self)
                     triggerOverRideAll = true
                     return true
                 end
-            }, {label = "CANCEL", action = function() return true end}
+            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
         }
     else
         buttons = {

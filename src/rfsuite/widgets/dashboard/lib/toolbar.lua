@@ -110,6 +110,13 @@ local function resolveToolbarThemeColor(lcd, themeColorKey, fallback)
     return fallback
 end
 
+local function resolveToolbarDividerColor(themeState, fallback, surfaceBg)
+    local divider = themeState and themeState.buttonBorderColor or nil
+    if divider == surfaceBg then divider = themeState and themeState.secondaryColor or nil end
+    if divider == surfaceBg then divider = themeState and themeState.primaryColor or nil end
+    return divider or fallback
+end
+
 local function getToolbarBounds(dashboard, lcd)
     local W, H = lcd.getWindowSize()
     -- Keep percentage-based sizing, but avoid overstretch on taller/fullscreen displays.
@@ -226,7 +233,7 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
     local themeDefaultBg = resolveToolbarThemeColor(lcd, THEME_DEFAULT_BGCOLOR, (themeState and themeState.primaryBgColor) or lcd.RGB(255, 255, 255))
     local themeFocusBg = resolveToolbarThemeColor(lcd, THEME_FOCUS_BGCOLOR, (themeState and themeState.focusBgColor) or lcd.RGB(230, 230, 230))
     local surfaceBg = (themeState and themeState.usesThemeColors and themeState.pageBgColor) or themeDefaultBg
-    local lineColor = themeFocus
+    local lineColor = resolveToolbarDividerColor(themeState, themeDefault, surfaceBg)
     lcd.color(surfaceBg)
     lcd.drawFilledRectangle(x, y, w, barH)
     lcd.color(lineColor)

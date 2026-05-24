@@ -61,8 +61,12 @@ function callback.wakeup()
                 i = i + 1
                 processed = processed + 1
             else
-                table_remove(queue, i)
+                -- swap-remove: O(1) vs table_remove's O(n) shift
+                local n = #queue
+                if i < n then queue[i] = queue[n] end
+                queue[n] = nil
                 processed = processed + 1
+                -- do not increment i: the swapped-in element needs checking
             end
         else
             i = i + 1
