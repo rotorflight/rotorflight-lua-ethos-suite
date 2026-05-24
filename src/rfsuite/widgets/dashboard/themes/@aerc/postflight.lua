@@ -49,7 +49,7 @@ local boxes_cache = nil
 local header_boxes_cache = nil
 local last_txbatt_type = nil
 
-local layout = {cols = 3, rows = 8}
+local layout = {cols = 3, rows = 8, padding = 1}
 
 local header_layout = utils.standardHeaderLayout(headeropts)
 

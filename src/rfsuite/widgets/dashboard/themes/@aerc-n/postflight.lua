@@ -51,7 +51,7 @@ local boxes_cache = nil
 local header_boxes_cache = nil
 local last_txbatt_type = nil
 
-local layout = {cols = 6, rows = 12}
+local layout = {cols = 6, rows = 12, padding = 1}
 
 local header_layout = utils.standardHeaderLayout(headeropts)
 
