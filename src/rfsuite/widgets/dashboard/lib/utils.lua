@@ -481,16 +481,20 @@ local function getThemeStateInternal()
     return legacyState, signature
 end
 
+local function resolveDashboardPageBg(state)
+    if state == nil then return nil end
+    return state.pageBgColor or state.topLcdBgColor or state.defaultBgColor or state.primaryBgColor or state.secondaryBgColor
+end
+
 local function resolveDashboardSurfaceBg(state)
-    local surfaceBg = state and state.secondaryBgColor
-    if surfaceBg == state.pageBgColor then surfaceBg = state.buttonBorderColor end
-    if surfaceBg == state.pageBgColor then surfaceBg = state.primaryBgColor end
-    if surfaceBg == nil then surfaceBg = state.pageBgColor or state.primaryBgColor end
+    local surfaceBg = state and state.primaryBgColor
+    if surfaceBg == nil then surfaceBg = state and state.secondaryBgColor end
+    if surfaceBg == nil then surfaceBg = resolveDashboardPageBg(state) end
     return surfaceBg
 end
 
 local function resolveDashboardHeaderBg(state, surfaceBg)
-    local headerBg = state and (state.topLcdBgColor or state.defaultBgColor or state.focusBgColor or state.secondaryBgColor)
+    local headerBg = resolveDashboardPageBg(state)
     if headerBg == nil then return surfaceBg end
     return headerBg
 end
@@ -506,24 +510,21 @@ local function resolveDashboardPanelColors(state)
     local secondary = state and state.secondaryBgColor
     if primary == nil then return secondary, secondary end
     if secondary == nil then return primary, primary end
-
-    local primaryLuminance = relativeLuminance(primary)
-    local secondaryLuminance = relativeLuminance(secondary)
-    if primaryLuminance ~= nil and secondaryLuminance ~= nil and secondaryLuminance < primaryLuminance then
-        return secondary, primary
-    end
     return primary, secondary
 end
 
 local function resolveGaugeTrackBg(state, background)
-    if state == nil then return ensureThemeColorContrast(background, background, 2.0) end
+    if state == nil then return background end
+
+    if state.secondaryBgColor ~= nil then return state.secondaryBgColor end
 
     local candidates = {
-        state.secondaryBgColor,
-        state.buttonBorderColor,
         state.focusBgColor,
+        state.buttonBorderColor,
         state.defaultBgColor,
+        state.pageBgColor,
         state.primaryBgColor,
+        state.topLcdBgColor,
         state.secondaryColor
     }
     local bestColor = nil
@@ -545,6 +546,14 @@ local function resolveGaugeTrackBg(state, background)
 
     if bestColor ~= nil then return ensureThemeColorContrast(bestColor, background, 2.0) end
     return ensureThemeColorContrast(background, background, 2.0)
+end
+
+local function resolveDashboardAccentColor(state, background)
+    if state == nil then return nil end
+
+    local accent = state.secondaryColor or state.highlightColor or state.buttonBorderActiveColor or state.primaryColor
+    if accent == nil or background == nil then return accent end
+    return ensureThemeColorContrast(accent, background, 2.0)
 end
 
 local function getThemeFallbackPalette()
@@ -576,14 +585,15 @@ local function getThemeFallbackPalette()
     local surfaceBg = resolveDashboardSurfaceBg(state)
     local trackBg = resolveGaugeTrackBg(state, surfaceBg)
     local fillcolor = state.safeColor or state.activeColor
+    local accentcolor = resolveDashboardAccentColor(state, surfaceBg)
 
     cached = {
         fillcolor = fillcolor,
         fillbgcolor = trackBg,
-        framecolor = state.buttonBorderColor,
+        framecolor = state.buttonBorderColor or trackBg,
         textcolor = state.primaryColor,
         titlecolor = state.primaryColor,
-        accentcolor = state.secondaryColor,
+        accentcolor = accentcolor,
         bgcolor = surfaceBg,
         defaultColor = state.primaryColor
     }
@@ -804,11 +814,13 @@ function utils.themeColors()
 
     local surfaceBg = resolveDashboardSurfaceBg(state)
     local gaugeTrackBg = resolveGaugeTrackBg(state, surfaceBg)
-    local headerBg = gaugeTrackBg or resolveDashboardHeaderBg(state, surfaceBg)
+    local headerBg = resolveDashboardHeaderBg(state, surfaceBg)
     local headerText = resolveDashboardHeaderTextColor(state, headerBg) or state.primaryColor
     local headerGaugeTrackBg = resolveGaugeTrackBg(state, headerBg)
     local fillcolor, fillwarncolor, fillcritcolor = resolveGaugeThresholdPalette(state, surfaceBg)
     local panelBg, panelAltBg = resolveDashboardPanelColors(state)
+    local accentcolor = resolveDashboardAccentColor(state, surfaceBg)
+    local headerAccentColor = resolveDashboardAccentColor(state, headerBg) or accentcolor
 
     cached = {
         textcolor = state.primaryColor,
@@ -818,19 +830,19 @@ function utils.themeColors()
         fillwarncolor = fillwarncolor,
         fillcritcolor = fillcritcolor,
         fillbgcolor = gaugeTrackBg,
-        accentcolor = state.secondaryColor,
+        accentcolor = accentcolor,
         rssifillcolor = fillcolor,
         rssifillbgcolor = headerGaugeTrackBg,
-        txaccentcolor = state.buttonBorderActiveColor,
+        txaccentcolor = headerAccentColor,
         txfillcolor = fillcolor,
         txbgfillcolor = headerGaugeTrackBg,
         tbbgcolor = headerBg,
         cntextcolor = headerText,
         tbtextcolor = headerText,
         rssitextcolor = headerText,
-        panelbg = panelBg,
-        paneldarkbg = panelAltBg,
-        panelbgline = state.buttonBorderColor
+        panelbg = panelBg or surfaceBg,
+        paneldarkbg = panelAltBg or gaugeTrackBg,
+        panelbgline = state.buttonBorderColor or gaugeTrackBg or state.primaryColor
     }
     dashboardThemePaletteCache.signature = signature
     dashboardThemePaletteCache.palette = cached
