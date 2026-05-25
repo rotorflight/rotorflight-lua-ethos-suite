@@ -139,6 +139,7 @@ dashboard.DEFAULT_THEME = "system/default"
 
 local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
+local LEGACY_SYSTEM_THEME_FOLDERS = {"default", "rfstatus", "aerc", "aerc-n", "claude", "gismo", "rt-rc", "rt-rc-n", "srb-rc", "timer"}
 
 local loadedStateModules = {}
 local loadedStateThemes = {}
@@ -363,6 +364,46 @@ local function clearTableKeys(t)
     if not t then return end
     for k in pairs(t) do
         t[k] = nil
+    end
+end
+
+local function normalizeThemePath(path)
+    if type(path) ~= "string" then return path end
+    local src, folder = path:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) == "@" then
+        return src .. "/" .. folder:sub(2)
+    end
+    return path
+end
+
+local function legacyThemePath(path)
+    if type(path) ~= "string" then return nil end
+    local src, folder = path:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) ~= "@" then
+        return src .. "/@" .. folder
+    end
+    return nil
+end
+
+local function migrateThemePreferenceSection(path)
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if type(prefs) ~= "table" or type(path) ~= "string" then return end
+    local legacy = legacyThemePath(path)
+    if legacy and prefs[path] == nil and type(prefs[legacy]) == "table" then
+        prefs[path] = prefs[legacy]
+    end
+end
+
+local function migrateLegacyThemePreferenceSections()
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if type(prefs) ~= "table" then return end
+    for i = 1, #LEGACY_SYSTEM_THEME_FOLDERS do
+        local folder = LEGACY_SYSTEM_THEME_FOLDERS[i]
+        local current = "system/" .. folder
+        local legacy = "system/@" .. folder
+        if prefs[current] == nil and type(prefs[legacy]) == "table" then
+            prefs[current] = prefs[legacy]
+        end
     end
 end
 
@@ -1246,6 +1287,7 @@ end
 
 local function load_state_script(theme_folder, state, isFallback)
     isFallback = isFallback or false
+    theme_folder = normalizeThemePath(theme_folder)
 
     if not theme_folder or theme_folder == "" then
         if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
@@ -1266,6 +1308,8 @@ local function load_state_script(theme_folder, state, isFallback)
     end
 
     local function setPath() dashboard.currentWidgetPath = src .. "/" .. folder end
+    migrateLegacyThemePreferenceSections()
+    migrateThemePreferenceSection(src .. "/" .. folder)
 
     local initPath = base .. folder .. "/init.lua"
     local initChunk, initErr = compile(initPath)
@@ -1324,7 +1368,7 @@ local function getThemeForState(state)
         val = modelPrefs["theme_" .. state]
         if val == "nil" then val = nil end
     end
-    return val or userPrefs["theme_" .. state] or dashboard.DEFAULT_THEME
+    return normalizeThemePath(val or userPrefs["theme_" .. state] or dashboard.DEFAULT_THEME)
 end
 
 local function reload_state_only(state)
@@ -2233,21 +2277,31 @@ end
 
 function dashboard.getPreference(key)
     if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
+    local section = dashboard.currentWidgetPath
 
     if not rfsuite.app.guiIsRunning then
-        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key)
+        local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
+        if value ~= nil then return value end
+        local legacy = legacyThemePath(section)
+        if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
+        return nil
     else
-        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key)
+        section = normalizeThemePath(rfsuite.app.dashboardEditingTheme)
+        local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
+        if value ~= nil then return value end
+        local legacy = legacyThemePath(section)
+        if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
+        return nil
     end
 end
 
 function dashboard.savePreference(key, value)
     if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then return false end
     if not rfsuite.app.guiIsRunning then
-        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key, value)
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(dashboard.currentWidgetPath), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     else
-        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key, value)
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(rfsuite.app.dashboardEditingTheme), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     end
 end
