@@ -11,7 +11,7 @@ local folder = "hw5"
 
 local apidata = {
     api = {
-        [1] = "ESC_PARAMETERS_HW5"
+        [1] = rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) and "ESC_PARAMETERS_HW5_COMPACT" or "ESC_PARAMETERS_HW5"
     },
     formdata = {
         labels = {

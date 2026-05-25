@@ -178,7 +178,7 @@ local function getProfileKey()
     local model = string.upper(trim(escDetails.model) or "")
     local firmware = string.upper(trim(escDetails.firmware) or "")
 
-    if version ~= "default" and (model:find("OPTO", 1, true) or firmware:find("OPTO", 1, true)) then
+    if version ~= "default" and (model:find("OPTO", 1, true) or firmware:find("OPTO", 1, true) or version:find("OPTO", 1, true)) then
         return version .. "_PL_OPTO"
     end
 
