@@ -55,8 +55,8 @@ Rotorflight dashboard themes and objects are organized under:
     │   ├── preflight.lua  # Preflight layout
     │   ├── inflight.lua   # In-flight layout
     │   └── postflight.lua # Post-flight layout
-    ├── @aerc/
-    ├── @rt-rc/
+    ├── aerc/
+    ├── rt-rc/
     ├── rfstatus/
     ├── timer/
     └── ...

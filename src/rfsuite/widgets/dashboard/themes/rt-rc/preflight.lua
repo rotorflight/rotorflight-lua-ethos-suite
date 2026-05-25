@@ -15,14 +15,14 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local theme_section = "system/rfstatus"
+local theme_section = "system/rt-rc"
 
 local THEME_DEFAULTS = {v_min = 18.0, v_max = 25.2}
 
 local function getUserVoltageOverride(which)
     local prefs = rfsuite.session and rfsuite.session.modelPreferences
-    if prefs and prefs["system/default"] then
-        local v = tonumber(prefs["system/default"][which])
+    if prefs and prefs["system/rt-rc"] then
+        local v = tonumber(prefs["system/rt-rc"][which])
 
         if which == "v_min" and v and abs(v - 18.0) > 0.05 then return v end
         if which == "v_max" and v and abs(v - 25.2) > 0.05 then return v end
@@ -51,7 +51,20 @@ local function getThemeOptionKey(W)
     return utils.getDashboardThemeOptionKey(W)
 end
 
-local themeOptions = {ls_full = {font = "FONT_XXL"}, ls_std = {font = "FONT_XL"}, ms_full = {font = "FONT_XXL"}, ms_std = {font = "FONT_XXL"}, ss_full = {font = "FONT_XXL"}, ss_std = {font = "FONT_XXL"}}
+local themeOptions = {
+
+    ls_full = {font = "FONT_XXL", thickness = 30, valuepaddingtop = 40, gaugepadding = 10},
+
+    ls_std = {font = "FONT_XXL", thickness = 25, valuepaddingtop = 25, gaugepadding = 10},
+
+    ms_full = {font = "FONT_XL", thickness = 22, valuepaddingtop = 35, gaugepadding = 5},
+
+    ms_std = {font = "FONT_XL", thickness = 20, valuepaddingtop = 25, gaugepadding = 5},
+
+    ss_full = {font = "FONT_XL", thickness = 28, valuepaddingtop = 30, gaugepadding = 5},
+
+    ss_std = {font = "FONT_XL", thickness = 23, valuepaddingtop = 20, gaugepadding = 5}
+}
 
 local lastScreenW = nil
 local boxes_cache = nil
@@ -59,7 +72,7 @@ local header_boxes_cache = nil
 local themeconfig = nil
 local last_txbatt_type = nil
 
-local layout = {cols = 8, rows = 4, padding = 4}
+local layout = {cols = 20, rows = 8, padding = 2, showstats = false}
 
 local header_layout = utils.standardHeaderLayout(headeropts)
 
@@ -79,43 +92,78 @@ local function buildBoxes(W)
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
 
     return {
-        {col = 1, row = 1, rowspan = 2, colspan = 2, type = "image", subtype = "model"}, {col = 1, row = 3, colspan = 1, type = "text", subtype = "telemetry", source = "link", nosource = "-", title = "@i18n(widgets.dashboard.lq):upper()@", unit = "dB", titlepos = "bottom", transform = "floor", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
-        {col = 2, row = 3, type = "time", subtype = "flight", titlepos = "bottom", title = "@i18n(widgets.dashboard.timer):upper()@", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor}, {
+
+        {col = 1, row = 1, colspan = 8, rowspan = 3, type = "image", subtype = "model", bgcolor = colorMode.bgcolor}, {
             col = 1,
             row = 4,
-            colspan = 2,
+            colspan = 4,
+            rowspan = 3,
             type = "text",
             subtype = "governor",
-            nosource = "-",
             title = "@i18n(widgets.dashboard.governor):upper()@",
             titlepos = "bottom",
-            titlecolor = colorMode.textcolor,
-            textcolor = colorMode.textcolor,
+            bgcolor = colorMode.bgcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
             thresholds = {
                 {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             }
-        }, {
-            col = 3,
+        }, {col = 5, row = 4, colspan = 4, rowspan = 3, type = "text", subtype = "telemetry", source = "rpm", unit = "", transform = "floor", title = "@i18n(widgets.dashboard.headspeed):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 1, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "pid_profile", title = "@i18n(widgets.dashboard.profile):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 3, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "rate_profile", title = "@i18n(widgets.dashboard.rates):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 5, row = 7, colspan = 2, rowspan = 2, type = "time", subtype = "count", title = "@i18n(widgets.dashboard.flights):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 7, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", title = "@i18n(widgets.dashboard.lq):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 9, row = 7, colspan = 6, rowspan = 2, type = "time", subtype = "flight", title = "@i18n(widgets.dashboard.time):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 15, row = 7, colspan = 6, rowspan = 2, type = "text", subtype = "blackbox", title = "@i18n(widgets.dashboard.blackbox):upper()@", titlepos = "bottom", decimals = 0, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor}, {
+            type = "gauge",
+            subtype = "arc",
+            col = 9,
             row = 1,
-            rowspan = 2,
-            colspan = 3,
-            type = "text",
-            subtype = "telemetry",
-            source = "voltage",
-            nosource = "-",
-            title = "@i18n(widgets.dashboard.voltage):upper()@",
-            unit = "v",
-            titlepos = "bottom",
+            colspan = 6,
+            rowspan = 6,
+            thickness = opts.thickness,
+            source = "smartfuel",
+            unit = "%",
+            transform = "floor",
+            min = 0,
+            max = 100,
             font = opts.font,
-            titlecolor = colorMode.textcolor,
-            textcolor = colorMode.textcolor,
+            gaugepadding = opts.gaugepadding,
+            valuepaddingtop = opts.valuepaddingtop,
+            fillbgcolor = colorMode.fillbgcolor,
+            title = function() return utils.isElectricEngine() and "@i18n(widgets.dashboard.battery):upper()@" or "@i18n(widgets.dashboard.fuel):upper()@" end,
+            titlepos = "bottom",
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
+            bgcolor = colorMode.bgcolor,
+            thresholds = {{value = 30, fillcolor = colorMode.fillcritcolor, textcolor = colorMode.textcolor}, {value = 50, fillcolor = colorMode.fillwarncolor, textcolor = colorMode.textcolor}, {value = 140, fillcolor = colorMode.fillcolor, textcolor = colorMode.textcolor}}
+        }, {
+            col = 15,
+            row = 1,
+            colspan = 6,
+            rowspan = 6,
+            type = "gauge",
+            subtype = "arc",
+            source = "voltage",
+            fillbgcolor = colorMode.fillbgcolor,
+            title = "@i18n(widgets.dashboard.voltage):upper()@",
+            font = opts.font,
+            thickness = opts.thickness,
+            titlepos = "bottom",
+            fillcolor = colorMode.fillcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
+            bgcolor = colorMode.bgcolor,
+            gaugepadding = opts.gaugepadding,
+            valuepaddingtop = opts.valuepaddingtop,
             min = function()
                 local override = getUserVoltageOverride("v_min")
                 if override then return override end
                 local cells, minV = utils.getBatteryVoltageBounds(3, 3.0, 4.2)
                 return max(0, cells * minV)
             end,
+
             max = function()
                 local override = getUserVoltageOverride("v_max")
                 if override then return override end
@@ -154,11 +202,8 @@ local function buildBoxes(W)
                     textcolor = colorMode.textcolor
                 }
             }
-        }, {col = 3, row = 3, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "current", nosource = "-", title = "@i18n(widgets.dashboard.current):upper()@", unit = "A", titlepos = "bottom", font = opts.font, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
-        {col = 6, row = 1, rowspan = 2, colspan = 3, type = "text", subtype = "telemetry", source = "smartfuel", nosource = "-", title = function() return utils.isElectricEngine() and "@i18n(widgets.dashboard.battery):upper()@" or "@i18n(widgets.dashboard.fuel):upper()@" end, unit = "%", titlepos = "bottom", font = opts.font, transform = "floor", thresholds = {{value = 30, textcolor = colorMode.fillcritcolor}, {value = 60, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcolor}}, titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor},
-        {col = 6, row = 3, colspan = 3, rowspan = 2, type = "text", subtype = "telemetry", source = "rpm", nosource = "-", title = "@i18n(widgets.dashboard.rpm):upper()@", unit = "rpm", titlepos = "bottom", font = opts.font, transform = "floor", titlecolor = colorMode.textcolor, textcolor = colorMode.textcolor}
+        }
     }
-
 end
 
 local function boxes()

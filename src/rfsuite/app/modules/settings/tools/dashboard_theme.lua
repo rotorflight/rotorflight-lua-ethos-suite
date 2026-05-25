@@ -24,6 +24,15 @@ local function clearTable(tbl)
     for k in pairs(tbl) do tbl[k] = nil end
 end
 
+local function normalizeThemeFolder(folderName)
+    if type(folderName) ~= "string" then return folderName end
+    local src, folder = folderName:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) == "@" then
+        return src .. "/" .. folder:sub(2)
+    end
+    return folderName
+end
+
 local function generateThemeList()
 
     themeList = rfsuite.widgets.dashboard.listThemes()
@@ -49,6 +58,9 @@ local function generateThemeList()
         if type(theme.source) == "string" and type(theme.folder) == "string" then
             folderKey = theme.source .. "/" .. theme.folder
             themeIdByFolder[folderKey] = themeId
+            if theme.source == "system" then
+                themeIdByFolder[theme.source .. "/@" .. theme.folder] = themeId
+            end
         end
         themeById[themeId] = theme
         if defaultThemeId == 0 then defaultThemeId = themeId end
@@ -65,7 +77,8 @@ end
 
 local function getThemeIdFromFolder(folderName, allowDisabled)
     if type(folderName) == "string" and folderName ~= "" and folderName ~= "nil" then
-        local id = themeIdByFolder[folderName]
+        local id = themeIdByFolder[normalizeThemeFolder(folderName)]
+        if not id then id = themeIdByFolder[folderName] end
         if type(id) == "number" then return id end
     end
     if allowDisabled then return 0 end
