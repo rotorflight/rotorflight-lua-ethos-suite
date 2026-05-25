@@ -327,6 +327,9 @@
       "label": "Run RFSuite Sensor Tool",
       "type": "process",
       "command": "${workspaceFolder}/bin/sensors/sensors.exe",
+      "osx": {
+        "command": "${workspaceFolder}/bin/sensors/sensors"
+      },
       "options": {
         "env": {
           "RFSUITE_LANG": "${config:rfsuite.deploy.language}"
