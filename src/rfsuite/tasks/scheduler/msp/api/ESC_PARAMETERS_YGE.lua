@@ -1,110 +1,133 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "ESC_PARAMETERS_YGE"
-local MSP_API_CMD_READ = 217
-local MSP_API_CMD_WRITE = 218
-local MSP_REBUILD_ON_WRITE = false
 local MSP_SIGNATURE = 0xA5
 local MSP_HEADER_BYTES = 2
 
 local escMode = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_modefree)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeext)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeheli)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modestore)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeglider)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modeair)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_modef3a)@"}
-local direction = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_reverse)@"}
-local cuttoff = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_off)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_slowdown)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_cutoff)@"}
-local cuttoffVoltage = {"2.9 V", "3.0 V", "3.1 V", "3.2 V", "3.3 V", "3.4 V"}
+local rotation = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_reverse)@"}
+local cutoff = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_off)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_slowdown)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_cutoff)@"}
+local cutoffVoltage = {"2.9 V", "3.0 V", "3.1 V", "3.2 V", "3.3 V", "3.4 V"}
 local offOn = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_off)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_on)@"}
-local startupResponse = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_smooth)@"}
 local throttleResponse = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_slow)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_medium)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_fast)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_custom)@"}
 local motorTiming = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_autonorm)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_autoefficient)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_autopower)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_autoextreme)@", "0°", "6°", "12°", "18°", "24°", "30°"}
-local motorTimingToUI = {0, 4, 5, 6, 7, 8, 9, [16] = 0, [17] = 1, [18] = 2, [19] = 3}
-local motorTimingFromUI = {0, 17, 18, 19, 1, 2, 3, 4, 5, 6}
 local freewheel = {"@i18n(api.ESC_PARAMETERS_YGE.tbl_off)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_auto)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_unused)@", "@i18n(api.ESC_PARAMETERS_YGE.tbl_alwayson)@"}
-
-local flags_bitmap = {{field = "direction", tableIdxInc = -1, table = direction}, {field = "f3cauto", tableIdxInc = -1, table = offOn}, {field = "keepmah", tableIdxInc = -1, table = offOn}, {field = "bec12v", tableIdxInc = -1, table = offOn}}
-
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature", type = "U8", apiVersion = {12, 0, 7}, simResponse = {165}},
-    {field = "esc_command", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "esc_model", type = "U8", apiVersion = {12, 0, 7}, simResponse = {32}},
-    {field = "esc_version", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "governor", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}, min = 1, max = #escMode, table = escMode, tableIdxInc = -1},
-    {field = "lv_bec_voltage", type = "U16", apiVersion = {12, 0, 7}, simResponse = {55, 0}, unit = "v", min = 55, max = 84, scale = 10, decimals = 1},
-    {field = "timing", type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 0}, min = 0, max = #motorTiming, tableIdxInc = -1, table = motorTiming},
-    {field = "acceleration", type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 0}},
-    {field = "gov_p", type = "U16", apiVersion = {12, 0, 7}, simResponse = {4, 0}, min = 1, max = 10},
-    {field = "gov_i", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}, min = 1, max = 10},
-    {field = "throttle_response", type = "U16", apiVersion = {12, 0, 7}, simResponse = {1, 0}, min = 0, max = #throttleResponse, tableIdxInc = -1, table = throttleResponse},
-    {field = "auto_restart_time", type = "U16", apiVersion = {12, 0, 7}, simResponse = {1, 0}, min = 0, max = #cuttoff, tableIdxInc = -1, table = cuttoff},
-    {field = "cell_cutoff", type = "U16", apiVersion = {12, 0, 7}, simResponse = {2, 0}, min = 0, max = #cuttoffVoltage, tableIdxInc = -1, table = cuttoffVoltage},
-    {field = "active_freewheel", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}, min = 0, max = #freewheel, tableIdxInc = -1, table = freewheel},
-    {field = "esc_type", type = "U16", apiVersion = {12, 0, 7}, simResponse = {80, 3}},
-    {field = "firmware_version", type = "U32", apiVersion = {12, 0, 7}, simResponse = {131, 148, 1, 0}},
-    {field = "serial_number", type = "U32", apiVersion = {12, 0, 7}, simResponse = {30, 170, 0, 0}},
-    {field = "unknown_1", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}},
-    {field = "stick_zero_us", type = "U16", apiVersion = {12, 0, 7}, simResponse = {86, 4}, min = 900, max = 1900, unit = "us"},
-    {field = "stick_range_us", type = "U16", apiVersion = {12, 0, 7}, simResponse = {22, 3}, min = 600, max = 1500, unit = "us"},
-    {field = "unknown_2", type = "U16", apiVersion = {12, 0, 7}, simResponse = {163, 15}},
-    {field = "motor_poll_pairs", type = "U16", apiVersion = {12, 0, 7}, simResponse = {1, 0}, min = 1, max = 100},
-    {field = "pinion_teeth", type = "U16", apiVersion = {12, 0, 7}, simResponse = {2, 0}, min = 1, max = 255},
-    {field = "main_teeth", type = "U16", apiVersion = {12, 0, 7}, simResponse = {2, 0}, min = 1, max = 1800},
-    {field = "min_start_power", type = "U16", apiVersion = {12, 0, 7}, simResponse = {20, 0}, min = 0, max = 26, unit = "%"},
-    {field = "max_start_power", type = "U16", apiVersion = {12, 0, 7}, simResponse = {20, 0}, min = 0, max = 31, unit = "%"},
-    {field = "unknown_3", type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 0}},
-    {field = "flags", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}, bitmap = flags_bitmap},
-    {field = "unknown_4", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}, min = 0, max = 1, tableIdxInc = -1, table = offOn},
-    {field = "current_limit", type = "U16", apiVersion = {12, 0, 7}, simResponse = {2, 19}, unit = "A", min = 1, max = 65500, decimals = 2, scale = 100}
+local flagsBitmap = {
+    {field = "direction", table = rotation, tableIdxInc = -1},
+    {field = "f3cauto", table = offOn, tableIdxInc = -1},
+    {field = "keepmah", table = offOn, tableIdxInc = -1},
+    {field = "bec12v", table = offOn, tableIdxInc = -1}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local FIELD_SPEC = {
+    {"esc_signature", "U8"},
+    {"esc_command", "U8"},
+    {"esc_model", "U8"},
+    {"esc_version", "U8"},
+    {"governor", "U16", 1, #escMode, nil, nil, nil, nil, nil, nil, escMode, -1},
+    {"lv_bec_voltage", "U16", 55, 84, nil, "v", 1, 10},
+    {"timing", "U16", 0, #motorTiming, nil, nil, nil, nil, nil, nil, motorTiming, -1},
+    {"acceleration", "U16"},
+    {"gov_p", "U16", 1, 10},
+    {"gov_i", "U16", 1, 10},
+    {"throttle_response", "U16", 0, #throttleResponse, nil, nil, nil, nil, nil, nil, throttleResponse, -1},
+    {"auto_restart_time", "U16", 0, #cutoff, nil, nil, nil, nil, nil, nil, cutoff, -1},
+    {"cell_cutoff", "U16", 0, #cutoffVoltage, nil, nil, nil, nil, nil, nil, cutoffVoltage, -1},
+    {"active_freewheel", "U16", 0, #freewheel, nil, nil, nil, nil, nil, nil, freewheel, -1},
+    {"esc_type", "U16"},
+    {"firmware_version", "U32"},
+    {"serial_number", "U32"},
+    {"unknown_1", "U16"},
+    {"stick_zero_us", "U16", 900, 1900, nil, "us"},
+    {"stick_range_us", "U16", 600, 1500, nil, "us"},
+    {"unknown_2", "U16"},
+    {"motor_poll_pairs", "U16", 1, 100},
+    {"pinion_teeth", "U16", 1, 255},
+    {"main_teeth", "U16", 1, 1800},
+    {"min_start_power", "U16", 0, 26, nil, "%"},
+    {"max_start_power", "U16", 0, 31, nil, "%"},
+    {"unknown_3", "U16"},
+    {"flags", "U8"},
+    {"unknown_4", "U8", 0, 1, nil, nil, nil, nil, nil, nil, offOn, -1},
+    {"current_limit", "U16", 1, 65500, nil, "A", 2, 100}
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local SIM_RESPONSE = core.simResponse({
+    165, -- esc_signature
+    0, -- esc_command
+    32, -- esc_model
+    0, -- esc_version
+    3, 0, -- governor
+    55, 0, -- lv_bec_voltage
+    0, 0, -- timing
+    0, 0, -- acceleration
+    4, 0, -- gov_p
+    3, 0, -- gov_i
+    1, 0, -- throttle_response
+    1, 0, -- auto_restart_time
+    2, 0, -- cell_cutoff
+    3, 0, -- active_freewheel
+    80, 3, -- esc_type
+    131, 148, 1, 0, -- firmware_version
+    30, 170, 0, 0, -- serial_number
+    3, 0, -- unknown_1
+    86, 4, -- stick_zero_us
+    22, 3, -- stick_range_us
+    163, 15, -- unknown_2
+    1, 0, -- motor_poll_pairs
+    2, 0, -- pinion_teeth
+    2, 0, -- main_teeth
+    20, 0, -- min_start_power
+    20, 0, -- max_start_power
+    0, 0, -- unknown_3
+    0, -- flags
+    0, -- unknown_4
+    2, 19 -- current_limit
+})
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+local api = core.createConfigAPI({
     name = API_NAME,
-    readCmd = MSP_API_CMD_READ,
-    writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    minApiVersion = {12, 0, 7},
+    readCmd = 217,
+    writeCmd = 218,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
+    initialRebuildOnWrite = false,
+    readCompleteOnErrorReplyAttempt = 2,
     exports = {
         mspSignature = MSP_SIGNATURE,
         mspHeaderBytes = MSP_HEADER_BYTES,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })
+
+for _, entry in ipairs(api.__rfReadStructure) do
+    if entry.field == "flags" then
+        entry.bitmap = flagsBitmap
+        break
+    end
+end
+
+for _, entry in ipairs(api.__rfWriteStructure) do
+    if entry.field == "flags" then
+        entry.bitmap = flagsBitmap
+        break
+    end
+end
+
+return api

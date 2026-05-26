@@ -101,6 +101,12 @@ local internalModule, externalModule
 local CPU_TICK_HZ = 20
 local SCHED_DT = 1 / CPU_TICK_HZ
 local OVERDUE_TOL = SCHED_DT * 0.25
+local OPTIONAL_TASK_RECHECK_INTERVAL = 0.5
+local OPTIONAL_TASKS = {
+    performance = true,
+    adjfunctions = true,
+    toolbox = true
+}
 
 tasks.rateMultiplier = tasks.rateMultiplier or 1.0
 
@@ -113,7 +119,11 @@ tasks._initState = "start"
 tasks._initMetadata = nil
 tasks._initKeys = nil
 tasks._initByName = nil
+tasks._metaByName = nil
 tasks._initIndex = 1
+
+local optionalTaskWanted
+local reconcileOptionalTasks
 
 local ethosVersionGood
 local lastCheckAt
@@ -140,10 +150,12 @@ local CONNECT_WATCHDOG_COOLDOWN_S = 3.0
 -- We only want to do heavy teardown ONCE when link drops, not every scheduler tick.
 -- nil = unknown (startup), true = up, false = down
 local lastTelemetryUp = nil
+local lastOptionalTaskCheckAt = 0
 
 
 local lastNameCheckAt = 0
 local NAME_CHECK_INTERVAL = 2.0
+local lastAppGuiRunning = false
 
 local usingSimulator = system.getVersion().simulation
 
@@ -247,6 +259,7 @@ function tasks.initialize()
         utils.log("[tasks] manifest.lua missing: " .. tostring(err), "error")
         tasks._initMetadata = {}
         tasks._initKeys = {}
+        tasks._metaByName = {}
         tasks._initState = nil
         return
     end
@@ -256,6 +269,7 @@ function tasks.initialize()
         utils.log("[tasks] manifest.lua did not return a table", "error")
         tasks._initMetadata = {}
         tasks._initKeys = {}
+        tasks._metaByName = {}
         tasks._initState = nil
         return
     end
@@ -263,10 +277,12 @@ function tasks.initialize()
     tasks._initMetadata = manifest
     tasks._initKeys = {}
     tasks._initByName = {}
+    tasks._metaByName = {}
     for i, meta in ipairs(tasks._initMetadata) do
         tasks._initKeys[i] = i
         if type(meta) == "table" and meta.name then
             tasks._initByName[meta.name] = meta
+            tasks._metaByName[meta.name] = meta
         end
     end
     tasks._initState = "loadNextTask"
@@ -781,6 +797,31 @@ local function eventMaybeWake(name, mod, now)
     mod.wakeup()
 end
 
+local function cleanupClosedAppRuntime()
+    local app = rfsuite.app
+
+    if app and app.tasks and app.tasks.reset then
+        app.tasks.reset()
+    end
+
+    if tasks.callback and tasks.callback.clearOwner then
+        tasks.callback.clearOwner("app.page")
+    elseif tasks.callback and tasks.callback.reset then
+        tasks.callback.reset()
+    end
+
+    local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if q and q.clear then
+        q:clear()
+    end
+
+    if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.resetApidata then
+        rfsuite.tasks.msp.api.resetApidata()
+    end
+
+    utils.log("[app] scheduler cleaned app-owned runtime after close", "debug")
+end
+
 function tasks.wakeup_protected()
 
     -- Primary scheduler tick: runs task loops, event edges, and profiling.
@@ -815,6 +856,12 @@ function tasks.wakeup_protected()
         return
     end
 
+    local appGuiRunning = (rfsuite.app and rfsuite.app.guiIsRunning) == true
+    if lastAppGuiRunning and not appGuiRunning then
+        cleanupClosedAppRuntime()
+    end
+    lastAppGuiRunning = appGuiRunning
+
     -- Progressive task loading to avoid long stalls on a single tick.
     if tasks._initState == "loadNextTask" then
         local key = tasks._initKeys[tasks._initIndex]
@@ -841,6 +888,7 @@ function tasks.wakeup_protected()
     tasks.telemetryCheckScheduler()
 
     local now = os_clock()
+    reconcileOptionalTasks(now)
     handleSystemFlightReset()
 
     local cycleFlip = schedulerTick % 2
@@ -1031,7 +1079,10 @@ function tasks.init()
     tasks._initState = "start"
     tasks._initMetadata = nil
     tasks._initKeys = nil
+    tasks._initByName = nil
+    tasks._metaByName = nil
     tasks._initIndex = 1
+    lastOptionalTaskCheckAt = 0
 
     tasks.begin = true
 
@@ -1056,13 +1107,111 @@ function tasks.setTelemetryTypeChanged()
     rfsuite.utils.session()
 end
 
+function tasks.done()
+
+    cleanupClosedAppRuntime()
+
+    for _, task in ipairs(tasksList) do
+        local mod = tasks[task.name]
+        if mod and type(mod.reset) == "function" then
+            mod.reset()
+        end
+        tasks[task.name] = nil
+    end
+
+    for name, mod in pairs(events) do
+        if type(mod) == "table" and type(mod.reset) == "function" then
+            mod.reset()
+        end
+        events[name] = nil
+    end
+
+    tasksList = {}
+    tasksListNonSpread = {}
+    tasksListSpread = {}
+    nonSpreadCount = 0
+
+    tasks._initState = "start"
+    tasks._initMetadata = nil
+    tasks._initKeys = nil
+    tasks._initByName = nil
+    tasks._metaByName = nil
+    tasks._initIndex = 1
+    tasks._justInitialized = false
+    tasks.begin = true
+    tasks.heartbeat = nil
+
+    currentTelemetrySensor = nil
+    lastTelemetryType = nil
+    lastSensorName = nil
+    lastCheckAt = nil
+    schedulerTick = 0
+    lastAppGuiRunning = false
+    lastArmedState = false
+    lastFlightModeValue = nil
+    lastTelemetryUp = nil
+    lastOptionalTaskCheckAt = 0
+    connectAttemptStartedAt = nil
+    connectAttemptResetCooldownUntil = 0
+    hadSession = false
+    flightResetEventSrc = nil
+    flightResetEventPrimed = false
+    lastFlightResetEventState = false
+
+    tlm = nil
+
+    print("[scheduler] background task closed and runtime state cleaned") -- Avoid utils.log here since it may rely on tasks/events that are now cleared.
+end
+
 function tasks.read() end
 function tasks.write() end
+
+optionalTaskWanted = function(name)
+    local prefs = rfsuite.preferences
+
+    if name == "performance" then
+        local dev = prefs and prefs.developer
+        return dev and (dev.memstats or dev.overlaystats or dev.overlaystatsadmin) or false
+    end
+
+    if name == "adjfunctions" then
+        local evt = prefs and prefs.events
+        return evt and (evt.adj_f or evt.adj_v) or false
+    end
+
+    if name == "toolbox" then
+        local session = rfsuite.session
+        return session and session.toolbox ~= nil or false
+    end
+
+    return true
+end
+
+reconcileOptionalTasks = function(now)
+    if tasks._initState ~= nil then return end
+    if (now - lastOptionalTaskCheckAt) < OPTIONAL_TASK_RECHECK_INTERVAL then return end
+
+    lastOptionalTaskCheckAt = now
+
+    local metaByName = tasks._metaByName
+    if not metaByName then return end
+
+    for name in pairs(OPTIONAL_TASKS) do
+        if optionalTaskWanted(name) then
+            if tasks[name] == nil then
+                tasks.load(name, metaByName[name])
+            end
+        elseif tasks[name] ~= nil then
+            tasks.unload(name)
+        end
+    end
+end
 
 function tasks.unload(name)
 
     -- Remove a task from scheduler lists and release its module.
     local mod = tasks[name]
+    if mod and type(mod.close) == "function" then mod.close() end
     if mod and mod.reset then mod.reset() end
 
     if name == "msp" then
@@ -1073,6 +1222,9 @@ function tasks.unload(name)
     local removed = nil
     for i, t in ipairs(tasksList) do
         if t.name == name then
+        if mod and type(mod.close) == "function" then
+            mod.close()
+        end
             removed = t
             table_remove(tasksList, i)
             break
@@ -1080,6 +1232,9 @@ function tasks.unload(name)
     end
 
     if removed then
+        if type(mod) == "table" and type(mod.close) == "function" then
+            mod.close()
+        end
         local list = removed.spreadschedule and tasksListSpread or tasksListNonSpread
         for i, t in ipairs(list) do
             if t.name == name then
@@ -1114,6 +1269,11 @@ function tasks.load(name, meta)
     local baseInterval = tonumber(meta.interval or 1)
     if baseInterval and baseInterval < 0 then
         utils.log(string.format("[scheduler] Skipped loading disabled task '%s' (interval < 0)", name), "info")
+        return true
+    end
+
+    if OPTIONAL_TASKS[name] and not optionalTaskWanted(name) then
+        utils.log(string.format("[scheduler] Skipped loading optional task '%s' (inactive)", name), "info")
         return true
     end
 
@@ -1164,7 +1324,7 @@ function tasks.reload(name)
 
     tasks.unload(name)
 
-    local meta = tasks._initByName and tasks._initByName[name] or nil
+    local meta = tasks._metaByName and tasks._metaByName[name] or tasks._initByName and tasks._initByName[name] or nil
 
     local ok = tasks.load(name, meta)
 

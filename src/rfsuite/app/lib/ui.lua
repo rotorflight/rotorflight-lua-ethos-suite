@@ -20,6 +20,11 @@ local rfutils = rfsuite.utils
 
 local ui = {}
 
+local function refreshSession()
+    session = rfsuite.session
+    return session
+end
+
 local function wipeTable(t)
     if type(t) ~= "table" then return end
     for k in pairs(t) do t[k] = nil end
@@ -86,6 +91,7 @@ local MENU_TRANSITION_PROGRESS = false
 local NAV_FOCUS_ORDER = {"menu", "save", "reload", "tool", "help"}
 local ADMIN_OVERLAY_REFRESH_S = 0.50
 local ADMIN_OVERLAY_INVALIDATE_H = 20
+local APP_PAGE_CALLBACK_OWNER = "app.page"
 
 ui._adminOverlayState = ui._adminOverlayState or {
     lastInvalidateAt = 0,
@@ -310,6 +316,25 @@ local function refreshMenuLookupCache()
 
     menuLookupCache = cache
     return menuLookupCache
+end
+
+function ui.clearRuntimeCaches()
+    menuLookupCache = {menuRef = nil}
+    ui._helpCache = {}
+    ui._helpExistsCache = {}
+
+    if app then
+        app._mainMenuPressHandlers = nil
+        app._mainMenuPressSpecs = nil
+        app._navButtonContext = nil
+        app.headerTitle = nil
+        app.headerParentBreadcrumb = nil
+        if type(app.menuContextStack) == "table" then
+            for i = #app.menuContextStack, 1, -1 do
+                app.menuContextStack[i] = nil
+            end
+        end
+    end
 end
 
 local function getHeaderNavButtonHeight()
@@ -965,7 +990,10 @@ function ui.progressDisplay(title, message, speed)
     app.dialogs.progressSpeed = speedMult
 
     if session then session.mspTimeouts = 0 end
+    app.triggers.closeProgressLoader = false
+    app.triggers.closeProgressLoaderNoisProcessed = false
     app.dialogs.progressDisplay = true
+    app.dialogs.progressCounter = 0
     app.dialogs.progressWatchDog = osClock()
     app.dialogs.progressTimedOut = false
     app.dialogs.progressBaseMessage = message
@@ -1077,6 +1105,10 @@ function ui.disableNavigationField(x)
 end
 
 function ui.cleanupCurrentPage()
+    if tasks and tasks.callback and tasks.callback.clearOwner then
+        tasks.callback.clearOwner(APP_PAGE_CALLBACK_OWNER)
+    end
+
     if preferences and preferences.developer and preferences.developer.memstats then
         local mem_kb = collectgarbage("count")
         local function tcount(t)
@@ -1118,6 +1150,10 @@ function ui.cleanupCurrentPage()
         ), "debug")
     end
 
+    -- Snapshot apidata before calling close() — some pages nil it inside close() which
+    -- would cause the cleanup block below to be silently skipped.
+    local _savedApidata = app.Page and app.Page.apidata
+
     -- Let the current page release resources.
     if app.Page then
         local hook = app.Page.close or app.Page.onClose or app.Page.destroy
@@ -1129,7 +1165,8 @@ function ui.cleanupCurrentPage()
         end
     end
 
-    if app.Page and app.Page.apidata then
+    if app.Page and _savedApidata then
+        app.Page.apidata = app.Page.apidata or _savedApidata
         -- Drop cached MSP API data for just this page's APIs.
         if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and app.Page.apidata.api then
             local apidata = tasks.msp.api.apidata
@@ -1169,6 +1206,13 @@ function ui.cleanupCurrentPage()
         app.Page.apidata = nil
     end
 
+    -- Release Ethos-side form references before wiping Lua refs.
+    -- form.clear() causes Ethos to drop its C++ references to form field callback
+    -- closures synchronously, so the subsequent GC cycle can collect them along
+    -- with any page data they captured.  Without this, those closures survive until
+    -- the *next* navigation's GC run.
+    form.clear()
+
     wipeTable(app.formFields)
     wipeTable(app.formLines)
     wipeTable(app.formNavigationFields)
@@ -1181,6 +1225,7 @@ function ui.cleanupCurrentPage()
     app.fieldHelpTxt = nil
     app._fieldHelpSection = nil
     ui._helpCache = {}
+    ui._helpExistsCache = {}
     if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.clearHelpCache then
         tasks.msp.api.clearHelpCache()
     end
@@ -2433,6 +2478,8 @@ function ui.openPage(opts)
         error("ui.openPage expects a table")
     end
 
+    refreshSession()
+
     local idx = opts.idx
     local title = opts.title
     local script = opts.script
@@ -2553,7 +2600,15 @@ function ui.openPage(opts)
     if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
-            if session.apiVersion == nil then return end
+            if session.apiVersion == nil then
+                utils.log("Page open aborted: API version unavailable; returning to main menu", "info")
+                if app.triggers then
+                    app.triggers.closeProgressLoader = true
+                    app.triggers.closeProgressLoaderNoisProcessed = true
+                end
+                app._pendingMainMenuOpen = true
+                return
+            end
 
             local valid = (field.apiversion == nil or utils.apiVersionCompare(">=", field.apiversion)) and (field.apiversionlt == nil or utils.apiVersionCompare("<", field.apiversionlt)) and (field.apiversiongt == nil or utils.apiVersionCompare(">", field.apiversiongt)) and (field.apiversionlte == nil or utils.apiVersionCompare("<=", field.apiversionlte)) and (field.apiversiongte == nil or utils.apiVersionCompare(">=", field.apiversiongte)) and
                               (field.enablefunction == nil or field.enablefunction())
@@ -2829,6 +2884,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
     end
 
     if v.unit and not f.unit then
+        f.unit = v.unit
         if f.type ~= 1 then
             --log("Injecting unit: " .. v.unit, "debug")
             if formField.suffix then formField:suffix(v.unit) end
@@ -2885,6 +2941,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
     end
 
     if v.tableEthos and not f.tableEthos then
+        f.tableEthos = v.tableEthos
         local tbldata = v.tableEthos
         if f.type == 1 then
             --log("Injecting table: {}", "debug")
@@ -2892,7 +2949,7 @@ function ui.injectApiAttributes(fieldIndex, f, v)
         end
     end
 
-    if v.help then
+    if v.help and not f.help then
         f.help = v.help
         --log("Injecting help: {}", "debug")
         if formField.help then formField:help(v.help) end
@@ -3053,6 +3110,7 @@ end
 
 function ui.requestPage()
     local log = utils.log
+    local callbackMeta = {owner = APP_PAGE_CALLBACK_OWNER}
 
     if not app.Page.apidata then return end
     if not app.Page.apidata.api and not app.Page.apidata.formdata then
@@ -3135,7 +3193,7 @@ function ui.requestPage()
             local base = 0.25
             local backoff = math.min(2.0, base * (2 ^ retryCount))
             local jitter = math.random() * 0.2
-            tasks.callback.inSeconds(backoff + jitter, processNextAPI)
+            tasks.callback.inSeconds(backoff + jitter, processNextAPI, callbackMeta)
             return
         end
 
@@ -3171,15 +3229,15 @@ function ui.requestPage()
             app.Page.apidata.retryCount[apiKey] = retryCount
             if retryCount < 3 then
                 log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "info")
-                tasks.callback.inSeconds(0.25, processNextAPI)
+                tasks.callback.inSeconds(0.25, processNextAPI, callbackMeta)
             else
                 log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
-                tasks.callback.inSeconds(0.25, processNextAPI)
+                tasks.callback.inSeconds(0.25, processNextAPI, callbackMeta)
             end
         end
 
-        tasks.callback.inSeconds(2, handleTimeout)
+        tasks.callback.inSeconds(2, handleTimeout, callbackMeta)
 
         API.setCompleteHandler(function(self, buf)
             if handled then return end
@@ -3213,7 +3271,7 @@ function ui.requestPage()
             state.currentIndex = state.currentIndex + 1
             API = nil
 
-            tasks.callback.inSeconds(0.5, processNextAPI)
+            tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
         end)
 
         API.setErrorHandler(function(self, err)
@@ -3229,11 +3287,11 @@ function ui.requestPage()
 
             if retryCount < 3 then
                 log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "info")
-                tasks.callback.inSeconds(0.5, processNextAPI)
+                tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
             else
                 log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "info")
                 state.currentIndex = state.currentIndex + 1
-                tasks.callback.inSeconds(0.5, processNextAPI)
+                tasks.callback.inSeconds(0.5, processNextAPI, callbackMeta)
             end
         end)
 
@@ -3455,35 +3513,29 @@ function ui.saveSettings(sourcePage)
 end
 
 function ui.rebootFc(sourcePage)
-    local armflags = tasks and tasks.telemetry and tasks.telemetry.getSensor and tasks.telemetry.getSensor("armflags")
-    local armedByFlags = (armflags == 1 or armflags == 3)
     local rebootPage = sourcePage or app.Page
-    if (session and session.isArmed) or armedByFlags then
-        utils.log("Blocked reboot while armed", "info")
+    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("REBOOT")
+    if not rebootAPI then
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
-        app.triggers.showSaveArmedWarning = true
-        return false, "armed_blocked"
+        return false, "reboot_api_unavailable"
     end
 
     app.triggers.rebootInProgress = true
     app.pageState = app.pageStatus.rebooting
-    local ok, reason = tasks.msp.mspQueue:add({
-        command = 68,
-        uuid = "ui.reboot",
-        processReply = function(self, buf)
-            if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
-                app.Page = rebootPage
-            end
-            -- Keep the current page object alive across reboot transitions;
-            -- loader/request logic will refresh live values when connection resumes.
-            app.utils.invalidatePages({preserveCurrentPage = true})
-            app.triggers.isReady = false
-            utils.onReboot()
-        end,
-        simulatorResponse = {}
-    })
+    rebootAPI.setUUID("ui.reboot")
+    rebootAPI.setCompleteHandler(function(self, buf)
+        if not app.Page and app.uiState == app.uiStatus.pages and rebootPage then
+            app.Page = rebootPage
+        end
+        -- Keep the current page object alive across reboot transitions;
+        -- loader/request logic will refresh live values when connection resumes.
+        app.utils.invalidatePages({preserveCurrentPage = true})
+        app.triggers.isReady = false
+        utils.onReboot()
+    end)
+    local ok, reason = rebootAPI.write()
     if ok and app.dialogs then
         if app.dialogs.saveDisplay then
             app.triggers.closeSaveFake = true
@@ -3513,6 +3565,9 @@ function ui.rebootFc(sourcePage)
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false
+        if reason == "armed_blocked" then
+            app.triggers.showSaveArmedWarning = true
+        end
     end
     return ok, reason
 end

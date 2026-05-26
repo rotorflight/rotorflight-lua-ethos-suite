@@ -23,7 +23,6 @@
 local rfsuite = require("rfsuite")
 
 local floor = math.floor
-local rep = string.rep
 local tostring = tostring
 
 local render = {}
@@ -31,6 +30,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local getPulsingDots = utils.getPulsingDots
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -87,14 +87,6 @@ local function ensureCfg(box)
     return box._cfg
 end
 
-local function nextDots(box)
-    local maxDots = 3
-    box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-    local s = rep(".", box._dotCount)
-    if s == "" then s = "." end
-    return s
-end
-
 function render.wakeup(box)
     local cfg = ensureCfg(box)
     local telemetry = rfsuite.tasks.telemetry
@@ -142,7 +134,7 @@ function render.wakeup(box)
         displayValue = tostring(floor(box._lastValidValue))
         unit = box._lastValidUnit
     else
-        displayValue = nextDots(box)
+        displayValue = getPulsingDots(box)
         unit = nil
     end
 

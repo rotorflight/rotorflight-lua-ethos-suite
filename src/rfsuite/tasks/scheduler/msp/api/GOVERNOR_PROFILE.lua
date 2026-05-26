@@ -1,116 +1,143 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "GOVERNOR_PROFILE"
 local MSP_API_CMD_READ = 148
 local MSP_API_CMD_WRITE = 149
-local MSP_REBUILD_ON_WRITE = false
 
-local MSP_API_STRUCTURE_READ_DATA
+local FIELD_SPEC
+local SIM_RESPONSE
+local GOVERNOR_FLAGS_BITMAP = nil
 
--- LuaFormatter off
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
-
-    local offOn = {
+    local tblOffOn = {
         "@i18n(api.GOVERNOR_PROFILE.tbl_off)@",
         "@i18n(api.GOVERNOR_PROFILE.tbl_on)@"
     }
 
-    local governor_flags_bitmap = {
-        { field = "bit0_spare" }, -- bit 0
-        { field = "bit1_spare" }, -- bit 1
-        { field = "fallback_precomp",   table = offOn, tableIdxInc = -1}, -- bit 2
-        { field = "voltage_comp",       table = offOn, tableIdxInc = -1},     -- bit 3
-        { field = "pid_spoolup",        table = offOn, tableIdxInc = -1},      -- bit 4
-        { field = "bit5_spare" }, -- bit 5
-        { field = "dyn_min_throttle",   table = offOn, tableIdxInc = -1}, -- bit 6
+    GOVERNOR_FLAGS_BITMAP = {
+        {field = "bit0_spare"},
+        {field = "bit1_spare"},
+        {field = "fallback_precomp", table = tblOffOn, tableIdxInc = -1},
+        {field = "voltage_comp", table = tblOffOn, tableIdxInc = -1},
+        {field = "pid_spoolup", table = tblOffOn, tableIdxInc = -1},
+        {field = "bit5_spare"},
+        {field = "dyn_min_throttle", table = tblOffOn, tableIdxInc = -1},
     }
 
-    MSP_API_STRUCTURE_READ_DATA = {
-        { field = "governor_headspeed",        type = "U16", apiVersion = {12, 0, 9}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
-        { field = "governor_gain",             type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 40},
-        { field = "governor_p_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 40},
-        { field = "governor_i_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {125},      min = 0,   max = 250,   default = 50},
-        { field = "governor_d_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {5},        min = 0,   max = 250,   default = 0},
-        { field = "governor_f_gain",           type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 10},
-        { field = "governor_tta_gain",         type = "U8",  apiVersion = {12, 0, 9}, simResponse = {0},        min = 0,   max = 250,   default = 0},
-        { field = "governor_tta_limit",        type = "U8",  apiVersion = {12, 0, 9}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%"},
-        { field = "governor_yaw_weight",       type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 250,   default = 0},
-        { field = "governor_cyclic_weight",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {40},       min = 0,   max = 250,   default = 10},
-        { field = "governor_collective_weight",type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 250,   default = 100},
-        { field = "governor_max_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%"},
-        { field = "governor_min_throttle",     type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%"},
-        { field = "governor_fallback_drop",    type = "U8",  apiVersion = {12, 0, 9}, simResponse = {10},       min = 0,   max = 50,    default = 10,  unit = "%"},
-        { field = "governor_flags",            type = "U16", apiVersion = {12, 0, 9}, simResponse = {251, 3}, bitmap = governor_flags_bitmap}
+    -- Tuple layout:
+    --   field, type, min, max, default, unit,
+    --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+    FIELD_SPEC = {
+        {"governor_headspeed", "U16", 0, 50000, 1000, "rpm", nil, nil, 10},
+        {"governor_gain", "U8", 0, 250, 40},
+        {"governor_p_gain", "U8", 0, 250, 40},
+        {"governor_i_gain", "U8", 0, 250, 50},
+        {"governor_d_gain", "U8", 0, 250, 0},
+        {"governor_f_gain", "U8", 0, 250, 10},
+        {"governor_tta_gain", "U8", 0, 250, 0},
+        {"governor_tta_limit", "U8", 0, 250, 20, "%"},
+        {"governor_yaw_weight", "U8", 0, 250, 0},
+        {"governor_cyclic_weight", "U8", 0, 250, 10},
+        {"governor_collective_weight", "U8", 0, 250, 100},
+        {"governor_max_throttle", "U8", 0, 100, 100, "%"},
+        {"governor_min_throttle", "U8", 0, 100, 10, "%"},
+        {"governor_fallback_drop", "U8", 0, 50, 10, "%"},
+        {"governor_flags", "U16"}
     }
 
+    SIM_RESPONSE = core.simResponse({
+        208, 7, -- governor_headspeed
+        100,    -- governor_gain
+        10,     -- governor_p_gain
+        125,    -- governor_i_gain
+        5,      -- governor_d_gain
+        20,     -- governor_f_gain
+        0,      -- governor_tta_gain
+        20,     -- governor_tta_limit
+        10,     -- governor_yaw_weight
+        40,     -- governor_cyclic_weight
+        100,    -- governor_collective_weight
+        100,    -- governor_max_throttle
+        10,     -- governor_min_throttle
+        10,     -- governor_fallback_drop
+        251, 3  -- governor_flags
+    })
 else
-
-    MSP_API_STRUCTURE_READ_DATA = {
-        { field = "governor_headspeed",           type = "U16", apiVersion = {12, 0, 6}, simResponse = {208, 7},  min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
-        { field = "governor_gain",                type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 40},
-        { field = "governor_p_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 40},
-        { field = "governor_i_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {125},      min = 0,   max = 250,   default = 50},
-        { field = "governor_d_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {5},        min = 0,   max = 250,   default = 0},
-        { field = "governor_f_gain",              type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 10},
-        { field = "governor_tta_gain",            type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0},        min = 0,   max = 250,   default = 0},
-        { field = "governor_tta_limit",           type = "U8",  apiVersion = {12, 0, 6}, simResponse = {20},       min = 0,   max = 250,   default = 20,  unit = "%"},
-        { field = "governor_yaw_ff_weight",       type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 250,   default = 0},
-        { field = "governor_cyclic_ff_weight",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {40},       min = 0,   max = 250,   default = 10},
-        { field = "governor_collective_ff_weight",type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 250,   default = 100},
-        { field = "governor_max_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {100},      min = 0,   max = 100,   default = 100, unit = "%"},
-        { field = "governor_min_throttle",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {10},       min = 0,   max = 100,   default = 10,  unit = "%"}
+    -- Tuple layout:
+    --   field, type, min, max, default, unit,
+    --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+    FIELD_SPEC = {
+        {"governor_headspeed", "U16", 0, 50000, 1000, "rpm", nil, nil, 10},
+        {"governor_gain", "U8", 0, 250, 40},
+        {"governor_p_gain", "U8", 0, 250, 40},
+        {"governor_i_gain", "U8", 0, 250, 50},
+        {"governor_d_gain", "U8", 0, 250, 0},
+        {"governor_f_gain", "U8", 0, 250, 10},
+        {"governor_tta_gain", "U8", 0, 250, 0},
+        {"governor_tta_limit", "U8", 0, 250, 20, "%"},
+        {"governor_yaw_ff_weight", "U8", 0, 250, 0},
+        {"governor_cyclic_ff_weight", "U8", 0, 250, 10},
+        {"governor_collective_ff_weight", "U8", 0, 250, 100},
+        {"governor_max_throttle", "U8", 0, 100, 100, "%"},
+        {"governor_min_throttle", "U8", 0, 100, 10, "%"}
     }
 
-end
--- LuaFormatter on
-
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
+    SIM_RESPONSE = core.simResponse({
+        208, 7, -- governor_headspeed
+        100,    -- governor_gain
+        10,     -- governor_p_gain
+        125,    -- governor_i_gain
+        5,      -- governor_d_gain
+        20,     -- governor_f_gain
+        0,      -- governor_tta_gain
+        20,     -- governor_tta_limit
+        10,     -- governor_yaw_ff_weight
+        40,     -- governor_cyclic_ff_weight
+        100,    -- governor_collective_ff_weight
+        100,    -- governor_max_throttle
+        10      -- governor_min_throttle
+    })
 end
 
-return factory.create({
+local api = core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })
+
+local function attachGovernorFlagsBitmap(structure)
+    if type(structure) ~= "table" then return end
+
+    for _, entry in ipairs(structure) do
+        if type(entry) == "table" and entry.field == "governor_flags" then
+            entry.bitmap = GOVERNOR_FLAGS_BITMAP
+            return
+        end
+    end
+end
+
+if GOVERNOR_FLAGS_BITMAP then
+    attachGovernorFlagsBitmap(api.__rfReadStructure)
+    if api.__rfWriteStructure ~= api.__rfReadStructure then
+        attachGovernorFlagsBitmap(api.__rfWriteStructure)
+    end
+end
+
+return api

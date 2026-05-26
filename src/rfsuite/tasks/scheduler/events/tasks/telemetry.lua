@@ -22,6 +22,7 @@ local batteryConfigCache = {
     batteryCellCount = 0,
     vbatwarningcellvoltage = 0,
     vbatmincellvoltage = 0,
+    consumptionWarningPercentage = 0,
     profileSig = 0,
     hasAnyBatteryCapacity = false,
     hasAnyProfileCapacity = false,
@@ -43,11 +44,14 @@ local utils = rfsuite.utils
 local os_clock = os.clock
 local math_floor = math.floor
 local math_abs = math.abs
+local math_min = math.min
+local math_max = math.max
 local system_playNumber = system.playNumber
 local system_playHaptic = system.playHaptic
 
 local MAX_BATTERY_PROFILES = 6
 local PROFILE_HASH_BASE = 131
+local SMARTFUEL_RESYNC_GAP_S = 3.0
 
 local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
 local governorMap = {
@@ -98,6 +102,7 @@ local function resetBatteryConfigCache()
     batteryConfigCache.batteryCellCount = 0
     batteryConfigCache.vbatwarningcellvoltage = 0
     batteryConfigCache.vbatmincellvoltage = 0
+    batteryConfigCache.consumptionWarningPercentage = 0
     batteryConfigCache.profileSig = 0
     batteryConfigCache.hasAnyBatteryCapacity = false
     batteryConfigCache.hasAnyProfileCapacity = false
@@ -162,7 +167,8 @@ local function refreshBatteryConfigCache()
     local batteryCellCount = tonumber(bc.batteryCellCount) or 0
     local vbatwarningcellvoltage = tonumber(bc.vbatwarningcellvoltage) or 0
     local vbatmincellvoltage = tonumber(bc.vbatmincellvoltage) or 0
-        local profileSig = buildProfileSignature(profiles)
+    local consumptionWarningPercentage = tonumber(bc.consumptionWarningPercentage) or 0
+    local profileSig = buildProfileSignature(profiles)
 
     if batteryConfigCache.config == bc and
         batteryConfigCache.profiles == profiles and
@@ -170,6 +176,7 @@ local function refreshBatteryConfigCache()
         batteryConfigCache.batteryCellCount == batteryCellCount and
         batteryConfigCache.vbatwarningcellvoltage == vbatwarningcellvoltage and
         batteryConfigCache.vbatmincellvoltage == vbatmincellvoltage and
+        batteryConfigCache.consumptionWarningPercentage == consumptionWarningPercentage and
         batteryConfigCache.profileSig == profileSig then
         return batteryConfigCache
     end
@@ -180,6 +187,7 @@ local function refreshBatteryConfigCache()
     batteryConfigCache.batteryCellCount = batteryCellCount
     batteryConfigCache.vbatwarningcellvoltage = vbatwarningcellvoltage
     batteryConfigCache.vbatmincellvoltage = vbatmincellvoltage
+    batteryConfigCache.consumptionWarningPercentage = consumptionWarningPercentage
     batteryConfigCache.profileSig = profileSig
 
     local profileCaps = batteryConfigCache.profileCaps
@@ -203,6 +211,10 @@ local function smartfuelIsElectricModel()
     if cellCount ~= 0 then return true end
 
     return bcCache.hasAnyBatteryCapacity
+end
+
+local function getSmartfuelEmptyThreshold()
+    return 0
 end
 
 -- Returns callout and empty audio in one call, calling smartfuelIsElectricModel only once.
@@ -276,8 +288,18 @@ local function smartfuelCallout(value, now)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = buildSmartfuelThresholds(smartfuelcallout)
     local calloutPkg, calloutFile, emptyPkg, emptyFile = resolveSmartfuelAudio()
+    local emptyThreshold = getSmartfuelEmptyThreshold()
+    local lastSmartfuelTime = lastEventTimes["smartfuel"]
 
-    if value <= 0 then
+    -- If telemetry stalled and then resumed, do not "catch up" missed threshold
+    -- callouts in a burst. Re-sync to the recovered value and continue normally.
+    if value > 0 and lastSmartfuelTime and (now - lastSmartfuelTime) >= SMARTFUEL_RESYNC_GAP_S then
+        lastSmartfuelAnnounced = math_floor(value + 0.5)
+        resetLowFuelState()
+        return
+    end
+
+    if value <= emptyThreshold then
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
         local haptic = eventPrefs.smartfuelhaptic and true or false
 

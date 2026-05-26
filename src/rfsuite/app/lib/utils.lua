@@ -16,6 +16,10 @@ local simevent = rfsuite.simevent
 local arg = {...}
 local config = arg[1]
 
+local function getTelemetryTask()
+    return tasks and tasks.telemetry or nil
+end
+
 function utils.getRSSI()
     if simevent.rflink == 1 then return 0 end
 
@@ -124,7 +128,10 @@ function utils.getInlinePositions(f)
 end
 
 function utils.getCurrentProfile()
-    local pidProfile = tasks.telemetry.getSensor("pid_profile")
+    local telemetry = getTelemetryTask()
+    if not telemetry then return end
+
+    local pidProfile = telemetry.getSensor("pid_profile")
     if pidProfile ~= nil then
         session.activeProfileLast = session.activeProfile
         local p = pidProfile
@@ -137,7 +144,10 @@ function utils.getCurrentProfile()
 end
 
 function utils.getCurrentRateProfile()
-    local rateProfile = tasks.telemetry.getSensor("rate_profile")
+    local telemetry = getTelemetryTask()
+    if not telemetry then return end
+
+    local rateProfile = telemetry.getSensor("rate_profile")
 
     if rateProfile ~= nil then
         session.activeRateProfileLast = session.activeRateProfile
@@ -160,7 +170,8 @@ function utils.getCurrentBatteryType()
         return nil
     end
 
-    local telemetryType = tasks.telemetry.getSensor("battery_profile")
+    local telemetry = getTelemetryTask()
+    local telemetryType = telemetry and telemetry.getSensor("battery_profile") or nil
     local telemetryValue = normalizeBatteryProfileIndex(telemetryType)
 
     local values = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.apidata and tasks.msp.api.apidata.values
@@ -182,8 +193,8 @@ function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, r
 
 function utils.settingsSaved(savedPage)
     local page = savedPage or app.Page
-    local mspEepromWrite = {
-        command = 250,
+    local eepromWrite = {
+        uuid = "app.settingsSaved.eeprom",
         processReply = function(self, buf)
             app.triggers.closeSave = true
             if page and page.postEepromWrite then page.postEepromWrite() end
@@ -197,17 +208,15 @@ function utils.settingsSaved(savedPage)
             app.triggers.closeSave = true 
             app.triggers.showSaveArmedWarning = true
         end,
-        simulatorResponse = {}
     }
 
     if page and page.eepromWrite then
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
             app.triggers.closeSave = true
-            if session.isArmed then app.triggers.showSaveArmedWarning = true end
-            local ok, reason = tasks.msp.mspQueue:add(mspEepromWrite)
+            local ok, reason = rfutils.queueEepromWrite(eepromWrite)
             if not ok then
-                utils.log("EEPROM enqueue rejected: " .. tostring(reason), "info")
+                rfutils.log("EEPROM enqueue rejected: " .. tostring(reason), "info")
                 app.pageState = app.pageStatus.display
                 app.triggers.closeSaveFake = true
                 app.triggers.isSaving = false

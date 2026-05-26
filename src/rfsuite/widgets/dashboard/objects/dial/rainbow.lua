@@ -54,7 +54,6 @@ local lcd = lcd
 local sin = math.sin
 local cos = math.cos
 local rad = math.rad
-local rep = string.rep
 local ipairs = ipairs
 
 local render = {}
@@ -64,6 +63,8 @@ local getParam = utils.getParam
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThemeColorArray = utils.resolveThemeColorArray
+local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 local lastDisplayValue = nil
 
 local DEFAULT_BAND_LABELS = {"Low", "Med", "High"}
@@ -141,11 +142,7 @@ function render.wakeup(box)
     if value ~= nil then displayValue = utils.transformValue(value, box) end
 
     if value == nil then
-        local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
         unit = nil
     end
 
@@ -206,12 +203,12 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    lcd.font(_G[c.bandlabelfont] or FONT_XS)
+    lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
     local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
 
     local titleHeight = 0
     if c.title then
-        lcd.font(_G[c.titlefont] or FONT_XS)
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
         local _, th = lcd.getTextSize(c.title)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
@@ -249,7 +246,7 @@ function render.paint(x, y, w, h, box)
     end
 
     local sweep = (endAngle - startAngle + 360) % 360
-    lcd.font(_G[c.bandlabelfont] or FONT_XS)
+    lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
 
     local angleOffset = -30
 

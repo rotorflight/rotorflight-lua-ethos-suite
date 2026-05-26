@@ -286,6 +286,10 @@ function app.create()
         app.utils = assert(compile("app/lib/utils.lua"))(config)
     end
 
+    if not app.MainMenu then
+        app.MainMenu = assert(compile("app/modules/init.lua"))()
+    end
+
     app._pendingMainMenuOpen = true
     app._pendingOpenPageOpts = nil
 end
@@ -426,6 +430,32 @@ function app.close()
     app._telemetryStaticCache = nil
     rfsuite._telemetryStaticCache = nil
 
+    if app.ui and app.ui.clearRuntimeCaches then
+        local ok, err = pcall(app.ui.clearRuntimeCaches)
+        if not ok then
+            log("app.close clearRuntimeCaches failed: " .. tostring(err), "debug")
+        end
+    end
+
+    app.MainMenu = nil
+    app.lastPage = nil
+    app.lastSection = nil
+    app.lastIdx = nil
+    app.lastTitle = nil
+    app.lastScript = nil
+    app.lastMenu = nil
+    app.lastLabel = nil
+    app.NewRateTable = nil
+    app.RateTable = nil
+    app.adjfunctions = nil
+    app.dashboardEditingTheme = nil
+    app._openedFromShortcuts = false
+    app._forceMenuToMain = false
+    app.pendingManifestMenuId = nil
+    app.activeManifestMenuId = nil
+    app._pendingMainMenuOpen = nil
+    app._pendingOpenPageOpts = nil
+
     app.uiState = app.uiStatus.init
 
     closeTransientDialogs()
@@ -446,6 +476,8 @@ function app.close()
     app.triggers.profileswitchLast = nil
 
     if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
+
+    collectgarbage("collect")
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")
 

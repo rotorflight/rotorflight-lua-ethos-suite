@@ -22,6 +22,7 @@ return {
     vfr = {{appId = 0xF010, subId = 0}},
     armflags = {{uid = 0x5001, unit = nil, dec = nil, value = function() return simSensors('armflags') end, min = 0, max = 2}},
     voltage = {{uid = 0x5002, unit = UNIT_VOLT, dec = 2, value = function() return simSensors('voltage') end, min = 0, max = 3000}},
+    cell_voltage = {nil},
     rpm = {{uid = 0x5003, unit = UNIT_RPM, dec = nil, value = function() return simSensors('rpm') end, min = 0, max = 2000}},
     current = {{uid = 0x5004, unit = UNIT_AMPERE, dec = 0, value = function() return simSensors('current') end, min = 0, max = 300}},
     temp_esc = {{uid = 0x5005, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_esc') end, min = 0, max = 100}},

@@ -68,7 +68,12 @@ return {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
-        onchange = function(value) rfsuite.session.isArmed = (value == 1 or value == 3) end
+        onchange = function(value)
+            local armed = rfsuite.utils.armFlagsToIsArmed(value)
+            if armed ~= nil then
+                rfsuite.session.isArmed = armed
+            end
+        end
     },
 
     voltage = {
@@ -76,6 +81,16 @@ return {
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 3,
+        switch_alerts = true,
+        unit = UNIT_VOLT,
+        unit_string = "V",
+    },
+
+    cell_voltage = {
+        name = "Cell Voltage",
+        mandatory = false,
+        stats = true,
+        set_telemetry_sensors = 8,
         switch_alerts = true,
         unit = UNIT_VOLT,
         unit_string = "V",
@@ -154,6 +169,7 @@ return {
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 6,
+        default_telemetry_sensor = true,
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
@@ -171,15 +187,6 @@ return {
                 return nil
             end
             return value
-        end,
-        default_telemetry_sensor = function()
-            return rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
-        end,
-        set_telemetry_sensors = function()
-            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 10}) then
-                return 118
-            end
-            return nil
         end,
     },
 

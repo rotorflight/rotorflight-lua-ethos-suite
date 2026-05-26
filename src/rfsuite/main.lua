@@ -58,10 +58,12 @@ local userpref_defaults = {
         save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
+        dashboard_startup_log_close = 0,
         save_armed_warning = true,
         toolbar_timeout = 10,
         show_battery_profile_startup = true,
-        show_confirmation_dialog = false
+        show_confirmation_dialog = false,
+        show_esc_tools_warning = true
     },
     localizations = {
         temperature_unit = 0,
@@ -122,6 +124,7 @@ local userpref_defaults = {
         mspexpbytes = 8,
         apiversion = 2,
         tailmode_override = 0,
+        escprotocol_override = 0,
         overlaystats = false,
         overlaygrid = false,
         overlaystatsadmin = false
@@ -155,6 +158,9 @@ if rfsuite.preferences then
     if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then
         gen.mspstatusdialog = dev.mspstatusdialog
     end
+    if gen and gen.elrs_sync_mode ~= nil then
+        gen.elrs_sync_mode = nil
+    end
 end
 
 if not rfsuite.ini.ini_tables_equal(master_ini, updated_ini) then rfsuite.ini.save_ini_file(userpref_file, updated_ini) end
@@ -165,7 +171,54 @@ rfsuite.config.bgTaskKey = "rf2bg"
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
 rfsuite.ethos_events = assert(loadfile("lib/ethos_events.lua", "t", _ENV))()
 
-rfsuite.app = assert(loadfile("app/app.lua"))(rfsuite.config)
+local function createLazyAppProxy()
+    local loadedModule = nil
+
+    local function ensureAppModule()
+        if loadedModule ~= nil then
+            return loadedModule
+        end
+
+        loadedModule = assert(loadfile("app/app.lua"))(rfsuite.config)
+        rfsuite.app = loadedModule
+        return loadedModule
+    end
+
+    local proxy = {}
+    setmetatable(proxy, {
+        __index = function(_, key)
+            local mod = loadedModule
+            if mod then
+                return mod[key]
+            end
+
+            if key == "guiIsRunning" or key == "escPowerCycleLoader" then
+                return false
+            end
+            if key == "tasks" or key == "triggers" or key == "ui" or key == "Page" or key == "formFields" then
+                return nil
+            end
+
+            return ensureAppModule()[key]
+        end,
+        __newindex = function(_, key, value)
+            ensureAppModule()[key] = value
+        end
+    })
+
+    local function callAppMethod(method, ...)
+        local mod = ensureAppModule()
+        local fn = mod and mod[method]
+        if type(fn) == "function" then
+            return fn(...)
+        end
+    end
+
+    return proxy, callAppMethod
+end
+
+local callAppMethod
+rfsuite.app, callAppMethod = createLazyAppProxy()
 
 rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(rfsuite.config)
 
@@ -219,13 +272,13 @@ end
 
 local function register_main_tool()
     rfsuite.sysIndex['app'] = system.registerSystemTool({
-        event  = rfsuite.app.event,
         name   = rfsuite.config.toolName,
         icon   = rfsuite.config.icon,
-        create = rfsuite.app.create,
-        wakeup = rfsuite.app.wakeup,
-        paint  = rfsuite.app.paint,
-        close  = rfsuite.app.close
+        event  = function(...) return callAppMethod("event", ...) end,
+        create = function(...) return callAppMethod("create", ...) end,
+        wakeup = function(...) return callAppMethod("wakeup", ...) end,
+        paint  = function(...) return callAppMethod("paint", ...) end,
+        close  = function(...) return callAppMethod("close", ...) end
     })
 end
 
@@ -236,9 +289,79 @@ local function register_bg_task()
         wakeup = rfsuite.tasks.wakeup,
         event = rfsuite.tasks.event,
         init  = rfsuite.tasks.init,
+        done = rfsuite.tasks.done,
         read  = rfsuite.tasks.read,
         write = rfsuite.tasks.write
     })
+end
+
+local function createLazyWidgetProxy(path)
+    local loadedModule = nil
+    local loadFailed = false
+
+    local function ensureWidgetModule()
+        if loadedModule ~= nil then
+            return loadedModule
+        end
+        if loadFailed then
+            return nil
+        end
+
+        local wchunk, err = loadfile(path)
+        if not wchunk then
+            rfsuite.utils.log("[widgets] failed to load widget: " .. path .. " (" .. tostring(err) .. ")", "info")
+            loadFailed = true
+            return nil
+        end
+
+        local ok, scriptModule = pcall(wchunk, config)
+        if not ok then
+            rfsuite.utils.log("[widgets] widget errored while loading: " .. path .. " (" .. tostring(scriptModule) .. ")", "info")
+            loadFailed = true
+            return nil
+        end
+
+        if type(scriptModule) ~= "table" then
+            rfsuite.utils.log("[widgets] widget did not return a module table: " .. path, "info")
+            loadFailed = true
+            return nil
+        end
+
+        loadedModule = scriptModule
+        return loadedModule
+    end
+
+    local proxy = {}
+    proxy.__isLoaded = function()
+        return loadedModule ~= nil
+    end
+    proxy.__callIfLoaded = function(method, ...)
+        local mod = loadedModule
+        local fn = mod and mod[method]
+        if type(fn) == "function" then
+            return fn(...)
+        end
+    end
+    setmetatable(proxy, {
+        __index = function(_, key)
+            local mod = ensureWidgetModule()
+            if mod then return mod[key] end
+        end,
+        __newindex = function(_, key, value)
+            local mod = ensureWidgetModule()
+            if mod then mod[key] = value end
+        end
+    })
+
+    local function callWidgetMethod(method, ...)
+        local mod = ensureWidgetModule()
+        local fn = mod and mod[method]
+        if type(fn) == "function" then
+            return fn(...)
+        end
+    end
+
+    return proxy, callWidgetMethod
 end
 
 local function register_widgets()
@@ -263,49 +386,44 @@ local function register_widgets()
     for _, v in ipairs(widgetList) do
         if v.script then
             local path = "widgets/" .. v.folder .. "/" .. v.script
+            local proxy, callWidgetMethod = createLazyWidgetProxy(path)
+            local base = v.varname or v.script:gsub("%.lua$", "")
+            if rfsuite.widgets[base] then
+                dupCount[base] = (dupCount[base] or 0) + 1
+                base = string.format("%s_dup%02d", base, dupCount[base])
+            end
+            rfsuite.widgets[base] = proxy
 
-            local wchunk = loadfile(path)
-            local scriptModule = wchunk and wchunk(config) or nil
-
-            if type(scriptModule) == "table" then
-                local base = v.varname or v.script:gsub("%.lua$", "")
-                if rfsuite.widgets[base] then
-                    dupCount[base] = (dupCount[base] or 0) + 1
-                    base = string.format("%s_dup%02d", base, dupCount[base])
-                end
-                rfsuite.widgets[base] = scriptModule
-
-                if v.type == "glasses" then
-                    -- we only register glasses widgets if the system supports them
-                    if system.registerGlassesWidget then
-                        rfsuite.sysIndex['widget_' .. v.folder] = system.registerGlassesWidget({
-                            key = v.key,
-                            name = v.name,
-                            create = scriptModule.create,
-                            build = scriptModule.build,
-                            wakeup = scriptModule.wakeup
-                        })
-                    end
-                else
-                    rfsuite.sysIndex['widget_' .. v.folder] = system.registerWidget({
-                        name = v.name,
+            if v.type == "glasses" then
+                -- Register a thin proxy so the widget module is only loaded if used.
+                if system.registerGlassesWidget then
+                    rfsuite.sysIndex['widget_' .. v.folder] = system.registerGlassesWidget({
                         key = v.key,
-                        event = scriptModule.event,
-                        create = scriptModule.create,
-                        paint = scriptModule.paint,
-                        wakeup = scriptModule.wakeup,
-                        build = scriptModule.build,
-                        close = scriptModule.close,
-                        configure = scriptModule.configure,
-                        read = scriptModule.read,
-                        write = scriptModule.write,
-                        persistent = scriptModule.persistent or false,
-                        menu = scriptModule.menu,
-                        title = scriptModule.title
+                        name = v.name,
+                        create = function(...) return callWidgetMethod("create", ...) or {} end,
+                        build = function(...) return callWidgetMethod("build", ...) end,
+                        wakeup = function(...) return callWidgetMethod("wakeup", ...) end
                     })
-                end    
+                end
             else
-                rfsuite.utils.log("[widgets] widget did not return a module table: " .. path, "info")
+                -- Keep static registration metadata simple and defer loading the module
+                -- until one of its callbacks is actually invoked by Ethos.
+                rfsuite.sysIndex['widget_' .. v.folder] = system.registerWidget({
+                    name = v.name,
+                    key = v.key,
+                    event = function(...) return callWidgetMethod("event", ...) end,
+                    create = function(...) return callWidgetMethod("create", ...) or {} end,
+                    paint = function(...) return callWidgetMethod("paint", ...) end,
+                    wakeup = function(...) return callWidgetMethod("wakeup", ...) end,
+                    build = function(...) return callWidgetMethod("build", ...) end,
+                    close = function(...) return callWidgetMethod("close", ...) end,
+                    configure = function(...) return callWidgetMethod("configure", ...) end,
+                    read = function(...) return callWidgetMethod("read", ...) end,
+                    write = function(...) return callWidgetMethod("write", ...) end,
+                    persistent = false,
+                    menu = function(...) return callWidgetMethod("menu", ...) end,
+                    title = false
+                })
             end
         end
     end

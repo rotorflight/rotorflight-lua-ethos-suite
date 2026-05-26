@@ -1,66 +1,59 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "LED_COLORS"
 local MSP_API_CMD_READ = 46
 local MSP_API_CMD_WRITE = 47
-local MSP_REBUILD_ON_WRITE = true
 local LED_CONFIGURABLE_COLOR_COUNT = 16
 
-local MSP_API_STRUCTURE_READ_DATA = {}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {}
 for i = 1, LED_CONFIGURABLE_COLOR_COUNT do
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_h", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0} }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_s", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "color_" .. i .. "_v", type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0} }
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"color_" .. i .. "_h", "U16"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"color_" .. i .. "_s", "U8"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"color_" .. i .. "_v", "U8"}
 end
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local SIM_RESPONSE = core.simResponse({
+    0, 0, 0, 0, -- color_1_h, color_1_s, color_1_v
+    0, 0, 0, 0, -- color_2_h, color_2_s, color_2_v
+    0, 0, 0, 0, -- color_3_h, color_3_s, color_3_v
+    0, 0, 0, 0, -- color_4_h, color_4_s, color_4_v
+    0, 0, 0, 0, -- color_5_h, color_5_s, color_5_v
+    0, 0, 0, 0, -- color_6_h, color_6_s, color_6_v
+    0, 0, 0, 0, -- color_7_h, color_7_s, color_7_v
+    0, 0, 0, 0, -- color_8_h, color_8_s, color_8_v
+    0, 0, 0, 0, -- color_9_h, color_9_s, color_9_v
+    0, 0, 0, 0, -- color_10_h, color_10_s, color_10_v
+    0, 0, 0, 0, -- color_11_h, color_11_s, color_11_v
+    0, 0, 0, 0, -- color_12_h, color_12_s, color_12_v
+    0, 0, 0, 0, -- color_13_h, color_13_s, color_13_v
+    0, 0, 0, 0, -- color_14_h, color_14_s, color_14_v
+    0, 0, 0, 0, -- color_15_h, color_15_s, color_15_v
+    0, 0, 0, 0  -- color_16_h, color_16_s, color_16_v
+})
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    writeRequiresStructure = true,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
+    initialRebuildOnWrite = true,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

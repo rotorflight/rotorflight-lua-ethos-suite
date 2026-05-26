@@ -53,5 +53,5 @@ local function getEscVersion(buffer) return getUInt(buffer, {29, 30, 31, 32}) en
 
 local function getEscFirmware(buffer) return string.format("%.5f", getUInt(buffer, {25, 26, 27, 28}) / 100000) end
 
-return {mspapi = "ESC_PARAMETERS_YGE", toolName = toolName, powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
+return {mspapi = "ESC_PARAMETERS_YGE", toolName = toolName, escSensorProtocolId = 9, powerCycle = false, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
 

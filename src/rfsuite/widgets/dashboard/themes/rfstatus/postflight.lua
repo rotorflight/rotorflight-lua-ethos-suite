@@ -13,7 +13,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local theme_section = "system/@rfstatus"
+local theme_section = "system/rfstatus"
 
 local THEME_DEFAULTS = {v_min = 18.0, v_max = 25.2}
 

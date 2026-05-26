@@ -28,13 +28,10 @@ local function copyTable(src)
 end
 
 local function saveToEeprom()
-    local mspEepromWrite = {
-        command = 250, 
+    local ok, reason = utils.queueEepromWrite({
         uuid = "eeprom.syncstats.timer",
-        simulatorResponse = {}, 
-        processReply = function() utils.log("EEPROM write command sent","info") end
-    }
-    local ok, reason = rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
+        processReply = function() utils.log("EEPROM write command sent", "info") end
+    })
     if not ok then
         utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
     end
@@ -164,6 +161,12 @@ function timer.wakeup()
     local timerSession = session.timer
     local prefs = session.modelPreferences
     local flightMode = rfsuite.flightmode.current
+    local flightActive = flightMode == "inflight"
+    local flightmodeTask = tasks and tasks.events and tasks.events.flightmode
+
+    if flightmodeTask and type(flightmodeTask.inFlight) == "function" then
+        flightActive = flightmodeTask.inFlight()
+    end
 
     lastFlightMode = flightMode
 
@@ -183,7 +186,7 @@ function timer.wakeup()
     end    
 
 
-    if flightMode == "inflight" then
+    if flightActive then
         if not timerSession.start then timerSession.start = now end
 
         local currentSegment = now - timerSession.start
@@ -206,7 +209,7 @@ function timer.wakeup()
         timerSession.live = timerSession.session or 0
     end
 
-    if flightMode == "postflight" and timerSession.start then finalizeFlightSegment(now) end
+    if not flightActive and timerSession.start then finalizeFlightSegment(now) end
 end
 
 return timer

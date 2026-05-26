@@ -40,7 +40,6 @@ thresholds = {
 local rfsuite = require("rfsuite")
 
 local gmatch = string.gmatch
-local rep = string.rep
 local clock = os.clock
 
 local render = {}
@@ -48,6 +47,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local getPulsingDots = utils.getPulsingDots
 
 local function splitCSV(str, out)
     local t = out or {}
@@ -118,10 +118,7 @@ function render.wakeup(box)
 
     -- Loading dots
     if raw == nil then
-        local maxDots = 3
-        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
-        displayValue = rep(".", box._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(box)
 
         -- reset CSV state
         box._csvParts = nil

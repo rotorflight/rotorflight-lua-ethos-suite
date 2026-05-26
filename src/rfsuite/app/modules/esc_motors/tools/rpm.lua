@@ -57,12 +57,21 @@ end
 
 local function wakeup() 
     if enableWakeup == true then
-        if rfsuite.tasks.msp.api.apidata.values["MOTOR_CONFIG"].motor_pwm_protocol >=5 and rfsuite.tasks.msp.api.apidata.values["MOTOR_CONFIG"].motor_pwm_protocol <= 8 then
+        local values = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.apidata and rfsuite.tasks.msp.api.apidata.values
+        local motorConfig = values and values["MOTOR_CONFIG"] or nil
+        local protocol = motorConfig and motorConfig.motor_pwm_protocol or nil
+        local dshotField = formFields and formFields[FIELDS.DSHOT_TELEMETRY] or nil
+
+        if protocol == nil or not (dshotField and dshotField.enable) then
+            return
+        end
+
+        if protocol >= 5 and protocol <= 8 then
             -- dshot compatable
-            formFields[FIELDS.DSHOT_TELEMETRY]:enable(true)
+            dshotField:enable(true)
         else
             -- not dshot
-            formFields[FIELDS.DSHOT_TELEMETRY]:enable(false)
+            dshotField:enable(false)
         end
 
         -- No additional processing for motor protocol here.

@@ -192,6 +192,7 @@ local lastModule = nil
 -- Cache loaded MSP API modules so we don't touch disk (loadfile/compile) on periodic polls.
 -- Also lets us install handlers/UUID once, instead of reallocating closures every poll.
 local apiCache = {}
+local API_CACHE_MAX = 0
 
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.5
@@ -322,13 +323,17 @@ local function updateSessionField(meta, value)
 end
 
 local function getApi(api_name, fields)
-    local cached = apiCache[api_name]
-    if cached then return cached end
+    if API_CACHE_MAX ~= 0 then
+        local cached = apiCache[api_name]
+        if cached then return cached end
+    end
 
     -- First load can be expensive (disk + compile). Keep it around.
     local API = tasks.msp.api.load(api_name)
     if API and API.enableDeltaCache then API.enableDeltaCache(false) end
-    apiCache[api_name] = API
+    if API_CACHE_MAX ~= 0 then
+        apiCache[api_name] = API
+    end
 
     -- Stable UUID per API (set once)
     API.setUUID("uuid-" .. api_name)
@@ -487,6 +492,14 @@ function msp.wakeup()
             break
         end
     end
+end
+
+function msp.debugSensorCount()
+    local count = 0
+    for _ in pairs(sensorCache) do
+        count = count + 1
+    end
+    return count
 end
 
 function msp.reset()

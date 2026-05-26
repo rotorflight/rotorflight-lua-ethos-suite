@@ -61,6 +61,9 @@ function utils.session()
         telemetryModule = nil,
         telemetryModelChanged = nil,
         telemetryConfig = nil,
+        telemetryConfigBuffer = nil,
+        crsfTelemetryConfig = nil,
+        elrsLinkConfig = nil,
         telemetryModuleNumber = nil,
 
         mspBusy = false,
@@ -106,6 +109,72 @@ function utils.rxmapReady()
     return false
 end
 
+function utils.armFlagsToIsArmed(value)
+    if value == 1 or value == 3 then return true end
+    if value == 0 or value == 2 then return false end
+    return nil
+end
+
+function utils.resolveArmedState(refreshFromTelemetry)
+    local session = rfsuite.session
+
+    if refreshFromTelemetry ~= false then
+        local tasks = rfsuite.tasks
+        local telemetry = tasks and tasks.telemetry
+        local getSensorSource = telemetry and telemetry.getSensorSource
+        local source = getSensorSource and getSensorSource("armflags")
+
+        if source and source:state() then
+            local armflags = source:value()
+            local armed = utils.armFlagsToIsArmed(armflags)
+            if armed ~= nil then
+                if session then session.isArmed = armed end
+                return armed, armflags, "armflags"
+            end
+        end
+    end
+
+    return (session and session.isArmed) == true, nil, "session"
+end
+
+function utils.signalArmedWriteBlocked()
+    local app = rfsuite.app
+    if app and app.triggers then
+        app.triggers.showSaveArmedWarning = true
+    end
+end
+
+function utils.getArmedSaveBlockedMessage()
+    if utils.apiVersionCompare(">=", {12, 0, 8}) then
+        return "@i18n(app.msg_please_disarm_to_save_warning)@"
+    end
+    return "@i18n(app.msg_please_disarm_to_save)@"
+end
+
+function utils.queueEepromWrite(opts)
+    opts = opts or {}
+
+    local tasks = rfsuite.tasks
+    local api = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("EEPROM_WRITE")
+    if not api then
+        return false, "eeprom_api_unavailable"
+    end
+
+    local completeHandler = opts.completeHandler or opts.processReply
+    local errorHandler = opts.errorHandler
+    local uuid = opts.uuid
+
+    if uuid and api.setUUID then api.setUUID(uuid) end
+    if type(completeHandler) == "function" then api.setCompleteHandler(completeHandler) end
+    if type(errorHandler) == "function" then api.setErrorHandler(errorHandler) end
+
+    local ok, reason = api.write()
+    if not ok and reason == "armed_blocked" then
+        utils.signalArmedWriteBlocked()
+    end
+    return ok, reason
+end
+
 function utils.inFlight()
     if rfsuite.flightmode.current == "inflight" then return true end
     return false
@@ -116,6 +185,50 @@ function utils.msp_version_array_to_indexed()
     local tbl = rfsuite.config.supportedMspApiVersion or {"12.07", "12.08", "12.09", "12.10"}
     for i, v in ipairs(tbl) do arr[#arr + 1] = {v, i} end
     return arr
+end
+
+function utils.esc_sensor_protocol_choices()
+    return {
+        {"NONE", 0},
+        {"BLHELI32", 1},
+        {"HOBBYWING V4", 2},
+        {"HOBBYWING V5", 3},
+        {"SCORPION", 4},
+        {"KONTRONIK", 5},
+        {"OMP", 6},
+        {"ZTW", 7},
+        {"APD", 8},
+        {"OPENYGE", 9},
+        {"FLYROTOR", 10},
+        {"GRAUPNER", 11},
+        {"XDFLY", 12},
+        {"FrSky F.BUS", 13},
+        {"RECORD", 14}
+    }
+end
+
+function utils.getSimulatorEscProtocolOverride()
+    if not (system and system.getVersion and system.getVersion().simulation == true) then
+        return nil
+    end
+
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    local override = tonumber(dev and dev.escprotocol_override)
+    if override == nil then return nil end
+    override = math.floor(override)
+    if override < 0 or override > 14 then return nil end
+    return override
+end
+
+function utils.getEffectiveEscSensorProtocol(value)
+    local override = utils.getSimulatorEscProtocolOverride()
+    if override ~= nil then
+        return override
+    end
+
+    value = tonumber(value)
+    if value == nil then return nil end
+    return math.floor(value)
 end
 
 function utils.armingDisableFlagsToString(flags)
@@ -185,7 +298,7 @@ function utils.getGovernorState(value)
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", {12, 0, 7}) then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
-        if armflags == 0 or armflags == 2 then value = 101 end
+        if utils.armFlagsToIsArmed(armflags) == false then value = 101 end
     end
 
     if map[value] then

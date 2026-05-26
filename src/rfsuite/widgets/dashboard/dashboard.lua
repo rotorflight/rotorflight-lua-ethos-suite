@@ -66,7 +66,15 @@ local function sigEquals(a, aN, b, bN)
     return true
 end
 
+local function isDashboardLogPanelEnabled()
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    return dev and dev.loglevel ~= nil and dev.loglevel ~= "off"
+end
+
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
+-- Holding inactive themes resident smooths the first state transition, but
+-- costs a noticeable amount of Lua RAM. Keep it off by default on Ethos.
+local PRELOAD_INACTIVE_STATES = false
 -- Busy cadence: run dashboard wakeup on RUN_NUM of RUN_DEN ticks while MSP is busy.
 -- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
 local BUSY_WAKEUP_RUN_NUM = 2
@@ -88,6 +96,7 @@ local toolbarOpenedAt = 0
 
 local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dashboard/"
 local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
+local debugLogPanel = compile(dashboardLibPath .. "lib/debug_log_panel.lua")()
 local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
 local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
 local toolbarLaunchApp = compile(dashboardLibPath .. "lib/toolbar_actions/launch_app.lua")()
@@ -111,12 +120,16 @@ local gestureActive = false
 local gestureStartX = 0
 local gestureStartY = 0
 local gestureTriggered = false
+local gestureConsumeUntilTouchEnd = false
+local gestureConsumeStartedAt = 0
 local GESTURE_MIN_DY = 20
 local GESTURE_MAX_DX = 40
+local GESTURE_CONSUME_TIMEOUT = 0.75
 
 dashboard.toolbarVisible = dashboard.toolbarVisible or false
 dashboard.toolbarItems = dashboard.toolbarItems or nil
 dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
+dashboard.debugLogPanelVisible = dashboard.debugLogPanelVisible or false
 
 local LOADER_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
 
@@ -126,6 +139,7 @@ dashboard.DEFAULT_THEME = "system/default"
 
 local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
+local LEGACY_SYSTEM_THEME_FOLDERS = {"default", "rfstatus", "aerc", "aerc-n", "claude", "gismo", "rt-rc", "rt-rc-n", "srb-rc", "timer"}
 
 local loadedStateModules = {}
 local loadedStateThemes = {}
@@ -143,7 +157,7 @@ local lastBoxRectsCount = 0
 local lastLoadedBoxSigParts = nil
 local lastLoadedBoxSigCount = 0
 
-local statePreloadQueue = {"inflight", "postflight"}
+local statePreloadQueue = PRELOAD_INACTIVE_STATES and {"inflight", "postflight"} or EMPTY
 local statePreloadIndex = 1
 
 local unsupportedResolution = false
@@ -169,7 +183,8 @@ dashboard.overlayMessage = nil
 
 dashboard.objectsByType = {}
 
-local darkModeState = lcd.darkMode()
+local themeStateSignature = nil
+local nextThemeStateCheck = 0
 
 dashboard._moduleCache = dashboard._moduleCache or {}
 
@@ -350,6 +365,194 @@ local function clearTableKeys(t)
     for k in pairs(t) do
         t[k] = nil
     end
+end
+
+local function normalizeThemePath(path)
+    if type(path) ~= "string" then return path end
+    local src, folder = path:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) == "@" then
+        return src .. "/" .. folder:sub(2)
+    end
+    return path
+end
+
+local function legacyThemePath(path)
+    if type(path) ~= "string" then return nil end
+    local src, folder = path:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) ~= "@" then
+        return src .. "/@" .. folder
+    end
+    return nil
+end
+
+local function migrateThemePreferenceSection(path)
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if type(prefs) ~= "table" or type(path) ~= "string" then return end
+    local legacy = legacyThemePath(path)
+    if legacy and prefs[path] == nil and type(prefs[legacy]) == "table" then
+        prefs[path] = prefs[legacy]
+    end
+end
+
+local function migrateLegacyThemePreferenceSections()
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if type(prefs) ~= "table" then return end
+    for i = 1, #LEGACY_SYSTEM_THEME_FOLDERS do
+        local folder = LEGACY_SYSTEM_THEME_FOLDERS[i]
+        local current = "system/" .. folder
+        local legacy = "system/@" .. folder
+        if prefs[current] == nil and type(prefs[legacy]) == "table" then
+            prefs[current] = prefs[legacy]
+        end
+    end
+end
+
+local function clearDashboardRuntimeCaches()
+    dashboard.reset()
+
+    if dashboard.utils then
+        if dashboard.utils.clearProgressDialog then dashboard.utils.clearProgressDialog() end
+        if dashboard.utils.resetImageCache then dashboard.utils.resetImageCache() end
+    end
+
+    if toolbar and toolbar.clearCaches then toolbar.clearCaches(dashboard) end
+    if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+    if rfsuite.utils and rfsuite.utils.clearImageCaches then rfsuite.utils.clearImageCaches() end
+
+    local session = rfsuite.session
+    if session and session.dialImageCache then
+        clearTableKeys(session.dialImageCache)
+    end
+
+    clearTableKeys(loadedStateModules)
+    clearTableKeys(loadedStateThemes)
+    clearTableKeys(dashboard.renders)
+    clearTableKeys(dashboard.objectsByType)
+    clearTableKeys(dashboard._moduleCache)
+    clearTableKeys(dashboard._objectDirty)
+
+    if dashboard.boxRects then clearArray(dashboard.boxRects) end
+    if scheduledBoxIndices then clearArray(scheduledBoxIndices) end
+    if dashboard._onpressIndices then clearArray(dashboard._onpressIndices) end
+    if dashboard._pendingInvalidates then clearArray(dashboard._pendingInvalidates) end
+    if dashboard._pendingInvalidatesPool then clearArray(dashboard._pendingInvalidatesPool) end
+    if dashboard._headerGeoms then clearArray(dashboard._headerGeoms) end
+    if dashboard._headerGeomsPaint then clearArray(dashboard._headerGeomsPaint) end
+    if dashboard._allBoxes then clearArray(dashboard._allBoxes) end
+    if dashboard._boxSigScratch then clearArray(dashboard._boxSigScratch) end
+    if lastLoadedBoxSigParts then clearArray(lastLoadedBoxSigParts) end
+
+    objectWakeupIndex = 1
+    objectWakeupsPerCycle = nil
+    objectsThreadedWakeupCount = 0
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    lastLoadedBoxSigCount = 0
+    lastFlightMode = nil
+    statePreloadIndex = 1
+
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._onpressIndicesReady = false
+    dashboard._forceFullRepaint = true
+    dashboard._loader_start_time = nil
+    dashboard._toolbarCache = nil
+    dashboard._toolbarRects = nil
+    dashboard._toolbarItemsSorted = nil
+    dashboard._toolbarEnabled = nil
+    dashboard._layoutBounds = nil
+    dashboard._overlayQueue = nil
+    dashboard._overlayLastTxt = nil
+    dashboard._overlayDefaultLine = nil
+    dashboard._overlaySingleLine = nil
+    dashboard._overlayStaticOpts = nil
+    dashboard._overlayLogOpts = nil
+    dashboard._lastWH = nil
+    dashboard.selectedBoxIndex = nil
+    dashboard.toolbarVisible = false
+    dashboard.selectedToolbarIndex = nil
+    dashboard.debugLogPanelVisible = false
+    dashboard._debugLogPanelLastActive = 0
+    dashboard._debugLogPanelLastInvalidate = 0
+    dashboard._debugLogPanelLastStatsInvalidate = 0
+    dashboard._debugLogPanelSeq = nil
+    dashboard._debugLogPanelLevel = nil
+    gestureConsumeUntilTouchEnd = false
+    gestureConsumeStartedAt = 0
+    gestureActive = false
+    gestureTriggered = false
+    dashboard.currentWidgetPath = nil
+    dashboard.overlayMessage = nil
+    unsupportedResolution = false
+
+    dashboard.utils = nil
+    dashboard.loaders = nil
+end
+
+local function resetBoxRuntime(box)
+    if not box then return end
+    for k in pairs(box) do
+        if type(k) == "string" and k:sub(1, 1) == "_" then
+            box[k] = nil
+        end
+    end
+    box.xOffset = nil
+end
+
+local function resetModuleRuntimeState(mod)
+    if type(mod) ~= "table" then return end
+
+    local boxes = resolveMaybe(mod.boxes or EMPTY) or EMPTY
+    local headerBoxes = resolveMaybe(mod.header_boxes or EMPTY) or EMPTY
+
+    for _, box in ipairs(boxes) do
+        resetBoxRuntime(box)
+    end
+
+    for _, box in ipairs(headerBoxes) do
+        resetBoxRuntime(box)
+    end
+end
+
+local function activate_state_only(state)
+    resetModuleRuntimeState(loadedStateModules[state])
+
+    dashboard.currentWidgetPath = loadedStateThemes[state]
+    dashboard._loader_start_time = nil
+    dashboard._forceFullRepaint = true
+    objectWakeupIndex = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle = nil
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    lastLoadedBoxSigCount = 0
+
+    if lastLoadedBoxSigParts then
+        clearArray(lastLoadedBoxSigParts)
+    end
+
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
+
+    if scheduledBoxIndices then
+        clearArray(scheduledBoxIndices)
+    else
+        scheduledBoxIndices = {}
+    end
+
+    if dashboard._onpressIndices then
+        clearArray(dashboard._onpressIndices)
+    end
+
+    clearTableKeys(dashboard._objectDirty)
+    _clearPendingInvalidates()
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._onpressIndicesReady = false
+    dashboard.selectedBoxIndex = nil
+
+    lcd.invalidate()
 end
 
 function dashboard.overlaystatic(x, y, w, h, txt)
@@ -548,6 +751,24 @@ local function getOnpressBoxIndices()
     return indices
 end
 
+local function getStartupLogCloseMode()
+    local general = rfsuite.preferences and rfsuite.preferences.general
+    return tonumber(general and general.dashboard_startup_log_close) or 0
+end
+
+local function isStartupBatteryStepComplete(session)
+    if not session or session.showBatteryTypeStartup ~= true then return true end
+    return session.batteryDialogShown == true
+end
+
+local function shouldShowStartupOverlay(state)
+    local session = rfsuite.session
+    if not session or state == "postflight" then return false end
+    if not session.isConnected then return true end
+    return getStartupLogCloseMode() == 1 and
+        (session.postConnectComplete ~= true or not isStartupBatteryStepComplete(session))
+end
+
 function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
@@ -561,7 +782,7 @@ function dashboard.computeOverlayMessage()
         if not tasks or not tasks.active or not tasks.active() then return "[ERROR] Background task is not enabled" end
     end
 
-    if not rfsuite.session.isConnected and state ~= "postflight" then
+    if shouldShowStartupOverlay(state) then
         local v = rfsuite.config.version
         local verStr
 
@@ -1066,6 +1287,7 @@ end
 
 local function load_state_script(theme_folder, state, isFallback)
     isFallback = isFallback or false
+    theme_folder = normalizeThemePath(theme_folder)
 
     if not theme_folder or theme_folder == "" then
         if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
@@ -1086,6 +1308,8 @@ local function load_state_script(theme_folder, state, isFallback)
     end
 
     local function setPath() dashboard.currentWidgetPath = src .. "/" .. folder end
+    migrateLegacyThemePreferenceSections()
+    migrateThemePreferenceSection(src .. "/" .. folder)
 
     local initPath = base .. folder .. "/init.lua"
     local initChunk, initErr = compile(initPath)
@@ -1144,7 +1368,7 @@ local function getThemeForState(state)
         val = modelPrefs["theme_" .. state]
         if val == "nil" then val = nil end
     end
-    return val or userPrefs["theme_" .. state] or dashboard.DEFAULT_THEME
+    return normalizeThemePath(val or userPrefs["theme_" .. state] or dashboard.DEFAULT_THEME)
 end
 
 local function reload_state_only(state)
@@ -1202,6 +1426,11 @@ end
 
 function dashboard.reload_active_theme_only(force)
     dashboard.utils.resetImageCache()
+
+    if dashboard.utils and dashboard.utils.getThemeSignature then
+        themeStateSignature = dashboard.utils.getThemeSignature()
+        nextThemeStateCheck = 0
+    end
 
     local state = dashboard.flightmode or "preflight"
     local theme = getThemeForState(state)
@@ -1272,6 +1501,11 @@ function dashboard.reload_themes(force)
 
     clearTableKeys(dashboard.renders)
 
+    if dashboard.utils and dashboard.utils.getThemeSignature then
+        themeStateSignature = dashboard.utils.getThemeSignature()
+        nextThemeStateCheck = 0
+    end
+
     dashboard.reload_active_theme_only(force)
 
     statePreloadIndex = 1
@@ -1335,6 +1569,8 @@ function dashboard.create()
     dashboard._lastInvalidateTime = 0
     dashboard._hg_cycles = 0
     dashboard.overlayMessage = nil
+    themeStateSignature = dashboard.utils.getThemeSignature and dashboard.utils.getThemeSignature() or nil
+    nextThemeStateCheck = 0
 
     firstWakeup = true
     firstWakeupCustomTheme = true
@@ -1357,6 +1593,10 @@ function dashboard.create()
     lcd.invalidate()
 
     return {value = 0}
+end
+
+function dashboard.close()
+    clearDashboardRuntimeCaches()
 end
 
 function dashboard.paint(widget)
@@ -1414,6 +1654,9 @@ function dashboard.paint(widget)
     if toolbar and toolbar.draw then
         toolbar.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
     end
+    if debugLogPanel and debugLogPanel.draw then
+        debugLogPanel.draw(dashboard, lcd, FONT_S, FONT_XS, FONT_XXS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR)
+    end
 
     if objectProfiler then _profReportIfDue() end
 end
@@ -1449,6 +1692,11 @@ function dashboard.event(widget, category, value, x, y)
 
     if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
         local now = clock()
+        if dashboard.debugLogPanelVisible then
+            dashboard.debugLogPanelVisible = false
+            dashboard._debugLogPanelLastActive = 0
+            if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+        end
         dashboard.toolbarVisible = true
         if not dashboard.selectedToolbarIndex then
             dashboard.selectedToolbarIndex = 1
@@ -1482,20 +1730,49 @@ function dashboard.event(widget, category, value, x, y)
                 end
     end
 
+    if gestureConsumeUntilTouchEnd and category == EVT_TOUCH then
+        local consumeNow = clock()
+        local staleConsume = gestureConsumeStartedAt > 0 and (consumeNow - gestureConsumeStartedAt) >= GESTURE_CONSUME_TIMEOUT
+        if value == TOUCH_START or staleConsume then
+            gestureConsumeUntilTouchEnd = false
+            gestureActive = false
+            gestureTriggered = false
+            gestureConsumeStartedAt = 0
+        else
+            if system and system.killEvents then
+                if TOUCH_START then system.killEvents(TOUCH_START) end
+                if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                if TOUCH_END then system.killEvents(TOUCH_END) end
+            end
+            if value == TOUCH_END then
+                gestureConsumeUntilTouchEnd = false
+                gestureActive = false
+                gestureTriggered = false
+                gestureConsumeStartedAt = 0
+            end
+            return true
+        end
+    end
+
     if toolbar and toolbar.handleEvent and toolbar.handleEvent(dashboard, widget, category, value, x, y, lcd) then
         return true
     end
 
-    -- Gesture start (touch down) anywhere
-    if category == EVT_TOUCH and (value == TOUCH_END or value == TOUCH_START) and x and y then
-        local W, H = lcd.getWindowSize()
+    -- Gesture start/end anywhere
+    if category == EVT_TOUCH and value == TOUCH_START and x and y then
         gestureActive = true
         gestureStartX = x or 0
         gestureStartY = y or 0
         gestureTriggered = false
+        gestureConsumeStartedAt = 0
+    elseif category == EVT_TOUCH and value == TOUCH_END then
+        gestureActive = false
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
     end
 
     if category == EVT_TOUCH and value == TOUCH_MOVE then
+        local now = clock()
         isSliding = true
         isSlidingStart = clock()
 
@@ -1512,25 +1789,62 @@ function dashboard.event(widget, category, value, x, y)
             if math.abs(dx) <= GESTURE_MAX_DX then
                 if dy <= -GESTURE_MIN_DY then
                     gestureTriggered = true
-                    dashboard.toolbarVisible = true
-                    if not dashboard.selectedToolbarIndex then
-                        dashboard.selectedToolbarIndex = 1
+                    gestureConsumeUntilTouchEnd = true
+                    gestureConsumeStartedAt = now
+                    if system and system.killEvents then
+                        if TOUCH_START then system.killEvents(TOUCH_START) end
+                        if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                        if TOUCH_END then system.killEvents(TOUCH_END) end
                     end
-                    toolbarOpenedAt = now
-                    dashboard._toolbarLastActive = now
-                    dashboard._toolbarCloseAt = 0
+                    if dashboard.debugLogPanelVisible then
+                        dashboard.debugLogPanelVisible = false
+                        dashboard._debugLogPanelLastActive = 0
+                        if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+                    else
+                        dashboard.toolbarVisible = true
+                        if not dashboard.selectedToolbarIndex then
+                            dashboard.selectedToolbarIndex = 1
+                        end
+                        toolbarOpenedAt = now
+                        dashboard._toolbarLastActive = now
+                        dashboard._toolbarCloseAt = 0
+                    end
                     lcd.invalidate(widget)
                     return true
                 elseif dy >= GESTURE_MIN_DY then
                     gestureTriggered = true
+                    gestureConsumeUntilTouchEnd = true
+                    gestureConsumeStartedAt = now
+                    if system and system.killEvents then
+                        if TOUCH_START then system.killEvents(TOUCH_START) end
+                        if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                        if TOUCH_END then system.killEvents(TOUCH_END) end
+                    end
+                    local wasToolbarVisible = dashboard.toolbarVisible
                     dashboard.toolbarVisible = false
                     dashboard.selectedToolbarIndex = nil
                     toolbarOpenedAt = 0
+                    dashboard._toolbarLastActive = 0
+                    dashboard._toolbarCloseAt = 0
+                    if not wasToolbarVisible and isDashboardLogPanelEnabled() then
+                        dashboard.debugLogPanelVisible = true
+                        dashboard._debugLogPanelLastActive = now
+                        dashboard._debugLogPanelSeq = nil
+                    end
                     lcd.invalidate(widget)
                     return true
                 end
             end
         end
+    end
+
+    if debugLogPanel and debugLogPanel.handleEvent and debugLogPanel.handleEvent(dashboard, widget, category, value, x, y, lcd) then
+        if category == EVT_TOUCH and value == TOUCH_END then
+            gestureActive = false
+            gestureTriggered = false
+            gestureConsumeStartedAt = 0
+        end
+        return true
     end
 
     if (not dashboard.toolbarVisible) and category == EVT_KEY and lcd.hasFocus() then
@@ -1653,6 +1967,32 @@ function dashboard.wakeup_protected(widget)
         lcd.invalidate(widget)
     end
 
+    if dashboard.debugLogPanelVisible then
+        if (dashboard._debugLogPanelLastActive or 0) == 0 then
+            dashboard._debugLogPanelLastActive = now
+        end
+        local logger = rfsuite.tasks and rfsuite.tasks.logger or nil
+        local seq = logger and logger.getSessionSeq and logger.getSessionSeq() or 0
+        local level = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.loglevel or "off"
+        local seqChanged = seq ~= (dashboard._debugLogPanelSeq or -1)
+        local levelChanged = level ~= dashboard._debugLogPanelLevel
+        local statsDue = now - (dashboard._debugLogPanelLastStatsInvalidate or 0) >= 0.5
+        if (seqChanged or levelChanged or statsDue) and now - (dashboard._debugLogPanelLastInvalidate or 0) >= 0.25 then
+            dashboard._debugLogPanelSeq = seq
+            dashboard._debugLogPanelLevel = level
+            dashboard._debugLogPanelLastInvalidate = now
+            if statsDue then dashboard._debugLogPanelLastStatsInvalidate = now end
+            lcd.invalidate(widget)
+        end
+    end
+
+    if gestureConsumeUntilTouchEnd and gestureConsumeStartedAt > 0 and (now - gestureConsumeStartedAt) >= GESTURE_CONSUME_TIMEOUT then
+        gestureConsumeUntilTouchEnd = false
+        gestureActive = false
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
+    end
+
     objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
 
     if not dashboard.utils then return end
@@ -1692,9 +2032,14 @@ function dashboard.wakeup_protected(widget)
 
     if unsupportedResolution then return end
 
-    if lcd.darkMode() ~= darkModeState then
-        darkModeState = lcd.darkMode()
-        dashboard.reload_themes(true)
+    local now = clock()
+    if now >= nextThemeStateCheck then
+        nextThemeStateCheck = now + 0.25
+        local currentThemeSignature = dashboard.utils.getThemeSignature and dashboard.utils.getThemeSignature() or nil
+        if currentThemeSignature ~= themeStateSignature then
+            themeStateSignature = currentThemeSignature
+            dashboard.reload_themes(true)
+        end
     end
 
     if firstWakeup then
@@ -1733,7 +2078,10 @@ function dashboard.wakeup_protected(widget)
         local currentTheme = getThemeForState(currentFlightMode)
         if (not loadedStateModules[currentFlightMode]) or (loadedStateThemes[currentFlightMode] ~= currentTheme) then
             reload_state_only(currentFlightMode)
+        else
+            activate_state_only(currentFlightMode)
         end
+        dashboard.applySchedulerSettings()
         lastFlightMode = currentFlightMode
         if dashboard._useSpreadSchedulingPaint then lcd.invalidate(widget) end
     end
@@ -1929,21 +2277,31 @@ end
 
 function dashboard.getPreference(key)
     if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
+    local section = dashboard.currentWidgetPath
 
     if not rfsuite.app.guiIsRunning then
-        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key)
+        local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
+        if value ~= nil then return value end
+        local legacy = legacyThemePath(section)
+        if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
+        return nil
     else
-        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key)
+        section = normalizeThemePath(rfsuite.app.dashboardEditingTheme)
+        local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
+        if value ~= nil then return value end
+        local legacy = legacyThemePath(section)
+        if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
+        return nil
     end
 end
 
 function dashboard.savePreference(key, value)
     if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then return false end
     if not rfsuite.app.guiIsRunning then
-        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key, value)
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(dashboard.currentWidgetPath), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     else
-        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key, value)
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(rfsuite.app.dashboardEditingTheme), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     end
 end

@@ -195,19 +195,26 @@ local function openPage(opts)
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
             rfsuite.app.formFields[i] = form.addNumberField(fieldRows[f.row], pos, 0, 0, function()
-                if rfsuite.app.Page.apidata.formdata.fields == nil or rfsuite.app.Page.apidata.formdata.fields[i] == nil then
-                    ui.disableAllFields()
-                    ui.disableAllNavigationFields()
-                    ui.enableNavigationField('menu')
+                local page = rfsuite.app and rfsuite.app.Page
+                if not (page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
+                    if rfsuite.app and rfsuite.app.ui then
+                        rfsuite.app.ui.disableAllFields()
+                        rfsuite.app.ui.disableAllNavigationFields()
+                        rfsuite.app.ui.enableNavigationField('menu')
+                    end
                     return nil
                 end
-                return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.apidata.formdata.fields[i])
+                return rfsuite.app.utils.getFieldValue(page.apidata.formdata.fields[i])
             end, function(value)
+                local page = rfsuite.app and rfsuite.app.Page
+                if not (page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields and page.apidata.formdata.fields[i]) then
+                    return
+                end
                 rfsuite.app.ui.markPageDirty()
-                if f.postEdit then f.postEdit(rfsuite.app.Page) end
-                if f.onChange then f.onChange(rfsuite.app.Page) end
+                if f.postEdit then f.postEdit(page) end
+                if f.onChange then f.onChange(page) end
 
-                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.apidata.formdata.fields[i], value)
+                f.value = rfsuite.app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
             end)
         end
     end

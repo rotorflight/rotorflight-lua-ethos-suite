@@ -5,8 +5,11 @@
       "label": "Deploy & Launch [SIM]",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--lang",
         "${config:rfsuite.deploy.language}",
         "--step",
@@ -43,8 +46,11 @@
       "label": "Deploy Radio",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--radio",
         "--lang",
         "${config:rfsuite.deploy.language}",
@@ -66,8 +72,11 @@
       "label": "Deploy Radio [Fast]",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--fileext",
         "fast",
         "--radio",
@@ -89,8 +98,11 @@
       "label": "Deploy Radio + Serial Debug",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--radio",
         "--radio-debug",
         "--lang",
@@ -111,8 +123,11 @@
       "label": "Deploy Radio + Serial Debug [Fast]",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--fileext",
         "fast",
         "--radio",
@@ -135,8 +150,11 @@
       "label": "Radio: Serial Debug",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--radio",
         "--connect-only",
         "--lang",
@@ -157,9 +175,67 @@
       "label": "Clear locks",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
-        "${workspaceFolder}\\.vscode\\scripts\\deploy.py",
+        "${workspaceFolder}/.vscode/scripts/deploy.py",
         "--clear-lock"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "Debug Radio Connection",
+      "type": "process",
+      "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/debug_connection.py"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "Debug Radio Connection: Switch To Serial",
+      "type": "process",
+      "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/debug_connection.py",
+        "--switch",
+        "start"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "Debug Radio Connection: Switch To Storage",
+      "type": "process",
+      "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
+      "args": [
+        "${workspaceFolder}/.vscode/scripts/debug_connection.py",
+        "--switch",
+        "stop"
       ],
       "problemMatcher": [],
       "presentation": {
@@ -172,6 +248,9 @@
       "label": "Menu: Generate manifest.lua",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
         "${workspaceFolder}/bin/menu/generate.py"
       ],
@@ -186,6 +265,9 @@
       "label": "Menu: Verify generated manifest.lua",
       "type": "process",
       "command": "python",
+      "osx": {
+        "command": "${config:python.defaultInterpreterPath}"
+      },
       "args": [
         "${workspaceFolder}/bin/menu/generate.py",
         "--check"
@@ -227,6 +309,13 @@
       ],
       "dependsOrder": "sequence"   // ensures they run 1 → 2 → 3
     },    
+    {
+      "label": "ethos.OpenControls",
+      "type": "process",
+      "command": "${command:ethos.openControls}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
     {
       "label": "ethos.OpenTelemetry",
       "type": "process",

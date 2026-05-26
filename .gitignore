@@ -2,12 +2,14 @@
 **/.DS_Store
 *.orig.png
 src/rfsuite.zip
+/build/
 /bin/sound-generator/soundpack/user/*.wav
 *subprocess_conout.cpython-312.*
 simulator/*
 deploy.json
 *.pyc
 *.pyc
+.claude
 bin/updater/src/rfsuite_updater_work
 bin/updater/src/build
 bin/updater/src/build_embed
@@ -16,3 +18,4 @@ bin/updater/src/build
 /bin/updater/src/rfsuite_updater_work
 /bin/updater/rfsuite_updater_work
 .vscode/settings.json
+bin/package/rotorflight-lua-ethos-suite-local-test-en.zip

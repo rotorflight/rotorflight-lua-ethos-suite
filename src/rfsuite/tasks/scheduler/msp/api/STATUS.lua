@@ -1,76 +1,68 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "STATUS"
 local MSP_API_CMD_READ = 101
-local MSP_REBUILD_ON_WRITE = false
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "task_delta_time_pid", type = "U16", apiVersion = {12, 0, 6}, simResponse = {252, 1}},
-    {field = "task_delta_time_gyro", type = "U16", apiVersion = {12, 0, 6}, simResponse = {127, 0}},
-    {field = "sensor_status", type = "U16", apiVersion = {12, 0, 6}, simResponse = {35, 0}},
-    {field = "flight_mode_flags", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0, 0, 0, 0}},
-    {field = "profile_number", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-    {field = "max_real_time_load", type = "U16", apiVersion = {12, 0, 6}, simResponse = {122, 1}},
-    {field = "average_cpu_load", type = "U16", apiVersion = {12, 0, 6}, simResponse = {182, 0}},
-    {field = "extra_flight_mode_flags_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-    {field = "arming_disable_flags_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-    {field = "arming_disable_flags", type = "U32", apiVersion = {12, 0, 6}, simResponse = {0, 0, 0, 0}},
-    {field = "reboot_required", type = "U8", apiVersion = {12, 0, 6}, simResponse = {2}},
-    {field = "configuration_state", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-    {field = "current_pid_profile_index", type = "U8", apiVersion = {12, 0, 6}, simResponse = {5}, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1},
-    {field = "pid_profile_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {6}},
-    {field = "current_control_rate_profile_index", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1},
-    {field = "control_rate_profile_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {4}},
-    {field = "motor_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}},
-    {field = "servo_count", type = "U8", apiVersion = {12, 0, 6}, simResponse = {4}},
-    {field = "gyro_detection_flags", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}}
+-- Flat field spec:
+--   field name, type
+local FIELD_SPEC = {
+    "task_delta_time_pid", "U16",
+    "task_delta_time_gyro", "U16",
+    "sensor_status", "U16",
+    "flight_mode_flags", "U32",
+    "profile_number", "U8",
+    "max_real_time_load", "U16",
+    "average_cpu_load", "U16",
+    "extra_flight_mode_flags_count", "U8",
+    "arming_disable_flags_count", "U8",
+    "arming_disable_flags", "U32",
+    "reboot_required", "U8",
+    "configuration_state", "U8",
+    "current_pid_profile_index", "U8",
+    "pid_profile_count", "U8",
+    "current_control_rate_profile_index", "U8",
+    "control_rate_profile_count", "U8",
+    "motor_count", "U8",
+    "servo_count", "U8",
+    "gyro_detection_flags", "U8"
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local SIM_RESPONSE = core.simResponse({
+    252, 1,       -- task_delta_time_pid
+    127, 0,       -- task_delta_time_gyro
+    35, 0,        -- sensor_status
+    0, 0, 0, 0,   -- flight_mode_flags
+    0,            -- profile_number
+    122, 1,       -- max_real_time_load
+    182, 0,       -- average_cpu_load
+    0,            -- extra_flight_mode_flags_count
+    0,            -- arming_disable_flags_count
+    0, 0, 0, 0,   -- arming_disable_flags
+    2,            -- reboot_required
+    0,            -- configuration_state
+    5,            -- current_pid_profile_index
+    6,            -- pid_profile_count
+    1,            -- current_control_rate_profile_index
+    4,            -- control_rate_profile_count
+    1,            -- motor_count
+    4,            -- servo_count
+    1             -- gyro_detection_flags
+})
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_READ
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createReadOnlyAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
-    writeCmd = nil,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
-    exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-    }
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE
 })

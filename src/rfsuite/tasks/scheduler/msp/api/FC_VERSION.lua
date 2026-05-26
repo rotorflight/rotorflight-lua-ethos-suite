@@ -1,43 +1,31 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local string_format = string.format
 
-local function parseRead(buf, helper)
-    if not helper then return nil, "msp_helper_missing" end
+-- Flat field spec:
+--   field name, type
+local FIELD_SPEC = {
+    "version_major", "U8",
+    "version_minor", "U8",
+    "version_patch", "U8"
+}
 
-    buf.offset = 1
-    local major = helper.readU8(buf)
-    local minor = helper.readU8(buf)
-    local patch = helper.readU8(buf)
-    if major == nil or minor == nil or patch == nil then
-        return nil, "parse_failed"
-    end
-
-    return {
-        parsed = {
-            version_major = major,
-            version_minor = minor,
-            version_patch = patch
-        },
-        buffer = buf,
-        receivedBytesCount = #buf
-    }
-end
-
-return factory.create({
+return core.createReadOnlyAPI({
     name = "FC_VERSION",
     readCmd = 3,
-    minBytes = 3,
+    fields = FIELD_SPEC,
     simulatorResponseRead = {4, 5, 1},
-    parseRead = parseRead,
     methods = {
         readVersion = function(state)
             local parsed = state.mspData and state.mspData.parsed

@@ -58,7 +58,6 @@ local lcd = lcd
 
 local floor = math.floor
 local ceil = math.ceil
-local rep = string.rep
 local tostring = tostring
 
 local render = {}
@@ -67,6 +66,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
+local resolveFont = utils.resolveFont
+local getPulsingDots = utils.getPulsingDots
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -144,6 +145,7 @@ function render.wakeup(box)
         cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
         cfg.font = getParam(box, "font") or "FONT_STD"
         cfg.maxfont = getParam(box, "maxfont") or "FONT_S"
+        cfg.maxfontResolved = resolveFont(cfg.maxfont, FONT_S)
         cfg.decimals = getParam(box, "decimals")
         cfg.valuealign = getParam(box, "valuealign")
         cfg.valuepadding = getParam(box, "valuepadding")
@@ -220,11 +222,7 @@ function render.wakeup(box)
     if arcmax and maxval ~= nil then displayMaxValue = cfg.transformFn(maxval) end
 
     if value == nil then
-        local maxDots = 3
-        if c._dotCount == nil then c._dotCount = 0 end
-        c._dotCount = (c._dotCount + 1) % (maxDots + 1)
-        displayValue = rep(".", c._dotCount)
-        if displayValue == "" then displayValue = "." end
+        displayValue = getPulsingDots(c)
         unit = nil
     end
 
@@ -261,6 +259,7 @@ function render.wakeup(box)
     c.titlepaddingbottom = cfg.titlepaddingbottom
     c.font = cfg.font
     c.maxfont = cfg.maxfont
+    c.maxfontResolved = cfg.maxfontResolved
     c.valuealign = cfg.valuealign
     c.valuepadding = cfg.valuepadding
     c.valuepaddingleft = cfg.valuepaddingleft
@@ -297,7 +296,7 @@ function render.paint(x, y, w, h, box)
 
         local titleHeight = 0
         if c.title then
-            lcd.font(_G[c.titlefont] or FONT_XS)
+            lcd.font(resolveFont(c.titlefont, FONT_XS))
             local _, th = lcd.getTextSize(c.title)
             titleHeight = (th or 0) + g.titlespacing + g.titlepaddingtop + g.titlepaddingbottom
         end
@@ -357,7 +356,7 @@ function render.paint(x, y, w, h, box)
         local maxStr = tostring(c.maxprefix or "") .. (c.displayMaxValue or c.maxval) .. (c.unit or "")
         local maxTextColor = c.maxtextcolor or c.textcolor
         lcd.color(maxTextColor)
-        lcd.font(_G[c.maxfont] or FONT_S)
+        lcd.font(c.maxfontResolved or FONT_S)
         local tw2, th2 = lcd.getTextSize(maxStr)
         lcd.drawText(g.cx - tw2 / 2 + (c.maxpaddingleft or 0), g.cy + g.radius * 0.25 + (c.maxpadding or 0) + (c.maxpaddingtop or 0), maxStr)
     end

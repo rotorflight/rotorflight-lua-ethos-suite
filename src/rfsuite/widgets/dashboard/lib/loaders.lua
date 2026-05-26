@@ -23,6 +23,13 @@ local loaders = {}
 
 local DEFAULT_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
 
+local function getLoaderThemeState(dashboard)
+    if dashboard and dashboard.utils and dashboard.utils.getThemeState then
+        return dashboard.utils.getThemeState()
+    end
+    return nil
+end
+
 local function clearArray(t)
     for i = #t, 1, -1 do
         t[i] = nil
@@ -352,16 +359,12 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local borderW = opts.borderW or max(4, floor(min(panelW, panelH) * 0.06))
     local cornerR = opts.cornerR or floor(min(panelW, panelH) * 0.14)
 
-    -- Frame like the circle: bright outer, dark inner.
-    local isDark = lcd.darkMode()
-
-    local outer = isDark
-        and lcd.RGB(255, 255, 255, 1.0)
-        or  lcd.GREY(64, 1.0)
-
-    local inner = isDark
-        and lcd.RGB(0,   0,   0,   1.0)
-        or  lcd.RGB(128, 128, 128, 1.0)
+    -- Frame like the circle: higher-contrast outer, calmer inner.
+    local themeState = getLoaderThemeState(dashboard)
+    local useThemeColors = themeState and themeState.usesThemeColors
+    local isLegacyDark = type(lcd.darkMode) == "function" and lcd.darkMode() == true
+    local outer = useThemeColors and themeState.primaryColor or (isLegacyDark and lcd.RGB(255, 255, 255, 1.0) or lcd.GREY(64, 1.0))
+    local inner = useThemeColors and themeState.primaryBgColor or (isLegacyDark and lcd.RGB(0, 0, 0, 1.0) or lcd.RGB(128, 128, 128, 1.0))
 
     -- Outer frame
     lcd.color(outer)
@@ -464,8 +467,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
     -- Right info column: separator + versions
     do
-        local isDark = lcd.darkMode()
-        local txt = isDark and lcd.RGB(255,255,255,1.0) or lcd.RGB(0,0,0,1.0)
+        local txt = useThemeColors and themeState.primaryColor or (isLegacyDark and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0))
 
         local padX = max(4, floor(infoW * 0.10))
         local padY = max(4, floor(infoH * 0.14))
@@ -473,7 +475,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
         -- Vertical separator line (kept)
         local sepW = max(1, floor(infoW * 0.02))
-        local sepCol = isDark and lcd.RGB(90,90,90,1.0) or lcd.RGB(110,110,110,1.0)
+        local sepCol = useThemeColors and themeState.buttonBorderColor or (isLegacyDark and lcd.RGB(90, 90, 90, 1.0) or lcd.RGB(110, 110, 110, 1.0))
         lcd.color(sepCol)
         lcd.drawFilledRectangle(infoX + floor(sepW / 2), infoY + padY, sepW, max(1, infoH - 2 * padY))
 
@@ -505,10 +507,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
 
 
     -- Bottom side: log lines
-    lcd.color(isDark
-        and lcd.RGB(255, 255, 255, 1.0)
-        or  lcd.RGB(0,   0,   0,   1.0)
-    )
+    lcd.color(useThemeColors and themeState.primaryColor or (isLegacyDark and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0)))
 
     -- Prefer the smaller fonts so we get more lines in the console area.
     local fontSize = opts.fontSize or FONT_XXS
@@ -561,13 +560,11 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
     local borderW = opts.borderW or max(4, floor(min(panelW, panelH) * 0.06))
     local cornerR = opts.cornerR or floor(min(panelW, panelH) * 0.14)
 
-    local isDark = lcd.darkMode()
-    local outer = isDark
-        and lcd.RGB(255, 255, 255, 1.0)
-        or  lcd.GREY(64, 1.0)
-    local inner = isDark
-        and lcd.RGB(0,   0,   0,   1.0)
-        or  lcd.RGB(128, 128, 128, 1.0)
+    local themeState = getLoaderThemeState(dashboard)
+    local useThemeColors = themeState and themeState.usesThemeColors
+    local isLegacyDark = type(lcd.darkMode) == "function" and lcd.darkMode() == true
+    local outer = useThemeColors and themeState.primaryColor or (isLegacyDark and lcd.RGB(255, 255, 255, 1.0) or lcd.GREY(64, 1.0))
+    local inner = useThemeColors and themeState.primaryBgColor or (isLegacyDark and lcd.RGB(0, 0, 0, 1.0) or lcd.RGB(128, 128, 128, 1.0))
 
     -- Outer frame
     lcd.color(outer)
@@ -644,7 +641,7 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
 
     -- Message area
     do
-        local fg = isDark and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0)
+        local fg = useThemeColors and themeState.primaryColor or (isLegacyDark and lcd.RGB(255, 255, 255, 1.0) or lcd.RGB(0, 0, 0, 1.0))
         lcd.color(fg)
 
         -- Provide a tiny bit of life without needing real log lines.

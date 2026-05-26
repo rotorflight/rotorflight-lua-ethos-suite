@@ -6,13 +6,27 @@
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local common = assert(loadfile("app/modules/settings/activelook/common.lua"))()
+local system = system
 
 local config = {}
+
+local function switchSourceFromConfig(value)
+    if value == nil or value == "" then return nil end
+    local scategory, smember = tostring(value):match("([^,]+),([^,]+)")
+    scategory = tonumber(scategory)
+    smember = tonumber(smember)
+    if scategory and smember then
+        return system.getSource({category = scategory, member = smember})
+    end
+    return nil
+end
 
 local function openPage(opts)
     local pageIdx = opts.idx
     local title = opts.title
     local script = opts.script
+
+    common.clearPreviewMode()
 
     if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
@@ -44,7 +58,18 @@ local function openPage(opts)
         return line, formFieldCount
     end
 
-    local line, fieldIdx = addFieldLine("Offset X")
+    local line, fieldIdx = addFieldLine("Hide Display")
+    rfsuite.app.formFields[fieldIdx] = form.addSwitchField(line, nil, function()
+        return switchSourceFromConfig(config.display_switch)
+    end, function(newValue)
+        if newValue then
+            config.display_switch = newValue:category() .. "," .. newValue:member()
+        else
+            config.display_switch = ""
+        end
+    end)
+
+    line, fieldIdx = addFieldLine("Offset X")
     rfsuite.app.formFields[fieldIdx] = form.addNumberField(line, nil, -20, 20, function()
         return tonumber(config.offset_x) or 0
     end, function(newValue) config.offset_x = common.clampOffset(newValue) end)
@@ -67,6 +92,7 @@ local function openPage(opts)
 end
 
 local function onNavMenu()
+    common.clearPreviewMode()
     pageRuntime.openMenuContext()
     return true
 end

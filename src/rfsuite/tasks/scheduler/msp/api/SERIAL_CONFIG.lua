@@ -1,77 +1,73 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 -- https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "SERIAL_CONFIG"
-local MSP_API_CMD_READ = 54
-local MSP_API_CMD_WRITE = 55
-local MSP_REBUILD_ON_WRITE = true
 local MAX_SERIAL_PORTS = 12
 
-local MSP_API_STRUCTURE_READ_DATA = {}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local READ_FIELD_SPEC = {}
 for i = 1, MAX_SERIAL_PORTS do
     local mandatory = (i == 1)
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_identifier",        type = "U8",  apiVersion = {12, 0, 6}, simResponse = {i - 1}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_function_mask",     type = "U32", apiVersion = {12, 0, 6}, simResponse = {0, 0, 0, 0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_msp_baud_index",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_gps_baud_index",    type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_telem_baud_index",  type = "U8",  apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
-    MSP_API_STRUCTURE_READ_DATA[#MSP_API_STRUCTURE_READ_DATA + 1] = { field = "port_" .. i .. "_blackbox_baud_index", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, mandatory = mandatory }
+    READ_FIELD_SPEC[#READ_FIELD_SPEC + 1] = {"port_" .. i .. "_identifier", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, mandatory}
+    READ_FIELD_SPEC[#READ_FIELD_SPEC + 1] = {"port_" .. i .. "_function_mask", "U32", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, mandatory}
+    READ_FIELD_SPEC[#READ_FIELD_SPEC + 1] = {"port_" .. i .. "_msp_baud_index", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, mandatory}
+    READ_FIELD_SPEC[#READ_FIELD_SPEC + 1] = {"port_" .. i .. "_gps_baud_index", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, mandatory}
+    READ_FIELD_SPEC[#READ_FIELD_SPEC + 1] = {"port_" .. i .. "_telem_baud_index", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, mandatory}
+    READ_FIELD_SPEC[#READ_FIELD_SPEC + 1] = {"port_" .. i .. "_blackbox_baud_index", "U8", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, mandatory}
 end
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = {
-    { field = "identifier",           type = "U8"  },
-    { field = "function_mask",        type = "U32" },
-    { field = "msp_baud_index",       type = "U8"  },
-    { field = "gps_baud_index",       type = "U8"  },
-    { field = "telem_baud_index",     type = "U8"  },
-    { field = "blackbox_baud_index",  type = "U8"  },
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local WRITE_FIELD_SPEC = {
+    {"identifier", "U8"},
+    {"function_mask", "U32"},
+    {"msp_baud_index", "U8"},
+    {"gps_baud_index", "U8"},
+    {"telem_baud_index", "U8"},
+    {"blackbox_baud_index", "U8"}
 }
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
+local function buildSimResponse()
+    local bytes = {}
+    for i = 1, MAX_SERIAL_PORTS do
+        bytes[#bytes + 1] = i - 1  -- identifier
+        bytes[#bytes + 1] = 0      -- function_mask b0
+        bytes[#bytes + 1] = 0      -- function_mask b1
+        bytes[#bytes + 1] = 0      -- function_mask b2
+        bytes[#bytes + 1] = 0      -- function_mask b3
+        bytes[#bytes + 1] = 0      -- msp_baud_index
+        bytes[#bytes + 1] = 0      -- gps_baud_index
+        bytes[#bytes + 1] = 0      -- telem_baud_index
+        bytes[#bytes + 1] = 0      -- blackbox_baud_index
     end
-    return result
+    return bytes
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
+local SIM_RESPONSE = core.simResponse(buildSimResponse())
 
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
-    readCmd = MSP_API_CMD_READ,
-    writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    writeRequiresStructure = true,
+    readCmd = 54,
+    writeCmd = 55,
+    fields = READ_FIELD_SPEC,
+    writeFields = WRITE_FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
+    initialRebuildOnWrite = true,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

@@ -1,27 +1,41 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
-
-local API_NAME = "EEPROM_WRITE"
-local MSP_API_STRUCTURE_WRITE = {}
-
-local function buildWritePayload(payloadData, _, _, state)
-    return core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
+if msp and not msp.apicore then
+    msp.apicore = core
 end
 
-return factory.create({
+local API_NAME = "EEPROM_WRITE"
+
+local function validateWrite()
+    local armed = rfsuite.utils and rfsuite.utils.resolveArmedState and rfsuite.utils.resolveArmedState()
+    if armed then
+        if rfsuite.utils and rfsuite.utils.log then
+            rfsuite.utils.log("EEPROM_WRITE API blocked while armed", "info")
+        end
+        if rfsuite.utils and rfsuite.utils.signalArmedWriteBlocked then
+            rfsuite.utils.signalArmedWriteBlocked()
+        end
+        return false, "armed_blocked"
+    end
+    return true
+end
+
+local function buildWritePayload()
+    return {}
+end
+
+return core.createWriteOnlyAPI({
     name = API_NAME,
     writeCmd = 250,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
     buildWritePayload = buildWritePayload,
+    validateWrite = validateWrite,
     writeUuidFallback = true,
     initialRebuildOnWrite = true
 })

@@ -95,10 +95,11 @@ local function servoCenterFocusOn(self)
 end
 
 local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    return queueDirect(mspEepromWrite, "servo.bustool.eeprom")
-
+    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.bustool.eeprom"})
+    if not ok then
+        rfsuite.utils.log("Servo BUS EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
+    return ok, reason
 end
 
 local function saveServoCenter(self)
@@ -598,10 +599,23 @@ end
 
 local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
+local function close()
+    -- Release Ethos-held form callbacks immediately so the GC can collect
+    -- configs, servoTable, and the rest of the module's upvalue environment.
+    -- Without this, Ethos retains the getter/setter closures until the next
+    -- page calls form.clear(), leaving all servo data pinned in RAM.
+    enableWakeup = false
+    form.clear()
+    configs = {}
+    servoTable = nil
+    collectgarbage("collect")
+end
+
 return {
 
     reboot = false,
     event = event,
+    close = close,
     setValues = setValues,
     servoChanged = servoChanged,
     servoCenterFocusOn = servoCenterFocusOn,

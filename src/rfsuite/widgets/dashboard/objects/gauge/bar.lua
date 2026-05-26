@@ -98,6 +98,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
+local resolveFont = utils.resolveFont
 local lastDisplayValue = nil
 local LOADING_DOTS = {".", "..", "...", "."}
 
@@ -529,7 +530,7 @@ function render.paint(x, y, w, h, box)
         local title_area_top = 0
         local title_area_bottom = 0
         if c.title and c.title ~= "" then
-            lcd.font(_G[c.titlefont] or FONT_XS)
+            lcd.font(resolveFont(c.titlefont, FONT_XS))
             local _, tsizeH = lcd.getTextSize(c.title)
             if c.titlepos == "bottom" then
                 title_area_bottom = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + (c.titlespacing or 0)
@@ -577,7 +578,7 @@ function render.paint(x, y, w, h, box)
     end
 
     if c.subtext and c.subtext ~= "" then
-        lcd.font(_G[c.subtextfont] or FONT_XS)
+        lcd.font(resolveFont(c.subtextfont, FONT_XS))
         lcd.color(c.textcolor)
         local textW, textH = lcd.getTextSize(c.subtext)
         local sy = gauge_y + gauge_h - textH - c.subtextpaddingbottom
@@ -612,7 +613,7 @@ function render.paint(x, y, w, h, box)
         local line1 = box._batteryLines.line1 or ""
         local line2 = box._batteryLines.line2 or ""
 
-        lcd.font(_G[c.battadvfont] or FONT_S)
+        lcd.font(resolveFont(c.battadvfont, FONT_S))
         local w1, h1 = lcd.getTextSize(line1)
         local w2, h2 = lcd.getTextSize(line2)
         local blockW = max(w1, w2) + c.battadvpaddingleft + c.battadvpaddingright

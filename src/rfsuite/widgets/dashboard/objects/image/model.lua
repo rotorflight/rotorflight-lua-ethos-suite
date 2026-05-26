@@ -122,8 +122,8 @@ local function resolveModelImage(cfg)
 
     if model and model.bitmap then
         local bm = model.bitmap()
-        local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
         if bm and type(bm) == "string" and bm ~= "" and not string.find(bm, "default_") then
+            local maxBytes = (rfsuite.config and rfsuite.config.maxModelImageBytes)
             local candidates = getBitmapCandidates(bm)
             for i = 1, #candidates do
                 local loaded = tryLoadImagePath(candidates[i], maxBytes)

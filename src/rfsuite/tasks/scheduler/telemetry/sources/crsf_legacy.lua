@@ -19,6 +19,7 @@ return {
     vfr = {{crsfId = 0x14, subIdStart = 0, subIdEnd = 1}},
     armflags = {nil},
     voltage = {"Rx Batt"},
+    cell_voltage = {nil},
     rpm = {"GPS Alt"},
     current = {"Rx Curr"},
     temp_esc = {"GPS Speed"},

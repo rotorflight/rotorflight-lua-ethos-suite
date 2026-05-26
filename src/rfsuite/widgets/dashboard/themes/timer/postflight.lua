@@ -17,7 +17,7 @@ local colorMode = utils.themeColors()
 
 local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
 
-local theme_section = "system/default"
+local theme_section = "system/timer"
 
 local THEME_DEFAULTS = {v_min = 18.0, v_max = 25.2}
 

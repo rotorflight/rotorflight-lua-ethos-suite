@@ -1,111 +1,124 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "RC_TUNING"
 local MSP_API_CMD_READ = 111
 local MSP_API_CMD_WRITE = 204
-local MSP_REBUILD_ON_WRITE = true
 
-local rateTable
-local rateSimResponse
+local TBL_RATE_TABLE
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
-    rateTable = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK", "ROTORFLIGHT"}
-    rateSimResponse = {6}
+    TBL_RATE_TABLE = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK", "ROTORFLIGHT"}
 else
-    rateTable = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}   
-    rateSimResponse = {6} 
+    TBL_RATE_TABLE = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}
 end
 
-local offOn = {
+local TBL_OFF_ON = {
     "@i18n(api.RC_TUNING.tbl_off)@",
     "@i18n(api.RC_TUNING.tbl_on)@"
 }
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rates_type", type = "U8", apiVersion = {12, 0, 6}, simResponse = rateSimResponse, min = 0, max = 6, default = 4, tableIdxInc = -1, table = rateTable},
-    {field = "rcRates_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {18}},
-    {field = "rcExpo_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {25}},
-    {field = "rates_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {32}},
-    {field = "response_time_1", type = "U8", apiVersion = {12, 0, 6}, simResponse = {20}, min = 0, max = 250, unit = "ms"},
-    {field = "accel_limit_1", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
-    {field = "rcRates_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {18}},
-    {field = "rcExpo_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {25}},
-    {field = "rates_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {32}},
-    {field = "response_time_2", type = "U8", apiVersion = {12, 0, 6}, simResponse = {20}, min = 0, max = 250, unit = "ms"},
-    {field = "accel_limit_2", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
-    {field = "rcRates_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {32}},
-    {field = "rcExpo_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {50}},
-    {field = "rates_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {45}},
-    {field = "response_time_3", type = "U8", apiVersion = {12, 0, 6}, simResponse = {10}, min = 0, max = 250, unit = "ms"},
-    {field = "accel_limit_3", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
-    {field = "rcRates_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {56}},
-    {field = "rcExpo_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}},
-    {field = "rates_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {56}},
-    {field = "response_time_4", type = "U8", apiVersion = {12, 0, 6}, simResponse = {20}, min = 0, max = 250, unit = "ms"},
-    {field = "accel_limit_4", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
-    {field = "setpoint_boost_gain_1", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0},
-    {field = "setpoint_boost_cutoff_1", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15},
-    {field = "setpoint_boost_gain_2", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0},
-    {field = "setpoint_boost_cutoff_2", type = "U8", apiVersion = {12, 0, 8}, simResponse = {90}, min = 0, max = 250, unit = "Hz", default = 90},
-    {field = "setpoint_boost_gain_3", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0},
-    {field = "setpoint_boost_cutoff_3", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15},
-    {field = "setpoint_boost_gain_4", type = "U8", apiVersion = {12, 0, 8}, simResponse = {0}, min = 0, max = 250, default = 0},
-    {field = "setpoint_boost_cutoff_4", type = "U8", apiVersion = {12, 0, 8}, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15},
-    {field = "yaw_dynamic_ceiling_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250},
-    {field = "yaw_dynamic_deadband_gain", type = "U8", apiVersion = {12, 0, 8}, simResponse = {30}, default = 30, min = 0, max = 250},
-    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = {12, 0, 8}, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit = "Hz"},
-    {field = "cyclic_ring", type = "U8", apiVersion = {12, 0, 9}, simResponse = {150}, default = 0, min = 0, max = 250, default=150, unit = "%"},
-    {field = "cyclic_polarity", type = "U8", apiVersion = {12, 0, 9}, simResponse = {1}, default = 0, min = 0, max = 1, tableIdxInc = -1, table = offOn},
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"rates_type", "U8", 0, 6, 4, nil, nil, nil, nil, nil, TBL_RATE_TABLE, -1},
+    {"rcRates_1", "U8"},
+    {"rcExpo_1", "U8"},
+    {"rates_1", "U8"},
+    {"response_time_1", "U8", 0, 250, nil, "ms"},
+    {"accel_limit_1", "U16", 0, 50000, nil, "°/s", nil, nil, 10, 10},
+    {"rcRates_2", "U8"},
+    {"rcExpo_2", "U8"},
+    {"rates_2", "U8"},
+    {"response_time_2", "U8", 0, 250, nil, "ms"},
+    {"accel_limit_2", "U16", 0, 50000, nil, "°/s", nil, nil, 10, 10},
+    {"rcRates_3", "U8"},
+    {"rcExpo_3", "U8"},
+    {"rates_3", "U8"},
+    {"response_time_3", "U8", 0, 250, nil, "ms"},
+    {"accel_limit_3", "U16", 0, 50000, nil, "°/s", nil, nil, 10, 10},
+    {"rcRates_4", "U8"},
+    {"rcExpo_4", "U8"},
+    {"rates_4", "U8"},
+    {"response_time_4", "U8", 0, 250, nil, "ms"},
+    {"accel_limit_4", "U16", 0, 50000, nil, "°/s", nil, nil, 10, 10}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_gain_1", "U8", 0, 250, 0}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_cutoff_1", "U8", 0, 250, 15, "Hz"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_gain_2", "U8", 0, 250, 0}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_cutoff_2", "U8", 0, 250, 90, "Hz"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_gain_3", "U8", 0, 250, 0}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_cutoff_3", "U8", 0, 250, 15, "Hz"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_gain_4", "U8", 0, 250, 0}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"setpoint_boost_cutoff_4", "U8", 0, 250, 15, "Hz"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"yaw_dynamic_ceiling_gain", "U8", 0, 250, 30}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"yaw_dynamic_deadband_gain", "U8", 0, 250, 30}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"yaw_dynamic_deadband_filter", "U8", 0, 250, 60, "Hz", 1, 10}
 end
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
+if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"cyclic_ring", "U8", 0, 250, 150, "%"}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"cyclic_polarity", "U8", 0, 1, 0, nil, nil, nil, nil, nil, TBL_OFF_ON, -1}
 end
 
-return factory.create({
+local SIM_RESPONSE = core.simResponse({
+    6,       -- rates_type
+    18,      -- rcRates_1
+    25,      -- rcExpo_1
+    32,      -- rates_1
+    20,      -- response_time_1
+    0, 0,    -- accel_limit_1
+    18,      -- rcRates_2
+    25,      -- rcExpo_2
+    32,      -- rates_2
+    20,      -- response_time_2
+    0, 0,    -- accel_limit_2
+    32,      -- rcRates_3
+    50,      -- rcExpo_3
+    45,      -- rates_3
+    10,      -- response_time_3
+    0, 0,    -- accel_limit_3
+    56,      -- rcRates_4
+    0,       -- rcExpo_4
+    56,      -- rates_4
+    20,      -- response_time_4
+    0, 0,    -- accel_limit_4
+    0,       -- setpoint_boost_gain_1
+    15,      -- setpoint_boost_cutoff_1
+    0,       -- setpoint_boost_gain_2
+    90,      -- setpoint_boost_cutoff_2
+    0,       -- setpoint_boost_gain_3
+    15,      -- setpoint_boost_cutoff_3
+    0,       -- setpoint_boost_gain_4
+    15,      -- setpoint_boost_cutoff_4
+    30,      -- yaw_dynamic_ceiling_gain
+    30,      -- yaw_dynamic_deadband_gain
+    60,      -- yaw_dynamic_deadband_filter
+    150,     -- cyclic_ring
+    1        -- cyclic_polarity
+})
+
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    initialRebuildOnWrite = true,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

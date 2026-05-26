@@ -122,6 +122,13 @@ function apiversion.wakeup()
                 rfsuite.config.mspProtocolVersion = restoreProto
                 rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "info")
                 rfsuite.utils.log(string.format("MSP protocol restored to v%d", restoreProto), "connect")
+                rfsuite.session.mspProtocolVersion = restoreProto
+                if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.setProtocolVersion then
+                    rfsuite.tasks.msp.common.setProtocolVersion(restoreProto)
+                end
+                mspCallMade = false
+                clearApiEntry()
+                return
             end
 
             rfsuite.session.apiVersion = version and string.format("%.2f", version) or nil
@@ -132,7 +139,15 @@ function apiversion.wakeup()
             end
             clearApiEntry()
         end)
-        API.setErrorHandler(function() clearApiEntry() end)
+        API.setErrorHandler(function()
+            rfsuite.config.mspProtocolVersion = originalProto
+            rfsuite.session.mspProtocolVersion = originalProto
+            if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common and rfsuite.tasks.msp.common.setProtocolVersion then
+                rfsuite.tasks.msp.common.setProtocolVersion(originalProto)
+            end
+            mspCallMade = false
+            clearApiEntry()
+        end)
         API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
         API.read()
     end

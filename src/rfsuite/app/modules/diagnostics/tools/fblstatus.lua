@@ -34,6 +34,20 @@ local function queueDirect(message, uuid)
     return tasks.msp.mspQueue:add(message)
 end
 
+local function setFieldValue(idx, value)
+    local field = app.formFields and app.formFields[idx] or nil
+    if field and field.value then
+        field:value(value)
+    end
+end
+
+local function setFieldColor(idx, value)
+    local field = app.formFields and app.formFields[idx] or nil
+    if field and field.color then
+        field:color(value)
+    end
+end
+
 local apidata = {
     api = {[1] = nil},
     formdata = {
@@ -135,12 +149,12 @@ local function eraseDataflash()
 
             summary = {}
 
-            app.formFields[1]:value("")
-            app.formFields[2]:value("")
-            app.formFields[3]:value("")
-            app.formFields[4]:value("")
-            app.formFields[5]:value("")
-            app.formFields[6]:value("")
+            setFieldValue(1, "")
+            setFieldValue(2, "")
+            setFieldValue(3, "")
+            setFieldValue(4, "")
+            setFieldValue(5, "")
+            setFieldValue(6, "")
         end,
         simulatorResponse = {}
     }
@@ -170,13 +184,29 @@ local function wakeup()
 
     if enableWakeup == false then return end
 
+    local page = app and app.Page or nil
+    local pageFields = app and app.formFields or nil
+    local mspQueue = tasks and tasks.msp and tasks.msp.mspQueue or nil
+
+    if not mspQueue then
+        return
+    end
+
     if triggerEraseDataFlash == true then
-        app.audio.playEraseFlash = true
+        if app and app.audio then
+            app.audio.playEraseFlash = true
+        end
         triggerEraseDataFlash = false
 
-        app.ui.progressDisplay("@i18n(app.modules.fblstatus.erasing)@", "@i18n(app.modules.fblstatus.erasing_dataflash)@")
-        app.Page.eraseDataflash()
-        app.triggers.isReady = true
+        if app and app.ui then
+            app.ui.progressDisplay("@i18n(app.modules.fblstatus.erasing)@", "@i18n(app.modules.fblstatus.erasing_dataflash)@")
+        end
+        if page and page.eraseDataflash then
+            page.eraseDataflash()
+        end
+        if app and app.triggers then
+            app.triggers.isReady = true
+        end
     end
 
     if triggerEraseDataFlash == false then
@@ -184,7 +214,7 @@ local function wakeup()
         if (now - wakeupScheduler) >= 2 then
             wakeupScheduler = now
             firstRun = false
-            if tasks.msp.mspQueue:isProcessed() then
+            if mspQueue:isProcessed() then
 
                 getStatus()
                 getDataflashSummary()
@@ -192,38 +222,40 @@ local function wakeup()
 
                 if status.fblYear ~= nil and status.fblMonth ~= nil and status.fblDay ~= nil then
                     local value = string.format("%04d-%02d-%02d", status.fblYear, status.fblMonth, status.fblDay)
-                    app.formFields[1]:value(value)
+                    setFieldValue(1, value)
                 end
 
                 if status.fblHour ~= nil and status.fblMinute ~= nil and status.fblSecond ~= nil then
                     local value = string.format("%02d:%02d:%02d", status.fblHour, status.fblMinute, status.fblSecond)
-                    app.formFields[2]:value(value)
+                    setFieldValue(2, value)
                 end
 
                 if status.armingDisableFlags ~= nil then
                     local value = rfutils.armingDisableFlagsToString(status.armingDisableFlags)
-                    app.formFields[3]:value(value)
+                    setFieldValue(3, value)
                 end
 
                 if summary.supported == true then
                     local value = getFreeDataflashSpace()
-                    app.formFields[4]:value(value)
+                    setFieldValue(4, value)
                 end
 
                 if status.realTimeLoad ~= nil then
                     local value = math.floor(status.realTimeLoad / 10)
-                    app.formFields[5]:value(tostring(value) .. "%")
-                    if value >= 60 then app.formFields[4]:color(RED) end
+                    setFieldValue(5, tostring(value) .. "%")
+                    if value >= 60 then setFieldColor(4, RED) end
                 end
                 if status.cpuLoad ~= nil then
                     local value = status.cpuLoad / 10
-                    app.formFields[6]:value(tostring(value) .. "%")
-                    if value >= 60 then app.formFields[4]:color(RED) end
+                    setFieldValue(6, tostring(value) .. "%")
+                    if value >= 60 then setFieldColor(4, RED) end
                 end
 
             end
         end
-        if (now - wakeupScheduler) >= 1 then app.triggers.closeProgressLoader = true end
+        if (now - wakeupScheduler) >= 1 and app and app.triggers then
+            app.triggers.closeProgressLoader = true
+        end
     end
 
 end

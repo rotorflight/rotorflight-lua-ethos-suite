@@ -8,7 +8,8 @@ local rfsuite = require("rfsuite")
 local smart = {}
 
 local smartfuel = assert(loadfile("tasks/scheduler/sensors/lib/smartfuel.lua"))()
-local smartfuelvoltage = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelvoltage.lua"))()
+local smartfuelfbl = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelfbl.lua"))()
+local smartfuellocal = assert(loadfile("tasks/scheduler/sensors/lib/smartfuellocal.lua"))()
 local smartfuelprefs = assert(loadfile("tasks/scheduler/sensors/lib/smartfuelprefs.lua"))()
 
 local log
@@ -30,37 +31,69 @@ local lastPush = {}
 local lastModule = nil
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.0
+local modeSignature = nil
+local lastSmartFuelMode = nil
+local SMARTFUEL_APP_ID = 0x5FE1
 
 local useRawValue = rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
 
-local function useNativeSmartFuel()
-    return system.getVersion().simulation ~= true and rfsuite.utils.apiVersionCompare(">=", {12, 0, 10})
+local function getProtocol()
+    return rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol and rfsuite.tasks.msp.protocol.mspProtocol
+end
+
+local function useFirmwareSmartFuel()
+    return smartfuelfbl.isActive()
+end
+
+local function getSmartFuelMode()
+    if useFirmwareSmartFuel() then
+        return "firmware"
+    end
+
+    local localSource = smartfuelprefs.getSource()
+    if localSource == 1 then
+        return "voltage"
+    elseif localSource == 2 then
+        return "combined"
+    end
+    return "current"
+end
+
+local function getSmartFuelModeDetail(mode)
+    local localSource = smartfuelprefs.getSource()
+    local remoteLabel = smartfuelfbl.getSourceLabel()
+    local localLabel = localSource == 1 and "VOLTAGE" or localSource == 2 and "COMBINED" or "CURRENT"
+    if mode == "firmware" then
+        return "firmware " .. remoteLabel
+    end
+    return "local " .. localLabel .. " (firmware " .. remoteLabel .. ")"
 end
 
 local function calculateFuel()
-    if smartfuelprefs.getSource() == 1 then
-        return smartfuelvoltage.calculate()
+    -- FBL OFF and firmware before 12.0.9 both use the local calculator.
+    if useFirmwareSmartFuel() then
+        return smartfuelfbl.calculateFuel()
     end
-    return smartfuel.calculate()
+
+    return smartfuellocal.calculate()
 end
 
 local function calculateConsumption()
-    if smartfuelprefs.getSource() == 1 then
-        local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000
-        local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
-        local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
-        if smartfuelPct then
-            local usableCapacity = capacity * (1 - warningPercentage / 100)
-            local usedPercent = 100 - smartfuelPct
-            return (usedPercent / 100) * usableCapacity
-        end
+    if useFirmwareSmartFuel() then
+        return smartfuelfbl.calculateConsumption()
     end
-    return rfsuite.tasks.telemetry.getSensor("consumption") or 0
+
+    if smartfuellocal.getConsumption then
+        local consumption = smartfuellocal.getConsumption()
+        if consumption ~= nil then return consumption end
+    end
+    return 0
 end
 
 local function resetFuel()
     smartfuel.reset()
-    smartfuelvoltage.reset()
+    smartfuelfbl.reset()
+    smartfuellocal.reset()
 end
 
 local function clamp(v, minv, maxv)
@@ -76,9 +109,34 @@ end
 
 local function resetConsumption() end
 
-local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = 0x5FE1, unit = UNIT_PERCENT, minimum = -1, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
+local smart_sensors = {smartfuel = {name = "Smart Fuel", appId = SMARTFUEL_APP_ID, unit = UNIT_PERCENT, minimum = -1, maximum = 100, value = calculateFuel}, smartconsumption = {name = "Smart Consumption", appId = 0x5FE0, unit = UNIT_MILLIAMPERE_HOUR, minimum = 0, maximum = 1000000000, value = calculateConsumption}}
 
 smart.sensors = smart_sensors
+
+local function syncSmartSensorMode()
+    local session = rfsuite.session
+    if not (session and session.apiVersion and session.telemetrySensor) then return end
+
+    local protocol = getProtocol()
+    local moduleId = session.telemetrySensor and session.telemetrySensor.module and session.telemetrySensor:module() or "?"
+    local smartFuelMode = getSmartFuelMode()
+    local signature = table.concat({tostring(session.apiVersion), tostring(protocol or "?"), tostring(moduleId), smartFuelMode}, ":")
+    if modeSignature == signature then return end
+    modeSignature = signature
+
+    if lastSmartFuelMode ~= smartFuelMode then
+        resetFuel()
+        resetConsumption()
+        lastValue = {}
+        lastPush = {}
+        if log then
+            local msg = "Smart Fuel mode: " .. getSmartFuelModeDetail(smartFuelMode)
+            log(msg, "info")
+            log(msg, "connect")
+        end
+    end
+    lastSmartFuelMode = smartFuelMode
+end
 
 local function createOrUpdateSensor(appId, fieldMeta, value)
 
@@ -163,17 +221,16 @@ function smart.wakeup()
     if (os_clock() - lastWake) < interval then return end
     lastWake = os_clock()
 
+    syncSmartSensorMode()
+
     for name, meta in pairs(smart_sensors) do
-        local shouldPublish = not (name == "smartfuel" and useNativeSmartFuel())
-        if shouldPublish then
-            local value
-            if type(meta.value) == "function" then
-                value = meta.value()
-            else
-                value = meta.value
-            end
-            createOrUpdateSensor(meta.appId, meta, value)
+        local value
+        if type(meta.value) == "function" then
+            value = meta.value()
+        else
+            value = meta.value
         end
+        createOrUpdateSensor(meta.appId, meta, value)
     end
 end
 
@@ -192,6 +249,8 @@ function smart.reset()
     lastValue = {}
     lastPush = {}
     lastModule = nil
+    modeSignature = nil
+    lastSmartFuelMode = nil
 
     resetFuel()
     resetConsumption()

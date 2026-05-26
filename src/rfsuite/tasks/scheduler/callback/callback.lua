@@ -20,11 +20,27 @@ callback._queue = {}
 local MAX_PER_WAKEUP = (config and config.callbackMaxPerWakeup) or 16
 local BUDGET_SECONDS = (config and config.callbackBudgetSeconds) or 0.004
 
-function callback.now(callbackParam) table_insert(callback._queue, {time = nil, func = callbackParam, repeat_interval = nil}) end
+local function enqueue(when, callbackParam, repeatInterval, meta)
+    local entry = {
+        time = when,
+        func = callbackParam,
+        repeat_interval = repeatInterval
+    }
 
-function callback.inSeconds(seconds, callbackParam) table_insert(callback._queue, {time = os_clock() + seconds, func = callbackParam, repeat_interval = nil}) end
+    if type(meta) == "table" then
+        for k, v in pairs(meta) do
+            entry[k] = v
+        end
+    end
 
-function callback.every(seconds, callbackParam) table_insert(callback._queue, {time = os_clock() + seconds, func = callbackParam, repeat_interval = seconds}) end
+    table_insert(callback._queue, entry)
+end
+
+function callback.now(callbackParam, meta) enqueue(nil, callbackParam, nil, meta) end
+
+function callback.inSeconds(seconds, callbackParam, meta) enqueue(os_clock() + seconds, callbackParam, nil, meta) end
+
+function callback.every(seconds, callbackParam, meta) enqueue(os_clock() + seconds, callbackParam, seconds, meta) end
 
 function callback.wakeup()
     local now = os_clock()
@@ -45,8 +61,12 @@ function callback.wakeup()
                 i = i + 1
                 processed = processed + 1
             else
-                table_remove(queue, i)
+                -- swap-remove: O(1) vs table_remove's O(n) shift
+                local n = #queue
+                if i < n then queue[i] = queue[n] end
+                queue[n] = nil
                 processed = processed + 1
+                -- do not increment i: the swapped-in element needs checking
             end
         else
             i = i + 1
@@ -61,6 +81,29 @@ function callback.clear(callbackParam)
             table_remove(queue, i)
         end
     end
+end
+
+function callback.clearBy(predicate)
+    if type(predicate) ~= "function" then return 0 end
+
+    local queue = callback._queue
+    local removed = 0
+
+    for i = #queue, 1, -1 do
+        local entry = queue[i]
+        local ok, shouldClear = pcall(predicate, entry)
+        if ok and shouldClear == true then
+            table_remove(queue, i)
+            removed = removed + 1
+        end
+    end
+
+    return removed
+end
+
+function callback.clearOwner(owner)
+    if owner == nil then return 0 end
+    return callback.clearBy(function(entry) return entry and entry.owner == owner end)
 end
 
 function callback.clearAll()

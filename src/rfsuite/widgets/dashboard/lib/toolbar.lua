@@ -98,6 +98,25 @@ local function loadToolbarMask(path, lcd)
     return mask
 end
 
+local function resolveToolbarThemeColor(lcd, themeColorKey, fallback)
+    if type(themeColorKey) == "number"
+        and rfsuite
+        and rfsuite.utils
+        and rfsuite.utils.ethosVersionAtLeast
+        and rfsuite.utils.ethosVersionAtLeast({26, 1, 0})
+        and type(lcd.themeColor) == "function" then
+        return lcd.themeColor(themeColorKey)
+    end
+    return fallback
+end
+
+local function resolveToolbarDividerColor(themeState, fallback, surfaceBg)
+    local divider = themeState and themeState.buttonBorderColor or nil
+    if divider == surfaceBg then divider = themeState and themeState.secondaryColor or nil end
+    if divider == surfaceBg then divider = themeState and themeState.primaryColor or nil end
+    return divider or fallback
+end
+
 local function getToolbarBounds(dashboard, lcd)
     local W, H = lcd.getWindowSize()
     -- Keep percentage-based sizing, but avoid overstretch on taller/fullscreen displays.
@@ -155,6 +174,15 @@ local function getToolbarCache(dashboard)
     return dashboard._toolbarCache
 end
 
+function M.clearCaches(dashboard)
+    clearToolbarMaskCache(dashboard)
+    if dashboard then
+        dashboard._toolbarRects = nil
+        dashboard._toolbarItemsSorted = nil
+        dashboard._toolbarEnabled = nil
+    end
+end
+
 local function isItemEnabled(item, dashboard, rfsuite)
     if not item then return false end
     if type(item.enableFunction) == "function" then
@@ -199,17 +227,14 @@ function M.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEF
         return
     end
 
-    local themeDefault = lcd.themeColor(THEME_DEFAULT_COLOR)
-    local themeFocus = lcd.themeColor(THEME_FOCUS_COLOR)
-    local themeDefaultBg = lcd.themeColor(THEME_DEFAULT_BGCOLOR)
-    local themeFocusBg = lcd.themeColor(THEME_FOCUS_BGCOLOR)
-    local lineColor = themeFocus
-    local isDark = lcd.darkMode()
-    if isDark then
-        lcd.color(lcd.RGB(0, 0, 0, 0.99))
-    else
-        lcd.color(lcd.RGB(255, 255, 255, 0.99))
-    end
+    local themeState = dashboard and dashboard.utils and dashboard.utils.getThemeState and dashboard.utils.getThemeState() or nil
+    local themeDefault = resolveToolbarThemeColor(lcd, THEME_DEFAULT_COLOR, (themeState and themeState.primaryColor) or lcd.RGB(90, 90, 90))
+    local themeFocus = resolveToolbarThemeColor(lcd, THEME_FOCUS_COLOR, (themeState and themeState.focusColor) or lcd.RGB(0, 0, 0))
+    local themeDefaultBg = resolveToolbarThemeColor(lcd, THEME_DEFAULT_BGCOLOR, (themeState and themeState.primaryBgColor) or lcd.RGB(255, 255, 255))
+    local themeFocusBg = resolveToolbarThemeColor(lcd, THEME_FOCUS_BGCOLOR, (themeState and themeState.focusBgColor) or lcd.RGB(230, 230, 230))
+    local surfaceBg = (themeState and themeState.usesThemeColors and themeState.pageBgColor) or themeDefaultBg
+    local lineColor = resolveToolbarDividerColor(themeState, themeDefault, surfaceBg)
+    lcd.color(surfaceBg)
     lcd.drawFilledRectangle(x, y, w, barH)
     lcd.color(lineColor)
     lcd.drawFilledRectangle(x, y, w, 4)

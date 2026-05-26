@@ -1,74 +1,76 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "PID_TUNING"
-local MSP_REBUILD_ON_WRITE = false
+local MSP_API_CMD_READ = 112
+local MSP_API_CMD_WRITE = 202
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "pid_0_P", type = "U16", apiVersion = {12, 0, 6}, simResponse = {50, 0}, min = 0, max = 1000, default = 50},
-    {field = "pid_0_I", type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
-    {field = "pid_0_D", type = "U16", apiVersion = {12, 0, 6}, simResponse = {20, 0}, min = 0, max = 1000, default = 0},
-    {field = "pid_0_F", type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"pid_0_P", "U16", 0, 1000, 50},
+    {"pid_0_I", "U16", 0, 1000, 100},
+    {"pid_0_D", "U16", 0, 1000, 0},
+    {"pid_0_F", "U16", 0, 1000, 100},
 
-    {field = "pid_1_P", type = "U16", apiVersion = {12, 0, 6}, simResponse = {50, 0}, min = 0, max = 1000, default = 50},
-    {field = "pid_1_I", type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
-    {field = "pid_1_D", type = "U16", apiVersion = {12, 0, 6}, simResponse = {50, 0}, min = 0, max = 1000, default = 40},
-    {field = "pid_1_F", type = "U16", apiVersion = {12, 0, 6}, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+    {"pid_1_P", "U16", 0, 1000, 50},
+    {"pid_1_I", "U16", 0, 1000, 100},
+    {"pid_1_D", "U16", 0, 1000, 40},
+    {"pid_1_F", "U16", 0, 1000, 100},
 
-    {field = "pid_2_P", type = "U16", apiVersion = {12, 0, 6}, simResponse = {80, 0}, min = 0, max = 1000, default = 80},
-    {field = "pid_2_I", type = "U16", apiVersion = {12, 0, 6}, simResponse = {120, 0}, min = 0, max = 1000, default = 120},
-    {field = "pid_2_D", type = "U16", apiVersion = {12, 0, 6}, simResponse = {40, 0}, min = 0, max = 1000, default = 10},
-    {field = "pid_2_F", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 1000, default = 0},
+    {"pid_2_P", "U16", 0, 1000, 80},
+    {"pid_2_I", "U16", 0, 1000, 120},
+    {"pid_2_D", "U16", 0, 1000, 10},
+    {"pid_2_F", "U16", 0, 1000, 0},
 
-    {field = "pid_0_B", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 1000, default = 0},
-    {field = "pid_1_B", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 1000, default = 0},
-    {field = "pid_2_B", type = "U16", apiVersion = {12, 0, 6}, simResponse = {0, 0}, min = 0, max = 1000, default = 0},
+    {"pid_0_B", "U16", 0, 1000, 0},
+    {"pid_1_B", "U16", 0, 1000, 0},
+    {"pid_2_B", "U16", 0, 1000, 0},
 
-    {field = "pid_0_O", type = "U16", apiVersion = {12, 0, 6}, simResponse = {45, 0}, min = 0, max = 1000, default = 45},
-    {field = "pid_1_O", type = "U16", apiVersion = {12, 0, 6}, simResponse = {45, 0}, min = 0, max = 1000, default = 45}
+    {"pid_0_O", "U16", 0, 1000, 45},
+    {"pid_1_O", "U16", 0, 1000, 45}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local SIM_RESPONSE = core.simResponse({
+    50, 0,   -- pid_0_P
+    100, 0,  -- pid_0_I
+    20, 0,   -- pid_0_D
+    100, 0,  -- pid_0_F
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
+    50, 0,   -- pid_1_P
+    100, 0,  -- pid_1_I
+    50, 0,   -- pid_1_D
+    100, 0,  -- pid_1_F
 
-local function buildWritePayload(payloadData, _, _, state)
-    return core.buildWritePayload(API_NAME, payloadData, MSP_API_STRUCTURE_WRITE, state.rebuildOnWrite == true)
-end
+    80, 0,   -- pid_2_P
+    120, 0,  -- pid_2_I
+    40, 0,   -- pid_2_D
+    0, 0,    -- pid_2_F
 
-return factory.create({
+    0, 0,    -- pid_0_B
+    0, 0,    -- pid_1_B
+    0, 0,    -- pid_2_B
+
+    45, 0,   -- pid_0_O
+    45, 0    -- pid_1_O
+})
+
+return core.createConfigAPI({
     name = API_NAME,
-    readCmd = 112,
-    writeCmd = 202,
-    minBytes = MSP_MIN_BYTES,
-    readStructure = MSP_API_STRUCTURE_READ,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE,
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
-    writeUuidFallback = true,
-    initialRebuildOnWrite = MSP_REBUILD_ON_WRITE,
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end
+    readCmd = MSP_API_CMD_READ,
+    writeCmd = MSP_API_CMD_WRITE,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
+    writeUuidFallback = true
 })

@@ -1,80 +1,83 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "RESCUE_PROFILE"
 local MSP_API_CMD_READ = 146
 local MSP_API_CMD_WRITE = 147
-local MSP_REBUILD_ON_WRITE = false
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rescue_mode", type = "U8", apiVersion = {12, 0, 6}, simResponse = {1}, min = 0, max = 1, default = 0, table = {[0] = "@i18n(api.RESCUE_PROFILE.tbl_off)@", "@i18n(api.RESCUE_PROFILE.tbl_on)@"}},
-    {field = "rescue_flip_mode", type = "U8", apiVersion = {12, 0, 6}, simResponse = {0}, min = 0, max = 1, default = 0, table = {[0] = "@i18n(api.RESCUE_PROFILE.tbl_noflip)@", "@i18n(api.RESCUE_PROFILE.tbl_flip)@"}},
-    {field = "rescue_flip_gain", type = "U8", apiVersion = {12, 0, 6}, simResponse = {200}, min = 5, max = 250, default = 200},
-    {field = "rescue_level_gain", type = "U8", apiVersion = {12, 0, 6}, simResponse = {100}, min = 5, max = 250, default = 100},
-    {field = "rescue_pull_up_time", type = "U8", apiVersion = {12, 0, 6}, simResponse = {5}, min = 0, max = 250, default = 0.3, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_climb_time", type = "U8", apiVersion = {12, 0, 6}, simResponse = {3}, min = 0, max = 250, default = 1, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_flip_time", type = "U8", apiVersion = {12, 0, 6}, simResponse = {10}, min = 0, max = 250, default = 2, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_exit_time", type = "U8", apiVersion = {12, 0, 6}, simResponse = {5}, min = 0, max = 250, default = 0.5, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_pull_up_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = {182, 3}, min = 0, max = 100, default = 65, unit = "%", scale = 10},
-    {field = "rescue_climb_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = {188, 2}, min = 0, max = 100, default = 45, unit = "%", scale = 10},
-    {field = "rescue_hover_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = {194, 1}, min = 0, max = 100, default = 35, unit = "%", scale = 10},
-    {field = "rescue_hover_altitude", type = "U16", apiVersion = {12, 0, 6}, simResponse = {244, 1}, min = 0, max = 500, default = 20, unit = "m"},
-    {field = "rescue_alt_p_gain", type = "U16", apiVersion = {12, 0, 6}, simResponse = {20, 0}, min = 0, max = 1000, default = 20},
-    {field = "rescue_alt_i_gain", type = "U16", apiVersion = {12, 0, 6}, simResponse = {20, 0}, min = 0, max = 1000, default = 20},
-    {field = "rescue_alt_d_gain", type = "U16", apiVersion = {12, 0, 6}, simResponse = {10, 0}, min = 0, max = 1000, default = 10},
-    {field = "rescue_max_collective", type = "U16", apiVersion = {12, 0, 6}, simResponse = {232, 3}, min = 0, max = 100, default = 90, unit = "%", scale = 10},
-    {field = "rescue_max_setpoint_rate", type = "U16", apiVersion = {12, 0, 6}, simResponse = {44, 1}, min = 5, max = 1000, default = 300, unit = "°/s"},
-    {field = "rescue_max_setpoint_accel", type = "U16", apiVersion = {12, 0, 6}, simResponse = {184, 11}, min = 0, max = 10000, default = 3000, unit = "°/s^2"}
+local TBL_RESCUE_MODE = {
+    [0] = "@i18n(api.RESCUE_PROFILE.tbl_off)@",
+    "@i18n(api.RESCUE_PROFILE.tbl_on)@"
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local TBL_RESCUE_FLIP = {
+    [0] = "@i18n(api.RESCUE_PROFILE.tbl_noflip)@",
+    "@i18n(api.RESCUE_PROFILE.tbl_flip)@"
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
+local FIELD_SPEC = {
+    {"rescue_mode", "U8", 0, 1, 0, nil, nil, nil, nil, nil, TBL_RESCUE_MODE},
+    {"rescue_flip_mode", "U8", 0, 1, 0, nil, nil, nil, nil, nil, TBL_RESCUE_FLIP},
+    {"rescue_flip_gain", "U8", 5, 250, 200},
+    {"rescue_level_gain", "U8", 5, 250, 100},
+    {"rescue_pull_up_time", "U8", 0, 250, 0.3, "s", 1, 10},
+    {"rescue_climb_time", "U8", 0, 250, 1, "s", 1, 10},
+    {"rescue_flip_time", "U8", 0, 250, 2, "s", 1, 10},
+    {"rescue_exit_time", "U8", 0, 250, 0.5, "s", 1, 10},
+    {"rescue_pull_up_collective", "U16", 0, 100, 65, "%", nil, 10},
+    {"rescue_climb_collective", "U16", 0, 100, 45, "%", nil, 10},
+    {"rescue_hover_collective", "U16", 0, 100, 35, "%", nil, 10},
+    {"rescue_hover_altitude", "U16", 0, 500, 20, "m"},
+    {"rescue_alt_p_gain", "U16", 0, 1000, 20},
+    {"rescue_alt_i_gain", "U16", 0, 1000, 20},
+    {"rescue_alt_d_gain", "U16", 0, 1000, 10},
+    {"rescue_max_collective", "U16", 0, 100, 90, "%", nil, 10},
+    {"rescue_max_setpoint_rate", "U16", 5, 1000, 300, "°/s"},
+    {"rescue_max_setpoint_accel", "U16", 0, 10000, 3000, "°/s^2"}
+}
 
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
+local SIM_RESPONSE = core.simResponse({
+    1,        -- rescue_mode
+    0,        -- rescue_flip_mode
+    200,      -- rescue_flip_gain
+    100,      -- rescue_level_gain
+    5,        -- rescue_pull_up_time
+    3,        -- rescue_climb_time
+    10,       -- rescue_flip_time
+    5,        -- rescue_exit_time
+    182, 3,   -- rescue_pull_up_collective
+    188, 2,   -- rescue_climb_collective
+    194, 1,   -- rescue_hover_collective
+    244, 1,   -- rescue_hover_altitude
+    20, 0,    -- rescue_alt_p_gain
+    20, 0,    -- rescue_alt_i_gain
+    10, 0,    -- rescue_alt_d_gain
+    232, 3,   -- rescue_max_collective
+    44, 1,    -- rescue_max_setpoint_rate
+    184, 11   -- rescue_max_setpoint_accel
+})
 
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
     readCmd = MSP_API_CMD_READ,
     writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
     exports = {
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

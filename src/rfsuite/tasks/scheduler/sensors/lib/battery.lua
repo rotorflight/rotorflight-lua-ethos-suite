@@ -10,6 +10,51 @@ local log = rfsuite.utils.log
 
 local mspCallMade = false
 
+local function finalizeBatteryConfig(config)
+    rfsuite.session.batteryConfig = config
+
+    log("Capacity: " .. config.batteryCapacity .. "mAh", "info")
+    log("Cell Count: " .. config.batteryCellCount, "info")
+    log("Warning Voltage: " .. config.vbatwarningcellvoltage .. "V", "info")
+    log("Min Voltage: " .. config.vbatmincellvoltage .. "V", "info")
+    log("Max Voltage: " .. config.vbatmaxcellvoltage .. "V", "info")
+    log("Full Cell Voltage: " .. config.vbatfullcellvoltage .. "V", "info")
+    log("LVC Percentage: " .. config.lvcPercentage .. "%", "info")
+    log("Consumption Warning Percentage: " .. config.consumptionWarningPercentage .. "%", "info")
+    log("Battery Config Complete", "info")
+
+    log("Capacity: " .. config.batteryCapacity .. "mAh", "connect")
+    log("Cell Count: " .. config.batteryCellCount, "connect")
+    log("Warning Voltage: " .. config.vbatwarningcellvoltage .. "V", "connect")
+    log("Min Voltage: " .. config.vbatmincellvoltage .. "V", "connect")
+    log("Max Voltage: " .. config.vbatmaxcellvoltage .. "V", "connect")
+    log("Full Cell Voltage: " .. config.vbatfullcellvoltage .. "V", "connect")
+    log("LVC Percentage: " .. config.lvcPercentage .. "%", "connect")
+    log("Consumption Warning Percentage: " .. config.consumptionWarningPercentage .. "%", "connect")
+end
+
+local function readSmartFuelConfig(config)
+    if not rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+        finalizeBatteryConfig(config)
+        return
+    end
+
+    local smartFuelAPI = rfsuite.tasks.msp.api.load("SMARTFUEL_CONFIG")
+    smartFuelAPI.setCompleteHandler(function()
+        config.smartfuelRemoteSource = tonumber(smartFuelAPI.readValue("smartfuel_mode")) or 0
+        finalizeBatteryConfig(config)
+    end)
+
+    smartFuelAPI.setErrorHandler(function(self, err)
+        log("Failed to read smart fuel config via MSP: " .. err, "info")
+        config.smartfuelRemoteSource = 0
+        finalizeBatteryConfig(config)
+    end)
+
+    smartFuelAPI.setUUID("0f6f4fd1-9e69-4e13-bc53-3d0e98e5c5a5")
+    smartFuelAPI.read()
+end
+
 function battery.wakeup()
 
     if rfsuite.session.apiVersion == nil then return end
@@ -31,46 +76,27 @@ function battery.wakeup()
             local lvcPercentage = API.readValue("lvcPercentage")
             local consumptionWarningPercentage = API.readValue("consumptionWarningPercentage")
             local voltageMeterSource = API.readValue("voltageMeterSource")
+            local config = {}
+            config.voltageMeterSource = voltageMeterSource
+            config.batteryCapacity = batteryCapacity
+            config.batteryCellCount = batteryCellCount
+            config.vbatwarningcellvoltage = vbatwarningcellvoltage
+            config.vbatmincellvoltage = vbatmincellvoltage
+            config.vbatmaxcellvoltage = vbatmaxcellvoltage
+            config.vbatfullcellvoltage = vbatfullcellvoltage
+            config.lvcPercentage = lvcPercentage
+            config.consumptionWarningPercentage = consumptionWarningPercentage
+            config.smartfuelRemoteSource = 0
 
-            rfsuite.session.batteryConfig = {}
-            rfsuite.session.batteryConfig.voltageMeterSource = voltageMeterSource
-            rfsuite.session.batteryConfig.batteryCapacity = batteryCapacity
-            rfsuite.session.batteryConfig.batteryCellCount = batteryCellCount
-            rfsuite.session.batteryConfig.vbatwarningcellvoltage = vbatwarningcellvoltage
-            rfsuite.session.batteryConfig.vbatmincellvoltage = vbatmincellvoltage
-            rfsuite.session.batteryConfig.vbatmaxcellvoltage = vbatmaxcellvoltage
-            rfsuite.session.batteryConfig.vbatfullcellvoltage = vbatfullcellvoltage
-            rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
-            rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
-
-            rfsuite.session.batteryConfig.profiles = {}
+            config.profiles = {}
             for i = 0, 5 do
                 local val = API.readValue("batteryCapacity_" .. i)
                 if val then
-                    rfsuite.session.batteryConfig.profiles[i] = val
+                    config.profiles[i] = val
                 end
             end
 
-            log("Capacity: " .. batteryCapacity .. "mAh", "info")
-            log("Cell Count: " .. batteryCellCount, "info")
-            log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "info")
-            log("Min Voltage: " .. vbatmincellvoltage .. "V", "info")
-            log("Max Voltage: " .. vbatmaxcellvoltage .. "V", "info")
-            log("Full Cell Voltage: " .. vbatfullcellvoltage .. "V", "info")
-            log("LVC Percentage: " .. lvcPercentage .. "%", "info")
-            log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%", "info")
-            log("Battery Config Complete", "info")
-
-            log("Capacity: " .. batteryCapacity .. "mAh", "connect")
-            log("Cell Count: " .. batteryCellCount, "connect")
-            log("Warning Voltage: " .. vbatwarningcellvoltage .. "V", "connect")
-            log("Min Voltage: " .. vbatmincellvoltage .. "V", "connect")
-            log("Max Voltage: " .. vbatmaxcellvoltage .. "V", "connect")
-            log("Full Cell Voltage: " .. vbatfullcellvoltage .. "V", "connect")
-            log("LVC Percentage: " .. lvcPercentage .. "%", "connect")
-            log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%", "connect")
-            
-
+            readSmartFuelConfig(config)
         end)
 
         API.setErrorHandler(function(self, err)

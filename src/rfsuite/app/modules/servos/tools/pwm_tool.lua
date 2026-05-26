@@ -15,11 +15,23 @@ local servoIndex = rfsuite.currentServoIndex - 1
 local isSaving = false
 local enableWakeup = false
 
-local USE_INDEXED = false       -- INDEX code not merged yet - force off for now, but keep functions in place for easier merge when ready
-
 local servoTable
 local servoCount
 local configs = {}
+local INDEXED_SERVO_CONFIG_MIN_API = {12, 0, 9}
+
+local function useIndexedServoConfig()
+    return rfsuite.utils.apiVersionCompare(">=", INDEXED_SERVO_CONFIG_MIN_API)
+end
+
+local function currentServoReadIndex()
+    -- PWM servos use the MSP servo namespace directly: Servo 1 -> 0.
+    return servoIndex
+end
+
+local function currentServoWriteIndex()
+    return servoIndex
+end
 
 local function queueDirect(message, uuid)
     if message and uuid and message.uuid == nil then message.uuid = uuid end
@@ -54,38 +66,42 @@ local function servoCenterFocusAllOff(self)
 end
 
 local function servoCenterFocusOff(self)
-    local message = {command = 193, payload = {servoIndex}}
+    local writeIndex = currentServoWriteIndex()
+    local message = {command = 193, payload = {writeIndex}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-    queueDirect(message, string.format("servo.override.%d.off", servoIndex))
+    queueDirect(message, string.format("servo.override.%d.off", writeIndex))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOn(self)
-    local message = {command = 193, payload = {servoIndex}}
+    local writeIndex = currentServoWriteIndex()
+    local message = {command = 193, payload = {writeIndex}}
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-    queueDirect(message, string.format("servo.override.%d.on", servoIndex))
+    queueDirect(message, string.format("servo.override.%d.on", writeIndex))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    return queueDirect(mspEepromWrite, "servo.pwmtool.eeprom")
-
+    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.pwmtool.eeprom"})
+    if not ok then
+        rfsuite.utils.log("Servo PWM EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
+    return ok, reason
 end
 
 local function saveServoCenter(self)
 
     local servoCenter = math.floor(configs[servoIndex]['mid'])
+    local writeIndex = currentServoWriteIndex()
 
     local message = {command = 213, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
 
-    return queueDirect(message, string.format("servo.%d.center", servoIndex))
+    return queueDirect(message, string.format("servo.%d.center", writeIndex))
 
 end
 
@@ -112,8 +128,9 @@ local function saveServoSettings(self)
         servoFlags = 3
     end
 
+    local writeIndex = currentServoWriteIndex()
     local message = {command = 212, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
@@ -123,7 +140,7 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-    local ok, reason = queueDirect(message, string.format("servo.%d.config", servoIndex))
+    local ok, reason = queueDirect(message, string.format("servo.%d.config", writeIndex))
     if not ok then return false, reason end
 
     if rfsuite.session.servoOverride == true then
@@ -219,8 +236,9 @@ local function wakeup(self)
             currentServoCenter = configs[servoIndex]['mid']
 
             local now = os.clock()
+            local indexedServoConfig = useIndexedServoConfig()
             local settleTime
-            if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+            if indexedServoConfig then
                 settleTime = 0.05
             else
                 settleTime = 0.85
@@ -228,7 +246,7 @@ local function wakeup(self)
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
                     local ok, reason
-                    if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+                    if indexedServoConfig then
                         ok, reason = self.saveServoCenter(self)
                     else
                         ok, reason = self.saveServoSettings(self)
@@ -273,6 +291,7 @@ local function getServoConfigurations(callback, callbackParam)
     local message = {
         command = 120,
         processReply = function(self, buf)
+            buf.offset = 1
             servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
             rfsuite.session.servoCount = servoCount
@@ -319,11 +338,16 @@ local function getServoConfigurationsIndexed(callback, callbackParam)
 
     -- MSP_GET_SERVO_CONFIG (125) returns config for a *single* servo index.
     -- Payload must contain exactly 1 byte: the servo index (0-based).
+    local readIndex = currentServoReadIndex()
     local message = {
         command = 125,
-        payload = {servoIndex},
-        uuid = string.format("servo.cfg.%d", servoIndex),
+        payload = {readIndex},
+        uuid = string.format("servo.cfg.%d", readIndex),
+        errorHandler = function()
+            getServoConfigurations(callback, callbackParam)
+        end,
         processReply = function(self, buf)
+            buf.offset = 1
 
             -- Ensure we have a servoCount for any "all servos" operations (override on/off).
             if not servoCount then
@@ -587,7 +611,7 @@ local function openPage(opts)
         if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
-    if USE_INDEXED and rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
+    if useIndexedServoConfig() then
         getServoConfigurationsIndexed(getServoConfigurationsEnd)
     else
         getServoConfigurations(getServoConfigurationsEnd)
@@ -643,10 +667,23 @@ end
 
 local function onReloadMenu() rfsuite.app.triggers.triggerReloadFull = true end
 
+local function close()
+    -- Release Ethos-held form callbacks immediately so the GC can collect
+    -- configs, servoTable, and the rest of the module's upvalue environment.
+    -- Without this, Ethos retains the getter/setter closures until the next
+    -- page calls form.clear(), leaving all servo data pinned in RAM.
+    enableWakeup = false
+    form.clear()
+    configs = {}
+    servoTable = nil
+    collectgarbage("collect")
+end
+
 return {
 
     reboot = false,
     event = event,
+    close = close,
     setValues = setValues,
     servoChanged = servoChanged,
     servoCenterFocusOn = servoCenterFocusOn,

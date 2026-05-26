@@ -1,19 +1,17 @@
 --[[
-  Copyright (C) 2025 Rotorflight Project
-  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+  Copyright (C) 2026 Rotorflight Project
+  GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
 local rfsuite = require("rfsuite")
+
 local msp = rfsuite.tasks and rfsuite.tasks.msp
 local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then msp.apicore = core end
-local factory = (msp and msp.apifactory) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/_factory.lua"))()
-if msp and not msp.apifactory then msp.apifactory = factory end
+if msp and not msp.apicore then
+    msp.apicore = core
+end
 
 local API_NAME = "ESC_PARAMETERS_SCORPION"
-local MSP_API_CMD_READ = 217
-local MSP_API_CMD_WRITE = 218
-local MSP_REBUILD_ON_WRITE = false
 local MSP_SIGNATURE = 0x53
 local MSP_HEADER_BYTES = 2
 
@@ -23,103 +21,134 @@ local becVoltage = {"5.1 V", "6.1 V", "7.3 V", "8.3 V", "Disabled"}
 local teleProtocol = {"@i18n(api.ESC_PARAMETERS_SCORPION.tbl_standard)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_vbar)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_exbus)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_unsolicited)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_futsbus)@"}
 local onOff = {"@i18n(api.ESC_PARAMETERS_SCORPION.tbl_on)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_off)@"}
 
--- LuaFormatter off
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature", type = "U8", apiVersion = {12, 0, 7}, simResponse = {83}},
-    {field = "esc_command", type = "U8", apiVersion = {12, 0, 7}, simResponse = {128}},
-    {field = "escinfo_1", type = "U8", apiVersion = {12, 0, 7}, simResponse = {84}},
-    {field = "escinfo_2", type = "U8", apiVersion = {12, 0, 7}, simResponse = {114}},
-    {field = "escinfo_3", type = "U8", apiVersion = {12, 0, 7}, simResponse = {105}},
-    {field = "escinfo_4", type = "U8", apiVersion = {12, 0, 7}, simResponse = {98}},
-    {field = "escinfo_5", type = "U8", apiVersion = {12, 0, 7}, simResponse = {117}},
-    {field = "escinfo_6", type = "U8", apiVersion = {12, 0, 7}, simResponse = {110}},
-    {field = "escinfo_7", type = "U8", apiVersion = {12, 0, 7}, simResponse = {117}},
-    {field = "escinfo_8", type = "U8", apiVersion = {12, 0, 7}, simResponse = {115}},
-    {field = "escinfo_9", type = "U8", apiVersion = {12, 0, 7}, simResponse = {32}},
-    {field = "escinfo_10", type = "U8", apiVersion = {12, 0, 7}, simResponse = {69}},
-    {field = "escinfo_11", type = "U8", apiVersion = {12, 0, 7}, simResponse = {83}},
-    {field = "escinfo_12", type = "U8", apiVersion = {12, 0, 7}, simResponse = {67}},
-    {field = "escinfo_13", type = "U8", apiVersion = {12, 0, 7}, simResponse = {45}},
-    {field = "escinfo_14", type = "U8", apiVersion = {12, 0, 7}, simResponse = {54}},
-    {field = "escinfo_15", type = "U8", apiVersion = {12, 0, 7}, simResponse = {83}},
-    {field = "escinfo_16", type = "U8", apiVersion = {12, 0, 7}, simResponse = {45}},
-    {field = "escinfo_17", type = "U8", apiVersion = {12, 0, 7}, simResponse = {56}},
-    {field = "escinfo_18", type = "U8", apiVersion = {12, 0, 7}, simResponse = {48}},
-    {field = "escinfo_19", type = "U8", apiVersion = {12, 0, 7}, simResponse = {65}},
-    {field = "escinfo_20", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_21", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_22", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_23", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_24", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_25", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_26", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_27", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_28", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_29", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_30", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "escinfo_31", type = "U8", apiVersion = {12, 0, 7}, simResponse = {4}},
-    {field = "escinfo_32", type = "U8", apiVersion = {12, 0, 7}, simResponse = {0}},
-    {field = "esc_mode", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}, min = 0, max = #escMode, tableIdxInc = -1, table = escMode},
-    {field = "bec_voltage", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}, min = 0, max = #becVoltage, tableIdxInc = -1, table = becVoltage},
-    {field = "rotation", type = "U16", apiVersion = {12, 0, 7}, simResponse = {1, 0}, min = 0, max = #rotation, tableIdxInc = -1, table = rotation},
-    {field = "telemetry_protocol", type = "U16", apiVersion = {12, 0, 7}, simResponse = {3, 0}, min = 0, max = #teleProtocol, tableIdxInc = -1, table = teleProtocol},
-    {field = "protection_delay", type = "U16", apiVersion = {12, 0, 7}, simResponse = {136, 19}, min = 0, max = 5000, unit = "s", scale = 1000},
-    {field = "min_voltage", type = "U16", apiVersion = {12, 0, 7}, simResponse = {22, 3}, min = 0, max = 7000, unit = "v", decimals = 1, scale = 100},
-    {field = "max_temperature", type = "U16", apiVersion = {12, 0, 7}, simResponse = {16, 39}, min = 0, max = 40000, unit = "°", scale = 100},
-    {field = "max_current", type = "U16", apiVersion = {12, 0, 7}, simResponse = {64, 31}, min = 0, max = 30000, unit = "A", scale = 100},
-    {field = "cutoff_handling", type = "U16", apiVersion = {12, 0, 7}, simResponse = {136, 19}, min = 0, max = 10000, unit = "%", scale = 100},
-    {field = "max_used", type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 0}, min = 0, max = 6000, unit = "Ah", scale = 100},
-    {field = "motor_startup_sound", type = "U16", apiVersion = {12, 0, 7}, simResponse = {1, 0}, min = 0, max = #onOff, tableIdxInc = -1, table = onOff},
-    {field = "padding_1", type = "U16", apiVersion = {12, 0, 7}, simResponse = {7, 2}},
-    {field = "padding_2", type = "U16", apiVersion = {12, 0, 7}, simResponse = {0, 6}},
-    {field = "padding_3", type = "U16", apiVersion = {12, 0, 7}, simResponse = {63, 0}},
-    {field = "soft_start_time", type = "U16", apiVersion = {12, 0, 7}, simResponse = {160, 15}, unit = "s", min = 0, max = 60000, scale = 1000},
-    {field = "runup_time", type = "U16", apiVersion = {12, 0, 7}, simResponse = {64, 31}, unit = "s", min = 0, max = 60000, scale = 1000},
-    {field = "bailout", type = "U16", apiVersion = {12, 0, 7}, simResponse = {208, 7}, unit = "s", min = 0, max = 100000, scale = 1000},
-    {field = "gov_proportional", type = "U32", apiVersion = {12, 0, 7}, simResponse = {100, 0, 0, 0}, min = 30, max = 180, scale = 100},
-    {field = "gov_integral", type = "U32", apiVersion = {12, 0, 7}, simResponse = {200, 0, 0, 0}, min = 150, max = 250, scale = 100}
+-- Tuple layout:
+--   field, type, min, max, default, unit,
+--   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos, offset, xvals
+local FIELD_SPEC = {
+    {"esc_signature", "U8"},
+    {"esc_command", "U8"},
+    {"escinfo_1", "U8"},
+    {"escinfo_2", "U8"},
+    {"escinfo_3", "U8"},
+    {"escinfo_4", "U8"},
+    {"escinfo_5", "U8"},
+    {"escinfo_6", "U8"},
+    {"escinfo_7", "U8"},
+    {"escinfo_8", "U8"},
+    {"escinfo_9", "U8"},
+    {"escinfo_10", "U8"},
+    {"escinfo_11", "U8"},
+    {"escinfo_12", "U8"},
+    {"escinfo_13", "U8"},
+    {"escinfo_14", "U8"},
+    {"escinfo_15", "U8"},
+    {"escinfo_16", "U8"},
+    {"escinfo_17", "U8"},
+    {"escinfo_18", "U8"},
+    {"escinfo_19", "U8"},
+    {"escinfo_20", "U8"},
+    {"escinfo_21", "U8"},
+    {"escinfo_22", "U8"},
+    {"escinfo_23", "U8"},
+    {"escinfo_24", "U8"},
+    {"escinfo_25", "U8"},
+    {"escinfo_26", "U8"},
+    {"escinfo_27", "U8"},
+    {"escinfo_28", "U8"},
+    {"escinfo_29", "U8"},
+    {"escinfo_30", "U8"},
+    {"escinfo_31", "U8"},
+    {"escinfo_32", "U8"},
+    {"esc_mode", "U16", 0, #escMode, nil, nil, nil, nil, nil, nil, escMode, -1},
+    {"bec_voltage", "U16", 0, #becVoltage, nil, nil, nil, nil, nil, nil, becVoltage, -1},
+    {"rotation", "U16", 0, #rotation, nil, nil, nil, nil, nil, nil, rotation, -1},
+    {"telemetry_protocol", "U16", 0, #teleProtocol, nil, nil, nil, nil, nil, nil, teleProtocol, -1},
+    {"protection_delay", "U16", 0, 5000, nil, "s", nil, 1000},
+    {"min_voltage", "U16", 0, 7000, nil, "v", 1, 100},
+    {"max_temperature", "U16", 0, 40000, nil, "°", nil, 100},
+    {"max_current", "U16", 0, 30000, nil, "A", nil, 100},
+    {"cutoff_handling", "U16", 0, 10000, nil, "%", nil, 100},
+    {"max_used", "U16", 0, 6000, nil, "Ah", nil, 100},
+    {"motor_startup_sound", "U16", 0, #onOff, nil, nil, nil, nil, nil, nil, onOff, -1},
+    {"padding_1", "U16"},
+    {"padding_2", "U16"},
+    {"padding_3", "U16"},
+    {"soft_start_time", "U16", 0, 60000, nil, "s", nil, 1000},
+    {"runup_time", "U16", 0, 60000, nil, "s", nil, 1000},
+    {"bailout", "U16", 0, 100000, nil, "s", nil, 1000},
+    {"gov_proportional", "U32", 30, 180, nil, nil, nil, 100},
+    {"gov_integral", "U32", 150, 250, nil, nil, nil, 100}
 }
--- LuaFormatter on
 
-local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE = core.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
+local SIM_RESPONSE = core.simResponse({
+    83, -- esc_signature
+    128, -- esc_command
+    84, -- escinfo_1
+    114, -- escinfo_2
+    105, -- escinfo_3
+    98, -- escinfo_4
+    117, -- escinfo_5
+    110, -- escinfo_6
+    117, -- escinfo_7
+    115, -- escinfo_8
+    32, -- escinfo_9
+    69, -- escinfo_10
+    83, -- escinfo_11
+    67, -- escinfo_12
+    45, -- escinfo_13
+    54, -- escinfo_14
+    83, -- escinfo_15
+    45, -- escinfo_16
+    56, -- escinfo_17
+    48, -- escinfo_18
+    65, -- escinfo_19
+    0, -- escinfo_20
+    0, -- escinfo_21
+    0, -- escinfo_22
+    0, -- escinfo_23
+    0, -- escinfo_24
+    0, -- escinfo_25
+    0, -- escinfo_26
+    0, -- escinfo_27
+    0, -- escinfo_28
+    0, -- escinfo_29
+    0, -- escinfo_30
+    4, -- escinfo_31
+    0, -- escinfo_32
+    3, 0, -- esc_mode
+    3, 0, -- bec_voltage
+    1, 0, -- rotation
+    3, 0, -- telemetry_protocol
+    136, 19, -- protection_delay
+    22, 3, -- min_voltage
+    16, 39, -- max_temperature
+    64, 31, -- max_current
+    136, 19, -- cutoff_handling
+    0, 0, -- max_used
+    1, 0, -- motor_startup_sound
+    7, 2, -- padding_1
+    0, 6, -- padding_2
+    63, 0, -- padding_3
+    160, 15, -- soft_start_time
+    64, 31, -- runup_time
+    208, 7, -- bailout
+    100, 0, 0, 0, -- gov_proportional
+    200, 0, 0, 0 -- gov_integral
+})
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
-local function parseRead(buf)
-    local result = nil
-    core.parseMSPData(API_NAME, buf, MSP_API_STRUCTURE_READ, nil, nil, function(parsed)
-        result = parsed
-    end)
-    if result == nil then
-        return nil, "parse_failed"
-    end
-    return result
-end
-
-local function buildWritePayload(payloadData, _, _, state)
-    local writeStructure = MSP_API_STRUCTURE_WRITE
-    if writeStructure == nil then return {} end
-    return core.buildWritePayload(API_NAME, payloadData, writeStructure, state.rebuildOnWrite == true)
-end
-
-return factory.create({
+return core.createConfigAPI({
     name = API_NAME,
-    readCmd = MSP_API_CMD_READ,
-    writeCmd = MSP_API_CMD_WRITE,
-    minBytes = MSP_MIN_BYTES or 0,
-    readStructure = MSP_API_STRUCTURE_READ,
-    writeStructure = MSP_API_STRUCTURE_WRITE,
-    simulatorResponseRead = MSP_API_SIMULATOR_RESPONSE or {},
-    parseRead = parseRead,
-    buildWritePayload = buildWritePayload,
+    minApiVersion = {12, 0, 7},
+    readCmd = 217,
+    writeCmd = 218,
+    fields = FIELD_SPEC,
+    simulatorResponseRead = SIM_RESPONSE,
     writeUuidFallback = true,
-    initialRebuildOnWrite = (MSP_REBUILD_ON_WRITE == true),
-    readCompleteFn = function(state)
-        return state.mspData ~= nil
-    end,
+    initialRebuildOnWrite = false,
+    readCompleteOnErrorReplyAttempt = 2,
     exports = {
         mspSignature = MSP_SIGNATURE,
         mspHeaderBytes = MSP_HEADER_BYTES,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        simulatorResponse = SIM_RESPONSE
     }
 })

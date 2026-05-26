@@ -8,7 +8,6 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local MSP_SET_SERIAL_CONFIG = 55
-local MSP_EEPROM_WRITE = 250
 
 local PORT_TYPE_DISABLED = 0
 local PORT_TYPE_MSP = 1
@@ -35,6 +34,7 @@ local PORT_FUNCTIONS = {
     {id = 128, excl = 128, name = "@i18n(app.modules.ports.function_blackbox)@", type = PORT_TYPE_BLACKBOX},
     {id = 262144, excl = 262144, name = "@i18n(app.modules.ports.function_sbus_out)@", type = PORT_TYPE_AUTO, minApi = {12, 0, 7}},
     {id = 524288, excl = 524288, name = "@i18n(app.modules.ports.function_fbus_out)@", type = PORT_TYPE_AUTO, minApi = {12, 0, 9}},
+    {id = 1048576, excl = 1048576, name = "@i18n(app.modules.ports.function_sport_input)@", type = PORT_TYPE_AUTO, minApi = {12, 0, 9}},
     {id = 4, excl = 4668, name = "@i18n(app.modules.ports.function_telem_frsky)@", type = PORT_TYPE_TELEM},
     {id = 32, excl = 4668, name = "@i18n(app.modules.ports.function_telem_smartport)@", type = PORT_TYPE_TELEM},
     {id = 4096, excl = 4668, name = "@i18n(app.modules.ports.function_telem_ibus)@", type = PORT_TYPE_TELEM},
@@ -349,14 +349,18 @@ local function queueSetSerialPort(port, done, failed)
 end
 
 local function queueEepromWrite(done, failed)
-    local message = {
-        command = MSP_EEPROM_WRITE,
+    local ok, reason = rfsuite.utils.queueEepromWrite({
+        uuid = "ports.eeprom",
         processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end,
-        simulatorResponse = {}
-    }
-    local ok, reason = queueDirect(message, "ports.eeprom")
-    if not ok and failed then failed(reason or "queue_rejected") end
+        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end
+    })
+    if not ok and failed then
+        if reason == "armed_blocked" then
+            failed(rfsuite.utils.getArmedSaveBlockedMessage())
+        else
+            failed(reason or "queue_rejected")
+        end
+    end
 end
 
 local function savePorts()

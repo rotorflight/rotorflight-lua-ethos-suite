@@ -24,9 +24,29 @@ local function clearTable(tbl)
     for k in pairs(tbl) do tbl[k] = nil end
 end
 
+local function normalizeThemeFolder(folderName)
+    if type(folderName) ~= "string" then return folderName end
+    local src, folder = folderName:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) == "@" then
+        return src .. "/" .. folder:sub(2)
+    end
+    return folderName
+end
+
+local function sortThemesByName(a, b)
+    local nameA = string.lower(a.name or "")
+    local nameB = string.lower(b.name or "")
+    if nameA ~= nameB then return nameA < nameB end
+
+    local folderA = (a.source or "") .. "/" .. (a.folder or "")
+    local folderB = (b.source or "") .. "/" .. (b.folder or "")
+    return folderA < folderB
+end
+
 local function generateThemeList()
 
     themeList = rfsuite.widgets.dashboard.listThemes()
+    table.sort(themeList, sortThemesByName)
 
     settings = rfsuite.preferences.dashboard or {}
 
@@ -42,6 +62,7 @@ local function generateThemeList()
     clearTable(themeById)
     defaultThemeId = 0
 
+    local fallbackThemeId = 0
     for i, theme in ipairs(themeList) do
         local themeId = tonumber(theme.idx) or i
         local themeName = theme.name or ("Theme " .. tostring(i))
@@ -49,11 +70,16 @@ local function generateThemeList()
         if type(theme.source) == "string" and type(theme.folder) == "string" then
             folderKey = theme.source .. "/" .. theme.folder
             themeIdByFolder[folderKey] = themeId
+            if theme.source == "system" then
+                themeIdByFolder[theme.source .. "/@" .. theme.folder] = themeId
+            end
+            if theme.source == "system" and theme.folder == "default" then defaultThemeId = themeId end
         end
         themeById[themeId] = theme
-        if defaultThemeId == 0 then defaultThemeId = themeId end
+        if fallbackThemeId == 0 then fallbackThemeId = themeId end
         table.insert(formattedThemes, {themeName, themeId})
     end
+    if defaultThemeId == 0 then defaultThemeId = fallbackThemeId end
 
     table.insert(formattedThemesModel, {"@i18n(app.modules.settings.dashboard_theme_panel_model_disabled)@", 0})
     for i, theme in ipairs(themeList) do
@@ -65,7 +91,8 @@ end
 
 local function getThemeIdFromFolder(folderName, allowDisabled)
     if type(folderName) == "string" and folderName ~= "" and folderName ~= "nil" then
-        local id = themeIdByFolder[folderName]
+        local id = themeIdByFolder[normalizeThemeFolder(folderName)]
+        if not id then id = themeIdByFolder[folderName] end
         if type(id) == "number" then return id end
     end
     if allowDisabled then return 0 end

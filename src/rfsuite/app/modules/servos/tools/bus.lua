@@ -27,10 +27,11 @@ local busServoCount = 16    -- how many bus servos we display
 -- This page only controls BUS servo list UI and navigation.
 
 local function writeEeprom()
-
-    local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
-
+    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.bus.eeprom"})
+    if not ok then
+        rfsuite.utils.log("Servo BUS EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
+    return ok, reason
 end
 
 local function buildServoTable()
@@ -277,7 +278,7 @@ local function onToolMenu(self)
                     triggerOverRideAll = true
                     return true
                 end
-            }, {label = "CANCEL", action = function() return true end}
+            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
         }
     else
         buttons = {
