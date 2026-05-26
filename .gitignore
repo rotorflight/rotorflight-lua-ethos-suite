@@ -6,6 +6,7 @@ src/rfsuite.zip
 /bin/sound-generator/soundpack/user/*.wav
 *subprocess_conout.cpython-312.*
 simulator/*
+simulators/*
 deploy.json
 *.pyc
 *.pyc
