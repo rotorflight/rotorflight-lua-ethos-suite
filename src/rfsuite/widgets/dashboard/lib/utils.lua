@@ -20,6 +20,7 @@ local format = string.format
 local rep = string.rep
 local ipairs = ipairs
 local pairs = pairs
+local type = type
 local tostring = tostring
 local tonumber = tonumber
 
@@ -103,6 +104,8 @@ local resolveColorTableCache = setmetatable({}, {__mode = "k"})
 local dashboardThemePaletteCache = {dark = nil, light = nil, signature = nil, palette = nil}
 local themeFallbackPaletteCache = {dark = nil, light = nil, signature = nil, palette = nil}
 local themeStateCache = {signature = nil, state = nil}
+local LOGO_DARK_FALLBACK = "widgets/dashboard/gfx/logo-dark.png"
+local LOGO_LIGHT_FALLBACK = "widgets/dashboard/gfx/logo-light.png"
 local DASHBOARD_RESOLUTION_TOLERANCE = 12
 local DASHBOARD_SUPPORTED_RESOLUTIONS = {
     {784, 294}, {784, 316}, {800, 458}, {800, 480},
@@ -204,6 +207,47 @@ end
 
 local function isLegacyDarkMode()
     return type(lcd.darkMode) == "function" and lcd.darkMode() == true
+end
+
+local function colorLuma(color)
+    if type(color) ~= "number" then return nil end
+    color = floor(color)
+    if color < 0 then return nil end
+
+    local r, g, b
+    if color > 0xFFFFFF then
+        local high = (color >> 24) & 0xFF
+        local low = color & 0xFF
+        if (low == 0 or low == 1 or low == 255) and high ~= 0 and high ~= 1 and high ~= 255 then
+            r = high
+            g = (color >> 16) & 0xFF
+            b = (color >> 8) & 0xFF
+        else
+            r = (color >> 16) & 0xFF
+            g = (color >> 8) & 0xFF
+            b = low
+        end
+    elseif color > 0xFFFF then
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+    else
+        r = ((color >> 11) & 0x1F) * 255 / 31
+        g = ((color >> 5) & 0x3F) * 255 / 63
+        b = (color & 0x1F) * 255 / 31
+    end
+
+    return r * 0.299 + g * 0.587 + b * 0.114
+end
+
+local function getLogoFallbackForBackground(bgcolor)
+    local luma = colorLuma(bgcolor)
+    if luma then return luma > 127 and LOGO_DARK_FALLBACK or LOGO_LIGHT_FALLBACK end
+    return isLegacyDarkMode() and LOGO_LIGHT_FALLBACK or LOGO_DARK_FALLBACK
+end
+
+function utils.getLogoFallbackForBackground(bgcolor)
+    return getLogoFallbackForBackground(bgcolor)
 end
 
 local _supportsThemeChecked = false
@@ -1039,11 +1083,12 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
 
         if type(image) == "string" and rfsuite and rfsuite.utils and rfsuite.utils.loadImage then
             imageCache = imageCache or {}
-            local cacheKey = image or "default_image"
+            local fallbackLogo = getLogoFallbackForBackground(bgcolor)
+            local cacheKey = image .. "|" .. fallbackLogo
             bitmapPtr = imageCache[cacheKey]
             if bitmapPtr == false then bitmapPtr = nil end
             if not bitmapPtr then
-                bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/gfx/logo-dark.png")
+                bitmapPtr = rfsuite.utils.loadImage(image, nil, fallbackLogo)
                 imageCache[cacheKey] = bitmapPtr or false
             end
         elseif type(image) == "userdata" then

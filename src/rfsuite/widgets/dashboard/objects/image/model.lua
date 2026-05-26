@@ -140,7 +140,10 @@ local function resolveModelImage(cfg)
         return paramImage
     end
 
-    return "widgets/dashboard/gfx/logo.png"
+    if utils.getLogoFallbackForBackground then
+        return utils.getLogoFallbackForBackground(cfg.bgcolor)
+    end
+    return "widgets/dashboard/gfx/logo-dark.png"
 end
 
 local function ensureCfg(box)
