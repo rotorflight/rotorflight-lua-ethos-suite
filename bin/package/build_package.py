@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--package-dir",
         default=DEFAULT_PACKAGE_DIR,
-        help="Directory under scripts/ to flatten into the Suite package root.",
+        help="Directory under scripts/ to package into the manifest install folder.",
     )
     parser.add_argument(
         "--build-root",
@@ -226,12 +226,14 @@ def copy_sound_pack(stage_scripts_dir: Path, lang: str) -> None:
     print(f"[package] Copied audio {source} -> {dest}")
 
 
-def build_package_root(stage_scripts_dir: Path, package_root: Path, package_dir: str) -> None:
+def build_package_root(
+    stage_scripts_dir: Path, package_root: Path, package_dir: str, folder: str
+) -> None:
     source_root = stage_scripts_dir / package_dir
     if not source_root.is_dir():
         raise FileNotFoundError(f"Package source directory not found: {source_root}")
     remove_tree(package_root)
-    shutil.copytree(source_root, package_root, dirs_exist_ok=True)
+    shutil.copytree(source_root, package_root / folder, dirs_exist_ok=True)
 
 
 def collect_files(package_root: Path) -> list[str]:
@@ -249,11 +251,10 @@ def collect_files(package_root: Path) -> list[str]:
     return files
 
 
-def build_manifest_file_selectors(files: list[str]) -> list[str]:
+def build_manifest_file_selectors(files: list[str], folder: str) -> list[str]:
     if not files:
         raise ValueError("Package must contain at least one file")
-    # This package zip is built from the app root, so a full selector is sufficient.
-    return ["**"]
+    return [f"{folder}/**"]
 
 
 def load_release_notes(path: str | None, fmt: str) -> dict[str, str] | None:
@@ -369,10 +370,10 @@ def main() -> int:
         update_staged_main_version(
             stage_scripts_dir / args.package_dir / "main.lua", args.artifact_version
         )
-        build_package_root(stage_scripts_dir, package_root, args.package_dir)
+        build_package_root(stage_scripts_dir, package_root, args.package_dir, args.folder)
 
         files = collect_files(package_root)
-        manifest_files = build_manifest_file_selectors(files)
+        manifest_files = build_manifest_file_selectors(files, args.folder)
         release_notes = load_release_notes(args.release_notes_file, args.release_notes_format)
         write_manifest(
             package_root=package_root,
