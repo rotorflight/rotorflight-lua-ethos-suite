@@ -143,6 +143,7 @@ local PATH_CHECK_INTERVAL = 2.0
 local connectAttemptStartedAt = nil
 local hadSession = false  -- latched once we have started (or had) a session attempt
 local connectAttemptResetCooldownUntil = 0
+local lastConnectProgressToken = nil
 local CONNECT_WATCHDOG_TIMEOUT_S = 10.0
 local CONNECT_WATCHDOG_COOLDOWN_S = 3.0
 
@@ -319,6 +320,7 @@ local function clearSessionAndQueue()
 
     -- Reset watchdog state as we are tearing down the connection attempt.
     connectAttemptStartedAt = nil
+    lastConnectProgressToken = nil
 
     utils.session()
 
@@ -390,6 +392,22 @@ local function clearSessionAndQueue()
 
 end
 
+local function connectProgressChanged()
+    local oc = getLoadedEvent("onconnect")
+    local token
+
+    if oc and type(oc.progressToken) == "function" then
+        token = oc.progressToken()
+    end
+
+    if token == nil or token == lastConnectProgressToken then
+        return false
+    end
+
+    lastConnectProgressToken = token
+    return true
+end
+
 function tasks.telemetryCheckScheduler()
 
     if rfsuite.app and rfsuite.app.triggers and rfsuite.app.escPowerCycleLoader then return end
@@ -433,6 +451,7 @@ function tasks.telemetryCheckScheduler()
         end
 
         connectAttemptStartedAt = nil
+        lastConnectProgressToken = nil
         return
     end
 
@@ -452,6 +471,10 @@ function tasks.telemetryCheckScheduler()
     -- Link is up. Start (or continue) a connect attempt timer until isConnected becomes true.
     -- If we exceed the deadline, teardown and retry (with cooldown).
     if not rfsuite.session.isConnected then
+        if connectProgressChanged() then
+            connectAttemptStartedAt = now
+        end
+
         if not connectAttemptStartedAt then
             connectAttemptStartedAt = now
         else
@@ -474,6 +497,7 @@ function tasks.telemetryCheckScheduler()
     else
         -- Connected OK: clear connect watchdog state.
         connectAttemptStartedAt = nil
+        lastConnectProgressToken = nil
     end
 
 
@@ -1071,6 +1095,7 @@ function tasks.init()
 
     connectAttemptStartedAt = nil
     connectAttemptResetCooldownUntil = 0
+    lastConnectProgressToken = nil
 
     tasksList = {}
     tasksListNonSpread = {}
@@ -1153,6 +1178,7 @@ function tasks.done()
     lastOptionalTaskCheckAt = 0
     connectAttemptStartedAt = nil
     connectAttemptResetCooldownUntil = 0
+    lastConnectProgressToken = nil
     hadSession = false
     flightResetEventSrc = nil
     flightResetEventPrimed = false
