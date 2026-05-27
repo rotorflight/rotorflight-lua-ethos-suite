@@ -400,7 +400,6 @@ function MspQueueController:processQueue()
             utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
-        if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         if session then
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
@@ -555,7 +554,6 @@ function MspQueueController:processQueue()
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
         end
         if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
-        if msg and msg.setErrorHandler then pcall(msg.setErrorHandler, msg) end
         local page = rfsuite.app and rfsuite.app.Page
         if page and page.mspTimeout then page.mspTimeout() end
     end
@@ -627,6 +625,8 @@ function MspQueueController:add(message)
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
     self._qidSeq = (self._qidSeq or 0) + 1
     toQueue._qid = self._qidSeq
+    local pageScript = rfsuite.app and rfsuite.app.lastScript
+    if pageScript then toQueue._pageScript = pageScript end
     qpush(self.queue, toQueue)
     pending = self:queueCount() + (self.currentMessage and 1 or 0)
 

@@ -1206,6 +1206,16 @@ function ui.cleanupCurrentPage()
         app.Page.apidata = nil
     end
 
+    -- Remove queued (not in-flight) MSP messages that belong to this page.
+    -- The in-flight currentMessage runs to completion; its callbacks guard against
+    -- a nil app.Page so stale execution is harmless.
+    if app.lastScript and tasks and tasks.msp and tasks.msp.mspQueue then
+        local scriptToFlush = app.lastScript
+        tasks.msp.mspQueue:removeQueuedBy(function(msg)
+            return msg._pageScript == scriptToFlush
+        end)
+    end
+
     -- Release Ethos-side form references before wiping Lua refs.
     -- form.clear() causes Ethos to drop its C++ references to form field callback
     -- closures synchronously, so the subsequent GC cycle can collect them along
