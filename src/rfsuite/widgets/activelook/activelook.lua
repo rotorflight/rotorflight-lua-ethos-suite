@@ -165,8 +165,12 @@ local SENSOR_DEFS = {
     current_max = {
         label = "Max Current",
         icon = {small = 19, large = 51}, -- power
-        value = function() return getSensorStatValue("current", "max") end,
-        decimals = 1,
+        value = function()
+            local current = getSensorStatValue("current", "max")
+            if current ~= nil and type(current) == "number" then current = floor(current) end
+            return current
+        end,
+        decimals = 0,
         suffix = "A"
     },
     voltage = {
