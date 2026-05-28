@@ -2539,6 +2539,7 @@ function ui.openPage(opts)
         app._openedFromShortcuts = (opts.openedFromShortcuts == true)
     end
     app.Page = assert(loadfile(modulePath))(idx)
+    app.utils.capturePageProfileState(app.Page)
     if app._openedFromShortcuts or app._forceMenuToMain then
         app.Page.onNavMenu = function()
             ui.openMainMenu()
@@ -2562,6 +2563,7 @@ function ui.openPage(opts)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
         app.Page.openPage(opts)
+        app.utils.capturePageProfileState(app.Page)
         if ui._shouldManageDirtySave() and app.Page.disableSaveUntilDirty ~= false and not app.Page.canSave then
             app.Page.canSave = function()
                 return app.pageDirty == true
@@ -3187,6 +3189,7 @@ function ui.requestPage()
                 else
                     app.triggers.closeProgressLoader = true
                 end
+                app.utils.capturePageProfileState(app.Page)
                 checkForUnresolvedTimeouts()
 
             end
