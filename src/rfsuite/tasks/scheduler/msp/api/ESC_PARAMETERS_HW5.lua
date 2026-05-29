@@ -42,7 +42,7 @@ local FIELD_SPEC = {
     {"firmware_version", "U128"},
     {"hardware_version", "U128"},
     {"esc_type", "U128"},
-    {"com_version", "U120"},
+    {"mode_name", "U120"},
     {"flight_mode", "U8", 0, #flightMode, 0, nil, nil, nil, nil, nil, flightMode, -1},
     {"lipo_cell_count", "U8", 0, #lipoCellCount, 0, nil, nil, nil, nil, nil, lipoCellCount, -1},
     {"volt_cutoff_type", "U8", 0, #cutoffType, 0, nil, nil, nil, nil, nil, cutoffType, -1},
@@ -67,7 +67,7 @@ local SIM_RESPONSE = core.simResponse({
     32, 32, 32, 80, 76, 45, 48, 52, 46, 49, 46, 48, 50, 32, 32, 32, -- firmware_version
     72, 87, 49, 49, 48, 54, 95, 86, 49, 48, 48, 52, 53, 54, 78, 66, -- hardware_version
     80, 108, 97, 116, 105, 110, 117, 109, 95, 86, 53, 32, 32, 32, 32, 32, -- esc_type
-    80, 108, 97, 116, 105, 110, 117, 109, 32, 86, 53, 32, 32, 32, 32, -- com_version
+    80, 108, 97, 116, 105, 110, 117, 109, 32, 86, 53, 32, 32, 32, 32, -- mode_name
     0, -- flight_mode
     0, -- lipo_cell_count
     0, -- volt_cutoff_type
