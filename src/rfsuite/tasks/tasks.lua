@@ -416,8 +416,9 @@ function tasks.telemetryCheckScheduler()
 
     local telemetryState
     if usingSimulator then
-        -- In simulator, rely on explicit sim event state to avoid TELEMETRY_ACTIVE flapping.
-        telemetryState = (rfsuite.simevent and rfsuite.simevent.telemetry_state) ~= false
+        -- Simulator sensors are provided by the Ethos sensor JSON, so keep the
+        -- link state stable and let normal S.Port source lookup handle values.
+        telemetryState = true
     else
         telemetryState = (tlm and tlm:state()) or false
     end

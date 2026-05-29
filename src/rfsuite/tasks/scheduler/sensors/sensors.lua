@@ -58,9 +58,7 @@ local function loadSensorModule()
 
     local protocol = tasks.msp.protocol.mspProtocol
 
-    if system:getVersion().simulation == true then
-        if not loadedSensorModule or loadedSensorModule.name ~= "sim" then loadedSensorModule = {name = "sim", module = assert(loadfile("tasks/scheduler/sensors/sim.lua"))(config)} end
-    elseif protocol == "crsf" then
+    if protocol == "crsf" then
         if not loadedSensorModule or loadedSensorModule.name ~= "elrs" then loadedSensorModule = {name = "elrs", module = assert(loadfile("tasks/scheduler/sensors/elrs.lua"))(config)} end
     elseif protocol == "sport" then
         if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then

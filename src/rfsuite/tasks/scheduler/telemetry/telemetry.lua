@@ -6,7 +6,7 @@
 --[[
 Telemetry table layout:
 - `sources/sensor_table.lua` stores shared sensor metadata (name, units, stats, transforms, onchange).
-- `sources/sim.lua`, `sources/sport.lua`, `sources/crsf.lua`, and `sources/crsf_legacy.lua`
+- `sources/sport.lua`, `sources/crsf.lua`, and `sources/crsf_legacy.lua`
   store transport-specific source candidates only.
 - Only the active transport table is loaded to keep RAM usage down.
 
@@ -19,8 +19,6 @@ Update process:
 local rfsuite = require("rfsuite")
 
 local arg = {...}
-
-local simSensors = rfsuite.utils.simSensors
 
 local telemetry = {}
 
@@ -113,7 +111,6 @@ end
 local sensorTable = loadSensorMetadata()
 
 local sourceModules = {
-    sim = "tasks/scheduler/telemetry/sources/sim.lua",
     sport = "tasks/scheduler/telemetry/sources/sport.lua",
     crsf = "tasks/scheduler/telemetry/sources/crsf.lua",
     crsfLegacy = "tasks/scheduler/telemetry/sources/crsf_legacy.lua"
@@ -138,7 +135,7 @@ end
 local function detectSourceMode(session)
     if isSim then
         protocol = "sport"
-        return "sim"
+        return "sport"
     end
 
     if session and session.telemetryType == "crsf" then
@@ -274,31 +271,7 @@ function telemetry.getSensorSource(name)
 
     local sourceCandidates = sourceTable[name] or {}
 
-    if mode == "sim" then
-        for _, sensor in t_ipairs(sourceCandidates) do
-            if sensor.uid then
-                local sensorQ = {appId = sensor.uid, category = CATEGORY_TELEMETRY_SENSOR}
-                local source = sys_getSource(sensorQ)
-                if source then
-                    cache_misses = cache_misses + 1
-                    sensors[name] = source
-                    mark_hot(name)
-                    return source
-                end
-            else
-                if checkCondition(sensor) and t_type(sensor) == "table" then
-                    local source = sys_getSource(sensor)
-                    if source then
-                        cache_misses = cache_misses + 1
-                        sensors[name] = source
-                        mark_hot(name)
-                        return source
-                    end
-                end
-            end
-        end
-
-    elseif mode == "crsfLegacy" then
+    if mode == "crsfLegacy" then
         for _, sensor in t_ipairs(sourceCandidates) do
             local source = sys_getSource(sensor)
             if source then
@@ -378,17 +351,6 @@ function telemetry.validateSensors(returnValid)
 
     lastValidationResult = resultSensors
     return resultSensors
-end
-
-function telemetry.simSensors(returnValid)
-    local sourceTable = loadSourceTable("sim", true) or {}
-    local result = {}
-    for key, sensor in t_pairs(sensorTable) do
-        local candidates = sourceTable[key]
-        local firstSim = candidates and candidates[1]
-        if firstSim then t_insert(result, {name = sensor.name, sensor = firstSim}) end
-    end
-    return result
 end
 
 function telemetry.active() return (rfsuite.session and rfsuite.session.telemetryState) or false end

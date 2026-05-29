@@ -627,29 +627,6 @@ function utils.loadImage(image1, image2, image3)
     return getCachedBitmap(image1, candidates(image1)) or getCachedBitmap(image2, candidates(image2)) or getCachedBitmap(image3, candidates(image3))
 end
 
-function utils.simSensors(id)
-    os.mkdir("LOGS:")
-    os.mkdir("LOGS:/rfsuite")
-    os.mkdir("LOGS:/rfsuite/sensors")
-
-    if id == nil then
-        return 0
-    end
-
-    local filepath = "sim/sensors/" .. id .. ".lua"
-
-    local chunk, err = loadfile(filepath)
-    if not chunk then
-        print("Error loading telemetry file: " .. err)
-        return 0
-    end
-
-    local result = chunk()
-
-    return result or 0
-end
-
-
 function utils.logMsp(cmd, rwState, buf, err)
     local dev = rfsuite.preferences and rfsuite.preferences.developer
     if dev and dev.logmsp then

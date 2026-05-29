@@ -11,5 +11,460 @@
     "module": 0,
     "band": 0,
     "rx": 0
+  },
+  {
+    "name": "VFR",
+    "frames": [
+      {
+        "name": "VFR",
+        "value": 100,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0
+  },
+  {
+    "name": "FAS",
+    "frames": [
+      {
+        "name": "Current",
+        "value": 12,
+        "interval": 200
+      },
+      {
+        "name": "Voltage",
+        "value": 24.2,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 0
+  },
+  {
+    "name": "FAS",
+    "frames": [
+      {
+        "name": "Current",
+        "value": 8,
+        "interval": 200
+      },
+      {
+        "name": "Voltage",
+        "value": 22.2,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1
+  },
+  {
+    "name": "FAS",
+    "frames": [
+      {
+        "name": "Current",
+        "value": 12,
+        "interval": 200
+      },
+      {
+        "name": "Voltage",
+        "value": 22.2,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 8
+  },
+  {
+    "name": "FAS",
+    "frames": [
+      {
+        "name": "Current",
+        "value": 0,
+        "interval": 200
+      },
+      {
+        "name": "Voltage",
+        "value": 5.2,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 9
+  },
+  {
+    "name": "FAS",
+    "frames": [
+      {
+        "name": "Current",
+        "value": 12,
+        "interval": 200
+      },
+      {
+        "name": "Voltage",
+        "value": 22.2,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 10
+  },
+  {
+    "name": "VariADV",
+    "frames": [
+      {
+        "name": "Altitude",
+        "value": 15,
+        "interval": 200
+      },
+      {
+        "name": "VSpeed",
+        "value": 0.5,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 0
+  },
+  {
+    "name": "GPS",
+    "frames": [
+      {
+        "name": "Latitude",
+        "value": 51.5072
+      },
+      {
+        "name": "Longitude",
+        "value": -0.1276
+      },
+      {
+        "name": "Altitude",
+        "value": 15
+      },
+      {
+        "name": "Speed",
+        "value": 10
+      },
+      {
+        "name": "Course",
+        "value": 0
+      },
+      {
+        "name": "Sats",
+        "value": 12
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 0,
+    "interval": 1000
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 1800,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1280
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 45,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1025
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 35,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1024
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 80,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1536
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 120,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 21072
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20770
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20771
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20773
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20752
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20753
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 1,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20784
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 1,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20785
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 1,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20787
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 1,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 20786
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 21568
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 5.2,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 2305
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 6,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 21088
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1792
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1808
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 1,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 1824
+  },
+  {
+    "name": "Custom",
+    "frames": [
+      {
+        "name": "",
+        "value": 0,
+        "interval": 200
+      }
+    ],
+    "module": 0,
+    "band": 0,
+    "rx": 0,
+    "appId": 21008
   }
 ]

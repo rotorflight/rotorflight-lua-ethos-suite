@@ -12,7 +12,7 @@ def debug(msg):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Ensure sensors.json exists in the simulator root directory."
+        description="Sync sensors.json to the simulator root directory."
     )
     parser.add_argument("--out-dir", required=True, help="Output directory (scripts/<tgt>)")
     parser.add_argument("--lang")
@@ -34,6 +34,7 @@ def main():
 
     src = git_src / ".vscode" / "sensors.json"
     dst = sim_root / "sensors.json"
+    legacy_sim_sensors = out_dir / "sim" / "sensors"
 
     debug(f"Source sensors.json = {src} (exists={src.is_file()})")
     debug(f"Destination sensors.json = {dst} (exists={dst.is_file()})")
@@ -42,15 +43,19 @@ def main():
         print(f"[SENSORS] No source sensors.json found at {src}")
         return 0
 
-    if dst.is_file():
-        print(f"[SENSORS] sensors.json already exists at simulator root - leaving untouched.")
-        return 0
-
     try:
-        shutil.copy2(src, dst)
-        print(f"[SENSORS] Copied sensors.json → {dst}")
+        if dst.is_file() and src.read_bytes() == dst.read_bytes():
+            print(f"[SENSORS] sensors.json already up to date at simulator root.")
+        else:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+            print(f"[SENSORS] Copied sensors.json to {dst}")
+
+        if legacy_sim_sensors.is_dir():
+            shutil.rmtree(legacy_sim_sensors)
+            print(f"[SENSORS] Removed legacy simulator sensor directory at {legacy_sim_sensors}")
     except Exception as e:
-        print(f"[SENSORS] Copy failed: {e}")
+        print(f"[SENSORS] Sync failed: {e}")
         import traceback
         traceback.print_exc()
         return 1
