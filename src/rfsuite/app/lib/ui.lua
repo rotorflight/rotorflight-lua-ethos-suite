@@ -3065,7 +3065,7 @@ function ui.mspApiUpdateFormAttributes()
                             app.ui.injectApiAttributes(i, f, v)
 
                             local scale = f.scale or 1
-                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] then app.Page.apidata.formdata.fields[i].value = values[mspapiNAME][apikey] / scale end
+                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] ~= nil then app.Page.apidata.formdata.fields[i].value = values[mspapiNAME][apikey] / scale end
 
                             if values[mspapiNAME][apikey] == nil then
                                 log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
@@ -3083,7 +3083,7 @@ function ui.mspApiUpdateFormAttributes()
                                 app.ui.injectApiAttributes(i, f, b)
 
                                 local scale = f.scale or 1
-                                if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
+                                if values and values[mspapiNAME] and values[mspapiNAME][v.field] ~= nil then
                                     local raw_value = values[mspapiNAME][v.field]
                                     local bit_value = (raw_value >> bidx - 1) & 1
                                     app.Page.apidata.formdata.fields[i].value = bit_value / scale

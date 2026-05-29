@@ -109,6 +109,13 @@ local PROFILES = {
             brake_type = TABLES.brake_no_prop
         }
     },
+    HW1121_V00456NB = {
+        tables = {
+            lipo_cell_count = TABLES.lipo_3_to_8,
+            bec_voltage = TABLES.bec_50_to_120,
+            brake_type = TABLES.brake_no_prop
+        }
+    },
     HW1132_V100456NB = {
         tables = {
             bec_voltage = TABLES.bec_60_74_84
@@ -177,9 +184,20 @@ local function getProfileKey()
     local version = trim(escDetails.version) or "default"
     local model = string.upper(trim(escDetails.model) or "")
     local firmware = string.upper(trim(escDetails.firmware) or "")
+    local versionUpper = string.upper(version)
 
     if version ~= "default" and (model:find("OPTO", 1, true) or firmware:find("OPTO", 1, true)) then
         return version .. "_PL_OPTO"
+    end
+
+    if not PROFILES[version] then
+        if versionUpper:find("HW1132", 1, true) then
+            return "HW1132_V100456NB"
+        elseif versionUpper:find("HW1128", 1, true) then
+            return "HW1128_V100456NB"
+        elseif versionUpper:find("HW1121", 1, true) then
+            return "HW1121_V100456NB"
+        end
     end
 
     return version
