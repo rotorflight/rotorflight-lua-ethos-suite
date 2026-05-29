@@ -45,9 +45,9 @@ local FIELD_SPEC = {
     {"mode_name", "U120"},
     {"flight_mode", "U8", 0, #flightMode, 0, nil, nil, nil, nil, nil, flightMode, -1},
     {"lipo_cell_count", "U8", 0, #lipoCellCount, 0, nil, nil, nil, nil, nil, lipoCellCount, -1},
-    {"volt_cutoff_type", "U8", 0, #cutoffType, 0, nil, nil, nil, nil, nil, cutoffType, -1},
     {"cutoff_voltage", "U8", 0, #cutoffVoltage, 3, nil, nil, nil, nil, nil, cutoffVoltage, -1},
     {"bec_voltage", "U8", 0, 70, 0},
+    {"volt_cutoff_type", "U8", 0, #cutoffType, 0, nil, nil, nil, nil, nil, cutoffType, -1},
     {"startup_time", "U8", 4, 25, 0, "s"},
     {"gov_p_gain", "U8", 0, 9, 0},
     {"gov_i_gain", "U8", 0, 9, 0},
@@ -70,9 +70,9 @@ local SIM_RESPONSE = core.simResponse({
     80, 108, 97, 116, 105, 110, 117, 109, 32, 86, 53, 32, 32, 32, 32, -- mode_name
     0, -- flight_mode
     0, -- lipo_cell_count
-    0, -- volt_cutoff_type
     3, -- cutoff_voltage
     0, -- bec_voltage
+    0, -- volt_cutoff_type
     11, -- startup_time
     6, -- gov_p_gain
     5, -- gov_i_gain
