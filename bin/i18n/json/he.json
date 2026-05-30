@@ -6778,6 +6778,13 @@
               "translation": "זמן אתחול",
               "reverse_text": true
             },
+            "response_time": {
+              "english": "Response Time",
+              "translation": "Response Time",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 13
+            },
             "rotation": {
               "english": "Rotation",
               "max_length": 8,

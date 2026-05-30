@@ -21,6 +21,7 @@ local lipoCellCount = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_autocalculate)@", "3S",
 local cutoffType = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_softcutoff)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_hardcutoff)@"}
 local cutoffVoltage = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
 local restartTime = {"1s", "1.5s", "2s", "2.5s", "3s"}
+local responseTime = {"1", "2", "3", "4", "5"}
 local startupPower = {"1", "2", "3", "4", "5", "6", "7"}
 local enabledDisabled = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_enabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@"}
 local brakeType = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_proportional)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_reverse)@"}
@@ -84,22 +85,15 @@ local HW1128_ITEMS = {
 }
 
 local HW1132_ITEMS = {
-    flight_mode = 1,
-    lipo_cell_count = 2,
+    lipo_cell_count = 1,
+    volt_cutoff_type = 2,
     cutoff_voltage = 3,
     bec_voltage = 4,
-    volt_cutoff_type = 5,
-    startup_time = 6,
-    gov_p_gain = 7,
-    gov_i_gain = 8,
-    auto_restart = 9,
-    restart_time = 10,
-    brake_type = 11,
-    brake_force = 12,
-    timing = 13,
-    rotation = 14,
-    active_freewheel = 15,
-    startup_power = 16
+    response_time = 5,
+    timing = 6,
+    rotation = 7,
+    active_freewheel = 8,
+    startup_power = 9
 }
 
 --[[
@@ -126,6 +120,7 @@ local FIELD_SPEC = {
     {"cutoff_voltage", "U8", 0, #cutoffVoltage, 3, nil, nil, nil, nil, nil, cutoffVoltage, -1},
     {"bec_voltage", "U8", 0, 70, 0},
     {"startup_time", "U8", 4, 25, 0, "s"},
+    {"response_time", "U8", 0, #responseTime, 0, nil, nil, nil, nil, nil, responseTime, -1},
     {"gov_p_gain", "U8", 0, 9, 0},
     {"gov_i_gain", "U8", 0, 9, 0},
     {"auto_restart", "U8", 0, 90, 25},
@@ -153,6 +148,7 @@ local SIM_RESPONSE = core.simResponse({
     3, -- cutoff_voltage
     0, -- bec_voltage
     11, -- startup_time
+    1, -- response_time
     6, -- gov_p_gain
     5, -- gov_i_gain
     25, -- auto_restart

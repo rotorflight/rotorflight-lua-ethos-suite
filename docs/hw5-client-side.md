@@ -221,43 +221,48 @@ The page profile hides `bec_voltage` for OPTO variants.
 
 ### HW1132 Layout
 
-`HW1132_V100456NB` is non-default. It swaps the cutoff/BEC/cutoff-type order.
+`HW1132_V100456NB` is non-default. Programming box testing identifies it as an `AIRPLANE_ESC` profile with a shorter 9-item field set.
 
 Layout:
 
 | Item | Field |
 | ---: | --- |
-| 1 | `flight_mode` |
-| 2 | `lipo_cell_count` |
+| 1 | `lipo_cell_count` |
+| 2 | `volt_cutoff_type` |
 | 3 | `cutoff_voltage` |
 | 4 | `bec_voltage` |
-| 5 | `volt_cutoff_type` |
-| 6 | `startup_time` |
-| 7 | `gov_p_gain` |
-| 8 | `gov_i_gain` |
-| 9 | `auto_restart` |
-| 10 | `restart_time` |
-| 11 | `brake_type` |
-| 12 | `brake_force` |
-| 13 | `timing` |
-| 14 | `rotation` |
-| 15 | `active_freewheel` |
-| 16 | `startup_power` |
+| 5 | `response_time` |
+| 6 | `timing` |
+| 7 | `rotation` |
+| 8 | `active_freewheel` |
+| 9 | `startup_power` |
 
-Known HW1132 raw write sequence:
+Known HW1132 raw read/write sequence:
 
 ```text
 ... AIRPLANE_ESC ... 00 00 07 01 00 0F ...
                       ^  ^  ^  ^  ^  ^
-                      |  |  |  |  |  startup_time
-                      |  |  |  |  volt_cutoff_type
+                      |  |  |  |  |  timing
+                      |  |  |  |  response_time
                       |  |  |  bec_voltage
                       |  |  cutoff_voltage
-                      |  lipo_cell_count
-                      flight_mode
+                      |  volt_cutoff_type
+                      lipo_cell_count
 ```
 
-The HobbyWing USB Link install inspected during development did not include a `HW1132` INI file, so this layout is based on captured OEM/write behavior.
+The programming box exposes only:
+
+- Lipo Cells
+- Cutoff Type
+- Cutoff Volt
+- BEC Voltage
+- Response Time
+- Timing
+- Motor Reverse
+- Active FW
+- Startup Power
+
+The HobbyWing USB Link install inspected during development did not include a `HW1132` INI file, so this layout is based on captured serial/write behavior and programming box field availability.
 
 ### HW1128 Layout
 
@@ -298,6 +303,8 @@ Examples:
   - Brake type: Disabled, Normal, Reverse.
 - `HW1132_V100456NB`
   - BEC: 6.0V, 7.4V, 8.4V.
+  - Uses Basic and Advanced pages only.
+  - Response Time and Rotation are shown on Advanced with the motor-related fields.
 - `HW1128_V100456NB`
   - LiPo: Auto, 2S through 4S.
   - Cutoff voltage: Disabled, 2.5V through 3.8V.
@@ -447,4 +454,3 @@ C:\Program Files (x86)\HobbyWing USB Link\Lcd
 The SQLite database files are useful for model/version presence, but the `Lcd/*.ini` files are the best source for item order and display options.
 
 The inspected install included `HW1121`, `HW1128`, `HW1104`, `HW1106`, and `HW198` Platinum V5 INI files, but not `HW1132`. HW1132 behavior was established from captured serial/write traces.
-
