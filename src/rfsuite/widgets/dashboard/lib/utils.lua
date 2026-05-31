@@ -18,6 +18,9 @@ local cos = math.cos
 local rad = math.rad
 local format = string.format
 local rep = string.rep
+
+local _fmtCache = {}
+local _DOTS = {".", "..", "..."}
 local ipairs = ipairs
 local pairs = pairs
 local type = type
@@ -1215,7 +1218,12 @@ function utils.transformValue(value, box)
     local decimals = utils.getParam(box, "decimals")
 
     if decimals ~= nil and value ~= nil then
-        value = format("%." .. decimals .. "f", value)
+        local fmt = _fmtCache[decimals]
+        if not fmt then
+            fmt = "%." .. decimals .. "f"
+            _fmtCache[decimals] = fmt
+        end
+        value = format(fmt, value)
     elseif value ~= nil then
         value = tostring(value)
     end
@@ -1249,7 +1257,7 @@ function utils.getPulsingDots(box, counterKey, maxDots)
     box[key] = count
 
     if count == 0 then return "." end
-    return rep(".", count)
+    return _DOTS[count] or rep(".", count)
 end
 
 local function extractCapacityValue(v)

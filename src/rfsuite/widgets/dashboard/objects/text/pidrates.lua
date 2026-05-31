@@ -61,6 +61,8 @@ local tonumber = tonumber
 
 local render = {}
 
+local PROFILE_STR = {"1", "2", "3", "4", "5", "6"}
+
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
@@ -216,7 +218,7 @@ function render.paint(x, y, w, h, box)
 
     for i = 1, count do
         local cx = startX + (i - 1) * spacing
-        local text = tostring(i)
+        local text = PROFILE_STR[i] or tostring(i)
         local isActive = (activeIndex ~= nil) and (activeIndex == i)
         local currentFont = (isActive and c.highlightlarger and largerFont) or baseFont
 
