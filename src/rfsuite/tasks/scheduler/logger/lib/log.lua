@@ -90,13 +90,13 @@ local function getMinLevel(cfg)
     return LEVEL[cfg.min_print_level] or LEVEL.info
 end
 
-local qConsole = Ring(200)
-local qDisk = Ring(200) -- a little bigger so we can batch more effectively
-local qConnect = Ring(80)
+local qConsole = Ring(20)
+local qDisk = Ring(40)
+local qConnect = Ring(20)
 
 -- Separate rolling buffer for on-screen "connect" display.
-local qConnectView = Ring(160)
-local qSessionView = Ring(160)
+local qConnectView = Ring(20)
+local qSessionView = Ring(20)
 local sessionSeq = 0
 
 local lastPrint, lastDisk, lastConnect = os_clock(), os_clock(), os_clock()
