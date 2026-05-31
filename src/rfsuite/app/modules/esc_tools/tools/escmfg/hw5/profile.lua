@@ -46,7 +46,7 @@ local TABLES = {
     brake_full = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_proportional)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_reverse)@"},
     brake_no_prop = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_reverse)@"},
     brake_basic = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@"},
-    response_time = {"1", "2", "3", "4", "5"}
+    response_time = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 }
 
 local PROFILES = {
@@ -117,6 +117,7 @@ local PROFILES = {
     },
     HW1132_V100456NB = {
         tables = {
+            lipo_cell_count = TABLES.lipo_2_to_4,
             bec_voltage = TABLES.bec_60_74_84,
             response_time = TABLES.response_time
         },
