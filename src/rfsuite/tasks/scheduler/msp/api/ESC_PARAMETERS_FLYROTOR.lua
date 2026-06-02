@@ -97,7 +97,7 @@ local SIM_RESPONSE = core.simResponse({
     35, -- gov_i
     0, -- active_freewheel
     16, -- drive_freq
-    2, 23, 40, -- motor_erpm_max
+    1, 255, 184, -- motor_erpm_max
     0, -- throttle_protocol
     0, -- telemetry_protocol
     3, -- led_color_index

@@ -125,6 +125,7 @@ local function buildRuntimeStructure(fieldSpec)
     local structure = {}
     local names = {}
     local readers = {}
+    local byteorders = {}
     local positionmap = {}
     local minBytes = 0
     local currentByte = 1
@@ -151,6 +152,7 @@ local function buildRuntimeStructure(fieldSpec)
         structure[#structure + 1] = field
         names[#names + 1] = fieldName
         readers[#readers + 1] = reader
+        byteorders[#byteorders + 1] = field.byteorder or false
         positionmap[fieldName] = {start = currentByte, size = fieldSize}
 
         if field.mandatory ~= false then
@@ -160,11 +162,11 @@ local function buildRuntimeStructure(fieldSpec)
         currentByte = currentByte + fieldSize
     end
 
-    return structure, names, readers, minBytes, positionmap
+    return structure, names, readers, byteorders, minBytes, positionmap
 end
 
 function core.buildStructure(fieldSpec)
-    local structure, _, _, minBytes, positionmap = buildRuntimeStructure(fieldSpec)
+    local structure, _, _, _, minBytes, positionmap = buildRuntimeStructure(fieldSpec)
     return structure, minBytes, positionmap
 end
 
@@ -189,12 +191,12 @@ function core.prepareReadPlan(fieldSpec)
     return names, readers, minBytes
 end
 
-function core.parseReadPlan(buf, names, readers)
+function core.parseReadPlan(buf, names, readers, byteorders)
     local parsed = {}
     buf.offset = 1
 
     for i = 1, #names do
-        parsed[names[i]] = readers[i](buf)
+        parsed[names[i]] = readers[i](buf, byteorders and byteorders[i] or nil)
     end
 
     return parsed
@@ -623,7 +625,7 @@ function core.createConfigAPI(spec)
         error("api.createConfigAPI requires spec.fields")
     end
 
-    local readStructure, fieldNames, fieldReaders, minBytes, positionmap = buildRuntimeStructure(spec.fields)
+    local readStructure, fieldNames, fieldReaders, fieldByteorders, minBytes, positionmap = buildRuntimeStructure(spec.fields)
     local writeStructure = readStructure
     if type(spec.writeFields) == "table" then
         writeStructure = select(1, buildRuntimeStructure(spec.writeFields))
@@ -672,7 +674,7 @@ function core.createConfigAPI(spec)
             state.mspData = parsed
         else
             state.mspData = {
-                parsed = core.parseReadPlan(buf, fieldNames, fieldReaders),
+                parsed = core.parseReadPlan(buf, fieldNames, fieldReaders, fieldByteorders),
                 structure = readStructure,
                 buffer = buf,
                 positionmap = positionmap,
