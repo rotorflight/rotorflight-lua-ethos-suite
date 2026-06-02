@@ -681,6 +681,11 @@ function core.createConfigAPI(spec)
             }
         end
         emitComplete(self, buf)
+        -- Free the response buffer after the completion callback has run.
+        -- The caller copies data.parsed/buffer into apidata during emitComplete,
+        -- so state.mspData is a duplicate at this point. Polling callers reset it
+        -- on the next handleReadReply before emitComplete is called again.
+        state.mspData = nil
     end
 
     local function handleWriteReply(self, buf)
