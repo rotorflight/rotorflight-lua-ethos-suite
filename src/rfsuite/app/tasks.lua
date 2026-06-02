@@ -613,7 +613,13 @@ end
 function tasks.reset()
     nextUiTask = 1
     taskAccumulator = 0
-    lastMainMenuBuildApiVersion = nil
+    -- lastMainMenuBuildApiVersion is intentionally NOT reset here.
+    -- Resetting it forces a redundant MainMenu reload on re-entry because the
+    -- first wakeup sees apiVersion != nil and rebuilds while menuLookupCache
+    -- still holds the just-created MainMenu from app.create(), causing two
+    -- full menu structures to be live simultaneously.  The API-version-change
+    -- guard (currentApiVersion ~= lastMainMenuBuildApiVersion) already triggers
+    -- a rebuild whenever the firmware version actually changes.
     mainMenuLastEnableState = {}
     mainMenuLastModeTag = nil
     mainMenuLastMenuId = nil
