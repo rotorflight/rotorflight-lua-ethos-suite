@@ -122,6 +122,10 @@ local function onEscDetailsReadComplete(_, buf)
         scheduleEscDetailsReadAt(getEscDetailsRetryInterval())
         return
     end
+    if not ESC then
+        mspBusy = false
+        return
+    end
 
     local signature = API.readValue("esc_signature")
 
