@@ -344,6 +344,10 @@ local function onEscDetailsReadComplete(_, buf)
         mspBusy = false
         return
     end
+    if not ESC then
+        mspBusy = false
+        return
+    end
 
     local signature = API.readValue("esc_signature")
     local valid = signature == mspSignature and #buf >= mspBytes
@@ -465,7 +469,7 @@ local function getESCDetails()
     end
     installEscDetailsHandlers(API)
 
-    API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
+    API.setUUID(rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock()))
     local ok = API.read()
     if ok then
         scheduleEscDetailsReadAt(getEscDetailsPollInterval())
@@ -602,14 +606,14 @@ local function setESC4WayMode(id)
     API.setCompleteHandler(function(self, buf)
         if seq == lastWriteSeq then
             last4WayWriteOk = true
+            rfsuite.session.esc4WaySetComplete = true
         end
-        rfsuite.session.esc4WaySetComplete = true
     end)
     API.setErrorHandler(function(self, err)
         if seq == lastWriteSeq then
             last4WayWriteOk = false
+            rfsuite.session.esc4WaySetComplete = false
         end
-        rfsuite.session.esc4WaySetComplete = false
         if rfsuite.utils and rfsuite.utils.log then
             rfsuite.utils.log("ESC 4WIF set target: " .. tostring(target) .. " failed", "info")
         end

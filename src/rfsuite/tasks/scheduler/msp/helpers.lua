@@ -25,7 +25,7 @@ function helpers.governorMode(callback)
             rfsuite.session.governorMode = governorMode
             if callback then callback(governorMode) end
         end)
-        API.setUUID("e2a1c5b3-7f4a-4c8e-9d2a-3b6f8e2d9a1c")
+        API.setUUID(utils.uuid and utils.uuid() or tostring(os.clock()))
         API.read()
     else
         if callback then callback(rfsuite.session.governorMode) end    
@@ -44,7 +44,7 @@ function helpers.servoCount(callback)
             end    
             if callback then callback(rfsuite.session.servoCount) end
         end)
-        API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
+        API.setUUID(utils.uuid and utils.uuid() or tostring(os.clock()))
         API.read()
     else
         if callback then callback(rfsuite.session.servoCount) end    
@@ -66,7 +66,7 @@ function helpers.servoOverride(callback)
             if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
             if callback then callback(rfsuite.session.servoOverride) end
         end)
-        API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
+        API.setUUID(utils.uuid and utils.uuid() or tostring(os.clock()))
         API.read()
     else
         if callback then callback(rfsuite.session.servoOverride) end    
@@ -142,7 +142,7 @@ function helpers.mixerConfig(callback)
             end
             if callback then callback(rfsuite.session.tailMode,rfsuite.session.swashMode) end
         end)
-        API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
+        API.setUUID(utils.uuid and utils.uuid() or tostring(os.clock()))
         API.read()
     else
         if callback then callback(rfsuite.session.tailMode,rfsuite.session.swashMode) end    
