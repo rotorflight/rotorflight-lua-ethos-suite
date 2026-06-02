@@ -326,6 +326,8 @@ function ui.clearRuntimeCaches()
     if app then
         app._mainMenuPressHandlers = nil
         app._mainMenuPressSpecs = nil
+        app._menuContainerPressHandlers = nil
+        app._menuContainerPressSpecs = nil
         app._navButtonContext = nil
         app.headerTitle = nil
         app.headerParentBreadcrumb = nil
@@ -1242,6 +1244,7 @@ function ui.cleanupCurrentPage()
 
     app.Page = nil
 
+    collectgarbage('collect')
     collectgarbage('collect')
 
     local dev = preferences and preferences.developer
