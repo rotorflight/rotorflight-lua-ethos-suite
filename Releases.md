@@ -9,6 +9,7 @@ Release candidate version for 2.3.0-RC3 Rotorflight
 - various minor fixes
 
 # 2.3.0-RC2
+
 Release candidate version for 2.3.0-RC2 Rotorflight
 
 4 Way ESC Improvements

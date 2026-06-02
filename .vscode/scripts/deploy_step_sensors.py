@@ -19,11 +19,11 @@ def main():
     parser.add_argument("--git-src")
     args = parser.parse_args()
 
-    # out_dir will be: simulator/<fw>/scripts/rfsuite
+    # out_dir will be: simulators/<fw>@<version>/scripts/rfsuite
     out_dir = Path(args.out_dir).resolve()
     debug(f"Given out_dir = {out_dir}")
 
-    # We want: simulator/<fw>/
+    # We want: simulators/<fw>@<version>/
     sim_root = out_dir.parents[1]   # one levels up
     debug(f"Computed simulator root = {sim_root}")
 
@@ -43,7 +43,7 @@ def main():
         return 0
 
     if dst.is_file():
-        print(f"[SENSORS] sensors.json already exists at simulator root — leaving untouched.")
+        print(f"[SENSORS] sensors.json already exists at simulator root - leaving untouched.")
         return 0
 
     try:

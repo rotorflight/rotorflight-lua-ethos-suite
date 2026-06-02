@@ -5822,6 +5822,12 @@
               "needs_translation": false,
               "translation": "Restart Time"
             },
+            "response_time": {
+              "english": "Response Time",
+              "max_length": 13,
+              "needs_translation": false,
+              "translation": "Response Time"
+            },
             "rotation": {
               "english": "Rotation",
               "max_length": 8,

@@ -51,7 +51,14 @@ function render.dirty(box)
     return false
 end
 
-local function resolveImagePath(imageParam)
+local function resolveLogoFallback(bgcolor)
+    if utils.getLogoFallbackForBackground then
+        return utils.getLogoFallbackForBackground(bgcolor)
+    end
+    return "widgets/dashboard/gfx/logo-dark.png"
+end
+
+local function resolveImagePath(imageParam, bgcolor)
     if imageParam and imageParam ~= "" then
         local baseNoExt = imageParam:gsub("%.png$", ""):gsub("%.bmp$", "")
         local pngPath = baseNoExt .. ".png"
@@ -62,7 +69,7 @@ local function resolveImagePath(imageParam)
             return bmpPath
         end
     end
-    return "widgets/dashboard/gfx/logo.png"
+    return resolveLogoFallback(bgcolor)
 end
 
 local function ensureCfg(box)
@@ -98,7 +105,7 @@ local function ensureCfg(box)
         cfg.imageheight = getParam(box, "imageheight")
         cfg.imagealign = getParam(box, "imagealign")
 
-        cfg.image = resolveImagePath(getParam(box, "image"))
+        cfg.image = resolveImagePath(getParam(box, "image"), cfg.bgcolor)
 
         box._cfg = cfg
     end

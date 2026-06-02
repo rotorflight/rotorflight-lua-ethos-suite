@@ -1206,6 +1206,16 @@ function ui.cleanupCurrentPage()
         app.Page.apidata = nil
     end
 
+    -- Remove queued (not in-flight) MSP messages that belong to this page.
+    -- The in-flight currentMessage runs to completion; its callbacks guard against
+    -- a nil app.Page so stale execution is harmless.
+    if app.lastScript and tasks and tasks.msp and tasks.msp.mspQueue then
+        local scriptToFlush = app.lastScript
+        tasks.msp.mspQueue:removeQueuedBy(function(msg)
+            return msg._pageScript == scriptToFlush
+        end)
+    end
+
     -- Release Ethos-side form references before wiping Lua refs.
     -- form.clear() causes Ethos to drop its C++ references to form field callback
     -- closures synchronously, so the subsequent GC cycle can collect them along
@@ -2529,6 +2539,7 @@ function ui.openPage(opts)
         app._openedFromShortcuts = (opts.openedFromShortcuts == true)
     end
     app.Page = assert(loadfile(modulePath))(idx)
+    app.utils.capturePageProfileState(app.Page)
     if app._openedFromShortcuts or app._forceMenuToMain then
         app.Page.onNavMenu = function()
             ui.openMainMenu()
@@ -2552,6 +2563,7 @@ function ui.openPage(opts)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
         app.Page.openPage(opts)
+        app.utils.capturePageProfileState(app.Page)
         if ui._shouldManageDirtySave() and app.Page.disableSaveUntilDirty ~= false and not app.Page.canSave then
             app.Page.canSave = function()
                 return app.pageDirty == true
@@ -3053,7 +3065,7 @@ function ui.mspApiUpdateFormAttributes()
                             app.ui.injectApiAttributes(i, f, v)
 
                             local scale = f.scale or 1
-                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] then app.Page.apidata.formdata.fields[i].value = values[mspapiNAME][apikey] / scale end
+                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] ~= nil then app.Page.apidata.formdata.fields[i].value = values[mspapiNAME][apikey] / scale end
 
                             if values[mspapiNAME][apikey] == nil then
                                 log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
@@ -3071,7 +3083,7 @@ function ui.mspApiUpdateFormAttributes()
                                 app.ui.injectApiAttributes(i, f, b)
 
                                 local scale = f.scale or 1
-                                if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
+                                if values and values[mspapiNAME] and values[mspapiNAME][v.field] ~= nil then
                                     local raw_value = values[mspapiNAME][v.field]
                                     local bit_value = (raw_value >> bidx - 1) & 1
                                     app.Page.apidata.formdata.fields[i].value = bit_value / scale
@@ -3177,6 +3189,7 @@ function ui.requestPage()
                 else
                     app.triggers.closeProgressLoader = true
                 end
+                app.utils.capturePageProfileState(app.Page)
                 checkForUnresolvedTimeouts()
 
             end

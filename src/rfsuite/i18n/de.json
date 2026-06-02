@@ -6787,6 +6787,13 @@
               "reverse_text": false,
               "translation": "Sonstiges"
             },
+            "response_time": {
+              "english": "Response Time",
+              "max_length": 13,
+              "needs_translation": true,
+              "reverse_text": false,
+              "translation": "Response Time"
+            },
             "restart_time": {
               "english": "Restart Time",
               "max_length": 12,

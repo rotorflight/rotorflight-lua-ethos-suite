@@ -9,7 +9,7 @@ return {
     ["firmware_version"] = "@i18n(api.ESC_PARAMETERS_HW5.firmware_version)@",
     ["hardware_version"] = "@i18n(api.ESC_PARAMETERS_HW5.hardware_version)@",
     ["esc_type"] = "@i18n(api.ESC_PARAMETERS_HW5.esc_type)@",
-    ["com_version"] = "@i18n(api.ESC_PARAMETERS_HW5.com_version)@",
+    ["mode_name"] = "@i18n(api.ESC_PARAMETERS_HW5.mode_name)@",
     ["flight_mode"] = "@i18n(api.ESC_PARAMETERS_HW5.flight_mode)@",
     ["lipo_cell_count"] = "@i18n(api.ESC_PARAMETERS_HW5.lipo_cell_count)@",
     ["volt_cutoff_type"] = "@i18n(api.ESC_PARAMETERS_HW5.volt_cutoff_type)@",

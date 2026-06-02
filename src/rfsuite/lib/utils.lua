@@ -318,7 +318,13 @@ function utils.getGovernorState(value)
 end
 
 local directoryExistenceCache = {}
+local dirCacheCount = 0
+local DIR_CACHE_MAX = 40
+
 local fileExistenceCache = {}
+local fileCacheCount = 0
+local FILE_CACHE_MAX = 100
+
 local lastConnectBeepAt = 0
 
 local function countTable(t)
@@ -338,7 +344,14 @@ function utils.dir_exists(base, name, noCache)
 
     local exists = os.stat(targetPath)
     if exists then
-        if not noCache then directoryExistenceCache[targetPath] = true end
+        if not noCache then
+            if dirCacheCount >= DIR_CACHE_MAX then
+                for k in pairs(directoryExistenceCache) do directoryExistenceCache[k] = nil end
+                dirCacheCount = 0
+            end
+            directoryExistenceCache[targetPath] = true
+            dirCacheCount = dirCacheCount + 1
+        end
         return true
     end
 
@@ -390,7 +403,14 @@ function utils.file_exists(path, noCache)
 
     local stat = os.stat(path)
     if stat then
-        if not noCache then fileExistenceCache[path] = true end
+        if not noCache then
+            if fileCacheCount >= FILE_CACHE_MAX then
+                for k in pairs(fileExistenceCache) do fileExistenceCache[k] = nil end
+                fileCacheCount = 0
+            end
+            fileExistenceCache[path] = true
+            fileCacheCount = fileCacheCount + 1
+        end
         return true
     end
 

@@ -108,19 +108,21 @@ local function profileRateChangeDetection()
 
     local now = os.clock()
     local telemetry = getTelemetryTask()
-    local interval = (telemetry and telemetry.getSensorSource("pid_profile") and telemetry.getSensorSource("rate_profile")) and 0.1 or 1.5
+    local interval = (telemetry and (telemetry.getSensorSource("pid_profile") or telemetry.getSensorSource("rate_profile"))) and 0.1 or 1.5
 
     if (now - (app.profileCheckScheduler or 0)) >= interval then
         app.profileCheckScheduler = now
 
         app.utils.getCurrentProfile()
-        if rfsuite.session.activeProfileLast and app.Page.refreshOnProfileChange and rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast then
+        local profileChanged, rateChanged = app.utils.pageProfileStateChanged(app.Page)
+        if profileChanged and (app.Page.refreshOnProfileChange or app.Page.refreshFullOnProfileChange) then
             app.triggers.reload = not app.Page.refreshFullOnProfileChange
             app.triggers.reloadFull = app.Page.refreshFullOnProfileChange
         end
 
         app.utils.getCurrentRateProfile()
-        if rfsuite.session.activeRateProfileLast and app.Page.refreshOnRateChange and rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast then
+        profileChanged, rateChanged = app.utils.pageProfileStateChanged(app.Page)
+        if rateChanged and (app.Page.refreshOnRateChange or app.Page.refreshFullOnRateChange) then
             app.triggers.reload = not app.Page.refreshFullOnRateChange
             app.triggers.reloadFull = app.Page.refreshFullOnRateChange
         end

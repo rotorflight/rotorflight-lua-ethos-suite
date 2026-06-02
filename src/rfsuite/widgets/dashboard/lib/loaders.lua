@@ -16,12 +16,17 @@ local rep = string.rep
 local insert = table.insert
 local clock = os.clock
 local ipairs = ipairs
+local type = type
 local tostring = tostring
 local tonumber = tonumber
 
 local loaders = {}
 
 local DEFAULT_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS, FONT_XXS}
+local DASHBOARD_GFX_DIR = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/"
+local LOGO_DARK_PATH = DASHBOARD_GFX_DIR .. "logo-dark.png"
+local LOGO_LIGHT_PATH = DASHBOARD_GFX_DIR .. "logo-light.png"
+local logoBitmapCache = {dark = nil, light = nil}
 
 local function getLoaderThemeState(dashboard)
     if dashboard and dashboard.utils and dashboard.utils.getThemeState then
@@ -201,11 +206,65 @@ local function drawRoundRectFrame(x, y, w, h, r, borderW)
     end
 end
 
+local function colorLuma(color)
+    if type(color) ~= "number" then return nil end
+    color = floor(color)
+    if color < 0 then return nil end
+
+    local r, g, b
+    if color > 0xFFFFFF then
+        local high = (color >> 24) & 0xFF
+        local low = color & 0xFF
+        if (low == 0 or low == 1 or low == 255) and high ~= 0 and high ~= 1 and high ~= 255 then
+            r = high
+            g = (color >> 16) & 0xFF
+            b = (color >> 8) & 0xFF
+        else
+            r = (color >> 16) & 0xFF
+            g = (color >> 8) & 0xFF
+            b = low
+        end
+    elseif color > 0xFFFF then
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+    else
+        r = ((color >> 11) & 0x1F) * 255 / 31
+        g = ((color >> 5) & 0x3F) * 255 / 63
+        b = (color & 0x1F) * 255 / 31
+    end
+
+    return r * 0.299 + g * 0.587 + b * 0.114
+end
+
+local function resolveLogoVariant(themeState, isLegacyDark, panelBg)
+    local bgLuma = colorLuma(panelBg)
+    if bgLuma then
+        return bgLuma > 127 and "dark" or "light"
+    end
+
+    if themeState then
+        local fgLuma = colorLuma(themeState.primaryColor)
+        if fgLuma then return fgLuma > 127 and "light" or "dark" end
+    end
+
+    return isLegacyDark and "light" or "dark"
+end
+
+local function loadLogoBitmap(themeState, isLegacyDark, panelBg)
+    local variant = resolveLogoVariant(themeState, isLegacyDark, panelBg)
+    local cached = logoBitmapCache[variant]
+    if cached == false then return nil end
+    if cached then return cached end
+
+    local bmp = rfsuite.utils.loadImage(variant == "light" and LOGO_LIGHT_PATH or LOGO_DARK_PATH)
+    logoBitmapCache[variant] = bmp or false
+    return bmp
+end
 
 
-local function drawLogoImage(cx, cy, w, h, scale)
-    local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
-    local bmp = rfsuite.utils.loadImage(imageName)
+local function drawLogoImage(cx, cy, w, h, scale, themeState, isLegacyDark, panelBg)
+    local bmp = loadLogoBitmap(themeState, isLegacyDark, panelBg)
     if bmp then
         -- scale is a ratio of the provided box size (min(w,h)).
         -- Default to 40% which works well for the rectangular loader panel.
@@ -416,8 +475,7 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
     local logoAreaH = logoH
 
      -- Draw logo in the top half
-    local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
-    local bmp = rfsuite.utils.loadImage(imageName)
+    local bmp = loadLogoBitmap(themeState, isLegacyDark, inner)
 
     -- Alignment: "center" (default) or "left"
     local align = "left" 
@@ -459,7 +517,10 @@ function loaders.logsLoader(dashboard, x, y, w, h, linesSrc, opts)
                 anchorY,
                 logoAreaW * (opts.logoFallbackWScale or 0.4),
                 logoAreaH,
-                opts.logoScale or 0.95
+                opts.logoScale or 0.95,
+                themeState,
+                isLegacyDark,
+                inner
             )
         end
     end
@@ -603,8 +664,7 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
 
     -- Draw logo (same asset as logsLoader)
     do
-        local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
-        local bmp = rfsuite.utils.loadImage(imageName)
+        local bmp = loadLogoBitmap(themeState, isLegacyDark, inner)
 
         local cx = logoX + logoW * 0.5
         local cy = logoY + logoH * 0.5
@@ -631,10 +691,10 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
                     drawH
                 )
             else
-                drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40)
+                drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40, themeState, isLegacyDark, inner)
             end
         else
-            drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40)
+            drawLogoImage(cx, cy, logoW, logoH, opts.logoFallbackWScale or 0.40, themeState, isLegacyDark, inner)
         end
     end
 

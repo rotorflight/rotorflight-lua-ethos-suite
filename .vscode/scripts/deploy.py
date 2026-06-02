@@ -802,6 +802,54 @@ CONFIG_PATH = str(cfg_path)
 
 pbar = None
 
+_vscode_settings_cache = None
+
+def _vscode_setting(name):
+    global _vscode_settings_cache
+    if _vscode_settings_cache is None:
+        settings_path = Path(config["git_src"]) / ".vscode" / "settings.json"
+        try:
+            with open(settings_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            _vscode_settings_cache = data if isinstance(data, dict) else {}
+        except Exception:
+            _vscode_settings_cache = {}
+    return _vscode_settings_cache.get(name)
+
+def _simulator_firmware():
+    configured = config.get("ethos_firmware")
+    if configured:
+        return configured
+
+    board = _vscode_setting("ethos.board")
+    protocol = _vscode_setting("ethos.protocol")
+    if board and protocol:
+        return f"{board}_{protocol}"
+
+    return _vscode_setting("ethos.firmware")
+
+def _simulator_version():
+    return config.get("ethos_version") or _vscode_setting("ethos.release") or _vscode_setting("ethos.version")
+
+def _simulator_scripts_dest(git_src, firmware=None, version=None):
+    simulator_root = (
+        os.environ.get("ETHOS_SIMULATORS_FOLDER")
+        or os.environ.get("ETHOS_SIMULATORS_ROOT")
+        or config.get("simulators_dir")
+        or config.get("simulators_root")
+        or "simulators"
+    )
+    simulator_root = str(simulator_root).strip() or "simulators"
+
+    firmware = str(firmware or "").strip()
+    version = str(version or "").strip()
+
+    path_parts = [git_src, simulator_root]
+    if firmware:
+        path_parts.append(f"{firmware}@{version}" if version else firmware)
+    path_parts.append("scripts")
+    return os.path.normpath(os.path.join(*path_parts))
+
 # === Ethos Serial + Serial Tail helpers =======================================
 
 DEFAULT_SERIAL_VID = "0483"
@@ -1220,7 +1268,11 @@ def copy_files(src_override, fileext, targets, lang="en", steps=None):
         print(f"[{i}/{len(targets)}] -> {t['name']} @ {dest}")
 
         if not os.path.isdir(dest):
-            fallback = os.path.normpath(os.path.join(git_src, 'simulator', 'scripts'))
+            fallback = _simulator_scripts_dest(
+                git_src,
+                os.environ.get("ETHOS_FIRMWARE") or _simulator_firmware(),
+                os.environ.get("ETHOS_VERSION") or _simulator_version(),
+            )
             try:
                 os.makedirs(fallback, exist_ok=True)
                 print(f"[DEST] '{dest}' not found. Using fallback: {fallback}")
@@ -1520,14 +1572,10 @@ def main():
 
         targets = [{'name': 'Radio', 'dest': rd, 'simulator': None}]
     else:
-        # SIMULATOR DEPLOY: always to <git_src>\simulator\[firmware]\scripts
-        firmware = os.environ.get("ETHOS_FIRMWARE")
-        path_parts = [config['git_src'], 'simulator']
-        if firmware:
-            path_parts.append(firmware)
-        path_parts.append('scripts')
-
-        fixed_dest = os.path.normpath(os.path.join(*path_parts))
+        # SIMULATOR DEPLOY: always to <git_src>\simulators\[firmware]@[version]\scripts
+        firmware = os.environ.get("ETHOS_FIRMWARE") or _simulator_firmware()
+        version = os.environ.get("ETHOS_VERSION") or _simulator_version()
+        fixed_dest = _simulator_scripts_dest(config['git_src'], firmware, version)
         os.makedirs(fixed_dest, exist_ok=True)
         targets = [{'name': 'Simulator', 'dest': fixed_dest, 'simulator': None}]
 

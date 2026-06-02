@@ -6778,6 +6778,13 @@
               "max_length": 12,
               "reverse_text": false
             },
+            "response_time": {
+              "english": "Response Time",
+              "translation": "Response Time",
+              "needs_translation": true,
+              "reverse_text": false,
+              "max_length": 13
+            },
             "rotation": {
               "english": "Rotation",
               "translation": "Rotace",

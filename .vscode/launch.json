@@ -69,6 +69,17 @@
       "preLaunchTask": "Radio: Serial Debug"
     },
     {
+      "name": "Simulator: Set Simulator",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/dummy.py",
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "ethos.SetSimulator"
+    },
+    {
       "name": "Simulator: Open Controls",
       "type": "debugpy",
       "request": "launch",

@@ -476,6 +476,7 @@ function app.close()
     app.triggers.profileswitchLast = nil
 
     if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
+    if rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue then rfsuite.tasks.msp.mspQueue:clear() end
 
     collectgarbage("collect")
 

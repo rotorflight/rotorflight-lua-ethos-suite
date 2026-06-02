@@ -19,7 +19,7 @@ class SensorApp:
         #   GITREPO/bin/sensors/sensors.exe
         #   or GITREPO/bin/sensors/src/sensors.py
         # Sensors live under:
-        #   GITREPO/simulator/<target>/scripts/rfsuite/sim/sensors
+        #   GITREPO/simulators/<target>/scripts/rfsuite/sim/sensors
 
         # Fixed scripts subfolder name under each simulator target
         self.tgt_name = "rfsuite"
@@ -47,7 +47,7 @@ class SensorApp:
     def _discover_simulator_targets(self):
         """
         Discover all simulator targets that contain:
-            ../../simulator/<target>/scripts/rfsuite/sim/sensors
+            ../../simulators/<target>/scripts/rfsuite/sim/sensors
 
         Returns a list of Path objects pointing to the 'scripts' folder
         for each matching simulator target.
@@ -59,8 +59,8 @@ class SensorApp:
             # Running as a .py script
             base_dir = Path(__file__).resolve().parent
 
-        # From either src/ or sensors/, ../../simulator gives us GITREPO/simulator
-        simulator_root = base_dir.parent.parent / "simulator"
+        repo_root = self._find_repo_root(base_dir)
+        simulator_root = repo_root / "simulators"
 
         if not simulator_root.exists():
             raise FileNotFoundError(
@@ -85,6 +85,12 @@ class SensorApp:
             )
 
         return dest_paths
+
+    def _find_repo_root(self, base_dir):
+        for path in (base_dir, *base_dir.parents):
+            if (path / ".vscode").is_dir() and (path / "src" / "rfsuite").is_dir():
+                return path
+        return base_dir.parent.parent
 
     def load_config(self):
         possible_xml = [

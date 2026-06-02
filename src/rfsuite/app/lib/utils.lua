@@ -189,6 +189,47 @@ function utils.getCurrentBatteryType()
     session.activeBatteryType = math.floor(resolved)
 end
 
+function utils.capturePageProfileState(page)
+    page = page or app.Page
+    if not page then return end
+
+    if page.refreshOnProfileChange or page.refreshFullOnProfileChange then
+        page.loadedActiveProfile = session.activeProfile
+    else
+        page.loadedActiveProfile = nil
+    end
+
+    if page.refreshOnRateChange or page.refreshFullOnRateChange then
+        page.loadedActiveRateProfile = session.activeRateProfile
+    else
+        page.loadedActiveRateProfile = nil
+    end
+end
+
+function utils.pageProfileStateChanged(page)
+    page = page or app.Page
+    if not page then return false, false end
+
+    local profileChanged = false
+    local rateChanged = false
+
+    if page.refreshOnProfileChange or page.refreshFullOnProfileChange then
+        local activeProfile = session.activeProfile
+        if activeProfile ~= nil and activeProfile ~= page.loadedActiveProfile then
+            profileChanged = true
+        end
+    end
+
+    if page.refreshOnRateChange or page.refreshFullOnRateChange then
+        local activeRateProfile = session.activeRateProfile
+        if activeRateProfile ~= nil and activeRateProfile ~= page.loadedActiveRateProfile then
+            rateChanged = true
+        end
+    end
+
+    return profileChanged, rateChanged
+end
+
 function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, rest) return first:upper() .. rest:lower() end) end
 
 function utils.settingsSaved(savedPage)

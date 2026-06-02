@@ -11,6 +11,7 @@ local tasks = {}
 local tasksQueue = {}
 local tasksLoaded = false
 local active = false
+local progressToken = 0
 
 local telemetryTypeChanged = false
 
@@ -63,6 +64,10 @@ local function clearTaskEntries()
     for i = #tasksQueue, 1, -1 do
         tasksQueue[i] = nil
     end
+end
+
+local function bumpProgress()
+    progressToken = progressToken + 1
 end
 
 local function ensureTaskModule(task)
@@ -237,6 +242,7 @@ function tasks.wakeup()
             linkStableUp = true
             linkSessionToken = linkSessionToken + 1
             establishedToken = nil
+            bumpProgress()
         end
     else
         linkUpSince = nil
@@ -280,6 +286,7 @@ function tasks.wakeup()
         local token = tostring(linkSessionToken)
         if establishedToken ~= token then
             establishedToken = token
+            bumpProgress()
 
             rfsuite.flightmode.current = "preflight"
             if rfsuite.tasks and rfsuite.tasks.events and rfsuite.tasks.events.flightmode
@@ -309,6 +316,7 @@ function tasks.wakeup()
     if not task.initialized then
         task.initialized = true
         task.startTime = now
+        bumpProgress()
     end
 
     rfsuite.utils.log("Waking up onconnect/" .. task.name, "debug")
@@ -318,6 +326,7 @@ function tasks.wakeup()
         task.failed = true
         task.startTime = nil
         task.nextEligibleAt = 0
+        bumpProgress()
         rfsuite.utils.log("Failed to load onconnect/" .. task.name .. ": " .. tostring(err or "?"), "info")
         rfsuite.utils.log("Failed to load onconnect/" .. task.name .. ": " .. tostring(err or "?"), "connect")
         queueIndex = (queueIndex or 1) + 1
@@ -332,6 +341,7 @@ function tasks.wakeup()
         task.startTime = nil
         task.nextEligibleAt = 0
         releaseTaskModule(task, false)
+        bumpProgress()
         rfsuite.utils.log("Completed onconnect/" .. task.name, "debug")
 
         if task.name == "apiversion" then
@@ -361,6 +371,7 @@ function tasks.wakeup()
             task.nextEligibleAt = now + backoff
             task.initialized = false
             task.startTime = nil
+            bumpProgress()
             rfsuite.utils.log(
                 string.format(
                     "Task 'onconnect/%s' timed out. Re-queueing (attempt %d/%d) in %.1fs.",
@@ -379,6 +390,7 @@ function tasks.wakeup()
             task.failed = true
             task.startTime = nil
             releaseTaskModule(task, false)
+            bumpProgress()
             rfsuite.utils.log(
                 string.format(
                     "Task 'onconnect/%s' failed after %d attempts. Skipping.",
@@ -407,6 +419,10 @@ end
 
 function tasks.active()
     return active
+end
+
+function tasks.progressToken()
+    return progressToken
 end
 
 return tasks

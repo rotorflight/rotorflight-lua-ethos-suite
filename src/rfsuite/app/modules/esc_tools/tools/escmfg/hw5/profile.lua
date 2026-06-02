@@ -21,9 +21,7 @@ local PAGE_FIELDS = {
         "gov_i_gain",
         "startup_time",
         "restart_time",
-        "auto_restart"
-    },
-    other = {
+        "auto_restart",
         "timing",
         "startup_power",
         "active_freewheel",
@@ -47,7 +45,8 @@ local TABLES = {
     bec_50_to_120 = {"5.0V", "5.1V", "5.2V", "5.3V", "5.4V", "5.5V", "5.6V", "5.7V", "5.8V", "5.9V", "6.0V", "6.1V", "6.2V", "6.3V", "6.4V", "6.5V", "6.6V", "6.7V", "6.8V", "6.9V", "7.0V", "7.1V", "7.2V", "7.3V", "7.4V", "7.5V", "7.6V", "7.7V", "7.8V", "7.9V", "8.0V", "8.1V", "8.2V", "8.3V", "8.4V", "8.5V", "8.6V", "8.7V", "8.8V", "8.9V", "9.0V", "9.1V", "9.2V", "9.3V", "9.4V", "9.5V", "9.6V", "9.7V", "9.8V", "9.9V", "10.0V", "10.1V", "10.2V", "10.3V", "10.4V", "10.5V", "10.6V", "10.7V", "10.8V", "10.9V", "11.0V", "11.1V", "11.2V", "11.3V", "11.4V", "11.5V", "11.6V", "11.7V", "11.8V", "11.9V", "12.0V"},
     brake_full = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_proportional)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_reverse)@"},
     brake_no_prop = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_reverse)@"},
-    brake_basic = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@"}
+    brake_basic = {"@i18n(api.ESC_PARAMETERS_HW5.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_HW5.tbl_normal)@"},
+    response_time = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 }
 
 local PROFILES = {
@@ -109,9 +108,33 @@ local PROFILES = {
             brake_type = TABLES.brake_no_prop
         }
     },
+    HW1121_V00456NB = {
+        tables = {
+            lipo_cell_count = TABLES.lipo_3_to_8,
+            bec_voltage = TABLES.bec_50_to_120,
+            brake_type = TABLES.brake_no_prop
+        }
+    },
     HW1132_V100456NB = {
         tables = {
-            bec_voltage = TABLES.bec_60_74_84
+            lipo_cell_count = TABLES.lipo_2_to_4,
+            bec_voltage = TABLES.bec_60_74_84,
+            response_time = TABLES.response_time
+        },
+        pages = {
+            basic = {
+                "lipo_cell_count",
+                "volt_cutoff_type",
+                "cutoff_voltage",
+                "bec_voltage"
+            },
+            advanced = {
+                "timing",
+                "startup_power",
+                "active_freewheel",
+                "response_time",
+                "rotation"
+            }
         }
     },
     HW1128_V100456NB = {
@@ -128,8 +151,7 @@ local PROFILES = {
                 "volt_cutoff_type",
                 "cutoff_voltage"
             },
-            advanced = {},
-            other = {
+            advanced = {
                 "timing",
                 "startup_power",
                 "active_freewheel",
@@ -177,9 +199,20 @@ local function getProfileKey()
     local version = trim(escDetails.version) or "default"
     local model = string.upper(trim(escDetails.model) or "")
     local firmware = string.upper(trim(escDetails.firmware) or "")
+    local versionUpper = string.upper(version)
 
     if version ~= "default" and (model:find("OPTO", 1, true) or firmware:find("OPTO", 1, true)) then
         return version .. "_PL_OPTO"
+    end
+
+    if not PROFILES[version] then
+        if versionUpper:find("HW1132", 1, true) then
+            return "HW1132_V100456NB"
+        elseif versionUpper:find("HW1128", 1, true) then
+            return "HW1128_V100456NB"
+        elseif versionUpper:find("HW1121", 1, true) then
+            return "HW1121_V100456NB"
+        end
     end
 
     return version
@@ -207,6 +240,24 @@ function helper.configurePage(apidata, pageKey)
         elseif apikey and tables[apikey] then
             field.table = tables[apikey]
             field.tableIdxInc = -1
+        end
+    end
+
+    local usedLabels = {}
+    for i = 1, #fields do
+        local label = fields[i] and fields[i].label
+        if label then
+            usedLabels[label] = true
+        end
+    end
+
+    local labels = apidata.formdata.labels
+    if type(labels) == "table" then
+        for i = #labels, 1, -1 do
+            local label = labels[i] and labels[i].label
+            if label and not usedLabels[label] then
+                table.remove(labels, i)
+            end
         end
     end
 end
