@@ -54,7 +54,7 @@ function uid.wakeup()
             clearApiEntry()
         end)
         API.setErrorHandler(function() clearApiEntry() end)
-        API.setUUID("a3e5f2d7-9c4b-4e6a-b8f1-3d7e2c9a1f45")
+        API.setUUID("onconnect-uid-read")
         API.read()
     end
 

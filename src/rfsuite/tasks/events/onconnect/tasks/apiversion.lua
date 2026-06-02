@@ -148,7 +148,7 @@ function apiversion.wakeup()
             mspCallMade = false
             clearApiEntry()
         end)
-        API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
+        API.setUUID("onconnect-apiversion-read")
         API.read()
     end
 end

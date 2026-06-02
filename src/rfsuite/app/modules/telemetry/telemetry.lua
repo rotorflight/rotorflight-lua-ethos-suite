@@ -438,7 +438,7 @@ end
 local function rebootFC()
     local epoch = lifecycleEpoch
     local RAPI = trackApi(rfsuite.tasks.msp.api.load("REBOOT"))
-    RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
+    RAPI.setUUID("telemetry-reboot")
     RAPI.setCompleteHandler(function(self)
         if not isLifecycleActive(epoch) then return end
         rfsuite.utils.log("Rebooting FC", "info")
@@ -450,7 +450,7 @@ end
 local function applySettings()
     local epoch = lifecycleEpoch
     local EAPI = trackApi(rfsuite.tasks.msp.api.load("EEPROM_WRITE"))
-    EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
+    EAPI.setUUID("telemetry-eeprom")
     EAPI.setCompleteHandler(function(self)
         if not isLifecycleActive(epoch) then return end
         rfsuite.utils.log("Writing to EEPROM", "info")
@@ -534,7 +534,7 @@ local function wakeup()
                 end
                 rfsuite.utils.log("Feature config loaded", "info")
         end)
-        FAPI.setUUID("d2a1c5b3-8f4a-3c8e-9d2a-3b6f8e2d9a1c")
+        FAPI.setUUID("telemetry-feature-read")
         FAPI.read()
 
         -- now load the telemetry config
@@ -593,7 +593,7 @@ local function wakeup()
             rfsuite.utils.log("Telemetry config load failed", "error")
             rfsuite.app.triggers.closeProgressLoader = true
         end)
-        API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
+        API.setUUID("telemetry-config-read")
         API.read()
     end
 
@@ -639,7 +639,7 @@ local function wakeup()
 
         local epoch = lifecycleEpoch
         local WRITEAPI = trackApi(rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG"))
-        WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174120")
+        WRITEAPI.setUUID("telemetry-config-write")
         WRITEAPI.setCompleteHandler(function(self, buf)
             if not isLifecycleActive(epoch) then return end
             rfsuite.utils.log("Telemetry config written, now writing to EEPROM", "info")

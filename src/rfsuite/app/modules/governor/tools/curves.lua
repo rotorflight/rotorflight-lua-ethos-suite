@@ -144,7 +144,7 @@ local function loadData()
             lcd.invalidate()
             
         end)
-        API.setUUID("e2a1c5b3-7f4a-4c8e-9d2a-3b6f8e2dca12")
+        API.setUUID("govcurves-read")
         API.read()
 end
 

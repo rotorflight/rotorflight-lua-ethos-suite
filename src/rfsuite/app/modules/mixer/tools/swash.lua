@@ -197,8 +197,7 @@ local function loadNext(i)
         loadNext(i + 1)
   end)
 
-  -- Keep your UUID scheme, but fix concat operator:
-  API.setUUID("d8163617-1496-4886-8b81-" .. IDX)
+  API.setUUID("swash-read-" .. IDX)
   API.read()
 end
 
@@ -228,7 +227,7 @@ local function writeNext(i)
 
         -- commit the change
         local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
-        EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
+        EAPI.setUUID("swash-eeprom")
         EAPI.setCompleteHandler(function(self)
             rfsuite.utils.log("Writing to EEPROM", "info")
         end)
@@ -237,7 +236,7 @@ local function writeNext(i)
         -- reboot if required
         if needsReboot then
             local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
-            RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
+            RAPI.setUUID("swash-reboot")
             RAPI.setCompleteHandler(function(self)
                 rfsuite.utils.log("Rebooting FC", "info")
                 rfsuite.utils.onReboot()
@@ -269,7 +268,7 @@ local function writeNext(i)
         end
     end
 
-    API.setUUID("d8163617-1496-4886-8b81-write-" .. apikey)
+    API.setUUID("swash-write-" .. apikey)
     API.write()
 end
 

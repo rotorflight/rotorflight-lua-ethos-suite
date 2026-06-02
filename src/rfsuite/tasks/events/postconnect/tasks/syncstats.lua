@@ -77,7 +77,7 @@ function sync.wakeup()
 
         local API = rfsuite.tasks.msp.api.load(API_NAME)
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
-        API.setUUID("7a5a2f27-2ef6-4f2d-9ecf-8a1f4c4a6e28") 
+        API.setUUID("syncstats-read")
         API.setCompleteHandler(function(self, buf)
             FBL_STATS = copyTable(API.data().parsed) 
 
@@ -120,7 +120,7 @@ function sync.wakeup()
             local API = rfsuite.tasks.msp.api.load(API_NAME)
             if API and API.enableDeltaCache then API.enableDeltaCache(false) end
             API.setRebuildOnWrite(true)
-            API.setUUID("7a5a2f27-2ef6-4f2d-7egf-8a1f4c4a6e28") 
+            API.setUUID("syncstats-write")
 
             for i,v in pairs(FBL_STATS) do
                 API.setValue(i, v)

@@ -71,7 +71,7 @@ function telemetryconfig.wakeup()
             log("Failed to read telemetry config via MSP: " .. err, "info")
             mspCallMade = false
         end)
-        API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")
+        API.setUUID("sensor-tlmcfg-read")
         API.setTimeout(3000)
         API.read()
     end

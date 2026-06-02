@@ -53,7 +53,7 @@ function rxmap.wakeup()
             clearApiEntry()
         end)
         API.setErrorHandler(function() clearApiEntry() end)
-        API.setUUID("b3e5c8a4-5f3e-4e2c-9f7d-2e7a1c4b8f21")
+        API.setUUID("postconnect-rxmap-read")
         API.read()
     end
 

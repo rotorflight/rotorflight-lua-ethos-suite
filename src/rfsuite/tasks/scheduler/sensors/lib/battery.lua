@@ -51,7 +51,7 @@ local function readSmartFuelConfig(config)
         finalizeBatteryConfig(config)
     end)
 
-    smartFuelAPI.setUUID("0f6f4fd1-9e69-4e13-bc53-3d0e98e5c5a5")
+    smartFuelAPI.setUUID("battery-smartfuel-read")
     smartFuelAPI.read()
 end
 
@@ -104,7 +104,7 @@ function battery.wakeup()
             mspCallMade = false
         end)
 
-        API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
+        API.setUUID("battery-config-read")
         API.read()
     end
 
