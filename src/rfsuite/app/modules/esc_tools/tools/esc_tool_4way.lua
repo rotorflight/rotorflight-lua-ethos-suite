@@ -465,7 +465,7 @@ local function getESCDetails()
     end
     installEscDetailsHandlers(API)
 
-    API.setUUID("550e8400-e29b-41d4-a716-546a55340500")
+    API.setUUID(rfsuite.utils and rfsuite.utils.uuid and rfsuite.utils.uuid() or tostring(os.clock()))
     local ok = API.read()
     if ok then
         scheduleEscDetailsReadAt(getEscDetailsPollInterval())
