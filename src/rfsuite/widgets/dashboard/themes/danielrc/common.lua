@@ -465,10 +465,15 @@ end
 local function wakeSectionHeader(box)
     local cache = box._cache
     if type(cache) ~= "table" or cache._mode ~= "sectionheader" then
+        local label = box.label or box.value or ""
+        local font = utils.resolveFont(box.font, utils.resolveFont("FONT_L", nil))
+        local textband = box.textband or 0.65
+        local textBandH = floor((box.h or 0) * textband + 0.5)
+        local chosenFont, tw, th = pickFont(font, label, (box.w or 0) - 8, textBandH)
         cache = {
             _mode = "sectionheader",
-            label = box.label or box.value or "",
-            font = utils.resolveFont(box.font, utils.resolveFont("FONT_L", nil)),
+            label = label,
+            font = font,
             textcolor = utils.resolveThemeColor("textcolor", box.textcolor),
             linecolor = utils.resolveThemeColor("textcolor", box.linecolor or box.textcolor),
             bgcolor = utils.resolveThemeColor("bgcolor", box.bgcolor),
@@ -477,7 +482,10 @@ local function wakeSectionHeader(box)
             linewidth = box.linewidth or 1,
             linealign = box.linealign or box.align or "center",
             liney = box.liney or 0.82,
-            textband = box.textband or 0.65
+            textband = textband,
+            _chosenFont = chosenFont,
+            _textW = tw,
+            _textH = th
         }
         box._cache = cache
     end
@@ -498,7 +506,13 @@ local function paintSectionHeader(x, y, w, h, box, cache)
     end
 
     local textBandH = floor(h * cache.textband + 0.5)
-    local font, tw, th = pickFont(cache.font, cache.label, w - 8, textBandH)
+    local font, tw, th
+    if cache._chosenFont then
+        font, tw, th = cache._chosenFont, cache._textW, cache._textH
+    else
+        font, tw, th = pickFont(cache.font, cache.label, w - 8, textBandH)
+        cache._chosenFont, cache._textW, cache._textH = font, tw, th
+    end
     lcd.font(font)
 
     local tx = x + (w - tw) / 2
@@ -583,7 +597,13 @@ local function paintFitValue(x, y, w, h, box, cache)
     end
 
     local pad = cache.padding or 4
-    local font, tw, th = pickFont(cache.font, text, w - (pad * 2), h - 4)
+    local font, tw, th
+    if cache._fontText == text then
+        font, tw, th = cache._font, cache._fontW, cache._fontH
+    else
+        font, tw, th = pickFont(cache.font, text, w - (pad * 2), h - 4)
+        cache._fontText, cache._font, cache._fontW, cache._fontH = text, font, tw, th
+    end
     lcd.font(font)
     lcd.color(cache.displayColor or cache.textcolor)
 
@@ -600,9 +620,14 @@ end
 local function wakeKeyValue(box, telemetry)
     local cache = box._cache
     if type(cache) ~= "table" or cache._mode ~= "keyvalue" then
+        local label = box.label or box.title or ""
+        local labelfont = utils.resolveFont(box.labelfont or box.titlefont, utils.resolveFont("FONT_STD", nil))
+        local valuefont = utils.resolveFont(box.valuefont or box.font, utils.resolveFont("FONT_L", utils.resolveFont("FONT_STD", nil)))
+        local bw, bh = box.w or 0, box.h or 0
+        local labelFont, labelW, labelH = pickFont(labelfont, label, bw * 0.52, bh - 2)
         cache = {
             _mode = "keyvalue",
-            label = box.label or box.title or "",
+            label = label,
             kind = box.kind or "telemetry",
             source = box.source,
             stattype = box.stattype,
@@ -616,13 +641,16 @@ local function wakeKeyValue(box, telemetry)
             novalue = box.novalue,
             thresholds = box.thresholds,
             showReason = box.showReason,
-            labelfont = utils.resolveFont(box.labelfont or box.titlefont, utils.resolveFont("FONT_STD", nil)),
-            valuefont = utils.resolveFont(box.valuefont or box.font, utils.resolveFont("FONT_L", utils.resolveFont("FONT_STD", nil))),
+            labelfont = labelfont,
+            valuefont = valuefont,
             labelcolor = utils.resolveThemeColor("titlecolor", box.labelcolor or box.titlecolor),
             textcolor = utils.resolveThemeColor("textcolor", box.textcolor),
             bgcolor = utils.resolveThemeColor("bgcolor", box.bgcolor),
             padding = box.padding or 4,
-            gap = box.gap or 8
+            gap = box.gap or 8,
+            _labelFont = labelFont,
+            _labelW = labelW,
+            _labelH = labelH
         }
         box._cache = cache
     end
@@ -650,9 +678,23 @@ local function paintKeyValue(x, y, w, h, box, cache)
     local valueText = tostring(cache.displayValue or "")
     if cache.unitDisplay and cache.unitDisplay ~= "" then valueText = valueText .. cache.unitDisplay end
 
-    local labelFont, labelW, labelH = pickFont(cache.labelfont, labelText, w * 0.52, h - 2)
+    local labelFont, labelW, labelH
+    if cache._labelFont then
+        labelFont, labelW, labelH = cache._labelFont, cache._labelW, cache._labelH
+    else
+        labelFont, labelW, labelH = pickFont(cache.labelfont, labelText, w * 0.52, h - 2)
+        cache._labelFont, cache._labelW, cache._labelH = labelFont, labelW, labelH
+    end
+
     local valueAvailW = w - (pad * 2) - labelW - gap
-    local valueFont, valueW, valueH = pickFont(cache.valuefont, valueText, valueAvailW, h - 2)
+    local valueFont, valueW, valueH
+    if cache._valueFontText == valueText and cache._valueFontAvailW == valueAvailW then
+        valueFont, valueW, valueH = cache._valueFont, cache._valueW, cache._valueH
+    else
+        valueFont, valueW, valueH = pickFont(cache.valuefont, valueText, valueAvailW, h - 2)
+        cache._valueFontText, cache._valueFontAvailW = valueText, valueAvailW
+        cache._valueFont, cache._valueW, cache._valueH = valueFont, valueW, valueH
+    end
 
     lcd.font(labelFont)
     lcd.color(cache.labelcolor)
@@ -840,7 +882,7 @@ local function labelBox(W, H, xp, yp, wp, hp, value, font, color, align, bgcolor
         font = font,
         textcolor = color,
         valuealign = align or "center",
-        bgcolor = bgcolor or common.getPalette().bg
+        bgcolor = bgcolor or common.palette.bg
     })
 end
 
@@ -858,7 +900,7 @@ local function sectionBox(W, H, xp, yp, wp, hp, label, font, color, align, extra
         textcolor = color,
         linecolor = color,
         align = align or "center",
-        bgcolor = common.getPalette().bg,
+        bgcolor = common.palette.bg,
         wakeup = wakeSectionHeader,
         paint = paintSectionHeader
     }, extra))
@@ -869,7 +911,7 @@ local function fitValueBox(W, H, xp, yp, wp, hp, font, color, extra)
         kind = "craftname",
         font = font,
         textcolor = color,
-        bgcolor = common.getPalette().bg,
+        bgcolor = common.palette.bg,
         wakeup = wakeFitValue,
         paint = paintFitValue
     }, extra))
@@ -882,7 +924,7 @@ local function readoutBox(W, H, xp, yp, wp, hp, label, labelFont, valueFont, lab
         valuefont = valueFont,
         labelcolor = labelColor,
         textcolor = valueColor,
-        bgcolor = common.getPalette().bg,
+        bgcolor = common.palette.bg,
         wakeup = wakeKeyValue,
         paint = paintKeyValue
     }, extra))
@@ -895,7 +937,7 @@ local function statusPanelBox(W, H, xp, yp, wp, hp, labelFont, valueFont, border
         labelcolor = borderColor,
         labelfont = labelFont,
         valuefont = valueFont,
-        bgcolor = common.getPalette().bg,
+        bgcolor = common.palette.bg,
         wakeup = wakeTwoRowPanel,
         paint = paintTwoRowPanel
     }, extra))
@@ -910,7 +952,7 @@ local function titledValueBox(W, H, xp, yp, wp, hp, boxType, subtype, title, tit
         titlecolor = titleColor,
         font = valueFont,
         textcolor = valueColor,
-        bgcolor = common.getPalette().bg
+        bgcolor = common.palette.bg
     }, extra))
 end
 
