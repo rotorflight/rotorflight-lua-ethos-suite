@@ -852,11 +852,15 @@ function common.buildCockpitBoxes()
     local frameT = max(2, round(H * 0.005))
     local readoutPad = max(4, round(W * 0.006))
     local readoutGap = max(6, round(W * 0.010))
+    local compactReadoutGap = max(4, round(W * 0.006))
     local panelPad = max(8, round(W * 0.012))
     local stackTitleSpacing = max(10, round(H * 0.022))
     local stackValueTop = max(10, round(H * 0.017))
     local heroTitleSpacing = max(18, round(H * 0.040))
     local heroValueTop = max(18, round(H * 0.030))
+    local midLowerShift = 0.025
+    local profileSlotGap = 0.01
+    local profileSlotW = (leftColumnW - profileSlotGap) / 2
 
     add(out, backgroundBox(W, H, p.bg))
     add(out, ruleBox(W, H, 0.02, 0.01, 0.96, lineH / H, p.dim))
@@ -907,7 +911,7 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = max(4, round(W * 0.008))
     }))
-    add(out, widgetBox(W, H, 0.03, 0.55, 0.28, 0.06, "gauge", "bar", {
+    add(out, widgetBox(W, H, 0.03, 0.55 + midLowerShift, 0.28, 0.06, "gauge", "bar", {
         source = "smartfuel",
         min = 0,
         max = 100,
@@ -931,11 +935,21 @@ function common.buildCockpitBoxes()
             {value = 100, fillcolor = p.green}
         }
     }))
-    add(out, fitValueBox(W, H, leftColumnX, 0.645, leftColumnW, 0.06, opts.craftnamefont or opts.bannerfont, p.white, {
-        kind = "craftname",
-        align = "left",
+    add(out, readoutBox(W, H, leftColumnX, 0.645 + midLowerShift, profileSlotW, 0.06, "PROFILE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
+        kind = "telemetry",
+        source = "pid_profile",
+        transform = "floor",
+        unit = "",
         padding = readoutPad,
-        novalue = "MODEL"
+        gap = compactReadoutGap
+    }))
+    add(out, readoutBox(W, H, leftColumnX + profileSlotW + profileSlotGap, 0.645 + midLowerShift, profileSlotW, 0.06, "RATE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
+        kind = "telemetry",
+        source = "rate_profile",
+        transform = "floor",
+        unit = "",
+        padding = readoutPad,
+        gap = compactReadoutGap
     }))
 
     add(out, widgetBox(W, H, 0.41, 0.25, 0.18, 0.18, "text", "telemetry", {
@@ -950,7 +964,7 @@ function common.buildCockpitBoxes()
     }))
     add(out, labelBox(W, H, 0.46, 0.44, 0.08, 0.05, "RPM", opts.biglabelfont, p.line, "center", p.bg))
 
-    add(out, statusPanelBox(W, H, centerColumnX, 0.53, centerColumnW, 0.16, opts.framefont, opts.framefont, p.yellow, {
+    add(out, statusPanelBox(W, H, centerColumnX, 0.53 + midLowerShift, centerColumnW, 0.16, opts.framefont, opts.framefont, p.yellow, {
         border = frameT,
         padding = panelPad,
         gap = readoutGap,
@@ -975,8 +989,8 @@ function common.buildCockpitBoxes()
         titlepaddingbottom = max(2, round(H * 0.006)),
         valuepaddingtop = heroValueTop
     }))
-    add(out, labelBox(W, H, 0.77, 0.53, 0.16, 0.05, "STATUS", opts.headingfont, p.yellow, "center", p.bg))
-    add(out, widgetBox(W, H, rightColumnX, 0.60, rightColumnW, 0.07, "text", "armflags", {
+    add(out, labelBox(W, H, 0.77, 0.53 + midLowerShift, 0.16, 0.05, "STATUS", opts.headingfont, p.yellow, "center", p.bg))
+    add(out, widgetBox(W, H, rightColumnX, 0.60 + midLowerShift, rightColumnW, 0.07, "text", "armflags", {
         font = opts.statusfont,
         textcolor = p.line,
         valuealign = "center",
@@ -998,10 +1012,9 @@ function common.buildCockpitBoxes()
         titlespacing = stackTitleSpacing,
         valuepaddingtop = stackValueTop
     }))
-    add(out, titledValueBox(W, H, 0.35, 0.82, 0.12, 0.12, "text", "telemetry", "RATE", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
-        source = "rate_profile",
+    add(out, titledValueBox(W, H, 0.35, 0.82, 0.12, 0.12, "text", "telemetry", "VFR", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
+        source = "vfr",
         transform = "floor",
-        unit = "",
         titlespacing = stackTitleSpacing,
         valuepaddingtop = stackValueTop
     }))
