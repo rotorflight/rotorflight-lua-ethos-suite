@@ -485,6 +485,12 @@ local function wakeSectionHeader(box)
 end
 
 local function paintSectionHeader(x, y, w, h, box, cache)
+    if type(cache) ~= "table" or cache._mode ~= "sectionheader" then
+        cache = box and box._cache
+        if type(cache) ~= "table" then return end
+        if cache._mode ~= "sectionheader" then return end
+    end
+
     x, y = utils.applyOffset(x, y, box)
     if cache.bgcolor then
         lcd.color(cache.bgcolor)
@@ -559,6 +565,12 @@ local function wakeFitValue(box, telemetry)
 end
 
 local function paintFitValue(x, y, w, h, box, cache)
+    if type(cache) ~= "table" or cache._mode ~= "fitvalue" then
+        cache = box and box._cache
+        if type(cache) ~= "table" then return end
+        if cache._mode ~= "fitvalue" then return end
+    end
+
     x, y = utils.applyOffset(x, y, box)
     if cache.bgcolor then
         lcd.color(cache.bgcolor)
@@ -620,6 +632,12 @@ local function wakeKeyValue(box, telemetry)
 end
 
 local function paintKeyValue(x, y, w, h, box, cache)
+    if type(cache) ~= "table" or cache._mode ~= "keyvalue" then
+        cache = box and box._cache
+        if type(cache) ~= "table" then return end
+        if cache._mode ~= "keyvalue" then return end
+    end
+
     x, y = utils.applyOffset(x, y, box)
     if cache.bgcolor then
         lcd.color(cache.bgcolor)
@@ -710,6 +728,12 @@ local function drawPanelRow(x, y, w, h, label, value, unit, labelFont, valueFont
 end
 
 local function paintTwoRowPanel(x, y, w, h, box, cache)
+    if type(cache) ~= "table" or cache._mode ~= "tworowpanel" then
+        cache = box and box._cache
+        if type(cache) ~= "table" then return end
+        if cache._mode ~= "tworowpanel" then return end
+    end
+
     x, y = utils.applyOffset(x, y, box)
     if cache.bgcolor then
         lcd.color(cache.bgcolor)
@@ -911,8 +935,10 @@ function common.buildCockpitBoxes()
     local heroTitleSpacing = max(18, round(H * 0.040))
     local heroValueTop = max(18, round(H * 0.030))
     local midLowerShift = 0.025
-    local profileSlotGap = 0.01
-    local profileSlotW = (leftColumnW - profileSlotGap) / 2
+    local profileRowW = 0.27
+    local profileSlotGap = 0.006
+    local profileSlotW = (profileRowW - profileSlotGap) / 2
+    local profilePad = readoutPad + max(2, round(W * 0.004))
 
     add(out, backgroundBox(W, H, p.bg))
 
@@ -991,7 +1017,7 @@ function common.buildCockpitBoxes()
         source = "pid_profile",
         transform = "floor",
         unit = "",
-        padding = readoutPad,
+        padding = profilePad,
         gap = compactReadoutGap
     }))
     add(out, readoutBox(W, H, leftColumnX + profileSlotW + profileSlotGap, 0.645 + midLowerShift, profileSlotW, 0.06, "RATE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
@@ -999,7 +1025,7 @@ function common.buildCockpitBoxes()
         source = "rate_profile",
         transform = "floor",
         unit = "",
-        padding = readoutPad,
+        padding = profilePad,
         gap = compactReadoutGap
     }))
 
