@@ -10084,6 +10084,12 @@
           "needs_translation": false,
           "translation": "Disabled"
         },
+        "dashboard_theme_use_same": {
+          "english": "Use same theme",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Use same theme"
+        },
         "dashboard_theme_postflight": {
           "english": "Postflight Theme",
           "max_length": 16,

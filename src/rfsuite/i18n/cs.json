@@ -11768,6 +11768,13 @@
           "reverse_text": false,
           "translation": "Tema pred letem"
         },
+        "dashboard_theme_use_same": {
+          "english": "Use same theme",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Use same theme"
+        },
         "esc_temperature": {
           "english": "ESC Temperature",
           "max_length": 15,
