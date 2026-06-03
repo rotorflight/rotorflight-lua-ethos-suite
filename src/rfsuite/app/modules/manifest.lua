@@ -15,6 +15,7 @@ return {
             id = "configuration",
             sections = {
                 {
+                    bgtask = true,
                     ethosversion = { 1, 6, 2 },
                     id = "flight_tuning",
                     image = "app/gfx/flight_tuning.png",
@@ -23,6 +24,7 @@ return {
                     title = "@i18n(app.menu_section_flight_tuning)@",
                 },
                 {
+                    bgtask = true,
                     ethosversion = { 1, 6, 2 },
                     id = "setup",
                     image = "app/gfx/hardware.png",
@@ -44,6 +46,7 @@ return {
                     title = "@i18n(app.menu_section_tools)@",
                 },
                 {
+                    bgtask = true,
                     ethosversion = { 1, 6, 2 },
                     image = "app/modules/logs/gfx/logs.png",
                     loaderspeed = "FAST",
@@ -53,6 +56,7 @@ return {
                     title = "@i18n(app.modules.logs.name)@",
                 },
                 {
+                    bgtask = true,
                     ethosversion = { 1, 6, 2 },
                     image = "app/modules/settings/settings.png",
                     menuId = "settings_admin",
@@ -273,7 +277,7 @@ return {
                     bgtask = false,
                     image = "rfstatus.png",
                     name = "@i18n(app.modules.rfstatus.name)@",
-                    offline = false,
+                    offline = true,
                     script = "rfstatus.lua",
                     shortcutId = "s_diagnostics_rfstatus_lua_ac6fe96c58",
                 },
@@ -784,6 +788,7 @@ return {
                     shortcutId = "s_settings_admin_tools_shortcuts_lua_7ef1a52bf9",
                 },
                 {
+                    bgtask = true,
                     image = "dashboard.png",
                     name = "@i18n(app.modules.settings.dashboard)@",
                     offline = true,
@@ -833,6 +838,7 @@ return {
             },
             pages = {
                 {
+                    bgtask = true,
                     image = "dashboard_theme.png",
                     name = "@i18n(app.modules.settings.dashboard_theme)@",
                     offline = true,
@@ -840,6 +846,7 @@ return {
                     shortcutId = "s_settings_dashboard_dashboard_theme_l_356eb135bd",
                 },
                 {
+                    bgtask = true,
                     image = "dashboard_settings.png",
                     name = "@i18n(app.modules.settings.dashboard_settings)@",
                     offline = false,
@@ -999,6 +1006,7 @@ return {
             pages = {
                 {
                     apiversion = { 12, 0, 6 },
+                    bgtask = true,
                     disabled = true,
                     image = "copyprofiles/copy.png",
                     name = "@i18n(app.modules.copyprofiles.name)@",
@@ -1009,6 +1017,7 @@ return {
                 },
                 {
                     apiversion = { 12, 0, 6 },
+                    bgtask = true,
                     image = "profile_select/select_profile.png",
                     name = "@i18n(app.modules.profile_select.name)@",
                     offline = false,

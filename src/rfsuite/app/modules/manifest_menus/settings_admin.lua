@@ -39,6 +39,7 @@ return {
             shortcutId = "s_settings_admin_tools_shortcuts_lua_7ef1a52bf9",
         },
         {
+            bgtask = true,
             image = "dashboard.png",
             name = "@i18n(app.modules.settings.dashboard)@",
             offline = true,

@@ -4,6 +4,7 @@
       "id": "configuration",
       "sections": [
         {
+          "bgtask": true,
           "ethosversion": [
             1,
             6,
@@ -17,6 +18,7 @@
           "translation": "@i18n(app.menu_section_flight_tuning)@"
         },
         {
+          "bgtask": true,
           "ethosversion": [
             1,
             6,
@@ -49,6 +51,7 @@
           "translation": "@i18n(app.menu_section_tools)@"
         },
         {
+          "bgtask": true,
           "ethosversion": [
             1,
             6,
@@ -63,6 +66,7 @@
           "translation": "@i18n(app.modules.logs.name)@"
         },
         {
+          "bgtask": true,
           "ethosversion": [
             1,
             6,
@@ -326,7 +330,7 @@
           "bgtask": false,
           "image": "rfstatus.png",
           "name": "Status",
-          "offline": false,
+          "offline": true,
           "script": "rfstatus.lua",
           "translation": "@i18n(app.modules.rfstatus.name)@"
         },
@@ -883,6 +887,7 @@
           "translation": "@i18n(app.modules.settings.shortcuts)@"
         },
         {
+          "bgtask": true,
           "image": "dashboard.png",
           "name": "Dashboard",
           "offline": true,
@@ -937,6 +942,7 @@
       },
       "pages": [
         {
+          "bgtask": true,
           "image": "dashboard_theme.png",
           "name": "Theme",
           "offline": true,
@@ -944,6 +950,7 @@
           "translation": "@i18n(app.modules.settings.dashboard_theme)@"
         },
         {
+          "bgtask": true,
           "image": "dashboard_settings.png",
           "name": "Settings",
           "offline": false,
@@ -1108,6 +1115,7 @@
             0,
             6
           ],
+          "bgtask": true,
           "disabled": true,
           "image": "copyprofiles/copy.png",
           "name": "Copy Profiles",
@@ -1122,6 +1130,7 @@
             0,
             6
           ],
+          "bgtask": true,
           "image": "profile_select/select_profile.png",
           "name": "Select Profile",
           "offline": false,

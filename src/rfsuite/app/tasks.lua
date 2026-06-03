@@ -169,6 +169,8 @@ local function mainMenuIconEnableDisable()
         local formFieldsOffline = app.formFieldsOffline
         if type(formFieldsOffline) ~= "table" then return end
 
+        local formFieldsBGTask = app.formFieldsBGTask
+        local tasksActive = rfsuite.tasks and rfsuite.tasks.active and rfsuite.tasks.active()
         local apiV = tostring(rfsuite.session.apiVersion)
         local connected = (rfsuite.session and rfsuite.session.isConnected) == true
         local postConnectComplete = (rfsuite.session and rfsuite.session.postConnectComplete) == true
@@ -208,7 +210,9 @@ local function mainMenuIconEnableDisable()
         -- Offline: only allow items explicitly marked offline.
         if not connected then
             for i, v in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(app, i, v == true) then
+                local blockedByBgTask = (formFieldsBGTask and formFieldsBGTask[i] == true) and not tasksActive
+                local shouldEnable = (v == true) and not blockedByBgTask
+                if setMainMenuFieldEnabled(app, i, shouldEnable) then
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -218,18 +222,21 @@ local function mainMenuIconEnableDisable()
         -- Connected but still in post-connect: still honor offline-only accessibility.
         elseif not postConnectComplete then
             for i, v in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(app, i, v == true) then
+                local blockedByBgTask = (formFieldsBGTask and formFieldsBGTask[i] == true) and not tasksActive
+                local shouldEnable = (v == true) and not blockedByBgTask
+                if setMainMenuFieldEnabled(app, i, shouldEnable) then
                 elseif v == false then
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
             end
             focusOnce(app, "postconnect")
 
-        -- Fully connected + supported API: enable everything.
+        -- Fully connected + supported API: enable entries unless they require a stopped background task.
         elseif supportedApi then
             app.offlineMode = false
             for i in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(app, i, true) then
+                local shouldEnable = tasksActive or not (formFieldsBGTask and formFieldsBGTask[i] == true)
+                if setMainMenuFieldEnabled(app, i, shouldEnable) then
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end
@@ -237,11 +244,12 @@ local function mainMenuIconEnableDisable()
             focusOnce(app, "online")
 
         else
-            -- Fallback: if we are connected and post-connect complete, never leave icons latched disabled.
+            -- Fallback: if we are connected and post-connect complete, never leave allowed icons latched disabled.
             -- This avoids a rare dead-end where menu icons stay disabled until restart.
             app.offlineMode = false
             for i in pairs(formFieldsOffline) do
-                if setMainMenuFieldEnabled(app, i, true) then
+                local shouldEnable = tasksActive or not (formFieldsBGTask and formFieldsBGTask[i] == true)
+                if setMainMenuFieldEnabled(app, i, shouldEnable) then
                 else
                     log("Main Menu Icon " .. i .. " not found in formFields", "debug")
                 end

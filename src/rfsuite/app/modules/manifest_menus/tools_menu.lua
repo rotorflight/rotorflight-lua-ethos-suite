@@ -18,6 +18,7 @@ return {
     pages = {
         {
             apiversion = { 12, 0, 6 },
+            bgtask = true,
             disabled = true,
             image = "copyprofiles/copy.png",
             name = "@i18n(app.modules.copyprofiles.name)@",
@@ -28,6 +29,7 @@ return {
         },
         {
             apiversion = { 12, 0, 6 },
+            bgtask = true,
             image = "profile_select/select_profile.png",
             name = "@i18n(app.modules.profile_select.name)@",
             offline = false,

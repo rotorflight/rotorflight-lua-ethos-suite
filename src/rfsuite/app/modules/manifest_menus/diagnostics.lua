@@ -20,7 +20,7 @@ return {
             bgtask = false,
             image = "rfstatus.png",
             name = "@i18n(app.modules.rfstatus.name)@",
-            offline = false,
+            offline = true,
             script = "rfstatus.lua",
             shortcutId = "s_diagnostics_rfstatus_lua_ac6fe96c58",
         },

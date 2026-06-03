@@ -26,6 +26,7 @@ return {
     },
     pages = {
         {
+            bgtask = true,
             image = "dashboard_theme.png",
             name = "@i18n(app.modules.settings.dashboard_theme)@",
             offline = true,
@@ -33,6 +34,7 @@ return {
             shortcutId = "s_settings_dashboard_dashboard_theme_l_356eb135bd",
         },
         {
+            bgtask = true,
             image = "dashboard_settings.png",
             name = "@i18n(app.modules.settings.dashboard_settings)@",
             offline = false,
