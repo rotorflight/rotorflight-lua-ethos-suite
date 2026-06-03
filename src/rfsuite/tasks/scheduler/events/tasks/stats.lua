@@ -18,9 +18,11 @@ local math_huge = math.huge
 local math_floor = math.floor
 local math_abs = math.abs
 
-local inflightStartTime = nil
-local rpmStatDelay = 15
-local rpmReset = false
+local rpmStatsReady = false
+
+local function isGovernorAtHeadspeed(value)
+    return type(value) == "number" and math_floor(value) == 4
+end
 
 local function roundSigned(value)
     if value >= 0 then return math_floor(value + 0.5) end
@@ -71,8 +73,7 @@ function stats.wakeup()
         if rfsuite.session then
             rfsuite.session.headspeedVariancePct = nil
         end
-        inflightStartTime = nil
-        rpmReset = false
+        rpmStatsReady = false
         return
     end
 
@@ -92,22 +93,22 @@ function stats.wakeup()
         telemetry.sensorStats = statsTable
     end
 
-    if not inflightStartTime then
-        inflightStartTime = now
-        rpmReset = false
+    local governorValue = telemetry.getSensor("governor")
+    if not rpmStatsReady and isGovernorAtHeadspeed(governorValue) then
+        if filteredSensors["rpm"] then statsTable["rpm"] = nil end
+        rpmStatsReady = true
     end
 
-    if not rpmReset and (now - inflightStartTime >= rpmStatDelay) then
-        if filteredSensors["rpm"] then statsTable["rpm"] = nil end
-        rpmReset = true
+    if not rpmStatsReady and rfsuite.session then
+        rfsuite.session.headspeedVariancePct = nil
     end
 
     local rpmValue = nil
     for sensorKey, _ in pairs(filteredSensors) do
-        local val = telemetry.getSensor(sensorKey)
+        local val = sensorKey == "governor" and governorValue or telemetry.getSensor(sensorKey)
         if sensorKey == "rpm" then rpmValue = val end
 
-        if val and type(val) == "number" then
+        if val and type(val) == "number" and (sensorKey ~= "rpm" or rpmStatsReady) then
             local entry = statsTable[sensorKey]
             if not entry then
                 entry = {min = math_huge, max = -math_huge, sum = 0, count = 0, avg = 0}
@@ -122,7 +123,9 @@ function stats.wakeup()
         end
     end
 
-    updateHeadspeedVariance(statsTable, rpmValue)
+    if rpmStatsReady then
+        updateHeadspeedVariance(statsTable, rpmValue)
+    end
 end
 
 function stats.reset()
@@ -134,8 +137,7 @@ function stats.reset()
     fullSensorTable = nil
     filteredSensors = nil
     lastTrackTime = 0
-    inflightStartTime = nil
-    rpmReset = false
+    rpmStatsReady = false
 end
 
 return stats

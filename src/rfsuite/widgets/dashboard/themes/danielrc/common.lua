@@ -1249,7 +1249,7 @@ function common.buildReportBoxes()
     local readoutPad = max(4, round(W * 0.006))
     local readoutGap = max(6, round(W * 0.010))
     local panelPad = max(8, round(W * 0.012))
-    local titleGap = max(8, round(H * 0.018))
+    local titleGap = max(14, round(H * 0.034))
 
     add(out, backgroundBox(W, H, p.bg))
 
