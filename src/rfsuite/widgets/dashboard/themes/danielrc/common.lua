@@ -1120,6 +1120,124 @@ function common.buildCockpitBoxes()
     return out
 end
 
+function common.buildInflightBoxes()
+    local W, H = common.getContentWindow()
+    local opts = common.getOptions(W)
+    local p = common.getPalette()
+    local hcm = common.getHeaderColorMode()
+    local out = {}
+
+    local lineH = max(2, round(H * 0.006))
+    local frameT = max(2, round(H * 0.005))
+    local readoutPad = max(6, round(W * 0.010))
+    local readoutGap = max(6, round(W * 0.012))
+    local panelPad = max(10, round(W * 0.016))
+
+    add(out, backgroundBox(W, H, p.bg))
+
+    add(out, sectionBox(W, H, 0.06, 0.06, 0.25, 0.08, "POWER", opts.headingfont, p.power, "left", {
+        lineheight = lineH,
+        linewidth = 0.22 / 0.25,
+        linealign = "left",
+        linecolor = p.line
+    }))
+    add(out, sectionBox(W, H, 0.34, 0.06, 0.32, 0.08, "HEADSPEED", opts.headingfont, p.line, "center", {
+        lineheight = lineH,
+        linewidth = 0.22 / 0.32
+    }))
+    add(out, sectionBox(W, H, 0.71, 0.06, 0.23, 0.08, "STATUS", opts.headingfont, p.yellow, "center", {
+        lineheight = lineH,
+        linewidth = 0.18 / 0.23,
+        linecolor = p.line
+    }))
+
+    add(out, readoutBox(W, H, 0.06, 0.26, 0.27, 0.08, "FUEL", opts.leftlabelfont, opts.rightvaluefont, p.power, p.power, {
+        kind = "telemetry",
+        source = "smartfuel",
+        transform = "floor",
+        unit = "%",
+        padding = readoutPad,
+        gap = readoutGap
+    }))
+    add(out, widgetBox(W, H, 0.06, 0.39, 0.28, 0.10, "gauge", "bar", {
+        source = "smartfuel",
+        min = 0,
+        max = 100,
+        battery = true,
+        batteryframe = false,
+        batteryframethickness = frameT,
+        batterysegments = 4,
+        batteryspacing = max(2, round(W * 0.005)),
+        batterysegmentpaddingtop = max(1, round(H * 0.010)),
+        batterysegmentpaddingbottom = max(1, round(H * 0.010)),
+        batterysegmentpaddingleft = max(1, round(W * 0.006)),
+        batterysegmentpaddingright = max(1, round(W * 0.006)),
+        hidevalue = true,
+        fillcolor = p.power,
+        fillbgcolor = p.bgalt,
+        accentcolor = p.power,
+        bgcolor = p.bg,
+        thresholds = {
+            {value = 15, fillcolor = hcm.fillcritcolor},
+            {value = 40, fillcolor = p.yellow},
+            {value = 100, fillcolor = p.power}
+        }
+    }))
+    add(out, readoutBox(W, H, 0.06, 0.56, 0.27, 0.07, "CELL", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+        kind = "telemetry",
+        source = "voltage",
+        decimals = 2,
+        unit = "V",
+        transform = maxVoltageToCellVoltage,
+        padding = readoutPad,
+        gap = readoutGap
+    }))
+
+    add(out, widgetBox(W, H, 0.36, 0.23, 0.28, 0.26, "text", "telemetry", {
+        source = "rpm",
+        transform = "floor",
+        unit = "",
+        novalue = "-",
+        valuealign = "center",
+        font = opts.bigfont,
+        textcolor = p.white,
+        bgcolor = p.bg
+    }))
+    add(out, labelBox(W, H, 0.44, 0.49, 0.12, 0.06, "RPM", opts.biglabelfont, p.line, "center", p.bg))
+
+    add(out, readoutBox(W, H, 0.70, 0.26, 0.25, 0.07, "TIME", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+        kind = "time",
+        timesource = "flight",
+        padding = readoutPad,
+        gap = readoutGap
+    }))
+    add(out, readoutBox(W, H, 0.70, 0.43, 0.25, 0.07, "LINK", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+        kind = "telemetry",
+        source = "link",
+        transform = "floor",
+        unit = "dB",
+        padding = readoutPad,
+        gap = readoutGap
+    }))
+
+    add(out, statusPanelBox(W, H, 0.34, 0.68, 0.32, 0.17, opts.framefont, opts.framefont, p.yellow, {
+        border = frameT,
+        padding = panelPad,
+        gap = readoutGap,
+        row1label = "GOV",
+        row1kind = "governor",
+        row1textcolor = p.yellow,
+        row2label = "ERR",
+        row2kind = "session",
+        row2sessionkey = "headspeedVariancePct",
+        row2transform = "round",
+        row2unit = "%",
+        row2novalue = "--",
+        row2textcolor = p.yellow
+    }))
+    return out
+end
+
 function common.buildReportBoxes()
     local W, H = common.getContentWindow()
     local opts = common.getOptions(W)
@@ -1131,18 +1249,18 @@ function common.buildReportBoxes()
     local readoutPad = max(4, round(W * 0.006))
     local readoutGap = max(6, round(W * 0.010))
     local panelPad = max(8, round(W * 0.012))
+    local titleGap = max(8, round(H * 0.018))
 
     add(out, backgroundBox(W, H, p.bg))
-    add(out, fitValueBox(W, H, 0.24, 0.02, 0.52, 0.07, opts.bannerfont, p.white))
 
-    add(out, sectionBox(W, H, 0.03, 0.11, 0.23, 0.09, "POWER", opts.headingfont, p.power, "left", {
+    add(out, sectionBox(W, H, 0.03, 0.04, 0.23, 0.09, "POWER", opts.headingfont, p.power, "left", {
         lineheight = lineH,
         linecolor = p.line
     }))
-    add(out, sectionBox(W, H, 0.36, 0.11, 0.24, 0.09, "FLIGHT TIME", opts.headingfont, p.line, "center", {
+    add(out, sectionBox(W, H, 0.36, 0.04, 0.24, 0.09, "FLIGHT TIME", opts.headingfont, p.line, "center", {
         lineheight = lineH
     }))
-    add(out, sectionBox(W, H, 0.75, 0.11, 0.20, 0.09, "STATUS", opts.headingfont, p.line, "center", {
+    add(out, sectionBox(W, H, 0.75, 0.04, 0.20, 0.09, "STATUS", opts.headingfont, p.line, "center", {
         lineheight = lineH
     }))
 
@@ -1180,7 +1298,7 @@ function common.buildReportBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.58, 0.24, 0.05, "FLIGHTS", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.58, 0.26, 0.05, "FLIGHTS", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
         kind = "time",
         timesource = "count",
         unit = "",
@@ -1188,7 +1306,9 @@ function common.buildReportBoxes()
         gap = readoutGap
     }))
 
-    add(out, titledValueBox(W, H, 0.40, 0.25, 0.21, 0.24, "time", "flight", "LAST FLIGHT", opts.biglabelfont, opts.bigfont, p.line, p.white))
+    add(out, titledValueBox(W, H, 0.40, 0.25, 0.21, 0.24, "time", "flight", "LAST FLIGHT", opts.biglabelfont, opts.bigfont, p.line, p.white, {
+        titlespacing = titleGap
+    }))
 
     add(out, statusPanelBox(W, H, 0.35, 0.57, 0.30, 0.17, opts.framefont, opts.framefont, p.yellow, {
         border = frameT,
@@ -1213,7 +1333,8 @@ function common.buildReportBoxes()
     add(out, titledValueBox(W, H, 0.80, 0.30, 0.11, 0.16, "text", "stats", "ESC MAX", opts.biglabelfont, opts.rightvaluefont, p.line, p.white, {
         stattype = "max",
         source = "temp_esc",
-        transform = "floor"
+        transform = "floor",
+        titlespacing = titleGap
     }))
     add(out, labelBox(W, H, 0.80, 0.57, 0.12, 0.06, "STATUS", opts.headingfont, p.yellow, "center", p.bg))
     add(out, widgetBox(W, H, 0.76, 0.65, 0.19, 0.07, "text", "armflags", {
@@ -1227,30 +1348,38 @@ function common.buildReportBoxes()
         }
     }))
 
-    add(out, titledValueBox(W, H, 0.03, 0.82, 0.12, 0.12, "time", "total", "TOTAL", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white))
-    add(out, titledValueBox(W, H, 0.18, 0.82, 0.14, 0.12, "time", "count", "FLIGHTS", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white))
+    add(out, titledValueBox(W, H, 0.03, 0.82, 0.12, 0.12, "time", "total", "TOTAL", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
+        titlespacing = titleGap
+    }))
+    add(out, titledValueBox(W, H, 0.18, 0.82, 0.14, 0.12, "time", "count", "FLIGHTS", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
+        titlespacing = titleGap
+    }))
     add(out, titledValueBox(W, H, 0.35, 0.82, 0.12, 0.12, "text", "stats", "USED", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         stattype = "max",
         source = "smartconsumption",
         transform = "floor",
-        unit = "mAh"
+        unit = "mAh",
+        titlespacing = titleGap
     }))
     add(out, titledValueBox(W, H, 0.48, 0.82, 0.17, 0.12, "text", "stats", "MAX CURR", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         stattype = "max",
         source = "current",
         decimals = 1,
-        unit = "A"
+        unit = "A",
+        titlespacing = titleGap
     }))
     add(out, titledValueBox(W, H, 0.66, 0.82, 0.12, 0.12, "text", "stats", "ESC MAX", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         stattype = "max",
         source = "temp_esc",
-        transform = "floor"
+        transform = "floor",
+        titlespacing = titleGap
     }))
     add(out, titledValueBox(W, H, 0.81, 0.82, 0.13, 0.12, "text", "stats", "CELL MIN", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         stattype = "min",
         source = "voltage",
         unit = "V",
-        transform = maxVoltageToCellVoltage
+        transform = maxVoltageToCellVoltage,
+        titlespacing = titleGap
     }))
 
     return out

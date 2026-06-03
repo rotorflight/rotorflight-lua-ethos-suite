@@ -22,7 +22,7 @@ local function boxes()
     local W, H = lcd.getWindowSize()
     local themeSignature = common.getThemeSignature()
     if boxes_cache == nil or lastScreenW ~= W or lastScreenH ~= H or lastThemeSignature ~= themeSignature then
-        boxes_cache = common.buildCockpitBoxes()
+        boxes_cache = common.buildInflightBoxes()
         lastScreenW = W
         lastScreenH = H
         lastThemeSignature = themeSignature
