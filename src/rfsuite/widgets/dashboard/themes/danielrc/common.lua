@@ -58,6 +58,7 @@ common.headerLayout = utils.standardHeaderLayout(utils.getHeaderOptions())
 local themeOptions = {
     ls_full = {
         bannerfont = "FONT_XXL",
+        craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
         leftlabelfont = "FONT_STD",
         leftvaluefont = "FONT_L",
@@ -72,6 +73,7 @@ local themeOptions = {
     },
     ls_std = {
         bannerfont = "FONT_XXL",
+        craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
         leftlabelfont = "FONT_STD",
         leftvaluefont = "FONT_L",
@@ -86,6 +88,7 @@ local themeOptions = {
     },
     ms_full = {
         bannerfont = "FONT_XL",
+        craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
         leftlabelfont = "FONT_STD",
         leftvaluefont = "FONT_L",
@@ -100,6 +103,7 @@ local themeOptions = {
     },
     ms_std = {
         bannerfont = "FONT_XL",
+        craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
         leftlabelfont = "FONT_STD",
         leftvaluefont = "FONT_L",
@@ -114,6 +118,7 @@ local themeOptions = {
     },
     ss_full = {
         bannerfont = "FONT_XL",
+        craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
         leftlabelfont = "FONT_STD",
         leftvaluefont = "FONT_L",
@@ -128,6 +133,7 @@ local themeOptions = {
     },
     ss_std = {
         bannerfont = "FONT_L",
+        craftnamefont = "FONT_L",
         headingfont = "FONT_STD",
         leftlabelfont = "FONT_S",
         leftvaluefont = "FONT_STD",
@@ -368,6 +374,11 @@ local function readSpec(box, spec, telemetry, slotKey)
     elseif kind == "time" then
         displayValue = readTime(spec, session)
         rawValue = displayValue
+    elseif kind == "session" then
+        if spec.sessionkey then
+            displayValue = session[spec.sessionkey]
+            rawValue = displayValue
+        end
     else
         displayValue = spec.value
         rawValue = displayValue
@@ -384,6 +395,7 @@ local function readSpec(box, spec, telemetry, slotKey)
     end
 
     local unit = resolveTelemetryUnit(spec, dynamicUnit, telemetry)
+    if rawValue == nil and kind ~= "static" then unit = nil end
     if type(displayValue) == "string" and displayValue:match("^%.+$") then unit = nil end
 
     local textValueForThreshold = rawValue
@@ -413,6 +425,8 @@ local function wakeSectionHeader(box)
             bgcolor = utils.resolveThemeColor("bgcolor", box.bgcolor),
             align = box.align or "center",
             lineheight = box.lineheight or 3,
+            linewidth = box.linewidth or 1,
+            linealign = box.linealign or box.align or "center",
             liney = box.liney or 0.82,
             textband = box.textband or 0.65
         }
@@ -442,8 +456,25 @@ local function paintSectionHeader(x, y, w, h, box, cache)
     lcd.color(cache.textcolor)
     lcd.drawText(tx, y + floor((textBandH - th) / 2 + 0.5), cache.label)
 
+    local lineW = w
+    if type(cache.linewidth) == "number" then
+        if cache.linewidth > 0 and cache.linewidth <= 1 then
+            lineW = max(1, floor(w * cache.linewidth + 0.5))
+        elseif cache.linewidth > 1 then
+            lineW = max(1, floor(cache.linewidth + 0.5))
+            if lineW > w then lineW = w end
+        end
+    end
+
+    local lineX = x + floor((w - lineW) / 2 + 0.5)
+    if cache.linealign == "left" then
+        lineX = x
+    elseif cache.linealign == "right" then
+        lineX = x + w - lineW
+    end
+
     lcd.color(cache.linecolor)
-    lcd.drawFilledRectangle(x, y + floor(h * cache.liney + 0.5), w, cache.lineheight)
+    lcd.drawFilledRectangle(lineX, y + floor(h * cache.liney + 0.5), lineW, cache.lineheight)
 end
 
 local function wakeFitValue(box, telemetry)
@@ -570,6 +601,7 @@ local function rowSpec(box, prefix, defaults)
         label = box[prefix .. "label"] or defaults.label,
         kind = box[prefix .. "kind"] or defaults.kind,
         source = box[prefix .. "source"] or defaults.source,
+        sessionkey = box[prefix .. "sessionkey"] or defaults.sessionkey,
         stattype = box[prefix .. "stattype"] or defaults.stattype,
         wattsmode = box[prefix .. "wattsmode"] or defaults.wattsmode,
         timesource = box[prefix .. "timesource"] or defaults.timesource,
@@ -605,14 +637,15 @@ local function wakeTwoRowPanel(box, telemetry)
         box._cache = cache
     end
 
-    cache.row1Value, _, cache.row1Color = readSpec(box, cache.row1, telemetry, "panel1")
-    cache.row2Value, _, cache.row2Color = readSpec(box, cache.row2, telemetry, "panel2")
+    cache.row1Value, cache.row1Unit, cache.row1Color = readSpec(box, cache.row1, telemetry, "panel1")
+    cache.row2Value, cache.row2Unit, cache.row2Color = readSpec(box, cache.row2, telemetry, "panel2")
     return cache
 end
 
-local function drawPanelRow(x, y, w, h, label, value, labelFont, valueFont, labelColor, valueColor, pad, gap)
+local function drawPanelRow(x, y, w, h, label, value, unit, labelFont, valueFont, labelColor, valueColor, pad, gap)
     local labelText = tostring(label or "")
     local valueText = tostring(value or "")
+    if unit and unit ~= "" then valueText = valueText .. unit end
 
     local lFont, lW, lH = pickFont(labelFont, labelText, w * 0.35, h - 2)
     local valueAvailW = w - (pad * 2) - lW - gap
@@ -647,8 +680,8 @@ local function paintTwoRowPanel(x, y, w, h, box, cache)
     local innerH = h - (cache.border * 2)
     local rowH = floor(innerH / 2)
 
-    drawPanelRow(innerX, innerY, innerW, rowH, cache.row1.label, cache.row1Value, cache.labelfont, cache.valuefont, cache.labelcolor, cache.row1Color or cache.row1.textcolor, cache.padding, cache.gap)
-    drawPanelRow(innerX, innerY + rowH, innerW, innerH - rowH, cache.row2.label, cache.row2Value, cache.labelfont, cache.valuefont, cache.labelcolor, cache.row2Color or cache.row2.textcolor, cache.padding, cache.gap)
+    drawPanelRow(innerX, innerY, innerW, rowH, cache.row1.label, cache.row1Value, cache.row1Unit, cache.labelfont, cache.valuefont, cache.labelcolor, cache.row1Color or cache.row1.textcolor, cache.padding, cache.gap)
+    drawPanelRow(innerX, innerY + rowH, innerW, innerH - rowH, cache.row2.label, cache.row2Value, cache.row2Unit, cache.labelfont, cache.valuefont, cache.labelcolor, cache.row2Color or cache.row2.textcolor, cache.padding, cache.gap)
 end
 
 function common.getOptions(W)
@@ -811,29 +844,39 @@ function common.buildCockpitBoxes()
     local opts = common.getOptions(W)
     local p = common.palette
     local out = {}
+    local leftColumnX, leftColumnW = 0.03, 0.30
+    local centerColumnX, centerColumnW = 0.35, 0.31
+    local rightColumnX, rightColumnW = 0.76, 0.19
 
     local lineH = max(2, round(H * 0.006))
     local frameT = max(2, round(H * 0.005))
     local readoutPad = max(4, round(W * 0.006))
     local readoutGap = max(6, round(W * 0.010))
     local panelPad = max(8, round(W * 0.012))
+    local stackTitleSpacing = max(10, round(H * 0.022))
+    local stackValueTop = max(10, round(H * 0.017))
+    local heroTitleSpacing = max(18, round(H * 0.040))
+    local heroValueTop = max(18, round(H * 0.030))
 
     add(out, backgroundBox(W, H, p.bg))
     add(out, ruleBox(W, H, 0.02, 0.01, 0.96, lineH / H, p.dim))
-    add(out, fitValueBox(W, H, 0.24, 0.02, 0.52, 0.07, opts.bannerfont, p.white))
 
-    add(out, sectionBox(W, H, 0.03, 0.12, 0.23, 0.09, "POWER", opts.headingfont, p.green, "left", {
+    add(out, sectionBox(W, H, leftColumnX, 0.08, leftColumnW, 0.09, "POWER", opts.headingfont, p.green, "left", {
         lineheight = lineH,
+        linewidth = 0.27 / leftColumnW,
+        linealign = "left",
         linecolor = p.line
     }))
-    add(out, sectionBox(W, H, 0.36, 0.12, 0.24, 0.09, "HEADSPEED", opts.headingfont, p.line, "center", {
-        lineheight = lineH
+    add(out, sectionBox(W, H, centerColumnX, 0.08, centerColumnW, 0.09, "HEADSPEED", opts.headingfont, p.line, "center", {
+        lineheight = lineH,
+        linewidth = 0.18 / centerColumnW
     }))
-    add(out, sectionBox(W, H, 0.75, 0.12, 0.18, 0.09, "TAIL SYSTEM", opts.headingfont, p.line, "center", {
-        lineheight = lineH
+    add(out, sectionBox(W, H, rightColumnX, 0.08, rightColumnW, 0.09, "TAIL SYSTEM", opts.headingfont, p.line, "center", {
+        lineheight = lineH,
+        linewidth = 0.14 / rightColumnW
     }))
 
-    add(out, readoutBox(W, H, 0.03, 0.27, 0.27, 0.05, "VOLT", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.22, 0.27, 0.05, "VOLT", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
         kind = "telemetry",
         source = "voltage",
         decimals = 2,
@@ -841,7 +884,7 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.35, 0.27, 0.05, "CURRENT", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.30, 0.27, 0.05, "CURRENT", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
         kind = "telemetry",
         source = "current",
         decimals = 1,
@@ -849,22 +892,22 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.43, 0.27, 0.05, "POWER", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.38, 0.27, 0.05, "POWER", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
         kind = "watts",
         wattsmode = "current",
         unit = "W",
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.51, 0.29, 0.05, "SMART FUEL", opts.leftlabelfont, opts.leftvaluefont, p.green, p.green, {
+    add(out, readoutBox(W, H, 0.03, 0.46, 0.27, 0.05, "SMART FUEL", opts.leftlabelfont, opts.leftvaluefont, p.green, p.green, {
         kind = "telemetry",
         source = "smartfuel",
         transform = "floor",
         unit = "%",
         padding = readoutPad,
-        gap = readoutGap
+        gap = max(4, round(W * 0.008))
     }))
-    add(out, widgetBox(W, H, 0.03, 0.60, 0.28, 0.06, "gauge", "bar", {
+    add(out, widgetBox(W, H, 0.03, 0.55, 0.28, 0.06, "gauge", "bar", {
         source = "smartfuel",
         min = 0,
         max = 100,
@@ -888,16 +931,14 @@ function common.buildCockpitBoxes()
             {value = 100, fillcolor = p.green}
         }
     }))
-    add(out, readoutBox(W, H, 0.03, 0.70, 0.23, 0.05, "PID", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
-        kind = "telemetry",
-        source = "pid_profile",
-        transform = "floor",
-        unit = "",
+    add(out, fitValueBox(W, H, leftColumnX, 0.645, leftColumnW, 0.06, opts.craftnamefont or opts.bannerfont, p.white, {
+        kind = "craftname",
+        align = "left",
         padding = readoutPad,
-        gap = readoutGap
+        novalue = "MODEL"
     }))
 
-    add(out, widgetBox(W, H, 0.41, 0.30, 0.18, 0.18, "text", "telemetry", {
+    add(out, widgetBox(W, H, 0.41, 0.25, 0.18, 0.18, "text", "telemetry", {
         source = "rpm",
         transform = "floor",
         unit = "",
@@ -907,34 +948,35 @@ function common.buildCockpitBoxes()
         textcolor = p.white,
         bgcolor = p.bg
     }))
-    add(out, labelBox(W, H, 0.46, 0.49, 0.08, 0.05, "RPM", opts.biglabelfont, p.line, "center", p.bg))
+    add(out, labelBox(W, H, 0.46, 0.44, 0.08, 0.05, "RPM", opts.biglabelfont, p.line, "center", p.bg))
 
-    add(out, statusPanelBox(W, H, 0.35, 0.58, 0.31, 0.16, opts.framefont, opts.framefont, p.yellow, {
+    add(out, statusPanelBox(W, H, centerColumnX, 0.53, centerColumnW, 0.16, opts.framefont, opts.framefont, p.yellow, {
         border = frameT,
         padding = panelPad,
         gap = readoutGap,
         row1label = "GOV",
         row1kind = "governor",
         row1textcolor = p.yellow,
-        row2label = "RATE",
-        row2kind = "telemetry",
-        row2source = "rate_profile",
-        row2transform = "floor",
-        row2unit = "",
+        row2label = "ERR",
+        row2kind = "session",
+        row2sessionkey = "headspeedVariancePct",
+        row2transform = "round",
+        row2unit = "%",
+        row2novalue = "--",
         row2textcolor = p.yellow
     }))
 
-    add(out, titledValueBox(W, H, 0.79, 0.31, 0.14, 0.15, "text", "telemetry", "LINK", opts.biglabelfont, opts.rightvaluefont, p.line, p.white, {
-        source = "link",
+    add(out, titledValueBox(W, H, 0.79, 0.26, 0.14, 0.15, "text", "telemetry", "TAIL RPM", opts.biglabelfont, opts.rightvaluefont, p.line, p.white, {
+        source = "tailspeed",
         transform = "floor",
-        unit = "dB",
+        unit = "",
         valuealign = "center",
-        titlespacing = max(10, round(H * 0.026)),
+        titlespacing = heroTitleSpacing,
         titlepaddingbottom = max(2, round(H * 0.006)),
-        valuepaddingtop = max(10, round(H * 0.018))
+        valuepaddingtop = heroValueTop
     }))
-    add(out, labelBox(W, H, 0.77, 0.58, 0.16, 0.05, "STATUS", opts.headingfont, p.yellow, "center", p.bg))
-    add(out, widgetBox(W, H, 0.76, 0.65, 0.19, 0.07, "text", "armflags", {
+    add(out, labelBox(W, H, 0.77, 0.53, 0.16, 0.05, "STATUS", opts.headingfont, p.yellow, "center", p.bg))
+    add(out, widgetBox(W, H, rightColumnX, 0.60, rightColumnW, 0.07, "text", "armflags", {
         font = opts.statusfont,
         textcolor = p.line,
         valuealign = "center",
@@ -945,31 +987,44 @@ function common.buildCockpitBoxes()
         }
     }))
 
-    add(out, titledValueBox(W, H, 0.03, 0.82, 0.12, 0.12, "time", "flight", "TIME", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white))
+    add(out, titledValueBox(W, H, 0.03, 0.82, 0.12, 0.12, "time", "flight", "TIME", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
+        titlespacing = stackTitleSpacing,
+        valuepaddingtop = stackValueTop
+    }))
     add(out, titledValueBox(W, H, 0.18, 0.82, 0.14, 0.12, "text", "telemetry", "RSSI", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         source = "link",
         transform = "floor",
-        unit = "dB"
+        unit = "dB",
+        titlespacing = stackTitleSpacing,
+        valuepaddingtop = stackValueTop
     }))
     add(out, titledValueBox(W, H, 0.35, 0.82, 0.12, 0.12, "text", "telemetry", "RATE", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         source = "rate_profile",
         transform = "floor",
-        unit = ""
+        unit = "",
+        titlespacing = stackTitleSpacing,
+        valuepaddingtop = stackValueTop
     }))
     add(out, titledValueBox(W, H, 0.48, 0.82, 0.17, 0.12, "text", "telemetry", "ESC TEMP", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         source = "temp_esc",
-        transform = "floor"
+        transform = "floor",
+        titlespacing = stackTitleSpacing,
+        valuepaddingtop = stackValueTop
     }))
     add(out, titledValueBox(W, H, 0.66, 0.82, 0.12, 0.12, "text", "telemetry", "BEC", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         source = "bec_voltage",
         decimals = 2,
-        unit = "V"
+        unit = "V",
+        titlespacing = stackTitleSpacing,
+        valuepaddingtop = stackValueTop
     }))
     add(out, titledValueBox(W, H, 0.81, 0.82, 0.13, 0.12, "text", "telemetry", "CELL", opts.bottomtitlefont, opts.bottomvaluefont, p.line, p.white, {
         source = "voltage",
         decimals = 2,
         unit = "V",
-        transform = maxVoltageToCellVoltage
+        transform = maxVoltageToCellVoltage,
+        titlespacing = stackTitleSpacing,
+        valuepaddingtop = stackValueTop
     }))
 
     return out

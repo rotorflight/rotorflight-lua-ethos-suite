@@ -26,6 +26,7 @@ return {
             },
     cell_voltage = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0910}},
     rpm = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}},
+    tailspeed = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0501}},
     current = {
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
                 {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208},

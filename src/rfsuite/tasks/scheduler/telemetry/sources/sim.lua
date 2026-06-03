@@ -24,6 +24,7 @@ return {
     voltage = {{uid = 0x5002, unit = UNIT_VOLT, dec = 2, value = function() return simSensors('voltage') end, min = 0, max = 3000}},
     cell_voltage = {nil},
     rpm = {{uid = 0x5003, unit = UNIT_RPM, dec = nil, value = function() return simSensors('rpm') end, min = 0, max = 2000}},
+    tailspeed = {{uid = 0x5027, unit = UNIT_RPM, dec = nil, value = function() return simSensors('tailspeed') end, min = 0, max = 65535}},
     current = {{uid = 0x5004, unit = UNIT_AMPERE, dec = 0, value = function() return simSensors('current') end, min = 0, max = 300}},
     temp_esc = {{uid = 0x5005, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_esc') end, min = 0, max = 100}},
     temp_mcu = {{uid = 0x5006, unit = UNIT_DEGREE, dec = 0, value = function() return simSensors('temp_mcu') end, min = 0, max = 100}},

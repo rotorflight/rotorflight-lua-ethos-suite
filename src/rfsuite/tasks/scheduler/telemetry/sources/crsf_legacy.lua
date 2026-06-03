@@ -21,6 +21,7 @@ return {
     voltage = {"Rx Batt"},
     cell_voltage = {nil},
     rpm = {"GPS Alt"},
+    tailspeed = {nil},
     current = {"Rx Curr"},
     temp_esc = {"GPS Speed"},
     temp_mcu = {"GPS Sats"},

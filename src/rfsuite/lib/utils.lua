@@ -37,6 +37,7 @@ function utils.session()
         activeRateProfile = nil,
         activeProfileLast = nil,
         activeRateProfileLast = nil,
+        headspeedVariancePct = nil,
 
         servoCount = nil,
         servoOverride = nil,

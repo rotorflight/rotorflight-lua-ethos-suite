@@ -106,6 +106,16 @@ return {
         unit_string = "rpm",
     },
 
+    tailspeed = {
+        name = "@i18n(telemetry.sensor_tailspeed)@",
+        mandatory = false,
+        stats = true,
+        set_telemetry_sensors = 61,
+        switch_alerts = true,
+        unit = UNIT_RPM,
+        unit_string = "rpm",
+    },
+
     current = {
         name = "@i18n(sensors.current)@",
         mandatory = true,

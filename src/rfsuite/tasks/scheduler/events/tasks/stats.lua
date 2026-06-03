@@ -15,10 +15,34 @@ local lastTrackTime = 0
 
 local os_clock = os.clock
 local math_huge = math.huge
+local math_floor = math.floor
+local math_abs = math.abs
 
 local inflightStartTime = nil
 local rpmStatDelay = 15
 local rpmReset = false
+
+local function roundSigned(value)
+    if value >= 0 then return math_floor(value + 0.5) end
+    return -math_floor(-value + 0.5)
+end
+
+local function updateHeadspeedVariance(statsTable, rpm)
+    local session = rfsuite.session
+    if not session then return end
+
+    local rpmStats = statsTable and statsTable.rpm
+    local avg = rpmStats and rpmStats.avg
+    if type(rpm) ~= "number" or type(avg) ~= "number" or avg <= 0 then
+        session.headspeedVariancePct = nil
+        return
+    end
+
+    local variancePct = roundSigned((math_abs(rpm - avg) / avg) * 100)
+    if session.headspeedVariancePct ~= variancePct then
+        session.headspeedVariancePct = variancePct
+    end
+end
 
 local function buildFilteredList()
     filteredSensors = {}
@@ -44,6 +68,9 @@ function stats.wakeup()
     if not telemetry then return end
 
     if rfsuite.flightmode.current ~= "inflight" then
+        if rfsuite.session then
+            rfsuite.session.headspeedVariancePct = nil
+        end
         inflightStartTime = nil
         rpmReset = false
         return
@@ -75,8 +102,10 @@ function stats.wakeup()
         rpmReset = true
     end
 
+    local rpmValue = nil
     for sensorKey, _ in pairs(filteredSensors) do
         local val = telemetry.getSensor(sensorKey)
+        if sensorKey == "rpm" then rpmValue = val end
 
         if val and type(val) == "number" then
             local entry = statsTable[sensorKey]
@@ -92,11 +121,16 @@ function stats.wakeup()
             entry.avg = entry.sum / entry.count
         end
     end
+
+    updateHeadspeedVariance(statsTable, rpmValue)
 end
 
 function stats.reset()
     local telemetry = rfsuite.tasks.telemetry
     if telemetry then telemetry.sensorStats = {} end
+    if rfsuite.session then
+        rfsuite.session.headspeedVariancePct = nil
+    end
     fullSensorTable = nil
     filteredSensors = nil
     lastTrackTime = 0
