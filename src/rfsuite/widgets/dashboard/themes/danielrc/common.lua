@@ -27,33 +27,82 @@ end
 
 common.layout = {cols = 1, rows = 1, padding = 0, showstats = false}
 
-common.palette = {
+common.basePalette = {
     bg = rgb(10, 10, 10),
     bgalt = rgb(16, 16, 16),
     line = rgb(0, 225, 255),
     green = rgb(34, 236, 22),
     white = rgb(245, 245, 245),
     yellow = rgb(255, 229, 0),
+    red = rgb(224, 64, 64),
     dim = rgb(56, 56, 56)
 }
 
-common.headerColorMode = {
-    fillwarncolor = common.palette.yellow,
-    fillcolor = common.palette.green,
-    fillcritcolor = rgb(224, 64, 64),
-    tbbgcolor = common.palette.bg,
-    tbtextcolor = common.palette.white,
-    titlecolor = common.palette.line,
-    txbgfillcolor = common.palette.bgalt,
-    txaccentcolor = common.palette.line,
-    txfillcolor = common.palette.green,
-    cntextcolor = common.palette.white,
-    rssitextcolor = common.palette.white,
-    rssifillcolor = common.palette.green,
-    rssifillbgcolor = common.palette.bgalt
+common.palette = common.basePalette
+
+local paletteCache = {
+    signature = nil,
+    palette = nil,
+    headerColorMode = nil
 }
 
 common.headerLayout = utils.standardHeaderLayout(utils.getHeaderOptions())
+
+function common.getThemeSignature()
+    return utils.getThemeSignature()
+end
+
+function common.getPalette()
+    local signature = utils.getThemeSignature()
+    if paletteCache.palette and paletteCache.signature == signature then return paletteCache.palette end
+
+    local state = utils.getThemeState() or {}
+    local colorMode = utils.themeColors()
+    local base = common.basePalette
+    local useSystemAccent = state.usesThemeColors == true
+
+    local palette = {
+        bg = colorMode.bgcolor or base.bg,
+        bgalt = colorMode.paneldarkbg or colorMode.fillbgcolor or base.bgalt,
+        line = (useSystemAccent and (state.mixerOutputColor or colorMode.titlecolor)) or colorMode.titlecolor or base.line,
+        green = state.safeColor or colorMode.fillcolor or base.green,
+        power = (useSystemAccent and ((state.mixerOutputColor or colorMode.titlecolor) or base.line)) or (state.safeColor or colorMode.fillcolor or base.green),
+        white = colorMode.textcolor or base.white,
+        yellow = state.warningColor or colorMode.fillwarncolor or base.yellow,
+        red = state.errorColor or colorMode.fillcritcolor or base.red,
+        dim = colorMode.panelbgline or state.buttonBorderColor or colorMode.accentcolor or base.dim
+    }
+
+    paletteCache.signature = signature
+    paletteCache.palette = palette
+    paletteCache.headerColorMode = {
+        fillwarncolor = palette.yellow,
+        fillcolor = palette.power,
+        fillcritcolor = palette.red,
+        tbbgcolor = colorMode.tbbgcolor or palette.bg,
+        tbtextcolor = colorMode.tbtextcolor or palette.white,
+        titlecolor = palette.line,
+        txbgfillcolor = colorMode.txbgfillcolor or palette.bgalt,
+        txaccentcolor = palette.line,
+        txfillcolor = palette.power,
+        cntextcolor = colorMode.cntextcolor or palette.white,
+        rssitextcolor = colorMode.rssitextcolor or palette.white,
+        rssifillcolor = palette.power,
+        rssifillbgcolor = colorMode.rssifillbgcolor or palette.bgalt
+    }
+    common.palette = palette
+    common.headerColorMode = paletteCache.headerColorMode
+
+    return palette
+end
+
+function common.getHeaderColorMode()
+    local signature = utils.getThemeSignature()
+    if paletteCache.headerColorMode == nil or paletteCache.signature ~= signature then
+        common.getPalette()
+    end
+    return paletteCache.headerColorMode
+end
 
 local themeOptions = {
     ls_full = {
@@ -700,13 +749,15 @@ end
 
 function common.headerBoxes(cache)
     local txbatt_type = 0
+    local signature = utils.getThemeSignature()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
         txbatt_type = rfsuite.preferences.general.txbatt_type or 0
     end
 
-    if cache.boxes == nil or cache.txbatt_type ~= txbatt_type then
-        cache.boxes = utils.standardHeaderBoxes(i18n, common.headerColorMode, utils.getHeaderOptions(), txbatt_type)
+    if cache.boxes == nil or cache.txbatt_type ~= txbatt_type or cache.theme_signature ~= signature then
+        cache.boxes = utils.standardHeaderBoxes(i18n, common.getHeaderColorMode(), utils.getHeaderOptions(), txbatt_type)
         cache.txbatt_type = txbatt_type
+        cache.theme_signature = signature
     end
 
     return cache.boxes
@@ -765,7 +816,7 @@ local function labelBox(W, H, xp, yp, wp, hp, value, font, color, align, bgcolor
         font = font,
         textcolor = color,
         valuealign = align or "center",
-        bgcolor = bgcolor or common.palette.bg
+        bgcolor = bgcolor or common.getPalette().bg
     })
 end
 
@@ -783,7 +834,7 @@ local function sectionBox(W, H, xp, yp, wp, hp, label, font, color, align, extra
         textcolor = color,
         linecolor = color,
         align = align or "center",
-        bgcolor = common.palette.bg,
+        bgcolor = common.getPalette().bg,
         wakeup = wakeSectionHeader,
         paint = paintSectionHeader
     }, extra))
@@ -794,7 +845,7 @@ local function fitValueBox(W, H, xp, yp, wp, hp, font, color, extra)
         kind = "craftname",
         font = font,
         textcolor = color,
-        bgcolor = common.palette.bg,
+        bgcolor = common.getPalette().bg,
         wakeup = wakeFitValue,
         paint = paintFitValue
     }, extra))
@@ -807,7 +858,7 @@ local function readoutBox(W, H, xp, yp, wp, hp, label, labelFont, valueFont, lab
         valuefont = valueFont,
         labelcolor = labelColor,
         textcolor = valueColor,
-        bgcolor = common.palette.bg,
+        bgcolor = common.getPalette().bg,
         wakeup = wakeKeyValue,
         paint = paintKeyValue
     }, extra))
@@ -820,7 +871,7 @@ local function statusPanelBox(W, H, xp, yp, wp, hp, labelFont, valueFont, border
         labelcolor = borderColor,
         labelfont = labelFont,
         valuefont = valueFont,
-        bgcolor = common.palette.bg,
+        bgcolor = common.getPalette().bg,
         wakeup = wakeTwoRowPanel,
         paint = paintTwoRowPanel
     }, extra))
@@ -835,14 +886,15 @@ local function titledValueBox(W, H, xp, yp, wp, hp, boxType, subtype, title, tit
         titlecolor = titleColor,
         font = valueFont,
         textcolor = valueColor,
-        bgcolor = common.palette.bg
+        bgcolor = common.getPalette().bg
     }, extra))
 end
 
 function common.buildCockpitBoxes()
     local W, H = common.getContentWindow()
     local opts = common.getOptions(W)
-    local p = common.palette
+    local p = common.getPalette()
+    local hcm = common.getHeaderColorMode()
     local out = {}
     local leftColumnX, leftColumnW = 0.03, 0.30
     local centerColumnX, centerColumnW = 0.35, 0.31
@@ -863,9 +915,8 @@ function common.buildCockpitBoxes()
     local profileSlotW = (leftColumnW - profileSlotGap) / 2
 
     add(out, backgroundBox(W, H, p.bg))
-    add(out, ruleBox(W, H, 0.02, 0.01, 0.96, lineH / H, p.dim))
 
-    add(out, sectionBox(W, H, leftColumnX, 0.08, leftColumnW, 0.09, "POWER", opts.headingfont, p.green, "left", {
+    add(out, sectionBox(W, H, leftColumnX, 0.08, leftColumnW, 0.09, "POWER", opts.headingfont, p.power, "left", {
         lineheight = lineH,
         linewidth = 0.27 / leftColumnW,
         linealign = "left",
@@ -880,7 +931,7 @@ function common.buildCockpitBoxes()
         linewidth = 0.14 / rightColumnW
     }))
 
-    add(out, readoutBox(W, H, 0.03, 0.22, 0.27, 0.05, "VOLT", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.22, 0.27, 0.05, "VOLT", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "telemetry",
         source = "voltage",
         decimals = 2,
@@ -888,7 +939,7 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.30, 0.27, 0.05, "CURRENT", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.30, 0.27, 0.05, "CURRENT", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "telemetry",
         source = "current",
         decimals = 1,
@@ -896,14 +947,14 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.38, 0.27, 0.05, "POWER", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.38, 0.27, 0.05, "POWER", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "watts",
         wattsmode = "current",
         unit = "W",
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.46, 0.27, 0.05, "SMART FUEL", opts.leftlabelfont, opts.leftvaluefont, p.green, p.green, {
+    add(out, readoutBox(W, H, 0.03, 0.46, 0.27, 0.05, "SMART FUEL", opts.leftlabelfont, opts.leftvaluefont, p.power, p.power, {
         kind = "telemetry",
         source = "smartfuel",
         transform = "floor",
@@ -925,14 +976,14 @@ function common.buildCockpitBoxes()
         batterysegmentpaddingleft = max(1, round(W * 0.005)),
         batterysegmentpaddingright = max(1, round(W * 0.005)),
         hidevalue = true,
-        fillcolor = p.green,
+        fillcolor = p.power,
         fillbgcolor = p.bgalt,
-        accentcolor = p.green,
+        accentcolor = p.power,
         bgcolor = p.bg,
         thresholds = {
-            {value = 15, fillcolor = common.headerColorMode.fillcritcolor},
+            {value = 15, fillcolor = hcm.fillcritcolor},
             {value = 40, fillcolor = p.yellow},
-            {value = 100, fillcolor = p.green}
+            {value = 100, fillcolor = p.power}
         }
     }))
     add(out, readoutBox(W, H, leftColumnX, 0.645 + midLowerShift, profileSlotW, 0.06, "PROFILE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
@@ -1046,7 +1097,7 @@ end
 function common.buildReportBoxes()
     local W, H = common.getContentWindow()
     local opts = common.getOptions(W)
-    local p = common.palette
+    local p = common.getPalette()
     local out = {}
 
     local lineH = max(2, round(H * 0.006))
@@ -1056,10 +1107,9 @@ function common.buildReportBoxes()
     local panelPad = max(8, round(W * 0.012))
 
     add(out, backgroundBox(W, H, p.bg))
-    add(out, ruleBox(W, H, 0.02, 0.01, 0.96, lineH / H, p.dim))
     add(out, fitValueBox(W, H, 0.24, 0.02, 0.52, 0.07, opts.bannerfont, p.white))
 
-    add(out, sectionBox(W, H, 0.03, 0.11, 0.23, 0.09, "POWER", opts.headingfont, p.green, "left", {
+    add(out, sectionBox(W, H, 0.03, 0.11, 0.23, 0.09, "POWER", opts.headingfont, p.power, "left", {
         lineheight = lineH,
         linecolor = p.line
     }))
@@ -1070,7 +1120,7 @@ function common.buildReportBoxes()
         lineheight = lineH
     }))
 
-    add(out, readoutBox(W, H, 0.03, 0.25, 0.26, 0.05, "MIN CELL", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.25, 0.26, 0.05, "MIN CELL", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "stats",
         stattype = "min",
         source = "voltage",
@@ -1079,7 +1129,7 @@ function common.buildReportBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.33, 0.26, 0.05, "MAX CURR", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.33, 0.26, 0.05, "MAX CURR", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "stats",
         stattype = "max",
         source = "current",
@@ -1088,14 +1138,14 @@ function common.buildReportBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.41, 0.26, 0.05, "MAX PWR", opts.leftlabelfont, opts.leftvaluefont, p.green, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.41, 0.26, 0.05, "MAX PWR", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "watts",
         wattsmode = "max",
         unit = "W",
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.49, 0.26, 0.05, "USED", opts.leftlabelfont, opts.leftvaluefont, p.green, p.green, {
+    add(out, readoutBox(W, H, 0.03, 0.49, 0.26, 0.05, "USED", opts.leftlabelfont, opts.leftvaluefont, p.power, p.power, {
         kind = "stats",
         stattype = "max",
         source = "smartconsumption",

@@ -11,6 +11,7 @@ local common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widget
 local boxes_cache = nil
 local lastScreenW = nil
 local lastScreenH = nil
+local lastThemeSignature = nil
 local headerCache = {}
 
 local function header_boxes()
@@ -19,10 +20,12 @@ end
 
 local function boxes()
     local W, H = lcd.getWindowSize()
-    if boxes_cache == nil or lastScreenW ~= W or lastScreenH ~= H then
+    local themeSignature = common.getThemeSignature()
+    if boxes_cache == nil or lastScreenW ~= W or lastScreenH ~= H or lastThemeSignature ~= themeSignature then
         boxes_cache = common.buildCockpitBoxes()
         lastScreenW = W
         lastScreenH = H
+        lastThemeSignature = themeSignature
     end
     return boxes_cache
 end
