@@ -45,6 +45,8 @@ This opens the RFSuite in your browser, showcasing its functionality within the 
 ### Key UI Screens
 
 **Status Widget**  
+Dashboard themes are available for different flight states. See the [Dashboard Themes Overview](docs/dashboard-themes-overview.md) to compare the available theme previews.
+
 ![Status](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/.github/gfx/status.png)
 
 **Flight Logs**  
