@@ -1,6 +1,7 @@
 # Dashboard Themes Overview
 
 This overview shows the available dashboard themes and their preflight, inflight, and postflight screens.
+You can change them via the Suite Menu "Settings - Dashboard - Theme"
 
 ## AERC
 
