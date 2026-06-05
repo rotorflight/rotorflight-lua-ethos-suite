@@ -12151,6 +12151,13 @@
           "reverse_text": false,
           "max_length": 5
         },
+        "txt_debugmalloc": {
+          "english": "Malloc debug",
+          "translation": "Malloc debug",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
         "txt_developer": {
           "english": "Developer",
           "translation": "Desenv.",
