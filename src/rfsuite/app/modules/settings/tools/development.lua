@@ -87,7 +87,16 @@ local function openPage(opts)
         end, function(newValue)
             settings.escprotocol_override = newValue
         end)
-    end    
+
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_debugmalloc)@")
+        rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
+            if rfsuite.preferences and rfsuite.preferences.developer then return settings['debugmalloc'] end
+        end, function(newValue)
+            if rfsuite.preferences and rfsuite.preferences.developer then settings.debugmalloc = newValue end
+        end)
+    end
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
@@ -163,9 +172,13 @@ local function onSaveMenu()
         for key, value in pairs(settings) do rfsuite.preferences.developer[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
 
+        if system.getVersion().simulation and simulator and type(simulator.setDebug) == "function" then
+            simulator.setDebug("malloc", rfsuite.preferences.developer.debugmalloc == true)
+        end
+
         rfsuite.app.triggers.closeSave = true
         return true
-    end        
+    end
 
     if rfsuite.preferences.general.save_confirm == false or rfsuite.preferences.general.save_confirm == "false" then
         doSave()

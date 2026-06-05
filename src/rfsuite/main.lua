@@ -127,7 +127,8 @@ local userpref_defaults = {
         escprotocol_override = 0,
         overlaystats = false,
         overlaygrid = false,
-        overlaystatsadmin = false
+        overlaystatsadmin = false,
+        debugmalloc = false
     },
     timer = {
         timeraudioenable = false,
@@ -164,6 +165,13 @@ if rfsuite.preferences then
 end
 
 if not rfsuite.ini.ini_tables_equal(master_ini, updated_ini) then rfsuite.ini.save_ini_file(userpref_file, updated_ini) end
+
+if system.getVersion and system.getVersion().simulation then
+    local dev = rfsuite.preferences.developer
+    if dev and simulator and type(simulator.setDebug) == "function" then
+        simulator.setDebug("malloc", dev.debugmalloc == true)
+    end
+end
 
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
