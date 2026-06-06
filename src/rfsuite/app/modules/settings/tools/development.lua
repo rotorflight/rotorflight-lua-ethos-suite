@@ -88,14 +88,6 @@ local function openPage(opts)
             settings.escprotocol_override = newValue
         end)
 
-        formFieldCount = formFieldCount + 1
-        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_debugmalloc)@")
-        rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
-            if rfsuite.preferences and rfsuite.preferences.developer then return settings['debugmalloc'] end
-        end, function(newValue)
-            if rfsuite.preferences and rfsuite.preferences.developer then settings.debugmalloc = newValue end
-        end)
     end
 
     formFieldCount = formFieldCount + 1
@@ -117,6 +109,17 @@ local function openPage(opts)
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_memusage)@")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() if rfsuite.preferences and rfsuite.preferences.developer then return settings['memstats'] end end, function(newValue) if rfsuite.preferences and rfsuite.preferences.developer then settings.memstats = newValue end end)
+
+   if system.getVersion().simulation and type(simulator.setDebug) == "function" then
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.txt_debugmalloc)@")
+        rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
+            if rfsuite.preferences and rfsuite.preferences.developer then return settings['debugmalloc'] end
+        end, function(newValue)
+            if rfsuite.preferences and rfsuite.preferences.developer then settings.debugmalloc = newValue end
+        end)
+    end
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1

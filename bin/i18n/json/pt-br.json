@@ -12152,8 +12152,8 @@
           "max_length": 5
         },
         "txt_debugmalloc": {
-          "english": "Malloc debug",
-          "translation": "Malloc debug",
+          "english": "Log Memory Allocation",
+          "translation": "Log Memory Allocation",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
