@@ -109,7 +109,7 @@ local themeOptions = {
         bannerfont = "FONT_XXL",
         craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
-        leftlabelfont = "FONT_STD",
+        leftlabelfont = "FONT_L",
         leftvaluefont = "FONT_L",
         profilefont = "FONT_L",
         bigfont = "FONT_XXL",
@@ -124,7 +124,7 @@ local themeOptions = {
         bannerfont = "FONT_XXL",
         craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
-        leftlabelfont = "FONT_STD",
+        leftlabelfont = "FONT_L",
         leftvaluefont = "FONT_L",
         profilefont = "FONT_L",
         bigfont = "FONT_XXL",
@@ -139,7 +139,7 @@ local themeOptions = {
         bannerfont = "FONT_XL",
         craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
-        leftlabelfont = "FONT_STD",
+        leftlabelfont = "FONT_L",
         leftvaluefont = "FONT_L",
         profilefont = "FONT_STD",
         bigfont = "FONT_XXL",
@@ -154,7 +154,7 @@ local themeOptions = {
         bannerfont = "FONT_XL",
         craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
-        leftlabelfont = "FONT_STD",
+        leftlabelfont = "FONT_L",
         leftvaluefont = "FONT_L",
         profilefont = "FONT_STD",
         bigfont = "FONT_XXL",
@@ -169,7 +169,7 @@ local themeOptions = {
         bannerfont = "FONT_XL",
         craftnamefont = "FONT_XL",
         headingfont = "FONT_L",
-        leftlabelfont = "FONT_STD",
+        leftlabelfont = "FONT_L",
         leftvaluefont = "FONT_L",
         profilefont = "FONT_STD",
         bigfont = "FONT_XXL",
@@ -184,7 +184,7 @@ local themeOptions = {
         bannerfont = "FONT_L",
         craftnamefont = "FONT_L",
         headingfont = "FONT_STD",
-        leftlabelfont = "FONT_S",
+        leftlabelfont = "FONT_STD",
         leftvaluefont = "FONT_STD",
         profilefont = "FONT_S",
         bigfont = "FONT_XL",
@@ -999,7 +999,7 @@ function common.buildCockpitBoxes()
         linewidth = 0.14 / rightColumnW
     }))
 
-    add(out, readoutBox(W, H, 0.03, 0.22, 0.27, 0.05, "VOLT", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.22, 0.27, 0.065, "VOLT", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "telemetry",
         source = "voltage",
         decimals = 2,
@@ -1007,7 +1007,7 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.30, 0.27, 0.05, "CURRENT", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.30, 0.27, 0.065, "CURRENT", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "telemetry",
         source = "current",
         decimals = 1,
@@ -1015,14 +1015,14 @@ function common.buildCockpitBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.38, 0.27, 0.05, "POWER", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.38, 0.27, 0.065, "POWER", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "watts",
         wattsmode = "current",
         unit = "W",
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.46, 0.27, 0.05, "SMART FUEL", opts.leftlabelfont, opts.leftvaluefont, p.power, p.power, {
+    add(out, readoutBox(W, H, 0.03, 0.46, 0.27, 0.065, "SMART FUEL", opts.leftlabelfont, opts.leftvaluefont, p.power, p.power, {
         kind = "telemetry",
         source = "smartfuel",
         transform = "floor",
@@ -1054,7 +1054,7 @@ function common.buildCockpitBoxes()
             {value = 100, fillcolor = p.power}
         }
     }))
-    add(out, readoutBox(W, H, leftColumnX, 0.645 + midLowerShift, profileSlotW, 0.06, "PROFILE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
+    add(out, readoutBox(W, H, leftColumnX, 0.645 + midLowerShift, profileSlotW, 0.075, "PID", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
         kind = "telemetry",
         source = "pid_profile",
         transform = "floor",
@@ -1062,7 +1062,7 @@ function common.buildCockpitBoxes()
         padding = profilePad,
         gap = compactReadoutGap
     }))
-    add(out, readoutBox(W, H, leftColumnX + profileSlotW + profileSlotGap, 0.645 + midLowerShift, profileSlotW, 0.06, "RATE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
+    add(out, readoutBox(W, H, leftColumnX + profileSlotW + profileSlotGap, 0.645 + midLowerShift, profileSlotW, 0.075, "RATE", opts.leftlabelfont, opts.profilefont, p.line, p.white, {
         kind = "telemetry",
         source = "rate_profile",
         transform = "floor",
@@ -1177,23 +1177,23 @@ function common.buildInflightBoxes()
 
     add(out, backgroundBox(W, H, p.bg))
 
-    add(out, sectionBox(W, H, 0.06, 0.06, 0.25, 0.08, "POWER", opts.headingfont, p.power, "left", {
+    add(out, sectionBox(W, H, 0.06, 0.06, 0.25, 0.11, "POWER", opts.headingfont, p.power, "left", {
         lineheight = lineH,
         linewidth = 0.22 / 0.25,
         linealign = "left",
         linecolor = p.line
     }))
-    add(out, sectionBox(W, H, 0.34, 0.06, 0.32, 0.08, "HEADSPEED", opts.headingfont, p.line, "center", {
+    add(out, sectionBox(W, H, 0.34, 0.06, 0.32, 0.11, "HEADSPEED", opts.headingfont, p.line, "center", {
         lineheight = lineH,
         linewidth = 0.22 / 0.32
     }))
-    add(out, sectionBox(W, H, 0.71, 0.06, 0.23, 0.08, "STATUS", opts.headingfont, p.yellow, "center", {
+    add(out, sectionBox(W, H, 0.71, 0.06, 0.23, 0.11, "STATUS", opts.headingfont, p.yellow, "center", {
         lineheight = lineH,
         linewidth = 0.18 / 0.23,
         linecolor = p.line
     }))
 
-    add(out, readoutBox(W, H, 0.06, 0.26, 0.27, 0.08, "FUEL", opts.leftlabelfont, opts.rightvaluefont, p.power, p.power, {
+    add(out, readoutBox(W, H, 0.06, 0.26, 0.27, 0.10, "FUEL", opts.leftlabelfont, opts.rightvaluefont, p.power, p.power, {
         kind = "telemetry",
         source = "smartfuel",
         transform = "floor",
@@ -1225,7 +1225,7 @@ function common.buildInflightBoxes()
             {value = 100, fillcolor = p.power}
         }
     }))
-    add(out, readoutBox(W, H, 0.06, 0.56, 0.27, 0.07, "CELL", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+    add(out, readoutBox(W, H, 0.06, 0.56, 0.27, 0.09, "CELL", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
         kind = "telemetry",
         source = "voltage",
         decimals = 2,
@@ -1247,13 +1247,13 @@ function common.buildInflightBoxes()
     }))
     add(out, labelBox(W, H, 0.44, 0.49, 0.12, 0.06, "RPM", opts.biglabelfont, p.line, "center", p.bg))
 
-    add(out, readoutBox(W, H, 0.70, 0.26, 0.25, 0.07, "TIME", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+    add(out, readoutBox(W, H, 0.70, 0.26, 0.25, 0.09, "TIME", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
         kind = "time",
         timesource = "flight",
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.70, 0.43, 0.25, 0.07, "LINK", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+    add(out, readoutBox(W, H, 0.70, 0.43, 0.25, 0.09, "LINK", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
         kind = "telemetry",
         source = "link",
         transform = "floor",
@@ -1306,7 +1306,7 @@ function common.buildReportBoxes()
         lineheight = lineH
     }))
 
-    add(out, readoutBox(W, H, 0.03, 0.25, 0.26, 0.05, "MIN CELL", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.25, 0.26, 0.065, "MIN CELL", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "stats",
         stattype = "min",
         source = "voltage",
@@ -1315,7 +1315,7 @@ function common.buildReportBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.33, 0.26, 0.05, "MAX CURR", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.33, 0.26, 0.065, "MAX CURR", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "stats",
         stattype = "max",
         source = "current",
@@ -1324,14 +1324,14 @@ function common.buildReportBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.41, 0.26, 0.05, "MAX PWR", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.41, 0.26, 0.065, "MAX PWR", opts.leftlabelfont, opts.leftvaluefont, p.power, p.white, {
         kind = "watts",
         wattsmode = "max",
         unit = "W",
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.49, 0.26, 0.05, "USED", opts.leftlabelfont, opts.leftvaluefont, p.power, p.power, {
+    add(out, readoutBox(W, H, 0.03, 0.49, 0.26, 0.065, "USED", opts.leftlabelfont, opts.leftvaluefont, p.power, p.power, {
         kind = "stats",
         stattype = "max",
         source = "smartconsumption",
@@ -1340,7 +1340,7 @@ function common.buildReportBoxes()
         padding = readoutPad,
         gap = readoutGap
     }))
-    add(out, readoutBox(W, H, 0.03, 0.58, 0.26, 0.05, "FLIGHTS", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
+    add(out, readoutBox(W, H, 0.03, 0.58, 0.26, 0.065, "FLIGHTS", opts.leftlabelfont, opts.leftvaluefont, p.line, p.white, {
         kind = "time",
         timesource = "count",
         unit = "",
