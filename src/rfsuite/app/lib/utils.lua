@@ -215,15 +215,25 @@ function utils.pageProfileStateChanged(page)
 
     if page.refreshOnProfileChange or page.refreshFullOnProfileChange then
         local activeProfile = session.activeProfile
-        if activeProfile ~= nil and activeProfile ~= page.loadedActiveProfile then
-            profileChanged = true
+        if activeProfile ~= nil then
+            if page.loadedActiveProfile == nil then
+                -- Profile was unknown at page load; anchor it now so future changes are detected
+                page.loadedActiveProfile = activeProfile
+            elseif activeProfile ~= page.loadedActiveProfile then
+                profileChanged = true
+            end
         end
     end
 
     if page.refreshOnRateChange or page.refreshFullOnRateChange then
         local activeRateProfile = session.activeRateProfile
-        if activeRateProfile ~= nil and activeRateProfile ~= page.loadedActiveRateProfile then
-            rateChanged = true
+        if activeRateProfile ~= nil then
+            if page.loadedActiveRateProfile == nil then
+                -- Rate profile was unknown at page load; anchor it now so future changes are detected
+                page.loadedActiveRateProfile = activeRateProfile
+            elseif activeRateProfile ~= page.loadedActiveRateProfile then
+                rateChanged = true
+            end
         end
     end
 
