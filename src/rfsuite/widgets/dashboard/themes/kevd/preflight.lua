@@ -40,17 +40,17 @@ end
 
 local themeOptions = {
 
-    ls_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", brfont = "FONT_XL", thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
+    ls_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_STD", brfont = "FONT_XL", tilefont = "FONT_XL", govfont = "FONT_XL", smartfont = "FONT_XXL", smartvaluefont = "FONT_XL", smartadvfont = "FONT_L", smartvaluepaddingtop = 36, smartbattadvpaddingright = 25, smartbattadvpaddingtop = -15, thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
 
     ls_std = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", brfont = "FONT_XL", thickness = 18, batteryframethickness = 3, titlepaddingbottom = 25, valuepaddingleft = 55, valuepaddingtop = 5, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 8, cappaddingright = 5},
 
-    ms_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", brfont = "FONT_L", thickness = 19, batteryframethickness = 3, titlepaddingbottom = 20, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 2, cappaddingright = 2},
+    ms_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_L", tilefont = "FONT_L", govfont = "FONT_L", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 12, smartbattadvpaddingright = 10, smartbattadvpaddingtop = -6, thickness = 19, batteryframethickness = 3, titlepaddingbottom = 16, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 2, cappaddingright = 2},
 
-    ms_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", brfont = "FONT_L", thickness = 14, batteryframethickness = 2, titlepaddingbottom = 10, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 3, cappaddingright = 3},
+    ms_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_STD", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_L", smartvaluefont = "FONT_STD", smartadvfont = "FONT_S", smartvaluepaddingtop = 8, smartbattadvpaddingright = 8, smartbattadvpaddingtop = -4, thickness = 14, batteryframethickness = 2, titlepaddingbottom = 10, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 3, cappaddingright = 3},
 
-    ss_full = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", brfont = "FONT_XL", thickness = 25, batteryframethickness = 3, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 25, valuepaddingbottom = 15, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 5, cappaddingright = 3},
+    ss_full = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_XL", tilefont = "FONT_L", govfont = "FONT_L", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 12, smartbattadvpaddingright = 10, smartbattadvpaddingtop = -6, thickness = 25, batteryframethickness = 3, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 25, valuepaddingbottom = 15, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 5, cappaddingright = 3},
 
-    ss_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", brfont = "FONT_XL", thickness = 14, batteryframethickness = 2, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 15, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 5, battadvpaddingtop = 0, cappaddingright = 3}
+    ss_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_L", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_L", smartvaluefont = "FONT_STD", smartadvfont = "FONT_S", smartvaluepaddingtop = 8, smartbattadvpaddingright = 8, smartbattadvpaddingtop = -4, thickness = 14, batteryframethickness = 2, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 15, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 5, battadvpaddingtop = 0, cappaddingright = 3}
 }
 
 local lastScreenW = nil
@@ -109,7 +109,7 @@ end
 
 local function buildBoxes(W)
 
-    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
+    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
     applyScreenBorderStyle()
     
     local footerBgColor = colorMode.headerbgcolor or colorMode.fillbgcolor or colorMode.bgcolor
@@ -199,7 +199,7 @@ local function buildBoxes(W)
             source = "rate_profile",
             title = "RATES",
             titlepos = "bottom",
-            font = "FONT_XL",
+            font = opts.tilefont,
             titlefont = opts.titlefont,
             valuepaddingbottom = 6,
             bgcolor = statusTileTopRowBg,
@@ -217,7 +217,7 @@ local function buildBoxes(W)
             source = "pid_profile",
             title = "PROFILE",
             titlepos = "bottom",
-            font = "FONT_XL",
+            font = opts.tilefont,
             titlefont = opts.titlefont,
             valuepaddingbottom = 6,
             bgcolor = statusTileTopRowBg,
@@ -236,7 +236,7 @@ local function buildBoxes(W)
             subtype = "count", 
             title = "FLIGHTS", 
             titlepos = "bottom", 
-            font = "FONT_XL", 
+            font = opts.tilefont, 
             titlefont = opts.titlefont, 
             valuepaddingbottom = 10, 
             bgcolor = statusTileTopRowRightEdgeBg, 
@@ -256,22 +256,22 @@ local function buildBoxes(W)
             battadv = true,
             battadvvaluealign = "right",
             -- Shrink the SmartFuel gauge inside its box for border clearance and no internal collision.
-            -- Keep the advanced voltage/cell/mAh text farther right so it does not contact the percent value.
-            -- Detail stack remains on the right but is tightened for the larger full-height battery gauge.
-            battadvpaddingright = 25,
+            -- Detail stack remains on the right, but compact layouts tighten it
+            -- so it does not collide with the percent value.
             gaugepaddingbottom = 8,
             gaugepaddingleft = 5,
             gaugepaddingright = 10,
             valuealign = "left",
             batteryframethickness = opts.batteryframethickness,
-            font = FONT_XXL, --(smart fuel % size)
-            valuefont = FONT_XL,
+            font = opts.smartfont, --(smart fuel % size)
+            valuefont = opts.smartvaluefont,
             valuepaddingleft = 10,
-            valuepaddingtop = 36,
+            valuepaddingtop = opts.smartvaluepaddingtop,
             valuepaddingbottom = 0,
             gaugepaddingtop = 6,
-            battadvfont = "FONT_L",
-            battadvpaddingtop = -15,
+            battadvfont = opts.smartadvfont,
+            battadvpaddingright = opts.smartbattadvpaddingright,
+            battadvpaddingtop = opts.smartbattadvpaddingtop,
             cappaddingright = 4,
             fillcolor = colorMode.fillcolor,
             bgcolor = colorMode.bgcolor,
@@ -298,7 +298,7 @@ local function buildBoxes(W)
             titlepaddingbottom = opts.titlepaddingbottom,
             valuepaddingtop = 42,
             font = "FONT_XL",
-            titlefont = "FONT_STD",
+            titlefont = opts.arctitlefont,
             min = getThemeValue("bec_min"),
             max = getThemeValue("bec_max"),
             thickness = opts.thickness + 1,
@@ -318,7 +318,7 @@ local function buildBoxes(W)
             subtype = "blackbox",
             title = "BLACKBOX",
             titlepos = "bottom",
-            font = "FONT_XL",
+            font = opts.tilefont,
             titlefont = opts.titlefont,
             valuepaddingbottom = 6,
             decimals = 0,
@@ -340,7 +340,7 @@ local function buildBoxes(W)
             title = "ESC TEMP",
             titlepos = "bottom",
             font = "FONT_XL",
-            titlefont = "FONT_STD",
+            titlefont = opts.arctitlefont,
             min = 0,
             max = getThemeValue("esctemp_max"),
             thickness = opts.thickness + 1,
@@ -365,7 +365,7 @@ local function buildBoxes(W)
             subtype = "governor",
             title = "GOVERNOR",
             titlepos = "bottom",
-            font = "FONT_XL",
+            font = opts.govfont,
             titlefont = opts.titlefont,
             valuepaddingbottom = 6,
             bgcolor = statusTileRightEdgeBg,
