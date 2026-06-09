@@ -324,6 +324,8 @@ function render.wakeup(box)
         cfg.accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
         cfg.manualUnit = getParam(box, "unit")
         cfg.source = getParam(box, "source")
+        cfg.stattype = getParam(box, "stattype")
+        cfg.gaugevalue = getParam(box, "gaugevalue") -- Optional: "display" uses transformed value for bar fill percentage
         cfg.hidevalue = getParam(box, "hidevalue")
         cfg.decimals = getParam(box, "decimals")
         cfg.transform = getParam(box, "transform")
@@ -344,8 +346,86 @@ function render.wakeup(box)
         local src = cfg._txBattSrc or system.getSource({category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE})
         value = src and src.value and src:value() or nil
         dynamicUnit = "V"
+
+    elseif source == "watts" and telemetry then
+        dynamicUnit = "W"
+
+        local statType = cfg.stattype or "current"
+        local vStats = telemetry.getSensorStats and telemetry.getSensorStats("voltage") or nil
+        local iStats = telemetry.getSensorStats and telemetry.getSensorStats("current") or nil
+
+        if statType == "min" or statType == "max" or statType == "avg" then
+            if vStats and iStats and vStats[statType] ~= nil and iStats[statType] ~= nil then
+                value = vStats[statType] * iStats[statType]
+            end
+        end
+
+        -- Fallback to live watts if stats are unavailable.
+        if value == nil and telemetry.getSensor then
+            local volts = telemetry.getSensor("voltage")
+            local amps = telemetry.getSensor("current")
+            if volts ~= nil and amps ~= nil then value = volts * amps end
+        end
+
     elseif telemetry and source then
-        value, _, dynamicUnit = telemetry.getSensor(source)
+        if cfg.stattype and telemetry.getSensorStats then
+            local stats = telemetry.getSensorStats(source)
+            if stats and stats[cfg.stattype] ~= nil then
+                value = stats[cfg.stattype]
+            end
+
+            -- Some telemetry tables use rpm aliases. Keep source="rpm" compatible.
+            if value == nil and source == "rpm" then
+                local rpmStats = telemetry.getSensorStats("headspeed") or telemetry.getSensorStats("erpm")
+                if rpmStats and rpmStats[cfg.stattype] ~= nil then
+                    value = rpmStats[cfg.stattype]
+                end
+            end
+
+            -- Direct per-cell voltage aliases. This uses telemetry values/stats directly,
+            -- not pack voltage divided by detected cell count.
+            if value == nil and source == "cellvoltage" then
+                local cellStats =
+                    telemetry.getSensorStats("cellvoltage") or
+                    telemetry.getSensorStats("cell_voltage") or
+                    telemetry.getSensorStats("vcell") or
+                    telemetry.getSensorStats("voltage_cell")
+
+                if cellStats and cellStats[cfg.stattype] ~= nil then
+                    value = cellStats[cfg.stattype]
+                end
+            end
+
+            local sensorDef = telemetry.sensorTable and telemetry.sensorTable[source]
+            if sensorDef and sensorDef.unit_string then dynamicUnit = sensorDef.unit_string end
+
+            -- If the requested stat is not ready yet, fall back to the live sensor so
+            -- the bar still populates instead of showing loading dots forever.
+            if value == nil and telemetry.getSensor then
+                value, _, dynamicUnit = telemetry.getSensor(source)
+
+                if value == nil and source == "rpm" then
+                    value, _, dynamicUnit = telemetry.getSensor("headspeed")
+                    if value == nil then value, _, dynamicUnit = telemetry.getSensor("erpm") end
+                end
+
+                if value == nil and source == "cellvoltage" then
+                    value, _, dynamicUnit = telemetry.getSensor("cellvoltage")
+                    if value == nil then value, _, dynamicUnit = telemetry.getSensor("cell_voltage") end
+                    if value == nil then value, _, dynamicUnit = telemetry.getSensor("vcell") end
+                    if value == nil then value, _, dynamicUnit = telemetry.getSensor("voltage_cell") end
+                end
+            end
+        else
+            value, _, dynamicUnit = telemetry.getSensor(source)
+
+            if value == nil and source == "cellvoltage" then
+                value, _, dynamicUnit = telemetry.getSensor("cellvoltage")
+                if value == nil then value, _, dynamicUnit = telemetry.getSensor("cell_voltage") end
+                if value == nil then value, _, dynamicUnit = telemetry.getSensor("vcell") end
+                if value == nil then value, _, dynamicUnit = telemetry.getSensor("voltage_cell") end
+            end
+        end
     else
         value = getParam(box, "value")
     end
@@ -384,16 +464,31 @@ function render.wakeup(box)
     end
 
     local percent = 0
-    if value and vmax ~= vmin then
-        percent = (value - vmin) / (vmax - vmin)
+    local gaugeCalcValue = value
+    if cfg.gaugevalue == "display" and type(displayValue) == "number" then
+        gaugeCalcValue = displayValue
+    end
+
+    if gaugeCalcValue and vmax ~= vmin then
+        percent = (gaugeCalcValue - vmin) / (vmax - vmin)
         percent = max(0, min(1, percent))
     end
 
-    if value == nil then
-        if c._dotCount == nil then c._dotCount = 0 end
-        c._dotCount = (c._dotCount + 1) % 4
-        displayValue = LOADING_DOTS[c._dotCount + 1]
-        unit = nil
+    if value ~= nil then
+        c._lastValidValue = value
+        c._lastValidDisplayValue = displayValue
+        c._lastValidUnit = unit
+    else
+        if c._lastValidValue ~= nil then
+            value = c._lastValidValue
+            displayValue = c._lastValidDisplayValue
+            unit = c._lastValidUnit
+        else
+            if c._dotCount == nil then c._dotCount = 0 end
+            c._dotCount = (c._dotCount + 1) % 4
+            displayValue = LOADING_DOTS[c._dotCount + 1]
+            unit = nil
+        end
     end
 
     local battadv = cfg.battadv
@@ -431,7 +526,11 @@ function render.wakeup(box)
     box._currentDisplayValue = value
 
     c.value = value
-    c.displayValue = displayValue
+    if cfg.decimals and type(displayValue) == "number" then
+        c.displayValue = format("%." .. cfg.decimals .. "f", displayValue)
+    else
+        c.displayValue = displayValue
+    end
     c.unit = unit
     c.min = vmin
     c.max = vmax
@@ -441,8 +540,11 @@ function render.wakeup(box)
     c.consumed = consumed
     c.perCellVoltage = perCellVoltage
     c.battadv = battadv
-    c.textcolor = resolveThresholdColor(value, box, "textcolor", "textcolor")
-    c.fillcolor = resolveThresholdColor(value, box, "fillcolor", "fillcolor")
+    local thresholdValue = displayValue
+    if type(thresholdValue) ~= "number" then thresholdValue = value end
+
+    c.textcolor = resolveThresholdColor(thresholdValue, box, "textcolor", "textcolor")
+    c.fillcolor = resolveThresholdColor(thresholdValue, box, "fillcolor", "fillcolor")
     c.fillbgcolor = cfg.fillbgcolor
     c.bgcolor = cfg.bgcolor
     c.titlecolor = cfg.titlecolor

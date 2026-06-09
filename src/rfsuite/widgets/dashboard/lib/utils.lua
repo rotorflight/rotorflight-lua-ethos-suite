@@ -979,6 +979,18 @@ function utils.resolveThemeColor(colorkey, value)
 
     if type(value) == "string" and value == "transparent" then return nil end
 
+    if type(value) == "table" then
+        -- RGB array tables are still resolved to a color.
+        -- Style tables are returned unchanged so a caller can pass a
+        -- background style table through c.bgcolor into utils.box()
+        -- without patching every individual widget renderer.
+        if #value >= 3 then
+            local resolved = utils.resolveColor(value)
+            if resolved then return resolved end
+        end
+        return value
+    end
+
     if type(value) == "string" then
         local resolved = utils.resolveColor(value)
         if resolved then return resolved end
@@ -1007,6 +1019,119 @@ function utils.resolveFont(font, fallback)
     return fallback
 end
 
+
+local function drawRoundedFilledRectSafe(x, y, w, h, radius, color)
+    if not color or w <= 0 or h <= 0 then return end
+
+    radius = tonumber(radius) or 0
+    if radius < 1 then
+        lcd.color(color)
+        lcd.drawFilledRectangle(x, y, w, h)
+        return
+    end
+
+    local maxRadius = math.floor(math.min(w, h) / 2)
+    if radius > maxRadius then radius = maxRadius end
+
+    lcd.color(color)
+    -- Center/edge fills create a rounded rectangle using primitives already
+    -- used elsewhere in this dashboard renderer.
+    lcd.drawFilledRectangle(x + radius, y, w - radius * 2, h)
+    lcd.drawFilledRectangle(x, y + radius, w, h - radius * 2)
+    lcd.drawFilledCircle(x + radius, y + radius, radius)
+    lcd.drawFilledCircle(x + w - radius - 1, y + radius, radius)
+    lcd.drawFilledCircle(x + radius, y + h - radius - 1, radius)
+    lcd.drawFilledCircle(x + w - radius - 1, y + h - radius - 1, radius)
+end
+
+local function drawStyledBoxBackground(x, y, w, h, bgcolor)
+    if type(bgcolor) ~= "table" then
+        if bgcolor then
+            lcd.color(bgcolor)
+            lcd.drawFilledRectangle(x, y, w, h)
+        end
+        return x, y, w, h
+    end
+
+    local backfillcolor = bgcolor.backfillcolor or bgcolor.cellbgcolor or bgcolor.outercolor
+    if backfillcolor then
+        lcd.color(backfillcolor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end
+
+    local inset = tonumber(bgcolor.inset or bgcolor.margin) or 0
+    local insetleft = tonumber(bgcolor.insetleft or bgcolor.inset_left) or inset
+    local insetright = tonumber(bgcolor.insetright or bgcolor.inset_right) or inset
+    local insettop = tonumber(bgcolor.insettop or bgcolor.inset_top) or inset
+    local insetbottom = tonumber(bgcolor.insetbottom or bgcolor.inset_bottom) or inset
+    local borderwidth = tonumber(bgcolor.borderwidth) or 0
+    local radius = tonumber(bgcolor.roundradius or bgcolor.radius) or 0
+    local fillcolor = bgcolor.bgcolor or bgcolor.fillcolor or bgcolor.fill or bgcolor.color
+    local bordercolor = bgcolor.bordercolor
+
+    local bx = x + insetleft
+    local by = y + insettop
+    local bw = w - insetleft - insetright
+    local bh = h - insettop - insetbottom
+
+    if bw <= 0 or bh <= 0 then return x, y, w, h end
+
+    if borderwidth > 0 and bordercolor then
+        drawRoundedFilledRectSafe(bx, by, bw, bh, radius, bordercolor)
+        local ix = bx + borderwidth
+        local iy = by + borderwidth
+        local iw = bw - borderwidth * 2
+        local ih = bh - borderwidth * 2
+        if iw > 0 and ih > 0 then
+            drawRoundedFilledRectSafe(ix, iy, iw, ih, math.max(0, radius - borderwidth), fillcolor)
+        end
+    else
+        drawRoundedFilledRectSafe(bx, by, bw, bh, radius, fillcolor)
+    end
+
+    local contentPad = tonumber(bgcolor.contentpadding) or 0
+    local innerLeft = insetleft + borderwidth + contentPad
+    local innerRight = insetright + borderwidth + contentPad
+    local innerTop = insettop + borderwidth + contentPad
+    local innerBottom = insetbottom + borderwidth + contentPad
+    return x + innerLeft, y + innerTop, w - innerLeft - innerRight, h - innerTop - innerBottom
+end
+
+function utils.setScreenBorderStyle(style)
+    utils._screenBorderStyle = style
+end
+
+local function drawDashboardScreenBorderSafe()
+    local style = utils._screenBorderStyle
+    if type(style) ~= "table" or not style.enabled then return end
+
+    local bordercolor = style.bordercolor or style.color
+    if not bordercolor then return end
+
+    local borderwidth = tonumber(style.borderwidth or style.width) or 0
+    if borderwidth < 1 then return end
+
+    local inset = tonumber(style.inset) or 0
+    local w, h = lcd.getWindowSize()
+    if w <= 0 or h <= 0 then return end
+
+    local x1 = inset
+    local y1 = inset
+    local x2 = w - inset - borderwidth
+    local y2 = h - inset - borderwidth
+    local fullW = w - inset * 2
+    local fullH = h - inset * 2
+
+    if fullW <= 0 or fullH <= 0 then return end
+
+    lcd.color(bordercolor)
+    -- Draw only the border strips so content is not erased.
+    lcd.drawFilledRectangle(x1, y1, fullW, borderwidth)
+    lcd.drawFilledRectangle(x1, y2, fullW, borderwidth)
+    lcd.drawFilledRectangle(x1, y1, borderwidth, fullH)
+    lcd.drawFilledRectangle(x2, y1, borderwidth, fullH)
+end
+
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
 
     if type(title) ~= "string" and type(title) ~= "number" then
@@ -1029,10 +1154,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
 
     titlespacing = titlespacing or DEFAULT_TITLE_SPACING
 
-    if bgcolor then
-        lcd.color(bgcolor)
-        lcd.drawFilledRectangle(x, y, w, h)
-    end
+    x, y, w, h = drawStyledBoxBackground(x, y, w, h, bgcolor)
 
     if not fontCache then fontCache = utils.getFontListsForResolution() end
 
@@ -1178,6 +1300,8 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
         lcd.color(titlecolor)
         lcd.drawText(sx, sy, title)
     end
+    -- Keep the outer preflight screen border visible even after individual widgets draw.
+    drawDashboardScreenBorderSafe()
 end
 
 function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey, thresholdsOverride)
@@ -1232,8 +1356,14 @@ end
 
 function utils.setBackgroundColourBasedOnTheme()
     local w, h = lcd.getWindowSize()
-    lcd.color(getThemeStateInternal().pageBgColor)
+    local bgColor = getThemeStateInternal().pageBgColor
+    local style = utils._screenBorderStyle
+    if type(style) == "table" and style.backgroundcolor then
+        bgColor = style.backgroundcolor
+    end
+    lcd.color(bgColor)
     lcd.drawFilledRectangle(0, 0, w, h)
+    drawDashboardScreenBorderSafe()
 end
 
 function utils.getParam(box, key, ...)
