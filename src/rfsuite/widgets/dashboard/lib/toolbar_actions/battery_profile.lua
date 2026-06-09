@@ -10,8 +10,63 @@ local progressBaseMessage
 local progressMspStatusLast
 local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local BATTERY_PROFILE_API = "BATTERY_PROFILE"
+local getDashboardUtils
+local DIALOG_WIDTH_NUMERATOR = 9
+local DIALOG_WIDTH_DENOMINATOR = 10
+local BUTTON_LABEL_PADDING = {
+    " %s ",
+    "  %s  ",
+    "   %s   ",
+    "    %s    ",
+    "     %s     ",
+    "      %s      ",
+    "       %s       "
+}
 
-local function getDashboardUtils()
+local function getBatteryDialogWidth()
+    local screenW = lcd.getWindowSize()
+    if not screenW or screenW <= 0 then return nil end
+    return math.floor((screenW * DIALOG_WIDTH_NUMERATOR) / DIALOG_WIDTH_DENOMINATOR)
+end
+
+local function getBatteryButtonPaddingIndex(matchedW, dialogWidth, buttonCount)
+    if matchedW == 800 or matchedW == 784 then
+        if buttonCount <= 3 then return 7 end
+        if buttonCount <= 4 then return 6 end
+        return 5
+    elseif matchedW == 640 or matchedW == 630 then
+        if buttonCount <= 3 then return 7 end
+        if buttonCount <= 4 then return 5 end
+        if buttonCount <= 5 then return 4 end
+        return 3
+    elseif matchedW == 480 or matchedW == 472 then
+        if buttonCount <= 2 then return 7 end
+        if buttonCount <= 3 then return 5 end
+        if buttonCount <= 4 then return 3 end
+        return 1
+    end
+
+    local buttonArea = math.floor(dialogWidth / buttonCount)
+    if buttonCount <= 3 or buttonArea >= 180 then return 7 end
+    if buttonArea >= 145 then return 5 end
+    if buttonArea >= 115 then return 3 end
+    return 1
+end
+
+local function getBatteryButtonLabel(label, dialogWidth, buttonCount)
+    if not dialogWidth or not buttonCount or buttonCount <= 0 then
+        return tostring(label)
+    end
+
+    local screenW, screenH = lcd.getWindowSize()
+    local utils = getDashboardUtils and getDashboardUtils() or nil
+    local matchedW = utils and utils.matchSupportedResolution and utils.matchSupportedResolution(screenW, screenH) or nil
+    local paddingIndex = getBatteryButtonPaddingIndex(matchedW, dialogWidth, buttonCount)
+
+    return string.format(BUTTON_LABEL_PADDING[paddingIndex], tostring(label))
+end
+
+function getDashboardUtils()
     local widgets = rfsuite and rfsuite.widgets
     local dashboard = widgets and widgets.dashboard
     return dashboard and dashboard.utils or nil
@@ -88,6 +143,33 @@ local function isAdjustmentConfigured()
     return false
 end
 
+local function buildBatteryProfileList()
+    local profilesRaw = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
+    local profileList = {}
+    if profilesRaw then
+        -- Legacy: numeric keys 0-5, value is capacity
+        for i = 0, 5 do
+            local cap = profilesRaw[i]
+            if cap and cap > 0 then
+                table.insert(profileList, { name = tostring(cap) .. "mAh", idx = i })
+            end
+        end
+        -- New: array of tables with .name
+        if #profileList == 0 then
+            for i, p in ipairs(profilesRaw) do
+                if type(p) == "table" and p.name then
+                    table.insert(profileList, { name = p.name, idx = i })
+                end
+            end
+        end
+    end
+    return profileList
+end
+
+function M.hasSelectableBatteryProfiles()
+    return #buildBatteryProfileList() > 1
+end
+
 local function setBatteryType(typeIndex, profileName)
     if not rfsuite.session.isConnected then return end
 
@@ -158,26 +240,7 @@ function M.chooseBatteryType()
         return
     end
 
-    -- Normalize profiles to a sequential array of tables with .name and .idx
-    local profilesRaw = rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.profiles
-    local profileList = {}
-    if profilesRaw then
-        -- Legacy: numeric keys 0-5, value is capacity
-        for i = 0, 5 do
-            local cap = profilesRaw[i]
-            if cap and cap > 0 then
-                table.insert(profileList, { name = tostring(cap) .. "mAh", idx = i })
-            end
-        end
-        -- New: array of tables with .name
-        if #profileList == 0 then
-            for i, p in ipairs(profilesRaw) do
-                if type(p) == "table" and p.name then
-                    table.insert(profileList, { name = p.name, idx = i })
-                end
-            end
-        end
-    end
+    local profileList = buildBatteryProfileList()
 
     if #profileList == 0 then
         form.openDialog({
@@ -190,17 +253,19 @@ function M.chooseBatteryType()
     end
 
     local buttons = {}
+    local dialogWidth = getBatteryDialogWidth()
+    local buttonCount = #profileList
     local message = "@i18n(widgets.battery.msg_select_battery)@\n\n"
     for _, profile in ipairs(profileList) do
         local label = tostring(profile.idx + 1)
         message = message .. label .. " - " .. profile.name .. "\n"
     end
 
-    for i = #profileList, 1, -1 do
+    for i = buttonCount, 1, -1 do
         local profile = profileList[i]
         local label = tostring(profile.idx + 1)
         table.insert(buttons, {
-            label = label,
+            label = getBatteryButtonLabel(label, dialogWidth, buttonCount),
             action = function()
                 setBatteryType(profile.idx, profile.name)
                 return true
@@ -211,7 +276,7 @@ function M.chooseBatteryType()
     form.openDialog({
         title = "@i18n(widgets.battery.select_title)@",
         message = message,
-        --width = w,
+        width = dialogWidth,
         buttons = buttons,
         options = TEXT_LEFT
     })

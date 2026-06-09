@@ -111,6 +111,7 @@ dashboard.toolbar_actions = {
     resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
     eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil,
     chooseBatteryType = toolbarBatteryType and toolbarBatteryType.chooseBatteryType or nil,
+    hasSelectableBatteryProfiles = toolbarBatteryType and toolbarBatteryType.hasSelectableBatteryProfiles or nil,
     launchApp = toolbarLaunchApp and toolbarLaunchApp.launchApp or nil
 }
 
@@ -2000,9 +2001,10 @@ function dashboard.wakeup_protected(widget)
     if rfsuite.session.isConnected and rfsuite.session.showBatteryTypeStartup and not rfsuite.session.batteryDialogShown then
         if rfsuite.session.batteryConfig and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
             rfsuite.session.batteryDialogShown = true
-            if dashboard.utils.hasMultipleBatteryProfiles and dashboard.utils.hasMultipleBatteryProfiles() then
-                local actions = dashboard.toolbar_actions
-                if actions and type(actions.chooseBatteryType) == "function" then
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.chooseBatteryType) == "function" then
+                local hasSelectable = type(actions.hasSelectableBatteryProfiles) ~= "function" or actions.hasSelectableBatteryProfiles()
+                if hasSelectable then
                     actions.chooseBatteryType()
                 end
             end
