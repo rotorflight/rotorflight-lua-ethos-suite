@@ -51,6 +51,16 @@ local function generateThemeList()
     themeList = rfsuite.widgets.dashboard.listThemes()
     table.sort(themeList, sortThemesByName)
 
+    local screenW, screenH = lcd.getWindowSize()
+    if screenW and screenH then
+        for i = #themeList, 1, -1 do
+            local minRes = themeList[i].minResolution
+            if type(minRes) == "table" and (screenW < (minRes.x or 0) or screenH < (minRes.y or 0)) then
+                table.remove(themeList, i)
+            end
+        end
+    end
+
     settings = rfsuite.preferences.dashboard or {}
 
     if rfsuite.session.modelPreferences and type(rfsuite.session.modelPreferences.dashboard) == "table" then

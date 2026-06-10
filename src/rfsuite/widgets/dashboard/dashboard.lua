@@ -2265,7 +2265,8 @@ function dashboard.listThemes()
                                 configure = initTable.configure,
                                 folder = folder,
                                 idx = num,
-                                source = sourceType
+                                source = sourceType,
+                                minResolution = initTable.minResolution
                             }
                         end
                     end
