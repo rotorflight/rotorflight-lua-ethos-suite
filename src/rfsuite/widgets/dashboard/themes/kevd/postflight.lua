@@ -42,12 +42,12 @@ local function getThemeOptionKey(W)
 end
 
 local themeOptions = {
-    ls_full = {font = "FONT_XL", valuefont = "FONT_L", titlefont = "FONT_STD", titlepaddingtop = 5, thickness = 24, tilefont = "FONT_XXL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
-    ls_std  = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 18, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
-    ms_full = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
-    ms_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0},
-    ss_full = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
-    ss_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0}
+    ls_full = {font = "FONT_XL", valuefont = "FONT_L", titlefont = "FONT_STD", titlepaddingtop = 5, thickness = 24, tilefont = "FONT_XXL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, gaugepaddingtop = 7, gaugepaddingbottom = 13},
+    ls_std  = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 18, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, gaugepaddingtop = 1, gaugepaddingbottom = 10},
+    ms_full = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, gaugepaddingtop = 1, gaugepaddingbottom = 9},
+    ms_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0, gaugepaddingtop = 1, gaugepaddingbottom = 7},
+    ss_full = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, gaugepaddingtop = 1, gaugepaddingbottom = 9},
+    ss_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0, gaugepaddingtop = 1, gaugepaddingbottom = 7}
 }
 
 local lastScreenW = nil
@@ -193,8 +193,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -228,8 +228,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -259,8 +259,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -291,8 +291,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -322,8 +322,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -359,8 +359,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -394,8 +394,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -431,8 +431,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -464,8 +464,8 @@ local function buildBoxes(W)
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
-            gaugepaddingtop = 7,
-            gaugepaddingbottom = 13,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
