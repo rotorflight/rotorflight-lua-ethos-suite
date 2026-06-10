@@ -27,7 +27,7 @@ function wrapper.wakeup(box)
     if box.wakeupinterval ~= nil then
         local now = clock()
 
-        box._wakeupInterval = box._wakeupInterval
+        box._wakeupInterval = box._wakeupInterval or box.wakeupinterval
         box._lastWakeup = box._lastWakeup or 0
 
         if now - box._lastWakeup < box._wakeupInterval then return end

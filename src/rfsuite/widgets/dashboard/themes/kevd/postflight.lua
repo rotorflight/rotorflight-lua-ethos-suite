@@ -42,12 +42,12 @@ local function getThemeOptionKey(W)
 end
 
 local themeOptions = {
-    ls_full = {font = "FONT_XL", valuefont = "FONT_L", titlefont = "FONT_STD", titlepaddingtop = 5, thickness = 24},
-    ls_std  = {font = "FONT_L", valuefont = "FONT_M", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 18},
-    ms_full = {font = "FONT_L", valuefont = "FONT_M", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16},
-    ms_std  = {font = "FONT_M", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12},
-    ss_full = {font = "FONT_L", valuefont = "FONT_M", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16},
-    ss_std  = {font = "FONT_M", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12}
+    ls_full = {font = "FONT_XL", valuefont = "FONT_L", titlefont = "FONT_STD", titlepaddingtop = 5, thickness = 24, tilefont = "FONT_XXL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ls_std  = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 18, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ms_full = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ms_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0},
+    ss_full = {font = "FONT_L", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 2, thickness = 16, tilefont = "FONT_XL", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ss_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0}
 }
 
 local lastScreenW = nil
@@ -124,9 +124,12 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XXL",
+            font = opts.tilefont,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = "transparent",
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor
@@ -139,9 +142,12 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XXL",
+            font = opts.tilefont,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = "transparent",
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor
@@ -154,9 +160,12 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XXL",
+            font = opts.tilefont,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = "transparent",
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor,
@@ -177,8 +186,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -211,8 +221,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -241,8 +252,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -272,8 +284,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -302,8 +315,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -338,8 +352,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -372,8 +387,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -408,8 +424,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
@@ -440,8 +457,9 @@ local function buildBoxes(W)
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
-            font = "FONT_XL",
+            font = opts.font,
             titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
             thickness = max(4, opts.thickness - 4),
