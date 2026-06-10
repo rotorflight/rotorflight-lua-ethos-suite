@@ -203,6 +203,8 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
+    x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
+
     lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
     local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
 
@@ -223,11 +225,6 @@ function render.paint(x, y, w, h, box)
     if radius < 8 then radius = 8 end
     local cx = x + w / 2
     local cy = arcRegionY + arcRegionH / 2 + 15
-
-    if c.bgcolor then
-        lcd.color(c.bgcolor)
-        lcd.drawFilledRectangle(x, y, w, h)
-    end
 
     local bandCount = #c.bandlabels
     local startAngle = 240

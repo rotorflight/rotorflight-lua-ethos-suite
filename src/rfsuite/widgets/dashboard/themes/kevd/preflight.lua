@@ -67,26 +67,16 @@ if header_layout and header_layout.height then
     header_layout.height = header_layout.height + topbarShiftY
 end
 
-local function applyScreenBorderStyle()
-    local screenBorderStyle = {
-        enabled = true,
-        -- Match the SmartFuel / advanced battery outline color path.
-        bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
-        -- Use the preflight screen background as the page fill so any exposed
-        -- gaps from gauge offsets/resizing match the dashboard background.
-        backgroundcolor = colorMode.bgcolor,
-        borderwidth = 6,
-        inset = -1
-    }
-
-    if utils.setScreenBorderStyle then
-        utils.setScreenBorderStyle(screenBorderStyle)
-    else
-        utils._screenBorderStyle = screenBorderStyle
-    end
-end
-
-applyScreenBorderStyle()
+local screenBorderStyle = {
+    enabled = true,
+    -- Match the SmartFuel / advanced battery outline color path.
+    bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
+    -- Use the preflight screen background as the page fill so any exposed
+    -- gaps from gauge offsets/resizing match the dashboard background.
+    backgroundcolor = colorMode.bgcolor,
+    borderwidth = 6,
+    inset = -1
+}
 
 local function header_boxes()
     local txbatt_type = 0
@@ -94,13 +84,13 @@ local function header_boxes()
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
         local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
-        
+
         local headerBgColor = colorMode.headerbgcolor or colorMode.fillbgcolor or colorMode.bgcolor
         for _, box in ipairs(boxes) do
             box.bgcolor = headerBgColor
             box.offsety = (box.offsety or 0) + topbarShiftY
         end
-        
+
         header_boxes_cache = boxes
         last_txbatt_type = txbatt_type
     end
@@ -110,8 +100,7 @@ end
 local function buildBoxes(W)
 
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
-    applyScreenBorderStyle()
-    
+
     local footerBgColor = colorMode.headerbgcolor or colorMode.fillbgcolor or colorMode.bgcolor
     local screenBgColor = colorMode.bgcolor or footerBgColor
     local statusTileBg = {
@@ -228,28 +217,28 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             transform = "floor",
             thresholds = {{value = 1.5, textcolor = colorMode.accentcolor}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}
-        }, 
+        },
         {
-            col = 6, 
-            row = 9, 
+            col = 6,
+            row = 9,
             colspan = 2,
-            rowspan = 2, 
+            rowspan = 2,
             offsetx = -5,
             offsety = -15,
-            type = "time", 
-            subtype = "count", 
-            title = "FLIGHTS", 
-            titlepos = "bottom", 
-            font = opts.tilefont, 
-            titlefont = opts.titlefont, 
+            type = "time",
+            subtype = "count",
+            title = "FLIGHTS",
+            titlepos = "bottom",
+            font = opts.tilefont,
+            titlefont = opts.titlefont,
             titlespacing = opts.tiletitlespacing,
             titlepaddingbottom = opts.tiletitlepaddingbottom,
             valuepaddingtop = opts.flightvaluepaddingtop,
-            valuepaddingbottom = opts.flightvaluepaddingbottom, 
-            bgcolor = statusTileTopRowRightEdgeBg, 
-            titlecolor = colorMode.titlecolor, 
+            valuepaddingbottom = opts.flightvaluepaddingbottom,
+            bgcolor = statusTileTopRowRightEdgeBg,
+            titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor
-        }, 
+        },
         {
             col = 1,
             row = 10,
@@ -288,7 +277,7 @@ local function buildBoxes(W)
             transform = "floor",
             -- Updated fillcolor for value = 45 using lcd.RGB
             thresholds = {{value = 25, fillcolor = colorMode.fillcritcolor}, {value = 45, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}}
-        }, 
+        },
         {
             col = 4,
             colspan = 2,
@@ -314,7 +303,7 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor,
             thresholds = {{value = getThemeValue("bec_warn"), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = getThemeValue("bec_max"), fillcolor = colorMode.fillcolor}}
-        }, 
+        },
         {
             col = 4,
             row = 11,
@@ -336,7 +325,7 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             transform = "floor",
             thresholds = {{value = 80, textcolor = colorMode.textcolor}, {value = 90, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcritcolor}}
-        }, 
+        },
         {
             col = 6,
             colspan = 2,
@@ -363,7 +352,7 @@ local function buildBoxes(W)
             valuepaddingtop = 30,
             transform = "floor",
             thresholds = {{value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor}, {value = getThemeValue("esctemp_max"), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = 155, fillcolor = colorMode.fillcritcolor}}
-        }, 
+        },
         {
             col = 6,
             row = 11,
@@ -402,4 +391,4 @@ local function boxes()
     return boxes_cache
 end
 
-return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.5}}
+return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, screenBorderStyle = screenBorderStyle, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.5}}

@@ -203,6 +203,8 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
+    x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
+
     local titleHeight = 0
     if c.title then
         lcd.font(resolveFont(c.titlefont, FONT_XS))
@@ -220,11 +222,6 @@ function render.paint(x, y, w, h, box)
     else
         imgRegionY = y
         imgRegionH = h
-    end
-
-    if c.bgcolor then
-        lcd.color(c.bgcolor)
-        lcd.drawFilledRectangle(x, y, w, h)
     end
 
     local drawX, drawY, drawW, drawH = x, y, w, h

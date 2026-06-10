@@ -639,7 +639,7 @@ function dashboard.overlaymessage(x, y, w, h, txt)
     end
     if themeLoader == 0 then
         opts.panelWidthRatio = 0.5
-        opts.panelHeightRatio = 0.5   
+        opts.panelHeightRatio = 0.5
         opts.fontSize = FONT_XXS
     elseif themeLoader == 1 then
         opts.panelWidthRatio = 0.7
@@ -647,7 +647,7 @@ function dashboard.overlaymessage(x, y, w, h, txt)
         opts.fontSize = FONT_XS
     elseif themeLoader == 2 then
         opts.panelWidthRatio = 0.9
-        opts.panelHeightRatio = 0.8       
+        opts.panelHeightRatio = 0.8
         opts.fontSize = FONT_S
     end
 
@@ -774,8 +774,8 @@ function dashboard.computeOverlayMessage()
 
     local state = dashboard.flightmode or "preflight"
 
-    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then 
-        return "[ERROR] Failed to load theme, using fallback" 
+    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
+        return "[ERROR] Failed to load theme, using fallback"
     end
 
     local elapsed = clock() - initTime
@@ -920,6 +920,9 @@ function dashboard.renderLayout(widget, config)
     local boxW = contentW / cols
     local boxH = contentH / rows
 
+    if utils.setScreenBorderStyle then
+        utils.setScreenBorderStyle(config.screenBorderStyle)
+    end
     utils.setBackgroundColourBasedOnTheme()
 
     local rectCount = 0
@@ -1187,6 +1190,10 @@ function dashboard.renderLayout(widget, config)
         end
 
         lcd.pen(SOLID)
+    end
+
+    if utils.drawScreenBorder then
+        utils.drawScreenBorder()
     end
 
     if layout.showstats or rfsuite.preferences.developer.overlaystats then
@@ -2210,7 +2217,7 @@ function dashboard.wakeup()
         else
             return
         end
-    end    
+    end
 
     -- If MSP is busy, only run the tasks every N ticks to allow background processing to complete and avoid UI freezes.
     local session = rfsuite.session

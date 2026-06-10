@@ -1097,6 +1097,10 @@ local function drawStyledBoxBackground(x, y, w, h, bgcolor)
     return x + innerLeft, y + innerTop, w - innerLeft - innerRight, h - innerTop - innerBottom
 end
 
+function utils.drawBoxBackground(x, y, w, h, bgcolor)
+    return drawStyledBoxBackground(x, y, w, h, bgcolor)
+end
+
 function utils.setScreenBorderStyle(style)
     utils._screenBorderStyle = style
 end
@@ -1130,6 +1134,12 @@ local function drawDashboardScreenBorderSafe()
     lcd.drawFilledRectangle(x1, y2, fullW, borderwidth)
     lcd.drawFilledRectangle(x1, y1, borderwidth, fullH)
     lcd.drawFilledRectangle(x2, y1, borderwidth, fullH)
+end
+
+-- Redraw the screen border on top of already-painted boxes so panel
+-- backgrounds that extend to the screen edge cannot erase it.
+function utils.drawScreenBorder()
+    drawDashboardScreenBorderSafe()
 end
 
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, font, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
@@ -1300,8 +1310,6 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
         lcd.color(titlecolor)
         lcd.drawText(sx, sy, title)
     end
-    -- Keep the outer preflight screen border visible even after individual widgets draw.
-    drawDashboardScreenBorderSafe()
 end
 
 function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey, thresholdsOverride)

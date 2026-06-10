@@ -14,6 +14,25 @@
 
 ---
 
+## Shared Background Styles
+
+Any object option documented as `bgcolor : color` may also be a style table when the object draws a widget background directly. This is used by gauge and dial objects that need a filled tile, optional border, and adjusted content area.
+
+```
+    bgcolor = {
+        color = lcd.RGB(...),       -- Fill color. Also accepts bgcolor, fillcolor, or fill.
+        bordercolor = lcd.RGB(...), -- Optional border color
+        borderwidth = 2,            -- Optional border thickness in pixels
+        radius = 4,                 -- Optional corner radius. Also accepts roundradius.
+        inset = 1,                  -- Optional outer inset. Can be overridden per side.
+        contentpadding = 2          -- Optional extra padding applied after inset/border
+    }
+```
+
+The background helper returns the remaining inner content rectangle, so `borderwidth`, `inset`, and `contentpadding` shrink the area used by the object's gauge, dial, text, or image content.
+
+---
+
 ### API Version Widget (type="text", subtype="apiversion")
 
 ```
@@ -180,7 +199,9 @@ Value/source
     value                   : any       -- (Optional) Static value to display if no telemetry
     hidevalue               : bool      -- (Optional) If true, do not display the value text (default: false; value is shown)
     source                  : string    -- (Optional) Telemetry sensor source name
+    stattype                : string    -- (Optional) For postflight/stat bars, use "min", "max", or "avg" from telemetry stats
     transform               : string|function|number -- (Optional) Value transformation
+    gaugevalue              : string    -- (Optional) "display" uses the transformed display value for fill percentage
     decimals                : number    -- (Optional) Number of decimal places for display
     thresholds              : table     -- (Optional) List of threshold tables: {value=..., fillcolor=..., textcolor=...}
     novalue                 : string    -- (Optional) Text shown if value missing (default: "-")
@@ -239,6 +260,9 @@ Subtext
     subtextpaddingtop    : number   -- (Optional) Extra offset from top of bar (default: 0)
     subtextpaddingbottom : number   -- (Optional) Padding above bottom of bar (default: 0)
 ```
+
+Bar gauges normally use the raw telemetry value for fill percentage. Set `gaugevalue = "display"` when the transform changes the value scale and the bar should use that transformed value too. When `stattype` is set, the bar reads the matching telemetry stat and falls back to the live sensor while stats are not available.
+
 ---
 
 ### Blackbox Widget (type="text", subtype="blackbox")

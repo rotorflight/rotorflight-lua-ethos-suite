@@ -279,6 +279,8 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
+    x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
+
     local g = box._geom
     local needGeo = (not g) or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.thickness ~= (c.thickness or 0) or g.gaugepadding ~= (c.gaugepadding or 0) or g.gaugepaddingbottom ~= (c.gaugepaddingbottom or 0)
 
@@ -329,11 +331,6 @@ function render.paint(x, y, w, h, box)
         g.endAngleFull = (startAngle + 270) % 360
 
         box._geom = g
-    end
-
-    if c.bgcolor then
-        lcd.color(c.bgcolor)
-        lcd.drawFilledRectangle(x, y, w, h)
     end
 
     drawArc(g.cx, g.cy, g.radius, c.thickness, g.startAngle, g.endAngleFull, c.fillbgcolor)
