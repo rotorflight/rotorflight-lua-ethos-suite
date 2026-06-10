@@ -243,10 +243,57 @@ local function colorLuma(color)
     return r * 0.299 + g * 0.587 + b * 0.114
 end
 
+local themeLogoOverrideCache = {}
+
+local function getThemeLogoOverride()
+    local widgetPath = rfsuite.widgets.dashboard.currentWidgetPath
+    if type(widgetPath) ~= "string" or widgetPath == "" then return nil end
+
+    local cached = themeLogoOverrideCache[widgetPath]
+    if cached ~= nil then return cached or nil end
+
+    local override = false
+    local src, folder = widgetPath:match("([^/]+)/(.+)")
+    if src and folder then
+        local themeBase
+        if src == "user" then
+            themeBase = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/" .. folder .. "/"
+        else
+            themeBase = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/" .. folder .. "/"
+        end
+
+        local chunk = loadfile(themeBase .. "init.lua")
+        if chunk then
+            local ok, initTable = pcall(chunk)
+            if ok and type(initTable) == "table" and type(initTable.logo) == "table" then
+                override = {
+                    dark = type(initTable.logo.dark) == "string" and (themeBase .. initTable.logo.dark) or nil,
+                    light = type(initTable.logo.light) == "string" and (themeBase .. initTable.logo.light) or nil
+                }
+            end
+        end
+    end
+
+    themeLogoOverrideCache[widgetPath] = override
+    return override or nil
+end
+
 local function getLogoFallbackForBackground(bgcolor)
     local luma = colorLuma(bgcolor)
-    if luma then return luma > 127 and LOGO_DARK_FALLBACK or LOGO_LIGHT_FALLBACK end
-    return isLegacyDarkMode() and LOGO_LIGHT_FALLBACK or LOGO_DARK_FALLBACK
+    local useDarkLogo
+    if luma then
+        useDarkLogo = luma > 127
+    else
+        useDarkLogo = not isLegacyDarkMode()
+    end
+
+    local override = getThemeLogoOverride()
+    if override then
+        local overridePath = useDarkLogo and override.dark or override.light
+        if overridePath then return overridePath end
+    end
+
+    return useDarkLogo and LOGO_DARK_FALLBACK or LOGO_LIGHT_FALLBACK
 end
 
 function utils.getLogoFallbackForBackground(bgcolor)

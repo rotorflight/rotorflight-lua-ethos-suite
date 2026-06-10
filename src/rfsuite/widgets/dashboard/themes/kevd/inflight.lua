@@ -272,10 +272,15 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
-        for _, box in ipairs(header_boxes_cache) do
+        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+
+        local headerBgColor = colorMode.headerbgcolor or colorMode.fillbgcolor or colorMode.bgcolor
+        for _, box in ipairs(boxes) do
+            box.bgcolor = headerBgColor
             box.offsety = (box.offsety or 0) + topbarShiftY -- shifts topbar and internal details on Y axis
         end
+
+        header_boxes_cache = boxes
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
