@@ -15,7 +15,7 @@ local colorMode = utils.themeColors()
 
 local theme_section = "system/kevd"
 
-local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.5, bec_warn = 7.4, bec_max = 11.0, esctemp_warn = 120, esctemp_max = 150}
+local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.5, bec_warn = 7.4, bec_max = 12.0, esctemp_warn = 110, esctemp_max = 150}
 
 local function getThemeValue(key)
 
@@ -40,17 +40,17 @@ end
 
 local themeOptions = {
 
-    ls_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_STD", brfont = "FONT_XL", tilefont = "FONT_XL", govfont = "FONT_XL", smartfont = "FONT_XXL", smartvaluefont = "FONT_XL", smartadvfont = "FONT_L", smartvaluepaddingtop = 36, smartbattadvpaddingright = 25, smartbattadvpaddingtop = -15, thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
+    ls_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_STD", brfont = "FONT_XL", tilefont = "FONT_XL", govfont = "FONT_XL", smartfont = "FONT_XXL", smartvaluefont = "FONT_XL", smartadvfont = "FONT_L", smartvaluepaddingtop = 44, smartbattadvpaddingright = 28, smartbattadvpaddingtop = -15, tiletitlespacing = 4, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 3, flightvaluepaddingbottom = 0, thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
 
-    ls_std = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_STD", brfont = "FONT_L", tilefont = "FONT_L", govfont = "FONT_L", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 14, smartbattadvpaddingright = 10, smartbattadvpaddingtop = -8, thickness = 18, batteryframethickness = 3, titlepaddingbottom = 18, valuepaddingleft = 55, valuepaddingtop = 5, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 8, cappaddingright = 5},
+    ls_std = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_STD", brfont = "FONT_L", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 22, smartbattadvpaddingright = 21, smartbattadvpaddingtop = 0, tiletitlespacing = 4, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 2, flightvaluepaddingbottom = 0, thickness = 18, batteryframethickness = 3, titlepaddingbottom = 18, valuepaddingleft = 55, valuepaddingtop = 5, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 8, cappaddingright = 5},
 
-    ms_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_L", tilefont = "FONT_L", govfont = "FONT_L", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 12, smartbattadvpaddingright = 10, smartbattadvpaddingtop = -6, thickness = 19, batteryframethickness = 3, titlepaddingbottom = 16, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 2, cappaddingright = 2},
+    ms_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_L", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 20, smartbattadvpaddingright = 19, smartbattadvpaddingtop = 0, tiletitlespacing = 4, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 2, flightvaluepaddingbottom = 0, thickness = 19, batteryframethickness = 3, titlepaddingbottom = 16, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 2, cappaddingright = 2},
 
-    ms_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_STD", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_L", smartvaluefont = "FONT_STD", smartadvfont = "FONT_S", smartvaluepaddingtop = 8, smartbattadvpaddingright = 8, smartbattadvpaddingtop = -4, thickness = 14, batteryframethickness = 2, titlepaddingbottom = 10, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 3, cappaddingright = 3},
+    ms_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_STD", tilefont = "FONT_S", govfont = "FONT_S", smartfont = "FONT_L", smartvaluefont = "FONT_STD", smartadvfont = "FONT_S", smartvaluepaddingtop = 16, smartbattadvpaddingright = 15, smartbattadvpaddingtop = 0, tiletitlespacing = 3, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 2, flightvaluepaddingbottom = 0, thickness = 14, batteryframethickness = 2, titlepaddingbottom = 10, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 20, valuepaddingbottom = 25, brvaluepaddingbottom = 8, gaugepaddingtop = 5, battadvpaddingtop = 3, cappaddingright = 3},
 
-    ss_full = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_XL", tilefont = "FONT_L", govfont = "FONT_L", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 12, smartbattadvpaddingright = 10, smartbattadvpaddingtop = -6, thickness = 25, batteryframethickness = 3, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 25, valuepaddingbottom = 15, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 5, cappaddingright = 3},
+    ss_full = {font = "FONT_XL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_XL", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_XL", smartvaluefont = "FONT_L", smartadvfont = "FONT_STD", smartvaluepaddingtop = 20, smartbattadvpaddingright = 19, smartbattadvpaddingtop = 0, tiletitlespacing = 4, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 2, flightvaluepaddingbottom = 0, thickness = 25, batteryframethickness = 3, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 25, valuepaddingbottom = 15, brvaluepaddingbottom = 15, gaugepaddingtop = 5, battadvpaddingtop = 5, cappaddingright = 3},
 
-    ss_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_L", tilefont = "FONT_STD", govfont = "FONT_STD", smartfont = "FONT_L", smartvaluefont = "FONT_STD", smartadvfont = "FONT_S", smartvaluepaddingtop = 8, smartbattadvpaddingright = 8, smartbattadvpaddingtop = -4, thickness = 14, batteryframethickness = 2, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 15, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 5, battadvpaddingtop = 0, cappaddingright = 3}
+    ss_std = {font = "FONT_XL", advfont = "FONT_S", titlefont = "FONT_XS", arctitlefont = "FONT_S", brfont = "FONT_L", tilefont = "FONT_S", govfont = "FONT_S", smartfont = "FONT_L", smartvaluefont = "FONT_STD", smartadvfont = "FONT_S", smartvaluepaddingtop = 16, smartbattadvpaddingright = 15, smartbattadvpaddingtop = 0, tiletitlespacing = 3, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 2, flightvaluepaddingbottom = 0, thickness = 14, batteryframethickness = 2, titlepaddingbottom = 15, valuepaddingleft = 20, valuepaddingtop = 10, gvaluepaddingtop = 15, valuepaddingbottom = 20, brvaluepaddingbottom = 20, gaugepaddingtop = 5, battadvpaddingtop = 0, cappaddingright = 3}
 }
 
 local lastScreenW = nil
@@ -123,10 +123,9 @@ local function buildBoxes(W)
         borderwidth = 4,
         roundradius = 6,
         inset = 4,
-        -- Lower tiles resized down by 4 px from the previous enlarged version.
-        -- Left/right spacing stays at 4 px; top/bottom inset becomes 2 px each.
+        -- Grow lower tiles downward by 5 px without moving the top edge.
         insettop = 2,
-        insetbottom = 2,
+        insetbottom = -3,
         contentpadding = 1
     }
 
@@ -136,27 +135,26 @@ local function buildBoxes(W)
         -- away from the screen border.
         backfillcolor = screenBgColor,
         fillcolor = colorMode.tbbgcolor or footerBgColor,
-        bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
+        bordercolor = colorMode.fillcritcolor,
         borderwidth = 4,
         roundradius = 6,
         inset = 4,
         insetleft = 9,
-        -- Lower tiles resized down by 4 px from the previous enlarged version.
+        -- Grow lower tiles downward by 5 px without moving the top edge.
         insettop = 2,
-        insetbottom = 2,
+        insetbottom = -3,
         contentpadding = 1
     }
 
     local statusTileTopRowBg = {
-        -- Rebuilt border style for Rates / Profile / Flights.
-        -- Keep the top border fully inside the cell so it does not clip.
+        -- Grow top-row tiles upward by 5 px to preserve row spacing below.
         backfillcolor = screenBgColor,
         fillcolor = colorMode.tbbgcolor or footerBgColor,
         bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
         borderwidth = 4,
         roundradius = 6,
         inset = 4,
-        insettop = 4,
+        insettop = -1,
         insetbottom = 2,
         contentpadding = 1
     }
@@ -170,7 +168,7 @@ local function buildBoxes(W)
         roundradius = 6,
         inset = 4,
         insetleft = 9,
-        insettop = 4,
+        insettop = -1,
         insetbottom = 2,
         contentpadding = 1
     }
@@ -193,7 +191,7 @@ local function buildBoxes(W)
             col = 4,
             row = 9,
             rowspan = 2,
-            offsety = -10,
+            offsety = -15,
             type = "text",
             subtype = "telemetry",
             source = "rate_profile",
@@ -201,7 +199,10 @@ local function buildBoxes(W)
             titlepos = "bottom",
             font = opts.tilefont,
             titlefont = opts.titlefont,
-            valuepaddingbottom = 6,
+            titlespacing = opts.tiletitlespacing,
+            titlepaddingbottom = opts.tiletitlepaddingbottom,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
             transform = "floor",
@@ -211,7 +212,7 @@ local function buildBoxes(W)
             col = 5,
             row = 9,
             rowspan = 2,
-            offsety = -10,
+            offsety = -15,
             type = "text",
             subtype = "telemetry",
             source = "pid_profile",
@@ -219,7 +220,10 @@ local function buildBoxes(W)
             titlepos = "bottom",
             font = opts.tilefont,
             titlefont = opts.titlefont,
-            valuepaddingbottom = 6,
+            titlespacing = opts.tiletitlespacing,
+            titlepaddingbottom = opts.tiletitlepaddingbottom,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
             transform = "floor",
@@ -231,14 +235,17 @@ local function buildBoxes(W)
             colspan = 2,
             rowspan = 2, 
             offsetx = -5,
-            offsety = -10,
+            offsety = -15,
             type = "time", 
             subtype = "count", 
             title = "FLIGHTS", 
             titlepos = "bottom", 
             font = opts.tilefont, 
             titlefont = opts.titlefont, 
-            valuepaddingbottom = 10, 
+            titlespacing = opts.tiletitlespacing,
+            titlepaddingbottom = opts.tiletitlepaddingbottom,
+            valuepaddingtop = opts.flightvaluepaddingtop,
+            valuepaddingbottom = opts.flightvaluepaddingbottom, 
             bgcolor = statusTileTopRowRightEdgeBg, 
             titlecolor = colorMode.titlecolor, 
             textcolor = colorMode.textcolor
@@ -249,7 +256,7 @@ local function buildBoxes(W)
             colspan = 3,
             rowspan = 3,
             offsetx = 4,
-            offsety = -4,
+            offsety = -1,
             type = "gauge",
             source = "smartfuel",
             batteryframe = true,
@@ -288,7 +295,7 @@ local function buildBoxes(W)
             row = 1,
             rowspan = 7,
             offsetx = 2,
-            offsety = -7,
+            offsety = 10,
             type = "gauge",
             subtype = "arc",
             source = "bec_voltage",
@@ -296,12 +303,12 @@ local function buildBoxes(W)
             titlepos = "bottom",
             decimals = 1,
             titlepaddingbottom = opts.titlepaddingbottom,
-            valuepaddingtop = 42,
+            valuepaddingtop = 30,
             font = "FONT_XL",
             titlefont = opts.arctitlefont,
             min = getThemeValue("bec_min"),
             max = getThemeValue("bec_max"),
-            thickness = opts.thickness + 1,
+            thickness = opts.thickness - 5,
             bgcolor = colorMode.bgcolor,
             fillbgcolor = colorMode.fillbgcolor,
             titlecolor = colorMode.titlecolor,
@@ -313,14 +320,17 @@ local function buildBoxes(W)
             row = 11,
             colspan = 2,
             rowspan = 2,
-            offsety = -8,
+            offsety = -10,
             type = "text",
             subtype = "blackbox",
             title = "BLACKBOX",
             titlepos = "bottom",
             font = opts.tilefont,
             titlefont = opts.titlefont,
-            valuepaddingbottom = 6,
+            titlespacing = opts.tiletitlespacing,
+            titlepaddingbottom = opts.tiletitlepaddingbottom,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             decimals = 0,
             bgcolor = statusTileBg,
             titlecolor = colorMode.titlecolor,
@@ -333,7 +343,7 @@ local function buildBoxes(W)
             row = 1,
             rowspan = 7,
             offsetx = -8,
-            offsety = -7,
+            offsety = 10,
             type = "gauge",
             subtype = "arc",
             source = "temp_esc",
@@ -343,14 +353,14 @@ local function buildBoxes(W)
             titlefont = opts.arctitlefont,
             min = 0,
             max = getThemeValue("esctemp_max"),
-            thickness = opts.thickness + 1,
-            valuepaddingleft = 0,
+            thickness = opts.thickness - 5,
+            valuepaddingleft = 6,
             bgcolor = colorMode.bgcolor,
             fillbgcolor = colorMode.fillbgcolor,
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor,
             titlepaddingbottom = opts.titlepaddingbottom,
-            valuepaddingtop = 42,
+            valuepaddingtop = 30,
             transform = "floor",
             thresholds = {{value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor}, {value = getThemeValue("esctemp_max"), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = 155, fillcolor = colorMode.fillcritcolor}}
         }, 
@@ -360,14 +370,17 @@ local function buildBoxes(W)
             colspan = 2,
             rowspan = 2,
             offsetx = -5,
-            offsety = -8,
+            offsety = -10,
             type = "text",
             subtype = "governor",
             title = "GOVERNOR",
             titlepos = "bottom",
             font = opts.govfont,
             titlefont = opts.titlefont,
-            valuepaddingbottom = 6,
+            titlespacing = opts.tiletitlespacing,
+            titlepaddingbottom = opts.tiletitlepaddingbottom,
+            valuepaddingtop = opts.tilevaluepaddingtop,
+            valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileRightEdgeBg,
             titlecolor = colorMode.titlecolor,
             thresholds = {
