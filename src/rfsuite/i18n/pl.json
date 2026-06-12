@@ -11635,6 +11635,41 @@
         }
       },
       "settings": {
+        "activelook_hide_display": {
+          "english": "Hide Display",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Hide Display"
+        },
+        "activelook_inflight": {
+          "english": "Inflight",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Inflight"
+        },
+        "activelook_postflight": {
+          "english": "Postflight",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Postflight"
+        },
+        "activelook_preflight": {
+          "english": "Preflight",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Preflight"
+        },
+        "activelook_settings": {
+          "english": "Settings",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Settings"
+        },
         "adj_callouts": {
           "english": "Adjustment Callouts",
           "max_length": 19,
@@ -12225,7 +12260,7 @@
         },
         "txt_debugmalloc": {
           "english": "Log Memory Allocation",
-          "max_length": 12,
+          "max_length": 21,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Log Memory Allocation"

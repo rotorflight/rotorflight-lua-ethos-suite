@@ -11661,6 +11661,41 @@
           "reverse_text": false,
           "max_length": 5
         },
+        "activelook_hide_display": {
+          "english": "Hide Display",
+          "translation": "Hide Display",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "activelook_inflight": {
+          "english": "Inflight",
+          "translation": "Inflight",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "activelook_postflight": {
+          "english": "Postflight",
+          "translation": "Postflight",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "activelook_preflight": {
+          "english": "Preflight",
+          "translation": "Preflight",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "activelook_settings": {
+          "english": "Settings",
+          "translation": "Settings",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
         "battery_capacity_callout": {
           "english": "Battery capacity",
           "translation": "Capac. Bateria",
@@ -12156,7 +12191,7 @@
           "translation": "Log Memory Allocation",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 12
+          "max_length": 21
         },
         "txt_developer": {
           "english": "Developer",

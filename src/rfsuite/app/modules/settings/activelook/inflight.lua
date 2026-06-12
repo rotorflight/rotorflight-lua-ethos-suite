@@ -5,4 +5,4 @@
 
 local modePage = assert(loadfile("app/modules/settings/activelook/mode.lua"))()
 
-return modePage.create("inflight", "Inflight")
+return modePage.create("inflight", "@i18n(app.modules.settings.activelook_inflight)@")
