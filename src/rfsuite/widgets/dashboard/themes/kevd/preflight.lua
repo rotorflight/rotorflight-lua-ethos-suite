@@ -15,7 +15,7 @@ local colorMode = utils.themeColors()
 
 local theme_section = "system/kevd"
 
-local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.5, bec_warn = 7.4, bec_max = 12.0, esctemp_warn = 110, esctemp_max = 150}
+local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.5, bec_warn = 8.0, bec_max = 10.0, esctemp_warn = 110, esctemp_max = 150}
 
 local function getThemeValue(key)
 
@@ -195,7 +195,7 @@ local function buildBoxes(W)
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
             transform = "floor",
-            thresholds = {{value = 1.5, textcolor = colorMode.accentcolor}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}
+            thresholds = {{value = 1.5, textcolor = colorMode.accentcolor}, {value = 2.5, textcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = 6, textcolor = colorMode.fillcolor}}
         },
         {
             col = 5,
@@ -216,7 +216,7 @@ local function buildBoxes(W)
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
             transform = "floor",
-            thresholds = {{value = 1.5, textcolor = colorMode.accentcolor}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}
+            thresholds = {{value = 1.5, textcolor = colorMode.accentcolor}, {value = 2.5, textcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = 6, textcolor = colorMode.fillcolor}}
         },
         {
             col = 6,
@@ -276,7 +276,7 @@ local function buildBoxes(W)
             accentcolor = colorMode.accentcolor,
             transform = "floor",
             -- Updated fillcolor for value = 45 using lcd.RGB
-            thresholds = {{value = 25, fillcolor = colorMode.fillcritcolor}, {value = 45, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}}
+            thresholds = {{value = 25, fillcolor = colorMode.fillcritcolor}, {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}}
         },
         {
             col = 4,
@@ -302,7 +302,7 @@ local function buildBoxes(W)
             fillbgcolor = colorMode.fillbgcolor,
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor,
-            thresholds = {{value = getThemeValue("bec_warn"), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = getThemeValue("bec_max"), fillcolor = colorMode.fillcolor}}
+            thresholds = {{value = 7.4, fillcolor = colorMode.fillcritcolor}, {value = getThemeValue("bec_max"), fillcolor = colorMode.fillcolor}}
         },
         {
             col = 4,
@@ -324,7 +324,7 @@ local function buildBoxes(W)
             bgcolor = statusTileBg,
             titlecolor = colorMode.titlecolor,
             transform = "floor",
-            thresholds = {{value = 80, textcolor = colorMode.textcolor}, {value = 90, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcritcolor}}
+            thresholds = {{value = 80, textcolor = colorMode.textcolor}, {value = 90, textcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = 100, textcolor = colorMode.fillcritcolor}}
         },
         {
             col = 6,
@@ -346,12 +346,17 @@ local function buildBoxes(W)
             valuepaddingleft = 6,
             bgcolor = colorMode.bgcolor,
             fillbgcolor = colorMode.fillbgcolor,
+            fillcolor = colorMode.fillcolor,
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor,
             titlepaddingbottom = opts.titlepaddingbottom,
             valuepaddingtop = 30,
             transform = "floor",
-            thresholds = {{value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor}, {value = getThemeValue("esctemp_max"), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = 155, fillcolor = colorMode.fillcritcolor}}
+            thresholds = {
+                {value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor},
+                {value = getThemeValue("esctemp_max"), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)},
+                {value = 10000, fillcolor = colorMode.fillcritcolor}
+            }
         },
         {
             col = 6,
@@ -373,7 +378,7 @@ local function buildBoxes(W)
             bgcolor = statusTileRightEdgeBg,
             titlecolor = colorMode.titlecolor,
             thresholds = {
-                {value = "DISARMED", textcolor = colorMode.fillcritcolor}, {value = "OFF", textcolor = colorMode.fillcritcolor}, {value = "IDLE", textcolor = colorMode.accentcolor}, {value = "SPOOLUP", textcolor = colorMode.accentcolor}, {value = "RECOVERY", textcolor = colorMode.fillwarncolor}, {value = "ACTIVE", textcolor = colorMode.fillcolor},
+                {value = "DISARMED", textcolor = colorMode.fillcritcolor}, {value = "OFF", textcolor = colorMode.fillcritcolor}, {value = "IDLE", textcolor = colorMode.accentcolor}, {value = "SPOOLUP", textcolor = colorMode.accentcolor}, {value = "RECOVERY", textcolor = lcd.RGB(0xE3, 0xA3, 0x00)}, {value = "ACTIVE", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             }
         }

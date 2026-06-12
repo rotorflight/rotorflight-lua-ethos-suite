@@ -19,7 +19,7 @@ local colorMode = utils.themeColors()
 
 local theme_section = "system/kevd"
 
-local THEME_DEFAULTS = {throttle_max = 100, rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 8.0, bec_max = 12.0, esctemp_warn = 120, esctemp_max = 150}
+local THEME_DEFAULTS = {throttle_max = 100, rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 8.0, bec_max = 12.0, esctemp_warn = 120, esctemp_max = 300}
 
 local function estimateCellCountFromVoltage(voltage)
     voltage = tonumber(voltage) or 0
@@ -262,6 +262,12 @@ local last_txbatt_type = nil
 
 local pageBgColor = colorMode.bgcolor
 local layout = {cols = 12, rows = 10, padding = 0, bgcolor = pageBgColor}
+local screenBorderStyle = {
+    enabled = true,
+    bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
+    borderwidth = 5,
+    inset = 0
+}
 
 local header_layout = utils.standardHeaderLayout(headeropts)
 local topbarShiftY = 4 -- increase to move topbar down, decrease to move it up
@@ -567,4 +573,4 @@ local function boxes()
     return boxes_cache
 end
 
-return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.8}}
+return {layout = layout, boxes = boxes, header_boxes = header_boxes, header_layout = header_layout, screenBorderStyle = screenBorderStyle, scheduler = {spread_scheduling = true, spread_scheduling_paint = false, spread_ratio = 0.8}}

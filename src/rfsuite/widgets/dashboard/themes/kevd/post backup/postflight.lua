@@ -19,7 +19,7 @@ local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
 
 local theme_section = "system/kevd"
 
-local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 7.0, bec_max = 12.0, esctemp_warn = 110, esctemp_max = 140}
+local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 8.0, bec_max = 12.0, esctemp_warn = 120, esctemp_max = 150}
 
 local function getThemeValue(key)
     if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
@@ -90,7 +90,6 @@ end
 
 local function buildBoxes(W)
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
-    local gaugePaddingBottom = opts.gaugepaddingbottom + 1
 
     local gaugeTileBg = {
         -- Same bordered-tile method used for the working preflight 5-tile borders.
@@ -116,7 +115,7 @@ local function buildBoxes(W)
         {col = 5, row = 7, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "current", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
         {col = 1, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "rpm", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
         {col = 1, row = 7, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "link", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 9, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "smartfuel", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 9, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "smartconsumption", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
         {col = 5, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "smartfuel", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
         {col = 9, row = 10, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "voltage", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
         {col = 9, row = 7, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "temp_esc", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
@@ -201,7 +200,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -236,7 +235,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -264,9 +263,10 @@ local function buildBoxes(W)
             titlespacing = opts.tiletitlespacing,
             titlepaddingtop = opts.titlepaddingtop + 11,
             -- Keep the actual bar gauge inside the bordered tile underlay.
+            thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -298,7 +298,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -329,7 +329,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -351,35 +351,34 @@ local function buildBoxes(W)
             offsety = -7,
             type = "gauge",
             subtype = "bar",
-            source = "smartfuel",
-            stattype = "min",
-            unit = "%",
-            batteryframe = true,
-            battadv = true,
-            battadvvaluealign = "right",
-            valuealign = "left",
-            font = opts.Font,
-            gaugepaddingtop = 13,
-            gaugepaddingbottom = 13,
+            source = "smartconsumption",
+            stattype = "max",
+            title = "Consumed mAh",
+            unit = "mAh",
+            titlepos = "top",
+            titlealign = "center",
+            valuealign = "center",
+            font = opts.font,
+            titlefont = opts.titlefont,
+            titlespacing = opts.tiletitlespacing,
+            titlepaddingtop = opts.titlepaddingtop + 11,
+            -- Keep the actual bar gauge inside the bordered tile underlay.
+            thickness = max(4, opts.thickness - 4),
+            gaugepadding = 12,
+            gaugepaddingtop = opts.gaugepaddingtop,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
-            gaugepaddingright = 5,
-            valuepaddingleft = 20,
-            valuepaddingtop = 30,
-            valuepaddingbottom = 0,
-            battadvfont = "FONT_S",
-            battadvpaddingright = 14,
-            battadvpaddingtop = -10,
-            battadvgap = 1,
-            batteryframethickness = 0,
+            gaugepaddingright = 13,
             bgcolor = "transparent",
-            fillbgcolor = colorMode.fillbgcolor,
             fillcolor = colorMode.fillcolor,
             textcolor = colorMode.textcolor,
             titlecolor = colorMode.titlecolor,
-            accentcolor = colorMode.accentcolor,
             min = 0,
-            max = 100,
-            thresholds = {{value = 25, fillcolor = colorMode.fillcritcolor}, {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}},
+            max = 5000,
+            thresholds = {
+                {value = 2250, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)},
+                {value = 4000, fillcolor = colorMode.fillcritcolor}
+            },
             transform = "floor"
         },
         {
@@ -402,7 +401,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -413,7 +412,7 @@ local function buildBoxes(W)
             max = 100,
             thresholds = {
                 {value = 25, fillcolor = colorMode.fillcritcolor},
-                {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}
+                {value = 45, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}
             },
             transform = "floor"
         },
@@ -440,7 +439,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",
@@ -474,7 +473,7 @@ local function buildBoxes(W)
             thickness = max(4, opts.thickness - 4),
             gaugepadding = 12,
             gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
+            gaugepaddingbottom = opts.gaugepaddingbottom,
             gaugepaddingleft = 13,
             gaugepaddingright = 13,
             bgcolor = "transparent",

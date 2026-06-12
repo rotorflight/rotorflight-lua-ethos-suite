@@ -1,6 +1,6 @@
 {
-  "ethos.board": "X20PRO",
-  "ethos.protocol": "EU",
+  "ethos.board": "X18RS",
+  "ethos.protocol": "FCC",
   "ethos.release": "nightly26",
   "ethos.simulatorsFolder": "simulators",
   "rfsuite.deploy.language": "en"
