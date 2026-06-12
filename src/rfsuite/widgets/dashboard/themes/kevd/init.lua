@@ -7,7 +7,7 @@ local rfsuite = require("rfsuite")
 
 local init = {
     name = "Kevd",
-    preflight = "postflight.lua",
+    preflight = "preflight.lua",
     inflight = "inflight.lua",
     postflight = "postflight.lua",
     configure = "configure.lua",
