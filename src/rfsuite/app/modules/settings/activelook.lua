@@ -12,9 +12,9 @@ return submenuBuilder.create({
     scriptPrefix = "settings/activelook/",
     navOptions = {defaultSection = "system", showProgress = true},
     pages = {
-        {image = "activelook_preflight.png", name = "Preflight", offline = true, script = "preflight.lua"},
-        {image = "activelook_inflight.png", name = "Inflight", offline = true, script = "inflight.lua"},
-        {image = "activelook_postflight.png", name = "Postflight", offline = true, script = "postflight.lua"},
-        {image = "activelook_settings.png", name = "Settings", offline = true, script = "settings.lua"}
+        {image = "activelook_preflight.png", name = "@i18n(app.modules.settings.activelook_preflight)@", offline = true, script = "preflight.lua"},
+        {image = "activelook_inflight.png", name = "@i18n(app.modules.settings.activelook_inflight)@", offline = true, script = "inflight.lua"},
+        {image = "activelook_postflight.png", name = "@i18n(app.modules.settings.activelook_postflight)@", offline = true, script = "postflight.lua"},
+        {image = "activelook_settings.png", name = "@i18n(app.modules.settings.activelook_settings)@", offline = true, script = "settings.lua"}
     }
 })

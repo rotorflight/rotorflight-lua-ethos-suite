@@ -10018,6 +10018,36 @@
           "needs_translation": false,
           "translation": "Audio"
         },
+        "activelook_hide_display": {
+          "english": "Hide Display",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Hide Display"
+        },
+        "activelook_inflight": {
+          "english": "Inflight",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Inflight"
+        },
+        "activelook_postflight": {
+          "english": "Postflight",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Postflight"
+        },
+        "activelook_preflight": {
+          "english": "Preflight",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Preflight"
+        },
+        "activelook_settings": {
+          "english": "Settings",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Settings"
+        },
         "battery_capacity_callout": {
           "english": "Battery capacity",
           "max_length": 16,
@@ -10440,7 +10470,7 @@
         },
         "txt_debugmalloc": {
           "english": "Log Memory Allocation",
-          "max_length": 12,
+          "max_length": 21,
           "needs_translation": false,
           "translation": "Log Memory Allocation"
         },
