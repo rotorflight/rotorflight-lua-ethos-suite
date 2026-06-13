@@ -145,6 +145,7 @@ end
 
 local function rightStackPaint(x, y, w, h, box, c)
     c = c or {}
+    h = h + (box.rs_heightadjust or 0)
     utils.drawBoxBackground(x, y, w, h, box.rs_bgstyle)
 
     local rowH = h / 10
@@ -186,15 +187,8 @@ local function rightStackPaint(x, y, w, h, box, c)
     local govBgY = govY + box.rs_govbgoffsety
     utils.drawBoxBackground(x, govBgY, w, govBgH, box.rs_govbgstyle)
 
-    if box.rs_pagebgcolor and govBgY + govBgH < y + h then
-        local govGapX = x + (box.rs_govgapfilloffsetx or 0)
-        local govGapW = w + (box.rs_govgapfillwidthadjust or 0)
-        lcd.color(box.rs_pagebgcolor)
-        lcd.drawFilledRectangle(govGapX, govBgY + govBgH, govGapW, (y + h) - (govBgY + govBgH))
-    end
-
     utils.box(x, govY + box.rs_govoffsety, w, govBgH,
-        "GOVERNOR", box.rs_govtitlepos or "bottom", "center", box.rs_govfont, box.rs_govtitlespacing, box.rs_titlecolor,
+        "GOVERNOR", "bottom", "center", box.rs_govfont, box.rs_govtitlespacing, box.rs_titlecolor,
         nil, nil, nil, nil, box.rs_govtitlepaddingbottom,
         c.governorText, nil, box.rs_govfont, "center", c.governorColor,
         nil, nil, nil, nil, box.rs_govvaluepaddingbottom,
@@ -281,6 +275,11 @@ local function buildBoxes(W)
     local themeKey = getThemeOptionKey(W)
     local opts = themeOptions[themeKey] or themeOptions.ls_full
     local stackOpts = rightStackOptions[themeKey] or rightStackOptions.ls_full
+    local compactWindow = themeKey == nil or themeKey == "ls_std" or themeKey == "ms_std" or themeKey == "ss_std"
+    local governorFont = compactWindow and "FONT_S" or stackOpts.govfont
+    local governorTitleSpacing = compactWindow and 5 or stackOpts.tiletitlespacing
+    local governorTitlePaddingBottom = compactWindow and 0 or 10
+    local governorValuePaddingBottom = compactWindow and 0 or 6
     local gaugePaddingBottom = opts.gaugepaddingbottom + 1
 
     local gaugeTileBg = {
@@ -296,8 +295,8 @@ local function buildBoxes(W)
     }
 
     local rightStackTileBg = {
-        backfillcolor = panelBgColor,
-        fillcolor = panelBgColor,
+        backfillcolor = pageBgColor,
+        fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
         bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
         borderwidth = 4,
         roundradius = 6,
@@ -310,7 +309,7 @@ local function buildBoxes(W)
     }
 
     local governorDisarmedTileBg = {
-        backfillcolor = panelBgColor,
+        backfillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
         fillcolor = lcd.RGB(0x00, 0x00, 0x00),
         bordercolor = colorMode.fillcritcolor,
         borderwidth = 6,
@@ -363,7 +362,6 @@ local function buildBoxes(W)
             rs_govbgstyle = governorDisarmedTileBg,
             rs_titlecolor = colorMode.titlecolor,
             rs_textcolor = colorMode.textcolor,
-            rs_pagebgcolor = panelBgColor,
             fillcolor = colorMode.fillcolor,
 
             rs_flightoffsety = 10,
@@ -395,15 +393,13 @@ local function buildBoxes(W)
             rs_celloffsety = 34,
             rs_consumedoffsety = 60,
 
-            rs_govbgoffsety = 2,
-            rs_govoffsety = 0,
-            rs_govtitlepos = "bottom",
-            rs_govgapfilloffsetx = -9,
-            rs_govgapfillwidthadjust = 14,
-            rs_govfont = stackOpts.govfont,
-            rs_govtitlespacing = stackOpts.tiletitlespacing,
-            rs_govtitlepaddingbottom = 10,
-            rs_govvaluepaddingbottom = 6,
+            rs_govbgoffsety = 0,
+            rs_govoffsety = -3,
+            rs_heightadjust = -7,
+            rs_govfont = governorFont,
+            rs_govtitlespacing = governorTitleSpacing,
+            rs_govtitlepaddingbottom = governorTitlePaddingBottom,
+            rs_govvaluepaddingbottom = governorValuePaddingBottom,
             rs_govthresholds = {
                 {value = "DISARMED", textcolor = colorMode.fillcritcolor},
                 {value = "OFF", textcolor = colorMode.fillcritcolor},
