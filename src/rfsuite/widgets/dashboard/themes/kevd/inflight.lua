@@ -294,7 +294,15 @@ end
 
 local function buildBoxes(W)
 
-    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
+    local optionKey = getThemeOptionKey(W)
+    local opts = themeOptions[optionKey] or themeOptions.ms_std
+    local compactWindow = optionKey == nil or optionKey == "ls_std" or optionKey == "ms_std" or optionKey == "ss_std"
+    local arcTitleFont = compactWindow and "FONT_S" or "FONT_STD"
+    local arcMaxFont = compactWindow and opts.maxfont or "FONT_L"
+    local governorFont = compactWindow and "FONT_S" or opts.govfont
+    local governorTitleSpacing = compactWindow and 5 or opts.tiletitlespacing
+    local governorTitlePaddingBottom = compactWindow and 0 or 3
+    local governorValuePaddingBottom = compactWindow and 0 or -5
 
 
     local governorDisarmedTileBg = {
@@ -432,10 +440,10 @@ local function buildBoxes(W)
             -- governor status
             rs_govbgoffsety = 0,
             rs_govoffsety = -3,
-            rs_govfont = opts.govfont,
-            rs_govtitlespacing = opts.tiletitlespacing,
-            rs_govtitlepaddingbottom = 3,
-            rs_govvaluepaddingbottom = -5,
+            rs_govfont = governorFont,
+            rs_govtitlespacing = governorTitleSpacing,
+            rs_govtitlepaddingbottom = governorTitlePaddingBottom,
+            rs_govvaluepaddingbottom = governorValuePaddingBottom,
             rs_govthresholds = {
                 {value = "DISARMED", textcolor = colorMode.fillcritcolor},
                 {value = "OFF", textcolor = colorMode.fillcritcolor},
@@ -461,7 +469,7 @@ local function buildBoxes(W)
             arcmax = true,
             title = "HEADSPEED",
             titlepos = "bottom",
-            titlefont = "FONT_STD",
+            titlefont = arcTitleFont,
             titlepaddingbottom = -15,
             titlepaddingleft = 10,
             min = 0,
@@ -472,7 +480,7 @@ local function buildBoxes(W)
             font = "FONT_XL",
             maxpaddingtop = opts.maxpaddingtop + 14,
             maxpaddingleft = opts.maxpaddingleft + -13,
-            maxfont = "FONT_L",
+            maxfont = arcMaxFont,
             gaugepadding = 13,
             gaugepaddingbottom = 14,
             valuepaddingbottom = math.max(0, opts.valuepaddingbottom - 23),
@@ -498,14 +506,14 @@ local function buildBoxes(W)
             arcmax = true,
             title = "THROTTLE",
             titlepos = "bottom",
-            titlefont = "FONT_STD",          -- throttle title font size
+            titlefont = arcTitleFont,        -- throttle title font size
             titlepaddingbottom = -50,        -- throttle title vertical position; adjust to move title up/down
             titlepaddingleft = 8,            -- shift throttle title left/right
             min = 0,
             max = getThemeValue("throttle_max"),
             thickness = math.max(3, math.floor((opts.thickness - 10) )), -- throttle arc ring thickness
             font = "FONT_XL",                -- throttle main value font size
-            maxfont = "FONT_L",              -- throttle max value font size
+            maxfont = arcMaxFont,            -- throttle max value font size
             maxprefix = "Max: ",
             maxpaddingtop = math.max(8, opts.maxpaddingtop), -- throttle max value vertical position
             maxpaddingleft = opts.maxpaddingleft - 12, -- moves throttle max text right 10 px
@@ -536,7 +544,7 @@ local function buildBoxes(W)
             arcmax = true,
             title = "ESC TEMP",
             titlepos = "bottom",
-            titlefont = "FONT_STD",
+            titlefont = arcTitleFont,
             titlepaddingbottom = -60,
             min = 0,
             max = getThemeValue("esctemp_max"),
@@ -546,7 +554,7 @@ local function buildBoxes(W)
             maxpaddingleft = opts.maxpaddingleft - 17,
             maxpaddingtop = math.max(8, opts.maxpaddingtop + 8),
             maxprefix = "Max: ",
-            maxfont = "FONT_L",
+            maxfont = arcMaxFont,
             font = "FONT_XL",
             gaugepadding = math.max(0, opts.gaugepadding + 3),
             gaugepaddingbottom = math.max(0, opts.gaugepaddingbottom + 3),
