@@ -187,12 +187,14 @@ local function rightStackPaint(x, y, w, h, box, c)
     utils.drawBoxBackground(x, govBgY, w, govBgH, box.rs_govbgstyle)
 
     if box.rs_pagebgcolor and govBgY + govBgH < y + h then
+        local govGapX = x + (box.rs_govgapfilloffsetx or 0)
+        local govGapW = w + (box.rs_govgapfillwidthadjust or 0)
         lcd.color(box.rs_pagebgcolor)
-        lcd.drawFilledRectangle(x, govBgY + govBgH, w, (y + h) - (govBgY + govBgH))
+        lcd.drawFilledRectangle(govGapX, govBgY + govBgH, govGapW, (y + h) - (govBgY + govBgH))
     end
 
     utils.box(x, govY + box.rs_govoffsety, w, govBgH,
-        "GOVERNOR", "bottom", "center", box.rs_govfont, box.rs_govtitlespacing, box.rs_titlecolor,
+        "GOVERNOR", box.rs_govtitlepos or "bottom", "center", box.rs_govfont, box.rs_govtitlespacing, box.rs_titlecolor,
         nil, nil, nil, nil, box.rs_govtitlepaddingbottom,
         c.governorText, nil, box.rs_govfont, "center", c.governorColor,
         nil, nil, nil, nil, box.rs_govvaluepaddingbottom,
@@ -393,12 +395,15 @@ local function buildBoxes(W)
             rs_celloffsety = 34,
             rs_consumedoffsety = 60,
 
-            rs_govbgoffsety = 0,
-            rs_govoffsety = -3,
+            rs_govbgoffsety = 2,
+            rs_govoffsety = 0,
+            rs_govtitlepos = "bottom",
+            rs_govgapfilloffsetx = -9,
+            rs_govgapfillwidthadjust = 14,
             rs_govfont = stackOpts.govfont,
             rs_govtitlespacing = stackOpts.tiletitlespacing,
-            rs_govtitlepaddingbottom = 3,
-            rs_govvaluepaddingbottom = -5,
+            rs_govtitlepaddingbottom = 10,
+            rs_govvaluepaddingbottom = 6,
             rs_govthresholds = {
                 {value = "DISARMED", textcolor = colorMode.fillcritcolor},
                 {value = "OFF", textcolor = colorMode.fillcritcolor},
