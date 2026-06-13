@@ -11635,6 +11635,41 @@
         }
       },
       "settings": {
+        "activelook_hide_display": {
+          "english": "Hide Display",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Display ausblenden"
+        },
+        "activelook_inflight": {
+          "english": "Inflight",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Flug"
+        },
+        "activelook_postflight": {
+          "english": "Postflight",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nachflug"
+        },
+        "activelook_preflight": {
+          "english": "Preflight",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Vorflug"
+        },
+        "activelook_settings": {
+          "english": "Settings",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Einstellungen"
+        },
         "adj_callouts": {
           "english": "Adjustment Callouts",
           "max_length": 19,
@@ -11771,9 +11806,9 @@
         "dashboard_theme_use_same": {
           "english": "Use same theme",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Use same theme"
+          "translation": "Benutze dasselbe Design"
         },
         "esc_temperature": {
           "english": "ESC Temperature",
@@ -12186,7 +12221,7 @@
           "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Log cache stats"
+          "translation": "Cache-Statistiken loggen"
         },
         "txt_collapse_unused_menu_entries": {
           "english": "Collapse Navigation",
@@ -12225,10 +12260,10 @@
         },
         "txt_debugmalloc": {
           "english": "Log Memory Allocation",
-          "max_length": 12,
-          "needs_translation": true,
+          "max_length": 21,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Log Memory Allocation"
+          "translation": "Speicherzuweisung loggen"
         },
         "txt_developer": {
           "english": "Developer",
@@ -12410,7 +12445,7 @@
           "max_length": 21,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Save requires changes"
+          "translation": "Speichern nur bei Aederungen"
         },
         "txt_show_battery_profile_connect": {
           "english": "Battery Type on connect",

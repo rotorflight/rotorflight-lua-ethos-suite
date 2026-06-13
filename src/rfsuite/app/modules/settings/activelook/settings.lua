@@ -36,7 +36,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / ActiveLook / Settings")
+    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / ActiveLook / " .. "@i18n(app.modules.settings.activelook_settings)@")
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
 
@@ -58,7 +58,7 @@ local function openPage(opts)
         return line, formFieldCount
     end
 
-    local line, fieldIdx = addFieldLine("Hide Display")
+    local line, fieldIdx = addFieldLine("@i18n(app.modules.settings.activelook_hide_display)@")
     rfsuite.app.formFields[fieldIdx] = form.addSwitchField(line, nil, function()
         return switchSourceFromConfig(config.display_switch)
     end, function(newValue)

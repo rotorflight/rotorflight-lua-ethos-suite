@@ -8,18 +8,198 @@ local lcd = lcd
 
 local floor = math.floor
 local max = math.max
+local min = math.min
+local format = string.format
 local tonumber = tonumber
 
 local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
-
-local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
+local pageBgColor = colorMode.bgcolor
+local panelBgColor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor
 
 local theme_section = "system/kevd"
 
 local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 7.0, bec_max = 12.0, esctemp_warn = 110, esctemp_max = 140}
+
+local function estimateCellCountFromVoltage(voltage)
+    voltage = tonumber(voltage) or 0
+    if voltage <= 0 then return 0 end
+
+    local fullCell = 4.2
+    local emptyCell = 3.5
+    local minCells = 1
+    local maxCells = 14
+
+    for cells = maxCells, minCells, -1 do
+        local perCell = voltage / cells
+        if perCell >= emptyCell and perCell <= (fullCell + 0.15) then
+            return cells
+        end
+    end
+
+    local estimated = floor((voltage / fullCell) + 0.999)
+    if estimated < minCells then estimated = minCells end
+    if estimated > maxCells then estimated = maxCells end
+    return estimated
+end
+
+local function formatPackVoltage(voltage)
+    voltage = tonumber(voltage) or 0
+    if voltage <= 0 then return "--.-V" end
+    return format("%.1fV", voltage)
+end
+
+local function formatCellVoltageAndCount(voltage)
+    voltage = tonumber(voltage) or 0
+    local cells = estimateCellCountFromVoltage(voltage)
+    if voltage <= 0 or cells <= 0 then return "--.--V (--S)" end
+    return format("%.2fV (%dS)", voltage / cells, cells)
+end
+
+local function formatConsumedMah(consumed)
+    consumed = tonumber(consumed) or 0
+    return format("%d mAh", floor(consumed + 0.5))
+end
+
+local function drawVerticalBatteryBar(x, y, w, h, percent, fillbgcolor, fillcolor, accentcolor, frameThickness, cappaddingtop)
+    frameThickness = frameThickness or 4
+    cappaddingtop = cappaddingtop or 0
+
+    local maxCapH = floor(h * 0.5)
+    local capH = min(max(8, floor(h * 0.10)), maxCapH)
+    local capW = min(max(4, floor(w * 0.40)), w)
+    local capX = x + floor((w - capW) / 2 + 0.5)
+    local capY = y + cappaddingtop
+    local capHFinal = capH - cappaddingtop
+
+    lcd.color(accentcolor)
+    for i = 0, frameThickness - 1 do
+        lcd.drawFilledRectangle(capX - i, capY + i, capW + 2 * i, capHFinal - i)
+    end
+
+    local bodyY = y + capH
+    local bodyH = h - capH
+
+    lcd.color(fillbgcolor)
+    lcd.drawFilledRectangle(x, bodyY, w, bodyH)
+    if percent > 0 then
+        lcd.color(fillcolor)
+        local fillH = floor(bodyH * percent)
+        lcd.drawFilledRectangle(x, bodyY + bodyH - fillH, w, fillH)
+    end
+
+    lcd.color(accentcolor)
+    lcd.drawRectangle(x, bodyY, w, bodyH, frameThickness)
+end
+
+local function rightStackWakeup(box, telemetry)
+    local c = box._cache or {}
+
+    local session = rfsuite.session
+    local telemetryActive = session and session.telemetryState and session.isConnected
+    if telemetryActive and session.timer then
+        c._flightSeconds = session.timer.live or 0
+    elseif c._flightSeconds == nil then
+        c._flightSeconds = 0
+    end
+
+    if c._flightSeconds > 0 then
+        c.flightTime = format("%02d:%02d", floor(c._flightSeconds / 60), floor(c._flightSeconds % 60))
+    else
+        c.flightTime = "00:00"
+    end
+
+    local getSensor = telemetry and telemetry.getSensor
+
+    local fuelRaw = getSensor and getSensor("smartfuel")
+    if fuelRaw ~= nil then
+        c.fuelPercent = max(0, min(1, fuelRaw / 100))
+        c.fuelDisplay = floor(fuelRaw)
+        c.fuelUnit = "%"
+        c._fuelHasValue = true
+    elseif not c._fuelHasValue then
+        c.fuelPercent = 0
+        c.fuelDisplay = utils.getPulsingDots(box, "_fuelDots")
+        c.fuelUnit = nil
+    end
+    c.fuelFillColor = utils.resolveThresholdColor(c.fuelDisplay, box, "fillcolor", "fillcolor", box.rs_fuelthresholds)
+
+    local voltage = getSensor and getSensor("voltage") or 0
+    local consumed = getSensor and getSensor("smartconsumption") or 0
+    c.voltageStr = formatPackVoltage(voltage)
+    c.cellStr = formatCellVoltageAndCount(voltage)
+    c.consumedStr = formatConsumedMah(consumed)
+
+    local govRaw = getSensor and getSensor("governor")
+    if govRaw == nil then
+        c.governorText = utils.getPulsingDots(box, "_govDots")
+    else
+        c.governorText = rfsuite.utils.getGovernorState(govRaw)
+    end
+    c.governorColor = utils.resolveThresholdColor(c.governorText, box, "textcolor", "textcolor", box.rs_govthresholds)
+
+    return c
+end
+
+local function rightStackPaint(x, y, w, h, box, c)
+    c = c or {}
+    utils.drawBoxBackground(x, y, w, h, box.rs_bgstyle)
+
+    local rowH = h / 10
+
+    utils.box(x, y + box.rs_flightoffsety, w, rowH * 2,
+        "FLIGHT TIME", "bottom", "center", box.rs_flighttitlefont, box.rs_flighttitlespacing, box.rs_titlecolor,
+        nil, nil, nil, nil, box.rs_flighttitlepaddingbottom,
+        c.flightTime, nil, box.rs_flightfont, "center", box.rs_textcolor,
+        nil, nil, nil, box.rs_flightvaluepaddingtop, box.rs_flightvaluepaddingbottom,
+        nil)
+
+    local fuelY = y + rowH * 2
+    local fuelH = floor(rowH * 5.5 + 0.5)
+
+    if box.rs_fuelbgcolor then
+        lcd.color(box.rs_fuelbgcolor)
+        lcd.drawFilledRectangle(x, fuelY, w, fuelH)
+    end
+
+    drawVerticalBatteryBar(x + box.rs_fuelgaugepaddingleft, fuelY + box.rs_fuelgaugepaddingtop, w - box.rs_fuelgaugepaddingleft, fuelH - box.rs_fuelgaugepaddingtop, c.fuelPercent or 0, box.rs_fuelfillbgcolor, c.fuelFillColor, box.rs_fuelaccentcolor, box.rs_fuelframethickness, box.rs_fuelcappaddingtop)
+
+    utils.box(x, fuelY, w, fuelH,
+        nil, nil, nil, nil, nil, nil,
+        nil, nil, nil, nil, nil,
+        c.fuelDisplay, c.fuelUnit, box.rs_fuelfont, "center", box.rs_textcolor,
+        nil, box.rs_fuelvaluepaddingleft, nil, box.rs_fuelvaluepaddingtop, box.rs_fuelvaluepaddingbottom,
+        nil)
+
+    utils.box(x, fuelY + box.rs_voltageoffsety, w, rowH, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+        c.voltageStr, nil, box.rs_overlayfont, "right", box.rs_textcolor, nil, nil, nil, nil, nil, nil)
+    utils.box(x, fuelY + box.rs_celloffsety, w, rowH, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+        c.cellStr, nil, box.rs_overlayfont, "right", box.rs_textcolor, nil, nil, nil, nil, nil, nil)
+    utils.box(x, fuelY + box.rs_consumedoffsety, w, rowH, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+        c.consumedStr, nil, box.rs_overlayfont, "right", box.rs_textcolor, nil, nil, nil, nil, nil, nil)
+
+    local govY = fuelY + fuelH
+    local govH = (y + h) - govY
+    local govBgH = govH - 8
+    local govBgY = govY + box.rs_govbgoffsety
+    utils.drawBoxBackground(x, govBgY, w, govBgH, box.rs_govbgstyle)
+
+    if box.rs_pagebgcolor and govBgY + govBgH < y + h then
+        local govGapX = x + (box.rs_govgapfilloffsetx or 0)
+        local govGapW = w + (box.rs_govgapfillwidthadjust or 0)
+        lcd.color(box.rs_pagebgcolor)
+        lcd.drawFilledRectangle(govGapX, govBgY + govBgH, govGapW, (y + h) - (govBgY + govBgH))
+    end
+
+    utils.box(x, govY + box.rs_govoffsety, w, govBgH,
+        "GOVERNOR", box.rs_govtitlepos or "bottom", "center", box.rs_govfont, box.rs_govtitlespacing, box.rs_titlecolor,
+        nil, nil, nil, nil, box.rs_govtitlepaddingbottom,
+        c.governorText, nil, box.rs_govfont, "center", c.governorColor,
+        nil, nil, nil, nil, box.rs_govvaluepaddingbottom,
+        nil)
+end
 
 local function getThemeValue(key)
     if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
@@ -50,12 +230,21 @@ local themeOptions = {
     ss_std  = {font = "FONT_S", valuefont = "FONT_S", titlefont = "FONT_STD", titlepaddingtop = 0, thickness = 12, tilefont = "FONT_L", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0, gaugepaddingtop = 1, gaugepaddingbottom = 7}
 }
 
+local rightStackOptions = {
+    ls_full = {tilefont = "FONT_XXL", govfont = "FONT_STD", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ls_std  = {tilefont = "FONT_XL", govfont = "FONT_STD", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ms_full = {tilefont = "FONT_XL", govfont = "FONT_STD", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ms_std  = {tilefont = "FONT_L", govfont = "FONT_S", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0},
+    ss_full = {tilefont = "FONT_XL", govfont = "FONT_STD", tiletitlespacing = 4, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0},
+    ss_std  = {tilefont = "FONT_L", govfont = "FONT_S", tiletitlespacing = 3, tilevaluepaddingtop = 2, tilevaluepaddingbottom = 0}
+}
+
 local lastScreenW = nil
 local boxes_cache = nil
 local header_boxes_cache = nil
 local last_txbatt_type = nil
 
-local layout = {cols = 12, rows = 12, padding = 0, bgcolor = colorMode.bgcolor}
+local layout = {cols = 12, rows = 12, padding = 0, bgcolor = panelBgColor}
 local screenBorderStyle = {
     enabled = true,
     bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
@@ -89,14 +278,16 @@ local function header_boxes()
 end
 
 local function buildBoxes(W)
-    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
+    local themeKey = getThemeOptionKey(W)
+    local opts = themeOptions[themeKey] or themeOptions.ls_full
+    local stackOpts = rightStackOptions[themeKey] or rightStackOptions.ls_full
     local gaugePaddingBottom = opts.gaugepaddingbottom + 1
 
     local gaugeTileBg = {
         -- Same bordered-tile method used for the working preflight 5-tile borders.
         -- Border follows the SmartFuel / AdvBatt outline color path.
-        backfillcolor = colorMode.bgcolor,
-        fillcolor = colorMode.bgcolor,
+        backfillcolor = panelBgColor,
+        fillcolor = panelBgColor,
         bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
         borderwidth = 5,
         roundradius = 8,
@@ -104,45 +295,131 @@ local function buildBoxes(W)
         contentpadding = 1
     }
 
+    local rightStackTileBg = {
+        backfillcolor = panelBgColor,
+        fillcolor = panelBgColor,
+        bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
+        borderwidth = 4,
+        roundradius = 6,
+        inset = 4,
+        insettop = 11,
+        insetleft = -9,
+        insetright = -5,
+        insetbottom = 8,
+        contentpadding = 1
+    }
+
+    local governorDisarmedTileBg = {
+        backfillcolor = panelBgColor,
+        fillcolor = lcd.RGB(0x00, 0x00, 0x00),
+        bordercolor = colorMode.fillcritcolor,
+        borderwidth = 6,
+        roundradius = 6,
+        inset = 4,
+        insettop = 4,
+        insetbottom = 0,
+        insetleft = -9,
+        insetright = -5,
+        contentpadding = 1
+    }
+
     return {
 
         -- Border underlays for postflight time/status tiles. These use the same
         -- 5-tile border method and draw before the actual time widgets.
+        {
+            col = 1, row = 1, colspan = 8, rowspan = 9,
+            offsetx = 30,
+            type = "text",
+            subtype = "telemetry",
+            source = "__background_only__",
+            title = "",
+            unit = "",
+            font = "FONT_XS",
+            textcolor = panelBgColor,
+            titlecolor = panelBgColor,
+            bgcolor = panelBgColor
+        },
 
         -- Border underlays for all postflight telemetry gauges. These draw first,
         -- and the actual bar gauges are drawn on top with transparent backgrounds.
-        {col = 1, row = 10, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "altitude", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 5, row = 10, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "watts", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 5, row = 7, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "current", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 1, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "rpm", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 1, row = 7, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "link", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 9, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "smartfuel", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 5, row = 4, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "smartfuel", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 9, row = 10, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "voltage", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
-        {col = 9, row = 7, colspan = 4, rowspan = 3, offsety = -7, type = "text", subtype = "telemetry", source = "temp_esc", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 1, row = 10, colspan = 4, rowspan = 3, offsetx = 30, offsety = -7, type = "text", subtype = "telemetry", source = "altitude", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 5, row = 10, colspan = 4, rowspan = 3, offsetx = 60, offsety = -7, type = "text", subtype = "telemetry", source = "watts", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 5, row = 7, colspan = 4, rowspan = 3, offsetx = 60, offsety = -7, type = "text", subtype = "telemetry", source = "current", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 1, row = 4, colspan = 4, rowspan = 3, offsetx = 30, offsety = -7, type = "text", subtype = "telemetry", source = "rpm", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 1, row = 7, colspan = 4, rowspan = 3, offsetx = 30, offsety = -7, type = "text", subtype = "telemetry", source = "link", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {col = 5, row = 4, colspan = 4, rowspan = 3, offsetx = 60, offsety = -7, type = "text", subtype = "telemetry", source = "temp_esc", font = "FONT_XXS", valuealign = "left", valuepaddingleft = -200, unit = "", bgcolor = gaugeTileBg, titlecolor = colorMode.bgcolor, textcolor = colorMode.bgcolor},
+        {
+            col = 11, row = 1, colspan = 2, rowspan = 12,
+            offsetx = -30,
+            offsety = 0,
+            type = "func",
+            subtype = "func",
+            wakeupinterval = 0.5,
+            wakeup = rightStackWakeup,
+            paint = rightStackPaint,
+
+            rs_bgstyle = rightStackTileBg,
+            rs_govbgstyle = governorDisarmedTileBg,
+            rs_titlecolor = colorMode.titlecolor,
+            rs_textcolor = colorMode.textcolor,
+            rs_pagebgcolor = panelBgColor,
+            fillcolor = colorMode.fillcolor,
+
+            rs_flightoffsety = 10,
+            rs_flighttitlefont = "FONT_S",
+            rs_flighttitlespacing = stackOpts.tiletitlespacing,
+            rs_flighttitlepaddingbottom = 6,
+            rs_flightfont = stackOpts.tilefont,
+            rs_flightvaluepaddingtop = stackOpts.tilevaluepaddingtop,
+            rs_flightvaluepaddingbottom = stackOpts.tilevaluepaddingbottom,
+
+            rs_fuelbgcolor = panelBgColor,
+            rs_fuelfillbgcolor = colorMode.fillbgcolor,
+            rs_fuelaccentcolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
+            rs_fuelgaugepaddingleft = -4,
+            rs_fuelgaugepaddingtop = -16,
+            rs_fuelcappaddingtop = 22,
+            rs_fuelframethickness = 3,
+            rs_fuelfont = "FONT_XXL",
+            rs_fuelvaluepaddingleft = 13,
+            rs_fuelvaluepaddingtop = 6,
+            rs_fuelvaluepaddingbottom = -40,
+            rs_fuelthresholds = {
+                {value = 25, fillcolor = colorMode.fillcritcolor},
+                {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}
+            },
+
+            rs_overlayfont = "FONT_STD",
+            rs_voltageoffsety = 8,
+            rs_celloffsety = 34,
+            rs_consumedoffsety = 60,
+
+            rs_govbgoffsety = 2,
+            rs_govoffsety = 0,
+            rs_govtitlepos = "bottom",
+            rs_govgapfilloffsetx = -9,
+            rs_govgapfillwidthadjust = 14,
+            rs_govfont = stackOpts.govfont,
+            rs_govtitlespacing = stackOpts.tiletitlespacing,
+            rs_govtitlepaddingbottom = 10,
+            rs_govvaluepaddingbottom = 6,
+            rs_govthresholds = {
+                {value = "DISARMED", textcolor = colorMode.fillcritcolor},
+                {value = "OFF", textcolor = colorMode.fillcritcolor},
+                {value = "IDLE", textcolor = colorMode.accentcolor},
+                {value = "SPOOLUP", textcolor = colorMode.accentcolor},
+                {value = "RECOVERY", textcolor = colorMode.fillwarncolor},
+                {value = "ACTIVE", textcolor = colorMode.fillcolor},
+                {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
+            }
+        },
         -- =========================================================================
         -- COLUMN 1: TIME AND ALTITUDE
         -- =========================================================================
         {
             col = 5, row = 1, colspan = 4, rowspan = 3,
-            type = "time",
-            subtype = "flight",
-            title = "Flight Time",
-            titlepos = "top",
-            titlealign = "center",
-            valuealign = "center",
-            font = opts.tilefont,
-            titlefont = opts.titlefont,
-            titlespacing = opts.tiletitlespacing,
-            titlepaddingtop = opts.titlepaddingtop + 11,
-            valuepaddingtop = opts.tilevaluepaddingtop,
-            valuepaddingbottom = opts.tilevaluepaddingbottom,
-            bgcolor = "transparent",
-            titlecolor = colorMode.titlecolor,
-            textcolor = colorMode.textcolor
-        },
-        {
-            col = 9, row = 1, colspan = 4, rowspan = 3,
+            offsetx = 60,
             type = "time",
             subtype = "total",
             title = "Total Flight Time",
@@ -161,6 +438,7 @@ local function buildBoxes(W)
         },
         {
             col = 1, row = 1, colspan = 4, rowspan = 3,
+            offsetx = 30,
             type = "time",
             subtype = "count",
             title = "Flights",
@@ -181,6 +459,7 @@ local function buildBoxes(W)
         -- MODIFIED: Altitude Max moved here (Col 1, Row 10)
         {
             col = 1, row = 10, colspan = 4, rowspan = 3,
+            offsetx = 30,
             offsety = -7,
             type = "gauge",
             subtype = "bar",
@@ -216,6 +495,7 @@ local function buildBoxes(W)
         -- =========================================================================
         {
             col = 5, row = 10, colspan = 4, rowspan = 3,
+            offsetx = 60,
             offsety = -7,
             type = "gauge",
             subtype = "bar",
@@ -247,6 +527,7 @@ local function buildBoxes(W)
         },
         {
             col = 5, row = 7, colspan = 4, rowspan = 3,
+            offsetx = 60,
             offsety = -7,
             type = "gauge",
             subtype = "bar",
@@ -278,6 +559,7 @@ local function buildBoxes(W)
         -- MODIFIED: RPM Max moved here (Col 5, Row 7)
         {
             col = 1, row = 4, colspan = 4, rowspan = 3,
+            offsetx = 30,
             offsety = -7,
             type = "gauge",
             subtype = "bar",
@@ -309,6 +591,7 @@ local function buildBoxes(W)
         },
         {
             col = 1, row = 7, colspan = 4, rowspan = 3,
+            offsetx = 30,
             offsety = -7,
             type = "gauge",
             subtype = "bar",
@@ -344,118 +627,11 @@ local function buildBoxes(W)
         },
 
         -- =========================================================================
-        -- COLUMN 3: CONSUMPTION, FUEL, VOLTAGE, TEMP
+        -- MIDDLE: TEMP
         -- =========================================================================
         {
-            col = 9, row = 4, colspan = 4, rowspan = 3,
-            offsety = -7,
-            type = "gauge",
-            subtype = "bar",
-            source = "smartfuel",
-            stattype = "min",
-            unit = "%",
-            batteryframe = true,
-            battadv = true,
-            battadvvaluealign = "right",
-            valuealign = "left",
-            font = opts.Font,
-            gaugepaddingtop = 13,
-            gaugepaddingbottom = 13,
-            gaugepaddingleft = 13,
-            gaugepaddingright = 5,
-            valuepaddingleft = 20,
-            valuepaddingtop = 30,
-            valuepaddingbottom = 0,
-            battadvfont = "FONT_S",
-            battadvpaddingright = 14,
-            battadvpaddingtop = -10,
-            battadvgap = 1,
-            batteryframethickness = 0,
-            bgcolor = "transparent",
-            fillbgcolor = colorMode.fillbgcolor,
-            fillcolor = colorMode.fillcolor,
-            textcolor = colorMode.textcolor,
-            titlecolor = colorMode.titlecolor,
-            accentcolor = colorMode.accentcolor,
-            min = 0,
-            max = 100,
-            thresholds = {{value = 25, fillcolor = colorMode.fillcritcolor}, {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}},
-            transform = "floor"
-        },
-        {
             col = 5, row = 4, colspan = 4, rowspan = 3,
-            offsety = -7,
-            type = "gauge",
-            subtype = "bar",
-            source = "smartfuel",
-            stattype = "min",
-            title = "Battery Remaining",
-            unit = "%",
-            titlepos = "top",
-            titlealign = "center",
-            valuealign = "center",
-            font = opts.font,
-            titlefont = opts.titlefont,
-            titlespacing = opts.tiletitlespacing,
-            titlepaddingtop = opts.titlepaddingtop + 11,
-            -- Keep the actual bar gauge inside the bordered tile underlay.
-            thickness = max(4, opts.thickness - 4),
-            gaugepadding = 12,
-            gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
-            gaugepaddingleft = 13,
-            gaugepaddingright = 13,
-            bgcolor = "transparent",
-            fillcolor = colorMode.fillcolor,
-            textcolor = colorMode.textcolor,
-            titlecolor = colorMode.titlecolor,
-            min = 0,
-            max = 100,
-            thresholds = {
-                {value = 25, fillcolor = colorMode.fillcritcolor},
-                {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}
-            },
-            transform = "floor"
-        },
-        {
-            col = 9, row = 10, colspan = 4, rowspan = 3,
-            offsety = -7,
-            type = "gauge",
-            subtype = "bar",
-            source = "voltage",
-            stattype = "min",
-            title = "Volts per cell",
-            unit = "V",
-            min = 3.2,
-            max = 4.35,
-            gaugevalue = "display",
-            titlepos = "top",
-            titlealign = "center",
-            valuealign = "center",
-            font = opts.font,
-            titlefont = opts.titlefont,
-            titlespacing = opts.tiletitlespacing,
-            titlepaddingtop = opts.titlepaddingtop + 11,
-            -- Keep the actual bar gauge inside the bordered tile underlay.
-            thickness = max(4, opts.thickness - 4),
-            gaugepadding = 12,
-            gaugepaddingtop = opts.gaugepaddingtop,
-            gaugepaddingbottom = gaugePaddingBottom,
-            gaugepaddingleft = 13,
-            gaugepaddingright = 13,
-            bgcolor = "transparent",
-            fillcolor = colorMode.fillcolor,
-            textcolor = colorMode.textcolor,
-            titlecolor = colorMode.titlecolor,
-            thresholds = {
-                {value = 3.70, fillcolor = colorMode.fillcritcolor},
-                {value = 3.85, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}
-            },
-            transform = function(v) return maxVoltageToCellVoltage(v) end,
-            decimals = 2
-        },
-        {
-            col = 9, row = 7, colspan = 4, rowspan = 3,
+            offsetx = 60,
             offsety = -7,
             type = "gauge",
             subtype = "bar",
@@ -488,7 +664,8 @@ local function buildBoxes(W)
                 {value = getThemeValue("esctemp_max"), fillcolor = colorMode.fillcritcolor}
             },
             transform = "floor"
-        },}
+        },
+    }
 end
 
 local function boxes()
