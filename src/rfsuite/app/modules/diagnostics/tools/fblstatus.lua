@@ -13,6 +13,12 @@ local rfutils = rfsuite.utils
 local fields = {}
 local labels = {}
 local wakeupScheduler = os.clock()
+local rtcAPI
+local statusAPI
+local dataflashAPI
+local eraseAPI
+local lastStatusData
+local lastDataflashData
 local status = {}
 local summary = {}
 local triggerEraseDataFlash = false
@@ -28,11 +34,6 @@ local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
-
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return tasks.msp.mspQueue:add(message)
-end
 
 local function setFieldValue(idx, value)
     local field = app.formFields and app.formFields[idx] or nil
@@ -59,110 +60,68 @@ local apidata = {
     }
 }
 
-local function getSimulatorTimeResponse()
-    local t = os.date("*t")
-    local millis = math.floor((os.clock() % 1) * 1000)
-
-    local year = t.year
-    local month = t.month
-    local day = t.day
-    local hour = t.hour
-    local min = t.min
-    local sec = t.sec
-
-    local bytes = {year & 0xFF, (year >> 8) & 0xFF, month, day, hour, min, sec, millis & 0xFF, (millis >> 8) & 0xFF}
-
-    return bytes
+local function ensureApis()
+    local api = tasks.msp and tasks.msp.api
+    if not rtcAPI then
+        rtcAPI = api.loadPage("RTC")
+        rtcAPI.setUUID("fbl.time")
+        rtcAPI.setCompleteHandler(function()
+            status.fblYear = rtcAPI.readValue("year")
+            status.fblMonth = rtcAPI.readValue("month")
+            status.fblDay = rtcAPI.readValue("day")
+            status.fblHour = rtcAPI.readValue("hours")
+            status.fblMinute = rtcAPI.readValue("minutes")
+            status.fblSecond = rtcAPI.readValue("seconds")
+            status.fblMillis = rtcAPI.readValue("milliseconds")
+        end)
+    end
+    if not statusAPI then
+        statusAPI = api.loadPage("STATUS")
+        statusAPI.setUUID("fbl.status")
+    end
+    if not dataflashAPI then
+        dataflashAPI = api.loadPage("DATAFLASH_SUMMARY")
+        dataflashAPI.setUUID("fbl.dataflash")
+    end
+    if not eraseAPI then
+        eraseAPI = api.loadPage("DATAFLASH_ERASE")
+        eraseAPI.setUUID("fbl.erase")
+    end
 end
 
 local function getFblTime()
-    local message = {
-        command = 247,
-        processReply = function(self, buf)
-
-            buf.offset = 1
-            status.fblYear = tasks.msp.mspHelper.readU16(buf)
-            buf.offset = 3
-            status.fblMonth = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 4
-            status.fblDay = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 5
-            status.fblHour = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 6
-            status.fblMinute = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 7
-            status.fblSecond = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 8
-            status.fblMillis = tasks.msp.mspHelper.readU16(buf)
-
-        end,
-        simulatorResponse = getSimulatorTimeResponse()
-    }
-
-    return queueDirect(message, "fbl.time")
+    ensureApis()
+    return rtcAPI.read()
 end
 
 local function getStatus()
-    local message = {
-        command = 101,
-        processReply = function(self, buf)
-
-            buf.offset = 12
-            status.realTimeLoad = tasks.msp.mspHelper.readU16(buf)
-            status.cpuLoad = tasks.msp.mspHelper.readU16(buf)
-            buf.offset = 18
-            status.armingDisableFlags = tasks.msp.mspHelper.readU32(buf)
-            buf.offset = 24
-            status.profile = tasks.msp.mspHelper.readU8(buf)
-            buf.offset = 26
-            status.rateProfile = tasks.msp.mspHelper.readU8(buf)
-
-        end,
-        simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
-    }
-
-    return queueDirect(message, "fbl.status")
+    ensureApis()
+    return statusAPI.read()
 end
 
 local function getDataflashSummary()
-    local message = {
-        command = 70,
-        processReply = function(self, buf)
-
-            local flags = tasks.msp.mspHelper.readU8(buf)
-            summary.ready = (flags & 1) ~= 0
-            summary.supported = (flags & 2) ~= 0
-            summary.sectors = tasks.msp.mspHelper.readU32(buf)
-            summary.totalSize = tasks.msp.mspHelper.readU32(buf)
-            summary.usedSize = tasks.msp.mspHelper.readU32(buf)
-
-        end,
-        simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
-    }
-    return queueDirect(message, "fbl.dataflash")
+    ensureApis()
+    return dataflashAPI.read()
 end
 
 local function eraseDataflash()
-    local message = {
-        command = 72,
-        processReply = function(self, buf)
-
-            summary = {}
-
-            setFieldValue(1, "")
-            setFieldValue(2, "")
-            setFieldValue(3, "")
-            setFieldValue(4, "")
-            setFieldValue(5, "")
-            setFieldValue(6, "")
-        end,
-        simulatorResponse = {}
-    }
-    return queueDirect(message, "fbl.erase")
+    ensureApis()
+    local ok, reason = eraseAPI.write()
+    if ok then
+        summary = {}
+        setFieldValue(1, "")
+        setFieldValue(2, "")
+        setFieldValue(3, "")
+        setFieldValue(4, "")
+        setFieldValue(5, "")
+        setFieldValue(6, "")
+    end
+    return ok, reason
 end
 
 local function postLoad(self)
 
+    ensureApis()
     getStatus()
     getDataflashSummary()
     getFblTime()
@@ -180,6 +139,36 @@ local function getFreeDataflashSpace()
     return string.format("%.1f " .. "@i18n(app.modules.fblstatus.megabyte)@", freeSpace / (1024 * 1024))
 end
 
+local function syncStatus()
+    local data = statusAPI and statusAPI.data()
+    if data == nil or data == lastStatusData then return end
+    lastStatusData = data
+
+    status.realTimeLoad = statusAPI.readValue("max_real_time_load")
+    status.cpuLoad = statusAPI.readValue("average_cpu_load")
+    status.armingDisableFlags = statusAPI.readValue("arming_disable_flags")
+    status.profile = statusAPI.readValue("current_pid_profile_index")
+    status.rateProfile = statusAPI.readValue("current_control_rate_profile_index")
+end
+
+local function syncDataflashSummary()
+    local data = dataflashAPI and dataflashAPI.data()
+    if data == nil or data == lastDataflashData then return end
+    lastDataflashData = data
+
+    local flags = tonumber(dataflashAPI.readValue("flags") or 0) or 0
+    summary.ready = (flags & 1) ~= 0
+    summary.supported = (flags & 2) ~= 0
+    summary.sectors = dataflashAPI.readValue("sectors")
+    summary.totalSize = dataflashAPI.readValue("total")
+    summary.usedSize = dataflashAPI.readValue("used")
+end
+
+local function syncApiData()
+    syncStatus()
+    syncDataflashSummary()
+end
+
 local function wakeup()
 
     if enableWakeup == false then return end
@@ -191,6 +180,8 @@ local function wakeup()
     if not mspQueue then
         return
     end
+
+    syncApiData()
 
     if triggerEraseDataFlash == true then
         if app and app.audio then

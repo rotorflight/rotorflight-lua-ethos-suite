@@ -98,7 +98,7 @@ local function postRead(self) rfutils.log("postRead", "debug") end
 
 local function rebootFC()
 
-    local RAPI = tasks.msp.api.load("REBOOT")
+    local RAPI = tasks.msp.api.loadPage("REBOOT")
     RAPI.setUUID("sensors-reboot")
     RAPI.setCompleteHandler(function(self)
         rfutils.log("Rebooting FC", "info")
@@ -111,7 +111,7 @@ local function rebootFC()
 end
 
 local function applySettings()
-    local EAPI = tasks.msp.api.load("EEPROM_WRITE")
+    local EAPI = tasks.msp.api.loadPage("EEPROM_WRITE")
     EAPI.setUUID("sensors-eeprom")
     EAPI.setCompleteHandler(function(self)
         rfutils.log("Writing to EEPROM", "info")
@@ -145,7 +145,7 @@ local function runRepair(data)
         end
     end
 
-    local WRITEAPI = tasks.msp.api.load("TELEMETRY_CONFIG")
+    local WRITEAPI = tasks.msp.api.loadPage("TELEMETRY_CONFIG")
     WRITEAPI.setUUID("sensors-tlm-repair")
     WRITEAPI.setCompleteHandler(function(self, buf) applySettings() end)
 
@@ -237,7 +237,7 @@ local function wakeup()
         updateProgressLoaderMessage()
         app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage)
 
-        API = tasks.msp.api.load("TELEMETRY_CONFIG")
+        API = tasks.msp.api.loadPage("TELEMETRY_CONFIG")
         API.setUUID("sensors-tlm-read")
         API.setCompleteHandler(function(self, buf)
             local data = API.data()

@@ -274,7 +274,7 @@ local function startLoad()
 
     rfsuite.app.ui.progressDisplay("@i18n(app.modules.configuration.name)@", "@i18n(app.modules.configuration.progress_loading)@", 0.08)
 
-    startRead(rfsuite.tasks.msp.api.load("NAME"), {
+    startRead(rfsuite.tasks.msp.api.loadPage("NAME"), {
         apiUnavailableError = "@i18n(app.modules.configuration.error_name_api_unavailable)@",
         readError = "@i18n(app.modules.configuration.error_name_read_failed)@",
         onComplete = function(api)
@@ -283,7 +283,7 @@ local function startLoad()
         end
     }, generation)
 
-    startRead(rfsuite.tasks.msp.api.load("ADVANCED_CONFIG"), {
+    startRead(rfsuite.tasks.msp.api.loadPage("ADVANCED_CONFIG"), {
         apiUnavailableError = "@i18n(app.modules.configuration.error_advanced_api_unavailable)@",
         readError = "@i18n(app.modules.configuration.error_advanced_read_failed)@",
         onComplete = function(api)
@@ -292,7 +292,7 @@ local function startLoad()
         end
     }, generation)
 
-    startRead(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"), {
+    startRead(rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG"), {
         apiUnavailableError = "@i18n(app.modules.configuration.error_feature_api_unavailable)@",
         readError = "@i18n(app.modules.configuration.error_feature_read_failed)@",
         onComplete = function(api)
@@ -301,7 +301,7 @@ local function startLoad()
         end
     }, generation)
 
-    startRead(rfsuite.tasks.msp.api.load("STATUS"), {
+    startRead(rfsuite.tasks.msp.api.loadPage("STATUS"), {
         onComplete = function(api)
             local parsed = api.data() and api.data().parsed or nil
             local delta = tonumber(parsed and parsed.task_delta_time_gyro or 0) or 0
@@ -357,25 +357,25 @@ local function performSave()
     state.saveError = nil
     rfsuite.app.ui.progressDisplaySave("@i18n(app.modules.configuration.progress_saving)@")
 
-    local nameApi = rfsuite.tasks.msp.api.load("NAME")
+    local nameApi = rfsuite.tasks.msp.api.loadPage("NAME")
     if not nameApi then
         saveFailed("@i18n(app.modules.configuration.error_name_api_unavailable)@")
         return
     end
 
-    local advApi = rfsuite.tasks.msp.api.load("ADVANCED_CONFIG")
+    local advApi = rfsuite.tasks.msp.api.loadPage("ADVANCED_CONFIG")
     if not advApi then
         saveFailed("@i18n(app.modules.configuration.error_advanced_api_unavailable)@")
         return
     end
 
-    local featureApi = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+    local featureApi = rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG")
     if not featureApi then
         saveFailed("@i18n(app.modules.configuration.error_feature_api_unavailable)@")
         return
     end
 
-    local eepromApi = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    local eepromApi = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
     if not eepromApi then
         saveFailed("@i18n(app.modules.configuration.error_eeprom_api_unavailable)@")
         return

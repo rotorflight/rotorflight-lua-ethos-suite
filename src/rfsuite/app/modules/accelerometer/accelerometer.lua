@@ -11,6 +11,9 @@ local fields = {}
 local calibrate = false
 local calibrateComplete = false
 local calibrateQueued = false
+local eepromQueued = false
+local calibrationAPI
+local eepromAPI
 
 local apidata = {
     api = {
@@ -34,7 +37,8 @@ local function onToolMenu(self)
 
                 calibrate = true
                 calibrateQueued = false
-                writePayload = nil
+                calibrateComplete = false
+                eepromQueued = false
                 return true
             end
         }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
@@ -44,37 +48,54 @@ local function onToolMenu(self)
 
 end
 
-local function applySettings()
-    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
-    EAPI.setUUID("accel-eeprom")
-    EAPI.setCompleteHandler(function(self)
-        rfsuite.utils.log("Writing to EEPROM", "info")
-        calibrateComplete = true
-    end)
-    EAPI.write()
+local function ensureApis()
+    if not calibrationAPI then
+        calibrationAPI = rfsuite.tasks.msp.api.loadPage("ACC_CALIBRATION")
+        calibrationAPI.setUUID("accelerometer-calibration")
+    end
+    if not eepromAPI then
+        eepromAPI = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
+        eepromAPI.setUUID("accel-eeprom")
+    end
+end
 
+local function applySettings()
+    ensureApis()
+    eepromAPI.resetWriteStatus()
+    local ok, reason = eepromAPI.write()
+    if ok then
+        eepromQueued = true
+    else
+        rfsuite.utils.log("Accelerometer EEPROM enqueue rejected: " .. tostring(reason), "info")
+    end
 end
 
 local function wakeup()
 
     if calibrate == true and calibrateQueued == false then
-
-        local message = {
-            command = 205,
-            processReply = function(self, buf)
-                rfsuite.utils.log("Accelerometer calibrated.", "info")
-                calibrate = false
-                calibrateQueued = false
-                applySettings()
-            end,
-            simulatorResponse = {},
-            uuid = "accelerometer-calibration"
-        }
-        local ok = rfsuite.tasks.msp.mspQueue:add(message)
+        ensureApis()
+        calibrationAPI.resetWriteStatus()
+        local ok, reason = calibrationAPI.write()
         if ok then
             calibrateQueued = true
+        else
+            rfsuite.utils.log("Accelerometer calibration enqueue rejected: " .. tostring(reason), "info")
+            calibrate = false
         end
 
+    end
+
+    if calibrateQueued == true and calibrationAPI and calibrationAPI.writeComplete() then
+        rfsuite.utils.log("Accelerometer calibrated.", "info")
+        calibrate = false
+        calibrateQueued = false
+        applySettings()
+    end
+
+    if eepromQueued == true and eepromAPI and eepromAPI.writeComplete() then
+        eepromQueued = false
+        rfsuite.utils.log("Writing to EEPROM", "info")
+        calibrateComplete = true
     end
 
     if calibrateComplete == true then

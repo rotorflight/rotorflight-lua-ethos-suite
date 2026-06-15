@@ -93,22 +93,23 @@ end
 
 local function postRead(self) end
 
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
 local function setPidProfile(profileIndex)
     profileIndex = tonumber(profileIndex) or 0
-    local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
-    return queueDirect(message, string.format("profile.pid.%d", profileIndex))
+    local API = rfsuite.tasks.msp.api.loadPage("SELECT_PROFILE")
+    if not API then return false, "api_unavailable" end
+    API.setUUID(string.format("profile.pid.%d", profileIndex))
+    API.setValue("profile", profileIndex)
+    return API.write()
 end
 
 local function setRateProfile(profileIndex)
     profileIndex = tonumber(profileIndex) or 0
     profileIndex = profileIndex + 128
-    local message = {command = 210, payload = {profileIndex}, processReply = function(self, buf) end, simulatorResponse = {}}
-    return queueDirect(message, string.format("profile.rate.%d", profileIndex))
+    local API = rfsuite.tasks.msp.api.loadPage("SELECT_PROFILE")
+    if not API then return false, "api_unavailable" end
+    API.setUUID(string.format("profile.rate.%d", profileIndex))
+    API.setValue("profile", profileIndex)
+    return API.write()
 end
 
 local function onSaveMenu()

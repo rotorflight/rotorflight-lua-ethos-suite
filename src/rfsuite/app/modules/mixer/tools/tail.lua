@@ -268,7 +268,7 @@ local function loadNext(i)
     return
   end
 
-  local API = rfsuite.tasks.msp.api.load(IDX)
+  local API = rfsuite.tasks.msp.api.loadPage(IDX)
   API.setCompleteHandler(function(self, buf)
         APIDATA[IDX] = {}
 
@@ -321,7 +321,7 @@ local function writeNext(i)
         -- all done
 
         -- commit the change
-        local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+        local EAPI = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
         EAPI.setUUID("tail-eeprom")
         EAPI.setCompleteHandler(function(self)
             rfsuite.utils.log("Writing to EEPROM", "info")
@@ -330,7 +330,7 @@ local function writeNext(i)
 
         -- reboot if required
         if needsReboot then
-            local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+            local RAPI = rfsuite.tasks.msp.api.loadPage("REBOOT")
             RAPI.setUUID("tail-reboot")
             RAPI.setCompleteHandler(function(self)
                 rfsuite.utils.log("Rebooting FC", "info")
@@ -347,7 +347,7 @@ local function writeNext(i)
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load(apikey)
+    local API = rfsuite.tasks.msp.api.loadPage(apikey)
     API.setRebuildOnWrite(true)
 
     API.setCompleteHandler(function(self, buf)

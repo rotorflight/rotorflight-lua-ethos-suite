@@ -72,9 +72,14 @@ local LAYOUT = {
     }
 
 
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
+local function queueMixerOverride(index, value, uuid)
+    local API = rfsuite.tasks.msp.api.loadPage("MIXER_OVERRIDE")
+    if not API then return false, "api_unavailable" end
+
+    API.setUUID(uuid)
+    API.setValue("index", index)
+    API.setValue("value", value)
+    return API.write()
 end
 
 local function formDigest()
@@ -325,9 +330,7 @@ local function mixerOn()
 
     local overrideValue = mixerOverrideOnValue()
     for i = 1, 4 do
-        local message = {command = 191, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, overrideValue)
-        queueDirect(message, string.format("mixer.override.%d.on", i))
+        queueMixerOverride(i, overrideValue, string.format("mixer.override.%d.on", i))
     end
 
     rfsuite.app.triggers.isReady = true
@@ -339,9 +342,7 @@ local function mixerOff()
     setMixerOverrideAudio(false)
 
     for i = 1, 4 do
-        local message = {command = 191, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, MIXER_OVERRIDE_OFF)
-        queueDirect(message, string.format("mixer.override.%d.off", i))
+        queueMixerOverride(i, MIXER_OVERRIDE_OFF, string.format("mixer.override.%d.off", i))
     end
 
     rfsuite.app.triggers.isReady = true
@@ -368,7 +369,7 @@ local function loadNext(i)
     return
   end
 
-  local API = rfsuite.tasks.msp.api.load(IDX)
+  local API = rfsuite.tasks.msp.api.loadPage(IDX)
   API.setCompleteHandler(function(self, buf)
         APIDATA[IDX] = {}
 
@@ -469,7 +470,7 @@ local function writeNext(i, commitToEeprom)
     local apikey = sequence[i]
     if not apikey then
         if commitToEeprom then
-            local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+            local EAPI = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
             EAPI.setUUID("swashgeo-eeprom")
             EAPI.setCompleteHandler(function(self)
                 rfsuite.utils.log("Writing to EEPROM", "info")
@@ -501,7 +502,7 @@ local function writeNext(i, commitToEeprom)
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load(apikey)
+    local API = rfsuite.tasks.msp.api.loadPage(apikey)
     API.setRebuildOnWrite(true)
 
     API.setCompleteHandler(function(self, buf)

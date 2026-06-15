@@ -244,21 +244,16 @@ function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, r
 
 function utils.settingsSaved(savedPage)
     local page = savedPage or app.Page
+    local bus = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.bus
+    local actions = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.genericActions
+    local genericActions = actions and actions.actions
+    local contextId = genericActions and bus and bus.createContext and bus.createContext({page = page}, app.lastScript)
     local eepromWrite = {
         uuid = "app.settingsSaved.eeprom",
-        processReply = function(self, buf)
-            app.triggers.closeSave = true
-            if page and page.postEepromWrite then page.postEepromWrite() end
-            if page and page.reboot then
-                app.ui.rebootFc(page)
-            else
-                app.utils.invalidatePages({preserveCurrentPage = true})
-            end
-        end,
-        errorHandler = function(self) 
-            app.triggers.closeSave = true 
-            app.triggers.showSaveArmedWarning = true
-        end,
+        replyAction = genericActions and genericActions.appSettingsSavedReply,
+        errorAction = genericActions and genericActions.appSettingsSavedError,
+        busContext = contextId,
+        releaseBusContext = true
     }
 
     if page and page.eepromWrite then
@@ -266,6 +261,9 @@ function utils.settingsSaved(savedPage)
             app.pageState = app.pageStatus.eepromWrite
             app.triggers.closeSave = true
             local ok, reason = rfutils.queueEepromWrite(eepromWrite)
+            if not ok and bus and bus.releaseContext and contextId then
+                bus.releaseContext(contextId)
+            end
             if not ok then
                 rfutils.log("EEPROM enqueue rejected: " .. tostring(reason), "info")
                 app.pageState = app.pageStatus.display
@@ -275,6 +273,9 @@ function utils.settingsSaved(savedPage)
             end
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
+        if bus and bus.releaseContext and contextId then
+            bus.releaseContext(contextId)
+        end
         app.utils.invalidatePages({preserveCurrentPage = true})
         app.triggers.closeSave = true
     end

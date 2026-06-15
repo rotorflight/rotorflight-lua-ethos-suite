@@ -45,6 +45,12 @@ You can change them via the Suite Menu "Settings - Dashboard - Theme"
 | --- | --- | --- |
 | ![Gismo preflight](Gismo/preflight.png) | ![Gismo inflight](Gismo/inflight.png) | ![Gismo postflight](Gismo/postflight.png) |
 
+## Kevd
+
+| Preflight | Inflight | Postflight |
+| --- | --- | --- |
+| ![Kevd preflight](Kevd/preflight.png) | ![Kevd inflight](Kevd/inflight.png) | ![Kevd postflight](Kevd/postflight.png) |
+
 ## RF Status
 
 | Preflight | Inflight | Postflight |

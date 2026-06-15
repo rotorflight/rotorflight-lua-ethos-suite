@@ -77,7 +77,7 @@ local function wakeup()
         governorModeRequested = true
         helpers.governorMode(function()
             activateWakeup = true
-        end)
+        end, rfsuite.app and rfsuite.app.lastScript)
     end
 
     setTtaEnabled((tonumber(rfsuite.session and rfsuite.session.governorMode) or 0) >= 1)

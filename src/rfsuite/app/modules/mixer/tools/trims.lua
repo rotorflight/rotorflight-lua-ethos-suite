@@ -24,9 +24,14 @@ local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
 local clear2send = true
 
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
+local function queueMixerOverride(index, value, uuid)
+    local API = rfsuite.tasks.msp.api.loadPage("MIXER_OVERRIDE")
+    if not API then return false, "api_unavailable" end
+
+    API.setUUID(uuid)
+    API.setValue("index", index)
+    API.setValue("value", value)
+    return API.write()
 end
 
 local apidata = {
@@ -52,13 +57,10 @@ local function mixerOn(self)
     rfsuite.app.audio.playMixerOverideEnable = true
 
     for i = 1, 4 do
-        local message = {command = 191, payload = {i}}
-
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-        queueDirect(message, string.format("mixer.override.%d.on", i))
+        queueMixerOverride(i, 0, string.format("mixer.override.%d.on", i))
 
         if rfsuite.preferences.developer.logmsp then
-            local logData = "mixerOn: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            local logData = "mixerOn: {index=" .. tostring(i) .. ", value=0}"
             rfsuite.utils.log(logData, "info")
         end
 
@@ -73,12 +75,10 @@ local function mixerOff(self)
     rfsuite.app.audio.playMixerOverideDisable = true
 
     for i = 1, 4 do
-        local message = {command = 191, payload = {i}}
-        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2501)
-        queueDirect(message, string.format("mixer.override.%d.off", i))
+        queueMixerOverride(i, 2501, string.format("mixer.override.%d.off", i))
 
         if rfsuite.preferences.developer.logmsp then
-            local logData = "mixerOff: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            local logData = "mixerOff: {index=" .. tostring(i) .. ", value=2501}"
             rfsuite.utils.log(logData, "info")
         end
 

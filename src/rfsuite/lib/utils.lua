@@ -164,12 +164,37 @@ function utils.queueEepromWrite(opts)
     local completeHandler = opts.completeHandler or opts.processReply
     local errorHandler = opts.errorHandler
     local uuid = opts.uuid
+    local owner = opts.owner
+    local createdBusContext
+    if owner == nil then
+        local app = rfsuite.app
+        owner = app and app.lastScript
+    end
+
+    if not opts.replyAction and opts.logMessage then
+        local msp = tasks and tasks.msp
+        local bus = msp and msp.bus
+        local actions = msp and msp.genericActions
+        if bus and bus.createContext and actions and actions.actions then
+            createdBusContext = bus.createContext({message = opts.logMessage, level = opts.logLevel or "info"}, owner)
+            opts.replyAction = actions.actions.logReply
+            opts.busContext = createdBusContext
+            opts.releaseBusContext = true
+        end
+    end
 
     if uuid and api.setUUID then api.setUUID(uuid) end
+    if owner and api.setOwner then api.setOwner(owner) end
+    if opts.replyAction and api.setBusActions then
+        api.setBusActions(opts.replyAction, opts.errorAction, opts.busContext, opts.releaseBusContext)
+    end
     if type(completeHandler) == "function" then api.setCompleteHandler(completeHandler) end
     if type(errorHandler) == "function" then api.setErrorHandler(errorHandler) end
 
     local ok, reason = api.write()
+    if not ok and createdBusContext and tasks and tasks.msp and tasks.msp.bus and tasks.msp.bus.releaseContext then
+        tasks.msp.bus.releaseContext(createdBusContext)
+    end
     if not ok and reason == "armed_blocked" then
         utils.signalArmedWriteBlocked()
     end

@@ -66,21 +66,21 @@ local function updateTestLoaderMessage()
 end
 
 local function getMSPBattery()
-    local API = tasks.msp.api.load("BATTERY_CONFIG")
+    local API = tasks.msp.api.loadPage("BATTERY_CONFIG")
     API.setCompleteHandler(function(self, buf) doNextMsp = true end)
     API.setUUID("mspspeed-battery")
     API.read()
 end
 
 local function getMSPGovernor()
-    local API = tasks.msp.api.load("GOVERNOR_CONFIG")
+    local API = tasks.msp.api.loadPage("GOVERNOR_CONFIG")
     API.setCompleteHandler(function(self, buf) doNextMsp = true end)
     API.setUUID("mspspeed-governor")
     API.read()
 end
 
 local function getMSPMixer()
-    local API = tasks.msp.api.load("MIXER_CONFIG")
+    local API = tasks.msp.api.loadPage("MIXER_CONFIG")
     API.setCompleteHandler(function(self, buf) doNextMsp = true end)
     API.setUUID("mspspeed-mixer")
     API.read()

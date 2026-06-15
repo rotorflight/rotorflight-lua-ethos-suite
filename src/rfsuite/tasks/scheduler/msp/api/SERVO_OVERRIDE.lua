@@ -34,7 +34,7 @@ local FIELD_SPEC = {
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local WRITE_FIELD_SPEC = {
     {"servo_id", "U8"},
-    {"action", "U8"}
+    {"value", "U16"}
 }
 
 local SIM_RESPONSE = core.simResponse({

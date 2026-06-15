@@ -305,7 +305,7 @@ local function requestData(forceApiRead)
 
     state.pendingReads = 2
 
-    local FAPI = tasks.msp.api.load("FEATURE_CONFIG")
+    local FAPI = tasks.msp.api.loadPage("FEATURE_CONFIG")
     FAPI.setUUID("blackbox-config-feature")
     FAPI.setCompleteHandler(function()
         local d = FAPI.data()
@@ -316,7 +316,7 @@ local function requestData(forceApiRead)
     FAPI.setErrorHandler(function() onReadDone() end)
     FAPI.read()
 
-    local BAPI = tasks.msp.api.load("BLACKBOX_CONFIG")
+    local BAPI = tasks.msp.api.loadPage("BLACKBOX_CONFIG")
     BAPI.setUUID("blackbox-config-main")
     BAPI.setCompleteHandler(function()
         local d = BAPI.data()
@@ -349,7 +349,7 @@ local function performSave()
     state.saving = true
     app.ui.progressDisplaySave("@i18n(app.modules.blackbox.saving)@")
 
-    local API = tasks.msp.api.load("BLACKBOX_CONFIG")
+    local API = tasks.msp.api.loadPage("BLACKBOX_CONFIG")
     API.setUUID("blackbox-config-write")
     API.setErrorHandler(function()
         state.saving = false
@@ -358,37 +358,37 @@ local function performSave()
         updateSaveEnabled()
     end)
     API.setCompleteHandler(function()
-        local ok = rfsuite.utils.queueEepromWrite({
-            uuid = "blackbox.configuration.eeprom",
-            processReply = function()
-                state.saving = false
-                state.dirty = false
-                if rfsuite.session and rfsuite.session.blackbox then
-                    rfsuite.session.blackbox.config = {
-                        blackbox_supported = state.cfg.blackbox_supported,
-                        device = state.cfg.device,
-                        mode = state.cfg.mode,
-                        denom = state.cfg.denom,
-                        fields = state.cfg.fields,
-                        initialEraseFreeSpaceKiB = state.cfg.initialEraseFreeSpaceKiB,
-                        rollingErase = state.cfg.rollingErase,
-                        gracePeriod = state.cfg.gracePeriod
-                    }
-                    rfsuite.session.blackbox.media = {
-                        dataflashSupported = state.media.dataflashSupported,
-                        sdcardSupported = state.media.sdcardSupported
-                    }
-                end
-                app.triggers.closeSave = true
-                updateSaveEnabled()
-            end,
-            errorHandler = function()
-                state.saving = false
-                app.triggers.closeSave = true
-                app.triggers.showSaveArmedWarning = true
-                updateSaveEnabled()
+        local EAPI = tasks.msp.api.loadPage("EEPROM_WRITE")
+        EAPI.setUUID("blackbox.configuration.eeprom")
+        EAPI.setCompleteHandler(function()
+            state.saving = false
+            state.dirty = false
+            if rfsuite.session and rfsuite.session.blackbox then
+                rfsuite.session.blackbox.config = {
+                    blackbox_supported = state.cfg.blackbox_supported,
+                    device = state.cfg.device,
+                    mode = state.cfg.mode,
+                    denom = state.cfg.denom,
+                    fields = state.cfg.fields,
+                    initialEraseFreeSpaceKiB = state.cfg.initialEraseFreeSpaceKiB,
+                    rollingErase = state.cfg.rollingErase,
+                    gracePeriod = state.cfg.gracePeriod
+                }
+                rfsuite.session.blackbox.media = {
+                    dataflashSupported = state.media.dataflashSupported,
+                    sdcardSupported = state.media.sdcardSupported
+                }
             end
-        })
+            app.triggers.closeSave = true
+            updateSaveEnabled()
+        end)
+        EAPI.setErrorHandler(function()
+            state.saving = false
+            app.triggers.closeSave = true
+            app.triggers.showSaveArmedWarning = true
+            updateSaveEnabled()
+        end)
+        local ok = EAPI.write()
         if not ok then
             state.saving = false
             app.triggers.closeSave = true

@@ -166,7 +166,7 @@ local function runTest()
         return
     end
 
-    local api = tasks.msp.api.load(apiName)
+    local api = tasks.msp.api.loadPage(apiName)
     if not api then
         state.rows = {{label = T.LABEL_ERROR, value = T.MSG_UNABLE_TO_LOAD .. ": " .. apiName}}
         setStatus(T.STATUS_LOAD_FAILED)

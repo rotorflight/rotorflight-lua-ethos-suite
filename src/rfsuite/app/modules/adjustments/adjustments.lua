@@ -157,11 +157,6 @@ local function restorePendingFocus(focusTargets)
     if target and target.focus then target:focus() end
 end
 
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
 local function clamp(value, minValue, maxValue)
     if value < minValue then return minValue end
     if value > maxValue then return maxValue end
@@ -572,73 +567,29 @@ local function setLoadError(reason)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
-local function parseAdjustmentRangeRecord(buf)
-    if type(buf) ~= "table" then return nil end
-    buf.offset = 1
-
-    local adjFunction = rfsuite.tasks.msp.mspHelper.readU8(buf)
-    if adjFunction == nil then return nil end
-
-    local enaChannel = rfsuite.tasks.msp.mspHelper.readU8(buf)
-    local enaStartStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
-    local enaEndStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
-    local adjChannel = rfsuite.tasks.msp.mspHelper.readU8(buf)
-    local adjRange1StartStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
-    local adjRange1EndStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
-    local adjRange2StartStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
-    local adjRange2EndStep = rfsuite.tasks.msp.mspHelper.readS8(buf)
-    local adjMin = rfsuite.tasks.msp.mspHelper.readS16(buf)
-    local adjMax = rfsuite.tasks.msp.mspHelper.readS16(buf)
-    local adjStep = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-    if enaChannel == nil or enaStartStep == nil or enaEndStep == nil or adjChannel == nil or adjRange1StartStep == nil or
-        adjRange1EndStep == nil or adjRange2StartStep == nil or adjRange2EndStep == nil or adjMin == nil or adjMax == nil or adjStep == nil then
-        return nil
-    end
-
-    return {
-        adjFunction = adjFunction,
-        enaChannel = enaChannel,
-        enaRange = {
-            start = 1500 + (enaStartStep * 5),
-            ["end"] = 1500 + (enaEndStep * 5)
-        },
-        adjChannel = adjChannel,
-        adjRange1 = {
-            start = 1500 + (adjRange1StartStep * 5),
-            ["end"] = 1500 + (adjRange1EndStep * 5)
-        },
-        adjRange2 = {
-            start = 1500 + (adjRange2StartStep * 5),
-            ["end"] = 1500 + (adjRange2EndStep * 5)
-        },
-        adjMin = adjMin,
-        adjMax = adjMax,
-        adjStep = adjStep
-    }
-end
-
 local function readAdjustmentRangeSlot(slotIndex, onComplete, onError)
     slotIndex = clamp(math.floor(slotIndex or 1), 1, ADJUSTMENT_RANGE_MAX)
 
-    local message = {
-        command = 156,
-        payload = {slotIndex - 1},
-        processReply = function(_, buf)
-            local parsed = parseAdjustmentRangeRecord(buf)
-            if not parsed then
-                if onError then onError("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex)) end
-                return
-            end
-            if onComplete then onComplete(parsed) end
-        end,
-        errorHandler = function()
-            if onError then onError("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end
-        end,
-        simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0}
-    }
+    local API = rfsuite.tasks.msp.api.loadPage("GET_ADJUSTMENT_RANGE")
+    if not API then
+        if onError then onError("GET_ADJUSTMENT_RANGE API unavailable") end
+        return
+    end
 
-    local ok, reason = queueDirect(message, string.format("adjustments.get.%d", slotIndex))
+    API.setCompleteHandler(function()
+        local data = API.data()
+        local parsed = data and data.parsed and data.parsed.adjustment_range
+        if not parsed then
+            if onError then onError("GET_ADJUSTMENT_RANGE parse failed at slot " .. tostring(slotIndex)) end
+            return
+        end
+        if onComplete then onComplete(parsed) end
+    end)
+    API.setErrorHandler(function()
+        if onError then onError("GET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end
+    end)
+
+    local ok, reason = API.read(slotIndex)
     if not ok and onError then onError(reason or "queue_rejected") end
 end
 
@@ -676,7 +627,7 @@ local function readAdjustmentFunctions(onComplete, onError)
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load("GET_ADJUSTMENT_FUNCTION_IDS")
+    local API = rfsuite.tasks.msp.api.loadPage("GET_ADJUSTMENT_FUNCTION_IDS")
     if not API then
         state.supportsAdjustmentFunctions = false
         if onError then onError("GET_ADJUSTMENT_FUNCTION_IDS API unavailable") end
@@ -715,7 +666,7 @@ local function applyAdjustmentFunctions(functions)
 end
 
 local function readAdjustmentRangesBulk(onComplete, onError)
-    local API = rfsuite.tasks.msp.api.load("ADJUSTMENT_RANGES")
+    local API = rfsuite.tasks.msp.api.loadPage("ADJUSTMENT_RANGES")
     if not API then
         if onError then onError("ADJUSTMENT_RANGES API unavailable") end
         return
@@ -1635,24 +1586,32 @@ local function queueSetAdjustmentRange(slotIndex, done, failed)
         clamp(adjRange.adjStep, ADJ_STEP_MIN, ADJ_STEP_MAX)
     }
 
-    local message = {
-        command = 53,
-        payload = payload,
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("SET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end end,
-        simulatorResponse = {}
-    }
+    local API = rfsuite.tasks.msp.api.loadPage("SET_ADJUSTMENT_RANGE")
+    if not API then
+        if failed then failed("SET_ADJUSTMENT_RANGE API unavailable") end
+        return
+    end
 
-    local ok, reason = queueDirect(message, string.format("adjustments.slot.%d", slotIndex))
+    API.setUUID(string.format("adjustments.slot.%d", slotIndex))
+    API.setCompleteHandler(function() if done then done() end end)
+    API.setErrorHandler(function() if failed then failed("SET_ADJUSTMENT_RANGE failed at slot " .. tostring(slotIndex)) end end)
+
+    local ok, reason = API.write(payload)
     if not ok and failed then failed(reason or "queue_rejected") end
 end
 
 local function queueEepromWrite(done, failed)
-    local ok, reason = rfsuite.utils.queueEepromWrite({
-        uuid = "adjustments.eeprom",
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("EEPROM write failed") end end
-    })
+    local API = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
+    if not API then
+        if failed then failed("EEPROM_WRITE API unavailable") end
+        return
+    end
+
+    API.setUUID("adjustments.eeprom")
+    API.setCompleteHandler(function() if done then done() end end)
+    API.setErrorHandler(function() if failed then failed("EEPROM write failed") end end)
+
+    local ok, reason = API.write()
 
     if not ok and failed then
         if reason == "armed_blocked" then

@@ -11,12 +11,13 @@ local system = system
 local utils = rfsuite.utils
 local helpers = {}
 
-function helpers.governorMode(callback)
+function helpers.governorMode(callback, owner)
     
     if (rfsuite.session.governorMode == nil ) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("GOVERNOR_CONFIG")
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
+        if API and owner and API.setOwner then API.setOwner(owner) end
         API.setCompleteHandler(function(self, buf)
             local governorMode = API.readValue("gov_mode")
             if governorMode then
@@ -33,11 +34,12 @@ function helpers.governorMode(callback)
     end
 end
 
-function helpers.servoCount(callback)
+function helpers.servoCount(callback, owner)
     if (rfsuite.session.servoCount == nil) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("STATUS")
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
+        if API and owner and API.setOwner then API.setOwner(owner) end
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.servoCount = API.readValue("servo_count")
             if rfsuite.session.servoCount then
@@ -53,11 +55,12 @@ function helpers.servoCount(callback)
     end
 end
 
-function helpers.servoOverride(callback)
+function helpers.servoOverride(callback, owner)
     if (rfsuite.session.servoOverride == nil) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("SERVO_OVERRIDE")
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
+        if API and owner and API.setOwner then API.setOwner(owner) end
         API.setCompleteHandler(function(self, buf)
             for i, v in pairs(API.data().parsed) do
                 if v == 0 then
@@ -77,56 +80,49 @@ function helpers.servoOverride(callback)
 end
 
 
-function helpers.servoBusEnabled(callback)
+function helpers.servoBusEnabled(callback, owner)
 
     local FBUS_FUNCTIONMASK = 524288
     local SBUS_FUNCTIONMASK = 262144
 
-    local function processSerialConfig(data) 
-        for i, v in ipairs(data) do 
-            if v.functionMask == FBUS_FUNCTIONMASK then 
-                return  true 
-            end 
-            if v.functionMask == SBUS_FUNCTIONMASK then 
-                return  true 
-            end             
-        end 
+    local function hasServoBusFunction(api)
+        local data = api and api.data and api.data()
+        local parsed = data and data.parsed
+        if not parsed then return false end
+
+        for i = 1, 12 do
+            local functionMask = parsed["port_" .. i .. "_function_mask"]
+            if functionMask == FBUS_FUNCTIONMASK or functionMask == SBUS_FUNCTIONMASK then
+                return true
+            end
+        end
+
         return false
     end
 
     if (rfsuite.session.servoBusEnabled == nil) then
-        local message = {
-            command = 54,
-            processReply = function(self, buf)
-                local data = {}
-
-                buf.offset = 1
-                for i = 1, 6 do
-                    data[i] = {}
-                    data[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
-                    data[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                    data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                end
-
-                rfsuite.session.servoBusEnabled  = processSerialConfig(data)
-                if callback then callback(rfsuite.session.servoBusEnabled) end
-            end,
-            simulatorResponse = {20 , 1  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 0  , 0  , 0  , 8  , 0  , 5  , 4  , 0  , 5  , 1  , 0  , 4  , 0  , 0  , 5  , 4  , 0  , 5  , 2  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 3  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 4  , 64 , 0  , 0  , 0  , 5  , 4  , 0  , 5  , 5  , 0  , 0  , 0  , 0  , 5  , 4  , 0  , 5  }
-        }
-        rfsuite.tasks.msp.mspQueue:add(message)
+        local msp = rfsuite.tasks.msp
+        local API = msp and msp.api.load("SERIAL_CONFIG")
+        if API and API.enableDeltaCache then API.enableDeltaCache(false) end
+        if API and owner and API.setOwner then API.setOwner(owner) end
+        API.setCompleteHandler(function()
+            rfsuite.session.servoBusEnabled = hasServoBusFunction(API)
+            API = nil
+            if callback then callback(rfsuite.session.servoBusEnabled) end
+        end)
+        API.setUUID(utils.uuid and utils.uuid() or tostring(os.clock()))
+        API.read()
     else
         if callback then callback(rfsuite.session.servoBusEnabled) end
     end
 end
 
-function helpers.mixerConfig(callback)
+function helpers.mixerConfig(callback, owner)
     if (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil) then
         local msp = rfsuite.tasks.msp
         local API = msp and msp.api.load("MIXER_CONFIG")
         if API and API.enableDeltaCache then API.enableDeltaCache(false) end
+        if API and owner and API.setOwner then API.setOwner(owner) end
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
             rfsuite.session.swashMode = API.readValue("swash_type")
@@ -153,16 +149,16 @@ function helpers.mixerConfig(callback)
     end
 end
 
-function helpers.tailMode(callback)
+function helpers.tailMode(callback, owner)
     helpers.mixerConfig(function(tailMode, swashMode)
         if callback then callback(tailMode) end
-    end)
+    end, owner)
 end
 
-function helpers.swashMode(callback)
+function helpers.swashMode(callback, owner)
     helpers.mixerConfig(function(tailMode, swashMode)
         if callback then callback(swashMode) end
-    end)
+    end, owner)
 end
 
 

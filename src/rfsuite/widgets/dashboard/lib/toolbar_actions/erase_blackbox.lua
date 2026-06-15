@@ -31,6 +31,7 @@ local eraseProgressMspStatusLast
 local eraseProgressCounter
 local eraseProgressStart
 local DATAFLASH_SUMMARY_API = "DATAFLASH_SUMMARY"
+local DATAFLASH_ERASE_API = "DATAFLASH_ERASE"
 
 local function clearApiEntry(apiName)
     local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
@@ -58,8 +59,9 @@ local function updateProgressMessage()
 end
 
 local function doErase()
-    if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
-        logInfo("Dataflash erase: MSP queue not available")
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api
+    if not api then
+        logInfo("Dataflash erase: MSP API not available")
         return
     end
     logInfo("Dataflash erase: queue MSP erase command")
@@ -89,21 +91,31 @@ local function doErase()
         API.read()
     end
 
-    local message = {
-        command = 72,
-        processReply = function()
-            logInfo("Dataflash erase: MSP erase reply received")
-            if eraseProgress then
-                eraseProgress:close()
-            end
-            eraseProgress = nil
-            eraseProgressBaseMessage = nil
-            eraseProgressMspStatusLast = nil
-            eraseProgressCounter = nil
-            readDataflashSummary()
+    local eraseAPI = api.load(DATAFLASH_ERASE_API)
+    if not eraseAPI then
+        logInfo("Dataflash erase: failed to load DATAFLASH_ERASE API")
+        return
+    end
+
+    eraseAPI.setCompleteHandler(function()
+        logInfo("Dataflash erase: MSP erase reply received")
+        if eraseProgress then
+            eraseProgress:close()
         end
-    }
-    local ok, reason = rfsuite.tasks.msp.mspQueue:add(message)
+        eraseProgress = nil
+        eraseProgressBaseMessage = nil
+        eraseProgressMspStatusLast = nil
+        eraseProgressCounter = nil
+        clearApiEntry(DATAFLASH_ERASE_API)
+        readDataflashSummary()
+    end)
+
+    eraseAPI.setErrorHandler(function()
+        logInfo("Dataflash erase: MSP erase failed")
+        clearApiEntry(DATAFLASH_ERASE_API)
+    end)
+
+    local ok, reason = eraseAPI.write()
     if ok == false then
         logInfo("Dataflash erase: MSP queue rejected message (" .. tostring(reason) .. ")")
     end
@@ -137,6 +149,7 @@ end
 
 function M.reset()
     clearApiEntry(DATAFLASH_SUMMARY_API)
+    clearApiEntry(DATAFLASH_ERASE_API)
     if eraseProgress then
         eraseProgress:close()
     end

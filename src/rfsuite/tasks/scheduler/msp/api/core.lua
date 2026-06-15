@@ -24,6 +24,16 @@ local mspHelper = rfsuite.tasks.msp.mspHelper
 local isSim = (system and system.getVersion and system.getVersion().simulation) == true
 local EMPTY_SIM_RESPONSE = {}
 
+function core.writeS32(v)
+    if v < 0 then v = v + 0x100000000 end
+    return {
+        v % 256,
+        math_floor(v / 256) % 256,
+        math_floor(v / 65536) % 256,
+        math_floor(v / 16777216) % 256
+    }
+end
+
 local TYPE_SIZES = {
     U8 = 1, S8 = 1, U16 = 2, S16 = 2, U24 = 3, S24 = 3, U32 = 4, S32 = 4,
     U40 = 5, S40 = 5, U48 = 6, S48 = 6, U56 = 7, S56 = 7, U64 = 8, S64 = 8,
@@ -86,6 +96,46 @@ local function resolveWriteUUID(spec, state)
 
     return nil
 end
+
+local function queueApiMessage(message, owner)
+    local tasks = rfsuite.tasks
+    local msp = tasks and tasks.msp
+    local queue = msp and msp.mspQueue
+    if not queue then return false, "msp_queue_unavailable" end
+
+    local replyFn = message.processReply
+    local errorFn = message.errorHandler
+    local bus = msp and msp.bus
+
+    if not message._busContext and (type(replyFn) == "function" or type(errorFn) == "function") and bus and bus.createContext then
+        local contextId = bus.createContext({
+            reply = type(replyFn) == "function" and replyFn or nil,
+            error = type(errorFn) == "function" and errorFn or nil
+        }, owner)
+
+        if contextId then
+            message.processReply = nil
+            message.errorHandler = nil
+            message._busContext = contextId
+            message._releaseBusContext = true
+            if type(replyFn) == "function" then message._replyAction = "legacy.reply" end
+            if type(errorFn) == "function" then message._errorAction = "legacy.error" end
+        end
+    end
+
+    local ok, reason, qid, pending = queue:add(message)
+    if not ok and bus and bus.releaseContext and message._busContext and message._releaseBusContext then
+        bus.releaseContext(message._busContext)
+        message._busContext = nil
+        message._releaseBusContext = nil
+        message._replyAction = nil
+        message._errorAction = nil
+    end
+
+    return ok, reason, qid, pending
+end
+
+core.queueMessage = queueApiMessage
 
 local function applyFieldMeta(target, tuple)
     local min = tuple[FIELD_MIN]
@@ -438,7 +488,8 @@ function core.createReadOnlyAPI(spec)
     local state = {
         mspData = nil,
         timeout = nil,
-        uuid = nil
+        uuid = nil,
+        owner = nil
     }
     local onError
 
@@ -510,9 +561,10 @@ function core.createReadOnlyAPI(spec)
             minBytes = minBytes,
             processReply = processReply,
             errorHandler = onError,
-            simulatorResponse = spec.simulatorResponseRead,
+            simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseRead, state, "read", ...),
             timeout = state.timeout,
             uuid = state.uuid,
+            _busOwner = state.owner,
             retryOnErrorReply = (spec.readRetryOnErrorReply == true),
             retryBackoff = spec.readRetryBackoff,
             completeOnErrorReplyAttempt = spec.readCompleteOnErrorReplyAttempt
@@ -527,7 +579,7 @@ function core.createReadOnlyAPI(spec)
             message.payload = payload
         end
 
-        return rfsuite.tasks.msp.mspQueue:add(message)
+        return queueApiMessage(message, state.owner)
     end
 
     local function write()
@@ -563,6 +615,10 @@ function core.createReadOnlyAPI(spec)
         state.timeout = timeout
     end
 
+    local function setOwner(owner)
+        state.owner = owner
+    end
+
     local function setValue()
     end
 
@@ -585,6 +641,7 @@ function core.createReadOnlyAPI(spec)
         setErrorHandler = setErrorHandler,
         setUUID = setUUID,
         setTimeout = setTimeout,
+        setOwner = setOwner,
         setRebuildOnWrite = setRebuildOnWrite,
         __rfReadStructure = {},
         __rfWriteStructure = {}
@@ -639,6 +696,7 @@ function core.createConfigAPI(spec)
         payloadData = {},
         timeout = nil,
         uuid = nil,
+        owner = nil,
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
@@ -731,6 +789,7 @@ function core.createConfigAPI(spec)
             simulatorResponse = spec.simulatorResponseRead,
             timeout = state.timeout,
             uuid = state.uuid,
+            _busOwner = state.owner,
             retryOnErrorReply = (spec.readRetryOnErrorReply == true),
             retryBackoff = spec.readRetryBackoff,
             completeOnErrorReplyAttempt = spec.readCompleteOnErrorReplyAttempt
@@ -750,7 +809,7 @@ function core.createConfigAPI(spec)
             message.timeout = timeoutResolver(state, ...)
         end
 
-        return rfsuite.tasks.msp.mspQueue:add(message)
+        return queueApiMessage(message, state.owner)
     end
 
     local function write(suppliedPayload, ...)
@@ -784,7 +843,8 @@ function core.createConfigAPI(spec)
             errorHandler = dispatchError,
             simulatorResponse = spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE,
             timeout = state.timeout,
-            uuid = resolveWriteUUID(spec, state)
+            uuid = resolveWriteUUID(spec, state),
+            _busOwner = state.owner
         }
 
         local writeUuidResolver = spec.resolveWriteUUID
@@ -797,7 +857,7 @@ function core.createConfigAPI(spec)
             message.timeout = timeoutResolver(state, suppliedPayload, ...)
         end
 
-        return rfsuite.tasks.msp.mspQueue:add(message)
+        return queueApiMessage(message, state.owner)
     end
 
     local function data()
@@ -837,6 +897,10 @@ function core.createConfigAPI(spec)
         state.timeout = timeout
     end
 
+    local function setOwner(owner)
+        state.owner = owner
+    end
+
     local function setRebuildOnWrite(rebuild)
         state.rebuildOnWrite = (rebuild == true)
     end
@@ -854,6 +918,7 @@ function core.createConfigAPI(spec)
         setErrorHandler = setErrorHandler,
         setUUID = setUUID,
         setTimeout = setTimeout,
+        setOwner = setOwner,
         setRebuildOnWrite = setRebuildOnWrite,
         __rfReadStructure = readStructure,
         __rfWriteStructure = writeStructure
@@ -894,6 +959,7 @@ function core.createCustomAPI(spec)
         payloadData = {},
         uuid = nil,
         timeout = nil,
+        owner = nil,
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
@@ -991,6 +1057,7 @@ function core.createCustomAPI(spec)
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseRead or EMPTY_SIM_RESPONSE, state, "read", ...),
             uuid = state.uuid,
             timeout = state.timeout,
+            _busOwner = state.owner,
             retryOnErrorReply = (spec.readRetryOnErrorReply == true),
             retryBackoff = spec.readRetryBackoff,
             completeOnErrorReplyAttempt = spec.readCompleteOnErrorReplyAttempt
@@ -1014,7 +1081,7 @@ function core.createCustomAPI(spec)
             message.structure = readStructure
         end
 
-        return rfsuite.tasks.msp.mspQueue:add(message)
+        return queueApiMessage(message, state.owner)
     end
 
     local function write(suppliedPayload, ...)
@@ -1061,7 +1128,8 @@ function core.createCustomAPI(spec)
             errorHandler = dispatchError,
             simulatorResponse = resolveSimulatorResponse(spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE, state, "write", suppliedPayload, ...),
             uuid = resolveWriteUUID(spec, state),
-            timeout = state.timeout
+            timeout = state.timeout,
+            _busOwner = state.owner
         }
 
         local writeUuidResolver = spec.resolveWriteUUID
@@ -1074,7 +1142,7 @@ function core.createCustomAPI(spec)
             message.timeout = timeoutResolver(state, suppliedPayload, ...)
         end
 
-        return rfsuite.tasks.msp.mspQueue:add(message)
+        return queueApiMessage(message, state.owner)
     end
 
     local function data()
@@ -1131,6 +1199,10 @@ function core.createCustomAPI(spec)
         state.timeout = timeout
     end
 
+    local function setOwner(owner)
+        state.owner = owner
+    end
+
     local function setRebuildOnWrite(rebuild)
         state.rebuildOnWrite = (rebuild == true)
     end
@@ -1148,6 +1220,7 @@ function core.createCustomAPI(spec)
         setErrorHandler = setErrorHandler,
         setUUID = setUUID,
         setTimeout = setTimeout,
+        setOwner = setOwner,
         setRebuildOnWrite = setRebuildOnWrite,
         __rfReadStructure = readStructure,
         __rfWriteStructure = writeStructure
@@ -1185,6 +1258,11 @@ function core.createWriteOnlyAPI(spec)
         error("api.createWriteOnlyAPI requires spec.writeCmd")
     end
 
+    local writeStructure = {}
+    if type(spec.fields) == "table" then
+        writeStructure = select(1, buildRuntimeStructure(spec.fields))
+    end
+
     local completeHandler = nil
     local errorHandler = nil
     local state = {
@@ -1192,6 +1270,11 @@ function core.createWriteOnlyAPI(spec)
         payloadData = {},
         timeout = nil,
         uuid = nil,
+        owner = nil,
+        replyAction = nil,
+        errorAction = nil,
+        busContext = nil,
+        releaseBusContext = nil,
         rebuildOnWrite = (spec.initialRebuildOnWrite == true)
     }
 
@@ -1246,20 +1329,37 @@ function core.createWriteOnlyAPI(spec)
                 payload = writeBuilder(state.payloadData, nil, mspHelper, state, ...)
             elseif spec.writePayload ~= nil then
                 payload = spec.writePayload
+            elseif #writeStructure > 0 then
+                payload = core.buildWritePayload(
+                    spec.name,
+                    state.payloadData,
+                    writeStructure,
+                    state.rebuildOnWrite == true
+                )
             else
                 payload = EMPTY_SIM_RESPONSE
             end
         end
 
+        local replyHandler = handleWriteReply
+        local writeErrorHandler = dispatchError
+        if state.replyAction then replyHandler = nil end
+        if state.errorAction then writeErrorHandler = nil end
+
         local message = {
             command = spec.writeCmd,
             apiname = spec.name,
             payload = payload,
-            processReply = handleWriteReply,
-            errorHandler = dispatchError,
+            processReply = replyHandler,
+            errorHandler = writeErrorHandler,
             simulatorResponse = spec.simulatorResponseWrite or EMPTY_SIM_RESPONSE,
             timeout = state.timeout,
-            uuid = resolveWriteUUID(spec, state)
+            uuid = resolveWriteUUID(spec, state),
+            _busOwner = state.owner,
+            _busContext = state.busContext,
+            _releaseBusContext = state.releaseBusContext,
+            _replyAction = state.replyAction,
+            _errorAction = state.errorAction
         }
 
         local writeUuidResolver = spec.resolveWriteUUID
@@ -1273,7 +1373,7 @@ function core.createWriteOnlyAPI(spec)
         end
 
         state.mspWriteComplete = false
-        return rfsuite.tasks.msp.mspQueue:add(message)
+        return queueApiMessage(message, state.owner)
     end
 
     local function data()
@@ -1308,6 +1408,17 @@ function core.createWriteOnlyAPI(spec)
         state.timeout = timeout
     end
 
+    local function setOwner(owner)
+        state.owner = owner
+    end
+
+    local function setBusActions(replyAction, errorAction, contextId, releaseContext)
+        state.replyAction = replyAction
+        state.errorAction = errorAction
+        state.busContext = contextId
+        state.releaseBusContext = releaseContext == true
+    end
+
     local function setRebuildOnWrite(rebuild)
         state.rebuildOnWrite = (rebuild == true)
     end
@@ -1325,9 +1436,11 @@ function core.createWriteOnlyAPI(spec)
         setErrorHandler = setErrorHandler,
         setUUID = setUUID,
         setTimeout = setTimeout,
+        setOwner = setOwner,
+        setBusActions = setBusActions,
         setRebuildOnWrite = setRebuildOnWrite,
         __rfReadStructure = {},
-        __rfWriteStructure = {}
+        __rfWriteStructure = writeStructure
     }
 
     local methods = spec.methods

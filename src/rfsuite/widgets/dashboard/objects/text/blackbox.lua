@@ -42,26 +42,8 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local eraseDataflashGo = false
-local progressBaseMessage
-local progressMspStatusLast
-local MSP_DEBUG_PLACEHOLDER = "MSP Waiting"
 local LOADING_DOTS = {".", "..", "...", "."}
 local BLACKBOX_UNIT_LABEL = "@i18n(app.modules.fblstatus.megabyte)@"
-
-local function openProgressDialog(...)
-    if rfsuite.utils.ethosVersionAtLeast({26, 1, 0}) and form.openWaitDialog then
-        local arg1 = select(1, ...)
-        if type(arg1) == "table" then
-            arg1.progress = true
-            return form.openWaitDialog(arg1)
-        end
-        local title = arg1
-        local message = select(2, ...)
-        return form.openWaitDialog({title = title, message = message, progress = true})
-    end
-    return form.openProgressDialog(...)
-end
 
 function render.invalidate(box) box._cfg = nil end
 
@@ -76,54 +58,6 @@ function render.dirty(box)
         return true
     end
     return false
-end
-
-local function eraseBlackboxAsk()
-    local buttons = {
-        {
-            label = "@i18n(app.btn_ok)@",
-            action = function()
-                eraseDataflash()
-                return true
-            end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
-    }
-
-    form.openDialog({title = "@i18n(widgets.bbl.erase_dataflash)@", message = "@i18n(widgets.bbl.erase_dataflash)@" .. "?", buttons = buttons, options = TEXT_LEFT})
-end
-
-local function eraseDataflash()
-    isErase = true
-    progress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
-    progress:value(0)
-    progress:closeAllowed(false)
-    progressCounter = 0
-    progressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
-    progressMspStatusLast = nil
-    if utils and utils.registerProgressDialog then
-        utils.registerProgressDialog(progress, progressBaseMessage)
-    end
-
-    local message = {command = 72, processReply = function() isErase = false end}
-    rfsuite.tasks.msp.mspQueue:add(message)
-end
-
-local function updateProgressMessage()
-    if not progress or not progressBaseMessage then return end
-    local showMsp = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
-    local mspStatus = (showMsp and rfsuite.session and rfsuite.session.mspStatusMessage) or nil
-    if showMsp then
-        local msg = mspStatus or MSP_DEBUG_PLACEHOLDER
-        if msg ~= progressMspStatusLast then
-            progress:message(msg)
-            progressMspStatusLast = msg
-        end
-    else
-        if progressMspStatusLast ~= nil then
-            progress:message(progressBaseMessage)
-            progressMspStatusLast = nil
-        end
-    end
 end
 
 local function ensureCfg(box)
@@ -197,26 +131,6 @@ function render.wakeup(box)
 
     box._dynamicTextColor = percentUsed ~= nil and utils.resolveThresholdColor(percentUsed, box, "textcolor", "textcolor") or cfg.defaultTextColor
 
-    if eraseDataflashGo then
-        eraseDataflashGo = false
-        eraseDataflash()
-    end
-
-    if progress then
-        updateProgressMessage()
-        progressCounter = (progressCounter or 0) + 20
-        progress:value(progressCounter)
-        if progressCounter >= 100 then
-            progress:close()
-            if utils and utils.clearProgressDialog then
-                utils.clearProgressDialog(progress)
-            end
-            progress = nil
-            progressBaseMessage = nil
-            progressMspStatusLast = nil
-        end
-    end
-
     box._currentDisplayValue = displayValue
 end
 
@@ -229,8 +143,6 @@ function render.paint(x, y, w, h, box)
 
     utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, unitForPaint, c.font, c.valuealign, textColor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
 end
-
-render.eraseBlackboxAsk = eraseBlackboxAsk
 
 return render
 

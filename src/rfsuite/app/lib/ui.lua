@@ -1208,11 +1208,33 @@ function ui.cleanupCurrentPage()
         app.Page.apidata = nil
     end
 
-    -- Remove queued (not in-flight) MSP messages that belong to this page.
-    -- The in-flight currentMessage runs to completion; its callbacks guard against
-    -- a nil app.Page so stale execution is harmless.
+    -- Remove queued MSP messages and bus handlers that belong to this page.
+    -- If a page-owned message is already in flight, the queue can still complete it
+    -- without retaining or calling the page closure.
     if app.lastScript and tasks and tasks.msp and tasks.msp.mspQueue then
         local scriptToFlush = app.lastScript
+        local bus = tasks.msp.bus
+        local dev = preferences and preferences.developer
+        local logBus = dev and (dev.memstats == true or dev.logmspQueue == true)
+        if bus and bus.releaseOwner then
+            local beforeHandlers, beforeContexts
+            if logBus and bus.ownerCount then
+                beforeHandlers, beforeContexts = bus.ownerCount(scriptToFlush)
+            end
+            local removed = bus.releaseOwner(scriptToFlush)
+            if logBus and (removed > 0 or (beforeHandlers and beforeHandlers > 0) or (beforeContexts and beforeContexts > 0)) then
+                utils.log(
+                    string.format(
+                        "[msp-bus] page cleanup owner=%s removed=%d handlers=%d contexts=%d",
+                        tostring(scriptToFlush),
+                        removed,
+                        beforeHandlers or 0,
+                        beforeContexts or 0
+                    ),
+                    "debug"
+                )
+            end
+        end
         tasks.msp.mspQueue:removeQueuedBy(function(msg)
             return msg._pageScript == scriptToFlush
         end)
@@ -3223,7 +3245,10 @@ function ui.requestPage()
             enableDeltaCache = nil
         end
 
-        local API = tasks.msp.api.load(apiKey, {loadHelp = true})
+        local API = tasks.msp.api.loadPage(apiKey, {loadHelp = true})
+        if API and API.setOwner and app.lastScript then
+            API.setOwner(app.lastScript)
+        end
         if API and API.enableDeltaCache and enableDeltaCache ~= nil then
             API.enableDeltaCache(enableDeltaCache)
         end
@@ -3390,7 +3415,10 @@ function ui.saveSettings(sourcePage)
         local payloadData = values[apiNAME]
         local payloadStructure = tasks.msp.api.apidata.structure[apiNAME]
 
-        local API = tasks.msp.api.load(apiNAME)
+        local API = tasks.msp.api.loadPage(apiNAME)
+        if API and API.setOwner and app.lastScript then
+            API.setOwner(app.lastScript)
+        end
         if API and API.enableDeltaCache then
             local enableDeltaCache = nil
             if apiMeta and apiMeta.enableDeltaCache ~= nil then
@@ -3532,7 +3560,7 @@ end
 
 function ui.rebootFc(sourcePage)
     local rebootPage = sourcePage or app.Page
-    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.load and tasks.msp.api.load("REBOOT")
+    local rebootAPI = tasks and tasks.msp and tasks.msp.api and tasks.msp.api.loadPage and tasks.msp.api.loadPage("REBOOT")
     if not rebootAPI then
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true

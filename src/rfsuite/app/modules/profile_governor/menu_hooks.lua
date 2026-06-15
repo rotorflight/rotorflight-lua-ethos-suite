@@ -17,7 +17,7 @@ return {
             if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.helpers then
                 rfsuite.tasks.msp.helpers.governorMode(function(governorMode)
                     rfsuite.utils.log("Received governor mode: " .. tostring(governorMode), "info")
-                end)
+                end, rfsuite.app and rfsuite.app.lastScript)
             end
             return
         end

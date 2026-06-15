@@ -24,7 +24,7 @@ local function requestServoInfoChain()
             rfsuite.utils.log("Received servo count: " .. tostring(servoCount), "info")
             chainInFlight = false
             requestServoInfoChain()
-        end)
+        end, rfsuite.app and rfsuite.app.lastScript)
         return
     end
 
@@ -34,7 +34,7 @@ local function requestServoInfoChain()
             rfsuite.utils.log("Received servo override: " .. tostring(servoOverride), "info")
             chainInFlight = false
             requestServoInfoChain()
-        end)
+        end, rfsuite.app and rfsuite.app.lastScript)
         return
     end
 
@@ -45,7 +45,7 @@ local function requestServoInfoChain()
             rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
             chainInFlight = false
             requestServoInfoChain()
-        end)
+        end, rfsuite.app and rfsuite.app.lastScript)
         return
     end
 
@@ -55,7 +55,7 @@ local function requestServoInfoChain()
             rfsuite.utils.log("Received servo bus enabled: " .. tostring(servoBusEnabled), "info")
             chainInFlight = false
             requestServoInfoChain()
-        end)
+        end, rfsuite.app and rfsuite.app.lastScript)
         return
     end
 end

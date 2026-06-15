@@ -31,7 +31,7 @@ return {
             if tasks and tasks.msp and tasks.msp.helpers then
                 tasks.msp.helpers.governorMode(function(governorMode)
                     utils.log("Received governor mode: " .. tostring(governorMode), "info")
-                end)
+                end, app and app.lastScript)
             end
             return
         end

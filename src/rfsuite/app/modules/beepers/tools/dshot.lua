@@ -174,7 +174,7 @@ local function requestData(forceApiRead)
 
     state.pendingReads = 1
 
-    local API = tasks.msp.api.load("BEEPER_CONFIG")
+    local API = tasks.msp.api.loadPage("BEEPER_CONFIG")
     API.setUUID("beepers-dshot-main")
     API.setCompleteHandler(function()
         local d = API.data()
@@ -203,7 +203,7 @@ local function performSave()
     state.saving = true
     app.ui.progressDisplaySave("@i18n(app.modules.beepers.saving)@")
 
-    local API = tasks.msp.api.load("BEEPER_CONFIG")
+    local API = tasks.msp.api.loadPage("BEEPER_CONFIG")
     API.setUUID("beepers-dshot-write")
     API.setErrorHandler(function()
         state.saving = false
@@ -212,22 +212,22 @@ local function performSave()
         updateSaveEnabled()
     end)
     API.setCompleteHandler(function()
-        local ok = rfsuite.utils.queueEepromWrite({
-            uuid = "beepers.dshot.eeprom",
-            processReply = function()
-                state.saving = false
-                state.dirty = false
-                syncSessionSnapshot()
-                app.triggers.closeSave = true
-                updateSaveEnabled()
-            end,
-            errorHandler = function()
-                state.saving = false
-                app.triggers.closeSave = true
-                app.triggers.showSaveArmedWarning = true
-                updateSaveEnabled()
-            end
-        })
+        local EAPI = tasks.msp.api.loadPage("EEPROM_WRITE")
+        EAPI.setUUID("beepers.dshot.eeprom")
+        EAPI.setCompleteHandler(function()
+            state.saving = false
+            state.dirty = false
+            syncSessionSnapshot()
+            app.triggers.closeSave = true
+            updateSaveEnabled()
+        end)
+        EAPI.setErrorHandler(function()
+            state.saving = false
+            app.triggers.closeSave = true
+            app.triggers.showSaveArmedWarning = true
+            updateSaveEnabled()
+        end)
+        local ok = EAPI.write()
         if not ok then
             state.saving = false
             app.triggers.closeSave = true

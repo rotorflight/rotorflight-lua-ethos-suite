@@ -622,7 +622,7 @@ local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, modul
 
     local writeBuffer = copyNumericBuffer(sourceBuffer)
     local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load
-        and rfsuite.tasks.msp.api.load(TELEMETRY_CONFIG_API_NAME)
+        and rfsuite.tasks.msp.api.loadPage(TELEMETRY_CONFIG_API_NAME)
 
     if not writeBuffer or not api then
         rfsuite.utils.log("ELRS sync could not open the Rotorflight telemetry configuration for writing", "info")
@@ -671,19 +671,19 @@ local function syncElrsToRotorflight(fcConfig, moduleRate, moduleRateText, modul
         )
         setStatus(T.savingRotorflight)
 
-        local ok, reason = rfsuite.utils.queueEepromWrite({
-            uuid = "eeprom.elrslink.diagnostics",
-            processReply = function()
-                rfsuite.utils.log("Saved Rotorflight telemetry sync to EEPROM", "info")
-                setStatus(T.rotorflightUpdated)
-                completeTask()
-            end,
-            errorHandler = function()
-                rfsuite.utils.log("EEPROM write failed after ELRS telemetry sync", "info")
-                setStatus(T.rotorflightSaveFailed)
-                completeTask()
-            end
-        })
+        local EAPI = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
+        EAPI.setUUID("eeprom.elrslink.diagnostics")
+        EAPI.setCompleteHandler(function()
+            rfsuite.utils.log("Saved Rotorflight telemetry sync to EEPROM", "info")
+            setStatus(T.rotorflightUpdated)
+            completeTask()
+        end)
+        EAPI.setErrorHandler(function()
+            rfsuite.utils.log("EEPROM write failed after ELRS telemetry sync", "info")
+            setStatus(T.rotorflightSaveFailed)
+            completeTask()
+        end)
+        local ok, reason = EAPI.write()
 
         if not ok then
             rfsuite.utils.log("EEPROM enqueue rejected after ELRS telemetry sync (" .. tostring(reason) .. ")", "info")

@@ -4,7 +4,6 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-local mspHelper = rfsuite.tasks.msp.mspHelper
 
 local prevConnectedState = nil
 local initTime = os.clock()
@@ -51,11 +50,6 @@ local function updateMenuAvailability()
     end
 end
 
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
-
 local function onPrereqDone()
     prereqReady = featureConfigReady and blackboxConfigReady and dataflashStatusReady and sdcardStatusReady
     if prereqReady then
@@ -87,7 +81,7 @@ local function requestBlackboxPrereqs()
     }
     blackboxFocused = false
 
-    local FAPI = rfsuite.tasks.msp.api.load("FEATURE_CONFIG")
+    local FAPI = rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG")
     FAPI.setUUID("blackbox-menu-feature")
     FAPI.setCompleteHandler(function()
         local d = FAPI.data()
@@ -102,7 +96,7 @@ local function requestBlackboxPrereqs()
     end)
     FAPI.read()
 
-    local BAPI = rfsuite.tasks.msp.api.load("BLACKBOX_CONFIG")
+    local BAPI = rfsuite.tasks.msp.api.loadPage("BLACKBOX_CONFIG")
     BAPI.setUUID("blackbox-menu-config")
     BAPI.setCompleteHandler(function()
         local d = BAPI.data()
@@ -120,43 +114,37 @@ local function requestBlackboxPrereqs()
     end)
     BAPI.read()
 
-    local dataflashMessage = {
-        command = 70,
-        processReply = function(self, buf)
-            if buf then
-                local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
-                media.dataflashSupported = (flags & 2) ~= 0
-            end
-            dataflashStatusReady = true
-            onPrereqDone()
-        end,
-        errorHandler = function()
-            dataflashStatusReady = true
-            onPrereqDone()
-        end,
-        simulatorResponse = {3, 235, 3, 0, 0, 0, 0, 214, 7, 0, 0, 0, 0}
-    }
-    if not queueDirect(dataflashMessage, "blackbox-menu-dataflash") then
+    local DAPI = rfsuite.tasks.msp.api.loadPage("DATAFLASH_SUMMARY")
+    DAPI.setUUID("blackbox-menu-dataflash")
+    DAPI.setCompleteHandler(function()
+        local parsed = DAPI.data() and DAPI.data().parsed
+        local flags = tonumber(parsed and parsed.flags or 0) or 0
+        media.dataflashSupported = (flags & 2) ~= 0
+        dataflashStatusReady = true
+        onPrereqDone()
+    end)
+    DAPI.setErrorHandler(function()
+        dataflashStatusReady = true
+        onPrereqDone()
+    end)
+    if not DAPI.read() then
         dataflashStatusReady = true
     end
 
-    local sdcardMessage = {
-        command = 79,
-        processReply = function(self, buf)
-            if buf then
-                local flags = tonumber(mspHelper.readU8(buf) or 0) or 0
-                media.sdcardSupported = (flags & 0x01) ~= 0
-            end
-            sdcardStatusReady = true
-            onPrereqDone()
-        end,
-        errorHandler = function()
-            sdcardStatusReady = true
-            onPrereqDone()
-        end,
-        simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    }
-    if not queueDirect(sdcardMessage, "blackbox-menu-sdcard") then
+    local SAPI = rfsuite.tasks.msp.api.loadPage("SDCARD_SUMMARY")
+    SAPI.setUUID("blackbox-menu-sdcard")
+    SAPI.setCompleteHandler(function()
+        local parsed = SAPI.data() and SAPI.data().parsed
+        local flags = tonumber(parsed and parsed.flags or 0) or 0
+        media.sdcardSupported = (flags & 0x01) ~= 0
+        sdcardStatusReady = true
+        onPrereqDone()
+    end)
+    SAPI.setErrorHandler(function()
+        sdcardStatusReady = true
+        onPrereqDone()
+    end)
+    if not SAPI.read() then
         sdcardStatusReady = true
     end
 

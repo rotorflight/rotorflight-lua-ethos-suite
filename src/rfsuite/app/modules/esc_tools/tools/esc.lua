@@ -381,7 +381,7 @@ local function requestEscProtocol()
         return
     end
 
-    local API = rfsuite.tasks.msp.api.load(ESC_SENSOR_CONFIG_API)
+    local API = rfsuite.tasks.msp.api.loadPage(ESC_SENSOR_CONFIG_API)
     if not API then
         protocolReadAttempted = true
         return

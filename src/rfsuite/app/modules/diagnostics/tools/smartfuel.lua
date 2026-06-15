@@ -149,7 +149,7 @@ local function readFirmwareConfig()
     if not (rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) and tasks and tasks.msp and tasks.msp.api) then return end
     firmwareReadStarted = true
 
-    local api = tasks.msp.api.load("SMARTFUEL_CONFIG")
+    local api = tasks.msp.api.loadPage("SMARTFUEL_CONFIG")
     api.setCompleteHandler(function()
         firmwareConfig = {
             mode = tonumber(api.readValue("smartfuel_mode")) or 0,

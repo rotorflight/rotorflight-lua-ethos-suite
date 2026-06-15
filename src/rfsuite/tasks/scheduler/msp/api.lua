@@ -384,6 +384,18 @@ function api.load(apiName, loadOpts)
     return module
 end
 
+function api.loadPage(apiName, loadOpts)
+    local module = api.load(apiName, loadOpts)
+    if module and module.setOwner then
+        local app = rfsuite.app
+        local owner = app and app.lastScript
+        if owner then
+            module.setOwner(owner)
+        end
+    end
+    return module
+end
+
 function api.clearEntry(apiName)
     if type(apiName) ~= "string" or apiName == "" then return false end
 

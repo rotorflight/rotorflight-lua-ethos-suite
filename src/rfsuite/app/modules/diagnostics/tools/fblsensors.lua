@@ -11,34 +11,28 @@ local tasks = rfsuite.tasks
 local session = rfsuite.session
 local lcd = lcd
 local osClock = os.clock
-local sin = math.sin
 local floor = math.floor
 
-local MSP_RAW_IMU = 102
-local MSP_ALTITUDE = 109
-local MSP_SONAR = 58
-local MSP_DEBUG = 254
-
 local SOURCES = {
-    {label = "@i18n(app.modules.fblsensors.sensor_gyro_x)@", packet = "raw_imu", group = "gyro", idx = 1},
-    {label = "@i18n(app.modules.fblsensors.sensor_gyro_y)@", packet = "raw_imu", group = "gyro", idx = 2},
-    {label = "@i18n(app.modules.fblsensors.sensor_gyro_z)@", packet = "raw_imu", group = "gyro", idx = 3},
-    {label = "@i18n(app.modules.fblsensors.sensor_accel_x)@", packet = "raw_imu", group = "accel", idx = 1},
-    {label = "@i18n(app.modules.fblsensors.sensor_accel_y)@", packet = "raw_imu", group = "accel", idx = 2},
-    {label = "@i18n(app.modules.fblsensors.sensor_accel_z)@", packet = "raw_imu", group = "accel", idx = 3},
-    {label = "@i18n(app.modules.fblsensors.sensor_mag_x)@", packet = "raw_imu", group = "mag", idx = 1},
-    {label = "@i18n(app.modules.fblsensors.sensor_mag_y)@", packet = "raw_imu", group = "mag", idx = 2},
-    {label = "@i18n(app.modules.fblsensors.sensor_mag_z)@", packet = "raw_imu", group = "mag", idx = 3},
-    {label = "@i18n(app.modules.fblsensors.sensor_altitude)@", packet = "altitude"},
-    {label = "@i18n(app.modules.fblsensors.sensor_sonar)@", packet = "sonar"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_0)@", packet = "debug", idx = 1},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_1)@", packet = "debug", idx = 2},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_2)@", packet = "debug", idx = 3},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_3)@", packet = "debug", idx = 4},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_4)@", packet = "debug", idx = 5},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_5)@", packet = "debug", idx = 6},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_6)@", packet = "debug", idx = 7},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_7)@", packet = "debug", idx = 8},
+    {label = "@i18n(app.modules.fblsensors.sensor_gyro_x)@", packet = "RAW_IMU", field = "gyro_1", scale = 4 / 16.4},
+    {label = "@i18n(app.modules.fblsensors.sensor_gyro_y)@", packet = "RAW_IMU", field = "gyro_2", scale = 4 / 16.4},
+    {label = "@i18n(app.modules.fblsensors.sensor_gyro_z)@", packet = "RAW_IMU", field = "gyro_3", scale = 4 / 16.4},
+    {label = "@i18n(app.modules.fblsensors.sensor_accel_x)@", packet = "RAW_IMU", field = "accel_1", scale = 1 / 512},
+    {label = "@i18n(app.modules.fblsensors.sensor_accel_y)@", packet = "RAW_IMU", field = "accel_2", scale = 1 / 512},
+    {label = "@i18n(app.modules.fblsensors.sensor_accel_z)@", packet = "RAW_IMU", field = "accel_3", scale = 1 / 512},
+    {label = "@i18n(app.modules.fblsensors.sensor_mag_x)@", packet = "RAW_IMU", field = "mag_1", scale = 1 / 1090},
+    {label = "@i18n(app.modules.fblsensors.sensor_mag_y)@", packet = "RAW_IMU", field = "mag_2", scale = 1 / 1090},
+    {label = "@i18n(app.modules.fblsensors.sensor_mag_z)@", packet = "RAW_IMU", field = "mag_3", scale = 1 / 1090},
+    {label = "@i18n(app.modules.fblsensors.sensor_altitude)@", packet = "ALTITUDE", field = "altitude_cm", scale = 0.01},
+    {label = "@i18n(app.modules.fblsensors.sensor_sonar)@", packet = "SONAR", field = "sonar"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_0)@", packet = "DEBUG", field = "debug_1"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_1)@", packet = "DEBUG", field = "debug_2"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_2)@", packet = "DEBUG", field = "debug_3"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_3)@", packet = "DEBUG", field = "debug_4"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_4)@", packet = "DEBUG", field = "debug_5"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_5)@", packet = "DEBUG", field = "debug_6"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_6)@", packet = "DEBUG", field = "debug_7"},
+    {label = "@i18n(app.modules.fblsensors.sensor_debug_7)@", packet = "DEBUG", field = "debug_8"},
 }
 
 local state = {
@@ -53,91 +47,12 @@ local state = {
     lastSampleAt = 0,
     samplePeriod = 0.08,
     pending = nil,
+    pendingData = nil,
     pendingAt = 0,
     pendingTimeout = 1.0,
     pollingEnabled = false,
-    rawImu = nil,
-    altitude = nil,
-    sonar = nil,
-    debug = nil,
+    apis = nil,
 }
-
-local function writeS16(v)
-    if v < 0 then v = v + 0x10000 end
-    return v % 256, floor(v / 256) % 256
-end
-
-local function writeS32(v)
-    if v < 0 then v = v + 0x100000000 end
-    return v % 256, floor(v / 256) % 256, floor(v / 65536) % 256, floor(v / 16777216) % 256
-end
-
-local function getRawImuSimResponse()
-    local t = osClock() * 3.5
-
-    local ax = math.floor(sin(t) * 180)
-    local ay = math.floor(sin(t + 1.3) * 160)
-    local az = math.floor(512 + sin(t + 0.4) * 70)
-
-    local gx = math.floor(sin(t * 1.2) * 220)
-    local gy = math.floor(sin(t * 1.1 + 1.1) * 200)
-    local gz = math.floor(sin(t * 0.9 + 2.0) * 170)
-
-    local mx = math.floor(sin(t * 0.8) * 120)
-    local my = math.floor(sin(t * 0.7 + 0.7) * 140)
-    local mz = math.floor(sin(t * 0.6 + 1.8) * 90)
-
-    local b = {}
-    local function push16(v)
-        local l, h = writeS16(v)
-        b[#b + 1] = l
-        b[#b + 1] = h
-    end
-
-    push16(ax)
-    push16(ay)
-    push16(az)
-    push16(gx)
-    push16(gy)
-    push16(gz)
-    push16(mx)
-    push16(my)
-    push16(mz)
-
-    return b
-end
-
-local function getAltitudeSimResponse()
-    local t = osClock() * 1.2
-    local altitudeCm = math.floor((100 + sin(t) * 40) * 100)
-    local b0, b1, b2, b3 = writeS32(altitudeCm)
-    return {b0, b1, b2, b3}
-end
-
-local function getSonarSimResponse()
-    local t = osClock() * 1.5
-    local sonar = math.floor(120 + sin(t) * 30)
-    local b0, b1, b2, b3 = writeS32(sonar)
-    return {b0, b1, b2, b3}
-end
-
-local function getDebugSimResponse()
-    local t = osClock() * 2.0
-    local b = {}
-    local function push32(v)
-        local b0, b1, b2, b3 = writeS32(v)
-        b[#b + 1] = b0
-        b[#b + 1] = b1
-        b[#b + 1] = b2
-        b[#b + 1] = b3
-    end
-
-    for i = 1, 8 do
-        push32(math.floor(sin(t + i * 0.6) * 1000))
-    end
-
-    return b
-end
 
 local function resetSamples()
     state.samples = {}
@@ -179,73 +94,19 @@ local function addSample(v)
     end
 end
 
-local function parseRawImu(buf)
-    local m = tasks.msp.mspHelper
-
-    local ax = m.readS16(buf)
-    local ay = m.readS16(buf)
-    local az = m.readS16(buf)
-
-    local gx = m.readS16(buf)
-    local gy = m.readS16(buf)
-    local gz = m.readS16(buf)
-
-    local mx = m.readS16(buf)
-    local my = m.readS16(buf)
-    local mz = m.readS16(buf)
-
-    if not mz then return false end
-
-    state.rawImu = {
-        accel = {ax / 512, ay / 512, az / 512},
-        gyro = {gx * (4 / 16.4), gy * (4 / 16.4), gz * (4 / 16.4)},
-        mag = {mx / 1090, my / 1090, mz / 1090}
-    }
-
-    return true
-end
-
-local function parseAltitude(buf)
-    local m = tasks.msp.mspHelper
-    local v = m.readS32(buf)
-    if v == nil then return false end
-    state.altitude = v / 100
-    return true
-end
-
-local function parseSonar(buf)
-    local m = tasks.msp.mspHelper
-    local v = m.readS32(buf)
-    if v == nil then return false end
-    state.sonar = v
-    return true
-end
-
-local function parseDebug(buf)
-    local m = tasks.msp.mspHelper
-    local d = {}
-    for i = 1, 8 do
-        d[i] = m.readS32(buf)
-        if d[i] == nil then return false end
-    end
-    state.debug = d
-    return true
-end
-
 local function readSelectedValue()
     local src = selectedSource()
     if not src then return nil end
 
-    if src.packet == "raw_imu" and state.rawImu then
-        local group = state.rawImu[src.group]
-        return group and group[src.idx] or nil
-    end
+    local apis = state.apis
+    local api = apis and apis[src.packet]
+    if not api then return nil end
 
-    if src.packet == "altitude" then return state.altitude end
-    if src.packet == "sonar" then return state.sonar end
-    if src.packet == "debug" and state.debug then return state.debug[src.idx] end
+    local value = api.readValue(src.field)
+    if type(value) ~= "number" then return nil end
+    if src.scale then return value * src.scale end
 
-    return nil
+    return value
 end
 
 local function drawGraph()
@@ -317,52 +178,87 @@ local function paint()
     drawGraph()
 end
 
-local function queueRead(command, apiname, parser, simulatorResponse)
-    if state.pending ~= nil then return false end
+local function loadApis()
+    if state.apis then return true end
 
+    local apiLoader = tasks.msp and tasks.msp.api
+    if not apiLoader then return false end
+
+    local apis = {
+        RAW_IMU = apiLoader.loadPage("RAW_IMU"),
+        ALTITUDE = apiLoader.loadPage("ALTITUDE"),
+        SONAR = apiLoader.loadPage("SONAR"),
+        DEBUG = apiLoader.loadPage("DEBUG")
+    }
+
+    for name, api in pairs(apis) do
+        if not api then return false end
+        if api.enableDeltaCache then api.enableDeltaCache(false) end
+        if api.setUUID then api.setUUID("fblsensors." .. name) end
+        if api.setErrorHandler then
+            api.setErrorHandler(function()
+                -- Clear the pending flag immediately so a single dropped/errored
+                -- reply doesn't stall sampling until pendingTimeout.
+                if state.pending == name then
+                    state.pending = nil
+                    state.pendingData = nil
+                    state.lastStateText = "INVALID"
+                end
+            end)
+        end
+    end
+
+    state.apis = apis
+    return true
+end
+
+local function updatePendingState()
+    local pending = state.pending
+    if pending == nil then return end
+
+    local api = state.apis and state.apis[pending]
+    if api and api.data and api.data() ~= state.pendingData then
+        state.pending = nil
+        state.pendingData = nil
+        state.lastStateText = "OK"
+        return
+    end
+
+    if (osClock() - state.pendingAt) > state.pendingTimeout then
+        state.pending = nil
+        state.pendingData = nil
+        state.lastStateText = "INVALID"
+    end
+end
+
+local function queueRead(apiname)
+    if state.pending ~= nil then return false end
+    if not loadApis() then
+        state.lastStateText = "INVALID"
+        return false
+    end
+
+    local api = state.apis and state.apis[apiname]
+    if not api then return false end
+
+    state.pendingData = api.data and api.data() or nil
     state.pending = apiname
     state.pendingAt = osClock()
 
-    return tasks.msp.mspQueue:add({
-        command = command,
-        apiname = apiname,
-        uuid = "fblsensors." .. apiname,
-        processReply = function(self, buf)
-            local ok = parser(buf)
-            state.pending = nil
-            state.lastStateText = ok and "OK" or "INVALID"
-        end,
-        errorHandler = function()
-            state.pending = nil
-            state.lastStateText = "INVALID"
-        end,
-        simulatorResponse = simulatorResponse
-    })
+    local ok = api.read()
+    if not ok then
+        state.pending = nil
+        state.pendingData = nil
+        state.lastStateText = "INVALID"
+    end
+
+    return ok
 end
 
 local function requestSelectedPacket()
     local src = selectedSource()
     if not src then return end
-
-    if src.packet == "raw_imu" then
-        queueRead(MSP_RAW_IMU, "RAW_IMU", parseRawImu, getRawImuSimResponse())
-        return
-    end
-
-    if src.packet == "altitude" then
-        queueRead(MSP_ALTITUDE, "ALTITUDE", parseAltitude, getAltitudeSimResponse())
-        return
-    end
-
-    if src.packet == "sonar" then
-        queueRead(MSP_SONAR, "SONAR", parseSonar, getSonarSimResponse())
-        return
-    end
-
-    if src.packet == "debug" then
-        queueRead(MSP_DEBUG, "DEBUG", parseDebug, getDebugSimResponse())
-        return
-    end
+    queueRead(src.packet)
 end
 
 local function openPage(opts)
@@ -391,6 +287,8 @@ local function openPage(opts)
     end, function(v)
         state.selectedSourceIdx = tonumber(v) or 1
         state.lastStateText = "WAIT"
+        state.pending = nil
+        state.pendingData = nil
         resetSamples()
     end)
 
@@ -412,15 +310,12 @@ local function wakeup()
 
     local now = osClock()
 
-    if state.pending ~= nil and (now - state.pendingAt) > state.pendingTimeout then
-        state.pending = nil
-        state.lastStateText = "INVALID"
-    end
+    updatePendingState()
 
     if (now - state.lastSampleAt) < state.samplePeriod then return end
     state.lastSampleAt = now
 
-    if tasks.msp.mspQueue:isProcessed() then
+    if tasks.msp.mspQueue:isProcessed() and state.pending == nil then
         requestSelectedPacket()
     end
 
@@ -440,11 +335,16 @@ local function onToolMenu()
     state.lastStateText = "WAIT"
 end
 
+local onNavMenu
+
 local function event(_, category, value)
     return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
-local function onNavMenu()
+function onNavMenu()
+    state.pending = nil
+    state.pendingData = nil
+    state.apis = nil
     pageRuntime.openMenuContext()
     return true
 end

@@ -27,7 +27,7 @@ local function u16_to_s16(u)
 end
 
 local function getMixerCompatibilityStatus()
-    local PAPI = rfsuite.tasks.msp.api.load("GET_MIXER_INPUT_PITCH")
+    local PAPI = rfsuite.tasks.msp.api.loadPage("GET_MIXER_INPUT_PITCH")
     PAPI.setCompleteHandler(function()
         MIXER_PITCH_RATE = u16_to_s16(PAPI.readValue("rate_stabilized_pitch"))
         MIXER_PITCH_MIN = u16_to_s16(PAPI.readValue("min_stabilized_pitch"))
@@ -36,7 +36,7 @@ local function getMixerCompatibilityStatus()
     PAPI.setUUID("mixer-menu-pitch")
     PAPI.read()
 
-    local RAPI = rfsuite.tasks.msp.api.load("GET_MIXER_INPUT_ROLL")
+    local RAPI = rfsuite.tasks.msp.api.loadPage("GET_MIXER_INPUT_ROLL")
     RAPI.setCompleteHandler(function()
         MIXER_ROLL_RATE = u16_to_s16(RAPI.readValue("rate_stabilized_roll"))
         MIXER_ROLL_MIN = u16_to_s16(RAPI.readValue("min_stabilized_roll"))
@@ -45,7 +45,7 @@ local function getMixerCompatibilityStatus()
     RAPI.setUUID("mixer-menu-roll")
     RAPI.read()
 
-    local CAPI = rfsuite.tasks.msp.api.load("GET_MIXER_INPUT_COLLECTIVE")
+    local CAPI = rfsuite.tasks.msp.api.loadPage("GET_MIXER_INPUT_COLLECTIVE")
     CAPI.setCompleteHandler(function()
         MIXER_COLLECTIVE_RATE = u16_to_s16(CAPI.readValue("rate_stabilized_collective"))
         MIXER_COLLECTIVE_MIN = u16_to_s16(CAPI.readValue("min_stabilized_collective"))
@@ -105,7 +105,7 @@ return {
                 rfsuite.tasks.msp.helpers.mixerConfig(function(tailMode, swashMode)
                     rfsuite.utils.log("Received tail mode: " .. tostring(tailMode), "info")
                     rfsuite.utils.log("Received swash mode: " .. tostring(swashMode), "info")
-                end)
+                end, rfsuite.app and rfsuite.app.lastScript)
             end
             return true
         end

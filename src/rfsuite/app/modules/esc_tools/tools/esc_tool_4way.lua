@@ -301,7 +301,7 @@ local function getEscDetailsAPI()
     if escDetailsApi and escDetailsApiName == ESC.mspapi then
         return escDetailsApi
     end
-    escDetailsApi = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    escDetailsApi = rfsuite.tasks.msp.api.loadPage(ESC.mspapi)
     if escDetailsApi then
         escDetailsApiName = ESC.mspapi
     else
@@ -488,7 +488,7 @@ local function ensureTailMode(callback)
             waitingTailMode = false
             pendingTailModeResolve = true
             if callback then callback(tailMode) end
-        end)
+        end, rfsuite.app and rfsuite.app.lastScript)
         return
     end
     if callback then callback(rfsuite.session and rfsuite.session.tailMode or nil) end
@@ -593,7 +593,7 @@ local function setESC4WayMode(id)
     last4WayWriteTarget = target
     last4WayWriteOk = nil
     if not escSwitchApi then
-        escSwitchApi = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+        escSwitchApi = rfsuite.tasks.msp.api.loadPage("4WIF_ESC_FWD_PROG")
     end
     local API = escSwitchApi
     if not API then return false, "api_missing" end

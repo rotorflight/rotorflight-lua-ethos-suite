@@ -61,7 +61,7 @@ local function requestPrereqs()
     beepersFocused = false
     beepersConfigParsed = {}
 
-    local API = rfsuite.tasks.msp.api.load("BEEPER_CONFIG")
+    local API = rfsuite.tasks.msp.api.loadPage("BEEPER_CONFIG")
     API.setUUID("beepers-menu-config")
     API.setCompleteHandler(function()
         local d = API.data()

@@ -9,7 +9,6 @@ local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"}
 
 local app = rfsuite.app
 local tasks = rfsuite.tasks
-local mspHelper = tasks.msp.mspHelper
 
 local FIELD = {
     DATAFLASH = 1,
@@ -25,6 +24,11 @@ local SDCARD_STATE = {
 }
 
 local wakeupScheduler = 0
+local dataflashAPI
+local sdcardAPI
+local eraseAPI
+local lastDataflashData
+local lastSdcardData
 local status = {
     dataflash = {
         ready = false,
@@ -54,11 +58,6 @@ local apidata = {
         }
     }
 }
-
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return tasks.msp.mspQueue:add(message)
-end
 
 local function formatSize(bytes)
     if not bytes or bytes <= 0 then return "0 B" end
@@ -95,6 +94,58 @@ local function formatSDCardStatus()
     return string.format("@i18n(app.modules.blackbox.unknown_state_fmt)@", state)
 end
 
+local function ensureApis()
+    local api = tasks.msp and tasks.msp.api
+    if not dataflashAPI then
+        dataflashAPI = api.loadPage("DATAFLASH_SUMMARY")
+        dataflashAPI.setUUID("blackbox.status.dataflash")
+    end
+    if not sdcardAPI then
+        sdcardAPI = api.loadPage("SDCARD_SUMMARY")
+        sdcardAPI.setUUID("blackbox.status.sdcard")
+    end
+    if not eraseAPI then
+        eraseAPI = api.loadPage("DATAFLASH_ERASE")
+        eraseAPI.setUUID("blackbox.status.erase")
+    end
+end
+
+local function syncDataflashStatus()
+    local data = dataflashAPI and dataflashAPI.data()
+    if data == nil or data == lastDataflashData then return end
+    lastDataflashData = data
+
+    local parsed = data.parsed
+    if not parsed then return end
+
+    local flags = tonumber(parsed.flags or 0) or 0
+    status.dataflash.ready = (flags & 1) ~= 0
+    status.dataflash.supported = (flags & 2) ~= 0
+    status.dataflash.totalSize = tonumber(parsed.total or 0) or 0
+    status.dataflash.usedSize = tonumber(parsed.used or 0) or 0
+end
+
+local function syncSDCardStatus()
+    local data = sdcardAPI and sdcardAPI.data()
+    if data == nil or data == lastSdcardData then return end
+    lastSdcardData = data
+
+    local parsed = data.parsed
+    if not parsed then return end
+
+    local flags = tonumber(parsed.flags or 0) or 0
+    status.sdcard.supported = (flags & 0x01) ~= 0
+    status.sdcard.state = tonumber(parsed.state or 0) or 0
+    status.sdcard.filesystemLastError = tonumber(parsed.filesystemLastError or 0) or 0
+    status.sdcard.freeSizeKB = tonumber(parsed.freeSizeKB or 0) or 0
+    status.sdcard.totalSizeKB = tonumber(parsed.totalSizeKB or 0) or 0
+end
+
+local function syncStatusFromApis()
+    syncDataflashStatus()
+    syncSDCardStatus()
+end
+
 local function updateStatusFields()
     if app.formFields[FIELD.DATAFLASH] and app.formFields[FIELD.DATAFLASH].value then
         app.formFields[FIELD.DATAFLASH]:value(formatDataflashStatus())
@@ -105,49 +156,23 @@ local function updateStatusFields()
 end
 
 local function pollDataflashSummary()
-    local message = {
-        command = 70,
-        processReply = function(self, buf)
-            local flags = mspHelper.readU8(buf)
-            status.dataflash.ready = (flags & 1) ~= 0
-            status.dataflash.supported = (flags & 2) ~= 0
-            mspHelper.readU32(buf)
-            status.dataflash.totalSize = mspHelper.readU32(buf)
-            status.dataflash.usedSize = mspHelper.readU32(buf)
-        end,
-        simulatorResponse = {3, 235, 3, 0, 0, 0, 0, 214, 7, 0, 0, 0, 0}
-    }
-    return queueDirect(message, "blackbox.status.dataflash")
+    ensureApis()
+    return dataflashAPI.read()
 end
 
 local function pollSDCardSummary()
-    local message = {
-        command = 79,
-        processReply = function(self, buf)
-            local flags = mspHelper.readU8(buf)
-            status.sdcard.supported = (flags & 0x01) ~= 0
-            status.sdcard.state = mspHelper.readU8(buf)
-            status.sdcard.filesystemLastError = mspHelper.readU8(buf)
-            status.sdcard.freeSizeKB = mspHelper.readU32(buf)
-            status.sdcard.totalSizeKB = mspHelper.readU32(buf)
-        end,
-        simulatorResponse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    }
-    return queueDirect(message, "blackbox.status.sdcard")
+    ensureApis()
+    return sdcardAPI.read()
 end
 
 local function eraseDataflash()
-    local message = {
-        command = 72,
-        processReply = function(self, buf)
-            status.eraseInProgress = true
-        end,
-        simulatorResponse = {}
-    }
-    return queueDirect(message, "blackbox.status.erase")
+    ensureApis()
+    status.eraseInProgress = true
+    return eraseAPI.write()
 end
 
 local function postLoad()
+    ensureApis()
     wakeupScheduler = 0
     pollDataflashSummary()
     pollSDCardSummary()
@@ -155,6 +180,8 @@ local function postLoad()
 end
 
 local function wakeup()
+    syncStatusFromApis()
+
     if tasks.msp.mspQueue:isProcessed() then
         local now = os.clock()
         if (now - wakeupScheduler) >= 2 then

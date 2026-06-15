@@ -32,7 +32,7 @@ end
 local function saveToEeprom()
     local ok, reason = rfsuite.utils.queueEepromWrite({
         uuid = "eeprom.syncstats.postconnect",
-        processReply = function() rfsuite.utils.log("EEPROM write command sent", "info") end
+        logMessage = "EEPROM write command sent"
     })
     if not ok then
         rfsuite.utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")

@@ -7,8 +7,6 @@ local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
-local MSP_SET_SERIAL_CONFIG = 55
-
 local PORT_TYPE_DISABLED = 0
 local PORT_TYPE_MSP = 1
 local PORT_TYPE_GPS = 2
@@ -83,11 +81,6 @@ local state = {
     portsOriginal = {},
     portsWorking = {}
 }
-
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
-end
 
 local function shallowCopy(tbl)
     local out = {}
@@ -267,7 +260,7 @@ local function parseSerialConfig(serialApi)
 end
 
 local function readRxConfig(done)
-    local rxApi = rfsuite.tasks.msp.api.load("RX_CONFIG")
+    local rxApi = rfsuite.tasks.msp.api.loadPage("RX_CONFIG")
     if not rxApi then
         state.rxSerialProvider = 0
         done()
@@ -297,7 +290,7 @@ local function startLoad()
 
     rfsuite.app.ui.progressDisplay("@i18n(app.modules.ports.name)@", "@i18n(app.modules.ports.progress_loading)@", 0.08)
 
-    local serialApi = rfsuite.tasks.msp.api.load("SERIAL_CONFIG")
+    local serialApi = rfsuite.tasks.msp.api.loadPage("SERIAL_CONFIG")
     if not serialApi then
         setLoadError("@i18n(app.modules.ports.error_serial_api_unavailable)@")
         return
@@ -320,40 +313,39 @@ local function startLoad()
     serialApi.read()
 end
 
-local function u32ToBytes(value)
-    local v = value or 0
-    return v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF
-end
-
 local function queueSetSerialPort(port, done, failed)
-    local b1, b2, b3, b4 = u32ToBytes(port.function_mask)
-    local payload = {
-        port.identifier,
-        b1, b2, b3, b4,
-        port.msp_baud_index,
-        port.gps_baud_index,
-        port.telem_baud_index,
-        port.blackbox_baud_index
-    }
+    local API = rfsuite.tasks.msp.api.loadPage("SERIAL_CONFIG")
+    if not API then
+        if failed then failed("@i18n(app.modules.ports.error_serial_api_unavailable)@") end
+        return
+    end
 
-    local message = {
-        command = MSP_SET_SERIAL_CONFIG,
-        payload = payload,
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_serial_write_failed_for)@ " .. portLabel(port.identifier)) end end,
-        simulatorResponse = {}
-    }
+    API.setUUID("ports.set." .. tostring(port.identifier))
+    API.setValue("identifier", port.identifier)
+    API.setValue("function_mask", port.function_mask)
+    API.setValue("msp_baud_index", port.msp_baud_index)
+    API.setValue("gps_baud_index", port.gps_baud_index)
+    API.setValue("telem_baud_index", port.telem_baud_index)
+    API.setValue("blackbox_baud_index", port.blackbox_baud_index)
+    API.setCompleteHandler(function() if done then done() end end)
+    API.setErrorHandler(function() if failed then failed("@i18n(app.modules.ports.error_serial_write_failed_for)@ " .. portLabel(port.identifier)) end end)
 
-    local ok, reason = queueDirect(message, "ports.set." .. tostring(port.identifier))
+    local ok, reason = API.write()
     if not ok and failed then failed(reason or "queue_rejected") end
 end
 
 local function queueEepromWrite(done, failed)
-    local ok, reason = rfsuite.utils.queueEepromWrite({
-        uuid = "ports.eeprom",
-        processReply = function() if done then done() end end,
-        errorHandler = function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end
-    })
+    local API = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
+    if not API then
+        if failed then failed("EEPROM_WRITE API unavailable") end
+        return
+    end
+
+    API.setUUID("ports.eeprom")
+    API.setCompleteHandler(function() if done then done() end end)
+    API.setErrorHandler(function() if failed then failed("@i18n(app.modules.ports.error_eeprom_write_failed)@") end end)
+
+    local ok, reason = API.write()
     if not ok and failed then
         if reason == "armed_blocked" then
             failed(rfsuite.utils.getArmedSaveBlockedMessage())

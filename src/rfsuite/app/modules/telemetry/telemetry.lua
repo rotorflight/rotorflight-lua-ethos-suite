@@ -437,7 +437,7 @@ end
 
 local function rebootFC()
     local epoch = lifecycleEpoch
-    local RAPI = trackApi(rfsuite.tasks.msp.api.load("REBOOT"))
+    local RAPI = trackApi(rfsuite.tasks.msp.api.loadPage("REBOOT"))
     RAPI.setUUID("telemetry-reboot")
     RAPI.setCompleteHandler(function(self)
         if not isLifecycleActive(epoch) then return end
@@ -449,7 +449,7 @@ end
 
 local function applySettings()
     local epoch = lifecycleEpoch
-    local EAPI = trackApi(rfsuite.tasks.msp.api.load("EEPROM_WRITE"))
+    local EAPI = trackApi(rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE"))
     EAPI.setUUID("telemetry-eeprom")
     EAPI.setCompleteHandler(function(self)
         if not isLifecycleActive(epoch) then return end
@@ -524,7 +524,7 @@ local function wakeup()
         local epoch = lifecycleEpoch
 
         -- first load the feature config 
-        local FAPI = trackApi(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"))
+        local FAPI = trackApi(rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG"))
         FAPI.setCompleteHandler(function(self, buf)
                 if not isLifecycleActive(epoch) then return end
                 local d = FAPI.data()
@@ -538,7 +538,7 @@ local function wakeup()
         FAPI.read()
 
         -- now load the telemetry config
-        local API = trackApi(rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG"))
+        local API = trackApi(rfsuite.tasks.msp.api.loadPage("TELEMETRY_CONFIG"))
         API.setCompleteHandler(function(self, buf)
             if not isLifecycleActive(epoch) then return end
             if rfsuite.app.Page then
@@ -616,7 +616,7 @@ local function wakeup()
 
                 local newBitmap = bitmap | FEATURE_TELEMETRY_MASK
 
-                local FAPI = trackApi(rfsuite.tasks.msp.api.load("FEATURE_CONFIG"))
+                local FAPI = trackApi(rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG"))
                 FAPI.setUUID("enable-telemetry-feature")
                 FAPI.setValue("enabledFeatures", newBitmap)
                 FAPI.write()
@@ -638,7 +638,7 @@ local function wakeup()
         end
 
         local epoch = lifecycleEpoch
-        local WRITEAPI = trackApi(rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG"))
+        local WRITEAPI = trackApi(rfsuite.tasks.msp.api.loadPage("TELEMETRY_CONFIG"))
         WRITEAPI.setUUID("telemetry-config-write")
         WRITEAPI.setCompleteHandler(function(self, buf)
             if not isLifecycleActive(epoch) then return end

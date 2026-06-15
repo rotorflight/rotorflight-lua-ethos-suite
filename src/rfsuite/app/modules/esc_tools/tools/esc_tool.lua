@@ -100,7 +100,7 @@ local function getEscDetailsAPI()
     if escDetailsApi and escDetailsApiName == ESC.mspapi then
         return escDetailsApi
     end
-    escDetailsApi = rfsuite.tasks.msp.api.load(ESC.mspapi)
+    escDetailsApi = rfsuite.tasks.msp.api.loadPage(ESC.mspapi)
     if escDetailsApi then
         escDetailsApiName = ESC.mspapi
     else

@@ -31,7 +31,7 @@ end
 local function saveToEeprom()
     local ok, reason = rfsuite.utils.queueEepromWrite({
         uuid = "eeprom.stats.page",
-        processReply = function() rfsuite.utils.log("EEPROM write command sent", "info") end
+        logMessage = "EEPROM write command sent"
     })
     if not ok then
         rfsuite.utils.log("EEPROM enqueue rejected (" .. tostring(reason) .. ")", "info")
@@ -57,7 +57,7 @@ local function postSave()
     local totalflighttime = toNumber(rfsuite.ini.getvalue(prefs, "general", "totalflighttime"), 0)
     local flightcount     = toNumber(rfsuite.ini.getvalue(prefs, "general", "flightcount"), 0)
 
-    local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+    local API = rfsuite.tasks.msp.api.loadPage("FLIGHT_STATS")
         API.setUUID("stats-postsave-sync")
         API.setRebuildOnWrite(true)
 
@@ -85,7 +85,7 @@ local function postLoad(self)
     enableWakeup = true
     if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
         --  load updated stats from FC after load
-            local API = rfsuite.tasks.msp.api.load("FLIGHT_STATS")
+            local API = rfsuite.tasks.msp.api.loadPage("FLIGHT_STATS")
             API.setUUID("stats-postload-read")
             API.setCompleteHandler(function(self, buf)
                 FBL_STATS = copyTable(API.data().parsed) 

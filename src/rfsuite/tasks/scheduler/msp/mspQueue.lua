@@ -80,6 +80,80 @@ local function qpop(q)
 end
 local function qcount(q) return q.last - q.first + 1 end
 
+local function getBus()
+    local tasks = rfsuite.tasks
+    local msp = tasks and tasks.msp
+    return msp and msp.bus or nil
+end
+
+local function releaseMessageHandlers(msg)
+    if not msg then return end
+
+    local bus = getBus()
+    if bus and bus.releaseContext then
+        if msg._busContext and msg._releaseBusContext then bus.releaseContext(msg._busContext) end
+        if msg._errorBusContext and msg._releaseErrorBusContext then bus.releaseContext(msg._errorBusContext) end
+    end
+
+    msg._replyAction = nil
+    msg._errorAction = nil
+    msg._busContext = nil
+    msg._releaseBusContext = nil
+    msg._errorBusContext = nil
+    msg._releaseErrorBusContext = nil
+    msg.processReply = nil
+    msg.errorHandler = nil
+end
+
+local function dispatchReply(msg, buf)
+    if not msg then return false, "nil_message" end
+
+    local action = msg._replyAction
+    if action then
+        local bus = getBus()
+        if bus and bus.dispatchAction then
+            return bus.dispatchAction(action, msg._busContext, msg, buf)
+        end
+        return false, "bus_missing"
+    end
+
+    if msg.processReply then
+        msg:processReply(buf)
+        return true
+    end
+
+    return false, "missing_handler"
+end
+
+local function dispatchError(msg, reason)
+    if not msg then return false, "nil_message" end
+
+    local action = msg._errorAction
+    if action then
+        local bus = getBus()
+        if bus and bus.dispatchAction then
+            return bus.dispatchAction(action, msg._errorBusContext or msg._busContext, msg, reason)
+        end
+        return false, "bus_missing"
+    end
+
+    if msg.errorHandler then
+        return pcall(msg.errorHandler, msg, reason)
+    end
+
+    return false, "missing_handler"
+end
+
+local function releaseQueuedHandlers(self)
+    releaseMessageHandlers(self.currentMessage)
+
+    local q = self.queue
+    if not (q and q.data) then return end
+    for i = q.first, q.last do
+        releaseMessageHandlers(q.data[i])
+    end
+end
+
 -- Shallow/array clone helpers
 local function cloneArray(src)
     local dst = {}
@@ -376,6 +450,7 @@ function MspQueueController:processQueue()
         -- Simulator mode: use provided simulatorResponse.
         if not self.currentMessage.simulatorResponse then
             if LOG_ENABLED_MSP() then utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug") end
+            releaseMessageHandlers(self.currentMessage)
             self.currentMessage = nil
             self.uuid = nil
             self.apiname = nil
@@ -399,7 +474,7 @@ function MspQueueController:processQueue()
             local modeSuffix = getRwModeSuffix(msg, rwState, false)
             utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " timeout" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
-        if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "timeout") end
+        if msg then dispatchError(msg, "timeout") end
         if LOG_ENABLED_MSP() then utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         if session then
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
@@ -413,6 +488,7 @@ function MspQueueController:processQueue()
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = now + self.interMessageDelay
         end
+        releaseMessageHandlers(msg)
         return
     end
 
@@ -429,8 +505,11 @@ function MspQueueController:processQueue()
         or (cmd == self.currentMessage.command and err and self.currentMessage.completeOnErrorReplyAttempt and self.retryCount >= self.currentMessage.completeOnErrorReplyAttempt)
         or (self.currentMessage.command == 68 and self.retryCount == 2) then
 
-        if self.currentMessage.processReply then
-            self.currentMessage:processReply(buf)
+        if self.currentMessage.processReply or self.currentMessage._replyAction then
+            local ok, errMsg = dispatchReply(self.currentMessage, buf)
+            if not ok and errMsg ~= "missing_handler" then
+                if LOG_ENABLED_MSP() then utils.log("MSP reply dispatch failed: " .. tostring(errMsg), "info") end
+            end
             if cmd and LOG_ENABLED_MSP() then
                 local rwState
                 if self.currentMessage.isWrite ~= nil then
@@ -524,6 +603,7 @@ function MspQueueController:processQueue()
             end
         end
 
+        releaseMessageHandlers(self.currentMessage)
         self.currentMessage = nil
         self.uuid = nil
         self.apiname = nil
@@ -548,12 +628,13 @@ function MspQueueController:processQueue()
             local modeSuffix = getRwModeSuffix(msg, rwState, false)
             utils.log("MSP " .. rwState .. " " .. tostring(msg.command) .. " max retries" .. modeSuffix .. (msg.apiname and (" (" .. tostring(msg.apiname) .. ")") or ""), "info")
         end
-        self:clear()
         setMspStatus(formatMspStatus(msg, "max retries"))
         if session then
             session.mspTimeouts = (session.mspTimeouts or 0) + 1
         end
-        if msg and msg.errorHandler then pcall(msg.errorHandler, msg, "max_retries") end
+        if msg then dispatchError(msg, "max_retries") end
+        self:clear()
+        releaseMessageHandlers(msg)
         local page = rfsuite.app and rfsuite.app.Page
         if page and page.mspTimeout then page.mspTimeout() end
     end
@@ -563,6 +644,7 @@ end
 function MspQueueController:clear()
     if rfsuite.session then rfsuite.session.mspBusy = false end
     self.mspBusyStart = nil
+    releaseQueuedHandlers(self)
     if self.queue then
         qreset(self.queue)
     else
@@ -627,6 +709,43 @@ function MspQueueController:add(message)
     toQueue._qid = self._qidSeq
     local pageScript = rfsuite.app and rfsuite.app.lastScript
     if pageScript then toQueue._pageScript = pageScript end
+    local bus = getBus()
+    if bus and bus.createContext then
+        local owner = toQueue._busOwner or toQueue.owner
+        if type(toQueue.processReply) == "function" then
+            local context = bus.createContext({
+                reply = toQueue.processReply,
+                error = type(toQueue.errorHandler) == "function" and toQueue.errorHandler or nil
+            }, owner)
+            toQueue._busContext = context
+            toQueue._releaseBusContext = true
+            toQueue._replyAction = "legacy.reply"
+            toQueue.processReply = nil
+            if type(toQueue.errorHandler) == "function" then
+                toQueue._errorAction = "legacy.error"
+                toQueue.errorHandler = nil
+            end
+        elseif type(toQueue.errorHandler) == "function" then
+            if toQueue._busContext and not toQueue._errorAction then
+                -- _busContext was supplied externally (e.g. setBusActions) and
+                -- carries no `error` field of its own; give the error handler
+                -- its own legacy context instead of silently dropping it.
+                toQueue._errorBusContext = bus.createContext({
+                    error = toQueue.errorHandler
+                }, owner)
+                toQueue._releaseErrorBusContext = true
+            elseif not toQueue._busContext then
+                toQueue._busContext = bus.createContext({
+                    error = toQueue.errorHandler
+                }, owner)
+                toQueue._releaseBusContext = true
+            end
+            if not toQueue._errorAction then
+                toQueue._errorAction = "legacy.error"
+            end
+            toQueue.errorHandler = nil
+        end
+    end
     qpush(self.queue, toQueue)
     pending = self:queueCount() + (self.currentMessage and 1 or 0)
 
@@ -638,6 +757,17 @@ function MspQueueController:add(message)
 
     setMspStatus(formatMspStatus(toQueue, "queued"))
     return true, "queued", toQueue._qid, pending
+end
+
+function MspQueueController:addPage(message)
+    if type(message) == "table" then
+        local pageScript = rfsuite.app and rfsuite.app.lastScript
+        if pageScript then
+            message._pageScript = message._pageScript or pageScript
+            message._busOwner = message._busOwner or pageScript
+        end
+    end
+    return self:add(message)
 end
 
 -- Estimate byte cost of pending messages
@@ -675,6 +805,7 @@ function MspQueueController:removeQueuedBy(predicate)
         end
 
         if drop then
+            releaseMessageHandlers(msg)
             data[read] = nil
             removed = removed + 1
         else

@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local servoApiHelpers = assert(loadfile("app/modules/servos/tools/servo_api_helpers.lua"))()
 
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -30,9 +31,15 @@ local configs = {}
 local BUS_OUTPUT_COUNT = 18
 local MSP125_READ_BASE_INDEX = 8  -- Base index expected by MSP 125 read-index namespace
 
-local function queueDirect(message, uuid)
-    if message and uuid and message.uuid == nil then message.uuid = uuid end
-    return rfsuite.tasks.msp.mspQueue:add(message)
+local queueApiWrite = servoApiHelpers.queueApiWrite
+local queueServoOverride = servoApiHelpers.queueServoOverride
+
+local function applyServoConfig(index, data)
+    return servoApiHelpers.applyServoConfig(configs, servoTable, index, data)
+end
+
+local function completeServoLoad()
+    servoApiHelpers.completeServoLoad(function() enableWakeup = true end)
 end
 
 local function uiIndexToReadIndex(ui0)
@@ -62,40 +69,34 @@ end
 local function servoCenterFocusAllOn(self)
 
     rfsuite.app.audio.playServoOverideEnable = true
-    local message = {command = 196, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-    queueDirect(message, "servo.bus.override.all.on")
+    queueApiWrite("SERVO_OVERRIDE_ALL", "servo.bus.override.all.on", {value = 0})
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusAllOff(self)
 
-    local message = {command = 196, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-    queueDirect(message, "servo.bus.override.all.off")
+    queueApiWrite("SERVO_OVERRIDE_ALL", "servo.bus.override.all.off", {value = 2001})
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOff(self)
-    local message = {command = 193, payload = {currentServoWriteIndex()}}
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
-    queueDirect(message, string.format("servo.bus.override.%d.off", currentServoWriteIndex()))
+    local writeIndex = currentServoWriteIndex()
+    queueServoOverride(writeIndex, 2001, string.format("servo.bus.override.%d.off", writeIndex))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function servoCenterFocusOn(self)
-    local message = {command = 193, payload = {currentServoWriteIndex()}}
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
-    queueDirect(message, string.format("servo.bus.override.%d.on", currentServoWriteIndex()))
+    local writeIndex = currentServoWriteIndex()
+    queueServoOverride(writeIndex, 0, string.format("servo.bus.override.%d.on", writeIndex))
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function writeEeprom()
-    local ok, reason = rfsuite.utils.queueEepromWrite({uuid = "servo.bustool.eeprom"})
+    local ok, reason = queueApiWrite("EEPROM_WRITE", "servo.bustool.eeprom")
     if not ok then
         rfsuite.utils.log("Servo BUS EEPROM enqueue rejected: " .. tostring(reason), "info")
     end
@@ -108,11 +109,10 @@ local function saveServoCenter(self)
     local writeIndex = currentServoWriteIndex()
     rfsuite.utils.log(string.format("BUS save center: ui=%d read=%d write=%d mid=%d", servoIndex, currentServoReadIndex(), writeIndex, servoCenter), "debug")
 
-    local message = {command = 213, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, writeIndex)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
-
-    return queueDirect(message, string.format("servo.bus.%d.center", writeIndex))
+    return queueApiWrite("SET_SERVO_CENTER", string.format("servo.bus.%d.center", writeIndex), {
+        index = writeIndex,
+        mid = servoCenter
+    })
 
 end
 
@@ -140,18 +140,17 @@ local function saveServoSettings(self)
     end
 
     local configWriteIndex = uiIndexToConfigWriteIndex(servoIndex)
-    local message = {command = 212, payload = {}}
-    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, configWriteIndex)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoScaleNeg)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoScalePos)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoRate)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
-    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
-
-    local ok, reason = queueDirect(message, string.format("servo.bus.%d.config", configWriteIndex))
+    local ok, reason = queueApiWrite("SET_SERVO_CONFIG", string.format("servo.bus.%d.config", configWriteIndex), {
+        index = configWriteIndex,
+        mid = servoCenter,
+        min = servoMin,
+        max = servoMax,
+        scale_neg = servoScaleNeg,
+        scale_pos = servoScalePos,
+        rate = servoRate,
+        speed = servoSpeed,
+        flags = servoFlags
+    })
     if not ok then return false, reason end
 
     if rfsuite.session.servoOverride == true then
@@ -287,66 +286,26 @@ local function wakeup(self)
 
 end
 
-local function getServoConfigurationsIndexed(callback, callbackParam)
-
-    -- MSP_GET_SERVO_CONFIG (125) reads one servo by read-index namespace (legacy absolute).
-    -- This intentionally differs from write-index namespace used by 212/213/193.
+local function getServoConfigurationsIndexed()
     local absIndex = currentServoReadIndex()
 
-    local message = {
-        command = 125,
-        payload = {absIndex},
-        uuid = string.format("servo.cfg.bus.%d", absIndex),
-        processReply = function(self, buf)
+    local API = rfsuite.tasks.msp.api.loadPage("GET_SERVO_CONFIG")
+    if not API then return false, "api_unavailable" end
 
-            -- Ensure we have a servoCount for any "all servos" operations (override on/off).
-            if not servoCount then
-                servoCount = rfsuite.session.servoCount or (servoTable and #servoTable) or 0
-                rfsuite.session.servoCount = servoCount
-            end
+    API.setUUID(string.format("servo.cfg.bus.%d", absIndex))
+    API.setCompleteHandler(function()
+        local data = API.data()
+        local parsed = data and data.parsed
+        if parsed then
+            servoCount = rfsuite.session and rfsuite.session.servoCount or servoCount
+            applyServoConfig(servoIndex, parsed)
+            completeServoLoad()
+        end
+    end)
 
-            local config = configs[servoIndex] or {}
-            config.name = servoTable[servoIndex + 1]['title']
-            config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
-            config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
-            config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
-            config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
-            config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
-            config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
-            config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
-            config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
-
-            if config.flags == 1 or config.flags == 3 then
-                config.reverse = 1
-            else
-                config.reverse = 0
-            end
-
-            if config.flags == 2 or config.flags == 3 then
-                config.geometry = 1
-            else
-                config.geometry = 0
-            end
-
-            configs[servoIndex] = config
-
-            if callback then callback(callbackParam) end
-        end,
-
-        -- 8x U16 fields (16 bytes). Values: mid=1500, min=1000, max=2000, rneg=1000, rpos=1000, rate=100, speed=0, flags=0
-        simulatorResponse = {220, 5, 232, 3, 208, 7, 232, 3, 232, 3, 100, 0, 0, 0, 0, 0}
-    }
-
-    return queueDirect(message)
+    return API.read(absIndex)
 end
 
-
-local function getServoConfigurationsEnd(callbackParam)
-    rfsuite.app.triggers.isReady = true
-    rfsuite.app.triggers.closeProgressLoader = true
-    enableWakeup = true
-    rfsuite.app.ui.setPageDirty(false)
-end
 
 local function openPage(opts)
 
@@ -547,7 +506,7 @@ local function openPage(opts)
         end
     end    
 
-    getServoConfigurationsIndexed(getServoConfigurationsEnd)
+    getServoConfigurationsIndexed()
 
 end
 

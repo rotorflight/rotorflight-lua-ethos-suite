@@ -264,7 +264,7 @@ local function startLoad()
     state.loadToken = state.loadToken + 1
     local token = state.loadToken
 
-    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load and rfsuite.tasks.msp.api.load("RC_TUNING")
+    local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.loadPage and rfsuite.tasks.msp.api.loadPage("RC_TUNING")
     if not api then
         state.loading = false
         state.loadError = "@i18n(app.error_timed_out)@"
