@@ -236,25 +236,7 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
     end
 end
 
-local function compileTransform(t, decimals)
-    local pow = decimals and (10 ^ decimals) or nil
-    local function round(v) return pow and (floor(v * pow + 0.5) / pow) or v end
-
-    if type(t) == "number" then
-        local mul = t
-        return function(v) return round(v * mul) end
-    elseif t == "floor" then
-        return function(v) return floor(v) end
-    elseif t == "ceil" then
-        return function(v) return ceil(v) end
-    elseif t == "round" or t == nil then
-        return function(v) return round(v) end
-    elseif type(t) == "function" then
-        return t
-    else
-        return function(v) return v end
-    end
-end
+local compileTransform = utils.compileTransform
 
 local function getStatsValue(telemetry, source, statType)
     if source == nil then return nil end

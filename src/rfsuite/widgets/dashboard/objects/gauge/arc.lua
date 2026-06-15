@@ -56,8 +56,6 @@ Arc Geometry/Advanced
 local rfsuite = require("rfsuite")
 local lcd = lcd
 
-local floor = math.floor
-local ceil = math.ceil
 local tostring = tostring
 
 local render = {}
@@ -85,44 +83,8 @@ function render.dirty(box)
     return false
 end
 
-local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
-    lcd.color(color)
-    local outer = radius
-    local inner = math.max(1, radius - (thickness or 6))
-
-    startAngle = startAngle % 360
-    endAngle = endAngle % 360
-    if endAngle <= startAngle then endAngle = endAngle + 360 end
-
-    local sweep = endAngle - startAngle
-    if sweep <= 180 then
-        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, endAngle)
-    else
-        local mid = startAngle + sweep / 2
-        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, mid)
-        lcd.drawAnnulusSector(cx, cy, inner, outer, mid, endAngle)
-    end
-end
-
-local function compileTransform(t, decimals)
-    local pow = decimals and (10 ^ decimals) or nil
-    local function round(v) return pow and (floor(v * pow + 0.5) / pow) or v end
-
-    if type(t) == "number" then
-        local mul = t
-        return function(v) return round(v * mul) end
-    elseif t == "floor" then
-        return function(v) return floor(v) end
-    elseif t == "ceil" then
-        return function(v) return ceil(v) end
-    elseif t == "round" or t == nil then
-        return function(v) return round(v) end
-    elseif type(t) == "function" then
-        return t
-    else
-        return function(v) return v end
-    end
-end
+local drawArc = utils.drawArc
+local compileTransform = utils.compileTransform
 
 function render.wakeup(box)
     local telemetry = rfsuite.tasks.telemetry

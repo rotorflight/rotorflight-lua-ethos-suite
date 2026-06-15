@@ -84,14 +84,7 @@ function render.dirty(box)
 end
 
 local function ensureCfg(box)
-    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
-    local param_version = box._param_version or 0
-    local cfg = box._cfg
-    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
-        cfg = {}
-        cfg._theme_version = theme_version
-        cfg._param_version = param_version
-
+    return utils.ensureCfg(box, function(cfg, box)
         cfg.object = getParam(box, "object")
         if cfg.object == "pid" then
             cfg.source = "pid_profile"
@@ -137,10 +130,7 @@ local function ensureCfg(box)
         cfg.novalue = getParam(box, "novalue") or "-"
         cfg.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
         cfg.fontList = (utils.getFontListsForResolution().value_default) or {}
-
-        box._cfg = cfg
-    end
-    return box._cfg
+    end)
 end
 
 function render.wakeup(box)

@@ -76,13 +76,7 @@ function render.dirty(box)
 end
 
 local function ensureCfg(box)
-    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
-    local param_version = box._param_version or 0
-    local cfg = box._cfg
-    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
-        cfg = {}
-        cfg._theme_version = theme_version
-        cfg._param_version = param_version
+    return utils.ensureCfg(box, function(cfg, box)
         cfg.title = getParam(box, "title")
         cfg.titlepos = getParam(box, "titlepos")
         cfg.titlealign = getParam(box, "titlealign")
@@ -104,9 +98,7 @@ local function ensureCfg(box)
         cfg.valuepaddingtop = getParam(box, "valuepaddingtop")
         cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
         cfg.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
-        box._cfg = cfg
-    end
-    return box._cfg
+    end)
 end
 
 function render.wakeup(box)

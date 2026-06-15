@@ -71,6 +71,13 @@ local function isDashboardLogPanelEnabled()
     return dev and dev.loglevel ~= nil and dev.loglevel ~= "off"
 end
 
+local function logMemCheckpoint(label)
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    if dev and (dev.memstats or dev.overlaystats) then
+        log(string.format("[mem] %s: %dk", label, collectgarbage("count")), "info")
+    end
+end
+
 local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
 -- Holding inactive themes resident smooths the first state transition, but
 -- costs a noticeable amount of Lua RAM. Keep it off by default on Ethos.
@@ -169,6 +176,7 @@ local scheduledBoxIndices = {}
 
 local firstWakeup = true
 local firstWakeupCustomTheme = true
+local firstRenderComplete = false
 
 dashboard.boxRects = {}
 dashboard.selectedBoxIndex = nil
@@ -1659,6 +1667,11 @@ function dashboard.paint(widget)
         callStateFunc("paint", widget)
     end
 
+    if not firstRenderComplete then
+        firstRenderComplete = true
+        logMemCheckpoint("after first render")
+    end
+
     if toolbar and toolbar.draw then
         toolbar.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
     end
@@ -2053,9 +2066,11 @@ function dashboard.wakeup_protected(widget)
 
     if firstWakeup then
         firstWakeup = false
+        logMemCheckpoint("before first theme load")
         local theme = getThemeForState("preflight")
         log("Initial loading of preflight theme: " .. theme, "info")
         loadedStateModules.preflight = load_state_script(theme, "preflight")
+        logMemCheckpoint("after load_state_script(preflight)")
         dashboard.applySchedulerSettings()
     end
 

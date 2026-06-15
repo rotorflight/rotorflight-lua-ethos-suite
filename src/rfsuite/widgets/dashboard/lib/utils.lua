@@ -945,6 +945,65 @@ end
 
 function utils.resetImageCache() for k in pairs(imageCache) do imageCache[k] = nil end end
 
+-- Shared theme/param-version-checked config cache used by most object renderers.
+-- builder(cfg, box) populates a fresh cfg table; the result is cached on box._cfg
+-- until rfsuite.theme.version or box._param_version changes.
+function utils.ensureCfg(box, builder)
+    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
+    local param_version = box._param_version or 0
+    local cfg = box._cfg
+    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
+        cfg = {}
+        cfg._theme_version = theme_version
+        cfg._param_version = param_version
+        builder(cfg, box)
+        box._cfg = cfg
+    end
+    return box._cfg
+end
+
+-- Compiles a value transform spec (number multiplier, "floor"/"ceil"/"round", or a
+-- custom function) into a function(v) -> v, with optional rounding to `decimals`.
+function utils.compileTransform(t, decimals)
+    local pow = decimals and (10 ^ decimals) or nil
+    local function round(v) return pow and (floor(v * pow + 0.5) / pow) or v end
+
+    if type(t) == "number" then
+        local mul = t
+        return function(v) return round(v * mul) end
+    elseif t == "floor" then
+        return function(v) return floor(v) end
+    elseif t == "ceil" then
+        return function(v) return ceil(v) end
+    elseif t == "round" or t == nil then
+        return function(v) return round(v) end
+    elseif type(t) == "function" then
+        return t
+    else
+        return function(v) return v end
+    end
+end
+
+-- Draws an annulus sector (arc) of the given thickness between startAngle and endAngle (degrees).
+function utils.drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
+    lcd.color(color)
+    local outer = radius
+    local inner = max(1, radius - (thickness or 6))
+
+    startAngle = startAngle % 360
+    endAngle = endAngle % 360
+    if endAngle <= startAngle then endAngle = endAngle + 360 end
+
+    local sweep = endAngle - startAngle
+    if sweep <= 180 then
+        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, endAngle)
+    else
+        local mid = startAngle + sweep / 2
+        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, mid)
+        lcd.drawAnnulusSector(cx, cy, inner, outer, mid, endAngle)
+    end
+end
+
 function utils.screenError(msg, border, pct, padX, padY)
 
     if not pct then pct = 0.5 end

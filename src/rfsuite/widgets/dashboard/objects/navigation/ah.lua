@@ -57,14 +57,7 @@ local function rotate(px, py, cx, cy, angle)
 end
 
 local function ensureCfg(box)
-    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
-    local param_version = box._param_version or 0
-    local cfg = box._cfg
-    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
-        cfg = {}
-        cfg._theme_version = theme_version
-        cfg._param_version = param_version
-
+    return utils.ensureCfg(box, function(cfg, box)
         cfg.ppd = getParam(box, "pixelsperdeg") or 2.0
         cfg.dMin = getParam(box, "dynamicscalemin") or 1.05
         cfg.dMax = getParam(box, "dynamicscalemax") or ((getParam(box, "dynamicscalemin") or 1.05) + 0.9)
@@ -86,10 +79,7 @@ local function ensureCfg(box)
         cfg.altitudemax = getParam(box, "altitudemax") or 200
         cfg.groundspeedmin = getParam(box, "groundspeedmin") or 0
         cfg.groundspeedmax = getParam(box, "groundspeedmax") or 100
-
-        box._cfg = cfg
-    end
-    return box._cfg
+    end)
 end
 
 function render.dirty(box)

@@ -46,15 +46,13 @@ To display min stats, set stattype = "min"; for max, omit or set stattype = "max
 
 local rfsuite = require("rfsuite")
 
-local floor = math.floor
-local ceil = math.ceil
-
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local getPulsingDots = utils.getPulsingDots
+local compileTransform = utils.compileTransform
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -70,26 +68,6 @@ function render.dirty(box)
     end
 
     return false
-end
-
-local function compileTransform(t, decimals)
-    local pow = decimals and (10 ^ decimals) or nil
-    local function round(v) return pow and (floor(v * pow + 0.5) / pow) or v end
-
-    if type(t) == "number" then
-        local mul = t
-        return function(v) return round(v * mul) end
-    elseif t == "floor" then
-        return function(v) return floor(v) end
-    elseif t == "ceil" then
-        return function(v) return ceil(v) end
-    elseif t == "round" or t == nil then
-        return function(v) return round(v) end
-    elseif type(t) == "function" then
-        return t
-    else
-        return function(v) return v end
-    end
 end
 
 function render.wakeup(box)
