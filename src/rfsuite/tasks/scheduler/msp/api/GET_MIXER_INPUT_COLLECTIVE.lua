@@ -4,16 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-
-local msp = rfsuite.tasks and rfsuite.tasks.msp
-local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then
-    msp.apicore = core
-end
-local legacyCore = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then
-    msp.apicore = legacyCore
-end
+local core = rfsuite.tasks.msp.getApiCore()
 local os_clock = os.clock
 
 local API_NAME = "GET_MIXER_INPUT_COLLECTIVE"
@@ -50,7 +41,7 @@ local function buildWritePayload(payloadData, mspData)
         min_stabilized_collective = (payloadData.min_stabilized_collective ~= nil) and payloadData.min_stabilized_collective or parsed.min_stabilized_collective,
         max_stabilized_collective = (payloadData.max_stabilized_collective ~= nil) and payloadData.max_stabilized_collective or parsed.max_stabilized_collective
     }
-    return legacyCore.buildFullPayload(API_NAME, values, {
+    return core.buildFullPayload(API_NAME, values, {
         {field = "index", type = "U8"},
         {field = "rate_stabilized_collective", type = "U16"},
         {field = "min_stabilized_collective", type = "U16"},

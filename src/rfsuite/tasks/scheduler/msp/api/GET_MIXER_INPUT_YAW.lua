@@ -4,16 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-
-local msp = rfsuite.tasks and rfsuite.tasks.msp
-local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then
-    msp.apicore = core
-end
-local legacyCore = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then
-    msp.apicore = legacyCore
-end
+local core = rfsuite.tasks.msp.getApiCore()
 
 local API_NAME = "GET_MIXER_INPUT_YAW"
 local FIXED_INDEX = 3
@@ -49,7 +40,7 @@ local function buildWritePayload(payloadData, mspData)
         min_stabilized_yaw = (payloadData.min_stabilized_yaw ~= nil) and payloadData.min_stabilized_yaw or parsed.min_stabilized_yaw,
         max_stabilized_yaw = (payloadData.max_stabilized_yaw ~= nil) and payloadData.max_stabilized_yaw or parsed.max_stabilized_yaw
     }
-    return legacyCore.buildFullPayload(API_NAME, values, {
+    return core.buildFullPayload(API_NAME, values, {
         {field = "index", type = "U8"},
         {field = "rate_stabilized_yaw", type = "U16"},
         {field = "min_stabilized_yaw", type = "U16"},

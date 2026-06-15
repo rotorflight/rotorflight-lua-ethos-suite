@@ -4,12 +4,7 @@
 ]] --
 
 local rfsuite = require("rfsuite")
-
-local msp = rfsuite.tasks and rfsuite.tasks.msp
-local core = (msp and msp.apicore) or assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
-if msp and not msp.apicore then
-    msp.apicore = core
-end
+local core = rfsuite.tasks.msp.getApiCore()
 
 local API_NAME = "FEATURE_CONFIG"
 local MSP_API_CMD_READ = 36

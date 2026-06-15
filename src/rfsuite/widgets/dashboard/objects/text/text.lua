@@ -45,15 +45,7 @@ local resolveThemeColor = utils.resolveThemeColor
 function render.invalidate(box) box._cfg = nil end
 
 function render.dirty(box)
-    if box._lastDisplayValue == nil then
-        box._lastDisplayValue = box._currentDisplayValue
-        return true
-    end
-    if box._lastDisplayValue ~= box._currentDisplayValue then
-        box._lastDisplayValue = box._currentDisplayValue
-        return true
-    end
-    return false
+    return utils.dirtyOnDisplayValueChange(box)
 end
 
 local function ensureCfg(box)

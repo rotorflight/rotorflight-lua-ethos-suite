@@ -111,6 +111,14 @@ msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks
 -- Snapshot protocol version at load; later changes should call setProtocolVersion.
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
 
+-- Lazily load (and cache) the shared MSP API core module used by tasks/scheduler/msp/api/*.lua
+function msp.getApiCore()
+    if not msp.apicore then
+        msp.apicore = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
+    end
+    return msp.apicore
+end
+
 -- Expose protocol logger
 msp.proto_logger = proto_logger
 

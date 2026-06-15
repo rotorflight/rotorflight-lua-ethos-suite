@@ -1659,4 +1659,18 @@ function utils.updateProgressDialogMessage(statusOverride)
     pcall(function() progressDialog.handle:message(msg) end)
 end
 
+-- Shared dirty-check: redraws when box._currentDisplayValue changes (and
+-- always on the first check, since _lastDisplayValue starts nil).
+function utils.dirtyOnDisplayValueChange(box)
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+    if box._lastDisplayValue ~= box._currentDisplayValue then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+    return false
+end
+
 return utils
