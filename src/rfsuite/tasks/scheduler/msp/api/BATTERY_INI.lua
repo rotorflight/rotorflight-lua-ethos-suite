@@ -118,7 +118,8 @@ return core.createCustomAPI({
     end,
     customWrite = function(_, state, emitComplete, emitError)
         local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
-        rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+        local cb = rfsuite.tasks.uiCallbacks
+        if cb and cb.progressDisplaySave then cb.progressDisplaySave(msg:gsub("%?$", ".")) end
 
         local tbl = ini.load_ini_file(INI_FILE) or {}
 

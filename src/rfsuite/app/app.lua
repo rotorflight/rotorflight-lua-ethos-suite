@@ -291,6 +291,18 @@ function app.create()
         app.MainMenu = assert(compile("app/modules/init.lua"))()
     end
 
+    rfsuite.tasks.uiCallbacks = {
+        updateProgressDialogMessage = function(msg)
+            if app.ui and app.ui.updateProgressDialogMessage then app.ui.updateProgressDialogMessage(msg) end
+        end,
+        applyMspStatusToActiveDialogs = function(msg)
+            if app.ui and app.ui.applyMspStatusToActiveDialogs then app.ui.applyMspStatusToActiveDialogs(msg) end
+        end,
+        progressDisplaySave = function(msg)
+            if app.ui and app.ui.progressDisplaySave then app.ui.progressDisplaySave(msg) end
+        end,
+    }
+
     app._pendingMainMenuOpen = true
     app._pendingOpenPageOpts = nil
 end
@@ -401,6 +413,7 @@ function app.close()
     rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
 
     rfsuite.tasks.appRunning = false
+    rfsuite.tasks.uiCallbacks = nil
     app.offlineMode = false
     rfsuite.tasks.escPowerCycleLoader = false
 

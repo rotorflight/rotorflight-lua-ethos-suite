@@ -257,11 +257,10 @@ local function _receivedReply(payload)
                 rfsuite.session.mspCrcErrors = n
                 rfsuite.session.mspStatusMessage = "MSP CRC error (" .. tostring(n) .. ")"
                 rfsuite.session.mspStatusUpdatedAt = os.clock()
-                if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.updateProgressDialogMessage then
-                    rfsuite.app.ui.updateProgressDialogMessage(rfsuite.session.mspStatusMessage)
-                end
-                if rfsuite.app and rfsuite.app.ui and rfsuite.app.ui.applyMspStatusToActiveDialogs then
-                    rfsuite.app.ui.applyMspStatusToActiveDialogs(rfsuite.session.mspStatusMessage)
+                local cb = rfsuite.tasks.uiCallbacks
+                if cb then
+                    if cb.updateProgressDialogMessage then cb.updateProgressDialogMessage(rfsuite.session.mspStatusMessage) end
+                    if cb.applyMspStatusToActiveDialogs then cb.applyMspStatusToActiveDialogs(rfsuite.session.mspStatusMessage) end
                 end
             end
             return nil
