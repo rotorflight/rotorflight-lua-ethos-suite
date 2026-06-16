@@ -73,6 +73,12 @@ function bus.dispatchAction(name, contextId, ...)
     return pcall(fn, context, ...)
 end
 
+function bus.notify(name, data)
+    local fn = actions[name]
+    if fn == nil then return false end
+    return pcall(fn, data or {})
+end
+
 function bus.reset()
     wipe(contexts)
     wipe(contextOwners)

@@ -31,6 +31,7 @@ local preferences = rfsuite.config.preferences
 local utils = rfsuite.utils
 local log = utils.log
 local tasks = rfsuite.tasks
+local themeLib
 local objectProfiler = false
 
 local function clearArray(t)
@@ -1578,6 +1579,14 @@ function dashboard.create()
 
     if not dashboard.utils then dashboard.utils = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua"))() end
     if not dashboard.loaders then dashboard.loaders = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/loaders.lua"))() end
+    if not themeLib then themeLib = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/themes.lua"))() end
+
+    local bus = rfsuite.bus
+    if bus and bus.registerAction then
+        bus.registerAction("dashboard.reload_themes", function(data)
+            dashboard.reload_themes(data and data.force)
+        end)
+    end
 
     os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/")
 
@@ -2255,48 +2264,10 @@ function dashboard.wakeup()
 end
 
 function dashboard.listThemes()
-    local themes = {}
-    local num = 0
-    if not utils then return themes end
-
-    local function scanThemes(basePath, sourceType)
-        if not basePath or basePath == "" then return end
-        local folders = system.listFiles(basePath)
-        if not folders then return end
-
-        for _, folder in ipairs(folders) do
-            if folder ~= ".." and folder ~= "." and not folder:match("%.%a+$") then
-                if utils.dir_exists(basePath, folder) then
-                    local themeDir = basePath .. folder .. "/"
-                    local initPath = themeDir .. "init.lua"
-
-                    local chunk = compile(initPath)
-                    if chunk then
-                        local ok, initTable = pcall(chunk)
-                        if ok and initTable and type(initTable.name) == "string" then
-                            num = num + 1
-                            themes[num] = {
-                                name = initTable.name,
-                                configure = initTable.configure,
-                                folder = folder,
-                                idx = num,
-                                source = sourceType,
-                                minResolution = initTable.minResolution
-                            }
-                        end
-                    end
-                end
-            end
-        end
+    if not themeLib then
+        themeLib = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/themes.lua"))()
     end
-
-    scanThemes(themesBasePath, "system")
-    local basePath = "SCRIPTS:/" .. preferences .. "/"
-    if utils.dir_exists(basePath, "dashboard") then
-        scanThemes(themesUserPath, "user")
-    end
-
-    return themes
+    return themeLib.listThemes()
 end
 
 

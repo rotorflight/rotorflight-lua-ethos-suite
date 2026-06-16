@@ -5,6 +5,7 @@
 
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local themeLib = assert(loadfile("widgets/dashboard/lib/themes.lua"))()
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
 local lcd = lcd
@@ -25,7 +26,7 @@ local function openPage(opts)
     local title = opts.title
     local script = opts.script
 
-    local themeList = rfsuite.widgets.dashboard.listThemes()
+    local themeList = themeLib.listThemes()
 
     rfsuite.session.dashboardEditingTheme = nil
     enableWakeup = true

@@ -59,7 +59,7 @@ local function onSaveMenu()
                 for key, value in pairs(config) do rfsuite.preferences.localizations[key] = value end
                 rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
 
-                rfsuite.widgets.dashboard.reload_themes()
+                rfsuite.bus.notify("dashboard.reload_themes", {})
 
                 rfsuite.app.triggers.closeSave = true
                 return true

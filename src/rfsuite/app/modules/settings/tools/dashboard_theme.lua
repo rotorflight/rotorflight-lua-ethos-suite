@@ -5,11 +5,12 @@
 
 local rfsuite = require("rfsuite")
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
+local themeLib = assert(loadfile("widgets/dashboard/lib/themes.lua"))()
 
 local settings = {}
 local settings_model = {}
 
-local themeList = rfsuite.widgets.dashboard.listThemes()
+local themeList = themeLib.listThemes()
 local formattedThemes = {}
 local formattedThemesModel = {}
 local themeIdByFolder = {}
@@ -48,7 +49,7 @@ end
 
 local function generateThemeList()
 
-    themeList = rfsuite.widgets.dashboard.listThemes()
+    themeList = themeLib.listThemes()
     table.sort(themeList, sortThemesByName)
 
     local screenW, screenH = lcd.getWindowSize()
@@ -381,7 +382,7 @@ local function onSaveMenu()
             rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
         end
 
-        rfsuite.widgets.dashboard.reload_themes(true)
+        rfsuite.bus.notify("dashboard.reload_themes", {force = true})
 
         rfsuite.app.triggers.closeSave = true
         return true

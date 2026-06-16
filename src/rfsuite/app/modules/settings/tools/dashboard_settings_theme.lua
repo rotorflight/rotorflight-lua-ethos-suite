@@ -21,7 +21,7 @@ local function onSaveMenu()
                 local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 if page and page.write then page.write() end
-                rfsuite.widgets.dashboard.reload_themes()
+                rfsuite.bus.notify("dashboard.reload_themes", {})
                 rfsuite.app.triggers.closeSave = true
                 return true
             end
