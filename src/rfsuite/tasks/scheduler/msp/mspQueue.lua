@@ -215,12 +215,10 @@ local function setMspStatus(message)
             session.mspStatusLast = message
             session.mspStatusClearAt = nil
         end
-        local app = rfsuite.app
-        if app and app.ui and app.ui.updateProgressDialogMessage then
-            app.ui.updateProgressDialogMessage(message)
-        end
-        if app and app.ui and app.ui.applyMspStatusToActiveDialogs then
-            app.ui.applyMspStatusToActiveDialogs(message)
+        local cb = rfsuite.tasks.uiCallbacks
+        if cb then
+            if cb.updateProgressDialogMessage then cb.updateProgressDialogMessage(message) end
+            if cb.applyMspStatusToActiveDialogs then cb.applyMspStatusToActiveDialogs(message) end
         end
     end
 end
