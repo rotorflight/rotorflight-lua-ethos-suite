@@ -25,6 +25,8 @@ The end state: `app` becomes a standalone Ethos tool that communicates only via
 | `d5c243cc` | Fix missed app.ui calls in mspQueue setMspStatus |
 | `75a5759a` | Replace app.ui direct calls from tasks with rfsuite.tasks.uiCallbacks |
 | `3882a72e` | Reverse app→tasks state coupling for guiIsRunning, lastScript, escPowerCycleLoader, rebootInProgress |
+| *(pending)* | Group A: uiCallbacks for resetAppTasks, closeSave, closeProgress, showArmedWarning, rebootFc, invalidatePages, mspRetry, mspSuccess, mspTimeout; tasks.lua and generic_actions.lua and mspQueue.lua updated |
+| *(pending)* | Group B: rfsuite.tasks.activePage for core.lua and ESC_PARAMETERS_HW5.lua; activePage lifecycle managed in ui.openPage, cleanupCurrentPage, utils.invalidatePages |
 
 ---
 
@@ -78,7 +80,9 @@ Run this to see all remaining `rfsuite.app` references in tasks:
 grep -rn "rfsuite\.app" src/rfsuite/tasks --include="*.lua"
 ```
 
-### Group A — Misc (smaller, do this first)
+**As of the last session, this returns no results — the tasks directory is clean.**
+
+### Group A — Misc (smaller, do this first) ✅ DONE
 
 **`src/rfsuite/tasks/tasks.lua:350-351` and `:825`**
 
@@ -165,7 +169,7 @@ Read what `app` is used for in context and move to `rfsuite.tasks.uiCallbacks` o
 
 ---
 
-### Group B — `app.Page` / `app.formFields` (the hard one, do last)
+### Group B — `app.Page` / `app.formFields` (the hard one, do last) ✅ DONE
 
 **`src/rfsuite/tasks/scheduler/msp/api/core.lua:293-430`**
 

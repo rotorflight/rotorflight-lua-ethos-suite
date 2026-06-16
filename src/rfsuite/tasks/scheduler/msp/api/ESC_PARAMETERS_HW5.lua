@@ -231,10 +231,9 @@ end
 
 local function getEditableFields()
     local editableFields = {}
-    local app = rfsuite.app
-    local page = app and app.Page
-    local fields = page and page.apidata and page.apidata.formdata and page.apidata.formdata.fields
-    local formFields = app and app.formFields
+    local activePage = rfsuite.tasks.activePage
+    local fields = activePage and activePage.fields
+    local formFields = activePage and activePage.formFields
 
     if type(fields) ~= "table" or type(formFields) ~= "table" then
         return editableFields

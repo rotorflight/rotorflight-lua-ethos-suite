@@ -420,8 +420,8 @@ function MspQueueController:processQueue()
                     else
                         setMspStatus(formatMspStatus(self.currentMessage, "send"))
                     end
-                    local page = rfsuite.app and rfsuite.app.Page
-                    if page and page.mspRetry then page.mspRetry(self) end
+                    local cb = rfsuite.tasks.uiCallbacks
+                    if cb and cb.mspRetry then cb.mspRetry(self) end
                 end
             end
         end
@@ -608,8 +608,8 @@ function MspQueueController:processQueue()
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = now + self.interMessageDelay
         end        
-        local page = rfsuite.app and rfsuite.app.Page
-        if page and page.mspSuccess then page.mspSuccess() end
+        local cb = rfsuite.tasks.uiCallbacks
+        if cb and cb.mspSuccess then cb.mspSuccess() end
 
     -- Too many retries - reset
     elseif self.retryCount > self.maxRetries then
@@ -631,8 +631,8 @@ function MspQueueController:processQueue()
         if msg then dispatchError(msg, "max_retries") end
         self:clear()
         releaseMessageHandlers(msg)
-        local page = rfsuite.app and rfsuite.app.Page
-        if page and page.mspTimeout then page.mspTimeout() end
+        local cb = rfsuite.tasks.uiCallbacks
+        if cb and cb.mspTimeout then cb.mspTimeout() end
     end
 end
 

@@ -290,8 +290,9 @@ function core.buildFullPayload(apiName, payloadData, writeStructure)
     local byteStream = {}
     local actualFields = {}
 
-    if rfsuite.app.Page and rfsuite.app.Page.apidata then
-        for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
+    local activePage = rfsuite.tasks.activePage
+    if activePage and activePage.fields then
+        for _, field in ipairs(activePage.fields) do
             if field.apikey then
                 actualFields[field.apikey] = field
             end
@@ -342,9 +343,10 @@ function core.buildDeltaPayload(apiName, payloadData, writeStructure, positionma
         byteStream[i] = receivedBytes and receivedBytes[i] or 0
     end
 
+    local activePage = rfsuite.tasks.activePage
     local editableFields = {}
-    for idx, _ in ipairs(rfsuite.app.formFields or {}) do
-        local pageField = rfsuite.app.Page and rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.formdata.fields[idx]
+    for idx, _ in ipairs(activePage and activePage.formFields or {}) do
+        local pageField = activePage and activePage.fields and activePage.fields[idx]
         if pageField and pageField.apikey then
             local key = pageField.apikey:match("([^%-]+)%-%>") or pageField.apikey
             editableFields[key] = true
@@ -352,11 +354,11 @@ function core.buildDeltaPayload(apiName, payloadData, writeStructure, positionma
     end
 
     local actualFields = {}
-    if rfsuite.app.Page and rfsuite.app.Page.apidata then
-        for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
+    if activePage and activePage.fields then
+        for _, field in ipairs(activePage.fields) do
             if field.api and not field.apikey then
                 local mspapi, apikey = string.match(field.api, "([^:]+):(.+)")
-                for i, apiNameEntry in ipairs(rfsuite.app.Page.apidata.api) do
+                for i, apiNameEntry in ipairs(activePage.api or {}) do
                     if apiNameEntry == mspapi then
                         mspapi = i
                         break
@@ -427,7 +429,7 @@ function core.buildDeltaPayload(apiName, payloadData, writeStructure, positionma
 end
 
 function core.buildWritePayload(apiName, payloadData, writeStructure, noDelta)
-    if not rfsuite.app.Page then
+    if not rfsuite.tasks.activePage then
         utils.log("[buildWritePayload] No page context", "info")
         return core.buildFullPayload(apiName, payloadData, writeStructure)
     end

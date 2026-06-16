@@ -301,6 +301,33 @@ function app.create()
         progressDisplaySave = function(msg)
             if app.ui and app.ui.progressDisplaySave then app.ui.progressDisplaySave(msg) end
         end,
+        resetAppTasks = function()
+            if app.tasks and app.tasks.reset then app.tasks.reset() end
+        end,
+        closeSave = function()
+            if app.triggers then app.triggers.closeSave = true end
+        end,
+        closeProgress = function()
+            if app.triggers then app.triggers.closeProgressLoader = true end
+        end,
+        showArmedWarning = function()
+            if app.triggers then app.triggers.showSaveArmedWarning = true end
+        end,
+        rebootFc = function(page)
+            if app.ui and app.ui.rebootFc then app.ui.rebootFc(page) end
+        end,
+        invalidatePages = function(opts)
+            if app.utils and app.utils.invalidatePages then app.utils.invalidatePages(opts) end
+        end,
+        mspRetry = function(queue)
+            if app.Page and app.Page.mspRetry then app.Page.mspRetry(queue) end
+        end,
+        mspSuccess = function()
+            if app.Page and app.Page.mspSuccess then app.Page.mspSuccess() end
+        end,
+        mspTimeout = function()
+            if app.Page and app.Page.mspTimeout then app.Page.mspTimeout() end
+        end,
     }
 
     app._pendingMainMenuOpen = true

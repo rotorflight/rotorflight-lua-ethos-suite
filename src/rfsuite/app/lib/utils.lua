@@ -287,6 +287,7 @@ function utils.invalidatePages(opts)
     local keepCurrentPage = preserveCurrentPage and app.Page
 
     if not keepCurrentPage then
+        rfsuite.tasks.activePage = nil
         app.Page = nil
     end
 

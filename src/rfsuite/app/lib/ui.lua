@@ -1264,6 +1264,7 @@ function ui.cleanupCurrentPage()
         tasks.msp.api.clearHelpCache()
     end
 
+    rfsuite.tasks.activePage = nil
     app.Page = nil
 
     collectgarbage('collect')
@@ -2659,6 +2660,14 @@ function ui.openPage(opts)
                 app.formFields[i] = {}
             end
         end
+    end
+
+    if app.Page and app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
+        rfsuite.tasks.activePage = {
+            fields     = app.Page.apidata.formdata.fields,
+            api        = app.Page.apidata.api,
+            formFields = app.formFields,
+        }
     end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "end")

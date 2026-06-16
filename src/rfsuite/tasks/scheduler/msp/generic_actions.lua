@@ -13,42 +13,30 @@ local ACTION_APP_SETTINGS_SAVED_REPLY = "app.settings_saved.reply"
 local ACTION_APP_SETTINGS_SAVED_ERROR = "app.settings_saved.error"
 local ACTION_LOG_REPLY = "msp.log.reply"
 
-local function appTriggers()
-    local app = rfsuite.app
-    return app and app.triggers or nil
-end
-
 local function closeProgress()
-    local triggers = appTriggers()
-    if triggers then
-        triggers.closeProgressLoader = true
-    end
+    local cb = rfsuite.tasks.uiCallbacks
+    if cb and cb.closeProgress then cb.closeProgress() end
     return true
 end
 
 local function settingsSavedReply(context)
-    local app = rfsuite.app
-    local triggers = app and app.triggers
+    local cb = rfsuite.tasks.uiCallbacks
     local page = context and context.page
 
-    if triggers then
-        triggers.closeSave = true
-    end
+    if cb and cb.closeSave then cb.closeSave() end
     if page and page.postEepromWrite then page.postEepromWrite() end
     if page and page.reboot then
-        app.ui.rebootFc(page)
+        if cb and cb.rebootFc then cb.rebootFc(page) end
     else
-        app.utils.invalidatePages({preserveCurrentPage = true})
+        if cb and cb.invalidatePages then cb.invalidatePages({preserveCurrentPage = true}) end
     end
     return true
 end
 
 local function settingsSavedError()
-    local triggers = appTriggers()
-    if triggers then
-        triggers.closeSave = true
-        triggers.showSaveArmedWarning = true
-    end
+    local cb = rfsuite.tasks.uiCallbacks
+    if cb and cb.closeSave then cb.closeSave() end
+    if cb and cb.showArmedWarning then cb.showArmedWarning() end
     return true
 end
 
