@@ -1213,7 +1213,7 @@ function ui.cleanupCurrentPage()
     -- without retaining or calling the page closure.
     if app.lastScript and tasks and tasks.msp and tasks.msp.mspQueue then
         local scriptToFlush = app.lastScript
-        local bus = tasks.msp.bus
+        local bus = rfsuite.bus
         local dev = preferences and preferences.developer
         local logBus = dev and (dev.memstats == true or dev.logmspQueue == true)
         if bus and bus.releaseOwner then

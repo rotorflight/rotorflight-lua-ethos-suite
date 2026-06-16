@@ -177,6 +177,7 @@ rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
 
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
+rfsuite.bus = assert(loadfile("lib/message_bus.lua", "t", _ENV))()
 rfsuite.ethos_events = assert(loadfile("lib/ethos_events.lua", "t", _ENV))()
 
 local function createLazyAppProxy()

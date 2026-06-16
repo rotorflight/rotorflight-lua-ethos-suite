@@ -105,7 +105,7 @@ local function queueApiMessage(message, owner)
 
     local replyFn = message.processReply
     local errorFn = message.errorHandler
-    local bus = msp and msp.bus
+    local bus = rfsuite.bus
 
     if not message._busContext and (type(replyFn) == "function" or type(errorFn) == "function") and bus and bus.createContext then
         local contextId = bus.createContext({

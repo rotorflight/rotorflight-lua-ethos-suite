@@ -244,7 +244,7 @@ function utils.titleCase(str) return str:gsub("(%a)([%w_']*)", function(first, r
 
 function utils.settingsSaved(savedPage)
     local page = savedPage or app.Page
-    local bus = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.bus
+    local bus = rfsuite.bus
     local actions = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.genericActions
     local genericActions = actions and actions.actions
     local contextId = genericActions and bus and bus.createContext and bus.createContext({page = page}, app.lastScript)

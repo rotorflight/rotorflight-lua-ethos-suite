@@ -81,9 +81,7 @@ end
 local function qcount(q) return q.last - q.first + 1 end
 
 local function getBus()
-    local tasks = rfsuite.tasks
-    local msp = tasks and tasks.msp
-    return msp and msp.bus or nil
+    return rfsuite.bus
 end
 
 local function releaseMessageHandlers(msg)

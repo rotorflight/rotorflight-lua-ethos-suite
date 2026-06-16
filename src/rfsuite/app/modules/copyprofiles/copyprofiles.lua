@@ -16,7 +16,7 @@ local doSave = false
 
 local function queueCopyProfile(payload, uuid)
     local msp = rfsuite.tasks and rfsuite.tasks.msp
-    local bus = msp and msp.bus
+    local bus = rfsuite.bus
     local actions = msp and msp.genericActions
     local contextId = bus and bus.createContext and bus.createContext({}, rfsuite.app and rfsuite.app.lastScript)
     local API = msp and msp.api and msp.api.loadPage("COPY_PROFILE")

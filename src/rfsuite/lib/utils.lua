@@ -173,7 +173,7 @@ function utils.queueEepromWrite(opts)
 
     if not opts.replyAction and opts.logMessage then
         local msp = tasks and tasks.msp
-        local bus = msp and msp.bus
+        local bus = rfsuite.bus
         local actions = msp and msp.genericActions
         if bus and bus.createContext and actions and actions.actions then
             createdBusContext = bus.createContext({message = opts.logMessage, level = opts.logLevel or "info"}, owner)
@@ -192,8 +192,8 @@ function utils.queueEepromWrite(opts)
     if type(errorHandler) == "function" then api.setErrorHandler(errorHandler) end
 
     local ok, reason = api.write()
-    if not ok and createdBusContext and tasks and tasks.msp and tasks.msp.bus and tasks.msp.bus.releaseContext then
-        tasks.msp.bus.releaseContext(createdBusContext)
+    if not ok and createdBusContext and rfsuite.bus and rfsuite.bus.releaseContext then
+        rfsuite.bus.releaseContext(createdBusContext)
     end
     if not ok and reason == "armed_blocked" then
         utils.signalArmedWriteBlocked()
