@@ -58,7 +58,7 @@ local function openPage(opts)
     if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
     if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
-    rfsuite.app.dashboardEditingTheme = source .. "/" .. folder
+    rfsuite.session.dashboardEditingTheme = source .. "/" .. folder
 
     local modulePath = themeScript
 

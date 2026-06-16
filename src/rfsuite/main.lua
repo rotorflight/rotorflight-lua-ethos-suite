@@ -209,7 +209,7 @@ local function createLazyAppProxy()
                 local t = rfsuite.tasks
                 return (t and t.escPowerCycleLoader) or false
             end
-            if key == "tasks" or key == "triggers" or key == "ui" or key == "Page" or key == "formFields" then
+            if key == "tasks" or key == "triggers" or key == "ui" then
                 return nil
             end
 

@@ -27,7 +27,7 @@ local function openPage(opts)
 
     local themeList = rfsuite.widgets.dashboard.listThemes()
 
-    rfsuite.app.dashboardEditingTheme = nil
+    rfsuite.session.dashboardEditingTheme = nil
     enableWakeup = true
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()

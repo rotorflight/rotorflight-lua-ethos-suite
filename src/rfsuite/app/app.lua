@@ -490,7 +490,7 @@ function app.close()
     app.NewRateTable = nil
     app.RateTable = nil
     app.adjfunctions = nil
-    app.dashboardEditingTheme = nil
+    rfsuite.session.dashboardEditingTheme = nil
     app._openedFromShortcuts = false
     app._forceMenuToMain = false
     app.pendingManifestMenuId = nil

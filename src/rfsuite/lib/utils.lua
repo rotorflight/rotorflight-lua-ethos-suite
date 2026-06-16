@@ -139,10 +139,8 @@ function utils.resolveArmedState(refreshFromTelemetry)
 end
 
 function utils.signalArmedWriteBlocked()
-    local app = rfsuite.app
-    if app and app.triggers then
-        app.triggers.showSaveArmedWarning = true
-    end
+    local cb = rfsuite.tasks and rfsuite.tasks.uiCallbacks
+    if cb and cb.showArmedWarning then cb.showArmedWarning() end
 end
 
 function utils.getArmedSaveBlockedMessage()

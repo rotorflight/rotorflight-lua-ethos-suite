@@ -2311,7 +2311,7 @@ function dashboard.getPreference(key)
         if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
         return nil
     else
-        section = normalizeThemePath(rfsuite.app.dashboardEditingTheme)
+        section = normalizeThemePath(rfsuite.session.dashboardEditingTheme)
         local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
         if value ~= nil then return value end
         local legacy = legacyThemePath(section)
@@ -2326,7 +2326,7 @@ function dashboard.savePreference(key, value)
         rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(dashboard.currentWidgetPath), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     else
-        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(rfsuite.app.dashboardEditingTheme), key, value)
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(rfsuite.session.dashboardEditingTheme), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     end
 end
