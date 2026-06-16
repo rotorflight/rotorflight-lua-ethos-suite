@@ -705,7 +705,7 @@ function MspQueueController:add(message)
     local toQueue = self.copyOnAdd and cloneMessage(message) or message
     self._qidSeq = (self._qidSeq or 0) + 1
     toQueue._qid = self._qidSeq
-    local pageScript = rfsuite.app and rfsuite.app.lastScript
+    local pageScript = rfsuite.tasks.lastScript
     if pageScript then toQueue._pageScript = pageScript end
     local bus = getBus()
     if bus and bus.createContext then
@@ -759,7 +759,7 @@ end
 
 function MspQueueController:addPage(message)
     if type(message) == "table" then
-        local pageScript = rfsuite.app and rfsuite.app.lastScript
+        local pageScript = rfsuite.tasks.lastScript
         if pageScript then
             message._pageScript = message._pageScript or pageScript
             message._busOwner = message._busOwner or pageScript

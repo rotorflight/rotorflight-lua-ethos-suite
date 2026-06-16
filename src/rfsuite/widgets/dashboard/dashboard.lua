@@ -2220,7 +2220,7 @@ function dashboard.wakeup()
     if lastWakeup and (now - lastWakeup) < WAKEUP_MIN_INTERVAL then return end
 
     local visible = lcd.isVisible()
-    local admin = rfsuite.app and rfsuite.app.guiIsRunning
+    local admin = rfsuite.tasks.appRunning
 
     if admin or not visible then
 
@@ -2304,7 +2304,7 @@ function dashboard.getPreference(key)
     if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
     local section = dashboard.currentWidgetPath
 
-    if not rfsuite.app.guiIsRunning then
+    if not rfsuite.tasks.appRunning then
         local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
         if value ~= nil then return value end
         local legacy = legacyThemePath(section)
@@ -2322,7 +2322,7 @@ end
 
 function dashboard.savePreference(key, value)
     if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then return false end
-    if not rfsuite.app.guiIsRunning then
+    if not rfsuite.tasks.appRunning then
         rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(dashboard.currentWidgetPath), key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     else

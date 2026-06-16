@@ -246,8 +246,7 @@ function api.isDeltaCacheEnabled(apiName)
     if apiName and api._deltaCacheByApi[apiName] ~= nil then
         return api._deltaCacheByApi[apiName]
     end
-    local app = rfsuite and rfsuite.app
-    if not (app and app.guiIsRunning) then
+    if not rfsuite.tasks.appRunning then
         return false
     end
     return api._deltaCacheDefault == true
@@ -315,8 +314,7 @@ end
 function api.loadPage(apiName, loadOpts)
     local module = api.load(apiName, loadOpts)
     if module and module.setOwner then
-        local app = rfsuite.app
-        local owner = app and app.lastScript
+        local owner = rfsuite.tasks.lastScript
         if owner then
             module.setOwner(owner)
         end

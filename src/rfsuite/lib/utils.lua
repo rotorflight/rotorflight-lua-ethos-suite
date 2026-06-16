@@ -167,8 +167,7 @@ function utils.queueEepromWrite(opts)
     local owner = opts.owner
     local createdBusContext
     if owner == nil then
-        local app = rfsuite.app
-        owner = app and app.lastScript
+        owner = rfsuite.tasks.lastScript
     end
 
     if not opts.replyAction and opts.logMessage then

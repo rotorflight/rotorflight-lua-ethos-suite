@@ -257,7 +257,7 @@ local function mainMenuIconEnableDisable()
             focusOnce(app, "online-fallback")
         end
 
-    elseif not app.isOfflinePage and not app.triggers.escPowerCycleLoader then
+    elseif not app.isOfflinePage and not rfsuite.tasks.escPowerCycleLoader then
         if not rfsuite.session.postConnectComplete or rfsuite.session.apiVersion == nil then
             if rfsuite.session.apiVersion == nil then
                 log("API version unavailable on live page; returning to main menu", "info")

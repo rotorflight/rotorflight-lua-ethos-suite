@@ -410,7 +410,7 @@ end
 
 function tasks.telemetryCheckScheduler()
 
-    if rfsuite.app and rfsuite.app.triggers and rfsuite.app.escPowerCycleLoader then return end
+    if rfsuite.tasks.escPowerCycleLoader then return end
 
     local now = os_clock()
 
@@ -880,7 +880,7 @@ function tasks.wakeup_protected()
         return
     end
 
-    local appGuiRunning = (rfsuite.app and rfsuite.app.guiIsRunning) == true
+    local appGuiRunning = rfsuite.tasks.appRunning == true
     if lastAppGuiRunning and not appGuiRunning then
         cleanupClosedAppRuntime()
     end

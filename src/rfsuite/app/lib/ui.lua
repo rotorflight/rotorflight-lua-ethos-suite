@@ -814,7 +814,7 @@ local function progressDialogWakeup()
 
     if app.dialogs.progressWatchDog and tasks.msp and (osClock() - app.dialogs.progressWatchDog) > tonumber(tasks.msp.protocol.pageReqTimeout) and app.dialogs.progressDisplay == true and app.dialogs.progressTimedOut ~= true then
         app.dialogs.progressTimedOut = true
-        if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) or (session and session.resetMSP) then
+        if app.pageState == app.pageStatus.rebooting or rfsuite.session.rebootInProgress or (session and session.resetMSP) then
             app.dialogs.progressCounter = 0
             app.dialogs.progressSpeed = nil
             app.dialogs.progressDisplay = false
@@ -945,7 +945,7 @@ local function saveDialogWakeup()
     local progressExceeded = (app.dialogs.saveProgressCounter > 120 and tasks.msp.mspQueue:isProcessed())
     if (watchdogExceeded or progressExceeded) and app.dialogs.saveDisplay == true and app.dialogs.saveTimedOut ~= true then
         app.dialogs.saveTimedOut = true
-        if app.pageState == app.pageStatus.rebooting or (app.triggers and app.triggers.rebootInProgress) then
+        if app.pageState == app.pageStatus.rebooting or rfsuite.session.rebootInProgress then
             app.dialogs.saveProgressCounter = 0
             app.dialogs.saveDisplay = false
             app.dialogs.saveWatchDog = nil
@@ -3206,7 +3206,7 @@ function ui.requestPage()
                 state.isProcessing = false
                 state.currentIndex = 1
                 app.triggers.isReady = true
-                app.triggers.rebootInProgress = false
+                rfsuite.session.rebootInProgress = false
                 if app.Page.postRead then app.Page.postRead(app.Page) end
                 app.ui.mspApiUpdateFormAttributes()
                 if app.Page.postLoad then
@@ -3568,7 +3568,7 @@ function ui.rebootFc(sourcePage)
         return false, "reboot_api_unavailable"
     end
 
-    app.triggers.rebootInProgress = true
+    rfsuite.session.rebootInProgress = true
     app.pageState = app.pageStatus.rebooting
     rebootAPI.setUUID("ui.reboot")
     rebootAPI.setCompleteHandler(function(self, buf)
@@ -3607,7 +3607,7 @@ function ui.rebootFc(sourcePage)
     end
     if not ok then
         utils.log("Reboot enqueue rejected: " .. tostring(reason), "info")
-        app.triggers.rebootInProgress = false
+        rfsuite.session.rebootInProgress = false
         app.pageState = app.pageStatus.display
         app.triggers.closeSaveFake = true
         app.triggers.isSaving = false

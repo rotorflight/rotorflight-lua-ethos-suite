@@ -76,7 +76,7 @@ local function isMaxInstructionError(err)
 end
 
 -- Make sure this is set - even if not initialised
-app.guiIsRunning = false
+rfsuite.tasks.appRunning = false
 
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
@@ -86,7 +86,7 @@ function app.paint()
 end
 
 function app.wakeup_protected()
-    app.guiIsRunning = true
+    rfsuite.tasks.appRunning = true
 
     -- Trap main menu opening to early and defer until wakeup to avoid VM instruction limit issues on some models when opening from shortcuts or after profile switch.
     if app._pendingMainMenuOpen and app.ui and app.ui.openMainMenu then
@@ -168,6 +168,7 @@ function app.create()
         app.lastIdx = nil -- last selected button index
         app.lastTitle = nil -- last page title string
         app.lastScript = nil -- last page script path
+        rfsuite.tasks.lastScript = nil
         app.headerTitle = nil -- resolved large header title
         app.headerParentBreadcrumb = nil -- resolved micro breadcrumb parent path
         app.menuContextStack = {} -- submenu return stack (parent chain)
@@ -180,14 +181,14 @@ function app.create()
         app.RateTable = nil -- active rates table
         app.fieldHelpTxt = nil -- active help text for focused field
         app.init = nil
-        app.guiIsRunning = false  -- flag to indicate if the app is active (for event handling)
+        rfsuite.tasks.appRunning = false
         app.adjfunctions = nil -- assigned adjust functions (if any)
         app.profileCheckScheduler = os.clock() -- last profile check time
         app.offlineMode = false -- app-wide offline flag
         app.isOfflinePage = false -- current page does not require FC link
         app.uiState = app.uiStatus.init -- reset UI state (redundant safety)
         app.lcdWidth, app.lcdHeight = lcd.getWindowSize() -- cached screen size
-        app.escPowerCycleLoader = false -- ESC power-cycle loader flag
+        rfsuite.tasks.escPowerCycleLoader = false
 
         app.audio = {}
         app.audio.playTimeout = false
@@ -257,7 +258,7 @@ function app.create()
         app.triggers.wasConnected = false -- last connection state
         app.triggers.isArmed = false -- model armed flag
         app.triggers.showSaveArmedWarning = false -- warn when saving armed
-        app.triggers.rebootInProgress = false -- expected reboot/link drop in progress
+        rfsuite.session.rebootInProgress = false
 
         -- default speeds for loaders (multipliers of default animation speed)
         app.loaderSpeed = {
@@ -399,9 +400,9 @@ function app.close()
     local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
     rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
 
-    app.guiIsRunning = false
+    rfsuite.tasks.appRunning = false
     app.offlineMode = false
-    app.escPowerCycleLoader = false
+    rfsuite.tasks.escPowerCycleLoader = false
 
     if app.ui and app.ui.cleanupCurrentPage then
         local ok, err = pcall(app.ui.cleanupCurrentPage)
@@ -443,6 +444,7 @@ function app.close()
     app.lastIdx = nil
     app.lastTitle = nil
     app.lastScript = nil
+    rfsuite.tasks.lastScript = nil
     app.lastMenu = nil
     app.lastLabel = nil
     app.NewRateTable = nil
