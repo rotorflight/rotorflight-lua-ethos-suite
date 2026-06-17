@@ -1648,6 +1648,10 @@ function utils.clearProgressDialog(handle)
     end
 end
 
+local function setDialogMessage(handle, msg)
+    handle:message(msg)
+end
+
 function utils.updateProgressDialogMessage(statusOverride)
     if not progressDialog or not progressDialog.handle then return end
     local showDebug = rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.mspstatusdialog
@@ -1656,7 +1660,7 @@ function utils.updateProgressDialogMessage(statusOverride)
     if showDebug then
         msg = mspStatus or MSP_DEBUG_PLACEHOLDER
     end
-    pcall(function() progressDialog.handle:message(msg) end)
+    pcall(setDialogMessage, progressDialog.handle, msg)
 end
 
 -- Shared dirty-check: redraws when box._currentDisplayValue changes (and

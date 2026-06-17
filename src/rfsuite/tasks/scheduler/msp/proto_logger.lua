@@ -45,6 +45,22 @@ local function now()
     return string_format("%.3f", os_clock())
 end
 
+local function flushHandle(fh)
+    fh:flush()
+end
+
+local function writeNewline(fh)
+    fh:write("\n")
+end
+
+local function closeHandle(fh)
+    fh:close()
+end
+
+local function flushLogs(logs)
+    logs.flush()
+end
+
 local function tryRequire(name)
     local ok, mod = pcall(require, name)
     if ok and mod then return mod end
@@ -102,7 +118,7 @@ local function writeLine(line)
     local t = os_clock()
     if (t - _lastFlushAt) >= _flushEvery then
         _lastFlushAt = t
-        pcall(function() _fh:flush() end)
+        pcall(flushHandle, _fh)
     end
 end
 
@@ -124,7 +140,7 @@ function M.enable(on)
         if not _logs then
             _fh = io_open(M.logFile, "a")
             if _fh then
-                pcall(function() _fh:write("\n") end)
+                pcall(writeNewline, _fh)
             end
         end
 
@@ -138,12 +154,12 @@ function M.enable(on)
 
         if _logs and _logs.flush then
             -- Ensure it hits disk on teardown, but don't touch global close() here.
-            pcall(function() _logs.flush() end)
+            pcall(flushLogs, _logs)
         end
 
         if _fh then
-            pcall(function() _fh:flush() end)
-            pcall(function() _fh:close() end)
+            pcall(flushHandle, _fh)
+            pcall(closeHandle, _fh)
         end
 
         _logs = nil

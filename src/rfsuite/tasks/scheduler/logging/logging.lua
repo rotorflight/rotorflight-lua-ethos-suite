@@ -83,9 +83,13 @@ local logTable = {
 local diskFH
 local diskFHPath
 
+local function closeHandle(fh)
+    fh:close()
+end
+
 local function diskClose()
     if diskFH then
-        pcall(function() diskFH:close() end)
+        pcall(closeHandle, diskFH)
         diskFH = nil
         diskFHPath = nil
     end
@@ -188,6 +192,12 @@ local function dropQueuePrefix(n)
     log_queue_bytes = bytes
 end
 
+local function writeChunk(f, lines, n)
+    f:write(table_concat(lines, "\n", 1, n))
+    f:write("\n")
+    if f.flush then f:flush() end
+end
+
 function logging.writeLogs(forcewrite)
     if #log_queue == 0 then return end
     if not logFileName then return end
@@ -217,14 +227,10 @@ function logging.writeLogs(forcewrite)
     end
 
     -- One write call for the whole chunk is much cheaper than line-by-line.
-    local ok = pcall(function()
-        f:write(table_concat(log_queue, "\n", 1, n))
-        f:write("\n")
-        if f.flush then f:flush() end
-    end)
+    local ok = pcall(writeChunk, f, log_queue, n)
 
     if not DISK_KEEP_OPEN then
-        pcall(function() f:close() end)
+        pcall(closeHandle, f)
     end
 
     if not ok then
