@@ -3382,6 +3382,15 @@ function ui.saveSettings(sourcePage)
 
     --log("Saving data", "debug")
 
+    -- Pages with a custom openPage() (e.g. rates grid) never run the generic
+    -- per-field render loop that normally populates this, so refresh it here
+    -- to guarantee core.lua's scale/mult lookups see the page being saved.
+    tasks.activePage = {
+        fields = page.apidata.formdata.fields,
+        api = page.apidata.api,
+        formFields = app.formFields,
+    }
+
     local mspapi = page.apidata
     local apiList = mspapi.api
     local values = tasks.msp.api.apidata.values
