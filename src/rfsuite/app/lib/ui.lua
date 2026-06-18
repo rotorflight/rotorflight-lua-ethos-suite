@@ -318,8 +318,11 @@ local function refreshMenuLookupCache()
     return menuLookupCache
 end
 
+local clearFieldHandlerCache
+
 function ui.clearRuntimeCaches()
     menuLookupCache = {menuRef = nil}
+    if clearFieldHandlerCache then clearFieldHandlerCache() end
     ui._helpCache = {}
     ui._helpExistsCache = {}
 
@@ -1250,6 +1253,7 @@ function ui.cleanupCurrentPage()
     wipeTable(app.formFields)
     wipeTable(app.formLines)
     wipeTable(app.formNavigationFields)
+    clearFieldHandlerCache()
     if app.gfx_buttons then
         for k in pairs(app.gfx_buttons) do
             app.gfx_buttons[k] = nil
@@ -1742,447 +1746,84 @@ function ui._installDirtyCallbackWrappers()
     ui._dirtyWrappersInstalled = true
 end
 
-function ui.fieldBoolean(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = ui._guardField(fields, i)
-    local formLines = app.formLines
-    local formFields = app.formFields
-    local radioText = app.radio.text
+local FIELD_HANDLER_FILES = {
+    [0] = "app/lib/fields/static_text.lua",
+    [1] = "app/lib/fields/choice.lua",
+    [2] = "app/lib/fields/number.lua",
+    [3] = "app/lib/fields/text.lua",
+    [4] = "app/lib/fields/boolean.lua",
+    [5] = "app/lib/fields/boolean_inverted.lua",
+    [6] = "app/lib/fields/slider.lua",
+    [7] = "app/lib/fields/source.lua",
+    [8] = "app/lib/fields/switch.lua",
+    [9] = "app/lib/fields/sensor.lua",
+    [10] = "app/lib/fields/color.lua"
+}
 
-    if not f then return end
+local fieldHandlerCache
+local fieldHandlerContext = {ui = ui, app = app, rfutils = rfutils}
 
-    local invert = (f.subtype == 1)
-
-    local posField = ui._prepareFieldLine(f, radioText)
-
-    local function decode()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        local v = (active.value == 1) and 1 or 0
-        if invert then v = (v == 1) and 0 or 1 end
-        return (v == 1)
-    end
-
-    local function encode(b)
-        local v = b and 1 or 0
-        if invert then v = (v == 1) and 0 or 1 end
-        return v
-    end
-
-    formFields[i] = form.addBooleanField(formLines[app.formLineCnt], posField, function() return decode() end, function(valueBool)
-        ui.markPageDirty()
-        local value = encode(valueBool == true)
-        if f.postEdit then f.postEdit(page, value) end
-        if f.onChange then f.onChange(page, value) end
-        f.value = app.utils.saveFieldValue(fields[i], value)
-    end)
-
-    if f.disable then formFields[i]:enable(false) end
-end
-
-function ui.fieldBooleanInverted(i, lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields and fields[i] or nil
-    local prevSubtype = f and f.subtype or nil
-    if f then f.subtype = 1 end
-    ui.fieldBoolean(i, lf)
-    if f then f.subtype = prevSubtype end
-end
-
-function ui.fieldChoice(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-    local radioText = app.radio.text
-
-    local posField = ui._prepareFieldLine(f, radioText)
-
-    local tbldata = f.table and app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
-    if f.tableEthos then
-        tbldata = f.tableEthos
-    end
-
-
-    formFields[i] = form.addChoiceField(formLines[app.formLineCnt], posField, tbldata, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page, value) end
-        if f.onChange then f.onChange(page, value) end
-        f.value = app.utils.saveFieldValue(fields[i], value)
-    end)
-
-    if f.disable then formFields[i]:enable(false) end
-end
-
-function ui.fieldSlider(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-
-    local posField = ui._prepareFieldLine(f)
-
-    if f.offset then
-        if f.min then f.min = f.min + f.offset end
-        if f.max then f.max = f.max + f.offset end
-    end
-
-    local minValue = app.utils.scaleValue(f.min, f)
-    local maxValue = app.utils.scaleValue(f.max, f)
-
-    if f.mult then
-        if minValue then minValue = minValue * f.mult end
-        if maxValue then maxValue = maxValue * f.mult end
-    end
-
-    minValue = minValue or 0
-    maxValue = maxValue or 0
-
-    formFields[i] = form.addSliderField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        if not (fields and fields[i]) then
-            ui.disableAllFields()
-            ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            return nil
-        end
-        return app.utils.getFieldValue(fields[i])
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(fields[i], value)
-    end)
-
-    local currentField = formFields[i]
-
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-
-    if f.decimals then currentField:decimals(f.decimals) end
-    if f.step then currentField:step(f.step) end
-    if f.disable then currentField:enable(false) end
-
-    if f.help or f.apikey then
-        if not f.help and f.apikey then f.help = f.apikey end
-        local fieldHelpTxt = ui.getFieldHelpTxt()
-        if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t then currentField:help(fieldHelpTxt[f.help].t) end
-    end
-
-end
-
-function ui.fieldNumber(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-
-    local posField = ui._prepareFieldLine(f)
-
-    if f.offset then
-        if f.min then f.min = f.min + f.offset end
-        if f.max then f.max = f.max + f.offset end
-    end
-
-    local minValue = app.utils.scaleValue(f.min, f)
-    local maxValue = app.utils.scaleValue(f.max, f)
-
-    if f.mult then
-        if minValue then minValue = minValue * f.mult end
-        if maxValue then maxValue = maxValue * f.mult end
-    end
-
-    minValue = minValue or 0
-    maxValue = maxValue or 0
-
-    formFields[i] = form.addNumberField(formLines[app.formLineCnt], posField, minValue, maxValue, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
-    end)
-
-    local currentField = formFields[i]
-
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-
-    if f.default then
-        if f.offset then f.default = f.default + f.offset end
-        local default = f.default * rfutils.decimalInc(f.decimals)
-        if f.mult then default = default * f.mult end
-        local str = tostring(default)
-        if str:match("%.0$") then default = math.ceil(default) end
-        currentField:default(default)
-    else
-        currentField:default(0)
-    end
-
-    if f.decimals then currentField:decimals(f.decimals) end
-    if f.unit then currentField:suffix(f.unit) end
-    if f.step then currentField:step(f.step) end
-    if f.disable then currentField:enable(false) end
-
-    if f.help or f.apikey then
-        if not f.help and f.apikey then f.help = f.apikey end
-        local fieldHelpTxt = ui.getFieldHelpTxt()
-        if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t then currentField:help(fieldHelpTxt[f.help].t) end
-    end
-
-    if f.instantChange == false then
-        currentField:enableInstantChange(false)
-    else
-        currentField:enableInstantChange(true)
+clearFieldHandlerCache = function()
+    if fieldHandlerCache then
+        wipeTable(fieldHandlerCache)
+        fieldHandlerCache = nil
     end
 end
 
-function ui.fieldSource(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
+local function getFieldHandler(fieldType)
+    local resolvedType = fieldType or 2
+    fieldHandlerCache = fieldHandlerCache or {}
 
-    local posField = ui._prepareFieldLine(f)
+    local handler = fieldHandlerCache[resolvedType]
+    if handler then return handler end
 
-    if f.offset then
-        if f.min then f.min = f.min + f.offset end
-        if f.max then f.max = f.max + f.offset end
+    local path = FIELD_HANDLER_FILES[resolvedType]
+    if not path then
+        if resolvedType ~= 2 then return getFieldHandler(2) end
+        return nil
     end
 
-    local minValue = app.utils.scaleValue(f.min, f)
-    local maxValue = app.utils.scaleValue(f.max, f)
-
-    if f.mult then
-        if minValue then minValue = minValue * f.mult end
-        if maxValue then maxValue = maxValue * f.mult end
+    local chunk, err = loadfile(path)
+    if not chunk then
+        utils.log("Field handler load failed: " .. tostring(path) .. " " .. tostring(err), "info")
+        if resolvedType ~= 2 then return getFieldHandler(2) end
+        return nil
     end
 
-    minValue = minValue or 0
-    maxValue = maxValue or 0
+    local factory = chunk()
+    if type(factory) ~= "function" then
+        utils.log("Field handler did not return a function: " .. tostring(path), "info")
+        if resolvedType ~= 2 then return getFieldHandler(2) end
+        return nil
+    end
 
-    formFields[i] = form.addSourceField(formLines[app.formLineCnt], posField, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
-    end)
+    handler = factory(fieldHandlerContext)
+    if type(handler) ~= "function" then
+        utils.log("Field handler factory failed: " .. tostring(path), "info")
+        if resolvedType ~= 2 then return getFieldHandler(2) end
+        return nil
+    end
 
-    local currentField = formFields[i]
-
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-
-    if f.disable then currentField:enable(false) end
-
+    fieldHandlerCache[resolvedType] = handler
+    return handler
 end
 
-function ui.fieldSensor(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-
-    local posField = ui._prepareFieldLine(f)
-
-    if f.offset then
-        if f.min then f.min = f.min + f.offset end
-        if f.max then f.max = f.max + f.offset end
-    end
-
-    local minValue = app.utils.scaleValue(f.min, f)
-    local maxValue = app.utils.scaleValue(f.max, f)
-
-    if f.mult then
-        if minValue then minValue = minValue * f.mult end
-        if maxValue then maxValue = maxValue * f.mult end
-    end
-
-    minValue = minValue or 0
-    maxValue = maxValue or 0
-
-    formFields[i] = form.addSensorField(formLines[app.formLineCnt], posField, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
-    end)
-
-    local currentField = formFields[i]
-
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-
-    if f.disable then currentField:enable(false) end
-
+local function runFieldHandler(fieldType, i, lf)
+    local handler = getFieldHandler(fieldType)
+    if handler then return handler(i, lf) end
 end
 
-function ui.fieldColor(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-
-    local posField = ui._prepareFieldLine(f)
-
-    if f.offset then
-        if f.min then f.min = f.min + f.offset end
-        if f.max then f.max = f.max + f.offset end
-    end
-
-    local minValue = app.utils.scaleValue(f.min, f)
-    local maxValue = app.utils.scaleValue(f.max, f)
-
-    if f.mult then
-        if minValue then minValue = minValue * f.mult end
-        if maxValue then maxValue = maxValue * f.mult end
-    end
-
-    minValue = minValue or 0
-    maxValue = maxValue or 0
-
-    formFields[i] = form.addColorField(formLines[app.formLineCnt], posField, function()
-        local active = ui._guardField(fields, i)
-        if not active then return COLOR_BLACK end
-        local color = active
-        if type(color) ~= "number" then
-            return COLOR_BLACK
-        else
-            return color
-        end
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
-    end)
-
-    local currentField = formFields[i]
-
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-
-    if f.disable then currentField:enable(false) end
-
-end
-
-function ui.fieldSwitch(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-
-    local posField = ui._prepareFieldLine(f)
-
-    if f.offset then
-        if f.min then f.min = f.min + f.offset end
-        if f.max then f.max = f.max + f.offset end
-    end
-
-    local minValue = app.utils.scaleValue(f.min, f)
-    local maxValue = app.utils.scaleValue(f.max, f)
-
-    if f.mult then
-        if minValue then minValue = minValue * f.mult end
-        if maxValue then maxValue = maxValue * f.mult end
-    end
-
-    minValue = minValue or 0
-    maxValue = maxValue or 0
-
-    formFields[i] = form.addSwitchField(formLines[app.formLineCnt], posField, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(page.apidata.formdata.fields[i], value)
-    end)
-
-    local currentField = formFields[i]
-
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-
-    if f.disable then currentField:enable(false) end
-
-end
-
-function ui.fieldStaticText(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-    local radioText = app.radio.text
-
-    local posField = ui._prepareFieldLine(f, radioText)
-    local active = ui._guardField(fields, i)
-    if not active then return end
-    formFields[i] = form.addStaticText(formLines[app.formLineCnt], posField, app.utils.getFieldValue(active))
-
-    local currentField = formFields[i]
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-    if f.decimals then currentField:decimals(f.decimals) end
-    if f.unit then currentField:suffix(f.unit) end
-    if f.step then currentField:step(f.step) end
-end
-
-function ui.fieldText(i,lf)
-    local page = app.Page
-    local fields = page and page.apidata and page.apidata.formdata.fields or lf
-    local f = fields[i]
-    local formLines = app.formLines
-    local formFields = app.formFields
-    local radioText = app.radio.text
-
-    local posField = ui._prepareFieldLine(f, radioText)
-
-    formFields[i] = form.addTextField(formLines[app.formLineCnt], posField, function()
-        local active = ui._guardField(fields, i)
-        if not active then return nil end
-        return app.utils.getFieldValue(active)
-    end, function(value)
-        ui.markPageDirty()
-        if f.postEdit then f.postEdit(page) end
-        if f.onChange then f.onChange(page) end
-        f.value = app.utils.saveFieldValue(fields[i], value)
-    end)
-
-    local currentField = formFields[i]
-    if f.onFocus then currentField:onFocus(function() f.onFocus(page) end) end
-    if f.disable then currentField:enable(false) end
-
-    if f.help then
-        local fieldHelpTxt = ui.getFieldHelpTxt()
-        if fieldHelpTxt and fieldHelpTxt[f.help] and fieldHelpTxt[f.help].t then currentField:help(fieldHelpTxt[f.help].t) end
-    end
-
-    if f.instantChange == false then
-        currentField:enableInstantChange(false)
-    else
-        currentField:enableInstantChange(true)
-    end
-end
+function ui.fieldStaticText(i, lf) return runFieldHandler(0, i, lf) end
+function ui.fieldChoice(i, lf) return runFieldHandler(1, i, lf) end
+function ui.fieldNumber(i, lf) return runFieldHandler(2, i, lf) end
+function ui.fieldText(i, lf) return runFieldHandler(3, i, lf) end
+function ui.fieldBoolean(i, lf) return runFieldHandler(4, i, lf) end
+function ui.fieldBooleanInverted(i, lf) return runFieldHandler(5, i, lf) end
+function ui.fieldSlider(i, lf) return runFieldHandler(6, i, lf) end
+function ui.fieldSource(i, lf) return runFieldHandler(7, i, lf) end
+function ui.fieldSwitch(i, lf) return runFieldHandler(8, i, lf) end
+function ui.fieldSensor(i, lf) return runFieldHandler(9, i, lf) end
+function ui.fieldColor(i, lf) return runFieldHandler(10, i, lf) end
 
 function ui.fieldLabel(f, i, l)
 
@@ -2589,6 +2230,7 @@ function ui.openPage(opts)
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "start")
 
         app.Page.openPage(opts)
+        clearFieldHandlerCache()
         app.utils.capturePageProfileState(app.Page)
         if ui._shouldManageDirtySave() and app.Page.disableSaveUntilDirty ~= false and not app.Page.canSave then
             app.Page.canSave = function()
@@ -2619,22 +2261,6 @@ function ui.openPage(opts)
 
     app.formLineCnt = 0
 
-    if not ui._fieldHandlers then
-        ui._fieldHandlers = {
-            [0] = ui.fieldStaticText,
-            [1] = ui.fieldChoice,
-            [2] = ui.fieldNumber,
-            [3] = ui.fieldText,
-            [4] = ui.fieldBoolean,
-            [5] = ui.fieldBooleanInverted or ui.fieldBoolean,
-            [6] = ui.fieldSlider,
-            [7] = ui.fieldSource,
-            [8] = ui.fieldSwitch,
-            [9] = ui.fieldSensor,
-            [10] = ui.fieldColor
-        }
-    end
-
     if app.Page.apidata and app.Page.apidata.formdata and app.Page.apidata.formdata.fields then
         for i, field in ipairs(app.Page.apidata.formdata.fields) do
             local label = app.Page.apidata.formdata.labels
@@ -2645,6 +2271,7 @@ function ui.openPage(opts)
                     app.triggers.closeProgressLoaderNoisProcessed = true
                 end
                 app._pendingMainMenuOpen = true
+                clearFieldHandlerCache()
                 return
             end
 
@@ -2654,8 +2281,8 @@ function ui.openPage(opts)
             if field.hidden ~= true and valid then
                 app.ui.fieldLabel(field, i, label)
                 local fieldType = field.table and 1 or field.type
-                local handler = ui._fieldHandlers[fieldType] or ui.fieldNumber
-                handler(i)
+                local handler = getFieldHandler(fieldType) or getFieldHandler(2)
+                if handler then handler(i) end
             else
                 app.formFields[i] = {}
             end
@@ -2671,6 +2298,7 @@ function ui.openPage(opts)
     end
 
     utils.reportMemoryUsage("ui.openPage: " .. script, "end")
+    clearFieldHandlerCache()
 
     collectgarbage('collect')
     collectgarbage('collect')
