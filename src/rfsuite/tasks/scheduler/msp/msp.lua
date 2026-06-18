@@ -19,7 +19,7 @@ msp.onConnectChecksInit = true -- Flag to run initial checks on telemetry connec
 
 local protocol = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/protocols.lua"))()
 local helpers = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/helpers.lua"))()
-local proto_logger = protocol.getProtoLogger and protocol.getProtoLogger() or nil
+local proto_logger = nil -- resolved lazily on first enableProtoLog(true) call, see below
 
 local telemetryTypeChanged = false -- Set when switching CRSF/S.Port/etc.
 
@@ -118,10 +118,14 @@ function msp.getApiCore()
     return msp.apicore
 end
 
--- Expose protocol logger
-msp.proto_logger = proto_logger
+-- Expose protocol logger (stays nil/unloaded unless actually enabled)
+msp.proto_logger = nil
 
 function msp.enableProtoLog(on)
+    if on and not proto_logger then
+        proto_logger = protocol.getProtoLogger and protocol.getProtoLogger() or nil
+        msp.proto_logger = proto_logger
+    end
     if proto_logger and proto_logger.enable then
         proto_logger.enable(on)
         return proto_logger.enabled

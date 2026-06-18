@@ -65,15 +65,24 @@ end
 
 -- Optional protocol logger (writes raw TX/RX frames to /LOGS/msp_proto.log)
 -- Enabled at runtime via: rfsuite.tasks.msp.enableProtoLog(true)
-local proto_logger = assert(loadfile(scriptBase .. "proto_logger.lua"))()
+-- Compiled lazily so it never occupies RAM unless actually enabled.
+local proto_logger = nil
+
+local function ensureProtoLogger()
+    if not proto_logger then
+        proto_logger = assert(loadfile(scriptBase .. "proto_logger.lua"))()
+    end
+    return proto_logger
+end
 
 function protocol.enableProtoLog(on)
-    proto_logger.enable(on)
-    return proto_logger.enabled
+    local logger = ensureProtoLogger()
+    logger.enable(on)
+    return logger.enabled
 end
 
 function protocol.getProtoLogger()
-    return proto_logger
+    return ensureProtoLogger()
 end
 
 return protocol
