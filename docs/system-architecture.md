@@ -41,7 +41,7 @@ app/modules/<module_name>/
   └─ <icon>.png     -- Icon displayed in navigation
 ```
 
-* **`init.lua`** returns a table. Modules are discovered by `rfsuite.utils.findModules()` and assembled into menus in `app/modules/init.lua` using `app/modules/sections.lua`.
+* **`init.lua`** returns a table. Modules are listed in `app/modules/manifest.lua` and assembled into menus in `app/modules/init.lua` using `app/modules/sections.lua`.
 * **Core Logic** (`<module>.lua`) implements a `Page` table with methods such as:
 
   * `Page:onEnter()` to initialize form data

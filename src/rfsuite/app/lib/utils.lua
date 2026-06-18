@@ -20,18 +20,6 @@ local function getTelemetryTask()
     return tasks and tasks.telemetry or nil
 end
 
-function utils.getRSSI()
-    if simevent.rflink == 1 then return 0 end
-
-    if app.offlineMode == true then return 100 end
-
-    if session.telemetryState then
-        return 100
-    else
-        return 0
-    end
-end
-
 function utils.convertPageValueTable(tbl, inc)
     local thetable = {}
 

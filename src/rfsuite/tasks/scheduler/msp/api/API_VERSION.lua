@@ -6,8 +6,16 @@
 local rfsuite = require("rfsuite")
 local core = rfsuite.tasks.msp.getApiCore()
 
+local function splitVersionStringToNumbers(versionString)
+    if not versionString then return nil end
+
+    local parts = {0}
+    for num in versionString:gmatch("%d+") do table.insert(parts, tonumber(num)) end
+    return parts
+end
+
 local API_NAME = "API_VERSION"
-local SIM_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(
+local SIM_RESPONSE = splitVersionStringToNumbers(
     rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion]
 )
 

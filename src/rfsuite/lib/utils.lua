@@ -558,64 +558,6 @@ function utils.log(msg, level)
     if rfsuite.tasks and rfsuite.tasks.logger then rfsuite.tasks.logger.add(msg, level or "debug") end 
 end
 
-function utils.print_r(node, maxDepth, currentDepth)
-    maxDepth = maxDepth or 5
-    currentDepth = currentDepth or 0
-
-    if currentDepth > maxDepth then return "{...} -- Max Depth Reached" end
-
-    if type(node) ~= "table" then return tostring(node) .. " (" .. type(node) .. ")" end
-
-    local result = {}
-    table.insert(result, "{")
-
-    for k, v in pairs(node) do
-        local key = type(k) == "string" and ('["' .. k .. '"]') or ("[" .. tostring(k) .. "]")
-        local value
-
-        if type(v) == "table" then
-            value = utils.print_r(v, maxDepth, currentDepth + 1)
-        else
-            value = tostring(v)
-            if type(v) == "string" then value = '"' .. value .. '"' end
-        end
-
-        table.insert(result, key .. " = " .. value .. ",")
-    end
-
-    table.insert(result, "}")
-    print(table.concat(result, " "))
-end
-
-function utils.findModules()
-    local modulesList = {}
-    local modules_path = "app/modules/"
-
-    for _, v in pairs(system.listFiles(modules_path)) do
-        if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
-            local init_path = modules_path .. v .. "/init.lua"
-
-            local func, err = loadfile(init_path)
-            if not func then
-                rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
-            else
-                local mconfig = func()
-
-                if type(mconfig) ~= "table" or not mconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
-                else
-                    rfsuite.utils.log("Loading module " .. v, "debug")
-                    mconfig.folder = v
-                    table.insert(modulesList, mconfig)
-                end
-            end
-        end
-    end
-
-    return modulesList
-end
-
-
 utils._imagePathCache = {}
 utils._imageBitmapCache = {}
 
@@ -760,20 +702,6 @@ function utils.onReboot()
     rfsuite.session.resetTelemetry = true
     rfsuite.session.resetMSP = true
     rfsuite.session.resetMSPSensors = true
-end
-
-function utils.splitVersionStringToNumbers(versionString)
-    if not versionString then return nil end
-
-    local parts = {0}
-    for num in versionString:gmatch("%d+") do table.insert(parts, tonumber(num)) end
-    return parts
-end
-
-function utils.keys(tbl)
-    local keys = {}
-    for k in pairs(tbl) do table.insert(keys, k) end
-    return keys
 end
 
 local function appendVersionParts(parts, value)
