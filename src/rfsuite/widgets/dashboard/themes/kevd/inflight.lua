@@ -51,8 +51,7 @@ end
 
 local function formatCellVoltageAndCount(voltage)
     voltage = tonumber(voltage) or 0
-    local cells = utils.getBatteryCellCount(0)
-    if cells <= 0 then cells = estimateCellCountFromVoltage(voltage) end
+    local cells = estimateCellCountFromVoltage(voltage)
     if voltage <= 0 or cells <= 0 then return "--.--V (--S)" end
     return format("%.2fV (%dS)", voltage / cells, cells)
 end
