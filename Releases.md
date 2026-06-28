@@ -2,6 +2,19 @@
 
 Release version for 2.3.0 Rotorflight
 
+This release brings together the 2.3.0 snapshot and release-candidate work since 2.2.1. The headline is a much broader Ethos Suite with dashboard support, expanded Rotorflight 2.3 configuration coverage, improved telemetry/MSP handling, and a large amount of memory and CPU optimisation for Ethos radios.
+
+- Added the new dashboard system, dashboard theme support, Ethos 2.6 theme integration, theme selection, and improved dashboard loader/status handling.
+- Reworked the menu structure and added/expanded modules so more Rotorflight configuration can be edited directly from the radio, including mixer, receiver, FBUS, ESC/motor, governor, rates, tail, smart fuel, and RF 2.3-specific settings.
+- Added Battery Profile support and improved battery/profile-aware behaviour for gauges, alerts, smart fuel, and fuel calculations.
+- Added Smart Fuel support on the FBL side, including improved model detection, voltage/consumption handling, sensor reset behaviour, and related translations/audio.
+- Added and improved ESC programming support, including BLHeli_S/Bluejay, AM32, Hobbywing/HW5, ZTW, OMP, Flyrotor, Skorpion, and 4-way ESC reliability improvements.
+- Improved MSP and telemetry transport with MSPv2 support, MSP boost mode, API/message-bus refactors, better S.Port reliability, FBUS sensor support, ELRS telemetry improvements, and safer reconnect/queue handling.
+- Added the Session Log tool, protocol/debug logging improvements, diagnostics/admin tools, and support for Ethos malloc debugging.
+- Added the new FrSky package format and cross-platform Ethos Suite updater/deployment tooling.
+- Reduced radio load throughout the app, background tasks, widgets, dashboard objects, ESC tools, telemetry modules, progress dialogs, image/theme handling, and navigation paths by reducing allocations, lazy loading more code, clearing caches, and fixing memory leaks.
+- Includes many UI fixes, translation/audio updates, sensor-tool updates, dashboard theme additions, and smaller stability fixes from the 2.3.0 snapshots and release candidates.
+
 # 2.3.0-RC3
 
 Release candidate version for 2.3.0-RC3 Rotorflight
