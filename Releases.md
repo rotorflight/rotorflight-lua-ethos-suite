@@ -1,3 +1,7 @@
+# 2.3.0
+
+Release version for 2.3.0 Rotorflight
+
 # 2.3.0-RC3
 
 Release candidate version for 2.3.0-RC3 Rotorflight
