@@ -14,21 +14,75 @@ local format = string.format
 
 local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
+local colorMode = utils.themeColors()
 local header_layout = utils.standardHeaderLayout(headeropts)
-local header_boxes = utils.standardHeaderBoxes(headeropts)
+local header_boxes_cache = nil
+local last_txbatt_type = nil
+local C
+
+local function header_boxes()
+    local txbatt_type = 0
+    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+        txbatt_type = rfsuite.preferences.general.txbatt_type or 0
+    end
+
+    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
+        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+
+        -- Replace the stock Rotorflight logo with the MWRC-style title while
+        -- keeping the radio's native header surface and battery/RSSI widgets.
+        for _, headerBox in ipairs(boxes) do
+            if headerBox.type == "image" then
+                headerBox.type = "func"
+                headerBox.subtype = "func"
+                headerBox.bgcolor = "transparent"
+                headerBox.paint = function(x, y, w, h)
+                    local headerBg = colorMode.tbbgcolor or colorMode.bgcolor
+                    if type(headerBg) == "number" then
+                        lcd.color(headerBg)
+                        lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
+                    end
+
+                    local font = utils.resolveFont("FONT_L", nil)
+                    if type(font) ~= "number" then return end
+                    lcd.font(font)
+
+                    local t1, t2, t3 = "ETHOS ", "// ", "ROTORFLIGHT"
+                    local tw1, th = lcd.getTextSize(t1)
+                    local tw2 = lcd.getTextSize(t2)
+                    local tw3 = lcd.getTextSize(t3)
+                    local totalW = tw1 + tw2 + tw3
+                    local tx = floor(x + (w - totalW) / 2)
+                    local ty = floor(y + (h - th) / 2)
+
+                    lcd.color(C.cyan)
+                    lcd.drawText(tx, ty, t1)
+                    lcd.color(C.amber)
+                    lcd.drawText(tx + tw1, ty, t2)
+                    lcd.color(C.white)
+                    lcd.drawText(tx + tw1 + tw2, ty, t3)
+                end
+            end
+        end
+
+        header_boxes_cache = boxes
+        last_txbatt_type = txbatt_type
+    end
+    return header_boxes_cache
+end
 
 local THEME_SECTION = "system/aegis"
 local DEFAULTS = {
     rpm_max = 2500,
     bec_min = 6.5,
-    bec_warn = 8.0,
+    bec_warn = 7.0,
     esc_warn = 110,
     esc_max = 150,
     fuel_warn = 25,
     link_warn = 50
 }
 
-local C = {
+C = {
     bg = lcd.RGB(7, 11, 16),
     panel = lcd.RGB(14, 21, 29),
     panel2 = lcd.RGB(19, 28, 38),
@@ -48,14 +102,27 @@ local C = {
     violetDim = lcd.RGB(55, 41, 88)
 }
 
+-- Use the radio's actual header surface for the dashboard and every panel.
+-- This removes the separate near-black Aegis backdrop while preserving the
+-- instrument borders, accents, and high-contrast telemetry.
+C.bg = colorMode.tbbgcolor or colorMode.bgcolor or C.bg
+C.panel = C.bg
+C.panel2 = C.bg
+
 local function getThemeValue(key)
     local session = rfsuite and rfsuite.session
     local prefs = session and session.modelPreferences and session.modelPreferences[THEME_SECTION]
     local value = prefs and tonumber(prefs[key])
+
+    -- Migrate the v1/v1.2 BEC healthy threshold. 8.0 V marked normal
+    -- 7.2 V BEC systems as a caution, so the new baseline is 7.0 V.
+    if key == "bec_warn" and value == 8 then value = 7.0 end
+
     return value or DEFAULTS[key]
 end
 
 local function sensor(telemetry, name, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
     if not (telemetry and telemetry.getSensor) then return nil end
     local value = telemetry.getSensor(name)
     if value ~= nil then return tonumber(value) end
@@ -171,6 +238,7 @@ local layout = {cols = 12, rows = 12, padding = 0}
 local screenBorderStyle = {enabled = false}
 
 local function stat(telemetry, source, statType, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
     local stats = telemetry and telemetry.sensorStats
     local data = stats and stats[source]
     local value = data and data[statType]
@@ -294,14 +362,19 @@ local function postflightPaint(x, y, w, h, box, c)
     end
 end
 
+local boxes_cache = nil
+
 local function boxes()
-    return {{
+    if boxes_cache == nil then
+        boxes_cache = {{
         col = 1, row = 1, colspan = 12, rowspan = 12,
         type = "func", subtype = "func",
         wakeup = postflightWakeup,
         paint = postflightPaint,
         bgcolor = "transparent"
-    }}
+        }}
+    end
+    return boxes_cache
 end
 
 return {
