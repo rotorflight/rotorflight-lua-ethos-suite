@@ -1,0 +1,1 @@
+Aegis v1.7 is the current radio-tested build. It includes the v1.1 load fix, v1.2 telemetry fix, native-header background integration, ETHOS // ROTORFLIGHT header text, relocated arm/governor badges, and the corrected two-row consumed-capacity readout.
